@@ -1,0 +1,125 @@
+package net.minecraft.client.resources;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.common.hash.Hashing;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.minecraft.InsecureTextureException;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import com.mojang.authlib.minecraft.MinecraftSessionService;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
+import com.mojang.blaze3d.systems.RenderSystem;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.HttpTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
+
+public class SkinManager {
+   private final TextureManager textureManager;
+   private final File skinsDirectory;
+   private final MinecraftSessionService sessionService;
+   private final LoadingCache insecureSkinCache;
+
+   public SkinManager(TextureManager var1, File var2, MinecraftSessionService var3) {
+      this.textureManager = var1;
+      this.skinsDirectory = var2;
+      this.sessionService = var3;
+      this.insecureSkinCache = CacheBuilder.newBuilder().expireAfterAccess(15L, TimeUnit.SECONDS).build(new CacheLoader() {
+         public Map load(GameProfile var1) throws Exception {
+            try {
+               return Minecraft.getInstance().getMinecraftSessionService().getTextures(var1, false);
+            } catch (Throwable var3) {
+               return Maps.newHashMap();
+            }
+         }
+
+         // $FF: synthetic method
+         public Object load(Object var1) throws Exception {
+            return this.load((GameProfile)var1);
+         }
+      });
+   }
+
+   public ResourceLocation registerTexture(MinecraftProfileTexture var1, Type var2) {
+      return this.registerTexture(var1, var2, (SkinManager.SkinTextureCallback)null);
+   }
+
+   public ResourceLocation registerTexture(MinecraftProfileTexture var1, Type var2, @Nullable SkinManager.SkinTextureCallback var3) {
+      String var4 = Hashing.sha1().hashUnencodedChars(var1.getHash()).toString();
+      ResourceLocation var5 = new ResourceLocation("skins/" + var4);
+      AbstractTexture var6 = this.textureManager.getTexture(var5);
+      if (var6 != null) {
+         if (var3 != null) {
+            var3.onSkinTextureAvailable(var2, var5, var1);
+         }
+      } else {
+         File var7 = new File(this.skinsDirectory, var4.length() > 2 ? var4.substring(0, 2) : "xx");
+         File var8 = new File(var7, var4);
+         HttpTexture var9 = new HttpTexture(var8, var1.getUrl(), DefaultPlayerSkin.getDefaultSkin(), var2 == Type.SKIN, () -> {
+            if (var3 != null) {
+               var3.onSkinTextureAvailable(var2, var5, var1);
+            }
+
+         });
+         this.textureManager.register((ResourceLocation)var5, (AbstractTexture)var9);
+      }
+
+      return var5;
+   }
+
+   public void registerSkins(GameProfile var1, SkinManager.SkinTextureCallback var2, boolean var3) {
+      Runnable var4 = () -> {
+         HashMap var4 = Maps.newHashMap();
+
+         try {
+            var4.putAll(this.sessionService.getTextures(var1, var3));
+         } catch (InsecureTextureException var7) {
+         }
+
+         if (var4.isEmpty()) {
+            var1.getProperties().clear();
+            if (var1.getId().equals(Minecraft.getInstance().getUser().getGameProfile().getId())) {
+               var1.getProperties().putAll(Minecraft.getInstance().getProfileProperties());
+               var4.putAll(this.sessionService.getTextures(var1, false));
+            } else {
+               this.sessionService.fillProfileProperties(var1, var3);
+
+               try {
+                  var4.putAll(this.sessionService.getTextures(var1, var3));
+               } catch (InsecureTextureException var6) {
+               }
+            }
+         }
+
+         Minecraft.getInstance().execute(() -> {
+            RenderSystem.recordRenderCall(() -> {
+               ImmutableList.of(Type.SKIN, Type.CAPE).forEach((var3) -> {
+                  if (var4.containsKey(var3)) {
+                     this.registerTexture((MinecraftProfileTexture)var4.get(var3), var3, var2);
+                  }
+
+               });
+            });
+         });
+      };
+      Util.backgroundExecutor().execute(var4);
+   }
+
+   public Map getInsecureSkinInformation(GameProfile var1) {
+      return (Map)this.insecureSkinCache.getUnchecked(var1);
+   }
+
+   public interface SkinTextureCallback {
+      void onSkinTextureAvailable(Type var1, ResourceLocation var2, MinecraftProfileTexture var3);
+   }
+}

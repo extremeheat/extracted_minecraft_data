@@ -1,0 +1,21 @@
+package net.minecraft.server.packs.resources;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import net.minecraft.util.profiling.ProfilerFiller;
+
+public abstract class SimplePreparableReloadListener implements PreparableReloadListener {
+   public final CompletableFuture reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
+      CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> {
+         return this.prepare(var2, var3);
+      }, var5);
+      var1.getClass();
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
+         this.apply(var3x, var2, var4);
+      }, var6);
+   }
+
+   protected abstract Object prepare(ResourceManager var1, ProfilerFiller var2);
+
+   protected abstract void apply(Object var1, ResourceManager var2, ProfilerFiller var3);
+}

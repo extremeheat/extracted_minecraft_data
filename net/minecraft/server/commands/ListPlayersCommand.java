@@ -1,0 +1,39 @@
+package net.minecraft.server.commands;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.List;
+import java.util.function.Function;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.entity.player.Player;
+
+public class ListPlayersCommand {
+   public static void register(CommandDispatcher var0) {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("list").executes((var0x) -> {
+         return listPlayers((CommandSourceStack)var0x.getSource());
+      })).then(Commands.literal("uuids").executes((var0x) -> {
+         return listPlayersWithUuids((CommandSourceStack)var0x.getSource());
+      })));
+   }
+
+   private static int listPlayers(CommandSourceStack var0) {
+      return format(var0, Player::getDisplayName);
+   }
+
+   private static int listPlayersWithUuids(CommandSourceStack var0) {
+      return format(var0, Player::getDisplayNameWithUuid);
+   }
+
+   private static int format(CommandSourceStack var0, Function var1) {
+      PlayerList var2 = var0.getServer().getPlayerList();
+      List var3 = var2.getPlayers();
+      Component var4 = ComponentUtils.formatList(var3, var1);
+      var0.sendSuccess(new TranslatableComponent("commands.list.players", new Object[]{var3.size(), var2.getMaxPlayers(), var4}), false);
+      return var3.size();
+   }
+}

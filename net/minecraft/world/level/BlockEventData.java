@@ -1,0 +1,55 @@
+package net.minecraft.world.level;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+
+public class BlockEventData {
+   private final BlockPos pos;
+   private final Block block;
+   private final int paramA;
+   private final int paramB;
+
+   public BlockEventData(BlockPos var1, Block var2, int var3, int var4) {
+      this.pos = var1;
+      this.block = var2;
+      this.paramA = var3;
+      this.paramB = var4;
+   }
+
+   public BlockPos getPos() {
+      return this.pos;
+   }
+
+   public Block getBlock() {
+      return this.block;
+   }
+
+   public int getParamA() {
+      return this.paramA;
+   }
+
+   public int getParamB() {
+      return this.paramB;
+   }
+
+   public boolean equals(Object var1) {
+      if (!(var1 instanceof BlockEventData)) {
+         return false;
+      } else {
+         BlockEventData var2 = (BlockEventData)var1;
+         return this.pos.equals(var2.pos) && this.paramA == var2.paramA && this.paramB == var2.paramB && this.block == var2.block;
+      }
+   }
+
+   public int hashCode() {
+      int var1 = this.pos.hashCode();
+      var1 = 31 * var1 + this.block.hashCode();
+      var1 = 31 * var1 + this.paramA;
+      var1 = 31 * var1 + this.paramB;
+      return var1;
+   }
+
+   public String toString() {
+      return "TE(" + this.pos + ")," + this.paramA + "," + this.paramB + "," + this.block;
+   }
+}

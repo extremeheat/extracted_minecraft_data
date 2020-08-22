@@ -1,0 +1,185 @@
+package net.minecraft.world.entity.ai.behavior;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import java.util.List;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.state.BlockState;
+
+public class HarvestFarmland extends Behavior {
+   @Nullable
+   private BlockPos aboveFarmlandPos;
+   private boolean canPlantStuff;
+   private boolean wantsToReapStuff;
+   private long nextOkStartTime;
+   private int timeWorkedSoFar;
+   private final List validFarmlandAroundVillager = Lists.newArrayList();
+
+   public HarvestFarmland() {
+      super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SECONDARY_JOB_SITE, MemoryStatus.VALUE_PRESENT));
+   }
+
+   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
+      if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         return false;
+      } else if (var2.getVillagerData().getProfession() != VillagerProfession.FARMER) {
+         return false;
+      } else {
+         this.canPlantStuff = var2.hasFarmSeeds();
+         this.wantsToReapStuff = false;
+         SimpleContainer var3 = var2.getInventory();
+         int var4 = var3.getContainerSize();
+
+         for(int var5 = 0; var5 < var4; ++var5) {
+            ItemStack var6 = var3.getItem(var5);
+            if (var6.isEmpty()) {
+               this.wantsToReapStuff = true;
+               break;
+            }
+
+            if (var6.getItem() == Items.WHEAT_SEEDS || var6.getItem() == Items.BEETROOT_SEEDS) {
+               this.wantsToReapStuff = true;
+               break;
+            }
+         }
+
+         BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(var2);
+         this.validFarmlandAroundVillager.clear();
+
+         for(int var10 = -1; var10 <= 1; ++var10) {
+            for(int var7 = -1; var7 <= 1; ++var7) {
+               for(int var8 = -1; var8 <= 1; ++var8) {
+                  var9.set(var2.getX() + (double)var10, var2.getY() + (double)var7, var2.getZ() + (double)var8);
+                  if (this.validPos(var9, var1)) {
+                     this.validFarmlandAroundVillager.add(new BlockPos(var9));
+                  }
+               }
+            }
+         }
+
+         this.aboveFarmlandPos = this.getValidFarmland(var1);
+         return (this.canPlantStuff || this.wantsToReapStuff) && this.aboveFarmlandPos != null;
+      }
+   }
+
+   @Nullable
+   private BlockPos getValidFarmland(ServerLevel var1) {
+      return this.validFarmlandAroundVillager.isEmpty() ? null : (BlockPos)this.validFarmlandAroundVillager.get(var1.getRandom().nextInt(this.validFarmlandAroundVillager.size()));
+   }
+
+   private boolean validPos(BlockPos var1, ServerLevel var2) {
+      BlockState var3 = var2.getBlockState(var1);
+      Block var4 = var3.getBlock();
+      Block var5 = var2.getBlockState(var1.below()).getBlock();
+      return var4 instanceof CropBlock && ((CropBlock)var4).isMaxAge(var3) && this.wantsToReapStuff || var3.isAir() && var5 instanceof FarmBlock && this.canPlantStuff;
+   }
+
+   protected void start(ServerLevel var1, Villager var2, long var3) {
+      if (var3 > this.nextOkStartTime && this.aboveFarmlandPos != null) {
+         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosWrapper(this.aboveFarmlandPos)));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new BlockPosWrapper(this.aboveFarmlandPos), 0.5F, 1)));
+      }
+
+   }
+
+   protected void stop(ServerLevel var1, Villager var2, long var3) {
+      var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+      var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+      this.timeWorkedSoFar = 0;
+      this.nextOkStartTime = var3 + 40L;
+   }
+
+   protected void tick(ServerLevel var1, Villager var2, long var3) {
+      if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {
+         BlockState var5 = var1.getBlockState(this.aboveFarmlandPos);
+         Block var6 = var5.getBlock();
+         Block var7 = var1.getBlockState(this.aboveFarmlandPos.below()).getBlock();
+         if (var6 instanceof CropBlock && ((CropBlock)var6).isMaxAge(var5) && this.wantsToReapStuff) {
+            var1.destroyBlock(this.aboveFarmlandPos, true, var2);
+         }
+
+         if (var5.isAir() && var7 instanceof FarmBlock && this.canPlantStuff) {
+            SimpleContainer var8 = var2.getInventory();
+
+            for(int var9 = 0; var9 < var8.getContainerSize(); ++var9) {
+               ItemStack var10 = var8.getItem(var9);
+               boolean var11 = false;
+               if (!var10.isEmpty()) {
+                  if (var10.getItem() == Items.WHEAT_SEEDS) {
+                     var1.setBlock(this.aboveFarmlandPos, Blocks.WHEAT.defaultBlockState(), 3);
+                     var11 = true;
+                  } else if (var10.getItem() == Items.POTATO) {
+                     var1.setBlock(this.aboveFarmlandPos, Blocks.POTATOES.defaultBlockState(), 3);
+                     var11 = true;
+                  } else if (var10.getItem() == Items.CARROT) {
+                     var1.setBlock(this.aboveFarmlandPos, Blocks.CARROTS.defaultBlockState(), 3);
+                     var11 = true;
+                  } else if (var10.getItem() == Items.BEETROOT_SEEDS) {
+                     var1.setBlock(this.aboveFarmlandPos, Blocks.BEETROOTS.defaultBlockState(), 3);
+                     var11 = true;
+                  }
+               }
+
+               if (var11) {
+                  var1.playSound((Player)null, (double)this.aboveFarmlandPos.getX(), (double)this.aboveFarmlandPos.getY(), (double)this.aboveFarmlandPos.getZ(), SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var10.shrink(1);
+                  if (var10.isEmpty()) {
+                     var8.setItem(var9, ItemStack.EMPTY);
+                  }
+                  break;
+               }
+            }
+         }
+
+         if (var6 instanceof CropBlock && !((CropBlock)var6).isMaxAge(var5)) {
+            this.validFarmlandAroundVillager.remove(this.aboveFarmlandPos);
+            this.aboveFarmlandPos = this.getValidFarmland(var1);
+            if (this.aboveFarmlandPos != null) {
+               this.nextOkStartTime = var3 + 20L;
+               var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new BlockPosWrapper(this.aboveFarmlandPos), 0.5F, 1)));
+               var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosWrapper(this.aboveFarmlandPos)));
+            }
+         }
+      }
+
+      ++this.timeWorkedSoFar;
+   }
+
+   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
+      return this.timeWorkedSoFar < 200;
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
+      this.tick(var1, (Villager)var2, var3);
+   }
+}

@@ -1,0 +1,19 @@
+package net.minecraft.client.renderer.entity;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.HorseModel;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+
+public abstract class AbstractHorseRenderer extends MobRenderer {
+   private final float scale;
+
+   public AbstractHorseRenderer(EntityRenderDispatcher var1, HorseModel var2, float var3) {
+      super(var1, var2, 0.75F);
+      this.scale = var3;
+   }
+
+   protected void scale(AbstractHorse var1, PoseStack var2, float var3) {
+      var2.scale(this.scale, this.scale, this.scale);
+      super.scale(var1, var2, var3);
+   }
+}

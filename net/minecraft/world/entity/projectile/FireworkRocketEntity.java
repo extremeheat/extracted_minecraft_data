@@ -1,0 +1,337 @@
+package net.minecraft.world.entity.projectile;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.OptionalInt;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+public class FireworkRocketEntity extends Entity implements ItemSupplier, Projectile {
+   private static final EntityDataAccessor DATA_ID_FIREWORKS_ITEM;
+   private static final EntityDataAccessor DATA_ATTACHED_TO_TARGET;
+   private static final EntityDataAccessor DATA_SHOT_AT_ANGLE;
+   private int life;
+   private int lifetime;
+   private LivingEntity attachedToEntity;
+
+   public FireworkRocketEntity(EntityType var1, Level var2) {
+      super(var1, var2);
+   }
+
+   protected void defineSynchedData() {
+      this.entityData.define(DATA_ID_FIREWORKS_ITEM, ItemStack.EMPTY);
+      this.entityData.define(DATA_ATTACHED_TO_TARGET, OptionalInt.empty());
+      this.entityData.define(DATA_SHOT_AT_ANGLE, false);
+   }
+
+   public boolean shouldRenderAtSqrDistance(double var1) {
+      return var1 < 4096.0D && !this.isAttachedToEntity();
+   }
+
+   public boolean shouldRender(double var1, double var3, double var5) {
+      return super.shouldRender(var1, var3, var5) && !this.isAttachedToEntity();
+   }
+
+   public FireworkRocketEntity(Level var1, double var2, double var4, double var6, ItemStack var8) {
+      super(EntityType.FIREWORK_ROCKET, var1);
+      this.life = 0;
+      this.setPos(var2, var4, var6);
+      int var9 = 1;
+      if (!var8.isEmpty() && var8.hasTag()) {
+         this.entityData.set(DATA_ID_FIREWORKS_ITEM, var8.copy());
+         var9 += var8.getOrCreateTagElement("Fireworks").getByte("Flight");
+      }
+
+      this.setDeltaMovement(this.random.nextGaussian() * 0.001D, 0.05D, this.random.nextGaussian() * 0.001D);
+      this.lifetime = 10 * var9 + this.random.nextInt(6) + this.random.nextInt(7);
+   }
+
+   public FireworkRocketEntity(Level var1, ItemStack var2, LivingEntity var3) {
+      this(var1, var3.getX(), var3.getY(), var3.getZ(), var2);
+      this.entityData.set(DATA_ATTACHED_TO_TARGET, OptionalInt.of(var3.getId()));
+      this.attachedToEntity = var3;
+   }
+
+   public FireworkRocketEntity(Level var1, ItemStack var2, double var3, double var5, double var7, boolean var9) {
+      this(var1, var3, var5, var7, var2);
+      this.entityData.set(DATA_SHOT_AT_ANGLE, var9);
+   }
+
+   public void lerpMotion(double var1, double var3, double var5) {
+      this.setDeltaMovement(var1, var3, var5);
+      if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
+         float var7 = Mth.sqrt(var1 * var1 + var5 * var5);
+         this.yRot = (float)(Mth.atan2(var1, var5) * 57.2957763671875D);
+         this.xRot = (float)(Mth.atan2(var3, (double)var7) * 57.2957763671875D);
+         this.yRotO = this.yRot;
+         this.xRotO = this.xRot;
+      }
+
+   }
+
+   public void tick() {
+      super.tick();
+      Vec3 var1;
+      if (this.isAttachedToEntity()) {
+         if (this.attachedToEntity == null) {
+            ((OptionalInt)this.entityData.get(DATA_ATTACHED_TO_TARGET)).ifPresent((var1x) -> {
+               Entity var2 = this.level.getEntity(var1x);
+               if (var2 instanceof LivingEntity) {
+                  this.attachedToEntity = (LivingEntity)var2;
+               }
+
+            });
+         }
+
+         if (this.attachedToEntity != null) {
+            if (this.attachedToEntity.isFallFlying()) {
+               var1 = this.attachedToEntity.getLookAngle();
+               double var2 = 1.5D;
+               double var4 = 0.1D;
+               Vec3 var6 = this.attachedToEntity.getDeltaMovement();
+               this.attachedToEntity.setDeltaMovement(var6.add(var1.x * 0.1D + (var1.x * 1.5D - var6.x) * 0.5D, var1.y * 0.1D + (var1.y * 1.5D - var6.y) * 0.5D, var1.z * 0.1D + (var1.z * 1.5D - var6.z) * 0.5D));
+            }
+
+            this.setPos(this.attachedToEntity.getX(), this.attachedToEntity.getY(), this.attachedToEntity.getZ());
+            this.setDeltaMovement(this.attachedToEntity.getDeltaMovement());
+         }
+      } else {
+         if (!this.isShotAtAngle()) {
+            this.setDeltaMovement(this.getDeltaMovement().multiply(1.15D, 1.0D, 1.15D).add(0.0D, 0.04D, 0.0D));
+         }
+
+         this.move(MoverType.SELF, this.getDeltaMovement());
+      }
+
+      var1 = this.getDeltaMovement();
+      HitResult var7 = ProjectileUtil.getHitResult(this, this.getBoundingBox().expandTowards(var1).inflate(1.0D), (var0) -> {
+         return !var0.isSpectator() && var0.isAlive() && var0.isPickable();
+      }, ClipContext.Block.COLLIDER, true);
+      if (!this.noPhysics) {
+         this.performHitChecks(var7);
+         this.hasImpulse = true;
+      }
+
+      float var3 = Mth.sqrt(getHorizontalDistanceSqr(var1));
+      this.yRot = (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875D);
+
+      for(this.xRot = (float)(Mth.atan2(var1.y, (double)var3) * 57.2957763671875D); this.xRot - this.xRotO < -180.0F; this.xRotO -= 360.0F) {
+      }
+
+      while(this.xRot - this.xRotO >= 180.0F) {
+         this.xRotO += 360.0F;
+      }
+
+      while(this.yRot - this.yRotO < -180.0F) {
+         this.yRotO -= 360.0F;
+      }
+
+      while(this.yRot - this.yRotO >= 180.0F) {
+         this.yRotO += 360.0F;
+      }
+
+      this.xRot = Mth.lerp(0.2F, this.xRotO, this.xRot);
+      this.yRot = Mth.lerp(0.2F, this.yRotO, this.yRot);
+      if (this.life == 0 && !this.isSilent()) {
+         this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
+      }
+
+      ++this.life;
+      if (this.level.isClientSide && this.life % 2 < 2) {
+         this.level.addParticle(ParticleTypes.FIREWORK, this.getX(), this.getY() - 0.3D, this.getZ(), this.random.nextGaussian() * 0.05D, -this.getDeltaMovement().y * 0.5D, this.random.nextGaussian() * 0.05D);
+      }
+
+      if (!this.level.isClientSide && this.life > this.lifetime) {
+         this.explode();
+      }
+
+   }
+
+   private void explode() {
+      this.level.broadcastEntityEvent(this, (byte)17);
+      this.dealExplosionDamage();
+      this.remove();
+   }
+
+   protected void performHitChecks(HitResult var1) {
+      if (var1.getType() == HitResult.Type.ENTITY && !this.level.isClientSide) {
+         this.explode();
+      } else if (this.collision) {
+         BlockPos var2;
+         if (var1.getType() == HitResult.Type.BLOCK) {
+            var2 = new BlockPos(((BlockHitResult)var1).getBlockPos());
+         } else {
+            var2 = new BlockPos(this);
+         }
+
+         this.level.getBlockState(var2).entityInside(this.level, var2, this);
+         if (this.hasExplosion()) {
+            this.explode();
+         }
+      }
+
+   }
+
+   private boolean hasExplosion() {
+      ItemStack var1 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      CompoundTag var2 = var1.isEmpty() ? null : var1.getTagElement("Fireworks");
+      ListTag var3 = var2 != null ? var2.getList("Explosions", 10) : null;
+      return var3 != null && !var3.isEmpty();
+   }
+
+   private void dealExplosionDamage() {
+      float var1 = 0.0F;
+      ItemStack var2 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      CompoundTag var3 = var2.isEmpty() ? null : var2.getTagElement("Fireworks");
+      ListTag var4 = var3 != null ? var3.getList("Explosions", 10) : null;
+      if (var4 != null && !var4.isEmpty()) {
+         var1 = 5.0F + (float)(var4.size() * 2);
+      }
+
+      if (var1 > 0.0F) {
+         if (this.attachedToEntity != null) {
+            this.attachedToEntity.hurt(DamageSource.FIREWORKS, 5.0F + (float)(var4.size() * 2));
+         }
+
+         double var5 = 5.0D;
+         Vec3 var7 = this.position();
+         List var8 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0D));
+         Iterator var9 = var8.iterator();
+
+         while(true) {
+            LivingEntity var10;
+            do {
+               do {
+                  if (!var9.hasNext()) {
+                     return;
+                  }
+
+                  var10 = (LivingEntity)var9.next();
+               } while(var10 == this.attachedToEntity);
+            } while(this.distanceToSqr(var10) > 25.0D);
+
+            boolean var11 = false;
+
+            for(int var12 = 0; var12 < 2; ++var12) {
+               Vec3 var13 = new Vec3(var10.getX(), var10.getY(0.5D * (double)var12), var10.getZ());
+               BlockHitResult var14 = this.level.clip(new ClipContext(var7, var13, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+               if (var14.getType() == HitResult.Type.MISS) {
+                  var11 = true;
+                  break;
+               }
+            }
+
+            if (var11) {
+               float var15 = var1 * (float)Math.sqrt((5.0D - (double)this.distanceTo(var10)) / 5.0D);
+               var10.hurt(DamageSource.FIREWORKS, var15);
+            }
+         }
+      }
+   }
+
+   private boolean isAttachedToEntity() {
+      return ((OptionalInt)this.entityData.get(DATA_ATTACHED_TO_TARGET)).isPresent();
+   }
+
+   public boolean isShotAtAngle() {
+      return (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE);
+   }
+
+   public void handleEntityEvent(byte var1) {
+      if (var1 == 17 && this.level.isClientSide) {
+         if (!this.hasExplosion()) {
+            for(int var2 = 0; var2 < this.random.nextInt(3) + 2; ++var2) {
+               this.level.addParticle(ParticleTypes.POOF, this.getX(), this.getY(), this.getZ(), this.random.nextGaussian() * 0.05D, 0.005D, this.random.nextGaussian() * 0.05D);
+            }
+         } else {
+            ItemStack var5 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+            CompoundTag var3 = var5.isEmpty() ? null : var5.getTagElement("Fireworks");
+            Vec3 var4 = this.getDeltaMovement();
+            this.level.createFireworks(this.getX(), this.getY(), this.getZ(), var4.x, var4.y, var4.z, var3);
+         }
+      }
+
+      super.handleEntityEvent(var1);
+   }
+
+   public void addAdditionalSaveData(CompoundTag var1) {
+      var1.putInt("Life", this.life);
+      var1.putInt("LifeTime", this.lifetime);
+      ItemStack var2 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      if (!var2.isEmpty()) {
+         var1.put("FireworksItem", var2.save(new CompoundTag()));
+      }
+
+      var1.putBoolean("ShotAtAngle", (Boolean)this.entityData.get(DATA_SHOT_AT_ANGLE));
+   }
+
+   public void readAdditionalSaveData(CompoundTag var1) {
+      this.life = var1.getInt("Life");
+      this.lifetime = var1.getInt("LifeTime");
+      ItemStack var2 = ItemStack.of(var1.getCompound("FireworksItem"));
+      if (!var2.isEmpty()) {
+         this.entityData.set(DATA_ID_FIREWORKS_ITEM, var2);
+      }
+
+      if (var1.contains("ShotAtAngle")) {
+         this.entityData.set(DATA_SHOT_AT_ANGLE, var1.getBoolean("ShotAtAngle"));
+      }
+
+   }
+
+   public ItemStack getItem() {
+      ItemStack var1 = (ItemStack)this.entityData.get(DATA_ID_FIREWORKS_ITEM);
+      return var1.isEmpty() ? new ItemStack(Items.FIREWORK_ROCKET) : var1;
+   }
+
+   public boolean isAttackable() {
+      return false;
+   }
+
+   public Packet getAddEntityPacket() {
+      return new ClientboundAddEntityPacket(this);
+   }
+
+   public void shoot(double var1, double var3, double var5, float var7, float var8) {
+      float var9 = Mth.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
+      var1 /= (double)var9;
+      var3 /= (double)var9;
+      var5 /= (double)var9;
+      var1 += this.random.nextGaussian() * 0.007499999832361937D * (double)var8;
+      var3 += this.random.nextGaussian() * 0.007499999832361937D * (double)var8;
+      var5 += this.random.nextGaussian() * 0.007499999832361937D * (double)var8;
+      var1 *= (double)var7;
+      var3 *= (double)var7;
+      var5 *= (double)var7;
+      this.setDeltaMovement(var1, var3, var5);
+   }
+
+   static {
+      DATA_ID_FIREWORKS_ITEM = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ATTACHED_TO_TARGET = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
+      DATA_SHOT_AT_ANGLE = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.BOOLEAN);
+   }
+}

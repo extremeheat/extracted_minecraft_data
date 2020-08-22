@@ -1,0 +1,57 @@
+package net.minecraft.world.item;
+
+import com.google.common.collect.Multimap;
+import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
+public class DiggerItem extends TieredItem {
+   private final Set blocks;
+   protected final float speed;
+   protected final float attackDamage;
+   protected final float attackSpeed;
+
+   protected DiggerItem(float var1, float var2, Tier var3, Set var4, Item.Properties var5) {
+      super(var3, var5);
+      this.blocks = var4;
+      this.speed = var3.getSpeed();
+      this.attackDamage = var1 + var3.getAttackDamageBonus();
+      this.attackSpeed = var2;
+   }
+
+   public float getDestroySpeed(ItemStack var1, BlockState var2) {
+      return this.blocks.contains(var2.getBlock()) ? this.speed : 1.0F;
+   }
+
+   public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+      var1.hurtAndBreak(2, var3, (var0) -> {
+         var0.broadcastBreakEvent(EquipmentSlot.MAINHAND);
+      });
+      return true;
+   }
+
+   public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
+      if (!var2.isClientSide && var3.getDestroySpeed(var2, var4) != 0.0F) {
+         var1.hurtAndBreak(1, var5, (var0) -> {
+            var0.broadcastBreakEvent(EquipmentSlot.MAINHAND);
+         });
+      }
+
+      return true;
+   }
+
+   public Multimap getDefaultAttributeModifiers(EquipmentSlot var1) {
+      Multimap var2 = super.getDefaultAttributeModifiers(var1);
+      if (var1 == EquipmentSlot.MAINHAND) {
+         var2.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", (double)this.attackDamage, AttributeModifier.Operation.ADDITION));
+         var2.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", (double)this.attackSpeed, AttributeModifier.Operation.ADDITION));
+      }
+
+      return var2;
+   }
+}
