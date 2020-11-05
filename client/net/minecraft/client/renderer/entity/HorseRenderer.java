@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.HorseModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HorseArmorLayer;
 import net.minecraft.client.renderer.entity.layers.HorseMarkingLayer;
 import net.minecraft.resources.ResourceLocation;
@@ -21,10 +22,10 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseModel
       var0.put(Variant.DARKBROWN, new ResourceLocation("textures/entity/horse/horse_darkbrown.png"));
    });
 
-   public HorseRenderer(EntityRenderDispatcher var1) {
-      super(var1, new HorseModel(0.0F), 1.1F);
+   public HorseRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new HorseModel(var1.getLayer(ModelLayers.HORSE)), 1.1F);
       this.addLayer(new HorseMarkingLayer(this));
-      this.addLayer(new HorseArmorLayer(this));
+      this.addLayer(new HorseArmorLayer(this, var1.getModelSet()));
    }
 
    public ResourceLocation getTextureLocation(Horse var1) {

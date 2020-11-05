@@ -265,21 +265,6 @@ public class Mth {
       return ceillog2(var0) - (isPowerOfTwo(var0) ? 0 : 1);
    }
 
-   public static int roundUp(int var0, int var1) {
-      if (var1 == 0) {
-         return 0;
-      } else if (var0 == 0) {
-         return var1;
-      } else {
-         if (var0 < 0) {
-            var1 *= -1;
-         }
-
-         int var2 = var0 % var1;
-         return var2 == 0 ? var0 : var0 + var1 - var2;
-      }
-   }
-
    public static int color(float var0, float var1, float var2) {
       return color(floor(var0 * 255.0F), floor(var1 * 255.0F), floor(var2 * 255.0F));
    }
@@ -539,6 +524,10 @@ public class Mth {
 
    public static float square(float var0) {
       return var0 * var0;
+   }
+
+   public static int roundToward(int var0, int var1) {
+      return (var0 + var1 - 1) / var1 * var1;
    }
 
    static {

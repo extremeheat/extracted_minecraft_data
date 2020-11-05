@@ -21,7 +21,7 @@ public class IntRange {
    }
 
    public int randomValue(Random var1) {
-      return this.minInclusive == this.maxInclusive ? this.minInclusive : var1.nextInt(this.maxInclusive - this.minInclusive + 1) + this.minInclusive;
+      return Mth.nextInt(var1, this.minInclusive, this.maxInclusive);
    }
 
    public int getMinInclusive() {

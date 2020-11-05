@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class ModelBlockRenderer {
+   private static final Direction[] DIRECTIONS = Direction.values();
    private final BlockColors blockColors;
    private static final ThreadLocal<ModelBlockRenderer.Cache> CACHE = ThreadLocal.withInitial(() -> {
       return new ModelBlockRenderer.Cache();
@@ -47,7 +48,7 @@ public class ModelBlockRenderer {
       } catch (Throwable var17) {
          CrashReport var15 = CrashReport.forThrowable(var17, "Tesselating block model");
          CrashReportCategory var16 = var15.addCategory("Block model being tesselated");
-         CrashReportCategory.populateBlockDetails(var16, var4, var3);
+         CrashReportCategory.populateBlockDetails(var16, var1, var4, var3);
          var16.setDetail("Using AO", (Object)var12);
          throw new ReportedException(var15);
       }
@@ -55,26 +56,30 @@ public class ModelBlockRenderer {
 
    public boolean tesselateWithAO(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, Random var8, long var9, int var11) {
       boolean var12 = false;
-      float[] var13 = new float[Direction.values().length * 2];
+      float[] var13 = new float[DIRECTIONS.length * 2];
       BitSet var14 = new BitSet(3);
       ModelBlockRenderer.AmbientOcclusionFace var15 = new ModelBlockRenderer.AmbientOcclusionFace();
-      Direction[] var16 = Direction.values();
-      int var17 = var16.length;
+      BlockPos.MutableBlockPos var16 = var4.mutable();
+      Direction[] var17 = DIRECTIONS;
+      int var18 = var17.length;
 
-      for(int var18 = 0; var18 < var17; ++var18) {
-         Direction var19 = var16[var18];
+      for(int var19 = 0; var19 < var18; ++var19) {
+         Direction var20 = var17[var19];
          var8.setSeed(var9);
-         List var20 = var2.getQuads(var3, var19, var8);
-         if (!var20.isEmpty() && (!var7 || Block.shouldRenderFace(var3, var1, var4, var19))) {
-            this.renderModelFaceAO(var1, var3, var4, var5, var6, var20, var13, var14, var15, var11);
-            var12 = true;
+         List var21 = var2.getQuads(var3, var20, var8);
+         if (!var21.isEmpty()) {
+            var16.setWithOffset(var4, var20);
+            if (!var7 || Block.shouldRenderFace(var3, var1, var4, var20, var16)) {
+               this.renderModelFaceAO(var1, var3, var4, var5, var6, var21, var13, var14, var15, var11);
+               var12 = true;
+            }
          }
       }
 
       var8.setSeed(var9);
-      List var21 = var2.getQuads(var3, (Direction)null, var8);
-      if (!var21.isEmpty()) {
-         this.renderModelFaceAO(var1, var3, var4, var5, var6, var21, var13, var14, var15, var11);
+      List var22 = var2.getQuads(var3, (Direction)null, var8);
+      if (!var22.isEmpty()) {
+         this.renderModelFaceAO(var1, var3, var4, var5, var6, var22, var13, var14, var15, var11);
          var12 = true;
       }
 
@@ -84,24 +89,28 @@ public class ModelBlockRenderer {
    public boolean tesselateWithoutAO(BlockAndTintGetter var1, BakedModel var2, BlockState var3, BlockPos var4, PoseStack var5, VertexConsumer var6, boolean var7, Random var8, long var9, int var11) {
       boolean var12 = false;
       BitSet var13 = new BitSet(3);
-      Direction[] var14 = Direction.values();
-      int var15 = var14.length;
+      BlockPos.MutableBlockPos var14 = var4.mutable();
+      Direction[] var15 = DIRECTIONS;
+      int var16 = var15.length;
 
-      for(int var16 = 0; var16 < var15; ++var16) {
-         Direction var17 = var14[var16];
+      for(int var17 = 0; var17 < var16; ++var17) {
+         Direction var18 = var15[var17];
          var8.setSeed(var9);
-         List var18 = var2.getQuads(var3, var17, var8);
-         if (!var18.isEmpty() && (!var7 || Block.shouldRenderFace(var3, var1, var4, var17))) {
-            int var19 = LevelRenderer.getLightColor(var1, var3, var4.relative(var17));
-            this.renderModelFaceFlat(var1, var3, var4, var19, var11, false, var5, var6, var18, var13);
-            var12 = true;
+         List var19 = var2.getQuads(var3, var18, var8);
+         if (!var19.isEmpty()) {
+            var14.setWithOffset(var4, var18);
+            if (!var7 || Block.shouldRenderFace(var3, var1, var4, var18, var14)) {
+               int var20 = LevelRenderer.getLightColor(var1, var3, var14);
+               this.renderModelFaceFlat(var1, var3, var4, var20, var11, false, var5, var6, var19, var13);
+               var12 = true;
+            }
          }
       }
 
       var8.setSeed(var9);
-      List var20 = var2.getQuads(var3, (Direction)null, var8);
-      if (!var20.isEmpty()) {
-         this.renderModelFaceFlat(var1, var3, var4, -1, var11, true, var5, var6, var20, var13);
+      List var21 = var2.getQuads(var3, (Direction)null, var8);
+      if (!var21.isEmpty()) {
+         this.renderModelFaceFlat(var1, var3, var4, -1, var11, true, var5, var6, var21, var13);
          var12 = true;
       }
 
@@ -167,7 +176,7 @@ public class ModelBlockRenderer {
          var6[Direction.UP.get3DDataValue()] = var12;
          var6[Direction.NORTH.get3DDataValue()] = var10;
          var6[Direction.SOUTH.get3DDataValue()] = var13;
-         var14 = Direction.values().length;
+         var14 = DIRECTIONS.length;
          var6[Direction.WEST.get3DDataValue() + var14] = 1.0F - var8;
          var6[Direction.EAST.get3DDataValue() + var14] = 1.0F - var11;
          var6[Direction.DOWN.get3DDataValue() + var14] = 1.0F - var9;
@@ -226,7 +235,7 @@ public class ModelBlockRenderer {
    public void renderModel(PoseStack.Pose var1, VertexConsumer var2, @Nullable BlockState var3, BakedModel var4, float var5, float var6, float var7, int var8, int var9) {
       Random var10 = new Random();
       long var11 = 42L;
-      Direction[] var13 = Direction.values();
+      Direction[] var13 = DIRECTIONS;
       int var14 = var13.length;
 
       for(int var15 = 0; var15 < var14; ++var15) {
@@ -321,7 +330,7 @@ public class ModelBlockRenderer {
       private final int shape;
 
       private SizeInfo(Direction var3, boolean var4) {
-         this.shape = var3.get3DDataValue() + (var4 ? Direction.values().length : 0);
+         this.shape = var3.get3DDataValue() + (var4 ? ModelBlockRenderer.DIRECTIONS.length : 0);
       }
    }
 

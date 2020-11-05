@@ -25,7 +25,7 @@ public class SelectorComponent extends BaseComponent implements ContextAwareComp
          EntitySelectorParser var3 = new EntitySelectorParser(new StringReader(var1));
          var2 = var3.parse();
       } catch (CommandSyntaxException var4) {
-         LOGGER.warn("Invalid selector component: {}", var1, var4.getMessage());
+         LOGGER.warn("Invalid selector component: {}: {}", var1, var4.getMessage());
       }
 
       this.selector = var2;

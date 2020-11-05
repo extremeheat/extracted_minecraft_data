@@ -91,7 +91,7 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
 
    }
 
-   public void addFollowers(Stream<AbstractSchoolingFish> var1) {
+   public void addFollowers(Stream<? extends AbstractSchoolingFish> var1) {
       var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((var1x) -> {
          return var1x != this;
       }).forEach((var1x) -> {

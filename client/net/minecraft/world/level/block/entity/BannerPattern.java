@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -9,7 +10,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
-import org.apache.commons.lang3.tuple.Pair;
 
 public enum BannerPattern {
    BASE("base", "b", false),
@@ -102,6 +102,21 @@ public enum BannerPattern {
       return null;
    }
 
+   @Nullable
+   public static BannerPattern byFilename(String var0) {
+      BannerPattern[] var1 = values();
+      int var2 = var1.length;
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         BannerPattern var4 = var1[var3];
+         if (var4.filename.equals(var0)) {
+            return var4;
+         }
+      }
+
+      return null;
+   }
+
    public static class Builder {
       private final List<Pair<BannerPattern, DyeColor>> patterns = Lists.newArrayList();
 
@@ -110,7 +125,11 @@ public enum BannerPattern {
       }
 
       public BannerPattern.Builder addPattern(BannerPattern var1, DyeColor var2) {
-         this.patterns.add(Pair.of(var1, var2));
+         return this.addPattern(Pair.of(var1, var2));
+      }
+
+      public BannerPattern.Builder addPattern(Pair<BannerPattern, DyeColor> var1) {
+         this.patterns.add(var1);
          return this;
       }
 
@@ -121,8 +140,8 @@ public enum BannerPattern {
          while(var2.hasNext()) {
             Pair var3 = (Pair)var2.next();
             CompoundTag var4 = new CompoundTag();
-            var4.putString("Pattern", ((BannerPattern)var3.getLeft()).hashname);
-            var4.putInt("Color", ((DyeColor)var3.getRight()).getId());
+            var4.putString("Pattern", ((BannerPattern)var3.getFirst()).hashname);
+            var4.putInt("Color", ((DyeColor)var3.getSecond()).getId());
             var1.add(var4);
          }
 

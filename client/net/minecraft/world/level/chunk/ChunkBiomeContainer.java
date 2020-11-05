@@ -37,7 +37,7 @@ public class ChunkBiomeContainer implements BiomeManager.NoiseBiomeSource {
          int var4 = var2[var3];
          Biome var5 = (Biome)var1.byId(var4);
          if (var5 == null) {
-            LOGGER.warn("Received invalid biome id: " + var4);
+            LOGGER.warn("Received invalid biome id: {}", var4);
             this.biomes[var3] = (Biome)var1.byId(0);
          } else {
             this.biomes[var3] = var5;

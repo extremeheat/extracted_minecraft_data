@@ -56,7 +56,7 @@ public class ViewArea {
    protected void setViewDistance(int var1) {
       int var2 = var1 * 2 + 1;
       this.chunkGridSizeX = var2;
-      this.chunkGridSizeY = 16;
+      this.chunkGridSizeY = this.level.getSectionsCount();
       this.chunkGridSizeZ = var2;
    }
 
@@ -75,7 +75,7 @@ public class ViewArea {
             int var14 = var13 + Math.floorMod(var11 * 16 - var13, var12);
 
             for(int var15 = 0; var15 < this.chunkGridSizeY; ++var15) {
-               int var16 = var15 * 16;
+               int var16 = this.level.getMinBuildHeight() + var15 * 16;
                ChunkRenderDispatcher.RenderChunk var17 = this.chunks[this.getChunkIndex(var7, var15, var11)];
                var17.setOrigin(var10, var16, var14);
             }
@@ -86,7 +86,7 @@ public class ViewArea {
 
    public void setDirty(int var1, int var2, int var3, boolean var4) {
       int var5 = Math.floorMod(var1, this.chunkGridSizeX);
-      int var6 = Math.floorMod(var2, this.chunkGridSizeY);
+      int var6 = Math.floorMod(var2 - this.level.getMinSection(), this.chunkGridSizeY);
       int var7 = Math.floorMod(var3, this.chunkGridSizeZ);
       ChunkRenderDispatcher.RenderChunk var8 = this.chunks[this.getChunkIndex(var5, var6, var7)];
       var8.setDirty(var4);
@@ -95,7 +95,7 @@ public class ViewArea {
    @Nullable
    protected ChunkRenderDispatcher.RenderChunk getRenderChunkAt(BlockPos var1) {
       int var2 = Mth.intFloorDiv(var1.getX(), 16);
-      int var3 = Mth.intFloorDiv(var1.getY(), 16);
+      int var3 = Mth.intFloorDiv(var1.getY() - this.level.getMinBuildHeight(), 16);
       int var4 = Mth.intFloorDiv(var1.getZ(), 16);
       if (var3 >= 0 && var3 < this.chunkGridSizeY) {
          var2 = Mth.positiveModulo(var2, this.chunkGridSizeX);

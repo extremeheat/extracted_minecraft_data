@@ -29,7 +29,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PathfindToRaidGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.animal.Wolf;
@@ -234,7 +234,7 @@ public abstract class Raider extends PatrollingMonster {
          this.onItemPickup(var1);
          this.setItemSlot(var4, var2);
          this.take(var1, var2.getCount());
-         var1.remove();
+         var1.discard();
          this.getCurrentRaid().setLeader(this.getWave(), this);
          this.setPatrolLeader(true);
       } else {
@@ -346,9 +346,9 @@ public abstract class Raider extends PatrollingMonster {
       public void tick() {
          if (this.raider.getNavigation().isDone()) {
             Vec3 var1 = Vec3.atBottomCenterOf(this.poiPos);
-            Vec3 var2 = RandomPos.getPosTowards(this.raider, 16, 7, var1, 0.3141592741012573D);
+            Vec3 var2 = DefaultRandomPos.getPosTowards(this.raider, 16, 7, var1, 0.3141592741012573D);
             if (var2 == null) {
-               var2 = RandomPos.getPosTowards(this.raider, 8, 7, var1);
+               var2 = DefaultRandomPos.getPosTowards(this.raider, 8, 7, var1, 1.5707963705062866D);
             }
 
             if (var2 == null) {

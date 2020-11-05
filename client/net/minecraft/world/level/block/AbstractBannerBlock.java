@@ -24,8 +24,8 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       return true;
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new BannerBlockEntity(this.color);
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new BannerBlockEntity(var1, var2, this.color);
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
@@ -40,7 +40,7 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var1.getBlockEntity(var2);
-      return var4 instanceof BannerBlockEntity ? ((BannerBlockEntity)var4).getItem(var3) : super.getCloneItemStack(var1, var2, var3);
+      return var4 instanceof BannerBlockEntity ? ((BannerBlockEntity)var4).getItem() : super.getCloneItemStack(var1, var2, var3);
    }
 
    public DyeColor getColor() {

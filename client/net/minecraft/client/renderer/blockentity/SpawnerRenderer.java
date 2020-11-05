@@ -9,16 +9,16 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 
-public class SpawnerRenderer extends BlockEntityRenderer<SpawnerBlockEntity> {
-   public SpawnerRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
+public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> {
+   public SpawnerRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
    }
 
    public void render(SpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       var3.pushPose();
       var3.translate(0.5D, 0.0D, 0.5D);
       BaseSpawner var7 = var1.getSpawner();
-      Entity var8 = var7.getOrCreateDisplayEntity();
+      Entity var8 = var7.getOrCreateDisplayEntity(var1.getLevel());
       if (var8 != null) {
          float var9 = 0.53125F;
          float var10 = Math.max(var8.getBbWidth(), var8.getBbHeight());

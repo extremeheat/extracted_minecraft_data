@@ -50,18 +50,18 @@ public class PotionItem extends Item {
 
       if (var4 != null) {
          var4.awardStat(Stats.ITEM_USED.get(this));
-         if (!var4.abilities.instabuild) {
+         if (!var4.getAbilities().instabuild) {
             var1.shrink(1);
          }
       }
 
-      if (var4 == null || !var4.abilities.instabuild) {
+      if (var4 == null || !var4.getAbilities().instabuild) {
          if (var1.isEmpty()) {
             return new ItemStack(Items.GLASS_BOTTLE);
          }
 
          if (var4 != null) {
-            var4.inventory.add(new ItemStack(Items.GLASS_BOTTLE));
+            var4.getInventory().add(new ItemStack(Items.GLASS_BOTTLE));
          }
       }
 
@@ -77,7 +77,7 @@ public class PotionItem extends Item {
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      return ItemUtils.useDrink(var1, var2, var3);
+      return ItemUtils.startUsingInstantly(var1, var2, var3);
    }
 
    public String getDescriptionId(ItemStack var1) {

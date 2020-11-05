@@ -134,41 +134,41 @@ public class TeleportCommand {
       if (!Level.isInSpawnableBounds(var13)) {
          throw INVALID_POSITION.create();
       } else {
+         float var14 = Mth.wrapDegrees(var10);
+         float var15 = Mth.wrapDegrees(var11);
          if (var1 instanceof ServerPlayer) {
-            ChunkPos var14 = new ChunkPos(new BlockPos(var3, var5, var7));
-            var2.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var14, 1, var1.getId());
+            ChunkPos var16 = new ChunkPos(new BlockPos(var3, var5, var7));
+            var2.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var16, 1, var1.getId());
             var1.stopRiding();
             if (((ServerPlayer)var1).isSleeping()) {
                ((ServerPlayer)var1).stopSleepInBed(true, true);
             }
 
             if (var2 == var1.level) {
-               ((ServerPlayer)var1).connection.teleport(var3, var5, var7, var10, var11, var9);
+               ((ServerPlayer)var1).connection.teleport(var3, var5, var7, var14, var15, var9);
             } else {
-               ((ServerPlayer)var1).teleportTo(var2, var3, var5, var7, var10, var11);
+               ((ServerPlayer)var1).teleportTo(var2, var3, var5, var7, var14, var15);
             }
 
-            var1.setYHeadRot(var10);
+            var1.setYHeadRot(var14);
          } else {
-            float var17 = Mth.wrapDegrees(var10);
-            float var15 = Mth.wrapDegrees(var11);
-            var15 = Mth.clamp(var15, -90.0F, 90.0F);
+            float var18 = Mth.clamp(var15, -90.0F, 90.0F);
             if (var2 == var1.level) {
-               var1.moveTo(var3, var5, var7, var17, var15);
-               var1.setYHeadRot(var17);
+               var1.moveTo(var3, var5, var7, var14, var18);
+               var1.setYHeadRot(var14);
             } else {
                var1.unRide();
-               Entity var16 = var1;
+               Entity var17 = var1;
                var1 = var1.getType().create(var2);
                if (var1 == null) {
                   return;
                }
 
-               var1.restoreFrom(var16);
-               var1.moveTo(var3, var5, var7, var17, var15);
-               var1.setYHeadRot(var17);
-               var2.addFromAnotherDimension(var1);
-               var16.removed = true;
+               var1.restoreFrom(var17);
+               var1.moveTo(var3, var5, var7, var14, var18);
+               var1.setYHeadRot(var14);
+               var2.addAndForceLoad(var1);
+               var17.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
             }
          }
 

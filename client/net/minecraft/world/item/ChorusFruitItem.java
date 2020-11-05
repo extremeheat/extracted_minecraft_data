@@ -23,7 +23,7 @@ public class ChorusFruitItem extends Item {
 
          for(int var11 = 0; var11 < 16; ++var11) {
             double var12 = var3.getX() + (var3.getRandom().nextDouble() - 0.5D) * 16.0D;
-            double var14 = Mth.clamp(var3.getY() + (double)(var3.getRandom().nextInt(16) - 8), 0.0D, (double)(var2.getHeight() - 1));
+            double var14 = Mth.clamp(var3.getY() + (double)(var3.getRandom().nextInt(16) - 8), (double)var2.getMinBuildHeight(), (double)(var2.getMinBuildHeight() + var2.getLogicalHeight() - 1));
             double var16 = var3.getZ() + (var3.getRandom().nextDouble() - 0.5D) * 16.0D;
             if (var3.isPassenger()) {
                var3.stopRiding();

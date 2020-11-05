@@ -129,7 +129,7 @@ public class TurtleEggBlock extends Block {
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().getItem() == this.asItem() && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
+      return var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    @Nullable

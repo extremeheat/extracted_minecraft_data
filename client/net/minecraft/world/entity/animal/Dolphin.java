@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -53,7 +54,7 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Player;
@@ -219,7 +220,7 @@ public class Dolphin extends WaterAnimal {
             this.setItemSlot(EquipmentSlot.MAINHAND, var2);
             this.handDropChances[EquipmentSlot.MAINHAND.getIndex()] = 2.0F;
             this.take(var1, var2.getCount());
-            var1.remove();
+            var1.discard();
          }
       }
 
@@ -282,13 +283,13 @@ public class Dolphin extends WaterAnimal {
 
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (!var3.isEmpty() && var3.getItem().is(ItemTags.FISHES)) {
+      if (!var3.isEmpty() && var3.is((Tag)ItemTags.FISHES)) {
          if (!this.level.isClientSide) {
             this.playSound(SoundEvents.DOLPHIN_EAT, 1.0F, 1.0F);
          }
 
          this.setGotFish(true);
-         if (!var1.abilities.instabuild) {
+         if (!var1.getAbilities().instabuild) {
             var3.shrink(1);
          }
 
@@ -422,15 +423,15 @@ public class Dolphin extends WaterAnimal {
          Level var1 = this.dolphin.level;
          if (this.dolphin.closeToNextPos() || this.dolphin.getNavigation().isDone()) {
             Vec3 var2 = Vec3.atCenterOf(this.dolphin.getTreasurePos());
-            Vec3 var3 = RandomPos.getPosTowards(this.dolphin, 16, 1, var2, 0.39269909262657166D);
+            Vec3 var3 = DefaultRandomPos.getPosTowards(this.dolphin, 16, 1, var2, 0.39269909262657166D);
             if (var3 == null) {
-               var3 = RandomPos.getPosTowards(this.dolphin, 8, 4, var2);
+               var3 = DefaultRandomPos.getPosTowards(this.dolphin, 8, 4, var2, 1.5707963705062866D);
             }
 
             if (var3 != null) {
                BlockPos var4 = new BlockPos(var3);
                if (!var1.getFluidState(var4).is(FluidTags.WATER) || !var1.getBlockState(var4).isPathfindable(var1, var4, PathComputationType.WATER)) {
-                  var3 = RandomPos.getPosTowards(this.dolphin, 8, 5, var2);
+                  var3 = DefaultRandomPos.getPosTowards(this.dolphin, 8, 5, var2, 1.5707963705062866D);
                }
             }
 

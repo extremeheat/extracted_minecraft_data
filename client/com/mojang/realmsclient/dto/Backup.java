@@ -46,7 +46,7 @@ public class Backup extends ValueObject {
             }
          }
       } catch (Exception var7) {
-         LOGGER.error("Could not parse Backup: " + var7.getMessage());
+         LOGGER.error("Could not parse Backup: {}", var7.getMessage());
       }
 
       return var2;

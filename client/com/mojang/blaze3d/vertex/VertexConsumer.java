@@ -56,64 +56,66 @@ public interface VertexConsumer {
    }
 
    default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, int[] var7, int var8, boolean var9) {
-      int[] var10 = var2.getVertices();
-      Vec3i var11 = var2.getDirection().getNormal();
-      Vector3f var12 = new Vector3f((float)var11.getX(), (float)var11.getY(), (float)var11.getZ());
-      Matrix4f var13 = var1.pose();
-      var12.transform(var1.normal());
-      boolean var14 = true;
-      int var15 = var10.length / 8;
-      MemoryStack var16 = MemoryStack.stackPush();
-      Throwable var17 = null;
+      float[] var10 = new float[]{var3[0], var3[1], var3[2], var3[3]};
+      int[] var11 = new int[]{var7[0], var7[1], var7[2], var7[3]};
+      int[] var12 = var2.getVertices();
+      Vec3i var13 = var2.getDirection().getNormal();
+      Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
+      Matrix4f var15 = var1.pose();
+      var14.transform(var1.normal());
+      boolean var16 = true;
+      int var17 = var12.length / 8;
+      MemoryStack var18 = MemoryStack.stackPush();
+      Throwable var19 = null;
 
       try {
-         ByteBuffer var18 = var16.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
-         IntBuffer var19 = var18.asIntBuffer();
+         ByteBuffer var20 = var18.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
+         IntBuffer var21 = var20.asIntBuffer();
 
-         for(int var20 = 0; var20 < var15; ++var20) {
-            var19.clear();
-            var19.put(var10, var20 * 8, 8);
-            float var21 = var18.getFloat(0);
-            float var22 = var18.getFloat(4);
-            float var23 = var18.getFloat(8);
-            float var24;
-            float var25;
+         for(int var22 = 0; var22 < var17; ++var22) {
+            var21.clear();
+            var21.put(var12, var22 * 8, 8);
+            float var23 = var20.getFloat(0);
+            float var24 = var20.getFloat(4);
+            float var25 = var20.getFloat(8);
             float var26;
+            float var27;
             float var28;
-            float var29;
+            float var30;
+            float var31;
             if (var9) {
-               float var27 = (float)(var18.get(12) & 255) / 255.0F;
-               var28 = (float)(var18.get(13) & 255) / 255.0F;
-               var29 = (float)(var18.get(14) & 255) / 255.0F;
-               var24 = var27 * var3[var20] * var4;
-               var25 = var28 * var3[var20] * var5;
-               var26 = var29 * var3[var20] * var6;
+               float var29 = (float)(var20.get(12) & 255) / 255.0F;
+               var30 = (float)(var20.get(13) & 255) / 255.0F;
+               var31 = (float)(var20.get(14) & 255) / 255.0F;
+               var26 = var29 * var10[var22] * var4;
+               var27 = var30 * var10[var22] * var5;
+               var28 = var31 * var10[var22] * var6;
             } else {
-               var24 = var3[var20] * var4;
-               var25 = var3[var20] * var5;
-               var26 = var3[var20] * var6;
+               var26 = var10[var22] * var4;
+               var27 = var10[var22] * var5;
+               var28 = var10[var22] * var6;
             }
 
-            int var40 = var7[var20];
-            var28 = var18.getFloat(16);
-            var29 = var18.getFloat(20);
-            Vector4f var30 = new Vector4f(var21, var22, var23, 1.0F);
-            var30.transform(var13);
-            this.vertex(var30.x(), var30.y(), var30.z(), var24, var25, var26, 1.0F, var28, var29, var8, var40, var12.x(), var12.y(), var12.z());
+            int var42 = var11[var22];
+            var30 = var20.getFloat(16);
+            var31 = var20.getFloat(20);
+            Vector4f var32 = new Vector4f(var23, var24, var25, 1.0F);
+            var32.transform(var15);
+            this.vertex(var32.x(), var32.y(), var32.z(), var26, var27, var28, 1.0F, var30, var31, var8, var42, var14.x(), var14.y(), var14.z());
          }
-      } catch (Throwable var38) {
-         var17 = var38;
-         throw var38;
+      } catch (Throwable var40) {
+         var19 = var40;
+         throw var40;
       } finally {
-         if (var16 != null) {
-            if (var17 != null) {
+         if (var18 != null) {
+            if (var19 != null) {
                try {
-                  var16.close();
-               } catch (Throwable var37) {
-                  var17.addSuppressed(var37);
+                  var18.close();
+               } catch (Throwable var39) {
+                  var19.addSuppressed(var39);
                }
             } else {
-               var16.close();
+               var18.close();
             }
          }
 

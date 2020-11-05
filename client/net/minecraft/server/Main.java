@@ -33,6 +33,7 @@ import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
 import net.minecraft.server.level.progress.LoggerChunkProgressListener;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
@@ -121,7 +122,7 @@ public class Main {
             LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
          }
 
-         PackRepository var32 = new PackRepository(new RepositorySource[]{new ServerPacksSource(), new FolderRepositorySource(var29.getLevelPath(LevelResource.DATAPACK_DIR).toFile(), PackSource.WORLD)});
+         PackRepository var32 = new PackRepository(PackType.SERVER_DATA, new RepositorySource[]{new ServerPacksSource(), new FolderRepositorySource(var29.getLevelPath(LevelResource.DATAPACK_DIR).toFile(), PackSource.WORLD)});
          DataPackConfig var33 = MinecraftServer.configurePackRepository(var32, var30 == null ? DataPackConfig.DEFAULT : var30, var31);
          CompletableFuture var34 = ServerResources.loadResources(var32.openAllSelected(), Commands.CommandSelection.DEDICATED, var19.getProperties().functionPermissionLevel, Util.backgroundExecutor(), Runnable::run);
 

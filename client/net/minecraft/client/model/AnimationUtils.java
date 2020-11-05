@@ -73,4 +73,8 @@ public class AnimationUtils {
       var0.xRot += var5 * 1.2F - var6 * 0.4F;
       bobArms(var1, var0, var4);
    }
+
+   public static float getSpyglassArmXRot(ModelPart var0) {
+      return var0.xRot * 0.95F - 2.277655F;
+   }
 }

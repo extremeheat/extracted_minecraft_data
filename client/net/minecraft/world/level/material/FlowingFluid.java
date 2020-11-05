@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -386,7 +385,7 @@ public abstract class FlowingFluid extends Fluid {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer) {
          return ((LiquidBlockContainer)var5).canPlaceLiquid(var1, var2, var3, var4);
-      } else if (!(var5 instanceof DoorBlock) && !var5.is((Tag)BlockTags.SIGNS) && var5 != Blocks.LADDER && var5 != Blocks.SUGAR_CANE && var5 != Blocks.BUBBLE_COLUMN) {
+      } else if (!(var5 instanceof DoorBlock) && !var3.is(BlockTags.SIGNS) && !var3.is(Blocks.LADDER) && !var3.is(Blocks.SUGAR_CANE) && !var3.is(Blocks.BUBBLE_COLUMN)) {
          Material var6 = var3.getMaterial();
          if (var6 != Material.PORTAL && var6 != Material.STRUCTURAL_AIR && var6 != Material.WATER_PLANT && var6 != Material.REPLACEABLE_WATER_PLANT) {
             return !var6.blocksMotion();

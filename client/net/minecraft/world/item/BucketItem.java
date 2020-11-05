@@ -89,7 +89,7 @@ public class BucketItem extends Item {
    }
 
    protected ItemStack getEmptySuccessItem(ItemStack var1, Player var2) {
-      return !var2.abilities.instabuild ? new ItemStack(Items.BUCKET) : var1;
+      return !var2.getAbilities().instabuild ? new ItemStack(Items.BUCKET) : var1;
    }
 
    public void checkExtraContent(Level var1, ItemStack var2, BlockPos var3) {

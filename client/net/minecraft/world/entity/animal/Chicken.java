@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -113,7 +113,7 @@ public class Chicken extends Animal {
       this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
-   public Chicken getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (Chicken)EntityType.CHICKEN.create(var1);
    }
 
@@ -166,7 +166,7 @@ public class Chicken extends Animal {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

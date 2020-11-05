@@ -5,10 +5,8 @@ import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
@@ -39,9 +37,9 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
 
    protected boolean isValidPosition(LevelAccessor var1, BlockPos var2, int var3, BlockPos.MutableBlockPos var4, HugeMushroomFeatureConfiguration var5) {
       int var6 = var2.getY();
-      if (var6 >= 1 && var6 + var3 + 1 < 256) {
-         Block var7 = var1.getBlockState(var2.below()).getBlock();
-         if (!isDirt(var7) && !var7.is((Tag)BlockTags.MUSHROOM_GROW_BLOCK)) {
+      if (var6 >= var1.getMinBuildHeight() + 1 && var6 + var3 + 1 < var1.getMaxBuildHeight()) {
+         BlockState var7 = var1.getBlockState(var2.below());
+         if (!isDirt(var7) && !var7.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
             return false;
          } else {
             for(int var8 = 0; var8 <= var3; ++var8) {

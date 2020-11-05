@@ -4,7 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -22,15 +28,22 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal> {
    private final ModelPart glass;
    private final ModelPart base;
 
-   public EndCrystalRenderer(EntityRenderDispatcher var1) {
+   public EndCrystalRenderer(EntityRendererProvider.Context var1) {
       super(var1);
       this.shadowRadius = 0.5F;
-      this.glass = new ModelPart(64, 32, 0, 0);
-      this.glass.addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F);
-      this.cube = new ModelPart(64, 32, 32, 0);
-      this.cube.addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F);
-      this.base = new ModelPart(64, 32, 0, 16);
-      this.base.addBox(-6.0F, 0.0F, -6.0F, 12.0F, 4.0F, 12.0F);
+      ModelPart var2 = var1.getLayer(ModelLayers.END_CRYSTAL);
+      this.glass = var2.getChild("glass");
+      this.cube = var2.getChild("cube");
+      this.base = var2.getChild("base");
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("glass", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
+      var1.addOrReplaceChild("cube", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
+      var1.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 16).addBox(-6.0F, 0.0F, -6.0F, 12.0F, 4.0F, 12.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    public void render(EndCrystal var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

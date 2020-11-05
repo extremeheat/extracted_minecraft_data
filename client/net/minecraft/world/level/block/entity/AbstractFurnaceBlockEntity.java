@@ -13,13 +13,17 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -41,7 +45,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, RecipeHolder, StackedContentsCompatible, TickableBlockEntity {
+public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, RecipeHolder, StackedContentsCompatible {
    private static final int[] SLOTS_FOR_UP = new int[]{0};
    private static final int[] SLOTS_FOR_DOWN = new int[]{2, 1};
    private static final int[] SLOTS_FOR_SIDES = new int[]{1};
@@ -52,10 +56,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    private int cookingTotalTime;
    protected final ContainerData dataAccess;
    private final Object2IntOpenHashMap<ResourceLocation> recipesUsed;
-   protected final RecipeType<? extends AbstractCookingRecipe> recipeType;
+   private final RecipeType<? extends AbstractCookingRecipe> recipeType;
 
-   protected AbstractFurnaceBlockEntity(BlockEntityType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2) {
-      super(var1);
+   protected AbstractFurnaceBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3, RecipeType<? extends AbstractCookingRecipe> var4) {
+      super(var1, var2, var3);
       this.items = NonNullList.withSize(3, ItemStack.EMPTY);
       this.dataAccess = new ContainerData() {
          public int get(int var1) {
@@ -95,7 +99,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          }
       };
       this.recipesUsed = new Object2IntOpenHashMap();
-      this.recipeType = var2;
+      this.recipeType = var4;
    }
 
    public static Map<Item, Integer> getFuel() {
@@ -194,20 +198,20 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       return this.litTime > 0;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
+   public void load(CompoundTag var1) {
+      super.load(var1);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-      ContainerHelper.loadAllItems(var2, this.items);
-      this.litTime = var2.getShort("BurnTime");
-      this.cookingProgress = var2.getShort("CookTime");
-      this.cookingTotalTime = var2.getShort("CookTimeTotal");
+      ContainerHelper.loadAllItems(var1, this.items);
+      this.litTime = var1.getShort("BurnTime");
+      this.cookingProgress = var1.getShort("CookTime");
+      this.cookingTotalTime = var1.getShort("CookTimeTotal");
       this.litDuration = this.getBurnDuration((ItemStack)this.items.get(1));
-      CompoundTag var3 = var2.getCompound("RecipesUsed");
-      Iterator var4 = var3.getAllKeys().iterator();
+      CompoundTag var2 = var1.getCompound("RecipesUsed");
+      Iterator var3 = var2.getAllKeys().iterator();
 
-      while(var4.hasNext()) {
-         String var5 = (String)var4.next();
-         this.recipesUsed.put(new ResourceLocation(var5), var3.getInt(var5));
+      while(var3.hasNext()) {
+         String var4 = (String)var3.next();
+         this.recipesUsed.put(new ResourceLocation(var4), var2.getInt(var4));
       }
 
    }
@@ -226,77 +230,78 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       return var1;
    }
 
-   public void tick() {
-      boolean var1 = this.isLit();
-      boolean var2 = false;
-      if (this.isLit()) {
-         --this.litTime;
+   public static void serverTick(Level var0, BlockPos var1, BlockState var2, AbstractFurnaceBlockEntity var3) {
+      boolean var4 = var3.isLit();
+      boolean var5 = false;
+      if (var3.isLit()) {
+         --var3.litTime;
       }
 
-      if (!this.level.isClientSide) {
-         ItemStack var3 = (ItemStack)this.items.get(1);
-         if (!this.isLit() && (var3.isEmpty() || ((ItemStack)this.items.get(0)).isEmpty())) {
-            if (!this.isLit() && this.cookingProgress > 0) {
-               this.cookingProgress = Mth.clamp(this.cookingProgress - 2, 0, this.cookingTotalTime);
-            }
-         } else {
-            Recipe var4 = (Recipe)this.level.getRecipeManager().getRecipeFor(this.recipeType, this, this.level).orElse((Object)null);
-            if (!this.isLit() && this.canBurn(var4)) {
-               this.litTime = this.getBurnDuration(var3);
-               this.litDuration = this.litTime;
-               if (this.isLit()) {
-                  var2 = true;
-                  if (!var3.isEmpty()) {
-                     Item var5 = var3.getItem();
-                     var3.shrink(1);
-                     if (var3.isEmpty()) {
-                        Item var6 = var5.getCraftingRemainingItem();
-                        this.items.set(1, var6 == null ? ItemStack.EMPTY : new ItemStack(var6));
-                     }
+      ItemStack var6 = (ItemStack)var3.items.get(1);
+      if (var3.isLit() || !var6.isEmpty() && !((ItemStack)var3.items.get(0)).isEmpty()) {
+         Recipe var7 = (Recipe)var0.getRecipeManager().getRecipeFor(var3.recipeType, var3, var0).orElse((Object)null);
+         int var8 = var3.getMaxStackSize();
+         if (!var3.isLit() && canBurn(var7, var3.items, var8)) {
+            var3.litTime = var3.getBurnDuration(var6);
+            var3.litDuration = var3.litTime;
+            if (var3.isLit()) {
+               var5 = true;
+               if (!var6.isEmpty()) {
+                  Item var9 = var6.getItem();
+                  var6.shrink(1);
+                  if (var6.isEmpty()) {
+                     Item var10 = var9.getCraftingRemainingItem();
+                     var3.items.set(1, var10 == null ? ItemStack.EMPTY : new ItemStack(var10));
                   }
                }
             }
+         }
 
-            if (this.isLit() && this.canBurn(var4)) {
-               ++this.cookingProgress;
-               if (this.cookingProgress == this.cookingTotalTime) {
-                  this.cookingProgress = 0;
-                  this.cookingTotalTime = this.getTotalCookTime();
-                  this.burn(var4);
-                  var2 = true;
+         if (var3.isLit() && canBurn(var7, var3.items, var8)) {
+            ++var3.cookingProgress;
+            if (var3.cookingProgress == var3.cookingTotalTime) {
+               var3.cookingProgress = 0;
+               var3.cookingTotalTime = getTotalCookTime(var0, var3.recipeType, var3);
+               if (burn(var7, var3.items, var8)) {
+                  var3.setRecipeUsed(var7);
                }
-            } else {
-               this.cookingProgress = 0;
-            }
-         }
 
-         if (var1 != this.isLit()) {
-            var2 = true;
-            this.level.setBlock(this.worldPosition, (BlockState)this.level.getBlockState(this.worldPosition).setValue(AbstractFurnaceBlock.LIT, this.isLit()), 3);
+               var5 = true;
+            }
+         } else {
+            var3.cookingProgress = 0;
          }
+      } else if (!var3.isLit() && var3.cookingProgress > 0) {
+         var3.cookingProgress = Mth.clamp(var3.cookingProgress - 2, 0, var3.cookingTotalTime);
       }
 
-      if (var2) {
-         this.setChanged();
+      if (var4 != var3.isLit()) {
+         var5 = true;
+         var2 = (BlockState)var2.setValue(AbstractFurnaceBlock.LIT, var3.isLit());
+         var0.setBlock(var1, var2, 3);
+      }
+
+      if (var5) {
+         setChanged(var0, var1, var2);
       }
 
    }
 
-   protected boolean canBurn(@Nullable Recipe<?> var1) {
-      if (!((ItemStack)this.items.get(0)).isEmpty() && var1 != null) {
-         ItemStack var2 = var1.getResultItem();
-         if (var2.isEmpty()) {
+   private static boolean canBurn(@Nullable Recipe<?> var0, NonNullList<ItemStack> var1, int var2) {
+      if (!((ItemStack)var1.get(0)).isEmpty() && var0 != null) {
+         ItemStack var3 = var0.getResultItem();
+         if (var3.isEmpty()) {
             return false;
          } else {
-            ItemStack var3 = (ItemStack)this.items.get(2);
-            if (var3.isEmpty()) {
+            ItemStack var4 = (ItemStack)var1.get(2);
+            if (var4.isEmpty()) {
                return true;
-            } else if (!var3.sameItem(var2)) {
+            } else if (!var4.sameItem(var3)) {
                return false;
-            } else if (var3.getCount() < this.getMaxStackSize() && var3.getCount() < var3.getMaxStackSize()) {
+            } else if (var4.getCount() < var2 && var4.getCount() < var4.getMaxStackSize()) {
                return true;
             } else {
-               return var3.getCount() < var2.getMaxStackSize();
+               return var4.getCount() < var3.getMaxStackSize();
             }
          }
       } else {
@@ -304,26 +309,25 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private void burn(@Nullable Recipe<?> var1) {
-      if (var1 != null && this.canBurn(var1)) {
-         ItemStack var2 = (ItemStack)this.items.get(0);
-         ItemStack var3 = var1.getResultItem();
-         ItemStack var4 = (ItemStack)this.items.get(2);
-         if (var4.isEmpty()) {
-            this.items.set(2, var3.copy());
-         } else if (var4.getItem() == var3.getItem()) {
-            var4.grow(1);
+   private static boolean burn(@Nullable Recipe<?> var0, NonNullList<ItemStack> var1, int var2) {
+      if (var0 != null && canBurn(var0, var1, var2)) {
+         ItemStack var3 = (ItemStack)var1.get(0);
+         ItemStack var4 = var0.getResultItem();
+         ItemStack var5 = (ItemStack)var1.get(2);
+         if (var5.isEmpty()) {
+            var1.set(2, var4.copy());
+         } else if (var5.is(var4.getItem())) {
+            var5.grow(1);
          }
 
-         if (!this.level.isClientSide) {
-            this.setRecipeUsed(var1);
+         if (var3.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var1.get(1)).isEmpty() && ((ItemStack)var1.get(1)).is(Items.BUCKET)) {
+            var1.set(1, new ItemStack(Items.WATER_BUCKET));
          }
 
-         if (var2.getItem() == Blocks.WET_SPONGE.asItem() && !((ItemStack)this.items.get(1)).isEmpty() && ((ItemStack)this.items.get(1)).getItem() == Items.BUCKET) {
-            this.items.set(1, new ItemStack(Items.WATER_BUCKET));
-         }
-
-         var2.shrink(1);
+         var3.shrink(1);
+         return true;
+      } else {
+         return false;
       }
    }
 
@@ -336,8 +340,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   protected int getTotalCookTime() {
-      return (Integer)this.level.getRecipeManager().getRecipeFor(this.recipeType, this, this.level).map(AbstractCookingRecipe::getCookingTime).orElse(200);
+   private static int getTotalCookTime(Level var0, RecipeType<? extends AbstractCookingRecipe> var1, Container var2) {
+      return (Integer)var0.getRecipeManager().getRecipeFor(var1, var2, var0).map(AbstractCookingRecipe::getCookingTime).orElse(200);
    }
 
    public static boolean isFuel(ItemStack var0) {
@@ -358,13 +362,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
       if (var3 == Direction.DOWN && var1 == 1) {
-         Item var4 = var2.getItem();
-         if (var4 != Items.WATER_BUCKET && var4 != Items.BUCKET) {
-            return false;
-         }
+         return var2.is(Items.WATER_BUCKET) || var2.is(Items.BUCKET);
+      } else {
+         return true;
       }
-
-      return true;
    }
 
    public int getContainerSize() {
@@ -407,7 +408,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
 
       if (var1 == 0 && !var4) {
-         this.cookingTotalTime = this.getTotalCookTime();
+         this.cookingTotalTime = getTotalCookTime(this.level, this.recipeType, this);
          this.cookingProgress = 0;
          this.setChanged();
       }
@@ -429,7 +430,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          return true;
       } else {
          ItemStack var3 = (ItemStack)this.items.get(1);
-         return isFuel(var2) || var2.getItem() == Items.BUCKET && var3.getItem() != Items.BUCKET;
+         return isFuel(var2) || var2.is(Items.BUCKET) && !var3.is(Items.BUCKET);
       }
    }
 
@@ -453,13 +454,13 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    public void awardUsedRecipes(Player var1) {
    }
 
-   public void awardUsedRecipesAndPopExperience(Player var1) {
-      List var2 = this.getRecipesToAwardAndPopExperience(var1.level, var1.position());
+   public void awardUsedRecipesAndPopExperience(ServerPlayer var1) {
+      List var2 = this.getRecipesToAwardAndPopExperience(var1.getLevel(), var1.position());
       var1.awardRecipes(var2);
       this.recipesUsed.clear();
    }
 
-   public List<Recipe<?>> getRecipesToAwardAndPopExperience(Level var1, Vec3 var2) {
+   public List<Recipe<?>> getRecipesToAwardAndPopExperience(ServerLevel var1, Vec3 var2) {
       ArrayList var3 = Lists.newArrayList();
       ObjectIterator var4 = this.recipesUsed.object2IntEntrySet().iterator();
 
@@ -474,19 +475,14 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       return var3;
    }
 
-   private static void createExperience(Level var0, Vec3 var1, int var2, float var3) {
+   private static void createExperience(ServerLevel var0, Vec3 var1, int var2, float var3) {
       int var4 = Mth.floor((float)var2 * var3);
       float var5 = Mth.frac((float)var2 * var3);
       if (var5 != 0.0F && Math.random() < (double)var5) {
          ++var4;
       }
 
-      while(var4 > 0) {
-         int var6 = ExperienceOrb.getExperienceValue(var4);
-         var4 -= var6;
-         var0.addFreshEntity(new ExperienceOrb(var0, var1.x, var1.y, var1.z, var6));
-      }
-
+      ExperienceOrb.award(var0, var1, var4);
    }
 
    public void fillStackedContents(StackedContents var1) {

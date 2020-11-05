@@ -37,7 +37,7 @@ public class GlDebug {
       return "Unknown (0x" + Integer.toHexString(var0).toUpperCase() + ")";
    }
 
-   private static String sourceToString(int var0) {
+   public static String sourceToString(int var0) {
       switch(var0) {
       case 33350:
          return "API";
@@ -56,7 +56,7 @@ public class GlDebug {
       }
    }
 
-   private static String typeToString(int var0) {
+   public static String typeToString(int var0) {
       switch(var0) {
       case 33356:
          return "ERROR";
@@ -77,7 +77,7 @@ public class GlDebug {
       }
    }
 
-   private static String severityToString(int var0) {
+   public static String severityToString(int var0) {
       switch(var0) {
       case 33387:
          return "NOTIFICATION";
@@ -164,9 +164,6 @@ public class GlDebug {
       setup(4, "GL11.GL_TRIANGLES");
       setup(5, "GL11.GL_TRIANGLE_STRIP");
       setup(6, "GL11.GL_TRIANGLE_FAN");
-      setup(7, "GL11.GL_QUADS");
-      setup(8, "GL11.GL_QUAD_STRIP");
-      setup(9, "GL11.GL_POLYGON");
       setup(0, "GL11.GL_ZERO");
       setup(1, "GL11.GL_ONE");
       setup(768, "GL11.GL_SRC_COLOR");

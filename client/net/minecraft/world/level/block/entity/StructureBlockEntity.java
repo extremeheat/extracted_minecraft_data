@@ -49,8 +49,8 @@ public class StructureBlockEntity extends BlockEntity {
    private float integrity;
    private long seed;
 
-   public StructureBlockEntity() {
-      super(BlockEntityType.STRUCTURE_BLOCK);
+   public StructureBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.STRUCTURE_BLOCK, var1, var2);
       this.structureSize = BlockPos.ZERO;
       this.mirror = Mirror.NONE;
       this.rotation = Rotation.NONE;
@@ -87,49 +87,49 @@ public class StructureBlockEntity extends BlockEntity {
       return var1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      this.setStructureName(var2.getString("name"));
-      this.author = var2.getString("author");
-      this.metaData = var2.getString("metadata");
-      int var3 = Mth.clamp(var2.getInt("posX"), -48, 48);
-      int var4 = Mth.clamp(var2.getInt("posY"), -48, 48);
-      int var5 = Mth.clamp(var2.getInt("posZ"), -48, 48);
-      this.structurePos = new BlockPos(var3, var4, var5);
-      int var6 = Mth.clamp(var2.getInt("sizeX"), 0, 48);
-      int var7 = Mth.clamp(var2.getInt("sizeY"), 0, 48);
-      int var8 = Mth.clamp(var2.getInt("sizeZ"), 0, 48);
-      this.structureSize = new BlockPos(var6, var7, var8);
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      this.setStructureName(var1.getString("name"));
+      this.author = var1.getString("author");
+      this.metaData = var1.getString("metadata");
+      int var2 = Mth.clamp(var1.getInt("posX"), -48, 48);
+      int var3 = Mth.clamp(var1.getInt("posY"), -48, 48);
+      int var4 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      this.structurePos = new BlockPos(var2, var3, var4);
+      int var5 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
+      int var6 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
+      int var7 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      this.structureSize = new BlockPos(var5, var6, var7);
 
       try {
-         this.rotation = Rotation.valueOf(var2.getString("rotation"));
-      } catch (IllegalArgumentException var12) {
+         this.rotation = Rotation.valueOf(var1.getString("rotation"));
+      } catch (IllegalArgumentException var11) {
          this.rotation = Rotation.NONE;
       }
 
       try {
-         this.mirror = Mirror.valueOf(var2.getString("mirror"));
-      } catch (IllegalArgumentException var11) {
+         this.mirror = Mirror.valueOf(var1.getString("mirror"));
+      } catch (IllegalArgumentException var10) {
          this.mirror = Mirror.NONE;
       }
 
       try {
-         this.mode = StructureMode.valueOf(var2.getString("mode"));
-      } catch (IllegalArgumentException var10) {
+         this.mode = StructureMode.valueOf(var1.getString("mode"));
+      } catch (IllegalArgumentException var9) {
          this.mode = StructureMode.DATA;
       }
 
-      this.ignoreEntities = var2.getBoolean("ignoreEntities");
-      this.powered = var2.getBoolean("powered");
-      this.showAir = var2.getBoolean("showair");
-      this.showBoundingBox = var2.getBoolean("showboundingbox");
-      if (var2.contains("integrity")) {
-         this.integrity = var2.getFloat("integrity");
+      this.ignoreEntities = var1.getBoolean("ignoreEntities");
+      this.powered = var1.getBoolean("powered");
+      this.showAir = var1.getBoolean("showair");
+      this.showBoundingBox = var1.getBoolean("showboundingbox");
+      if (var1.contains("integrity")) {
+         this.integrity = var1.getFloat("integrity");
       } else {
          this.integrity = 1.0F;
       }
 
-      this.seed = var2.getLong("seed");
+      this.seed = var1.getLong("seed");
       this.updateBlockState();
    }
 
@@ -290,7 +290,7 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var1 = this.getBlockPos();
          boolean var2 = true;
          BlockPos var3 = new BlockPos(var1.getX() - 80, 0, var1.getZ() - 80);
-         BlockPos var4 = new BlockPos(var1.getX() + 80, 255, var1.getZ() + 80);
+         BlockPos var4 = new BlockPos(var1.getX() + 80, this.level.getMaxBuildHeight() - 1, var1.getZ() + 80);
          List var5 = this.getNearbyCornerBlocks(var3, var4);
          List var6 = this.filterRelatedCornerBlocks(var5);
          if (var6.size() < 1) {

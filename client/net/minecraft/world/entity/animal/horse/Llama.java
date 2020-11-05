@@ -12,11 +12,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,7 +43,6 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -171,12 +171,11 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       byte var4 = 0;
       float var5 = 0.0F;
       boolean var6 = false;
-      Item var7 = var2.getItem();
-      if (var7 == Items.WHEAT) {
+      if (var2.is(Items.WHEAT)) {
          var3 = 10;
          var4 = 3;
          var5 = 2.0F;
-      } else if (var7 == Blocks.HAY_BLOCK.asItem()) {
+      } else if (var2.is(Blocks.HAY_BLOCK.asItem())) {
          var3 = 90;
          var4 = 6;
          var5 = 10.0F;
@@ -208,8 +207,8 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       }
 
       if (var6 && !this.isSilent()) {
-         SoundEvent var8 = this.getEatingSound();
-         if (var8 != null) {
+         SoundEvent var7 = this.getEatingSound();
+         if (var7 != null) {
             this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
@@ -286,8 +285,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    public boolean isArmor(ItemStack var1) {
-      Item var2 = var1.getItem();
-      return ItemTags.CARPETS.contains(var2);
+      return var1.is((Tag)ItemTags.CARPETS);
    }
 
    public boolean isSaddleable() {
@@ -335,7 +333,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return var1 != this && var1 instanceof Llama && this.canParent() && ((Llama)var1).canParent();
    }
 
-   public Llama getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Llama getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Llama var3 = this.makeBabyLlama();
       this.setOffspringAttributes(var2, var3);
       Llama var4 = (Llama)var2;
@@ -444,7 +442,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -485,7 +483,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       }
    }
 
-   static class LlamaGroupData extends AgableMob.AgableMobGroupData {
+   static class LlamaGroupData extends AgeableMob.AgeableMobGroupData {
       public final int variant;
 
       private LlamaGroupData(int var1) {

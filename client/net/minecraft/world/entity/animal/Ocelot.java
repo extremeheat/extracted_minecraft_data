@@ -18,7 +18,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -218,7 +218,7 @@ public class Ocelot extends Animal {
 
    }
 
-   public Ocelot getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (Ocelot)EntityType.OCELOT.create(var1);
    }
 
@@ -249,7 +249,7 @@ public class Ocelot extends Animal {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       if (var4 == null) {
-         var4 = new AgableMob.AgableMobGroupData(1.0F);
+         var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
@@ -260,7 +260,7 @@ public class Ocelot extends Animal {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

@@ -27,23 +27,16 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureMana
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class JigsawBlockEntity extends BlockEntity {
-   private ResourceLocation name;
-   private ResourceLocation target;
-   private ResourceLocation pool;
+   private ResourceLocation name = new ResourceLocation("empty");
+   private ResourceLocation target = new ResourceLocation("empty");
+   private ResourceLocation pool = new ResourceLocation("empty");
    private JigsawBlockEntity.JointType joint;
    private String finalState;
 
-   public JigsawBlockEntity(BlockEntityType<?> var1) {
-      super(var1);
-      this.name = new ResourceLocation("empty");
-      this.target = new ResourceLocation("empty");
-      this.pool = new ResourceLocation("empty");
+   public JigsawBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.JIGSAW, var1, var2);
       this.joint = JigsawBlockEntity.JointType.ROLLABLE;
       this.finalState = "minecraft:air";
-   }
-
-   public JigsawBlockEntity() {
-      this(BlockEntityType.JIGSAW);
    }
 
    public ResourceLocation getName() {
@@ -96,14 +89,14 @@ public class JigsawBlockEntity extends BlockEntity {
       return var1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      this.name = new ResourceLocation(var2.getString("name"));
-      this.target = new ResourceLocation(var2.getString("target"));
-      this.pool = new ResourceLocation(var2.getString("pool"));
-      this.finalState = var2.getString("final_state");
-      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var2.getString("joint")).orElseGet(() -> {
-         return JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      this.name = new ResourceLocation(var1.getString("name"));
+      this.target = new ResourceLocation(var1.getString("target"));
+      this.pool = new ResourceLocation(var1.getString("pool"));
+      this.finalState = var1.getString("final_state");
+      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var1.getString("joint")).orElseGet(() -> {
+         return JigsawBlock.getFrontFacing(this.getBlockState()).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
       });
    }
 

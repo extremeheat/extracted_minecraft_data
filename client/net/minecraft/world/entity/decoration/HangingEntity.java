@@ -91,14 +91,11 @@ public abstract class HangingEntity extends Entity {
 
    public void tick() {
       if (!this.level.isClientSide) {
-         if (this.getY() < -64.0D) {
-            this.outOfWorld();
-         }
-
+         this.checkOutOfWorld();
          if (this.checkInterval++ == 100) {
             this.checkInterval = 0;
-            if (!this.removed && !this.survives()) {
-               this.remove();
+            if (!this.isRemoved() && !this.survives()) {
+               this.discard();
                this.dropItem((Entity)null);
             }
          }
@@ -153,8 +150,8 @@ public abstract class HangingEntity extends Entity {
       if (this.isInvulnerableTo(var1)) {
          return false;
       } else {
-         if (!this.removed && !this.level.isClientSide) {
-            this.remove();
+         if (!this.isRemoved() && !this.level.isClientSide) {
+            this.kill();
             this.markHurt();
             this.dropItem(var1.getEntity());
          }
@@ -164,16 +161,16 @@ public abstract class HangingEntity extends Entity {
    }
 
    public void move(MoverType var1, Vec3 var2) {
-      if (!this.level.isClientSide && !this.removed && var2.lengthSqr() > 0.0D) {
-         this.remove();
+      if (!this.level.isClientSide && !this.isRemoved() && var2.lengthSqr() > 0.0D) {
+         this.kill();
          this.dropItem((Entity)null);
       }
 
    }
 
    public void push(double var1, double var3, double var5) {
-      if (!this.level.isClientSide && !this.removed && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D) {
-         this.remove();
+      if (!this.level.isClientSide && !this.isRemoved() && var1 * var1 + var3 * var3 + var5 * var5 > 0.0D) {
+         this.kill();
          this.dropItem((Entity)null);
       }
 

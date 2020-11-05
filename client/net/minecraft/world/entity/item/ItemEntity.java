@@ -16,6 +16,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -76,7 +77,7 @@ public class ItemEntity extends Entity {
 
    public void tick() {
       if (this.getItem().isEmpty()) {
-         this.remove();
+         this.discard();
       } else {
          super.tick();
          if (this.pickupDelay > 0 && this.pickupDelay != 32767) {
@@ -146,7 +147,7 @@ public class ItemEntity extends Entity {
          }
 
          if (!this.level.isClientSide && this.age >= 6000) {
-            this.remove();
+            this.discard();
          }
 
       }
@@ -173,7 +174,7 @@ public class ItemEntity extends Entity {
             ItemEntity var3 = (ItemEntity)var2.next();
             if (var3.isMergable()) {
                this.tryToMerge(var3);
-               if (this.removed) {
+               if (this.isRemoved()) {
                   break;
                }
             }
@@ -201,7 +202,7 @@ public class ItemEntity extends Entity {
    }
 
    public static boolean areMergable(ItemStack var0, ItemStack var1) {
-      if (var1.getItem() != var0.getItem()) {
+      if (!var1.is(var0.getItem())) {
          return false;
       } else if (var1.getCount() + var0.getCount() > var1.getMaxStackSize()) {
          return false;
@@ -230,7 +231,7 @@ public class ItemEntity extends Entity {
       var0.pickupDelay = Math.max(var0.pickupDelay, var2.pickupDelay);
       var0.age = Math.min(var0.age, var2.age);
       if (var3.isEmpty()) {
-         var2.remove();
+         var2.discard();
       }
 
    }
@@ -242,7 +243,7 @@ public class ItemEntity extends Entity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.getItem().isEmpty() && this.getItem().getItem() == Items.NETHER_STAR && var1.isExplosion()) {
+      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.isExplosion()) {
          return false;
       } else if (!this.getItem().getItem().canBeHurtBy(var1)) {
          return false;
@@ -250,7 +251,7 @@ public class ItemEntity extends Entity {
          this.markHurt();
          this.health = (int)((float)this.health - var2);
          if (this.health <= 0) {
-            this.remove();
+            this.discard();
          }
 
          return false;
@@ -293,7 +294,7 @@ public class ItemEntity extends Entity {
       CompoundTag var2 = var1.getCompound("Item");
       this.setItem(ItemStack.of(var2));
       if (this.getItem().isEmpty()) {
-         this.remove();
+         this.discard();
       }
 
    }
@@ -303,10 +304,10 @@ public class ItemEntity extends Entity {
          ItemStack var2 = this.getItem();
          Item var3 = var2.getItem();
          int var4 = var2.getCount();
-         if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(var1.getUUID())) && var1.inventory.add(var2)) {
+         if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(var1.getUUID())) && var1.getInventory().add(var2)) {
             var1.take(this, var4);
             if (var2.isEmpty()) {
-               this.remove();
+               this.discard();
                var2.setCount(var4);
             }
 
@@ -413,6 +414,10 @@ public class ItemEntity extends Entity {
 
    public ItemEntity copy() {
       return new ItemEntity(this);
+   }
+
+   public SoundSource getSoundSource() {
+      return SoundSource.AMBIENT;
    }
 
    static {

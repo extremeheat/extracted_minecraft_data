@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -48,8 +47,8 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Block var4 = var2.getBlockState(var3.relative((Direction)var1.getValue(FACING))).getBlock();
-      return var4.is((Tag)BlockTags.JUNGLE_LOGS);
+      BlockState var4 = var2.getBlockState(var3.relative((Direction)var1.getValue(FACING)));
+      return var4.is(BlockTags.JUNGLE_LOGS);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

@@ -29,7 +29,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
       return new OperationArgument();
    }
 
-   public static OperationArgument.Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static OperationArgument.Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) {
       return (OperationArgument.Operation)var0.getArgument(var1, OperationArgument.Operation.class);
    }
 

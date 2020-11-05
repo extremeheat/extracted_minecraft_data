@@ -26,8 +26,8 @@ public class EndPortalBlock extends BaseEntityBlock {
       super(var1);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new TheEndPortalBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new TheEndPortalBlockEntity(var1, var2);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

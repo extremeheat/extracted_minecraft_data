@@ -62,7 +62,7 @@ public class SmallFireball extends Fireball {
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level.isClientSide) {
-         this.remove();
+         this.discard();
       }
 
    }

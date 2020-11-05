@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -468,7 +469,7 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       RenderSystem.disableTexture();
       RenderSystem.enableColorLogicOp();
       RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      var6.begin(7, DefaultVertexFormat.POSITION);
+      var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
       var6.vertex((double)var1, (double)var4, 0.0D).endVertex();
       var6.vertex((double)var3, (double)var4, 0.0D).endVertex();
       var6.vertex((double)var3, (double)var2, 0.0D).endVertex();

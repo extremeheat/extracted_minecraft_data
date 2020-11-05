@@ -59,7 +59,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob {
    private static final UUID SPEED_MODIFIER_BABY_UUID;
    private static final AttributeModifier SPEED_MODIFIER_BABY;
    private final SimpleContainer inventory = new SimpleContainer(8);
-   private boolean cannotHunt = false;
+   private boolean cannotHunt;
    protected static final ImmutableList<SensorType<? extends Sensor<? super Piglin>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -258,7 +258,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob {
    public PiglinArmPose getArmPose() {
       if (this.isDancing()) {
          return PiglinArmPose.DANCING;
-      } else if (PiglinAi.isLovedItem(this.getOffhandItem().getItem())) {
+      } else if (PiglinAi.isLovedItem(this.getOffhandItem())) {
          return PiglinArmPose.ADMIRING_ITEM;
       } else if (this.isAggressive() && this.isHoldingMeleeWeapon()) {
          return PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON;
@@ -307,7 +307,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob {
    }
 
    protected void holdInOffHand(ItemStack var1) {
-      if (var1.getItem() == PiglinAi.BARTERING_ITEM) {
+      if (var1.is(PiglinAi.BARTERING_ITEM)) {
          this.setItemSlot(EquipmentSlot.OFFHAND, var1);
          this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
       } else {
@@ -330,14 +330,14 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob {
       if (EnchantmentHelper.hasBindingCurse(var2)) {
          return false;
       } else {
-         boolean var3 = PiglinAi.isLovedItem(var1.getItem()) || var1.getItem() == Items.CROSSBOW;
-         boolean var4 = PiglinAi.isLovedItem(var2.getItem()) || var2.getItem() == Items.CROSSBOW;
+         boolean var3 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
+         boolean var4 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
          if (var3 && !var4) {
             return true;
          } else if (!var3 && var4) {
             return false;
          } else {
-            return this.isAdult() && var1.getItem() != Items.CROSSBOW && var2.getItem() == Items.CROSSBOW ? false : super.canReplaceCurrentItem(var1, var2);
+            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2);
          }
       }
    }

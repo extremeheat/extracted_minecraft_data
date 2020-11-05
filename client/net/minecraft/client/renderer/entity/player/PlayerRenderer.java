@@ -4,11 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.ArrowLayer;
 import net.minecraft.client.renderer.entity.layers.BeeStingerLayer;
@@ -40,21 +41,17 @@ import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
-   public PlayerRenderer(EntityRenderDispatcher var1) {
-      this(var1, false);
-   }
-
-   public PlayerRenderer(EntityRenderDispatcher var1, boolean var2) {
-      super(var1, new PlayerModel(0.0F, var2), 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(0.5F), new HumanoidModel(1.0F)));
+   public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
+      super(var1, new PlayerModel(var1.getLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
+      this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(var1.getLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidModel(var1.getLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR))));
       this.addLayer(new ItemInHandLayer(this));
-      this.addLayer(new ArrowLayer(this));
+      this.addLayer(new ArrowLayer(var1, this));
       this.addLayer(new Deadmau5EarsLayer(this));
       this.addLayer(new CapeLayer(this));
-      this.addLayer(new CustomHeadLayer(this));
-      this.addLayer(new ElytraLayer(this));
-      this.addLayer(new ParrotOnShoulderLayer(this));
-      this.addLayer(new SpinAttackEffectLayer(this));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new ElytraLayer(this, var1.getModelSet()));
+      this.addLayer(new ParrotOnShoulderLayer(this, var1.getModelSet()));
+      this.addLayer(new SpinAttackEffectLayer(this, var1.getModelSet()));
       this.addLayer(new BeeStingerLayer(this));
    }
 
@@ -121,7 +118,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             if (var3 == UseAnim.CROSSBOW && var1 == var0.getUsedItemHand()) {
                return HumanoidModel.ArmPose.CROSSBOW_CHARGE;
             }
-         } else if (!var0.swinging && var2.getItem() == Items.CROSSBOW && CrossbowItem.isCharged(var2)) {
+
+            if (var3 == UseAnim.SPYGLASS) {
+               return HumanoidModel.ArmPose.SPYGLASS;
+            }
+         } else if (!var0.swinging && var2.is(Items.CROSSBOW) && CrossbowItem.isCharged(var2)) {
             return HumanoidModel.ArmPose.CROSSBOW_HOLD;
          }
 

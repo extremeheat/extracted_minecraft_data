@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.CartographyTableMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -35,14 +34,14 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       int var5 = this.leftPos;
       int var6 = this.topPos;
       this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      Item var7 = ((CartographyTableMenu)this.menu).getSlot(1).getItem().getItem();
-      boolean var8 = var7 == Items.MAP;
-      boolean var9 = var7 == Items.PAPER;
-      boolean var10 = var7 == Items.GLASS_PANE;
+      ItemStack var7 = ((CartographyTableMenu)this.menu).getSlot(1).getItem();
+      boolean var8 = var7.is(Items.MAP);
+      boolean var9 = var7.is(Items.PAPER);
+      boolean var10 = var7.is(Items.GLASS_PANE);
       ItemStack var11 = ((CartographyTableMenu)this.menu).getSlot(0).getItem();
       boolean var13 = false;
       MapItemSavedData var12;
-      if (var11.getItem() == Items.FILLED_MAP) {
+      if (var11.is(Items.FILLED_MAP)) {
          var12 = MapItem.getSavedData(var11, this.minecraft.level);
          if (var12 != null) {
             if (var12.locked) {

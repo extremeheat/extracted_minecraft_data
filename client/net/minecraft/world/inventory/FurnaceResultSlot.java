@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,8 +40,8 @@ public class FurnaceResultSlot extends Slot {
 
    protected void checkTakeAchievements(ItemStack var1) {
       var1.onCraftedBy(this.player.level, this.player, this.removeCount);
-      if (!this.player.level.isClientSide && this.container instanceof AbstractFurnaceBlockEntity) {
-         ((AbstractFurnaceBlockEntity)this.container).awardUsedRecipesAndPopExperience(this.player);
+      if (this.player instanceof ServerPlayer && this.container instanceof AbstractFurnaceBlockEntity) {
+         ((AbstractFurnaceBlockEntity)this.container).awardUsedRecipesAndPopExperience((ServerPlayer)this.player);
       }
 
       this.removeCount = 0;

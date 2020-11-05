@@ -114,7 +114,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
             return true;
          }
 
-         if (!this.hasChest() && var2.getItem() == Blocks.CHEST.asItem()) {
+         if (!this.hasChest() && var2.is(Blocks.CHEST.asItem())) {
             this.setChest(true);
             this.createInventory();
             return true;
@@ -147,10 +147,10 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
             return InteractionResult.sidedSuccess(this.level.isClientSide);
          }
 
-         if (!this.hasChest() && var3.getItem() == Blocks.CHEST.asItem()) {
+         if (!this.hasChest() && var3.is(Blocks.CHEST.asItem())) {
             this.setChest(true);
             this.playChestEquipsSound();
-            if (!var1.abilities.instabuild) {
+            if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 
@@ -158,7 +158,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
             return InteractionResult.sidedSuccess(this.level.isClientSide);
          }
 
-         if (!this.isBaby() && !this.isSaddled() && var3.getItem() == Items.SADDLE) {
+         if (!this.isBaby() && !this.isSaddled() && var3.is(Items.SADDLE)) {
             this.openInventory(var1);
             return InteractionResult.sidedSuccess(this.level.isClientSide);
          }

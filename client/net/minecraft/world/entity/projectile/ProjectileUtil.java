@@ -136,14 +136,14 @@ public final class ProjectileUtil {
    }
 
    public static InteractionHand getWeaponHoldingHand(LivingEntity var0, Item var1) {
-      return var0.getMainHandItem().getItem() == var1 ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+      return var0.getMainHandItem().is(var1) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
    }
 
    public static AbstractArrow getMobArrow(LivingEntity var0, ItemStack var1, float var2) {
       ArrowItem var3 = (ArrowItem)((ArrowItem)(var1.getItem() instanceof ArrowItem ? var1.getItem() : Items.ARROW));
       AbstractArrow var4 = var3.createArrow(var0.level, var1, var0);
       var4.setEnchantmentEffectsFromEntity(var0, var2);
-      if (var1.getItem() == Items.TIPPED_ARROW && var4 instanceof Arrow) {
+      if (var1.is(Items.TIPPED_ARROW) && var4 instanceof Arrow) {
          ((Arrow)var4).setEffectsFromItem(var1);
       }
 

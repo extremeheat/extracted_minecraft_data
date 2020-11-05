@@ -214,27 +214,33 @@ public class PackSelectionScreen extends Screen {
          PackResources var3 = var2.open();
          Throwable var4 = null;
 
-         ResourceLocation var10;
+         Object var7;
          try {
             InputStream var5 = var3.getRootResource("pack.png");
             Throwable var6 = null;
 
             try {
-               String var7 = var2.getId();
-               ResourceLocation var8 = new ResourceLocation("minecraft", "pack/" + Util.sanitizeName(var7, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var7) + "/icon");
-               NativeImage var9 = NativeImage.read(var5);
-               var1.register((ResourceLocation)var8, (AbstractTexture)(new DynamicTexture(var9)));
-               var10 = var8;
-            } catch (Throwable var37) {
-               var6 = var37;
-               throw var37;
+               if (var5 != null) {
+                  var7 = var2.getId();
+                  ResourceLocation var8 = new ResourceLocation("minecraft", "pack/" + Util.sanitizeName((String)var7, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars((CharSequence)var7) + "/icon");
+                  NativeImage var9 = NativeImage.read(var5);
+                  var1.register((ResourceLocation)var8, (AbstractTexture)(new DynamicTexture(var9)));
+                  ResourceLocation var10 = var8;
+                  return var10;
+               }
+
+               var7 = DEFAULT_ICON;
+            } catch (Throwable var40) {
+               var7 = var40;
+               var6 = var40;
+               throw var40;
             } finally {
                if (var5 != null) {
                   if (var6 != null) {
                      try {
                         var5.close();
-                     } catch (Throwable var36) {
-                        var6.addSuppressed(var36);
+                     } catch (Throwable var39) {
+                        var6.addSuppressed(var39);
                      }
                   } else {
                      var5.close();
@@ -242,16 +248,16 @@ public class PackSelectionScreen extends Screen {
                }
 
             }
-         } catch (Throwable var39) {
-            var4 = var39;
-            throw var39;
+         } catch (Throwable var42) {
+            var4 = var42;
+            throw var42;
          } finally {
             if (var3 != null) {
                if (var4 != null) {
                   try {
                      var3.close();
-                  } catch (Throwable var35) {
-                     var4.addSuppressed(var35);
+                  } catch (Throwable var38) {
+                     var4.addSuppressed(var38);
                   }
                } else {
                   var3.close();
@@ -260,10 +266,10 @@ public class PackSelectionScreen extends Screen {
 
          }
 
-         return var10;
-      } catch (FileNotFoundException var41) {
-      } catch (Exception var42) {
-         LOGGER.warn("Failed to load icon from pack {}", var2.getId(), var42);
+         return (ResourceLocation)var7;
+      } catch (FileNotFoundException var44) {
+      } catch (Exception var45) {
+         LOGGER.warn("Failed to load icon from pack {}", var2.getId(), var45);
       }
 
       return DEFAULT_ICON;

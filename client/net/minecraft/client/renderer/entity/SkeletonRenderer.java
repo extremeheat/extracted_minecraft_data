@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.SkeletonModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
@@ -8,9 +10,13 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 public class SkeletonRenderer extends HumanoidMobRenderer<AbstractSkeleton, SkeletonModel<AbstractSkeleton>> {
    private static final ResourceLocation SKELETON_LOCATION = new ResourceLocation("textures/entity/skeleton/skeleton.png");
 
-   public SkeletonRenderer(EntityRenderDispatcher var1) {
-      super(var1, new SkeletonModel(), 0.5F);
-      this.addLayer(new HumanoidArmorLayer(this, new SkeletonModel(0.5F, true), new SkeletonModel(1.0F, true)));
+   public SkeletonRenderer(EntityRendererProvider.Context var1) {
+      this(var1, ModelLayers.SKELETON, ModelLayers.SKELETON_INNER_ARMOR, ModelLayers.SKELETON_OUTER_ARMOR);
+   }
+
+   public SkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4) {
+      super(var1, new SkeletonModel(var1.getLayer(var2)), 0.5F);
+      this.addLayer(new HumanoidArmorLayer(this, new SkeletonModel(var1.getLayer(var3)), new SkeletonModel(var1.getLayer(var4))));
    }
 
    public ResourceLocation getTextureLocation(AbstractSkeleton var1) {

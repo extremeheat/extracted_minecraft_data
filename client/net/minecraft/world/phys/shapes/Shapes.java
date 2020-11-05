@@ -22,7 +22,7 @@ import net.minecraft.world.phys.AABB;
 public final class Shapes {
    private static final VoxelShape BLOCK = (VoxelShape)Util.make(() -> {
       BitSetDiscreteVoxelShape var0 = new BitSetDiscreteVoxelShape(1, 1, 1);
-      var0.setFull(0, 0, 0, true, true);
+      var0.fill(0, 0, 0);
       return new CubeVoxelShape(var0);
    });
    public static final VoxelShape INFINITY = box(-1.0D / 0.0, -1.0D / 0.0, -1.0D / 0.0, 1.0D / 0.0, 1.0D / 0.0, 1.0D / 0.0);
@@ -37,51 +37,50 @@ public final class Shapes {
    }
 
    public static VoxelShape box(double var0, double var2, double var4, double var6, double var8, double var10) {
-      return create(new AABB(var0, var2, var4, var6, var8, var10));
-   }
-
-   public static VoxelShape create(AABB var0) {
-      int var1 = findBits(var0.minX, var0.maxX);
-      int var2 = findBits(var0.minY, var0.maxY);
-      int var3 = findBits(var0.minZ, var0.maxZ);
-      if (var1 >= 0 && var2 >= 0 && var3 >= 0) {
-         if (var1 == 0 && var2 == 0 && var3 == 0) {
-            return var0.contains(0.5D, 0.5D, 0.5D) ? block() : empty();
-         } else {
-            int var4 = 1 << var1;
-            int var5 = 1 << var2;
-            int var6 = 1 << var3;
-            int var7 = (int)Math.round(var0.minX * (double)var4);
-            int var8 = (int)Math.round(var0.maxX * (double)var4);
-            int var9 = (int)Math.round(var0.minY * (double)var5);
-            int var10 = (int)Math.round(var0.maxY * (double)var5);
-            int var11 = (int)Math.round(var0.minZ * (double)var6);
-            int var12 = (int)Math.round(var0.maxZ * (double)var6);
-            BitSetDiscreteVoxelShape var13 = new BitSetDiscreteVoxelShape(var4, var5, var6, var7, var9, var11, var8, var10, var12);
-
-            for(long var14 = (long)var7; var14 < (long)var8; ++var14) {
-               for(long var16 = (long)var9; var16 < (long)var10; ++var16) {
-                  for(long var18 = (long)var11; var18 < (long)var12; ++var18) {
-                     var13.setFull((int)var14, (int)var16, (int)var18, false, true);
-                  }
-               }
-            }
-
-            return new CubeVoxelShape(var13);
-         }
+      if (var0 <= var6 && var2 <= var8 && var4 <= var10) {
+         return create(var0, var2, var4, var6, var8, var10);
       } else {
-         return new ArrayVoxelShape(BLOCK.shape, new double[]{var0.minX, var0.maxX}, new double[]{var0.minY, var0.maxY}, new double[]{var0.minZ, var0.maxZ});
+         throw new IllegalArgumentException("The min values need to be smaller or equals to the max values");
       }
    }
 
-   private static int findBits(double var0, double var2) {
+   public static VoxelShape create(double var0, double var2, double var4, double var6, double var8, double var10) {
+      if (var6 - var0 >= 1.0E-7D && var8 - var2 >= 1.0E-7D && var10 - var4 >= 1.0E-7D) {
+         int var12 = findBits(var0, var6);
+         int var13 = findBits(var2, var8);
+         int var14 = findBits(var4, var10);
+         if (var12 >= 0 && var13 >= 0 && var14 >= 0) {
+            if (var12 == 0 && var13 == 0 && var14 == 0) {
+               return block();
+            } else {
+               int var15 = 1 << var12;
+               int var16 = 1 << var13;
+               int var17 = 1 << var14;
+               BitSetDiscreteVoxelShape var18 = BitSetDiscreteVoxelShape.withFilledBounds(var15, var16, var17, (int)Math.round(var0 * (double)var15), (int)Math.round(var2 * (double)var16), (int)Math.round(var4 * (double)var17), (int)Math.round(var6 * (double)var15), (int)Math.round(var8 * (double)var16), (int)Math.round(var10 * (double)var17));
+               return new CubeVoxelShape(var18);
+            }
+         } else {
+            return new ArrayVoxelShape(BLOCK.shape, DoubleArrayList.wrap(new double[]{var0, var6}), DoubleArrayList.wrap(new double[]{var2, var8}), DoubleArrayList.wrap(new double[]{var4, var10}));
+         }
+      } else {
+         return empty();
+      }
+   }
+
+   public static VoxelShape create(AABB var0) {
+      return create(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ);
+   }
+
+   @VisibleForTesting
+   protected static int findBits(double var0, double var2) {
       if (var0 >= -1.0E-7D && var2 <= 1.0000001D) {
          for(int var4 = 0; var4 <= 3; ++var4) {
-            double var5 = var0 * (double)(1 << var4);
-            double var7 = var2 * (double)(1 << var4);
-            boolean var9 = Math.abs(var5 - Math.floor(var5)) < 1.0E-7D;
-            boolean var10 = Math.abs(var7 - Math.floor(var7)) < 1.0E-7D;
-            if (var9 && var10) {
+            int var5 = 1 << var4;
+            double var6 = var0 * (double)var5;
+            double var8 = var2 * (double)var5;
+            boolean var10 = Math.abs(var6 - (double)Math.round(var6)) < 1.0E-7D * (double)var5;
+            boolean var11 = Math.abs(var8 - (double)Math.round(var8)) < 1.0E-7D * (double)var5;
+            if (var10 && var11) {
                return var4;
             }
          }
@@ -122,8 +121,8 @@ public final class Shapes {
             return var3 ? var0 : empty();
          } else {
             IndexMerger var5 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var3, var4);
-            IndexMerger var6 = createIndexMerger(var5.getList().size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var3, var4);
-            IndexMerger var7 = createIndexMerger((var5.getList().size() - 1) * (var6.getList().size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4);
+            IndexMerger var6 = createIndexMerger(var5.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var3, var4);
+            IndexMerger var7 = createIndexMerger((var5.size() - 1) * (var6.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4);
             BitSetDiscreteVoxelShape var8 = BitSetDiscreteVoxelShape.join(var0.shape, var1.shape, var5, var6, var7, var2);
             return (VoxelShape)(var5 instanceof DiscreteCubeMerger && var6 instanceof DiscreteCubeMerger && var7 instanceof DiscreteCubeMerger ? new CubeVoxelShape(var8) : new ArrayVoxelShape(var8, var5.getList(), var6.getList(), var7.getList()));
          }
@@ -133,33 +132,37 @@ public final class Shapes {
    public static boolean joinIsNotEmpty(VoxelShape var0, VoxelShape var1, BooleanOp var2) {
       if (var2.apply(false, false)) {
          throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
-      } else if (var0 == var1) {
-         return var2.apply(true, true);
-      } else if (var0.isEmpty()) {
-         return var2.apply(false, !var1.isEmpty());
-      } else if (var1.isEmpty()) {
-         return var2.apply(!var0.isEmpty(), false);
       } else {
-         boolean var3 = var2.apply(true, false);
-         boolean var4 = var2.apply(false, true);
-         Direction.Axis[] var5 = AxisCycle.AXIS_VALUES;
-         int var6 = var5.length;
+         boolean var3 = var0.isEmpty();
+         boolean var4 = var1.isEmpty();
+         if (!var3 && !var4) {
+            if (var0 == var1) {
+               return var2.apply(true, true);
+            } else {
+               boolean var5 = var2.apply(true, false);
+               boolean var6 = var2.apply(false, true);
+               Direction.Axis[] var7 = AxisCycle.AXIS_VALUES;
+               int var8 = var7.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Direction.Axis var8 = var5[var7];
-            if (var0.max(var8) < var1.min(var8) - 1.0E-7D) {
-               return var3 || var4;
-            }
+               for(int var9 = 0; var9 < var8; ++var9) {
+                  Direction.Axis var10 = var7[var9];
+                  if (var0.max(var10) < var1.min(var10) - 1.0E-7D) {
+                     return var5 || var6;
+                  }
 
-            if (var1.max(var8) < var0.min(var8) - 1.0E-7D) {
-               return var3 || var4;
+                  if (var1.max(var10) < var0.min(var10) - 1.0E-7D) {
+                     return var5 || var6;
+                  }
+               }
+
+               IndexMerger var11 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var5, var6);
+               IndexMerger var12 = createIndexMerger(var11.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var5, var6);
+               IndexMerger var13 = createIndexMerger((var11.size() - 1) * (var12.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var5, var6);
+               return joinIsNotEmpty(var11, var12, var13, var0.shape, var1.shape, var2);
             }
+         } else {
+            return var2.apply(!var3, !var4);
          }
-
-         IndexMerger var9 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var3, var4);
-         IndexMerger var10 = createIndexMerger(var9.getList().size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var3, var4);
-         IndexMerger var11 = createIndexMerger((var9.getList().size() - 1) * (var10.getList().size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4);
-         return joinIsNotEmpty(var9, var10, var11, var0.shape, var1.shape, var2);
       }
    }
 
@@ -347,14 +350,8 @@ public final class Shapes {
          return new NonOverlappingMerger(var1, var2, false);
       } else if (var2.getDouble(var6) < var1.getDouble(0) - 1.0E-7D) {
          return new NonOverlappingMerger(var2, var1, true);
-      } else if (var5 == var6 && Objects.equals(var1, var2)) {
-         if (var1 instanceof IdenticalMerger) {
-            return (IndexMerger)var1;
-         } else {
-            return (IndexMerger)(var2 instanceof IdenticalMerger ? (IndexMerger)var2 : new IdenticalMerger(var1));
-         }
       } else {
-         return new IndirectMerger(var1, var2, var3, var4);
+         return (IndexMerger)(var5 == var6 && Objects.equals(var1, var2) ? new IdenticalMerger(var1) : new IndirectMerger(var1, var2, var3, var4));
       }
    }
 

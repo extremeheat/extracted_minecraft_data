@@ -2,12 +2,13 @@ package net.minecraft.world.item;
 
 import java.util.function.Predicate;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 
 public abstract class ProjectileWeaponItem extends Item {
    public static final Predicate<ItemStack> ARROW_ONLY = (var0) -> {
-      return var0.getItem().is(ItemTags.ARROWS);
+      return var0.is((Tag)ItemTags.ARROWS);
    };
    public static final Predicate<ItemStack> ARROW_OR_FIREWORK;
 
@@ -37,7 +38,7 @@ public abstract class ProjectileWeaponItem extends Item {
 
    static {
       ARROW_OR_FIREWORK = ARROW_ONLY.or((var0) -> {
-         return var0.getItem() == Items.FIREWORK_ROCKET;
+         return var0.is(Items.FIREWORK_ROCKET);
       });
    }
 }

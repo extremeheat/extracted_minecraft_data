@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -42,12 +44,17 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Nullable
-   public BlockEntity newBlockEntity(BlockGetter var1) {
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return null;
    }
 
-   public static BlockEntity newMovingBlockEntity(BlockState var0, Direction var1, boolean var2, boolean var3) {
-      return new PistonMovingBlockEntity(var0, var1, var2, var3);
+   public static BlockEntity newMovingBlockEntity(BlockPos var0, BlockState var1, BlockState var2, Direction var3, boolean var4, boolean var5) {
+      return new PistonMovingBlockEntity(var0, var1, var2, var3, var4, var5);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {

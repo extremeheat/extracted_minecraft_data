@@ -51,7 +51,7 @@ public class BlockColors {
       }, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE);
       var0.register((var0x, var1, var2, var3) -> {
          return var1 != null && var2 != null ? BiomeColors.getAverageWaterColor(var1, var2) : -1;
-      }, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.CAULDRON);
+      }, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.WATER_CAULDRON);
       var0.register((var0x, var1, var2, var3) -> {
          return RedStoneWireBlock.getColorForPower((Integer)var0x.getValue(RedStoneWireBlock.POWER));
       }, Blocks.REDSTONE_WIRE);

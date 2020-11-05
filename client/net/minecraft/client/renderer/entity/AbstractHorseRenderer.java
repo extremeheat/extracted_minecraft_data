@@ -7,7 +7,7 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 public abstract class AbstractHorseRenderer<T extends AbstractHorse, M extends HorseModel<T>> extends MobRenderer<T, M> {
    private final float scale;
 
-   public AbstractHorseRenderer(EntityRenderDispatcher var1, M var2, float var3) {
+   public AbstractHorseRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1, var2, 0.75F);
       this.scale = var3;
    }

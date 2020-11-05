@@ -26,7 +26,7 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
-      for(var4 = var4.above(); var1.isEmptyBlock(var4) && var4.getY() > 2; var4 = var4.below()) {
+      for(var4 = var4.above(); var1.isEmptyBlock(var4) && var4.getY() > var1.getMinBuildHeight() + 2; var4 = var4.below()) {
       }
 
       if (!IS_SAND.test(var1.getBlockState(var4))) {

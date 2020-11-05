@@ -1,11 +1,13 @@
 package net.minecraft.world.level.block;
 
 import java.util.Random;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
@@ -89,8 +92,13 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
       }
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new EnderChestBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new EnderChestBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
@@ -134,6 +142,14 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
 
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
       return false;
+   }
+
+   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+      BlockEntity var5 = var2.getBlockEntity(var3);
+      if (var5 instanceof EnderChestBlockEntity) {
+         ((EnderChestBlockEntity)var5).recheckOpen();
+      }
+
    }
 
    static {

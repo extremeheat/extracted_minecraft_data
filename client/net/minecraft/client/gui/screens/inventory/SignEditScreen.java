@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.util.stream.IntStream;
 import net.minecraft.client.gui.components.Button;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.Material;
@@ -28,13 +30,15 @@ import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class SignEditScreen extends Screen {
-   private final SignRenderer.SignModel signModel = new SignRenderer.SignModel();
    private final SignBlockEntity sign;
    private int frame;
    private int line;
    private TextFieldHelper signField;
+   private WoodType woodType;
+   private SignRenderer.SignModel signModel;
    private final String[] messages;
 
    public SignEditScreen(SignBlockEntity var1) {
@@ -49,18 +53,21 @@ public class SignEditScreen extends Screen {
 
    protected void init() {
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120, 200, 20, CommonComponents.GUI_DONE, (var1) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120, 200, 20, CommonComponents.GUI_DONE, (var1x) -> {
          this.onDone();
       }));
       this.sign.setEditable(false);
       this.signField = new TextFieldHelper(() -> {
          return this.messages[this.line];
-      }, (var1) -> {
-         this.messages[this.line] = var1;
-         this.sign.setMessage(this.line, new TextComponent(var1));
-      }, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), (var1) -> {
-         return this.minecraft.font.width(var1) <= 90;
+      }, (var1x) -> {
+         this.messages[this.line] = var1x;
+         this.sign.setMessage(this.line, new TextComponent(var1x));
+      }, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), (var1x) -> {
+         return this.minecraft.font.width(var1x) <= 90;
       });
+      BlockState var1 = this.sign.getBlockState();
+      this.woodType = SignRenderer.getWoodType(var1.getBlock());
+      this.signModel = SignRenderer.createSignModel(this.minecraft.getEntityModels(), this.woodType);
    }
 
    public void removed() {
@@ -75,7 +82,7 @@ public class SignEditScreen extends Screen {
 
    public void tick() {
       ++this.frame;
-      if (!this.sign.getType().isValid(this.sign.getBlockState().getBlock())) {
+      if (!this.sign.getType().isValid(this.sign.getBlockState())) {
          this.onDone();
       }
 
@@ -129,15 +136,12 @@ public class SignEditScreen extends Screen {
       var1.pushPose();
       var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
       MultiBufferSource.BufferSource var10 = this.minecraft.renderBuffers().bufferSource();
-      Material var11 = SignRenderer.getMaterial(var6.getBlock());
+      Material var11 = Sheets.signTexture(this.woodType);
       SignRenderer.SignModel var10002 = this.signModel;
       var10002.getClass();
       VertexConsumer var12 = var11.buffer(var10, var10002::renderType);
-      this.signModel.sign.render(var1, var12, 15728880, OverlayTexture.NO_OVERLAY);
-      if (var7) {
-         this.signModel.stick.render(var1, var12, 15728880, OverlayTexture.NO_OVERLAY);
-      }
-
+      this.signModel.stick.visible = var7;
+      this.signModel.root.render(var1, var12, 15728880, OverlayTexture.NO_OVERLAY);
       var1.popPose();
       float var13 = 0.010416667F;
       var1.translate(0.0D, 0.3333333432674408D, 0.046666666865348816D);
@@ -197,7 +201,7 @@ public class SignEditScreen extends Screen {
                RenderSystem.disableTexture();
                RenderSystem.enableColorLogicOp();
                RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-               var30.begin(7, DefaultVertexFormat.POSITION_COLOR);
+               var30.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                float var32 = (float)var27;
                this.minecraft.font.getClass();
                var30.vertex(var18, var32, (float)(var17 + 9), 0.0F).color(0, 0, 255, 255).endVertex();

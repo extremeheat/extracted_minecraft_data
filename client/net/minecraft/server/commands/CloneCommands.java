@@ -176,7 +176,7 @@ public class CloneCommands {
                      var34.tag.putInt("x", var34.pos.getX());
                      var34.tag.putInt("y", var34.pos.getY());
                      var34.tag.putInt("z", var34.pos.getZ());
-                     var35.load(var34.state, var34.tag);
+                     var35.load(var34.tag);
                      var35.setChanged();
                   }
                }

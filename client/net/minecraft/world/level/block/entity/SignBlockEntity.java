@@ -5,6 +5,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -30,8 +31,8 @@ public class SignBlockEntity extends BlockEntity {
    private final FormattedCharSequence[] renderMessages;
    private DyeColor color;
 
-   public SignBlockEntity() {
-      super(BlockEntityType.SIGN);
+   public SignBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.SIGN, var1, var2);
       this.messages = new Component[]{TextComponent.EMPTY, TextComponent.EMPTY, TextComponent.EMPTY, TextComponent.EMPTY};
       this.isEditable = true;
       this.renderMessages = new FormattedCharSequence[4];
@@ -50,25 +51,25 @@ public class SignBlockEntity extends BlockEntity {
       return var1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
+   public void load(CompoundTag var1) {
       this.isEditable = false;
-      super.load(var1, var2);
-      this.color = DyeColor.byName(var2.getString("Color"), DyeColor.BLACK);
+      super.load(var1);
+      this.color = DyeColor.byName(var1.getString("Color"), DyeColor.BLACK);
 
-      for(int var3 = 0; var3 < 4; ++var3) {
-         String var4 = var2.getString("Text" + (var3 + 1));
-         MutableComponent var5 = Component.Serializer.fromJson(var4.isEmpty() ? "\"\"" : var4);
+      for(int var2 = 0; var2 < 4; ++var2) {
+         String var3 = var1.getString("Text" + (var2 + 1));
+         MutableComponent var4 = Component.Serializer.fromJson(var3.isEmpty() ? "\"\"" : var3);
          if (this.level instanceof ServerLevel) {
             try {
-               this.messages[var3] = ComponentUtils.updateForEntity(this.createCommandSourceStack((ServerPlayer)null), var5, (Entity)null, 0);
-            } catch (CommandSyntaxException var7) {
-               this.messages[var3] = var5;
+               this.messages[var2] = ComponentUtils.updateForEntity(this.createCommandSourceStack((ServerPlayer)null), var4, (Entity)null, 0);
+            } catch (CommandSyntaxException var6) {
+               this.messages[var2] = var4;
             }
          } else {
-            this.messages[var3] = var5;
+            this.messages[var2] = var4;
          }
 
-         this.renderMessages[var3] = null;
+         this.renderMessages[var2] = null;
       }
 
    }

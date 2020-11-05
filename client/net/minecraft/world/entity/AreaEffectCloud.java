@@ -205,7 +205,7 @@ public class AreaEffectCloud extends Entity {
          }
       } else {
          if (this.tickCount >= this.waitTime + this.duration) {
-            this.remove();
+            this.discard();
             return;
          }
 
@@ -221,7 +221,7 @@ public class AreaEffectCloud extends Entity {
          if (this.radiusPerTick != 0.0F) {
             var2 += this.radiusPerTick;
             if (var2 < 0.5F) {
-               this.remove();
+               this.discard();
                return;
             }
 
@@ -288,7 +288,7 @@ public class AreaEffectCloud extends Entity {
                      if (this.radiusOnUse != 0.0F) {
                         var2 += this.radiusOnUse;
                         if (var2 < 0.5F) {
-                           this.remove();
+                           this.discard();
                            return;
                         }
 
@@ -298,7 +298,7 @@ public class AreaEffectCloud extends Entity {
                      if (this.durationOnUse != 0) {
                         this.duration += this.durationOnUse;
                         if (this.duration <= 0) {
-                           this.remove();
+                           this.discard();
                            return;
                         }
                      }

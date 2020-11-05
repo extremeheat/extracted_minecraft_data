@@ -42,7 +42,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
                while(var2.hasNext()) {
                   Block var3 = (Block)var2.next();
-                  if (var1.inventory.contains(new ItemStack(var3))) {
+                  if (var1.getInventory().contains(new ItemStack(var3))) {
                      this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                      return;
                   }
@@ -91,7 +91,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
          }
 
          var3 = (Block)var2.next();
-      } while(var1.getItem() != var3.asItem());
+      } while(!var1.is(var3.asItem()));
 
       this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
    }

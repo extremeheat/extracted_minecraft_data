@@ -7,7 +7,6 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -50,7 +49,7 @@ public class ValidateNearbyPoi extends Behavior<LivingEntity> {
 
    private boolean bedIsOccupied(ServerLevel var1, BlockPos var2, LivingEntity var3) {
       BlockState var4 = var1.getBlockState(var2);
-      return var4.getBlock().is((Tag)BlockTags.BEDS) && (Boolean)var4.getValue(BedBlock.OCCUPIED) && !var3.isSleeping();
+      return var4.is(BlockTags.BEDS) && (Boolean)var4.getValue(BedBlock.OCCUPIED) && !var3.isSleeping();
    }
 
    private boolean poiDoesntExist(ServerLevel var1, BlockPos var2) {

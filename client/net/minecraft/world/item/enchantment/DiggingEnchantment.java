@@ -22,6 +22,6 @@ public class DiggingEnchantment extends Enchantment {
    }
 
    public boolean canEnchant(ItemStack var1) {
-      return var1.getItem() == Items.SHEARS ? true : super.canEnchant(var1);
+      return var1.is(Items.SHEARS) ? true : super.canEnchant(var1);
    }
 }

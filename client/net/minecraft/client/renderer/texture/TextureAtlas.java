@@ -52,7 +52,7 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
       this.maxSupportedTextureSize = RenderSystem.maxSupportedTextureSize();
    }
 
-   public void load(ResourceManager var1) throws IOException {
+   public void load(ResourceManager var1) {
    }
 
    public void reload(TextureAtlas.Preparations var1) {

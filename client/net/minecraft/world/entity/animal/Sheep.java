@@ -23,7 +23,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -193,7 +193,7 @@ public class Sheep extends Animal implements Shearable {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.getItem() == Items.SHEARS) {
+      if (var3.is(Items.SHEARS)) {
          if (!this.level.isClientSide && this.readyForShearing()) {
             this.shear(SoundSource.PLAYERS);
             var3.hurtAndBreak(1, var1, (var1x) -> {
@@ -292,7 +292,7 @@ public class Sheep extends Animal implements Shearable {
       }
    }
 
-   public Sheep getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Sheep var3 = (Sheep)var2;
       Sheep var4 = (Sheep)EntityType.SHEEP.create(var1);
       var4.setColor(this.getOffspringColor(this, var3));
@@ -344,7 +344,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

@@ -60,7 +60,7 @@ public abstract class WaterFluid extends FlowingFluid {
    }
 
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      BlockEntity var4 = var3.getBlock().isEntityBlock() ? var1.getBlockEntity(var2) : null;
+      BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
       Block.dropResources(var3, var1, var2, var4);
    }
 

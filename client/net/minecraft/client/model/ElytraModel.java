@@ -2,20 +2,33 @@ package net.minecraft.client.model;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
    private final ModelPart rightWing;
-   private final ModelPart leftWing = new ModelPart(this, 22, 0);
+   private final ModelPart leftWing;
 
-   public ElytraModel() {
+   public ElytraModel(ModelPart var1) {
       super();
-      this.leftWing.addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, 1.0F);
-      this.rightWing = new ModelPart(this, 22, 0);
-      this.rightWing.mirror = true;
-      this.rightWing.addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, 1.0F);
+      this.leftWing = var1.getChild("left_wing");
+      this.rightWing = var1.getChild("right_wing");
+   }
+
+   public static LayerDefinition createLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      CubeDeformation var2 = new CubeDeformation(1.0F);
+      var1.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(22, 0).addBox(-10.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, -0.2617994F));
+      var1.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(22, 0).mirror().addBox(0.0F, 0.0F, 0.0F, 10.0F, 20.0F, 2.0F, var2), PartPose.offsetAndRotation(-5.0F, 0.0F, 0.0F, 0.2617994F, 0.0F, 0.2617994F));
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    protected Iterable<ModelPart> headParts() {
@@ -48,7 +61,6 @@ public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
          var10 = 0.08726646F;
       }
 
-      this.leftWing.x = 5.0F;
       this.leftWing.y = var9;
       if (var1 instanceof AbstractClientPlayer) {
          AbstractClientPlayer var14 = (AbstractClientPlayer)var1;
@@ -64,7 +76,6 @@ public class ElytraModel<T extends LivingEntity> extends AgeableListModel<T> {
          this.leftWing.yRot = var10;
       }
 
-      this.rightWing.x = -this.leftWing.x;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.rightWing.y = this.leftWing.y;
       this.rightWing.xRot = this.leftWing.xRot;

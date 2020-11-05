@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 
 public class SimpleParticleType extends ParticleType<SimpleParticleType> implements ParticleOptions {
    private static final ParticleOptions.Deserializer<SimpleParticleType> DESERIALIZER = new ParticleOptions.Deserializer<SimpleParticleType>() {
-      public SimpleParticleType fromCommand(ParticleType<SimpleParticleType> var1, StringReader var2) throws CommandSyntaxException {
+      public SimpleParticleType fromCommand(ParticleType<SimpleParticleType> var1, StringReader var2) {
          return (SimpleParticleType)var1;
       }
 

@@ -25,7 +25,7 @@ public class Heightmap {
    private static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = (var0) -> {
       return var0.getMaterial().blocksMotion();
    };
-   private final BitStorage data = new BitStorage(9, 256);
+   private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
    private final ChunkAccess chunk;
 
@@ -33,6 +33,8 @@ public class Heightmap {
       super();
       this.isOpaque = var2.isOpaque();
       this.chunk = var1;
+      int var3 = (int)Math.ceil(Math.log((double)(var1.getHeight() + 1)) / Math.log(2.0D));
+      this.data = new BitStorage(var3, 256);
    }
 
    public static void primeHeightmaps(ChunkAccess var0, Set<Heightmap.Types> var1) {
@@ -51,7 +53,7 @@ public class Heightmap {
                var3.add(var0.getOrCreateHeightmapUnprimed(var10));
             }
 
-            for(int var12 = var5 - 1; var12 >= 0; --var12) {
+            for(int var12 = var5 - 1; var12 >= var0.getMinBuildHeight(); --var12) {
                var6.set(var7, var12, var8);
                BlockState var13 = var0.getBlockState(var6);
                if (!var13.is(Blocks.AIR)) {
@@ -88,7 +90,7 @@ public class Heightmap {
          } else if (var5 - 1 == var2) {
             BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-            for(int var7 = var2 - 1; var7 >= 0; --var7) {
+            for(int var7 = var2 - 1; var7 >= this.chunk.getMinBuildHeight(); --var7) {
                var6.set(var1, var7, var3);
                if (this.isOpaque.test(this.chunk.getBlockState(var6))) {
                   this.setHeight(var1, var3, var7 + 1);
@@ -96,7 +98,7 @@ public class Heightmap {
                }
             }
 
-            this.setHeight(var1, var3, 0);
+            this.setHeight(var1, var3, this.chunk.getMinBuildHeight());
             return true;
          }
 
@@ -109,11 +111,11 @@ public class Heightmap {
    }
 
    private int getFirstAvailable(int var1) {
-      return this.data.get(var1);
+      return this.data.get(var1) + this.chunk.getMinBuildHeight();
    }
 
    private void setHeight(int var1, int var2, int var3) {
-      this.data.set(getIndex(var1, var2), var3);
+      this.data.set(getIndex(var1, var2), var3 - this.chunk.getMinBuildHeight());
    }
 
    public void setRawData(long[] var1) {

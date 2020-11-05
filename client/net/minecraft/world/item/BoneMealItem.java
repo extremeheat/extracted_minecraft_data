@@ -2,13 +2,13 @@ package net.minecraft.world.item;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -75,39 +75,41 @@ public class BoneMealItem extends Item {
          if (!(var1 instanceof ServerLevel)) {
             return true;
          } else {
-            label80:
-            for(int var4 = 0; var4 < 128; ++var4) {
-               BlockPos var5 = var2;
-               BlockState var6 = Blocks.SEAGRASS.defaultBlockState();
+            Random var4 = var1.getRandom();
 
-               for(int var7 = 0; var7 < var4 / 16; ++var7) {
-                  var5 = var5.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
-                  if (var1.getBlockState(var5).isCollisionShapeFullBlock(var1, var5)) {
+            label80:
+            for(int var5 = 0; var5 < 128; ++var5) {
+               BlockPos var6 = var2;
+               BlockState var7 = Blocks.SEAGRASS.defaultBlockState();
+
+               for(int var8 = 0; var8 < var5 / 16; ++var8) {
+                  var6 = var6.offset(var4.nextInt(3) - 1, (var4.nextInt(3) - 1) * var4.nextInt(3) / 2, var4.nextInt(3) - 1);
+                  if (var1.getBlockState(var6).isCollisionShapeFullBlock(var1, var6)) {
                      continue label80;
                   }
                }
 
-               Optional var9 = var1.getBiomeName(var5);
-               if (Objects.equals(var9, Optional.of(Biomes.WARM_OCEAN)) || Objects.equals(var9, Optional.of(Biomes.DEEP_WARM_OCEAN))) {
-                  if (var4 == 0 && var3 != null && var3.getAxis().isHorizontal()) {
-                     var6 = (BlockState)((Block)BlockTags.WALL_CORALS.getRandomElement(var1.random)).defaultBlockState().setValue(BaseCoralWallFanBlock.FACING, var3);
-                  } else if (random.nextInt(4) == 0) {
-                     var6 = ((Block)BlockTags.UNDERWATER_BONEMEALS.getRandomElement(random)).defaultBlockState();
+               Optional var10 = var1.getBiomeName(var6);
+               if (Objects.equals(var10, Optional.of(Biomes.WARM_OCEAN)) || Objects.equals(var10, Optional.of(Biomes.DEEP_WARM_OCEAN))) {
+                  if (var5 == 0 && var3 != null && var3.getAxis().isHorizontal()) {
+                     var7 = (BlockState)((Block)BlockTags.WALL_CORALS.getRandomElement(var1.random)).defaultBlockState().setValue(BaseCoralWallFanBlock.FACING, var3);
+                  } else if (var4.nextInt(4) == 0) {
+                     var7 = ((Block)BlockTags.UNDERWATER_BONEMEALS.getRandomElement(var4)).defaultBlockState();
                   }
                }
 
-               if (var6.getBlock().is((Tag)BlockTags.WALL_CORALS)) {
-                  for(int var8 = 0; !var6.canSurvive(var1, var5) && var8 < 4; ++var8) {
-                     var6 = (BlockState)var6.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random));
+               if (var7.is(BlockTags.WALL_CORALS)) {
+                  for(int var9 = 0; !var7.canSurvive(var1, var6) && var9 < 4; ++var9) {
+                     var7 = (BlockState)var7.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var4));
                   }
                }
 
-               if (var6.canSurvive(var1, var5)) {
-                  BlockState var10 = var1.getBlockState(var5);
-                  if (var10.is(Blocks.WATER) && var1.getFluidState(var5).getAmount() == 8) {
-                     var1.setBlock(var5, var6, 3);
-                  } else if (var10.is(Blocks.SEAGRASS) && random.nextInt(10) == 0) {
-                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal((ServerLevel)var1, random, var5, var10);
+               if (var7.canSurvive(var1, var6)) {
+                  BlockState var11 = var1.getBlockState(var6);
+                  if (var11.is(Blocks.WATER) && var1.getFluidState(var6).getAmount() == 8) {
+                     var1.setBlock(var6, var7, 3);
+                  } else if (var11.is(Blocks.SEAGRASS) && var4.nextInt(10) == 0) {
+                     ((BonemealableBlock)Blocks.SEAGRASS).performBonemeal((ServerLevel)var1, var4, var6, var11);
                   }
                }
             }
@@ -143,17 +145,18 @@ public class BoneMealItem extends Item {
          }
 
          var0.addParticle(ParticleTypes.HAPPY_VILLAGER, (double)var1.getX() + 0.5D, (double)var1.getY() + 0.5D, (double)var1.getZ() + 0.5D, 0.0D, 0.0D, 0.0D);
+         Random var8 = var0.getRandom();
 
-         for(int var8 = 0; var8 < var2; ++var8) {
-            double var9 = random.nextGaussian() * 0.02D;
-            double var11 = random.nextGaussian() * 0.02D;
-            double var13 = random.nextGaussian() * 0.02D;
-            double var15 = 0.5D - var4;
-            double var17 = (double)var1.getX() + var15 + random.nextDouble() * var4 * 2.0D;
-            double var19 = (double)var1.getY() + random.nextDouble() * var6;
-            double var21 = (double)var1.getZ() + var15 + random.nextDouble() * var4 * 2.0D;
-            if (!var0.getBlockState((new BlockPos(var17, var19, var21)).below()).isAir()) {
-               var0.addParticle(ParticleTypes.HAPPY_VILLAGER, var17, var19, var21, var9, var11, var13);
+         for(int var9 = 0; var9 < var2; ++var9) {
+            double var10 = var8.nextGaussian() * 0.02D;
+            double var12 = var8.nextGaussian() * 0.02D;
+            double var14 = var8.nextGaussian() * 0.02D;
+            double var16 = 0.5D - var4;
+            double var18 = (double)var1.getX() + var16 + var8.nextDouble() * var4 * 2.0D;
+            double var20 = (double)var1.getY() + var8.nextDouble() * var6;
+            double var22 = (double)var1.getZ() + var16 + var8.nextDouble() * var4 * 2.0D;
+            if (!var0.getBlockState((new BlockPos(var18, var20, var22)).below()).isAir()) {
+               var0.addParticle(ParticleTypes.HAPPY_VILLAGER, var18, var20, var22, var10, var12, var14);
             }
          }
 

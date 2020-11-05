@@ -100,7 +100,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       super.removed(var1);
       this.resultSlots.clearContent();
       if (!var1.level.isClientSide) {
-         this.clearContainer(var1, var1.level, this.craftSlots);
+         this.clearContainer(var1, this.craftSlots);
       }
    }
 

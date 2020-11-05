@@ -23,7 +23,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -178,7 +178,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
          return false;
       } else {
          Player var2 = (Player)var1;
-         return var2.getMainHandItem().getItem() == Items.WARPED_FUNGUS_ON_A_STICK || var2.getOffhandItem().getItem() == Items.WARPED_FUNGUS_ON_A_STICK;
+         return var2.getMainHandItem().is(Items.WARPED_FUNGUS_ON_A_STICK) || var2.getOffhandItem().is(Items.WARPED_FUNGUS_ON_A_STICK);
       }
    }
 
@@ -188,7 +188,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
+      return this.getFirstPassenger();
    }
 
    public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
@@ -336,7 +336,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    protected boolean canAddPassenger(Entity var1) {
-      return this.getPassengers().isEmpty() && !this.isEyeInFluid(FluidTags.LAVA);
+      return !this.isVehicle() && !this.isEyeInFluid(FluidTags.LAVA);
    }
 
    public boolean isSensitiveToWater() {
@@ -359,7 +359,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       }
    }
 
-   public Strider getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (Strider)EntityType.STRIDER.create(var1);
    }
 
@@ -387,7 +387,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
             ItemStack var5 = var1.getItemInHand(var2);
-            return var5.getItem() == Items.SADDLE ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS;
+            return var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS;
          } else {
             if (var3 && !this.isSilent()) {
                this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
@@ -414,11 +414,11 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
             this.equipSaddle((SoundSource)null);
          } else if (this.random.nextInt(10) == 0) {
-            AgableMob var8 = (AgableMob)EntityType.STRIDER.create(var1.getLevel());
+            AgeableMob var8 = (AgeableMob)EntityType.STRIDER.create(var1.getLevel());
             var8.setAge(-24000);
             var7 = this.spawnJockey(var1, var2, var8, (SpawnGroupData)null);
          } else {
-            var7 = new AgableMob.AgableMobGroupData(0.5F);
+            var7 = new AgeableMob.AgeableMobGroupData(0.5F);
          }
 
          return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var7, var5);
@@ -429,11 +429,11 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       var3.moveTo(this.getX(), this.getY(), this.getZ(), this.yRot, 0.0F);
       var3.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, var4, (CompoundTag)null);
       var3.startRiding(this, true);
-      return new AgableMob.AgableMobGroupData(0.0F);
+      return new AgeableMob.AgeableMobGroupData(0.0F);
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

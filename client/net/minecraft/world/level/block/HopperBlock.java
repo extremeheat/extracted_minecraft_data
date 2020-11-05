@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
@@ -16,6 +17,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -93,8 +96,13 @@ public class HopperBlock extends BaseEntityBlock {
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var2.getAxis() == Direction.Axis.Y ? Direction.DOWN : var2)).setValue(ENABLED, true);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new HopperBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new HopperBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.HOPPER, HopperBlockEntity::pushItemsTick);
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
@@ -178,7 +186,7 @@ public class HopperBlock extends BaseEntityBlock {
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof HopperBlockEntity) {
-         ((HopperBlockEntity)var5).entityInside(var4);
+         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var5);
       }
 
    }

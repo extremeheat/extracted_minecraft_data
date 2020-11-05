@@ -67,7 +67,7 @@ public class SugarCaneBlock extends Block {
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
-      if (var4.getBlock() == this) {
+      if (var4.is(this)) {
          return true;
       } else {
          if (var4.is(Blocks.GRASS_BLOCK) || var4.is(Blocks.DIRT) || var4.is(Blocks.COARSE_DIRT) || var4.is(Blocks.PODZOL) || var4.is(Blocks.SAND) || var4.is(Blocks.RED_SAND)) {

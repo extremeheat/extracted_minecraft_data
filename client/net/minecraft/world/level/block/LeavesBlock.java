@@ -80,7 +80,7 @@ public class LeavesBlock extends Block {
    }
 
    private static int getDistanceAt(BlockState var0) {
-      if (BlockTags.LOGS.contains(var0.getBlock())) {
+      if (var0.is(BlockTags.LOGS)) {
          return 0;
       } else {
          return var0.getBlock() instanceof LeavesBlock ? (Integer)var0.getValue(DISTANCE) : 7;

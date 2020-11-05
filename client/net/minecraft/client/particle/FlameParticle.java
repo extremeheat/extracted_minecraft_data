@@ -42,6 +42,22 @@ public class FlameParticle extends RisingParticle {
       this(var1, var2, var4, var6, var8, var10, var12);
    }
 
+   public static class SmallFlameProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public SmallFlameProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         FlameParticle var15 = new FlameParticle(var2, var3, var5, var7, var9, var11, var13);
+         var15.pickSprite(this.sprite);
+         var15.scale(0.5F);
+         return var15;
+      }
+   }
+
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 

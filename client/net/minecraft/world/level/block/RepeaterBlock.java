@@ -29,7 +29,7 @@ public class RepeaterBlock extends DiodeBlock {
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var4.abilities.mayBuild) {
+      if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          var2.setBlock(var3, (BlockState)var1.cycle(DELAY), 3);

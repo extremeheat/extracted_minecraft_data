@@ -29,7 +29,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -88,7 +88,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       this.setVariant(this.random.nextInt(5));
       if (var4 == null) {
-         var4 = new AgableMob.AgableMobGroupData(false);
+         var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
@@ -187,7 +187,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!this.isTame() && TAME_FOOD.contains(var3.getItem())) {
-         if (!var1.abilities.instabuild) {
+         if (!var1.getAbilities().instabuild) {
             var3.shrink(1);
          }
 
@@ -205,8 +205,8 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          }
 
          return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (var3.getItem() == POISONOUS_FOOD) {
-         if (!var1.abilities.instabuild) {
+      } else if (var3.is(POISONOUS_FOOD)) {
+         if (!var1.getAbilities().instabuild) {
             var3.shrink(1);
          }
 
@@ -248,7 +248,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    }
 
    @Nullable
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return null;
    }
 

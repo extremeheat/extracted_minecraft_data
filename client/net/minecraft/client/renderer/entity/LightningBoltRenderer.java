@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LightningBolt;
 
 public class LightningBoltRenderer extends EntityRenderer<LightningBolt> {
-   public LightningBoltRenderer(EntityRenderDispatcher var1) {
+   public LightningBoltRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 

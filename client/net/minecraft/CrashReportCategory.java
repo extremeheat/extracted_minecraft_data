@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class CrashReportCategory {
@@ -20,26 +22,25 @@ public class CrashReportCategory {
       this.title = var2;
    }
 
-   public static String formatLocation(double var0, double var2, double var4) {
-      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", var0, var2, var4, formatLocation(new BlockPos(var0, var2, var4)));
+   public static String formatLocation(LevelHeightAccessor var0, double var1, double var3, double var5) {
+      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", var1, var3, var5, formatLocation(var0, new BlockPos(var1, var3, var5)));
    }
 
-   public static String formatLocation(BlockPos var0) {
-      return formatLocation(var0.getX(), var0.getY(), var0.getZ());
+   public static String formatLocation(LevelHeightAccessor var0, BlockPos var1) {
+      return formatLocation(var0, var1.getX(), var1.getY(), var1.getZ());
    }
 
-   public static String formatLocation(int var0, int var1, int var2) {
-      StringBuilder var3 = new StringBuilder();
+   public static String formatLocation(LevelHeightAccessor var0, int var1, int var2, int var3) {
+      StringBuilder var4 = new StringBuilder();
 
       try {
-         var3.append(String.format("World: (%d,%d,%d)", var0, var1, var2));
-      } catch (Throwable var16) {
-         var3.append("(Error finding world loc)");
+         var4.append(String.format("World: (%d,%d,%d)", var1, var2, var3));
+      } catch (Throwable var19) {
+         var4.append("(Error finding world loc)");
       }
 
-      var3.append(", ");
+      var4.append(", ");
 
-      int var4;
       int var5;
       int var6;
       int var7;
@@ -48,40 +49,49 @@ public class CrashReportCategory {
       int var10;
       int var11;
       int var12;
+      int var13;
+      int var14;
+      int var15;
+      int var16;
       try {
-         var4 = var0 >> 4;
-         var5 = var2 >> 4;
-         var6 = var0 & 15;
-         var7 = var1 >> 4;
-         var8 = var2 & 15;
-         var9 = var4 << 4;
-         var10 = var5 << 4;
-         var11 = (var4 + 1 << 4) - 1;
-         var12 = (var5 + 1 << 4) - 1;
-         var3.append(String.format("Chunk: (at %d,%d,%d in %d,%d; contains blocks %d,0,%d to %d,255,%d)", var6, var7, var8, var4, var5, var9, var10, var11, var12));
-      } catch (Throwable var15) {
-         var3.append("(Error finding chunk loc)");
+         var5 = SectionPos.blockToSectionCoord(var1);
+         var6 = SectionPos.blockToSectionCoord(var2);
+         var7 = SectionPos.blockToSectionCoord(var3);
+         var8 = var1 & 15;
+         var9 = var2 & 15;
+         var10 = var3 & 15;
+         var11 = SectionPos.sectionToBlockCoord(var5);
+         var12 = var0.getMinBuildHeight();
+         var13 = SectionPos.sectionToBlockCoord(var7);
+         var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
+         var15 = var0.getMaxBuildHeight() - 1;
+         var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
+         var4.append(String.format("Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
+      } catch (Throwable var18) {
+         var4.append("(Error finding chunk loc)");
       }
 
-      var3.append(", ");
+      var4.append(", ");
 
       try {
-         var4 = var0 >> 9;
-         var5 = var2 >> 9;
-         var6 = var4 << 5;
+         var5 = var1 >> 9;
+         var6 = var3 >> 9;
          var7 = var5 << 5;
-         var8 = (var4 + 1 << 5) - 1;
+         var8 = var6 << 5;
          var9 = (var5 + 1 << 5) - 1;
-         var10 = var4 << 9;
+         var10 = (var6 + 1 << 5) - 1;
          var11 = var5 << 9;
-         var12 = (var4 + 1 << 9) - 1;
-         int var13 = (var5 + 1 << 9) - 1;
-         var3.append(String.format("Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,0,%d to %d,255,%d)", var4, var5, var6, var7, var8, var9, var10, var11, var12, var13));
-      } catch (Throwable var14) {
-         var3.append("(Error finding world loc)");
+         var12 = var0.getMinBuildHeight();
+         var13 = var6 << 9;
+         var14 = (var5 + 1 << 9) - 1;
+         var15 = var0.getMaxBuildHeight() - 1;
+         var16 = (var6 + 1 << 9) - 1;
+         var4.append(String.format("Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16));
+      } catch (Throwable var17) {
+         var4.append("(Error finding world loc)");
       }
 
-      return var3.toString();
+      return var4.toString();
    }
 
    public CrashReportCategory setDetail(String var1, CrashReportDetail<String> var2) {
@@ -171,13 +181,13 @@ public class CrashReportCategory {
       return this.stackTrace;
    }
 
-   public static void populateBlockDetails(CrashReportCategory var0, BlockPos var1, @Nullable BlockState var2) {
-      if (var2 != null) {
-         var0.setDetail("Block", var2::toString);
+   public static void populateBlockDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2, @Nullable BlockState var3) {
+      if (var3 != null) {
+         var0.setDetail("Block", var3::toString);
       }
 
       var0.setDetail("Block location", () -> {
-         return formatLocation(var1);
+         return formatLocation(var1, var2);
       });
    }
 

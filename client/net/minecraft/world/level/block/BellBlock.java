@@ -18,6 +18,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -232,8 +234,13 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Nullable
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new BellBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new BellBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.BELL, var1.isClientSide ? BellBlockEntity::clientTick : BellBlockEntity::serverTick);
    }
 
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {

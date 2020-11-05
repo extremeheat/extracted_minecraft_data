@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -29,67 +28,48 @@ public class ClientboundLevelChunkPacket implements Packet<ClientGamePacketListe
    private int[] biomes;
    private byte[] buffer;
    private List<CompoundTag> blockEntitiesTags;
-   private boolean fullChunk;
 
    public ClientboundLevelChunkPacket() {
       super();
    }
 
-   public ClientboundLevelChunkPacket(LevelChunk var1, int var2) {
+   public ClientboundLevelChunkPacket(LevelChunk var1) {
       super();
-      ChunkPos var3 = var1.getPos();
-      this.x = var3.x;
-      this.z = var3.z;
-      this.fullChunk = var2 == 65535;
+      ChunkPos var2 = var1.getPos();
+      this.x = var2.x;
+      this.z = var2.z;
       this.heightmaps = new CompoundTag();
-      Iterator var4 = var1.getHeightmaps().iterator();
+      Iterator var3 = var1.getHeightmaps().iterator();
 
-      Entry var5;
-      while(var4.hasNext()) {
-         var5 = (Entry)var4.next();
-         if (((Heightmap.Types)var5.getKey()).sendToClient()) {
-            this.heightmaps.put(((Heightmap.Types)var5.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var5.getValue()).getRawData()));
+      Entry var4;
+      while(var3.hasNext()) {
+         var4 = (Entry)var3.next();
+         if (((Heightmap.Types)var4.getKey()).sendToClient()) {
+            this.heightmaps.put(((Heightmap.Types)var4.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var4.getValue()).getRawData()));
          }
       }
 
-      if (this.fullChunk) {
-         this.biomes = var1.getBiomes().writeBiomes();
-      }
-
-      this.buffer = new byte[this.calculateChunkSize(var1, var2)];
-      this.availableSections = this.extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1, var2);
+      this.biomes = var1.getBiomes().writeBiomes();
+      this.buffer = new byte[this.calculateChunkSize(var1)];
+      this.availableSections = this.extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
       this.blockEntitiesTags = Lists.newArrayList();
-      var4 = var1.getBlockEntities().entrySet().iterator();
+      var3 = var1.getBlockEntities().entrySet().iterator();
 
-      while(true) {
-         BlockEntity var7;
-         int var8;
-         do {
-            if (!var4.hasNext()) {
-               return;
-            }
-
-            var5 = (Entry)var4.next();
-            BlockPos var6 = (BlockPos)var5.getKey();
-            var7 = (BlockEntity)var5.getValue();
-            var8 = var6.getY() >> 4;
-         } while(!this.isFullChunk() && (var2 & 1 << var8) == 0);
-
-         CompoundTag var9 = var7.getUpdateTag();
-         this.blockEntitiesTags.add(var9);
+      while(var3.hasNext()) {
+         var4 = (Entry)var3.next();
+         BlockEntity var5 = (BlockEntity)var4.getValue();
+         CompoundTag var6 = var5.getUpdateTag();
+         this.blockEntitiesTags.add(var6);
       }
+
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
       this.x = var1.readInt();
       this.z = var1.readInt();
-      this.fullChunk = var1.readBoolean();
       this.availableSections = var1.readVarInt();
       this.heightmaps = var1.readNbt();
-      if (this.fullChunk) {
-         this.biomes = var1.readVarIntArray(ChunkBiomeContainer.BIOMES_SIZE);
-      }
-
+      this.biomes = var1.readVarIntArray(ChunkBiomeContainer.BIOMES_SIZE);
       int var2 = var1.readVarInt();
       if (var2 > 2097152) {
          throw new RuntimeException("Chunk Packet trying to allocate too much memory on read.");
@@ -109,7 +89,6 @@ public class ClientboundLevelChunkPacket implements Packet<ClientGamePacketListe
    public void write(FriendlyByteBuf var1) throws IOException {
       var1.writeInt(this.x);
       var1.writeInt(this.z);
-      var1.writeBoolean(this.fullChunk);
       var1.writeVarInt(this.availableSections);
       var1.writeNbt(this.heightmaps);
       if (this.biomes != null) {
@@ -142,35 +121,35 @@ public class ClientboundLevelChunkPacket implements Packet<ClientGamePacketListe
       return var1;
    }
 
-   public int extractChunkData(FriendlyByteBuf var1, LevelChunk var2, int var3) {
-      int var4 = 0;
-      LevelChunkSection[] var5 = var2.getSections();
-      int var6 = 0;
-
-      for(int var7 = var5.length; var6 < var7; ++var6) {
-         LevelChunkSection var8 = var5[var6];
-         if (var8 != LevelChunk.EMPTY_SECTION && (!this.isFullChunk() || !var8.isEmpty()) && (var3 & 1 << var6) != 0) {
-            var4 |= 1 << var6;
-            var8.write(var1);
-         }
-      }
-
-      return var4;
-   }
-
-   protected int calculateChunkSize(LevelChunk var1, int var2) {
+   public int extractChunkData(FriendlyByteBuf var1, LevelChunk var2) {
       int var3 = 0;
-      LevelChunkSection[] var4 = var1.getSections();
+      LevelChunkSection[] var4 = var2.getSections();
       int var5 = 0;
 
       for(int var6 = var4.length; var5 < var6; ++var5) {
          LevelChunkSection var7 = var4[var5];
-         if (var7 != LevelChunk.EMPTY_SECTION && (!this.isFullChunk() || !var7.isEmpty()) && (var2 & 1 << var5) != 0) {
-            var3 += var7.getSerializedSize();
+         if (var7 != LevelChunk.EMPTY_SECTION && !var7.isEmpty()) {
+            var3 |= 1 << var5;
+            var7.write(var1);
          }
       }
 
       return var3;
+   }
+
+   protected int calculateChunkSize(LevelChunk var1) {
+      int var2 = 0;
+      LevelChunkSection[] var3 = var1.getSections();
+      int var4 = 0;
+
+      for(int var5 = var3.length; var4 < var5; ++var4) {
+         LevelChunkSection var6 = var3[var4];
+         if (var6 != LevelChunk.EMPTY_SECTION && !var6.isEmpty()) {
+            var2 += var6.getSerializedSize();
+         }
+      }
+
+      return var2;
    }
 
    public int getX() {
@@ -183,10 +162,6 @@ public class ClientboundLevelChunkPacket implements Packet<ClientGamePacketListe
 
    public int getAvailableSections() {
       return this.availableSections;
-   }
-
-   public boolean isFullChunk() {
-      return this.fullChunk;
    }
 
    public CompoundTag getHeightmaps() {

@@ -58,7 +58,7 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
-      if (var4 == this && this.fewerNeigboursThan(var2, var3, 2)) {
+      if (var4.defaultBlockState().is(this) && this.fewerNeigboursThan(var2, var3, 2)) {
          this.melt(var1, var2, var3);
       }
 

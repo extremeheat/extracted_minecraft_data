@@ -40,7 +40,6 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -161,7 +160,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
       super.enchantSpawnedWeapon(var1);
       if (this.random.nextInt(300) == 0) {
          ItemStack var2 = this.getMainHandItem();
-         if (var2.getItem() == Items.CROSSBOW) {
+         if (var2.is(Items.CROSSBOW)) {
             Map var3 = EnchantmentHelper.getEnchantments(var2);
             var3.putIfAbsent(Enchantments.PIERCING, 1);
             EnchantmentHelper.setEnchantments(var3, var2);
@@ -205,23 +204,20 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
       ItemStack var2 = var1.getItem();
       if (var2.getItem() instanceof BannerItem) {
          super.pickUpItem(var1);
-      } else {
-         Item var3 = var2.getItem();
-         if (this.wantsItem(var3)) {
-            this.onItemPickup(var1);
-            ItemStack var4 = this.inventory.addItem(var2);
-            if (var4.isEmpty()) {
-               var1.remove();
-            } else {
-               var2.setCount(var4.getCount());
-            }
+      } else if (this.wantsItem(var2)) {
+         this.onItemPickup(var1);
+         ItemStack var3 = this.inventory.addItem(var2);
+         if (var3.isEmpty()) {
+            var1.discard();
+         } else {
+            var2.setCount(var3.getCount());
          }
       }
 
    }
 
-   private boolean wantsItem(Item var1) {
-      return this.hasActiveRaid() && var1 == Items.WHITE_BANNER;
+   private boolean wantsItem(ItemStack var1) {
+      return this.hasActiveRaid() && var1.is(Items.WHITE_BANNER);
    }
 
    public boolean setSlot(int var1, ItemStack var2) {

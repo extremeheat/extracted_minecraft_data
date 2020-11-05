@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +22,6 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
@@ -118,14 +118,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       return Shapes.box(var0 / 16.0D, var2 / 16.0D, var4 / 16.0D, var6 / 16.0D, var8 / 16.0D, var10 / 16.0D);
    }
 
-   public boolean is(Tag<Block> var1) {
-      return var1.contains(this);
-   }
-
-   public boolean is(Block var1) {
-      return this == var1;
-   }
-
    public static BlockState updateFromNeighbourShapes(BlockState var0, LevelAccessor var1, BlockPos var2) {
       BlockState var3 = var0;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
@@ -164,18 +156,24 @@ public class Block extends BlockBehaviour implements ItemLike {
       this.createBlockStateDefinition(var2);
       this.stateDefinition = var2.create(Block::defaultBlockState, BlockState::new);
       this.registerDefaultState((BlockState)this.stateDefinition.any());
+      if (SharedConstants.IS_RUNNING_IN_IDE) {
+         String var3 = this.getClass().getSimpleName();
+         if (!var3.endsWith("Block")) {
+            LOGGER.error("Block classes should end with Block and {} doesn't.", var3);
+         }
+      }
+
    }
 
-   public static boolean isExceptionForConnection(Block var0) {
-      return var0 instanceof LeavesBlock || var0 == Blocks.BARRIER || var0 == Blocks.CARVED_PUMPKIN || var0 == Blocks.JACK_O_LANTERN || var0 == Blocks.MELON || var0 == Blocks.PUMPKIN || var0.is((Tag)BlockTags.SHULKER_BOXES);
+   public static boolean isExceptionForConnection(BlockState var0) {
+      return var0.getBlock() instanceof LeavesBlock || var0.is(Blocks.BARRIER) || var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN) || var0.is(Blocks.MELON) || var0.is(Blocks.PUMPKIN) || var0.is(BlockTags.SHULKER_BOXES);
    }
 
    public boolean isRandomlyTicking(BlockState var1) {
       return this.isRandomlyTicking;
    }
 
-   public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3) {
-      BlockPos var4 = var2.relative(var3);
+   public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3, BlockPos var4) {
       BlockState var5 = var1.getBlockState(var4);
       if (var0.skipRendering(var5, var3)) {
          return false;
@@ -283,11 +281,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    protected void popExperience(ServerLevel var1, BlockPos var2, int var3) {
       if (var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
-         while(var3 > 0) {
-            int var4 = ExperienceOrb.getExperienceValue(var3);
-            var3 -= var4;
-            var1.addFreshEntity(new ExperienceOrb(var1, (double)var2.getX() + 0.5D, (double)var2.getY() + 0.5D, (double)var2.getZ() + 0.5D, var4));
-         }
+         ExperienceOrb.award(var1, Vec3.atCenterOf(var2), var3);
       }
 
    }
@@ -362,13 +356,13 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       var1.levelEvent(var4, 2001, var2, getId(var3));
-      if (this.is((Tag)BlockTags.GUARDED_BY_PIGLINS)) {
+      if (var3.is(BlockTags.GUARDED_BY_PIGLINS)) {
          PiglinAi.angerNearbyPiglins(var4, false);
       }
 
    }
 
-   public void handleRain(Level var1, BlockPos var2) {
+   public void handleRain(BlockState var1, Level var2, BlockPos var3) {
    }
 
    public boolean dropFromExplosion(Explosion var1) {

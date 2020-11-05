@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -67,11 +68,13 @@ public class VanillaPackResources implements PackResources {
 
       }
    });
+   public final PackMetadataSection packMetadata;
    public final Set<String> namespaces;
 
-   public VanillaPackResources(String... var1) {
+   public VanillaPackResources(PackMetadataSection var1, String... var2) {
       super();
-      this.namespaces = ImmutableSet.copyOf(var1);
+      this.packMetadata = var1;
+      this.namespaces = ImmutableSet.copyOf(var2);
    }
 
    public InputStream getRootResource(String var1) throws IOException {
@@ -245,19 +248,28 @@ public class VanillaPackResources implements PackResources {
          InputStream var2 = this.getRootResource("pack.mcmeta");
          Throwable var3 = null;
 
-         Object var4;
+         Object var5;
          try {
-            var4 = AbstractPackResources.getMetadataFromStream(var1, var2);
-         } catch (Throwable var14) {
-            var3 = var14;
-            throw var14;
+            if (var2 == null) {
+               return var1 == PackMetadataSection.SERIALIZER ? this.packMetadata : null;
+            }
+
+            Object var4 = AbstractPackResources.getMetadataFromStream(var1, var2);
+            if (var4 == null) {
+               return var1 == PackMetadataSection.SERIALIZER ? this.packMetadata : null;
+            }
+
+            var5 = var4;
+         } catch (Throwable var16) {
+            var3 = var16;
+            throw var16;
          } finally {
             if (var2 != null) {
                if (var3 != null) {
                   try {
                      var2.close();
-                  } catch (Throwable var13) {
-                     var3.addSuppressed(var13);
+                  } catch (Throwable var15) {
+                     var3.addSuppressed(var15);
                   }
                } else {
                   var2.close();
@@ -266,9 +278,9 @@ public class VanillaPackResources implements PackResources {
 
          }
 
-         return var4;
-      } catch (FileNotFoundException | RuntimeException var16) {
-         return null;
+         return var5;
+      } catch (FileNotFoundException | RuntimeException var18) {
+         return var1 == PackMetadataSection.SERIALIZER ? this.packMetadata : null;
       }
    }
 

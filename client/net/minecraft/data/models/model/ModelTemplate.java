@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.Block;
 public class ModelTemplate {
    private final Optional<ResourceLocation> model;
    private final Set<TextureSlot> requiredSlots;
-   private Optional<String> suffix;
+   private final Optional<String> suffix;
 
    public ModelTemplate(Optional<ResourceLocation> var1, Optional<String> var2, TextureSlot... var3) {
       super();

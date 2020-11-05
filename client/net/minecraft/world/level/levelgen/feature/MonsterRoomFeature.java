@@ -77,7 +77,7 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
                      if (!var27.is(Blocks.CHEST) && !var27.is(Blocks.SPAWNER)) {
                         var1.setBlock(var19, AIR, 2);
                      }
-                  } else if (var19.getY() >= 0 && !var1.getBlockState(var19.below()).getMaterial().isSolid()) {
+                  } else if (var19.getY() >= var1.getMinBuildHeight() && !var1.getBlockState(var19.below()).getMaterial().isSolid()) {
                      var1.setBlock(var19, AIR, 2);
                   } else if (var27.getMaterial().isSolid() && !var27.is(Blocks.CHEST)) {
                      if (var17 == -1 && var3.nextInt(4) != 0) {

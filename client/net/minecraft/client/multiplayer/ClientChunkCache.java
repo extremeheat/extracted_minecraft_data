@@ -8,8 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
@@ -80,37 +78,39 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    @Nullable
-   public LevelChunk replaceWithPacketData(int var1, int var2, @Nullable ChunkBiomeContainer var3, FriendlyByteBuf var4, CompoundTag var5, int var6, boolean var7) {
+   public LevelChunk replaceWithPacketData(int var1, int var2, @Nullable ChunkBiomeContainer var3, FriendlyByteBuf var4, CompoundTag var5, int var6) {
       if (!this.storage.inRange(var1, var2)) {
          LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", var1, var2);
          return null;
       } else {
-         int var8 = this.storage.getIndex(var1, var2);
-         LevelChunk var9 = (LevelChunk)this.storage.chunks.get(var8);
-         if (!var7 && isValidChunk(var9, var1, var2)) {
-            var9.replaceWithPacketData(var3, var4, var5, var6);
-         } else {
+         int var7 = this.storage.getIndex(var1, var2);
+         LevelChunk var8 = (LevelChunk)this.storage.chunks.get(var7);
+         ChunkPos var9 = new ChunkPos(var1, var2);
+         if (!isValidChunk(var8, var1, var2)) {
             if (var3 == null) {
                LOGGER.warn("Ignoring chunk since we don't have complete data: {}, {}", var1, var2);
                return null;
             }
 
-            var9 = new LevelChunk(this.level, new ChunkPos(var1, var2), var3);
-            var9.replaceWithPacketData(var3, var4, var5, var6);
-            this.storage.replace(var8, var9);
+            var8 = new LevelChunk(this.level, var9, var3);
+            var8.replaceWithPacketData(var3, var4, var5, var6);
+            this.storage.replace(var7, var8);
+         } else {
+            var8.replaceWithPacketData(var3, var4, var5, var6);
          }
 
-         LevelChunkSection[] var10 = var9.getSections();
+         LevelChunkSection[] var10 = var8.getSections();
          LevelLightEngine var11 = this.getLightEngine();
-         var11.enableLightSources(new ChunkPos(var1, var2), true);
+         var11.enableLightSources(var9, true);
 
          for(int var12 = 0; var12 < var10.length; ++var12) {
             LevelChunkSection var13 = var10[var12];
-            var11.updateSectionStatus(SectionPos.of(var1, var12, var2), LevelChunkSection.isEmpty(var13));
+            int var14 = this.level.getSectionYFromSectionIndex(var12);
+            var11.updateSectionStatus(SectionPos.of(var1, var14, var2), LevelChunkSection.isEmpty(var13));
          }
 
-         this.level.onChunkLoaded(var1, var2);
-         return var9;
+         this.level.onChunkLoaded(var9);
+         return var8;
       }
    }
 
@@ -150,7 +150,7 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    public String gatherStats() {
-      return "Client Chunk Cache: " + this.storage.chunks.length() + ", " + this.getLoadedChunksCount();
+      return this.storage.chunks.length() + ", " + this.getLoadedChunksCount();
    }
 
    public int getLoadedChunksCount() {
@@ -162,15 +162,11 @@ public class ClientChunkCache extends ChunkSource {
    }
 
    public boolean isTickingChunk(BlockPos var1) {
-      return this.hasChunk(var1.getX() >> 4, var1.getZ() >> 4);
+      return this.hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    public boolean isEntityTickingChunk(ChunkPos var1) {
       return this.hasChunk(var1.x, var1.z);
-   }
-
-   public boolean isEntityTickingChunk(Entity var1) {
-      return this.hasChunk(Mth.floor(var1.getX()) >> 4, Mth.floor(var1.getZ()) >> 4);
    }
 
    // $FF: synthetic method

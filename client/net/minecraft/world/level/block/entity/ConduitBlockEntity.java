@@ -17,41 +17,38 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class ConduitBlockEntity extends BlockEntity implements TickableBlockEntity {
+public class ConduitBlockEntity extends BlockEntity {
    private static final Block[] VALID_BLOCKS;
    public int tickCount;
    private float activeRotation;
    private boolean isActive;
    private boolean isHunting;
-   private final List<BlockPos> effectBlocks;
+   private final List<BlockPos> effectBlocks = Lists.newArrayList();
    @Nullable
    private LivingEntity destroyTarget;
    @Nullable
    private UUID destroyTargetUUID;
    private long nextAmbientSoundActivation;
 
-   public ConduitBlockEntity() {
-      this(BlockEntityType.CONDUIT);
+   public ConduitBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.CONDUIT, var1, var2);
    }
 
-   public ConduitBlockEntity(BlockEntityType<?> var1) {
-      super(var1);
-      this.effectBlocks = Lists.newArrayList();
-   }
-
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      if (var2.hasUUID("Target")) {
-         this.destroyTargetUUID = var2.getUUID("Target");
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      if (var1.hasUUID("Target")) {
+         this.destroyTargetUUID = var1.getUUID("Target");
       } else {
          this.destroyTargetUUID = null;
       }
@@ -76,69 +73,92 @@ public class ConduitBlockEntity extends BlockEntity implements TickableBlockEnti
       return this.save(new CompoundTag());
    }
 
-   public void tick() {
-      ++this.tickCount;
-      long var1 = this.level.getGameTime();
-      if (var1 % 40L == 0L) {
-         this.setActive(this.updateShape());
-         if (!this.level.isClientSide && this.isActive()) {
-            this.applyEffects();
-            this.updateDestroyTarget();
+   public static void clientTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
+      ++var3.tickCount;
+      long var4 = var0.getGameTime();
+      List var6 = var3.effectBlocks;
+      if (var4 % 40L == 0L) {
+         var3.isActive = updateShape(var0, var1, var6);
+         updateHunting(var3, var6);
+      }
+
+      updateClientTarget(var0, var1, var3);
+      animationTick(var0, var1, var6, var3.destroyTarget, var3.tickCount);
+      if (var3.isActive()) {
+         ++var3.activeRotation;
+      }
+
+   }
+
+   public static void serverTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
+      ++var3.tickCount;
+      long var4 = var0.getGameTime();
+      List var6 = var3.effectBlocks;
+      if (var4 % 40L == 0L) {
+         boolean var7 = updateShape(var0, var1, var6);
+         if (var7 != var3.isActive) {
+            SoundEvent var8 = var7 ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE;
+            var0.playSound((Player)null, (BlockPos)var1, var8, SoundSource.BLOCKS, 1.0F, 1.0F);
+         }
+
+         var3.isActive = var7;
+         updateHunting(var3, var6);
+         if (var7) {
+            applyEffects(var0, var1, var6);
+            updateDestroyTarget(var0, var1, var2, var6, var3);
          }
       }
 
-      if (var1 % 80L == 0L && this.isActive()) {
-         this.playSound(SoundEvents.CONDUIT_AMBIENT);
-      }
+      if (var3.isActive()) {
+         if (var4 % 80L == 0L) {
+            var0.playSound((Player)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
+         }
 
-      if (var1 > this.nextAmbientSoundActivation && this.isActive()) {
-         this.nextAmbientSoundActivation = var1 + 60L + (long)this.level.getRandom().nextInt(40);
-         this.playSound(SoundEvents.CONDUIT_AMBIENT_SHORT);
-      }
-
-      if (this.level.isClientSide) {
-         this.updateClientTarget();
-         this.animationTick();
-         if (this.isActive()) {
-            ++this.activeRotation;
+         if (var4 > var3.nextAmbientSoundActivation) {
+            var3.nextAmbientSoundActivation = var4 + 60L + (long)var0.getRandom().nextInt(40);
+            var0.playSound((Player)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
       }
 
    }
 
-   private boolean updateShape() {
-      this.effectBlocks.clear();
+   private static void updateHunting(ConduitBlockEntity var0, List<BlockPos> var1) {
+      var0.setHunting(var1.size() >= 42);
+   }
 
-      int var1;
-      int var2;
+   private static boolean updateShape(Level var0, BlockPos var1, List<BlockPos> var2) {
+      var2.clear();
+
       int var3;
-      for(var1 = -1; var1 <= 1; ++var1) {
-         for(var2 = -1; var2 <= 1; ++var2) {
-            for(var3 = -1; var3 <= 1; ++var3) {
-               BlockPos var4 = this.worldPosition.offset(var1, var2, var3);
-               if (!this.level.isWaterAt(var4)) {
+      int var4;
+      int var5;
+      for(var3 = -1; var3 <= 1; ++var3) {
+         for(var4 = -1; var4 <= 1; ++var4) {
+            for(var5 = -1; var5 <= 1; ++var5) {
+               BlockPos var6 = var1.offset(var3, var4, var5);
+               if (!var0.isWaterAt(var6)) {
                   return false;
                }
             }
          }
       }
 
-      for(var1 = -2; var1 <= 2; ++var1) {
-         for(var2 = -2; var2 <= 2; ++var2) {
-            for(var3 = -2; var3 <= 2; ++var3) {
-               int var13 = Math.abs(var1);
-               int var5 = Math.abs(var2);
-               int var6 = Math.abs(var3);
-               if ((var13 > 1 || var5 > 1 || var6 > 1) && (var1 == 0 && (var5 == 2 || var6 == 2) || var2 == 0 && (var13 == 2 || var6 == 2) || var3 == 0 && (var13 == 2 || var5 == 2))) {
-                  BlockPos var7 = this.worldPosition.offset(var1, var2, var3);
-                  BlockState var8 = this.level.getBlockState(var7);
-                  Block[] var9 = VALID_BLOCKS;
-                  int var10 = var9.length;
+      for(var3 = -2; var3 <= 2; ++var3) {
+         for(var4 = -2; var4 <= 2; ++var4) {
+            for(var5 = -2; var5 <= 2; ++var5) {
+               int var15 = Math.abs(var3);
+               int var7 = Math.abs(var4);
+               int var8 = Math.abs(var5);
+               if ((var15 > 1 || var7 > 1 || var8 > 1) && (var3 == 0 && (var7 == 2 || var8 == 2) || var4 == 0 && (var15 == 2 || var8 == 2) || var5 == 0 && (var15 == 2 || var7 == 2))) {
+                  BlockPos var9 = var1.offset(var3, var4, var5);
+                  BlockState var10 = var0.getBlockState(var9);
+                  Block[] var11 = VALID_BLOCKS;
+                  int var12 = var11.length;
 
-                  for(int var11 = 0; var11 < var10; ++var11) {
-                     Block var12 = var9[var11];
-                     if (var8.is(var12)) {
-                        this.effectBlocks.add(var7);
+                  for(int var13 = 0; var13 < var12; ++var13) {
+                     Block var14 = var11[var13];
+                     if (var10.is(var14)) {
+                        var2.add(var9);
                      }
                   }
                }
@@ -146,117 +166,113 @@ public class ConduitBlockEntity extends BlockEntity implements TickableBlockEnti
          }
       }
 
-      this.setHunting(this.effectBlocks.size() >= 42);
-      return this.effectBlocks.size() >= 16;
+      return var2.size() >= 16;
    }
 
-   private void applyEffects() {
-      int var1 = this.effectBlocks.size();
-      int var2 = var1 / 7 * 16;
-      int var3 = this.worldPosition.getX();
-      int var4 = this.worldPosition.getY();
-      int var5 = this.worldPosition.getZ();
-      AABB var6 = (new AABB((double)var3, (double)var4, (double)var5, (double)(var3 + 1), (double)(var4 + 1), (double)(var5 + 1))).inflate((double)var2).expandTowards(0.0D, (double)this.level.getMaxBuildHeight(), 0.0D);
-      List var7 = this.level.getEntitiesOfClass(Player.class, var6);
-      if (!var7.isEmpty()) {
-         Iterator var8 = var7.iterator();
+   private static void applyEffects(Level var0, BlockPos var1, List<BlockPos> var2) {
+      int var3 = var2.size();
+      int var4 = var3 / 7 * 16;
+      int var5 = var1.getX();
+      int var6 = var1.getY();
+      int var7 = var1.getZ();
+      AABB var8 = (new AABB((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1))).inflate((double)var4).expandTowards(0.0D, (double)var0.getMaxBuildHeight(), 0.0D);
+      List var9 = var0.getEntitiesOfClass(Player.class, var8);
+      if (!var9.isEmpty()) {
+         Iterator var10 = var9.iterator();
 
-         while(var8.hasNext()) {
-            Player var9 = (Player)var8.next();
-            if (this.worldPosition.closerThan(var9.blockPosition(), (double)var2) && var9.isInWaterOrRain()) {
-               var9.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 0, true, true));
+         while(var10.hasNext()) {
+            Player var11 = (Player)var10.next();
+            if (var1.closerThan(var11.blockPosition(), (double)var4) && var11.isInWaterOrRain()) {
+               var11.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 0, true, true));
             }
          }
 
       }
    }
 
-   private void updateDestroyTarget() {
-      LivingEntity var1 = this.destroyTarget;
-      int var2 = this.effectBlocks.size();
-      if (var2 < 42) {
-         this.destroyTarget = null;
-      } else if (this.destroyTarget == null && this.destroyTargetUUID != null) {
-         this.destroyTarget = this.findDestroyTarget();
-         this.destroyTargetUUID = null;
-      } else if (this.destroyTarget == null) {
-         List var3 = this.level.getEntitiesOfClass(LivingEntity.class, this.getDestroyRangeAABB(), (var0) -> {
-            return var0 instanceof Enemy && var0.isInWaterOrRain();
+   private static void updateDestroyTarget(Level var0, BlockPos var1, BlockState var2, List<BlockPos> var3, ConduitBlockEntity var4) {
+      LivingEntity var5 = var4.destroyTarget;
+      int var6 = var3.size();
+      if (var6 < 42) {
+         var4.destroyTarget = null;
+      } else if (var4.destroyTarget == null && var4.destroyTargetUUID != null) {
+         var4.destroyTarget = findDestroyTarget(var0, var1, var4.destroyTargetUUID);
+         var4.destroyTargetUUID = null;
+      } else if (var4.destroyTarget == null) {
+         List var7 = var0.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(var1), (var0x) -> {
+            return var0x instanceof Enemy && var0x.isInWaterOrRain();
          });
-         if (!var3.isEmpty()) {
-            this.destroyTarget = (LivingEntity)var3.get(this.level.random.nextInt(var3.size()));
+         if (!var7.isEmpty()) {
+            var4.destroyTarget = (LivingEntity)var7.get(var0.random.nextInt(var7.size()));
          }
-      } else if (!this.destroyTarget.isAlive() || !this.worldPosition.closerThan(this.destroyTarget.blockPosition(), 8.0D)) {
-         this.destroyTarget = null;
+      } else if (!var4.destroyTarget.isAlive() || !var1.closerThan(var4.destroyTarget.blockPosition(), 8.0D)) {
+         var4.destroyTarget = null;
       }
 
-      if (this.destroyTarget != null) {
-         this.level.playSound((Player)null, this.destroyTarget.getX(), this.destroyTarget.getY(), this.destroyTarget.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
-         this.destroyTarget.hurt(DamageSource.MAGIC, 4.0F);
+      if (var4.destroyTarget != null) {
+         var0.playSound((Player)null, var4.destroyTarget.getX(), var4.destroyTarget.getY(), var4.destroyTarget.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var4.destroyTarget.hurt(DamageSource.MAGIC, 4.0F);
       }
 
-      if (var1 != this.destroyTarget) {
-         BlockState var4 = this.getBlockState();
-         this.level.sendBlockUpdated(this.worldPosition, var4, var4, 2);
+      if (var5 != var4.destroyTarget) {
+         var0.sendBlockUpdated(var1, var2, var2, 2);
       }
 
    }
 
-   private void updateClientTarget() {
-      if (this.destroyTargetUUID == null) {
-         this.destroyTarget = null;
-      } else if (this.destroyTarget == null || !this.destroyTarget.getUUID().equals(this.destroyTargetUUID)) {
-         this.destroyTarget = this.findDestroyTarget();
-         if (this.destroyTarget == null) {
-            this.destroyTargetUUID = null;
+   private static void updateClientTarget(Level var0, BlockPos var1, ConduitBlockEntity var2) {
+      if (var2.destroyTargetUUID == null) {
+         var2.destroyTarget = null;
+      } else if (var2.destroyTarget == null || !var2.destroyTarget.getUUID().equals(var2.destroyTargetUUID)) {
+         var2.destroyTarget = findDestroyTarget(var0, var1, var2.destroyTargetUUID);
+         if (var2.destroyTarget == null) {
+            var2.destroyTargetUUID = null;
          }
       }
 
    }
 
-   private AABB getDestroyRangeAABB() {
-      int var1 = this.worldPosition.getX();
-      int var2 = this.worldPosition.getY();
-      int var3 = this.worldPosition.getZ();
+   private static AABB getDestroyRangeAABB(BlockPos var0) {
+      int var1 = var0.getX();
+      int var2 = var0.getY();
+      int var3 = var0.getZ();
       return (new AABB((double)var1, (double)var2, (double)var3, (double)(var1 + 1), (double)(var2 + 1), (double)(var3 + 1))).inflate(8.0D);
    }
 
    @Nullable
-   private LivingEntity findDestroyTarget() {
-      List var1 = this.level.getEntitiesOfClass(LivingEntity.class, this.getDestroyRangeAABB(), (var1x) -> {
-         return var1x.getUUID().equals(this.destroyTargetUUID);
+   private static LivingEntity findDestroyTarget(Level var0, BlockPos var1, UUID var2) {
+      List var3 = var0.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(var1), (var1x) -> {
+         return var1x.getUUID().equals(var2);
       });
-      return var1.size() == 1 ? (LivingEntity)var1.get(0) : null;
+      return var3.size() == 1 ? (LivingEntity)var3.get(0) : null;
    }
 
-   private void animationTick() {
-      Random var1 = this.level.random;
-      double var2 = (double)(Mth.sin((float)(this.tickCount + 35) * 0.1F) / 2.0F + 0.5F);
-      var2 = (var2 * var2 + var2) * 0.30000001192092896D;
-      Vec3 var4 = new Vec3((double)this.worldPosition.getX() + 0.5D, (double)this.worldPosition.getY() + 1.5D + var2, (double)this.worldPosition.getZ() + 0.5D);
-      Iterator var5 = this.effectBlocks.iterator();
+   private static void animationTick(Level var0, BlockPos var1, List<BlockPos> var2, @Nullable Entity var3, int var4) {
+      Random var5 = var0.random;
+      double var6 = (double)(Mth.sin((float)(var4 + 35) * 0.1F) / 2.0F + 0.5F);
+      var6 = (var6 * var6 + var6) * 0.30000001192092896D;
+      Vec3 var8 = new Vec3((double)var1.getX() + 0.5D, (double)var1.getY() + 1.5D + var6, (double)var1.getZ() + 0.5D);
+      Iterator var9 = var2.iterator();
 
-      float var7;
-      float var8;
-      while(var5.hasNext()) {
-         BlockPos var6 = (BlockPos)var5.next();
-         if (var1.nextInt(50) == 0) {
-            var7 = -0.5F + var1.nextFloat();
-            var8 = -2.0F + var1.nextFloat();
-            float var9 = -0.5F + var1.nextFloat();
-            BlockPos var10 = var6.subtract(this.worldPosition);
-            Vec3 var11 = (new Vec3((double)var7, (double)var8, (double)var9)).add((double)var10.getX(), (double)var10.getY(), (double)var10.getZ());
-            this.level.addParticle(ParticleTypes.NAUTILUS, var4.x, var4.y, var4.z, var11.x, var11.y, var11.z);
+      float var12;
+      while(var9.hasNext()) {
+         BlockPos var10 = (BlockPos)var9.next();
+         if (var5.nextInt(50) == 0) {
+            BlockPos var11 = var10.subtract(var1);
+            var12 = -0.5F + var5.nextFloat() + (float)var11.getX();
+            float var13 = -2.0F + var5.nextFloat() + (float)var11.getY();
+            float var14 = -0.5F + var5.nextFloat() + (float)var11.getZ();
+            var0.addParticle(ParticleTypes.NAUTILUS, var8.x, var8.y, var8.z, (double)var12, (double)var13, (double)var14);
          }
       }
 
-      if (this.destroyTarget != null) {
-         Vec3 var12 = new Vec3(this.destroyTarget.getX(), this.destroyTarget.getEyeY(), this.destroyTarget.getZ());
-         float var13 = (-0.5F + var1.nextFloat()) * (3.0F + this.destroyTarget.getBbWidth());
-         var7 = -1.0F + var1.nextFloat() * this.destroyTarget.getBbHeight();
-         var8 = (-0.5F + var1.nextFloat()) * (3.0F + this.destroyTarget.getBbWidth());
-         Vec3 var14 = new Vec3((double)var13, (double)var7, (double)var8);
-         this.level.addParticle(ParticleTypes.NAUTILUS, var12.x, var12.y, var12.z, var14.x, var14.y, var14.z);
+      if (var3 != null) {
+         Vec3 var18 = new Vec3(var3.getX(), var3.getEyeY(), var3.getZ());
+         float var15 = (-0.5F + var5.nextFloat()) * (3.0F + var3.getBbWidth());
+         float var16 = -1.0F + var5.nextFloat() * var3.getBbHeight();
+         var12 = (-0.5F + var5.nextFloat()) * (3.0F + var3.getBbWidth());
+         Vec3 var17 = new Vec3((double)var15, (double)var16, (double)var12);
+         var0.addParticle(ParticleTypes.NAUTILUS, var18.x, var18.y, var18.z, var17.x, var17.y, var17.z);
       }
 
    }
@@ -269,24 +285,12 @@ public class ConduitBlockEntity extends BlockEntity implements TickableBlockEnti
       return this.isHunting;
    }
 
-   private void setActive(boolean var1) {
-      if (var1 != this.isActive) {
-         this.playSound(var1 ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE);
-      }
-
-      this.isActive = var1;
-   }
-
    private void setHunting(boolean var1) {
       this.isHunting = var1;
    }
 
    public float getActiveRotation(float var1) {
       return (this.activeRotation + var1) * -0.0375F;
-   }
-
-   public void playSound(SoundEvent var1) {
-      this.level.playSound((Player)null, (BlockPos)this.worldPosition, var1, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    static {

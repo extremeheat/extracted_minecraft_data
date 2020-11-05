@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
 import net.minecraft.resources.RegistryLookupCodec;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.Mth;
@@ -61,8 +62,8 @@ public class DebugLevelSource extends ChunkGenerator {
 
       for(int var6 = 0; var6 < 16; ++var6) {
          for(int var7 = 0; var7 < 16; ++var7) {
-            int var8 = (var4 << 4) + var6;
-            int var9 = (var5 << 4) + var7;
+            int var8 = SectionPos.sectionToBlockCoord(var4, var6);
+            int var9 = SectionPos.sectionToBlockCoord(var5, var7);
             var1.setBlock(var3.set(var8, 60, var9), BARRIER, 2);
             BlockState var10 = getBlockStateFor(var8, var9);
             if (var10 != null) {

@@ -8,9 +8,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.data.worldgen.Features;
+import net.minecraft.util.IntRange;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -296,6 +298,8 @@ public class Blocks {
    public static final Block ENCHANTING_TABLE;
    public static final Block BREWING_STAND;
    public static final Block CAULDRON;
+   public static final Block WATER_CAULDRON;
+   public static final Block LAVA_CAULDRON;
    public static final Block END_PORTAL;
    public static final Block END_PORTAL_FRAME;
    public static final Block END_STONE;
@@ -532,7 +536,7 @@ public class Blocks {
    public static final Block PURPUR_STAIRS;
    public static final Block END_STONE_BRICKS;
    public static final Block BEETROOTS;
-   public static final Block GRASS_PATH;
+   public static final Block DIRT_PATH;
    public static final Block END_GATEWAY;
    public static final Block REPEATING_COMMAND_BLOCK;
    public static final Block CHAIN_COMMAND_BLOCK;
@@ -797,6 +801,79 @@ public class Blocks {
    public static final Block CHISELED_NETHER_BRICKS;
    public static final Block CRACKED_NETHER_BRICKS;
    public static final Block QUARTZ_BRICKS;
+   public static final Block CANDLE;
+   public static final Block WHITE_CANDLE;
+   public static final Block ORANGE_CANDLE;
+   public static final Block MAGENTA_CANDLE;
+   public static final Block LIGHT_BLUE_CANDLE;
+   public static final Block YELLOW_CANDLE;
+   public static final Block LIME_CANDLE;
+   public static final Block PINK_CANDLE;
+   public static final Block GRAY_CANDLE;
+   public static final Block LIGHT_GRAY_CANDLE;
+   public static final Block CYAN_CANDLE;
+   public static final Block PURPLE_CANDLE;
+   public static final Block BLUE_CANDLE;
+   public static final Block BROWN_CANDLE;
+   public static final Block GREEN_CANDLE;
+   public static final Block RED_CANDLE;
+   public static final Block BLACK_CANDLE;
+   public static final Block CANDLE_CAKE;
+   public static final Block WHITE_CANDLE_CAKE;
+   public static final Block ORANGE_CANDLE_CAKE;
+   public static final Block MAGENTA_CANDLE_CAKE;
+   public static final Block LIGHT_BLUE_CANDLE_CAKE;
+   public static final Block YELLOW_CANDLE_CAKE;
+   public static final Block LIME_CANDLE_CAKE;
+   public static final Block PINK_CANDLE_CAKE;
+   public static final Block GRAY_CANDLE_CAKE;
+   public static final Block LIGHT_GRAY_CANDLE_CAKE;
+   public static final Block CYAN_CANDLE_CAKE;
+   public static final Block PURPLE_CANDLE_CAKE;
+   public static final Block BLUE_CANDLE_CAKE;
+   public static final Block BROWN_CANDLE_CAKE;
+   public static final Block GREEN_CANDLE_CAKE;
+   public static final Block RED_CANDLE_CAKE;
+   public static final Block BLACK_CANDLE_CAKE;
+   public static final Block AMETHYST_BLOCK;
+   public static final Block BUDDING_AMETHYST;
+   public static final Block AMETHYST_CLUSTER;
+   public static final Block LARGE_AMETHYST_BUD;
+   public static final Block MEDIUM_AMETHYST_BUD;
+   public static final Block SMALL_AMETHYST_BUD;
+   public static final Block TUFF;
+   public static final Block CALCITE;
+   public static final Block TINTED_GLASS;
+   public static final Block WEATHERED_COPPER_BLOCK;
+   public static final Block SEMI_WEATHERED_COPPER_BLOCK;
+   public static final Block LIGHTLY_WEATHERED_COPPER_BLOCK;
+   public static final Block COPPER_BLOCK;
+   public static final Block COPPER_ORE;
+   public static final Block WEATHERED_CUT_COPPER;
+   public static final Block SEMI_WEATHERED_CUT_COPPER;
+   public static final Block LIGHTLY_WEATHERED_CUT_COPPER;
+   public static final Block CUT_COPPER;
+   public static final Block WEATHERED_CUT_COPPER_STAIRS;
+   public static final Block SEMI_WEATHERED_CUT_COPPER_STAIRS;
+   public static final Block LIGHTLY_WEATHERED_CUT_COPPER_STAIRS;
+   public static final Block CUT_COPPER_STAIRS;
+   public static final Block WEATHERED_CUT_COPPER_SLAB;
+   public static final Block SEMI_WEATHERED_CUT_COPPER_SLAB;
+   public static final Block LIGHTLY_WEATHERED_CUT_COPPER_SLAB;
+   public static final Block CUT_COPPER_SLAB;
+   public static final Block WAXED_COPPER;
+   public static final Block WAXED_SEMI_WEATHERED_COPPER;
+   public static final Block WAXED_LIGHTLY_WEATHERED_COPPER;
+   public static final Block WAXED_SEMI_WEATHERED_CUT_COPPER;
+   public static final Block WAXED_LIGHTLY_WEATHERED_CUT_COPPER;
+   public static final Block WAXED_CUT_COPPER;
+   public static final Block WAXED_SEMI_WEATHERED_CUT_COPPER_STAIRS;
+   public static final Block WAXED_LIGHTLY_WEATHERED_CUT_COPPER_STAIRS;
+   public static final Block WAXED_CUT_COPPER_STAIRS;
+   public static final Block WAXED_SEMI_WEATHERED_CUT_COPPER_SLAB;
+   public static final Block WAXED_LIGHTLY_WEATHERED_CUT_COPPER_SLAB;
+   public static final Block WAXED_CUT_COPPER_SLAB;
+   public static final Block LIGHTNING_ROD;
 
    private static ToIntFunction<BlockState> litBlockEmission(int var0) {
       return (var1) -> {
@@ -914,8 +991,8 @@ public class Blocks {
       GRAVEL = register("gravel", new GravelBlock(BlockBehaviour.Properties.of(Material.SAND, MaterialColor.STONE).strength(0.6F).sound(SoundType.GRAVEL)));
       GOLD_ORE = register("gold_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
       IRON_ORE = register("iron_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
-      COAL_ORE = register("coal_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
-      NETHER_GOLD_ORE = register("nether_gold_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(3.0F, 3.0F).sound(SoundType.NETHER_GOLD_ORE)));
+      COAL_ORE = register("coal_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), IntRange.of(0, 2)));
+      NETHER_GOLD_ORE = register("nether_gold_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(3.0F, 3.0F).sound(SoundType.NETHER_GOLD_ORE), IntRange.of(0, 1)));
       OAK_LOG = register("oak_log", log(MaterialColor.WOOD, MaterialColor.PODZOL));
       SPRUCE_LOG = register("spruce_log", log(MaterialColor.PODZOL, MaterialColor.COLOR_BROWN));
       BIRCH_LOG = register("birch_log", log(MaterialColor.SAND, MaterialColor.QUARTZ));
@@ -949,7 +1026,7 @@ public class Blocks {
       SPONGE = register("sponge", new SpongeBlock(BlockBehaviour.Properties.of(Material.SPONGE).strength(0.6F).sound(SoundType.GRASS)));
       WET_SPONGE = register("wet_sponge", new WetSpongeBlock(BlockBehaviour.Properties.of(Material.SPONGE).strength(0.6F).sound(SoundType.GRASS)));
       GLASS = register("glass", new GlassBlock(BlockBehaviour.Properties.of(Material.GLASS).strength(0.3F).sound(SoundType.GLASS).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never)));
-      LAPIS_ORE = register("lapis_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
+      LAPIS_ORE = register("lapis_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), IntRange.of(2, 5)));
       LAPIS_BLOCK = register("lapis_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.LAPIS).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
       DISPENSER = register("dispenser", new DispenserBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.5F)));
       SANDSTONE = register("sandstone", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.SAND).requiresCorrectToolForDrops().strength(0.8F)));
@@ -979,8 +1056,8 @@ public class Blocks {
       GRASS = register("grass", new TallGrassBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_PLANT).noCollission().instabreak().sound(SoundType.GRASS)));
       FERN = register("fern", new TallGrassBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_PLANT).noCollission().instabreak().sound(SoundType.GRASS)));
       DEAD_BUSH = register("dead_bush", new DeadBushBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_PLANT, MaterialColor.WOOD).noCollission().instabreak().sound(SoundType.GRASS)));
-      SEAGRASS = register("seagrass", new Seagrass(BlockBehaviour.Properties.of(Material.REPLACEABLE_WATER_PLANT).noCollission().instabreak().sound(SoundType.WET_GRASS)));
-      TALL_SEAGRASS = register("tall_seagrass", new TallSeagrass(BlockBehaviour.Properties.of(Material.REPLACEABLE_WATER_PLANT).noCollission().instabreak().sound(SoundType.WET_GRASS)));
+      SEAGRASS = register("seagrass", new SeagrassBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_WATER_PLANT).noCollission().instabreak().sound(SoundType.WET_GRASS)));
+      TALL_SEAGRASS = register("tall_seagrass", new TallSeagrassBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_WATER_PLANT).noCollission().instabreak().sound(SoundType.WET_GRASS)));
       PISTON = register("piston", pistonBase(false));
       PISTON_HEAD = register("piston_head", new PistonHeadBlock(BlockBehaviour.Properties.of(Material.PISTON).strength(1.5F).noDrops()));
       WHITE_WOOL = register("white_wool", new Block(BlockBehaviour.Properties.of(Material.WOOL, MaterialColor.SNOW).strength(0.8F).sound(SoundType.WOOL)));
@@ -1015,8 +1092,12 @@ public class Blocks {
       LILY_OF_THE_VALLEY = register("lily_of_the_valley", new FlowerBlock(MobEffects.POISON, 12, BlockBehaviour.Properties.of(Material.PLANT).noCollission().instabreak().sound(SoundType.GRASS)));
       BROWN_MUSHROOM = register("brown_mushroom", new MushroomBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_BROWN).noCollission().randomTicks().instabreak().sound(SoundType.GRASS).lightLevel((var0x) -> {
          return 1;
-      }).hasPostProcess(Blocks::always)));
-      RED_MUSHROOM = register("red_mushroom", new MushroomBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_RED).noCollission().randomTicks().instabreak().sound(SoundType.GRASS).hasPostProcess(Blocks::always)));
+      }).hasPostProcess(Blocks::always), () -> {
+         return Features.HUGE_BROWN_MUSHROOM;
+      }));
+      RED_MUSHROOM = register("red_mushroom", new MushroomBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_RED).noCollission().randomTicks().instabreak().sound(SoundType.GRASS).hasPostProcess(Blocks::always), () -> {
+         return Features.HUGE_RED_MUSHROOM;
+      }));
       GOLD_BLOCK = register("gold_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.GOLD).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.METAL)));
       IRON_BLOCK = register("iron_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.METAL).requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL)));
       BRICKS = register("bricks", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.COLOR_RED).requiresCorrectToolForDrops().strength(2.0F, 6.0F)));
@@ -1042,7 +1123,7 @@ public class Blocks {
          return BlockEntityType.CHEST;
       }));
       REDSTONE_WIRE = register("redstone_wire", new RedStoneWireBlock(BlockBehaviour.Properties.of(Material.DECORATION).noCollission().instabreak()));
-      DIAMOND_ORE = register("diamond_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
+      DIAMOND_ORE = register("diamond_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), IntRange.of(3, 7)));
       DIAMOND_BLOCK = register("diamond_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.DIAMOND).requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL)));
       CRAFTING_TABLE = register("crafting_table", new CraftingTableBlock(BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
       WHEAT = register("wheat", new CropBlock(BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.CROP)));
@@ -1150,10 +1231,18 @@ public class Blocks {
       CHAIN = register("chain", new ChainBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.NONE).requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.CHAIN).noOcclusion()));
       GLASS_PANE = register("glass_pane", new IronBarsBlock(BlockBehaviour.Properties.of(Material.GLASS).strength(0.3F).sound(SoundType.GLASS).noOcclusion()));
       MELON = register("melon", new MelonBlock(BlockBehaviour.Properties.of(Material.VEGETABLE, MaterialColor.COLOR_LIGHT_GREEN).strength(1.0F).sound(SoundType.WOOD)));
-      ATTACHED_PUMPKIN_STEM = register("attached_pumpkin_stem", new AttachedStemBlock((StemGrownBlock)PUMPKIN, BlockBehaviour.Properties.of(Material.PLANT).noCollission().instabreak().sound(SoundType.WOOD)));
-      ATTACHED_MELON_STEM = register("attached_melon_stem", new AttachedStemBlock((StemGrownBlock)MELON, BlockBehaviour.Properties.of(Material.PLANT).noCollission().instabreak().sound(SoundType.WOOD)));
-      PUMPKIN_STEM = register("pumpkin_stem", new StemBlock((StemGrownBlock)PUMPKIN, BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.HARD_CROP)));
-      MELON_STEM = register("melon_stem", new StemBlock((StemGrownBlock)MELON, BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.HARD_CROP)));
+      ATTACHED_PUMPKIN_STEM = register("attached_pumpkin_stem", new AttachedStemBlock((StemGrownBlock)PUMPKIN, () -> {
+         return Items.PUMPKIN_SEEDS;
+      }, BlockBehaviour.Properties.of(Material.PLANT).noCollission().instabreak().sound(SoundType.WOOD)));
+      ATTACHED_MELON_STEM = register("attached_melon_stem", new AttachedStemBlock((StemGrownBlock)MELON, () -> {
+         return Items.MELON_SEEDS;
+      }, BlockBehaviour.Properties.of(Material.PLANT).noCollission().instabreak().sound(SoundType.WOOD)));
+      PUMPKIN_STEM = register("pumpkin_stem", new StemBlock((StemGrownBlock)PUMPKIN, () -> {
+         return Items.PUMPKIN_SEEDS;
+      }, BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.HARD_CROP)));
+      MELON_STEM = register("melon_stem", new StemBlock((StemGrownBlock)MELON, () -> {
+         return Items.MELON_SEEDS;
+      }, BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.HARD_CROP)));
       VINE = register("vine", new VineBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_PLANT).noCollission().randomTicks().strength(0.2F).sound(SoundType.VINE)));
       OAK_FENCE_GATE = register("oak_fence_gate", new FenceGateBlock(BlockBehaviour.Properties.of(Material.WOOD, OAK_PLANKS.defaultMaterialColor()).strength(2.0F, 3.0F).sound(SoundType.WOOD)));
       BRICK_STAIRS = register("brick_stairs", new StairBlock(BRICKS.defaultBlockState(), BlockBehaviour.Properties.copy(BRICKS)));
@@ -1169,6 +1258,10 @@ public class Blocks {
          return 1;
       }).noOcclusion()));
       CAULDRON = register("cauldron", new CauldronBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.STONE).requiresCorrectToolForDrops().strength(2.0F).noOcclusion()));
+      WATER_CAULDRON = register("water_cauldron", new WaterCauldronBlock(BlockBehaviour.Properties.copy(CAULDRON)));
+      LAVA_CAULDRON = register("lava_cauldron", new LavaCauldronBlock(BlockBehaviour.Properties.copy(CAULDRON).lightLevel((var0x) -> {
+         return 15;
+      })));
       END_PORTAL = register("end_portal", new EndPortalBlock(BlockBehaviour.Properties.of(Material.PORTAL, MaterialColor.COLOR_BLACK).noCollission().lightLevel((var0x) -> {
          return 15;
       }).strength(-1.0F, 3600000.0F).noDrops()));
@@ -1182,7 +1275,7 @@ public class Blocks {
       REDSTONE_LAMP = register("redstone_lamp", new RedstoneLampBlock(BlockBehaviour.Properties.of(Material.BUILDABLE_GLASS).lightLevel(litBlockEmission(15)).strength(0.3F).sound(SoundType.GLASS).isValidSpawn(Blocks::always)));
       COCOA = register("cocoa", new CocoaBlock(BlockBehaviour.Properties.of(Material.PLANT).randomTicks().strength(0.2F, 3.0F).sound(SoundType.WOOD).noOcclusion()));
       SANDSTONE_STAIRS = register("sandstone_stairs", new StairBlock(SANDSTONE.defaultBlockState(), BlockBehaviour.Properties.copy(SANDSTONE)));
-      EMERALD_ORE = register("emerald_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F)));
+      EMERALD_ORE = register("emerald_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.0F, 3.0F), IntRange.of(3, 7)));
       ENDER_CHEST = register("ender_chest", new EnderChestBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(22.5F, 600.0F).lightLevel((var0x) -> {
          return 7;
       })));
@@ -1192,7 +1285,7 @@ public class Blocks {
       SPRUCE_STAIRS = register("spruce_stairs", new StairBlock(SPRUCE_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(SPRUCE_PLANKS)));
       BIRCH_STAIRS = register("birch_stairs", new StairBlock(BIRCH_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(BIRCH_PLANKS)));
       JUNGLE_STAIRS = register("jungle_stairs", new StairBlock(JUNGLE_PLANKS.defaultBlockState(), BlockBehaviour.Properties.copy(JUNGLE_PLANKS)));
-      COMMAND_BLOCK = register("command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_BROWN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops()));
+      COMMAND_BLOCK = register("command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_BROWN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops(), false));
       BEACON = register("beacon", new BeaconBlock(BlockBehaviour.Properties.of(Material.GLASS, MaterialColor.DIAMOND).strength(3.0F).lightLevel((var0x) -> {
          return 15;
       }).noOcclusion().isRedstoneConductor(Blocks::never)));
@@ -1252,7 +1345,7 @@ public class Blocks {
       COMPARATOR = register("comparator", new ComparatorBlock(BlockBehaviour.Properties.of(Material.DECORATION).instabreak().sound(SoundType.WOOD)));
       DAYLIGHT_DETECTOR = register("daylight_detector", new DaylightDetectorBlock(BlockBehaviour.Properties.of(Material.WOOD).strength(0.2F).sound(SoundType.WOOD)));
       REDSTONE_BLOCK = register("redstone_block", new PoweredBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.FIRE).requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.METAL).isRedstoneConductor(Blocks::never)));
-      NETHER_QUARTZ_ORE = register("nether_quartz_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(3.0F, 3.0F).sound(SoundType.NETHER_ORE)));
+      NETHER_QUARTZ_ORE = register("nether_quartz_ore", new OreBlock(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(3.0F, 3.0F).sound(SoundType.NETHER_ORE), IntRange.of(2, 5)));
       HOPPER = register("hopper", new HopperBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.STONE).requiresCorrectToolForDrops().strength(3.0F, 4.8F).sound(SoundType.METAL).noOcclusion()));
       QUARTZ_BLOCK = register("quartz_block", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.QUARTZ).requiresCorrectToolForDrops().strength(0.8F)));
       CHISELED_QUARTZ_BLOCK = register("chiseled_quartz_block", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.QUARTZ).requiresCorrectToolForDrops().strength(0.8F)));
@@ -1419,12 +1512,12 @@ public class Blocks {
       PURPUR_STAIRS = register("purpur_stairs", new StairBlock(PURPUR_BLOCK.defaultBlockState(), BlockBehaviour.Properties.copy(PURPUR_BLOCK)));
       END_STONE_BRICKS = register("end_stone_bricks", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.SAND).requiresCorrectToolForDrops().strength(3.0F, 9.0F)));
       BEETROOTS = register("beetroots", new BeetrootBlock(BlockBehaviour.Properties.of(Material.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.CROP)));
-      GRASS_PATH = register("grass_path", new GrassPathBlock(BlockBehaviour.Properties.of(Material.DIRT).strength(0.65F).sound(SoundType.GRASS).isViewBlocking(Blocks::always).isSuffocating(Blocks::always)));
+      DIRT_PATH = register("dirt_path", new DirtPathBlock(BlockBehaviour.Properties.of(Material.DIRT).strength(0.65F).sound(SoundType.GRASS).isViewBlocking(Blocks::always).isSuffocating(Blocks::always)));
       END_GATEWAY = register("end_gateway", new EndGatewayBlock(BlockBehaviour.Properties.of(Material.PORTAL, MaterialColor.COLOR_BLACK).noCollission().lightLevel((var0x) -> {
          return 15;
       }).strength(-1.0F, 3600000.0F).noDrops()));
-      REPEATING_COMMAND_BLOCK = register("repeating_command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops()));
-      CHAIN_COMMAND_BLOCK = register("chain_command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_GREEN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops()));
+      REPEATING_COMMAND_BLOCK = register("repeating_command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops(), false));
+      CHAIN_COMMAND_BLOCK = register("chain_command_block", new CommandBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_GREEN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noDrops(), true));
       FROSTED_ICE = register("frosted_ice", new FrostedIceBlock(BlockBehaviour.Properties.of(Material.ICE).friction(0.98F).randomTicks().strength(0.5F).sound(SoundType.GLASS).noOcclusion().isValidSpawn((var0x, var1x, var2x, var3x) -> {
          return var3x == EntityType.POLAR_BEAR;
       })));
@@ -1611,10 +1704,10 @@ public class Blocks {
       SMITHING_TABLE = register("smithing_table", new SmithingTableBlock(BlockBehaviour.Properties.of(Material.WOOD).strength(2.5F).sound(SoundType.WOOD)));
       STONECUTTER = register("stonecutter", new StonecutterBlock(BlockBehaviour.Properties.of(Material.STONE).requiresCorrectToolForDrops().strength(3.5F)));
       BELL = register("bell", new BellBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.GOLD).requiresCorrectToolForDrops().strength(5.0F).sound(SoundType.ANVIL)));
-      LANTERN = register("lantern", new Lantern(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(3.5F).sound(SoundType.LANTERN).lightLevel((var0x) -> {
+      LANTERN = register("lantern", new LanternBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(3.5F).sound(SoundType.LANTERN).lightLevel((var0x) -> {
          return 15;
       }).noOcclusion()));
-      SOUL_LANTERN = register("soul_lantern", new Lantern(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(3.5F).sound(SoundType.LANTERN).lightLevel((var0x) -> {
+      SOUL_LANTERN = register("soul_lantern", new LanternBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(3.5F).sound(SoundType.LANTERN).lightLevel((var0x) -> {
          return 10;
       }).noOcclusion()));
       CAMPFIRE = register("campfire", new CampfireBlock(true, 1, BlockBehaviour.Properties.of(Material.WOOD, MaterialColor.PODZOL).strength(2.0F).sound(SoundType.WOOD).lightLevel(litBlockEmission(15)).noOcclusion()));
@@ -1642,10 +1735,10 @@ public class Blocks {
       SHROOMLIGHT = register("shroomlight", new Block(BlockBehaviour.Properties.of(Material.GRASS, MaterialColor.COLOR_RED).strength(1.0F).sound(SoundType.SHROOMLIGHT).lightLevel((var0x) -> {
          return 15;
       })));
-      WEEPING_VINES = register("weeping_vines", new WeepingVines(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.NETHER).randomTicks().noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
-      WEEPING_VINES_PLANT = register("weeping_vines_plant", new WeepingVinesPlant(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.NETHER).noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
-      TWISTING_VINES = register("twisting_vines", new TwistingVines(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_CYAN).randomTicks().noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
-      TWISTING_VINES_PLANT = register("twisting_vines_plant", new TwistingVinesPlant(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_CYAN).noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
+      WEEPING_VINES = register("weeping_vines", new WeepingVinesBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.NETHER).randomTicks().noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
+      WEEPING_VINES_PLANT = register("weeping_vines_plant", new WeepingVinesPlantBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.NETHER).noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
+      TWISTING_VINES = register("twisting_vines", new TwistingVinesBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_CYAN).randomTicks().noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
+      TWISTING_VINES_PLANT = register("twisting_vines_plant", new TwistingVinesPlantBlock(BlockBehaviour.Properties.of(Material.PLANT, MaterialColor.COLOR_CYAN).noCollission().instabreak().sound(SoundType.WEEPING_VINES)));
       CRIMSON_ROOTS = register("crimson_roots", new RootsBlock(BlockBehaviour.Properties.of(Material.REPLACEABLE_FIREPROOF_PLANT, MaterialColor.NETHER).noCollission().instabreak().sound(SoundType.ROOTS)));
       CRIMSON_PLANKS = register("crimson_planks", new Block(BlockBehaviour.Properties.of(Material.NETHER_WOOD, MaterialColor.CRIMSON_STEM).strength(2.0F, 3.0F).sound(SoundType.WOOD)));
       WARPED_PLANKS = register("warped_planks", new Block(BlockBehaviour.Properties.of(Material.NETHER_WOOD, MaterialColor.WARPED_STEM).strength(2.0F, 3.0F).sound(SoundType.WOOD)));
@@ -1710,6 +1803,79 @@ public class Blocks {
       CHISELED_NETHER_BRICKS = register("chiseled_nether_bricks", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(2.0F, 6.0F).sound(SoundType.NETHER_BRICKS)));
       CRACKED_NETHER_BRICKS = register("cracked_nether_bricks", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.NETHER).requiresCorrectToolForDrops().strength(2.0F, 6.0F).sound(SoundType.NETHER_BRICKS)));
       QUARTZ_BRICKS = register("quartz_bricks", new Block(BlockBehaviour.Properties.copy(QUARTZ_BLOCK)));
+      CANDLE = register("candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.SAND).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      WHITE_CANDLE = register("white_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.WOOL).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      ORANGE_CANDLE = register("orange_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_ORANGE).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      MAGENTA_CANDLE = register("magenta_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_MAGENTA).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      LIGHT_BLUE_CANDLE = register("light_blue_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_LIGHT_BLUE).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      YELLOW_CANDLE = register("yellow_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_YELLOW).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      LIME_CANDLE = register("lime_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_LIGHT_GREEN).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      PINK_CANDLE = register("pink_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_PINK).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      GRAY_CANDLE = register("gray_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_GRAY).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      LIGHT_GRAY_CANDLE = register("light_gray_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_LIGHT_GRAY).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      CYAN_CANDLE = register("cyan_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_CYAN).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      PURPLE_CANDLE = register("purple_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_PURPLE).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      BLUE_CANDLE = register("blue_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_BLUE).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      BROWN_CANDLE = register("brown_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_BROWN).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      GREEN_CANDLE = register("green_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_GREEN).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      RED_CANDLE = register("red_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_RED).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      BLACK_CANDLE = register("black_candle", new CandleBlock(BlockBehaviour.Properties.of(Material.DECORATION, MaterialColor.COLOR_BLACK).noOcclusion().strength(0.1F).sound(SoundType.CANDLE).lightLevel(CandleBlock.LIGHT_EMISSION)));
+      CANDLE_CAKE = register("candle_cake", new CandleCakeBlock(CANDLE, BlockBehaviour.Properties.copy(CAKE).lightLevel(litBlockEmission(3))));
+      WHITE_CANDLE_CAKE = register("white_candle_cake", new CandleCakeBlock(WHITE_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      ORANGE_CANDLE_CAKE = register("orange_candle_cake", new CandleCakeBlock(ORANGE_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      MAGENTA_CANDLE_CAKE = register("magenta_candle_cake", new CandleCakeBlock(MAGENTA_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      LIGHT_BLUE_CANDLE_CAKE = register("light_blue_candle_cake", new CandleCakeBlock(LIGHT_BLUE_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      YELLOW_CANDLE_CAKE = register("yellow_candle_cake", new CandleCakeBlock(YELLOW_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      LIME_CANDLE_CAKE = register("lime_candle_cake", new CandleCakeBlock(LIME_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      PINK_CANDLE_CAKE = register("pink_candle_cake", new CandleCakeBlock(PINK_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      GRAY_CANDLE_CAKE = register("gray_candle_cake", new CandleCakeBlock(GRAY_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      LIGHT_GRAY_CANDLE_CAKE = register("light_gray_candle_cake", new CandleCakeBlock(LIGHT_GRAY_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      CYAN_CANDLE_CAKE = register("cyan_candle_cake", new CandleCakeBlock(CYAN_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      PURPLE_CANDLE_CAKE = register("purple_candle_cake", new CandleCakeBlock(PURPLE_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      BLUE_CANDLE_CAKE = register("blue_candle_cake", new CandleCakeBlock(BLUE_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      BROWN_CANDLE_CAKE = register("brown_candle_cake", new CandleCakeBlock(BROWN_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      GREEN_CANDLE_CAKE = register("green_candle_cake", new CandleCakeBlock(GREEN_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      RED_CANDLE_CAKE = register("red_candle_cake", new CandleCakeBlock(RED_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      BLACK_CANDLE_CAKE = register("black_candle_cake", new CandleCakeBlock(BLACK_CANDLE, BlockBehaviour.Properties.copy(CANDLE_CAKE)));
+      AMETHYST_BLOCK = register("amethyst_block", new AmethystBlock(BlockBehaviour.Properties.of(Material.AMETHYST, MaterialColor.COLOR_PURPLE).strength(1.5F).sound(SoundType.AMETHYST).requiresCorrectToolForDrops()));
+      BUDDING_AMETHYST = register("budding_amethyst", new BuddingAmethystBlock(BlockBehaviour.Properties.of(Material.AMETHYST).randomTicks().strength(1.5F).sound(SoundType.AMETHYST).requiresCorrectToolForDrops()));
+      AMETHYST_CLUSTER = register("amethyst_cluster", new AmethystClusterBlock(7, 3, BlockBehaviour.Properties.of(Material.AMETHYST).noOcclusion().requiresCorrectToolForDrops().randomTicks().sound(SoundType.AMETHYST_CLUSTER).strength(1.5F).lightLevel(litBlockEmission(5))));
+      LARGE_AMETHYST_BUD = register("large_amethyst_bud", new AmethystClusterBlock(5, 3, BlockBehaviour.Properties.copy(AMETHYST_CLUSTER).sound(SoundType.MEDIUM_AMETHYST_BUD).lightLevel(litBlockEmission(4))));
+      MEDIUM_AMETHYST_BUD = register("medium_amethyst_bud", new AmethystClusterBlock(4, 3, BlockBehaviour.Properties.copy(AMETHYST_CLUSTER).sound(SoundType.LARGE_AMETHYST_BUD).lightLevel(litBlockEmission(2))));
+      SMALL_AMETHYST_BUD = register("small_amethyst_bud", new AmethystClusterBlock(3, 4, BlockBehaviour.Properties.copy(AMETHYST_CLUSTER).sound(SoundType.SMALL_AMETHYST_BUD).lightLevel(litBlockEmission(1))));
+      TUFF = register("tuff", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.TERRACOTTA_GRAY).sound(SoundType.TUFF).requiresCorrectToolForDrops().strength(1.5F, 6.0F)));
+      CALCITE = register("calcite", new Block(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.TERRACOTTA_WHITE).sound(SoundType.CALCITE).requiresCorrectToolForDrops().strength(0.75F)));
+      TINTED_GLASS = register("tinted_glass", new TintedGlassBlock(BlockBehaviour.Properties.copy(GLASS).color(MaterialColor.COLOR_GRAY)));
+      WEATHERED_COPPER_BLOCK = register("weathered_copper_block", new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.WARPED_NYLIUM).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.COPPER)));
+      SEMI_WEATHERED_COPPER_BLOCK = register("semi_weathered_copper_block", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.WARPED_STEM).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.COPPER), WEATHERED_COPPER_BLOCK));
+      LIGHTLY_WEATHERED_COPPER_BLOCK = register("lightly_weathered_copper_block", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.TERRACOTTA_LIGHT_GRAY).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.COPPER), SEMI_WEATHERED_COPPER_BLOCK));
+      COPPER_BLOCK = register("copper_block", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_ORANGE).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.COPPER), LIGHTLY_WEATHERED_COPPER_BLOCK));
+      COPPER_ORE = register("copper_ore", new Block(BlockBehaviour.Properties.copy(IRON_ORE)));
+      WEATHERED_CUT_COPPER = register("weathered_cut_copper", new Block(BlockBehaviour.Properties.copy(WEATHERED_COPPER_BLOCK)));
+      SEMI_WEATHERED_CUT_COPPER = register("semi_weathered_cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(SEMI_WEATHERED_COPPER_BLOCK), WEATHERED_CUT_COPPER));
+      LIGHTLY_WEATHERED_CUT_COPPER = register("lightly_weathered_cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_COPPER_BLOCK), SEMI_WEATHERED_CUT_COPPER));
+      CUT_COPPER = register("cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(COPPER_BLOCK), LIGHTLY_WEATHERED_CUT_COPPER));
+      WEATHERED_CUT_COPPER_STAIRS = register("weathered_cut_copper_stairs", new StairBlock(WEATHERED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(WEATHERED_COPPER_BLOCK)));
+      SEMI_WEATHERED_CUT_COPPER_STAIRS = register("semi_weathered_cut_copper_stairs", new ChangeOverTimeStairBlock(SEMI_WEATHERED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(SEMI_WEATHERED_COPPER_BLOCK), WEATHERED_CUT_COPPER_STAIRS));
+      LIGHTLY_WEATHERED_CUT_COPPER_STAIRS = register("lightly_weathered_cut_copper_stairs", new ChangeOverTimeStairBlock(LIGHTLY_WEATHERED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_COPPER_BLOCK), SEMI_WEATHERED_CUT_COPPER_STAIRS));
+      CUT_COPPER_STAIRS = register("cut_copper_stairs", new ChangeOverTimeStairBlock(CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(COPPER_BLOCK), LIGHTLY_WEATHERED_CUT_COPPER_STAIRS));
+      WEATHERED_CUT_COPPER_SLAB = register("weathered_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.copy(WEATHERED_CUT_COPPER).requiresCorrectToolForDrops()));
+      SEMI_WEATHERED_CUT_COPPER_SLAB = register("semi_weathered_cut_copper_slab", new ChangeOverTimeSlabBlock(BlockBehaviour.Properties.copy(SEMI_WEATHERED_CUT_COPPER).requiresCorrectToolForDrops(), WEATHERED_CUT_COPPER_SLAB));
+      LIGHTLY_WEATHERED_CUT_COPPER_SLAB = register("lightly_weathered_cut_copper_slab", new ChangeOverTimeSlabBlock(BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_CUT_COPPER).requiresCorrectToolForDrops(), SEMI_WEATHERED_CUT_COPPER_SLAB));
+      CUT_COPPER_SLAB = register("cut_copper_slab", new ChangeOverTimeSlabBlock(BlockBehaviour.Properties.copy(CUT_COPPER).requiresCorrectToolForDrops(), LIGHTLY_WEATHERED_CUT_COPPER_SLAB));
+      WAXED_COPPER = register("waxed_copper", new Block(BlockBehaviour.Properties.copy(COPPER_BLOCK)));
+      WAXED_SEMI_WEATHERED_COPPER = register("waxed_semi_weathered_copper", new Block(BlockBehaviour.Properties.copy(SEMI_WEATHERED_COPPER_BLOCK)));
+      WAXED_LIGHTLY_WEATHERED_COPPER = register("waxed_lightly_weathered_copper", new Block(BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_COPPER_BLOCK)));
+      WAXED_SEMI_WEATHERED_CUT_COPPER = register("waxed_semi_weathered_cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(SEMI_WEATHERED_COPPER_BLOCK), WEATHERED_CUT_COPPER));
+      WAXED_LIGHTLY_WEATHERED_CUT_COPPER = register("waxed_lightly_weathered_cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_COPPER_BLOCK), SEMI_WEATHERED_CUT_COPPER));
+      WAXED_CUT_COPPER = register("waxed_cut_copper", new ChangeOverTimeFullBlock(BlockBehaviour.Properties.copy(COPPER_BLOCK), LIGHTLY_WEATHERED_CUT_COPPER));
+      WAXED_SEMI_WEATHERED_CUT_COPPER_STAIRS = register("waxed_semi_weathered_cut_copper_stairs", new StairBlock(WAXED_SEMI_WEATHERED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(SEMI_WEATHERED_COPPER_BLOCK)));
+      WAXED_LIGHTLY_WEATHERED_CUT_COPPER_STAIRS = register("waxed_lightly_weathered_cut_copper_stairs", new StairBlock(WAXED_LIGHTLY_WEATHERED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(LIGHTLY_WEATHERED_COPPER_BLOCK)));
+      WAXED_CUT_COPPER_STAIRS = register("waxed_cut_copper_stairs", new StairBlock(WAXED_CUT_COPPER.defaultBlockState(), BlockBehaviour.Properties.copy(COPPER_BLOCK)));
+      WAXED_SEMI_WEATHERED_CUT_COPPER_SLAB = register("waxed_semi_weathered_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.copy(WAXED_SEMI_WEATHERED_CUT_COPPER).requiresCorrectToolForDrops()));
+      WAXED_LIGHTLY_WEATHERED_CUT_COPPER_SLAB = register("waxed_lightly_weathered_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.copy(WAXED_LIGHTLY_WEATHERED_CUT_COPPER).requiresCorrectToolForDrops()));
+      WAXED_CUT_COPPER_SLAB = register("waxed_cut_copper_slab", new SlabBlock(BlockBehaviour.Properties.copy(WAXED_CUT_COPPER).requiresCorrectToolForDrops()));
+      LIGHTNING_ROD = register("lightning_rod", new LightningRodBlock(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.COLOR_ORANGE).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.COPPER).noOcclusion()));
       Iterator var0 = Registry.BLOCK.iterator();
 
       while(var0.hasNext()) {

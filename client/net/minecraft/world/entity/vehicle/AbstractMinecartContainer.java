@@ -31,7 +31,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public abstract class AbstractMinecartContainer extends AbstractMinecart implements Container, MenuProvider {
    private NonNullList<ItemStack> itemStacks;
-   private boolean dropEquipment;
    @Nullable
    private ResourceLocation lootTable;
    private long lootTableSeed;
@@ -39,13 +38,11 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    protected AbstractMinecartContainer(EntityType<?> var1, Level var2) {
       super(var1, var2);
       this.itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
-      this.dropEquipment = true;
    }
 
    protected AbstractMinecartContainer(EntityType<?> var1, double var2, double var4, double var6, Level var8) {
       super(var1, var8, var2, var4, var6);
       this.itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
-      this.dropEquipment = true;
    }
 
    public void destroy(DamageSource var1) {
@@ -120,25 +117,19 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    public boolean stillValid(Player var1) {
-      if (this.removed) {
+      if (this.isRemoved()) {
          return false;
       } else {
          return var1.distanceToSqr(this) <= 64.0D;
       }
    }
 
-   @Nullable
-   public Entity changeDimension(ServerLevel var1) {
-      this.dropEquipment = false;
-      return super.changeDimension(var1);
-   }
-
-   public void remove() {
-      if (!this.level.isClientSide && this.dropEquipment) {
+   public void remove(Entity.RemovalReason var1) {
+      if (!this.level.isClientSide && var1.shouldDestroy()) {
          Containers.dropContents(this.level, (Entity)this, (Container)this);
       }
 
-      super.remove();
+      super.remove(var1);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
@@ -181,6 +172,10 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
       if (this.lootTable == null) {
          int var2 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
          var1 += (float)var2 * 0.001F;
+      }
+
+      if (this.isInWater()) {
+         var1 *= 0.95F;
       }
 
       this.setDeltaMovement(this.getDeltaMovement().multiply((double)var1, 0.0D, (double)var1));

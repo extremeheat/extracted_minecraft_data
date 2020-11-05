@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
@@ -41,6 +42,7 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -209,7 +211,7 @@ public class DebugScreenOverlay extends GuiComponent {
          var13.add("");
          var13.add(String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", this.minecraft.getCameraEntity().getX(), this.minecraft.getCameraEntity().getY(), this.minecraft.getCameraEntity().getZ()));
          var13.add(String.format("Block: %d %d %d", var6.getX(), var6.getY(), var6.getZ()));
-         var13.add(String.format("Chunk: %d %d %d in %d %d %d", var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15, var6.getX() >> 4, var6.getY() >> 4, var6.getZ() >> 4));
+         var13.add(String.format("Chunk: %d %d %d in %d %d %d", var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15, SectionPos.blockToSectionCoord(var6.getX()), SectionPos.blockToSectionCoord(var6.getY()), SectionPos.blockToSectionCoord(var6.getZ())));
          var13.add(String.format(Locale.ROOT, "Facing: %s (%s) (%.1f / %.1f)", var8, var9, Mth.wrapDegrees(var7.yRot), Mth.wrapDegrees(var7.xRot)));
          int var18;
          if (this.minecraft.level != null) {
@@ -262,7 +264,7 @@ public class DebugScreenOverlay extends GuiComponent {
                   }
 
                   var13.add(var29.toString());
-                  if (var6.getY() >= 0 && var6.getY() < 256) {
+                  if (var6.getY() >= this.minecraft.level.getMinBuildHeight() && var6.getY() < this.minecraft.level.getMaxBuildHeight()) {
                      var13.add("Biome: " + this.minecraft.level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getKey(this.minecraft.level.getBiome(var6)));
                      long var30 = 0L;
                      float var31 = 0.0F;
@@ -461,7 +463,7 @@ public class DebugScreenOverlay extends GuiComponent {
       RenderSystem.enableBlend();
       RenderSystem.disableTexture();
       RenderSystem.defaultBlendFunc();
-      var27.begin(7, DefaultVertexFormat.POSITION_COLOR);
+      var27.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
       for(Matrix4f var19 = Transformation.identity().getMatrix(); var9 != var7; var9 = var2.wrapIndex(var9 + 1)) {
          int var20 = var2.scaleSampleTo(var8[var9], var5 ? 30 : 60, var5 ? 60 : 20);

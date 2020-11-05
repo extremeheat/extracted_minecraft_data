@@ -65,9 +65,9 @@ public class ItemPredicate {
    public boolean matches(ItemStack var1) {
       if (this == ANY) {
          return true;
-      } else if (this.tag != null && !this.tag.contains(var1.getItem())) {
+      } else if (this.tag != null && !var1.is(this.tag)) {
          return false;
-      } else if (this.item != null && var1.getItem() != this.item) {
+      } else if (this.item != null && !var1.is(this.item)) {
          return false;
       } else if (!this.count.matches(var1.getCount())) {
          return false;

@@ -248,7 +248,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                if (var13 > 0) {
                   Entity var16 = this.level.getEntity(var13);
                   if (var16 != null && var16.isAlive() && this.distanceToSqr(var16) <= 900.0D && this.canSee(var16)) {
-                     if (var16 instanceof Player && ((Player)var16).abilities.invulnerable) {
+                     if (var16 instanceof Player && ((Player)var16).getAbilities().invulnerable) {
                         this.setAlternativeTarget(var1, 0);
                      } else {
                         this.performRangedAttack(var1 + 1, (LivingEntity)var16);
@@ -265,7 +265,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                      LivingEntity var5 = (LivingEntity)var15.get(this.random.nextInt(var15.size()));
                      if (var5 != this && var5.isAlive() && this.canSee(var5)) {
                         if (var5 instanceof Player) {
-                           if (!((Player)var5).abilities.invulnerable) {
+                           if (!((Player)var5).getAbilities().invulnerable) {
                               this.setAlternativeTarget(var1, var5.getId());
                            }
                         } else {
@@ -324,7 +324,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    }
 
    public static boolean canDestroy(BlockState var0) {
-      return !var0.isAir() && !BlockTags.WITHER_IMMUNE.contains(var0.getBlock());
+      return !var0.isAir() && !var0.is(BlockTags.WITHER_IMMUNE);
    }
 
    public void makeInvulnerable() {
@@ -458,7 +458,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    public void checkDespawn() {
       if (this.level.getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
-         this.remove();
+         this.discard();
       } else {
          this.noActionTime = 0;
       }

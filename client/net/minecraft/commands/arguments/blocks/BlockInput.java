@@ -70,7 +70,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
                var6.putInt("x", var2.getX());
                var6.putInt("y", var2.getY());
                var6.putInt("z", var2.getZ());
-               var5.load(var4, var6);
+               var5.load(var6);
             }
          }
 

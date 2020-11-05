@@ -22,7 +22,7 @@ import net.minecraft.world.level.pathfinder.BlockPathTypes;
 
 public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
-   protected int timeInOverworld = 0;
+   protected int timeInOverworld;
 
    public AbstractPiglin(EntityType<? extends AbstractPiglin> var1, Level var2) {
       super(var1, var2);

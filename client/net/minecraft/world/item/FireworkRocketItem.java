@@ -46,7 +46,7 @@ public class FireworkRocketItem extends Item {
          ItemStack var4 = var2.getItemInHand(var3);
          if (!var1.isClientSide) {
             var1.addFreshEntity(new FireworkRocketEntity(var1, var4, var2));
-            if (!var2.abilities.instabuild) {
+            if (!var2.getAbilities().instabuild) {
                var4.shrink(1);
             }
          }
@@ -81,6 +81,12 @@ public class FireworkRocketItem extends Item {
          }
 
       }
+   }
+
+   public ItemStack getDefaultInstance() {
+      ItemStack var1 = new ItemStack(this);
+      var1.getOrCreateTag().putByte("Flight", (byte)1);
+      return var1;
    }
 
    public static enum Shape {

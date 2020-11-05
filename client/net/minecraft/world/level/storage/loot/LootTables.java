@@ -57,7 +57,7 @@ public class LootTables extends SimpleJsonResourceReloadListener {
          validate(var7, var1x, var2x);
       });
       var7.getProblems().forEach((var0, var1x) -> {
-         LOGGER.warn("Found validation problem in " + var0 + ": " + var1x);
+         LOGGER.warn("Found validation problem in {}: {}", var0, var1x);
       });
       this.tables = var6;
    }

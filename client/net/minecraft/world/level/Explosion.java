@@ -204,7 +204,7 @@ public class Explosion {
                   var13.setDeltaMovement(var13.getDeltaMovement().add(var16 * var28, var18 * var28, var20 * var28));
                   if (var13 instanceof Player) {
                      Player var30 = (Player)var13;
-                     if (!var30.isSpectator() && (!var30.isCreative() || !var30.abilities.flying)) {
+                     if (!var30.isSpectator() && (!var30.isCreative() || !var30.getAbilities().flying)) {
                         this.hitPlayers.put(var30, new Vec3(var16 * var26, var18 * var26, var20 * var26));
                      }
                   }
@@ -242,7 +242,7 @@ public class Explosion {
                BlockPos var8 = var5.immutable();
                this.level.getProfiler().push("explosion_blocks");
                if (var7.dropFromExplosion(this) && this.level instanceof ServerLevel) {
-                  BlockEntity var9 = var7.isEntityBlock() ? this.level.getBlockEntity(var5) : null;
+                  BlockEntity var9 = var6.hasBlockEntity() ? this.level.getBlockEntity(var5) : null;
                   LootContext.Builder var10 = (new LootContext.Builder((ServerLevel)this.level)).withRandom(this.level.random).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var5)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9).withOptionalParameter(LootContextParams.THIS_ENTITY, this.source);
                   if (this.blockInteraction == Explosion.BlockInteraction.DESTROY) {
                      var10.withParameter(LootContextParams.EXPLOSION_RADIUS, this.radius);

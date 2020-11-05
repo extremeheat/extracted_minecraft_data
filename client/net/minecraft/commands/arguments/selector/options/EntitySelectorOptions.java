@@ -343,7 +343,7 @@ public class EntitySelectorOptions {
                if (var0.isTag()) {
                   var3 = ResourceLocation.read(var0.getReader());
                   var0.addPredicate((var2x) -> {
-                     return var2x.getServer().getTags().getEntityTypes().getTagOrEmpty(var3).contains(var2x.getType()) != var2;
+                     return var2x.getType().is(var2x.getServer().getTags().getEntityTypes().getTagOrEmpty(var3)) != var2;
                   });
                } else {
                   var3 = ResourceLocation.read(var0.getReader());
@@ -386,7 +386,7 @@ public class EntitySelectorOptions {
             var0.addPredicate((var2x) -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
                if (var2x instanceof ServerPlayer) {
-                  ItemStack var4 = ((ServerPlayer)var2x).inventory.getSelected();
+                  ItemStack var4 = ((ServerPlayer)var2x).getInventory().getSelected();
                   if (!var4.isEmpty()) {
                      var3.put("SelectedItem", var4.save(new CompoundTag()));
                   }

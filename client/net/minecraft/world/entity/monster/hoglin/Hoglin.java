@@ -20,7 +20,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,8 +49,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION;
    private int attackAnimationRemainingTicks;
-   private int timeInOverworld = 0;
-   private boolean cannotBeHunted = false;
+   private int timeInOverworld;
+   private boolean cannotBeHunted;
    protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Hoglin>>> SENSOR_TYPES;
    protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES;
 
@@ -216,7 +216,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.getItem() == Items.CRIMSON_FUNGUS;
+      return var1.is(Items.CRIMSON_FUNGUS);
    }
 
    public boolean isAdult() {
@@ -269,7 +269,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Nullable
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Hoglin var3 = (Hoglin)EntityType.HOGLIN.create(var1);
       if (var3 != null) {
          var3.setPersistenceRequired();

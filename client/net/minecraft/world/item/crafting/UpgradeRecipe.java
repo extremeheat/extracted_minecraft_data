@@ -1,6 +1,7 @@
 package net.minecraft.world.item.crafting;
 
 import com.google.gson.JsonObject;
+import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -64,6 +65,12 @@ public class UpgradeRecipe implements Recipe<Container> {
 
    public RecipeType<?> getType() {
       return RecipeType.SMITHING;
+   }
+
+   public boolean isIncomplete() {
+      return Stream.of(this.base, this.addition).anyMatch((var0) -> {
+         return var0.getItems().length == 0;
+      });
    }
 
    public static class Serializer implements RecipeSerializer<UpgradeRecipe> {

@@ -29,7 +29,7 @@ public class PortalShape {
    @Nullable
    private BlockPos bottomLeft;
    private int height;
-   private int width;
+   private final int width;
 
    public static Optional<PortalShape> findEmptyPortalShape(LevelAccessor var0, BlockPos var1, Direction.Axis var2) {
       return findPortalShape(var0, var1, (var0x) -> {
@@ -68,7 +68,7 @@ public class PortalShape {
 
    @Nullable
    private BlockPos calculateBottomLeft(BlockPos var1) {
-      for(int var2 = Math.max(0, var1.getY() - 21); var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below())); var1 = var1.below()) {
+      for(int var2 = Math.max(this.level.getMinBuildHeight(), var1.getY() - 21); var1.getY() > var2 && isEmpty(this.level.getBlockState(var1.below())); var1 = var1.below()) {
       }
 
       Direction var3 = this.rightDir.getOpposite();

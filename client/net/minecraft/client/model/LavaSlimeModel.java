@@ -1,41 +1,51 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.Arrays;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Slime;
 
-public class LavaSlimeModel<T extends Slime> extends ListModel<T> {
+public class LavaSlimeModel<T extends Slime> extends HierarchicalModel<T> {
+   private final ModelPart root;
    private final ModelPart[] bodyCubes = new ModelPart[8];
-   private final ModelPart insideCube;
-   private final ImmutableList<ModelPart> parts;
 
-   public LavaSlimeModel() {
+   public LavaSlimeModel(ModelPart var1) {
       super();
+      this.root = var1;
+      Arrays.setAll(this.bodyCubes, (var1x) -> {
+         return var1.getChild(getSegmentName(var1x));
+      });
+   }
 
-      for(int var1 = 0; var1 < this.bodyCubes.length; ++var1) {
-         byte var2 = 0;
-         int var3 = var1;
-         if (var1 == 2) {
-            var2 = 24;
-            var3 = 10;
-         } else if (var1 == 3) {
-            var2 = 24;
-            var3 = 19;
+   private static String getSegmentName(int var0) {
+      return "cube" + var0;
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+
+      for(int var2 = 0; var2 < 8; ++var2) {
+         byte var3 = 0;
+         int var4 = var2;
+         if (var2 == 2) {
+            var3 = 24;
+            var4 = 10;
+         } else if (var2 == 3) {
+            var3 = 24;
+            var4 = 19;
          }
 
-         this.bodyCubes[var1] = new ModelPart(this, var2, var3);
-         this.bodyCubes[var1].addBox(-4.0F, (float)(16 + var1), -4.0F, 8.0F, 1.0F, 8.0F);
+         var1.addOrReplaceChild(getSegmentName(var2), CubeListBuilder.create().texOffs(var3, var4).addBox(-4.0F, (float)(16 + var2), -4.0F, 8.0F, 1.0F, 8.0F), PartPose.ZERO);
       }
 
-      this.insideCube = new ModelPart(this, 0, 16);
-      this.insideCube.addBox(-2.0F, 18.0F, -2.0F, 4.0F, 4.0F, 4.0F);
-      Builder var4 = ImmutableList.builder();
-      var4.add(this.insideCube);
-      var4.addAll(Arrays.asList(this.bodyCubes));
-      this.parts = var4.build();
+      var1.addOrReplaceChild("inside_cube", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 18.0F, -2.0F, 4.0F, 4.0F, 4.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
@@ -53,12 +63,7 @@ public class LavaSlimeModel<T extends Slime> extends ListModel<T> {
 
    }
 
-   public ImmutableList<ModelPart> parts() {
-      return this.parts;
-   }
-
-   // $FF: synthetic method
-   public Iterable parts() {
-      return this.parts();
+   public ModelPart root() {
+      return this.root;
    }
 }

@@ -71,7 +71,7 @@ public final class Ingredient implements Predicate<ItemStack> {
 
             for(int var4 = 0; var4 < var3; ++var4) {
                ItemStack var5 = var2[var4];
-               if (var5.getItem() == var1.getItem()) {
+               if (var5.is(var1.getItem())) {
                   return true;
                }
             }

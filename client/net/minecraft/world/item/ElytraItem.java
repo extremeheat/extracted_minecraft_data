@@ -1,5 +1,8 @@
 package net.minecraft.world.item;
 
+import javax.annotation.Nullable;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -19,7 +22,7 @@ public class ElytraItem extends Item implements Wearable {
    }
 
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return var2.getItem() == Items.PHANTOM_MEMBRANE;
+      return var2.is(Items.PHANTOM_MEMBRANE);
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
@@ -33,5 +36,10 @@ public class ElytraItem extends Item implements Wearable {
       } else {
          return InteractionResultHolder.fail(var4);
       }
+   }
+
+   @Nullable
+   public SoundEvent getEquipSound() {
+      return SoundEvents.ARMOR_EQUIP_ELYTRA;
    }
 }

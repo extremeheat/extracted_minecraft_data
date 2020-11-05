@@ -10,7 +10,7 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.level.block.Blocks;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt> {
-   public TntRenderer(EntityRenderDispatcher var1) {
+   public TntRenderer(EntityRendererProvider.Context var1) {
       super(var1);
       this.shadowRadius = 0.5F;
    }

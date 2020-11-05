@@ -6,7 +6,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class MoveBackToVillageGoal extends RandomStrollGoal {
@@ -26,6 +26,6 @@ public class MoveBackToVillageGoal extends RandomStrollGoal {
       BlockPos var2 = this.mob.blockPosition();
       SectionPos var3 = SectionPos.of(var2);
       SectionPos var4 = BehaviorUtils.findSectionClosestToVillage(var1, var3, 2);
-      return var4 != var3 ? RandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(var4.center())) : null;
+      return var4 != var3 ? DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(var4.center()), 1.5707963705062866D) : null;
    }
 }

@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 
 public abstract class ArrowRenderer<T extends AbstractArrow> extends EntityRenderer<T> {
-   public ArrowRenderer(EntityRenderDispatcher var1) {
+   public ArrowRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 

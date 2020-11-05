@@ -12,9 +12,9 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity> {
    private final ItemRenderer itemRenderer;
 
-   public FireworkEntityRenderer(EntityRenderDispatcher var1, ItemRenderer var2) {
+   public FireworkEntityRenderer(EntityRendererProvider.Context var1) {
       super(var1);
-      this.itemRenderer = var2;
+      this.itemRenderer = var1.getItemRenderer();
    }
 
    public void render(FireworkRocketEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

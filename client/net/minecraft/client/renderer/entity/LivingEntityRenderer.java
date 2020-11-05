@@ -31,7 +31,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
    protected M model;
    protected final List<RenderLayer<T, M>> layers = Lists.newArrayList();
 
-   public LivingEntityRenderer(EntityRenderDispatcher var1, M var2, float var3) {
+   public LivingEntityRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1);
       this.model = var2;
       this.shadowRadius = var3;

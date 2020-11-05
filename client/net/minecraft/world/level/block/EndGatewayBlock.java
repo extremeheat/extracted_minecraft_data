@@ -1,12 +1,15 @@
 package net.minecraft.world.level.block;
 
 import java.util.Random;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,8 +20,13 @@ public class EndGatewayBlock extends BaseEntityBlock {
       super(var1);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new TheEndGatewayBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new TheEndGatewayBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::teleportTick);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {

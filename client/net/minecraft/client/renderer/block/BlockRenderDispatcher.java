@@ -25,14 +25,16 @@ import net.minecraft.world.level.material.FluidState;
 public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    private final BlockModelShaper blockModelShaper;
    private final ModelBlockRenderer modelRenderer;
+   private final BlockEntityWithoutLevelRenderer blockEntityRenderer;
    private final LiquidBlockRenderer liquidBlockRenderer;
    private final Random random = new Random();
    private final BlockColors blockColors;
 
-   public BlockRenderDispatcher(BlockModelShaper var1, BlockColors var2) {
+   public BlockRenderDispatcher(BlockModelShaper var1, BlockEntityWithoutLevelRenderer var2, BlockColors var3) {
       super();
       this.blockModelShaper = var1;
-      this.blockColors = var2;
+      this.blockEntityRenderer = var2;
+      this.blockColors = var3;
       this.modelRenderer = new ModelBlockRenderer(this.blockColors);
       this.liquidBlockRenderer = new LiquidBlockRenderer();
    }
@@ -56,7 +58,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       } catch (Throwable var11) {
          CrashReport var9 = CrashReport.forThrowable(var11, "Tesselating block in world");
          CrashReportCategory var10 = var9.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var10, var2, var1);
+         CrashReportCategory.populateBlockDetails(var10, var3, var2, var1);
          throw new ReportedException(var9);
       }
    }
@@ -67,7 +69,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
       } catch (Throwable var8) {
          CrashReport var6 = CrashReport.forThrowable(var8, "Tesselating liquid in world");
          CrashReportCategory var7 = var6.addCategory("Block being tesselated");
-         CrashReportCategory.populateBlockDetails(var7, var1, (BlockState)null);
+         CrashReportCategory.populateBlockDetails(var7, var2, var1, (BlockState)null);
          throw new ReportedException(var6);
       }
    }
@@ -93,7 +95,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
             this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1, false)), var1, var7, var9, var10, var11, var4, var5);
             break;
          case ENTITYBLOCK_ANIMATED:
-            BlockEntityWithoutLevelRenderer.instance.renderByItem(new ItemStack(var1.getBlock()), ItemTransforms.TransformType.NONE, var2, var3, var4, var5);
+            this.blockEntityRenderer.renderByItem(new ItemStack(var1.getBlock()), ItemTransforms.TransformType.NONE, var2, var3, var4, var5);
          }
 
       }

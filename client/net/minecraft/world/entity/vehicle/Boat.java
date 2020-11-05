@@ -32,6 +32,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -88,7 +89,6 @@ public class Boat extends Entity {
    public Boat(Level var1, double var2, double var4, double var6) {
       this(EntityType.BOAT, var1);
       this.setPos(var2, var4, var6);
-      this.setDeltaMovement(Vec3.ZERO);
       this.xo = var2;
       this.yo = var4;
       this.zo = var6;
@@ -139,18 +139,18 @@ public class Boat extends Entity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.level.isClientSide && !this.removed) {
+      } else if (!this.level.isClientSide && !this.isRemoved()) {
          this.setHurtDir(-this.getHurtDir());
          this.setHurtTime(10);
          this.setDamage(this.getDamage() + var2 * 10.0F);
          this.markHurt();
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).abilities.instabuild;
+         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
          if (var3 || this.getDamage() > 40.0F) {
             if (!var3 && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                this.spawnAtLocation(this.getDropItem());
             }
 
-            this.remove();
+            this.discard();
          }
 
          return true;
@@ -211,7 +211,7 @@ public class Boat extends Entity {
    }
 
    public boolean isPickable() {
-      return !this.removed;
+      return !this.isRemoved();
    }
 
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
@@ -251,7 +251,7 @@ public class Boat extends Entity {
       super.tick();
       this.tickLerp();
       if (this.isControlledByLocalInstance()) {
-         if (this.getPassengers().isEmpty() || !(this.getPassengers().get(0) instanceof Player)) {
+         if (!(this.getFirstPassenger() instanceof Player)) {
             this.setPaddleState(false, false);
          }
 
@@ -336,7 +336,9 @@ public class Boat extends Entity {
                   this.setDeltaMovement(var3.add(0.0D, -0.7D, 0.0D));
                   this.ejectPassengers();
                } else {
-                  this.setDeltaMovement(var3.x, this.hasPassenger(Player.class) ? 2.7D : 0.6D, var3.z);
+                  this.setDeltaMovement(var3.x, this.hasPassenger((var0) -> {
+                     return var0 instanceof Player;
+                  }) ? 2.7D : 0.6D, var3.z);
                }
             }
 
@@ -612,7 +614,7 @@ public class Boat extends Entity {
    public void positionRider(Entity var1) {
       if (this.hasPassenger(var1)) {
          float var2 = 0.0F;
-         float var3 = (float)((this.removed ? 0.009999999776482582D : this.getPassengersRidingOffset()) + var1.getMyRidingOffset());
+         float var3 = (float)((this.isRemoved() ? 0.009999999776482582D : this.getPassengersRidingOffset()) + var1.getMyRidingOffset());
          if (this.getPassengers().size() > 1) {
             int var4 = this.getPassengers().indexOf(var1);
             if (var4 == 0) {
@@ -719,8 +721,8 @@ public class Boat extends Entity {
                }
 
                this.causeFallDamage(this.fallDistance, 1.0F);
-               if (!this.level.isClientSide && !this.removed) {
-                  this.remove();
+               if (!this.level.isClientSide && !this.isRemoved()) {
+                  this.kill();
                   if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                      int var6;
                      for(var6 = 0; var6 < 3; ++var6) {
@@ -796,8 +798,7 @@ public class Boat extends Entity {
 
    @Nullable
    public Entity getControllingPassenger() {
-      List var1 = this.getPassengers();
-      return var1.isEmpty() ? null : (Entity)var1.get(0);
+      return this.getFirstPassenger();
    }
 
    public void setInput(boolean var1, boolean var2, boolean var3, boolean var4) {
@@ -813,6 +814,10 @@ public class Boat extends Entity {
 
    public boolean isUnderWater() {
       return this.status == Boat.Status.UNDER_WATER || this.status == Boat.Status.UNDER_FLOWING_WATER;
+   }
+
+   public ItemStack getPickResult() {
+      return new ItemStack(this.getDropItem());
    }
 
    static {

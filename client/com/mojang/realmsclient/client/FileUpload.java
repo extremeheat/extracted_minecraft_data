@@ -128,7 +128,7 @@ public class FileUpload {
    private void handleResponse(HttpResponse var1, UploadResult.Builder var2) throws IOException {
       int var3 = var1.getStatusLine().getStatusCode();
       if (var3 == 401) {
-         LOGGER.debug("Realms server returned 401: " + var1.getFirstHeader("WWW-Authenticate"));
+         LOGGER.debug("Realms server returned 401: {}", var1.getFirstHeader("WWW-Authenticate"));
       }
 
       var2.withStatusCode(var3);

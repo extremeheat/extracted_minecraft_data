@@ -93,7 +93,7 @@ public class MinecartTNT extends AbstractMinecart {
          }
 
          this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)(4.0D + this.random.nextDouble() * 1.5D * var3), Explosion.BlockInteraction.BREAK);
-         this.remove();
+         this.discard();
       }
 
    }

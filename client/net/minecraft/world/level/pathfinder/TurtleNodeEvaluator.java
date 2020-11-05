@@ -171,7 +171,7 @@ public class TurtleNodeEvaluator extends WalkNodeEvaluator {
 
                int var17 = 0;
 
-               while(var2 > 0 && var11 == BlockPathTypes.OPEN) {
+               while(var2 > this.level.getMinBuildHeight() && var11 == BlockPathTypes.OPEN) {
                   --var2;
                   if (var17++ >= this.mob.getMaxFallDistance()) {
                      return null;

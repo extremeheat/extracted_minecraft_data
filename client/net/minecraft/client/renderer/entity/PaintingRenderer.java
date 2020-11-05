@@ -20,7 +20,7 @@ import net.minecraft.world.entity.decoration.Motive;
 import net.minecraft.world.entity.decoration.Painting;
 
 public class PaintingRenderer extends EntityRenderer<Painting> {
-   public PaintingRenderer(EntityRenderDispatcher var1) {
+   public PaintingRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 
@@ -71,9 +71,9 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
             float var35 = var11 + (float)(var32 * 16);
             float var36 = var12 + (float)((var33 + 1) * 16);
             float var37 = var12 + (float)(var33 * 16);
-            int var38 = Mth.floor(var3.getX());
+            int var38 = var3.getBlockX();
             int var39 = Mth.floor(var3.getY() + (double)((var36 + var37) / 2.0F / 16.0F));
-            int var40 = Mth.floor(var3.getZ());
+            int var40 = var3.getBlockZ();
             Direction var41 = var3.getDirection();
             if (var41 == Direction.NORTH) {
                var38 = Mth.floor(var3.getX() + (double)((var34 + var35) / 2.0F / 16.0F));

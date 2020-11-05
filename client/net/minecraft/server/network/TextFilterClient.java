@@ -113,16 +113,16 @@ public class TextFilterClient implements AutoCloseable {
 
       JsonObject var6;
       try {
-         if (var3.getResponseCode() == 204) {
-            var6 = new JsonObject();
-            return var6;
+         if (var3.getResponseCode() != 204) {
+            try {
+               var6 = Streams.parse(new JsonReader(new InputStreamReader(var4))).getAsJsonObject();
+               return var6;
+            } finally {
+               this.drainStream(var4);
+            }
          }
 
-         try {
-            var6 = Streams.parse(new JsonReader(new InputStreamReader(var4))).getAsJsonObject();
-         } finally {
-            this.drainStream(var4);
-         }
+         var6 = new JsonObject();
       } catch (Throwable var23) {
          var5 = var23;
          throw var23;

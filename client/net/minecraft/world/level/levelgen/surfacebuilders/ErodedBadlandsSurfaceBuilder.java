@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -76,23 +75,22 @@ public class ErodedBadlandsSurfaceBuilder extends BadlandsSurfaceBuilder {
                      var2.setBlockState(var30, var24, false);
                      var29 = true;
                   } else {
-                     BlockState var37;
+                     BlockState var33;
                      if (var31 >= 64 && var31 <= 127) {
                         if (var27) {
-                           var37 = TERRACOTTA;
+                           var33 = TERRACOTTA;
                         } else {
-                           var37 = this.getBand(var4, var31, var5);
+                           var33 = this.getBand(var4, var31, var5);
                         }
                      } else {
-                        var37 = ORANGE_TERRACOTTA;
+                        var33 = ORANGE_TERRACOTTA;
                      }
 
-                     var2.setBlockState(var30, var37, false);
+                     var2.setBlockState(var30, var33, false);
                   }
                } else {
                   var2.setBlockState(var30, var25, false);
-                  Block var33 = var25.getBlock();
-                  if (var33 == Blocks.WHITE_TERRACOTTA || var33 == Blocks.ORANGE_TERRACOTTA || var33 == Blocks.MAGENTA_TERRACOTTA || var33 == Blocks.LIGHT_BLUE_TERRACOTTA || var33 == Blocks.YELLOW_TERRACOTTA || var33 == Blocks.LIME_TERRACOTTA || var33 == Blocks.PINK_TERRACOTTA || var33 == Blocks.GRAY_TERRACOTTA || var33 == Blocks.LIGHT_GRAY_TERRACOTTA || var33 == Blocks.CYAN_TERRACOTTA || var33 == Blocks.PURPLE_TERRACOTTA || var33 == Blocks.BLUE_TERRACOTTA || var33 == Blocks.BROWN_TERRACOTTA || var33 == Blocks.GREEN_TERRACOTTA || var33 == Blocks.RED_TERRACOTTA || var33 == Blocks.BLACK_TERRACOTTA) {
+                  if (var25.is(Blocks.WHITE_TERRACOTTA) || var25.is(Blocks.ORANGE_TERRACOTTA) || var25.is(Blocks.MAGENTA_TERRACOTTA) || var25.is(Blocks.LIGHT_BLUE_TERRACOTTA) || var25.is(Blocks.YELLOW_TERRACOTTA) || var25.is(Blocks.LIME_TERRACOTTA) || var25.is(Blocks.PINK_TERRACOTTA) || var25.is(Blocks.GRAY_TERRACOTTA) || var25.is(Blocks.LIGHT_GRAY_TERRACOTTA) || var25.is(Blocks.CYAN_TERRACOTTA) || var25.is(Blocks.PURPLE_TERRACOTTA) || var25.is(Blocks.BLUE_TERRACOTTA) || var25.is(Blocks.BROWN_TERRACOTTA) || var25.is(Blocks.GREEN_TERRACOTTA) || var25.is(Blocks.RED_TERRACOTTA) || var25.is(Blocks.BLACK_TERRACOTTA)) {
                      var2.setBlockState(var30, ORANGE_TERRACOTTA, false);
                   }
                }

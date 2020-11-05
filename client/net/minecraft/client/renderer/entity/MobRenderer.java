@@ -17,7 +17,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> extends LivingEntityRenderer<T, M> {
-   public MobRenderer(EntityRenderDispatcher var1, M var2, float var3) {
+   public MobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1, var2, var3);
    }
 
@@ -68,47 +68,32 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       int var32 = this.entityRenderDispatcher.getRenderer(var5).getBlockLightLevel(var5, var30);
       int var33 = var1.level.getBrightness(LightLayer.SKY, var29);
       int var34 = var1.level.getBrightness(LightLayer.SKY, var30);
-      renderSide(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28);
-      renderSide(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28);
+
+      int var35;
+      for(var35 = 0; var35 <= 24; ++var35) {
+         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28, var35, false);
+      }
+
+      for(var35 = 24; var35 >= 0; --var35) {
+         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var35, true);
+      }
+
       var3.popPose();
    }
 
-   public static void renderSide(VertexConsumer var0, Matrix4f var1, float var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12) {
-      boolean var13 = true;
-
-      for(int var14 = 0; var14 < 24; ++var14) {
-         float var15 = (float)var14 / 23.0F;
-         int var16 = (int)Mth.lerp(var15, (float)var5, (float)var6);
-         int var17 = (int)Mth.lerp(var15, (float)var7, (float)var8);
-         int var18 = LightTexture.pack(var16, var17);
-         addVertexPair(var0, var1, var18, var2, var3, var4, var9, var10, 24, var14, false, var11, var12);
-         addVertexPair(var0, var1, var18, var2, var3, var4, var9, var10, 24, var14 + 1, true, var11, var12);
-      }
-
-   }
-
-   public static void addVertexPair(VertexConsumer var0, Matrix4f var1, int var2, float var3, float var4, float var5, float var6, float var7, int var8, int var9, boolean var10, float var11, float var12) {
-      float var13 = 0.5F;
-      float var14 = 0.4F;
-      float var15 = 0.3F;
-      if (var9 % 2 == 0) {
-         var13 *= 0.7F;
-         var14 *= 0.7F;
-         var15 *= 0.7F;
-      }
-
-      float var16 = (float)var9 / (float)var8;
-      float var17 = var3 * var16;
-      float var18 = var4 > 0.0F ? var4 * var16 * var16 : var4 - var4 * (1.0F - var16) * (1.0F - var16);
-      float var19 = var5 * var16;
-      if (!var10) {
-         var0.vertex(var1, var17 + var11, var18 + var6 - var7, var19 - var12).color(var13, var14, var15, 1.0F).uv2(var2).endVertex();
-      }
-
-      var0.vertex(var1, var17 - var11, var18 + var7, var19 + var12).color(var13, var14, var15, 1.0F).uv2(var2).endVertex();
-      if (var10) {
-         var0.vertex(var1, var17 + var11, var18 + var6 - var7, var19 - var12).color(var13, var14, var15, 1.0F).uv2(var2).endVertex();
-      }
-
+   private static void addVertexPair(VertexConsumer var0, Matrix4f var1, float var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13, boolean var14) {
+      float var15 = (float)var13 / 24.0F;
+      int var16 = (int)Mth.lerp(var15, (float)var5, (float)var6);
+      int var17 = (int)Mth.lerp(var15, (float)var7, (float)var8);
+      int var18 = LightTexture.pack(var16, var17);
+      float var19 = var13 % 2 == (var14 ? 1 : 0) ? 0.7F : 1.0F;
+      float var20 = 0.5F * var19;
+      float var21 = 0.4F * var19;
+      float var22 = 0.3F * var19;
+      float var23 = var2 * var15;
+      float var24 = var3 > 0.0F ? var3 * var15 * var15 : var3 - var3 * (1.0F - var15) * (1.0F - var15);
+      float var25 = var4 * var15;
+      var0.vertex(var1, var23 - var11, var24 + var10, var25 + var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
+      var0.vertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
    }
 }

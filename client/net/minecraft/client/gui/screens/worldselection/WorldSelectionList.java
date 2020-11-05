@@ -319,7 +319,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
                      this.minecraft.setScreen(this.screen);
                   }
 
-               }, new TranslatableComponent("selectWorld.versionQuestion"), new TranslatableComponent("selectWorld.versionWarning", new Object[]{this.summary.getWorldVersionName(), new TranslatableComponent("selectWorld.versionJoinButton"), CommonComponents.GUI_CANCEL})));
+               }, new TranslatableComponent("selectWorld.versionQuestion"), new TranslatableComponent("selectWorld.versionWarning", new Object[]{this.summary.getWorldVersionName()}), new TranslatableComponent("selectWorld.versionJoinButton"), CommonComponents.GUI_CANCEL));
             } else {
                this.loadWorld();
             }

@@ -18,7 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -35,7 +35,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class AbstractVillager extends AgableMob implements Npc, Merchant {
+public abstract class AbstractVillager extends AgeableMob implements Npc, Merchant {
    private static final EntityDataAccessor<Integer> DATA_UNHAPPY_COUNTER;
    @Nullable
    private Player tradingPlayer;
@@ -51,7 +51,7 @@ public abstract class AbstractVillager extends AgableMob implements Npc, Merchan
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       if (var4 == null) {
-         var4 = new AgableMob.AgableMobGroupData(false);
+         var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);

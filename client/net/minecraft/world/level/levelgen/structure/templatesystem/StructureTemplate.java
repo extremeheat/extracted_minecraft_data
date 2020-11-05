@@ -105,7 +105,7 @@ public class StructureTemplate {
                var13 = (BlockPos)var12.next();
                var14 = var13.subtract(var10);
                var15 = var1.getBlockState(var13);
-            } while(var5 != null && var5 == var15.getBlock());
+            } while(var5 != null && var15.is(var5));
 
             BlockEntity var16 = var1.getBlockEntity(var13);
             StructureTemplate.StructureBlockInfo var17;
@@ -232,94 +232,93 @@ public class StructureTemplate {
          if ((!var7.isEmpty() || !var4.isIgnoreEntities() && !this.entityInfoList.isEmpty()) && this.size.getX() >= 1 && this.size.getY() >= 1 && this.size.getZ() >= 1) {
             BoundingBox var8 = var4.getBoundingBox();
             ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
-            ArrayList var10 = Lists.newArrayListWithCapacity(var7.size());
-            int var11 = 2147483647;
+            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
+            ArrayList var11 = Lists.newArrayListWithCapacity(var7.size());
             int var12 = 2147483647;
             int var13 = 2147483647;
-            int var14 = -2147483648;
+            int var14 = 2147483647;
             int var15 = -2147483648;
             int var16 = -2147483648;
-            List var17 = processBlockInfos(var1, var2, var3, var4, var7);
-            Iterator var18 = var17.iterator();
+            int var17 = -2147483648;
+            List var18 = processBlockInfos(var1, var2, var3, var4, var7);
+            Iterator var19 = var18.iterator();
 
             while(true) {
-               StructureTemplate.StructureBlockInfo var19;
-               BlockPos var20;
-               BlockEntity var23;
+               StructureTemplate.StructureBlockInfo var20;
+               BlockPos var21;
+               BlockEntity var24;
                do {
-                  if (!var18.hasNext()) {
-                     boolean var27 = true;
-                     Direction[] var28 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+                  if (!var19.hasNext()) {
+                     boolean var28 = true;
+                     Direction[] var29 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 
-                     Iterator var29;
-                     BlockPos var34;
-                     BlockState var38;
-                     while(var27 && !var9.isEmpty()) {
-                        var27 = false;
-                        var29 = var9.iterator();
+                     Iterator var30;
+                     int var38;
+                     BlockState var39;
+                     while(var28 && !var9.isEmpty()) {
+                        var28 = false;
+                        var30 = var9.iterator();
 
-                        while(var29.hasNext()) {
-                           BlockPos var31 = (BlockPos)var29.next();
-                           var34 = var31;
-                           FluidState var36 = var1.getFluidState(var31);
+                        while(var30.hasNext()) {
+                           BlockPos var32 = (BlockPos)var30.next();
+                           FluidState var35 = var1.getFluidState(var32);
 
-                           for(int var24 = 0; var24 < var28.length && !var36.isSource(); ++var24) {
-                              BlockPos var25 = var34.relative(var28[var24]);
+                           for(var38 = 0; var38 < var29.length && !var35.isSource(); ++var38) {
+                              BlockPos var25 = var32.relative(var29[var38]);
                               FluidState var26 = var1.getFluidState(var25);
-                              if (var26.getHeight(var1, var25) > var36.getHeight(var1, var34) || var26.isSource() && !var36.isSource()) {
-                                 var36 = var26;
-                                 var34 = var25;
+                              if (var26.isSource() && !var10.contains(var25)) {
+                                 var35 = var26;
                               }
                            }
 
-                           if (var36.isSource()) {
-                              var38 = var1.getBlockState(var31);
-                              Block var41 = var38.getBlock();
-                              if (var41 instanceof LiquidBlockContainer) {
-                                 ((LiquidBlockContainer)var41).placeLiquid(var1, var31, var38, var36);
-                                 var27 = true;
-                                 var29.remove();
+                           if (var35.isSource()) {
+                              var39 = var1.getBlockState(var32);
+                              Block var40 = var39.getBlock();
+                              if (var40 instanceof LiquidBlockContainer) {
+                                 ((LiquidBlockContainer)var40).placeLiquid(var1, var32, var39, var35);
+                                 var28 = true;
+                                 var30.remove();
                               }
                            }
                         }
                      }
 
-                     if (var11 <= var14) {
+                     if (var12 <= var15) {
                         if (!var4.getKnownShape()) {
-                           BitSetDiscreteVoxelShape var30 = new BitSetDiscreteVoxelShape(var14 - var11 + 1, var15 - var12 + 1, var16 - var13 + 1);
-                           int var32 = var11;
-                           int var35 = var12;
-                           int var37 = var13;
-                           Iterator var40 = var10.iterator();
+                           BitSetDiscreteVoxelShape var31 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
+                           int var33 = var12;
+                           int var36 = var13;
+                           var38 = var14;
+                           Iterator var41 = var11.iterator();
 
-                           while(var40.hasNext()) {
-                              Pair var42 = (Pair)var40.next();
-                              BlockPos var43 = (BlockPos)var42.getFirst();
-                              var30.setFull(var43.getX() - var32, var43.getY() - var35, var43.getZ() - var37, true, true);
+                           while(var41.hasNext()) {
+                              Pair var43 = (Pair)var41.next();
+                              BlockPos var27 = (BlockPos)var43.getFirst();
+                              var31.fill(var27.getX() - var33, var27.getY() - var36, var27.getZ() - var38);
                            }
 
-                           updateShapeAtEdge(var1, var6, var30, var32, var35, var37);
+                           updateShapeAtEdge(var1, var6, var31, var33, var36, var38);
                         }
 
-                        var29 = var10.iterator();
+                        var30 = var11.iterator();
 
-                        while(var29.hasNext()) {
-                           Pair var33 = (Pair)var29.next();
-                           var34 = (BlockPos)var33.getFirst();
+                        while(var30.hasNext()) {
+                           Pair var34 = (Pair)var30.next();
+                           BlockPos var37 = (BlockPos)var34.getFirst();
                            if (!var4.getKnownShape()) {
-                              BlockState var39 = var1.getBlockState(var34);
-                              var38 = Block.updateFromNeighbourShapes(var39, var1, var34);
-                              if (var39 != var38) {
-                                 var1.setBlock(var34, var38, var6 & -2 | 16);
+                              var39 = var1.getBlockState(var37);
+                              BlockState var42 = Block.updateFromNeighbourShapes(var39, var1, var37);
+                              if (var39 != var42) {
+                                 var1.setBlock(var37, var42, var6 & -2 | 16);
                               }
 
-                              var1.blockUpdated(var34, var38.getBlock());
+                              var1.blockUpdated(var37, var42.getBlock());
                            }
 
-                           if (var33.getSecond() != null) {
-                              var23 = var1.getBlockEntity(var34);
-                              if (var23 != null) {
-                                 var23.setChanged();
+                           if (var34.getSecond() != null) {
+                              var24 = var1.getBlockEntity(var37);
+                              if (var24 != null) {
+                                 var24.setChanged();
                               }
                            }
                         }
@@ -332,46 +331,48 @@ public class StructureTemplate {
                      return true;
                   }
 
-                  var19 = (StructureTemplate.StructureBlockInfo)var18.next();
-                  var20 = var19.pos;
-               } while(var8 != null && !var8.isInside(var20));
+                  var20 = (StructureTemplate.StructureBlockInfo)var19.next();
+                  var21 = var20.pos;
+               } while(var8 != null && !var8.isInside(var21));
 
-               FluidState var21 = var4.shouldKeepLiquids() ? var1.getFluidState(var20) : null;
-               BlockState var22 = var19.state.mirror(var4.getMirror()).rotate(var4.getRotation());
-               if (var19.nbt != null) {
-                  var23 = var1.getBlockEntity(var20);
-                  Clearable.tryClear(var23);
-                  var1.setBlock(var20, Blocks.BARRIER.defaultBlockState(), 20);
+               FluidState var22 = var4.shouldKeepLiquids() ? var1.getFluidState(var21) : null;
+               BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
+               if (var20.nbt != null) {
+                  var24 = var1.getBlockEntity(var21);
+                  Clearable.tryClear(var24);
+                  var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 20);
                }
 
-               if (var1.setBlock(var20, var22, var6)) {
-                  var11 = Math.min(var11, var20.getX());
-                  var12 = Math.min(var12, var20.getY());
-                  var13 = Math.min(var13, var20.getZ());
-                  var14 = Math.max(var14, var20.getX());
-                  var15 = Math.max(var15, var20.getY());
-                  var16 = Math.max(var16, var20.getZ());
-                  var10.add(Pair.of(var20, var19.nbt));
-                  if (var19.nbt != null) {
-                     var23 = var1.getBlockEntity(var20);
-                     if (var23 != null) {
-                        var19.nbt.putInt("x", var20.getX());
-                        var19.nbt.putInt("y", var20.getY());
-                        var19.nbt.putInt("z", var20.getZ());
-                        if (var23 instanceof RandomizableContainerBlockEntity) {
-                           var19.nbt.putLong("LootTableSeed", var5.nextLong());
+               if (var1.setBlock(var21, var23, var6)) {
+                  var12 = Math.min(var12, var21.getX());
+                  var13 = Math.min(var13, var21.getY());
+                  var14 = Math.min(var14, var21.getZ());
+                  var15 = Math.max(var15, var21.getX());
+                  var16 = Math.max(var16, var21.getY());
+                  var17 = Math.max(var17, var21.getZ());
+                  var11.add(Pair.of(var21, var20.nbt));
+                  if (var20.nbt != null) {
+                     var24 = var1.getBlockEntity(var21);
+                     if (var24 != null) {
+                        var20.nbt.putInt("x", var21.getX());
+                        var20.nbt.putInt("y", var21.getY());
+                        var20.nbt.putInt("z", var21.getZ());
+                        if (var24 instanceof RandomizableContainerBlockEntity) {
+                           var20.nbt.putLong("LootTableSeed", var5.nextLong());
                         }
 
-                        var23.load(var19.state, var19.nbt);
-                        var23.mirror(var4.getMirror());
-                        var23.rotate(var4.getRotation());
+                        var24.load(var20.nbt);
                      }
                   }
 
-                  if (var21 != null && var22.getBlock() instanceof LiquidBlockContainer) {
-                     ((LiquidBlockContainer)var22.getBlock()).placeLiquid(var1, var20, var22, var21);
-                     if (!var21.isSource()) {
-                        var9.add(var20);
+                  if (var22 != null) {
+                     if (var23.getFluidState().isSource()) {
+                        var10.add(var21);
+                     } else if (var23.getBlock() instanceof LiquidBlockContainer) {
+                        ((LiquidBlockContainer)var23.getBlock()).placeLiquid(var1, var21, var23, var22);
+                        if (!var22.isSource()) {
+                           var9.add(var21);
+                        }
                      }
                   }
                }

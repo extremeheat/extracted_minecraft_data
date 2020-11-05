@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.BufferedReader;
@@ -176,7 +177,7 @@ public class WinScreen extends Screen {
       var8 = var8 * 96.0F / 255.0F;
       Tesselator var11 = Tesselator.getInstance();
       BufferBuilder var12 = var11.getBuilder();
-      var12.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
       var12.vertex(0.0D, (double)this.height, (double)this.getBlitOffset()).uv(0.0F, var5 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
       var12.vertex((double)var4, (double)this.height, (double)this.getBlitOffset()).uv((float)var4 * 0.015625F, var5 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
       var12.vertex((double)var4, 0.0D, (double)this.getBlitOffset()).uv((float)var4 * 0.015625F, var6 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
@@ -237,7 +238,7 @@ public class WinScreen extends Screen {
       int var15 = this.height;
       Tesselator var12 = Tesselator.getInstance();
       BufferBuilder var13 = var12.getBuilder();
-      var13.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var13.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
       var13.vertex(0.0D, (double)var15, (double)this.getBlitOffset()).uv(0.0F, 1.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
       var13.vertex((double)var10, (double)var15, (double)this.getBlitOffset()).uv(1.0F, 1.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
       var13.vertex((double)var10, 0.0D, (double)this.getBlitOffset()).uv(1.0F, 0.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();

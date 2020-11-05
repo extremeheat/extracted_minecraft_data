@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -15,10 +15,10 @@ public class EntityCollisionContext implements CollisionContext {
    protected static final CollisionContext EMPTY;
    private final boolean descending;
    private final double entityBottom;
-   private final Item heldItem;
+   private final ItemStack heldItem;
    private final Predicate<Fluid> canStandOnFluid;
 
-   protected EntityCollisionContext(boolean var1, double var2, Item var4, Predicate<Fluid> var5) {
+   protected EntityCollisionContext(boolean var1, double var2, ItemStack var4, Predicate<Fluid> var5) {
       super();
       this.descending = var1;
       this.entityBottom = var2;
@@ -30,7 +30,7 @@ public class EntityCollisionContext implements CollisionContext {
    protected EntityCollisionContext(Entity var1) {
       boolean var10001 = var1.isDescending();
       double var10002 = var1.getY();
-      Item var10003 = var1 instanceof LivingEntity ? ((LivingEntity)var1).getMainHandItem().getItem() : Items.AIR;
+      ItemStack var10003 = var1 instanceof LivingEntity ? ((LivingEntity)var1).getMainHandItem() : ItemStack.EMPTY;
       Predicate var2;
       if (var1 instanceof LivingEntity) {
          LivingEntity var10004 = (LivingEntity)var1;
@@ -46,7 +46,7 @@ public class EntityCollisionContext implements CollisionContext {
    }
 
    public boolean isHoldingItem(Item var1) {
-      return this.heldItem == var1;
+      return this.heldItem.is(var1);
    }
 
    public boolean canStandOnFluid(FluidState var1, FlowingFluid var2) {
@@ -62,7 +62,7 @@ public class EntityCollisionContext implements CollisionContext {
    }
 
    static {
-      EMPTY = new EntityCollisionContext(false, -1.7976931348623157E308D, Items.AIR, (var0) -> {
+      EMPTY = new EntityCollisionContext(false, -1.7976931348623157E308D, ItemStack.EMPTY, (var0) -> {
          return false;
       }) {
          public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {

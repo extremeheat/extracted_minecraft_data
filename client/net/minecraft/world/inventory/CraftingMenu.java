@@ -91,7 +91,7 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, var2, this.craftSlots);
+         this.clearContainer(var1, this.craftSlots);
       });
    }
 

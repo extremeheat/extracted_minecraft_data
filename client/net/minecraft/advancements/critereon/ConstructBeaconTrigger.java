@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 
 public class ConstructBeaconTrigger extends SimpleCriterionTrigger<ConstructBeaconTrigger.TriggerInstance> {
    private static final ResourceLocation ID = new ResourceLocation("construct_beacon");
@@ -21,7 +20,7 @@ public class ConstructBeaconTrigger extends SimpleCriterionTrigger<ConstructBeac
       return new ConstructBeaconTrigger.TriggerInstance(var2, var4);
    }
 
-   public void trigger(ServerPlayer var1, BeaconBlockEntity var2) {
+   public void trigger(ServerPlayer var1, int var2) {
       this.trigger(var1, (var1x) -> {
          return var1x.matches(var2);
       });
@@ -44,8 +43,8 @@ public class ConstructBeaconTrigger extends SimpleCriterionTrigger<ConstructBeac
          return new ConstructBeaconTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
       }
 
-      public boolean matches(BeaconBlockEntity var1) {
-         return this.level.matches(var1.getLevels());
+      public boolean matches(int var1) {
+         return this.level.matches(var1);
       }
 
       public JsonObject serializeToJson(SerializationContext var1) {

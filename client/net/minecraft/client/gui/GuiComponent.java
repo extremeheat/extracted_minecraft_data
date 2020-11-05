@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.util.function.BiConsumer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -70,7 +71,7 @@ public abstract class GuiComponent {
       RenderSystem.enableBlend();
       RenderSystem.disableTexture();
       RenderSystem.defaultBlendFunc();
-      var10.begin(7, DefaultVertexFormat.POSITION_COLOR);
+      var10.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
       var10.vertex(var0, (float)var1, (float)var4, 0.0F).color(var7, var8, var9, var11).endVertex();
       var10.vertex(var0, (float)var3, (float)var4, 0.0F).color(var7, var8, var9, var11).endVertex();
       var10.vertex(var0, (float)var3, (float)var2, 0.0F).color(var7, var8, var9, var11).endVertex();
@@ -89,7 +90,7 @@ public abstract class GuiComponent {
       RenderSystem.shadeModel(7425);
       Tesselator var8 = Tesselator.getInstance();
       BufferBuilder var9 = var8.getBuilder();
-      var9.begin(7, DefaultVertexFormat.POSITION_COLOR);
+      var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
       fillGradient(var1.last().pose(), var9, var2, var3, var4, var5, this.blitOffset, var6, var7);
       var8.end();
       RenderSystem.shadeModel(7424);
@@ -166,7 +167,7 @@ public abstract class GuiComponent {
 
    private static void innerBlit(Matrix4f var0, int var1, int var2, int var3, int var4, int var5, float var6, float var7, float var8, float var9) {
       BufferBuilder var10 = Tesselator.getInstance().getBuilder();
-      var10.begin(7, DefaultVertexFormat.POSITION_TEX);
+      var10.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
       var10.vertex(var0, (float)var1, (float)var4, (float)var5).uv(var6, var9).endVertex();
       var10.vertex(var0, (float)var2, (float)var4, (float)var5).uv(var7, var9).endVertex();
       var10.vertex(var0, (float)var2, (float)var3, (float)var5).uv(var7, var8).endVertex();

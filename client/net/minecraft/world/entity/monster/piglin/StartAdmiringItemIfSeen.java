@@ -17,7 +17,7 @@ public class StartAdmiringItemIfSeen<E extends Piglin> extends Behavior<E> {
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
       ItemEntity var3 = (ItemEntity)var2.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM).get();
-      return PiglinAi.isLovedItem(var3.getItem().getItem());
+      return PiglinAi.isLovedItem(var3.getItem());
    }
 
    protected void start(ServerLevel var1, E var2, long var3) {

@@ -70,12 +70,12 @@ public class ServerFunctionManager {
 
          return 0;
       } else {
+         int var6;
          try {
             this.isInFunction = true;
             int var4 = 0;
             CommandFunction.Entry[] var5 = var1.getEntries();
 
-            int var6;
             for(var6 = var5.length - 1; var6 >= 0; --var6) {
                this.commandQueue.push(new ServerFunctionManager.QueuedCommand(this, var2, var5[var6]));
             }
@@ -103,12 +103,13 @@ public class ServerFunctionManager {
             }
 
             var6 = var4;
-            return var6;
          } finally {
             this.commandQueue.clear();
             this.nestedCalls.clear();
             this.isInFunction = false;
          }
+
+         return var6;
       }
    }
 

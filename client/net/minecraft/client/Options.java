@@ -165,7 +165,6 @@ public class Options {
       this.incompatibleResourcePacks = Lists.newArrayList();
       this.chatVisibility = ChatVisiblity.FULL;
       this.chatOpacity = 1.0D;
-      this.chatLineSpacing = 0.0D;
       this.textBackgroundOpacity = 0.5D;
       this.pauseOnLostFocus = true;
       this.modelParts = Sets.newHashSet(PlayerModelPart.values());
@@ -175,7 +174,6 @@ public class Options {
       this.chatWidth = 1.0D;
       this.chatHeightUnfocused = 0.44366195797920227D;
       this.chatHeightFocused = 1.0D;
-      this.chatDelay = 0.0D;
       this.mipmapLevels = 4;
       this.sourceVolumes = Maps.newEnumMap(SoundSource.class);
       this.useNativeTransport = true;

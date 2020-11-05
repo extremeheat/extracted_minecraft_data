@@ -96,10 +96,10 @@ public abstract class ChunkGenerator {
                double var12 = (double)(4 * var17 + var17 * var10 * 6) + (var6.nextDouble() - 0.5D) * (double)var17 * 2.5D;
                int var14 = (int)Math.round(Math.cos(var7) * var12);
                int var15 = (int)Math.round(Math.sin(var7) * var12);
-               BlockPos var16 = this.biomeSource.findBiomeHorizontal((var14 << 4) + 8, 0, (var15 << 4) + 8, 112, var2::contains, var6);
+               BlockPos var16 = this.biomeSource.findBiomeHorizontal(SectionPos.sectionToBlockCoord(var14, 8), 0, SectionPos.sectionToBlockCoord(var15, 8), 112, var2::contains, var6);
                if (var16 != null) {
-                  var14 = var16.getX() >> 4;
-                  var15 = var16.getZ() >> 4;
+                  var14 = SectionPos.blockToSectionCoord(var16.getX());
+                  var15 = SectionPos.blockToSectionCoord(var16.getZ());
                }
 
                this.strongholdPositions.add(new ChunkPos(var14, var15));
@@ -168,7 +168,7 @@ public abstract class ChunkGenerator {
 
          while(var10.hasNext()) {
             ChunkPos var11 = (ChunkPos)var10.next();
-            var9.set((var11.x << 4) + 8, 32, (var11.z << 4) + 8);
+            var9.set(SectionPos.sectionToBlockCoord(var11.x, 8), 32, SectionPos.sectionToBlockCoord(var11.z, 8));
             double var12 = var9.distSqr(var3);
             if (var14 == null) {
                var14 = new BlockPos(var9);
@@ -189,10 +189,10 @@ public abstract class ChunkGenerator {
    public void applyBiomeDecoration(WorldGenRegion var1, StructureFeatureManager var2) {
       int var3 = var1.getCenterX();
       int var4 = var1.getCenterZ();
-      int var5 = var3 * 16;
-      int var6 = var4 * 16;
+      int var5 = SectionPos.sectionToBlockCoord(var3);
+      int var6 = SectionPos.sectionToBlockCoord(var4);
       BlockPos var7 = new BlockPos(var5, 0, var6);
-      Biome var8 = this.biomeSource.getNoiseBiome((var3 << 2) + 2, 2, (var4 << 2) + 2);
+      Biome var8 = this.biomeSource.getPrimaryBiome(var3, var4);
       WorldgenRandom var9 = new WorldgenRandom();
       long var10 = var9.setDecorationSeed(var1.getSeed(), var5, var6);
 
@@ -232,7 +232,7 @@ public abstract class ChunkGenerator {
 
    public void createStructures(RegistryAccess var1, StructureFeatureManager var2, ChunkAccess var3, StructureManager var4, long var5) {
       ChunkPos var7 = var3.getPos();
-      Biome var8 = this.biomeSource.getNoiseBiome((var7.x << 2) + 2, 0, (var7.z << 2) + 2);
+      Biome var8 = this.biomeSource.getPrimaryBiome(var7.x, var7.z);
       this.createStructure(StructureFeatures.STRONGHOLD, var1, var2, var3, var4, var5, var7, var8);
       Iterator var9 = var8.getGenerationSettings().structures().iterator();
 
@@ -258,8 +258,8 @@ public abstract class ChunkGenerator {
       boolean var4 = true;
       int var5 = var3.getPos().x;
       int var6 = var3.getPos().z;
-      int var7 = var5 << 4;
-      int var8 = var6 << 4;
+      int var7 = SectionPos.sectionToBlockCoord(var5);
+      int var8 = SectionPos.sectionToBlockCoord(var6);
       SectionPos var9 = SectionPos.of(var3.getPos(), 0);
 
       for(int var10 = var5 - 8; var10 <= var5 + 8; ++var10) {

@@ -17,6 +17,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightningRodBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -48,6 +50,15 @@ public class LightningBolt extends Entity {
       this.cause = var1;
    }
 
+   private void powerLightningRod() {
+      BlockPos var1 = this.blockPosition().below();
+      BlockState var2 = this.level.getBlockState(var1);
+      if (var2.is(Blocks.LIGHTNING_ROD)) {
+         ((LightningRodBlock)var2.getBlock()).onLightningStrike(var2, this.level, var1);
+      }
+
+   }
+
    public void tick() {
       super.tick();
       if (this.life == 2) {
@@ -56,6 +67,7 @@ public class LightningBolt extends Entity {
             this.spawnFire(4);
          }
 
+         this.powerLightningRod();
          this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER, 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
          this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.WEATHER, 2.0F, 0.5F + this.random.nextFloat() * 0.2F);
       }
@@ -63,7 +75,7 @@ public class LightningBolt extends Entity {
       --this.life;
       if (this.life < 0) {
          if (this.flashes == 0) {
-            this.remove();
+            this.discard();
          } else if (this.life < -this.random.nextInt(10)) {
             --this.flashes;
             this.life = 1;

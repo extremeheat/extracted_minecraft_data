@@ -4,6 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Function;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -12,55 +17,46 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 
 public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> implements ArmedModel, HeadedModel {
-   public ModelPart head;
-   public ModelPart hat;
-   public ModelPart body;
-   public ModelPart rightArm;
-   public ModelPart leftArm;
-   public ModelPart rightLeg;
-   public ModelPart leftLeg;
+   public final ModelPart head;
+   public final ModelPart hat;
+   public final ModelPart body;
+   public final ModelPart rightArm;
+   public final ModelPart leftArm;
+   public final ModelPart rightLeg;
+   public final ModelPart leftLeg;
    public HumanoidModel.ArmPose leftArmPose;
    public HumanoidModel.ArmPose rightArmPose;
    public boolean crouching;
    public float swimAmount;
 
-   public HumanoidModel(float var1) {
-      this(RenderType::entityCutoutNoCull, var1, 0.0F, 64, 32);
+   public HumanoidModel(ModelPart var1) {
+      this(var1, RenderType::entityCutoutNoCull);
    }
 
-   protected HumanoidModel(float var1, float var2, int var3, int var4) {
-      this(RenderType::entityCutoutNoCull, var1, var2, var3, var4);
-   }
-
-   public HumanoidModel(Function<ResourceLocation, RenderType> var1, float var2, float var3, int var4, int var5) {
-      super(var1, true, 16.0F, 0.0F, 2.0F, 2.0F, 24.0F);
+   public HumanoidModel(ModelPart var1, Function<ResourceLocation, RenderType> var2) {
+      super(var2, true, 16.0F, 0.0F, 2.0F, 2.0F, 24.0F);
       this.leftArmPose = HumanoidModel.ArmPose.EMPTY;
       this.rightArmPose = HumanoidModel.ArmPose.EMPTY;
-      this.texWidth = var4;
-      this.texHeight = var5;
-      this.head = new ModelPart(this, 0, 0);
-      this.head.addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var2);
-      this.head.setPos(0.0F, 0.0F + var3, 0.0F);
-      this.hat = new ModelPart(this, 32, 0);
-      this.hat.addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var2 + 0.5F);
-      this.hat.setPos(0.0F, 0.0F + var3, 0.0F);
-      this.body = new ModelPart(this, 16, 16);
-      this.body.addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var2);
-      this.body.setPos(0.0F, 0.0F + var3, 0.0F);
-      this.rightArm = new ModelPart(this, 40, 16);
-      this.rightArm.addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var2);
-      this.rightArm.setPos(-5.0F, 2.0F + var3, 0.0F);
-      this.leftArm = new ModelPart(this, 40, 16);
-      this.leftArm.mirror = true;
-      this.leftArm.addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var2);
-      this.leftArm.setPos(5.0F, 2.0F + var3, 0.0F);
-      this.rightLeg = new ModelPart(this, 0, 16);
-      this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var2);
-      this.rightLeg.setPos(-1.9F, 12.0F + var3, 0.0F);
-      this.leftLeg = new ModelPart(this, 0, 16);
-      this.leftLeg.mirror = true;
-      this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var2);
-      this.leftLeg.setPos(1.9F, 12.0F + var3, 0.0F);
+      this.head = var1.getChild("head");
+      this.hat = var1.getChild("hat");
+      this.body = var1.getChild("body");
+      this.rightArm = var1.getChild("right_arm");
+      this.leftArm = var1.getChild("left_arm");
+      this.rightLeg = var1.getChild("right_leg");
+      this.leftLeg = var1.getChild("left_leg");
+   }
+
+   public static MeshDefinition createMesh(CubeDeformation var0, float var1) {
+      MeshDefinition var2 = new MeshDefinition();
+      PartDefinition var3 = var2.getRoot();
+      var3.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.offset(0.0F, 0.0F + var1, 0.0F));
+      var3.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0.extend(0.5F)), PartPose.offset(0.0F, 0.0F + var1, 0.0F));
+      var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.offset(0.0F, 0.0F + var1, 0.0F));
+      var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.0F + var1, 0.0F));
+      var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 16).mirror().addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F + var1, 0.0F));
+      var3.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(-1.9F, 12.0F + var1, 0.0F));
+      var3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(1.9F, 12.0F + var1, 0.0F));
+      return var2;
    }
 
    protected Iterable<ModelPart> headParts() {
@@ -240,6 +236,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          break;
       case CROSSBOW_HOLD:
          AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
+         break;
+      case SPYGLASS:
+         this.rightArm.xRot = Mth.clamp(this.head.xRot + AnimationUtils.getSpyglassArmXRot(this.rightArm), -2.4F, 3.3F);
+         this.rightArm.yRot = Mth.clamp(this.head.yRot + -0.7853982F, -1.1F, 0.0F);
       }
 
    }
@@ -272,6 +272,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          break;
       case CROSSBOW_HOLD:
          AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, false);
+         break;
+      case SPYGLASS:
+         this.leftArm.xRot = AnimationUtils.getSpyglassArmXRot(this.leftArm);
+         this.leftArm.yRot = 0.7853982F;
       }
 
    }
@@ -363,7 +367,7 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
       return this.head;
    }
 
-   protected HumanoidArm getAttackArm(T var1) {
+   private HumanoidArm getAttackArm(T var1) {
       HumanoidArm var2 = var1.getMainArm();
       return var1.swingingArm == InteractionHand.MAIN_HAND ? var2 : var2.getOpposite();
    }
@@ -375,7 +379,8 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
       BOW_AND_ARROW(true),
       THROW_SPEAR(false),
       CROSSBOW_CHARGE(true),
-      CROSSBOW_HOLD(true);
+      CROSSBOW_HOLD(true),
+      SPYGLASS(false);
 
       private final boolean twoHanded;
 

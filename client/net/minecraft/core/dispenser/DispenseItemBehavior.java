@@ -52,6 +52,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BucketPickup;
 import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.CandleBlock;
+import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.CarvedPumpkinBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
@@ -385,13 +387,15 @@ public interface DispenseItemBehavior {
             BlockState var6 = var3.getBlockState(var5);
             if (BaseFireBlock.canBePlacedAt(var3, var5, var4)) {
                var3.setBlockAndUpdate(var5, BaseFireBlock.getState(var3, var5));
-            } else if (CampfireBlock.canLight(var6)) {
-               var3.setBlockAndUpdate(var5, (BlockState)var6.setValue(BlockStateProperties.LIT, true));
-            } else if (var6.getBlock() instanceof TntBlock) {
-               TntBlock.explode(var3, var5);
-               var3.removeBlock(var5, false);
+            } else if (!CampfireBlock.canLight(var6) && !CandleBlock.canLight(var6) && !CandleCakeBlock.canLight(var6)) {
+               if (var6.getBlock() instanceof TntBlock) {
+                  TntBlock.explode(var3, var5);
+                  var3.removeBlock(var5, false);
+               } else {
+                  this.setSuccess(false);
+               }
             } else {
-               this.setSuccess(false);
+               var3.setBlockAndUpdate(var5, (BlockState)var6.setValue(BlockStateProperties.LIT, true));
             }
 
             if (this.isSuccess() && var2.hurt(1, var3.random, (ServerPlayer)null)) {

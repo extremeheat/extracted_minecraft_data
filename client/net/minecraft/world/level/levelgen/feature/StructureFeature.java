@@ -153,8 +153,8 @@ public abstract class StructureFeature<C extends FeatureConfiguration> {
    @Nullable
    public BlockPos getNearestGeneratedFeature(LevelReader var1, StructureFeatureManager var2, BlockPos var3, int var4, boolean var5, long var6, StructureFeatureConfiguration var8) {
       int var9 = var8.spacing();
-      int var10 = var3.getX() >> 4;
-      int var11 = var3.getZ() >> 4;
+      int var10 = SectionPos.blockToSectionCoord(var3.getX());
+      int var11 = SectionPos.blockToSectionCoord(var3.getZ());
       int var12 = 0;
 
       for(WorldgenRandom var13 = new WorldgenRandom(); var12 <= var4; ++var12) {
@@ -167,16 +167,19 @@ public abstract class StructureFeature<C extends FeatureConfiguration> {
                   int var18 = var10 + var9 * var14;
                   int var19 = var11 + var9 * var16;
                   ChunkPos var20 = this.getPotentialFeatureChunk(var8, var6, var13, var18, var19);
-                  ChunkAccess var21 = var1.getChunk(var20.x, var20.z, ChunkStatus.STRUCTURE_STARTS);
-                  StructureStart var22 = var2.getStartForFeature(SectionPos.of(var21.getPos(), 0), this, var21);
-                  if (var22 != null && var22.isValid()) {
-                     if (var5 && var22.canBeReferenced()) {
-                        var22.addReference();
-                        return var22.getLocatePos();
-                     }
+                  boolean var21 = var1.getBiomeManager().getPrimaryBiomeAtChunk(var20.x, var20.z).getGenerationSettings().isValidStart(this);
+                  if (var21) {
+                     ChunkAccess var22 = var1.getChunk(var20.x, var20.z, ChunkStatus.STRUCTURE_STARTS);
+                     StructureStart var23 = var2.getStartForFeature(SectionPos.of(var22.getPos(), 0), this, var22);
+                     if (var23 != null && var23.isValid()) {
+                        if (var5 && var23.canBeReferenced()) {
+                           var23.addReference();
+                           return var23.getLocatePos();
+                        }
 
-                     if (!var5) {
-                        return var22.getLocatePos();
+                        if (!var5) {
+                           return var23.getLocatePos();
+                        }
                      }
                   }
 

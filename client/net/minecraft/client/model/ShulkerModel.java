@@ -2,23 +2,34 @@ package net.minecraft.client.model;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.monster.Shulker;
 
 public class ShulkerModel<T extends Shulker> extends ListModel<T> {
-   private final ModelPart base = new ModelPart(64, 64, 0, 28);
-   private final ModelPart lid = new ModelPart(64, 64, 0, 0);
-   private final ModelPart head = new ModelPart(64, 64, 0, 52);
+   private final ModelPart base;
+   private final ModelPart lid;
+   private final ModelPart head;
 
-   public ShulkerModel() {
+   public ShulkerModel(ModelPart var1) {
       super(RenderType::entityCutoutNoCullZOffset);
-      this.lid.addBox(-8.0F, -16.0F, -8.0F, 16.0F, 12.0F, 16.0F);
-      this.lid.setPos(0.0F, 24.0F, 0.0F);
-      this.base.addBox(-8.0F, -8.0F, -8.0F, 16.0F, 8.0F, 16.0F);
-      this.base.setPos(0.0F, 24.0F, 0.0F);
-      this.head.addBox(-3.0F, 0.0F, -3.0F, 6.0F, 6.0F, 6.0F);
-      this.head.setPos(0.0F, 12.0F, 0.0F);
+      this.lid = var1.getChild("lid");
+      this.base = var1.getChild("base");
+      this.head = var1.getChild("head");
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 12.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
+      var1.addOrReplaceChild("base", CubeListBuilder.create().texOffs(0, 28).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 8.0F, 16.0F), PartPose.offset(0.0F, 24.0F, 0.0F));
+      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 52).addBox(-3.0F, 0.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.offset(0.0F, 12.0F, 0.0F));
+      return LayerDefinition.create(var0, 64, 64);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {

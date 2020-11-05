@@ -133,11 +133,11 @@ public class MouseHandler {
                   if (this.minecraft.gui.getSpectatorGui().isMenuActive()) {
                      this.minecraft.gui.getSpectatorGui().onMouseScrolled((double)(-var13));
                   } else {
-                     float var10 = Mth.clamp(this.minecraft.player.abilities.getFlyingSpeed() + var13 * 0.005F, 0.0F, 0.2F);
-                     this.minecraft.player.abilities.setFlyingSpeed(var10);
+                     float var10 = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + var13 * 0.005F, 0.0F, 0.2F);
+                     this.minecraft.player.getAbilities().setFlyingSpeed(var10);
                   }
                } else {
-                  this.minecraft.player.inventory.swapPaint((double)var13);
+                  this.minecraft.player.getInventory().swapPaint((double)var13);
                }
             }
          }
@@ -221,31 +221,37 @@ public class MouseHandler {
       this.lastMouseEventTime = var1;
       if (this.isMouseGrabbed() && this.minecraft.isWindowActive()) {
          double var9 = this.minecraft.options.sensitivity * 0.6000000238418579D + 0.20000000298023224D;
-         double var11 = var9 * var9 * var9 * 8.0D;
+         double var11 = var9 * var9 * var9;
+         double var13 = var11 * 8.0D;
          double var5;
          double var7;
          if (this.minecraft.options.smoothCamera) {
-            double var13 = this.smoothTurnX.getNewDeltaValue(this.accumulatedDX * var11, var3 * var11);
-            double var15 = this.smoothTurnY.getNewDeltaValue(this.accumulatedDY * var11, var3 * var11);
-            var5 = var13;
-            var7 = var15;
-         } else {
+            double var15 = this.smoothTurnX.getNewDeltaValue(this.accumulatedDX * var13, var3 * var13);
+            double var17 = this.smoothTurnY.getNewDeltaValue(this.accumulatedDY * var13, var3 * var13);
+            var5 = var15;
+            var7 = var17;
+         } else if (this.minecraft.options.getCameraType().isFirstPerson() && this.minecraft.player.isScoping()) {
             this.smoothTurnX.reset();
             this.smoothTurnY.reset();
             var5 = this.accumulatedDX * var11;
             var7 = this.accumulatedDY * var11;
+         } else {
+            this.smoothTurnX.reset();
+            this.smoothTurnY.reset();
+            var5 = this.accumulatedDX * var13;
+            var7 = this.accumulatedDY * var13;
          }
 
          this.accumulatedDX = 0.0D;
          this.accumulatedDY = 0.0D;
-         byte var17 = 1;
+         byte var19 = 1;
          if (this.minecraft.options.invertYMouse) {
-            var17 = -1;
+            var19 = -1;
          }
 
          this.minecraft.getTutorial().onMouse(var5, var7);
          if (this.minecraft.player != null) {
-            this.minecraft.player.turn(var5, var7 * (double)var17);
+            this.minecraft.player.turn(var5, var7 * (double)var19);
          }
 
       } else {

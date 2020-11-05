@@ -55,7 +55,7 @@ public class RespawnAnchorBlock extends Block {
          return InteractionResult.PASS;
       } else if (isRespawnFuel(var7) && canBeCharged(var1)) {
          charge(var2, var3, var1);
-         if (!var4.abilities.instabuild) {
+         if (!var4.getAbilities().instabuild) {
             var7.shrink(1);
          }
 
@@ -83,7 +83,7 @@ public class RespawnAnchorBlock extends Block {
    }
 
    private static boolean isRespawnFuel(ItemStack var0) {
-      return var0.getItem() == Items.GLOWSTONE;
+      return var0.is(Items.GLOWSTONE);
    }
 
    private static boolean canBeCharged(BlockState var0) {

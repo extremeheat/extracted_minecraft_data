@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -144,7 +145,7 @@ public class GLX {
       Tesselator var4 = RenderSystem.renderThreadTesselator();
       BufferBuilder var5 = var4.getBuilder();
       GL11.glLineWidth(4.0F);
-      var5.begin(1, DefaultVertexFormat.POSITION_COLOR);
+      var5.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
       if (var1) {
          var5.vertex(0.0D, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
          var5.vertex((double)var0, 0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
@@ -162,7 +163,7 @@ public class GLX {
 
       var4.end();
       GL11.glLineWidth(2.0F);
-      var5.begin(1, DefaultVertexFormat.POSITION_COLOR);
+      var5.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
       if (var1) {
          var5.vertex(0.0D, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();
          var5.vertex((double)var0, 0.0D, 0.0D).color(255, 0, 0, 255).endVertex();

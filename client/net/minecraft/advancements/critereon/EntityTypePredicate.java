@@ -69,7 +69,7 @@ public abstract class EntityTypePredicate {
       }
 
       public boolean matches(EntityType<?> var1) {
-         return this.tag.contains(var1);
+         return var1.is(this.tag);
       }
 
       public JsonElement serializeToJson() {

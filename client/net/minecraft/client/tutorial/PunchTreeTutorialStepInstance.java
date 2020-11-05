@@ -34,7 +34,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
          if (this.timeWaiting == 1) {
             LocalPlayer var1 = this.tutorial.getMinecraft().player;
             if (var1 != null) {
-               if (var1.inventory.contains((Tag)ItemTags.LOGS)) {
+               if (var1.getInventory().contains((Tag)ItemTags.LOGS)) {
                   this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                   return;
                }
@@ -81,7 +81,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    public void onGetItem(ItemStack var1) {
-      if (ItemTags.LOGS.contains(var1.getItem())) {
+      if (var1.is((Tag)ItemTags.LOGS)) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
       }
    }

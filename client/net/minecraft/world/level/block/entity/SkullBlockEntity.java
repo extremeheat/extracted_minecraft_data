@@ -6,15 +6,16 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.properties.Property;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class SkullBlockEntity extends BlockEntity implements TickableBlockEntity {
+public class SkullBlockEntity extends BlockEntity {
    @Nullable
    private static GameProfileCache profileCache;
    @Nullable
@@ -24,8 +25,8 @@ public class SkullBlockEntity extends BlockEntity implements TickableBlockEntity
    private int mouthTickCount;
    private boolean isMovingMouth;
 
-   public SkullBlockEntity() {
-      super(BlockEntityType.SKULL);
+   public SkullBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.SKULL, var1, var2);
    }
 
    public static void setProfileCache(GameProfileCache var0) {
@@ -47,28 +48,25 @@ public class SkullBlockEntity extends BlockEntity implements TickableBlockEntity
       return var1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      if (var2.contains("SkullOwner", 10)) {
-         this.setOwner(NbtUtils.readGameProfile(var2.getCompound("SkullOwner")));
-      } else if (var2.contains("ExtraType", 8)) {
-         String var3 = var2.getString("ExtraType");
-         if (!StringUtil.isNullOrEmpty(var3)) {
-            this.setOwner(new GameProfile((UUID)null, var3));
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      if (var1.contains("SkullOwner", 10)) {
+         this.setOwner(NbtUtils.readGameProfile(var1.getCompound("SkullOwner")));
+      } else if (var1.contains("ExtraType", 8)) {
+         String var2 = var1.getString("ExtraType");
+         if (!StringUtil.isNullOrEmpty(var2)) {
+            this.setOwner(new GameProfile((UUID)null, var2));
          }
       }
 
    }
 
-   public void tick() {
-      BlockState var1 = this.getBlockState();
-      if (var1.is(Blocks.DRAGON_HEAD) || var1.is(Blocks.DRAGON_WALL_HEAD)) {
-         if (this.level.hasNeighborSignal(this.worldPosition)) {
-            this.isMovingMouth = true;
-            ++this.mouthTickCount;
-         } else {
-            this.isMovingMouth = false;
-         }
+   public static void dragonHeadAnimation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
+      if (var0.hasNeighborSignal(var1)) {
+         var3.isMovingMouth = true;
+         ++var3.mouthTickCount;
+      } else {
+         var3.isMovingMouth = false;
       }
 
    }

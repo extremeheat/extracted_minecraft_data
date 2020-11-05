@@ -100,7 +100,7 @@ public class PoiSection {
    public void remove(BlockPos var1) {
       PoiRecord var2 = (PoiRecord)this.records.remove(SectionPos.sectionRelativePos(var1));
       if (var2 == null) {
-         LOGGER.error("POI data mismatch: never registered at " + var1);
+         LOGGER.error("POI data mismatch: never registered at {}", var1);
       } else {
          ((Set)this.byType.get(var2.getPoiType())).remove(var2);
          LOGGER.debug("Removed POI of type {} @ {}", new Supplier[]{var2::getPoiType, var2::getPos});

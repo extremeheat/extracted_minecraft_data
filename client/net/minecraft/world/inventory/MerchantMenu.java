@@ -146,10 +146,7 @@ public class MerchantMenu extends AbstractContainerMenu {
       super.removed(var1);
       this.trader.setTradingPlayer((Player)null);
       if (!this.trader.getLevel().isClientSide) {
-         if (var1.isAlive() && (!(var1 instanceof ServerPlayer) || !((ServerPlayer)var1).hasDisconnected())) {
-            var1.inventory.placeItemBackInInventory(var1.level, this.tradeContainer.removeItemNoUpdate(0));
-            var1.inventory.placeItemBackInInventory(var1.level, this.tradeContainer.removeItemNoUpdate(1));
-         } else {
+         if (!var1.isAlive() || var1 instanceof ServerPlayer && ((ServerPlayer)var1).hasDisconnected()) {
             ItemStack var2 = this.tradeContainer.removeItemNoUpdate(0);
             if (!var2.isEmpty()) {
                var1.drop(var2, false);
@@ -159,6 +156,9 @@ public class MerchantMenu extends AbstractContainerMenu {
             if (!var2.isEmpty()) {
                var1.drop(var2, false);
             }
+         } else if (var1 instanceof ServerPlayer) {
+            var1.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(0));
+            var1.getInventory().placeItemBackInInventory(this.tradeContainer.removeItemNoUpdate(1));
          }
 
       }
@@ -198,7 +198,7 @@ public class MerchantMenu extends AbstractContainerMenu {
       if (!var2.isEmpty()) {
          for(int var3 = 3; var3 < 39; ++var3) {
             ItemStack var4 = ((Slot)this.slots.get(var3)).getItem();
-            if (!var4.isEmpty() && this.isSameItem(var2, var4)) {
+            if (!var4.isEmpty() && ItemStack.isSameItemSameTags(var2, var4)) {
                ItemStack var5 = this.tradeContainer.getItem(var1);
                int var6 = var5.isEmpty() ? 0 : var5.getCount();
                int var7 = Math.min(var2.getMaxStackSize() - var6, var4.getCount());
@@ -214,10 +214,6 @@ public class MerchantMenu extends AbstractContainerMenu {
          }
       }
 
-   }
-
-   private boolean isSameItem(ItemStack var1, ItemStack var2) {
-      return var1.getItem() == var2.getItem() && ItemStack.tagMatches(var1, var2);
    }
 
    public void setOffers(MerchantOffers var1) {

@@ -18,7 +18,7 @@ import net.minecraft.util.TimeUtil;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -130,7 +130,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
 
-      this.readPersistentAngerSaveData((ServerLevel)this.level, var1);
+      this.readPersistentAngerSaveData(this.level, var1);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -300,12 +300,12 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       ItemStack var3 = var1.getItemInHand(var2);
       Item var4 = var3.getItem();
       if (this.level.isClientSide) {
-         boolean var7 = this.isOwnedBy(var1) || this.isTame() || var4 == Items.BONE && !this.isTame() && !this.isAngry();
+         boolean var7 = this.isOwnedBy(var1) || this.isTame() || var3.is(Items.BONE) && !this.isTame() && !this.isAngry();
          return var7 ? InteractionResult.CONSUME : InteractionResult.PASS;
       } else {
          if (this.isTame()) {
             if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-               if (!var1.abilities.instabuild) {
+               if (!var1.getAbilities().instabuild) {
                   var3.shrink(1);
                }
 
@@ -329,14 +329,14 @@ public class Wolf extends TamableAnimal implements NeutralMob {
             DyeColor var5 = ((DyeItem)var4).getDyeColor();
             if (var5 != this.getCollarColor()) {
                this.setCollarColor(var5);
-               if (!var1.abilities.instabuild) {
+               if (!var1.getAbilities().instabuild) {
                   var3.shrink(1);
                }
 
                return InteractionResult.SUCCESS;
             }
-         } else if (var4 == Items.BONE && !this.isAngry()) {
-            if (!var1.abilities.instabuild) {
+         } else if (var3.is(Items.BONE) && !this.isAngry()) {
+            if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 
@@ -416,7 +416,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.entityData.set(DATA_COLLAR_COLOR, var1.getId());
    }
 
-   public Wolf getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Wolf var3 = (Wolf)EntityType.WOLF.create(var1);
       UUID var4 = this.getOwnerUUID();
       if (var4 != null) {
@@ -480,7 +480,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

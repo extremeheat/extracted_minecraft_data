@@ -14,10 +14,13 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction8;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -34,40 +37,40 @@ import org.apache.logging.log4j.Logger;
 
 public class UpgradeData {
    private static final Logger LOGGER = LogManager.getLogger();
-   public static final UpgradeData EMPTY = new UpgradeData();
-   private static final Direction8[] DIRECTIONS = Direction8.values();
+   public static final UpgradeData EMPTY;
+   private static final Direction8[] DIRECTIONS;
    private final EnumSet<Direction8> sides;
    private final int[][] index;
-   private static final Map<Block, UpgradeData.BlockFixer> MAP = new IdentityHashMap();
-   private static final Set<UpgradeData.BlockFixer> CHUNKY_FIXERS = Sets.newHashSet();
+   private static final Map<Block, UpgradeData.BlockFixer> MAP;
+   private static final Set<UpgradeData.BlockFixer> CHUNKY_FIXERS;
 
-   private UpgradeData() {
+   private UpgradeData(LevelHeightAccessor var1) {
       super();
       this.sides = EnumSet.noneOf(Direction8.class);
-      this.index = new int[16][];
+      this.index = new int[var1.getSectionsCount()][];
    }
 
-   public UpgradeData(CompoundTag var1) {
-      this();
+   public UpgradeData(CompoundTag var1, LevelHeightAccessor var2) {
+      this(var2);
       if (var1.contains("Indices", 10)) {
-         CompoundTag var2 = var1.getCompound("Indices");
+         CompoundTag var3 = var1.getCompound("Indices");
 
-         for(int var3 = 0; var3 < this.index.length; ++var3) {
-            String var4 = String.valueOf(var3);
-            if (var2.contains(var4, 11)) {
-               this.index[var3] = var2.getIntArray(var4);
+         for(int var4 = 0; var4 < this.index.length; ++var4) {
+            String var5 = String.valueOf(var4);
+            if (var3.contains(var5, 11)) {
+               this.index[var4] = var3.getIntArray(var5);
             }
          }
       }
 
-      int var7 = var1.getInt("Sides");
-      Direction8[] var8 = Direction8.values();
-      int var9 = var8.length;
+      int var8 = var1.getInt("Sides");
+      Direction8[] var9 = Direction8.values();
+      int var10 = var9.length;
 
-      for(int var5 = 0; var5 < var9; ++var5) {
-         Direction8 var6 = var8[var5];
-         if ((var7 & 1 << var6.ordinal()) != 0) {
-            this.sides.add(var6);
+      for(int var6 = 0; var6 < var10; ++var6) {
+         Direction8 var7 = var9[var6];
+         if ((var8 & 1 << var7.ordinal()) != 0) {
+            this.sides.add(var7);
          }
       }
 
@@ -102,12 +105,12 @@ public class UpgradeData {
          boolean var10 = var3.size() == 1;
          ChunkPos var11 = var0.getPos();
          int var12 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 1 : (var7 ? 0 : 15));
-         int var13 = var11.getMinBlockX() + (!var10 || !var9 && !var8 ? (var7 ? 0 : 15) : 14);
+         int var13 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 14 : (var7 ? 0 : 15));
          int var14 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 1);
          int var15 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 14);
          Direction[] var16 = Direction.values();
          BlockPos.MutableBlockPos var17 = new BlockPos.MutableBlockPos();
-         Iterator var18 = BlockPos.betweenClosed(var12, 0, var14, var13, var2.getMaxBuildHeight() - 1, var15).iterator();
+         Iterator var18 = BlockPos.betweenClosed(var12, var2.getMinBuildHeight(), var14, var13, var2.getMaxBuildHeight() - 1, var15).iterator();
 
          while(var18.hasNext()) {
             BlockPos var19 = (BlockPos)var18.next();
@@ -139,7 +142,7 @@ public class UpgradeData {
       Level var5 = var1.getLevel();
 
       int var6;
-      for(var6 = 0; var6 < 16; ++var6) {
+      for(var6 = 0; var6 < this.index.length; ++var6) {
          LevelChunkSection var7 = var1.getSections()[var6];
          int[] var8 = this.index[var6];
          this.index[var6] = null;
@@ -154,7 +157,7 @@ public class UpgradeData {
                int var15 = var14 & 15;
                int var16 = var14 >> 8 & 15;
                int var17 = var14 >> 4 & 15;
-               var2.set(var4.getMinBlockX() + var15, (var6 << 4) + var16, var4.getMinBlockZ() + var17);
+               var2.set(var4.getMinBlockX() + var15, var7.bottomBlockY() + var16, var4.getMinBlockZ() + var17);
                BlockState var18 = (BlockState)var10.get(var14);
                BlockState var19 = var18;
                Direction[] var20 = var9;
@@ -163,7 +166,7 @@ public class UpgradeData {
                for(int var22 = 0; var22 < var21; ++var22) {
                   Direction var23 = var20[var22];
                   var3.setWithOffset(var2, var23);
-                  if (var2.getX() >> 4 == var4.x && var2.getZ() >> 4 == var4.z) {
+                  if (SectionPos.blockToSectionCoord(var2.getX()) == var4.x && SectionPos.blockToSectionCoord(var2.getZ()) == var4.z) {
                      var19 = updateState(var19, var23, var5, var2, var3);
                   }
                }
@@ -175,7 +178,7 @@ public class UpgradeData {
 
       for(var6 = 0; var6 < this.index.length; ++var6) {
          if (this.index[var6] != null) {
-            LOGGER.warn("Discarding update data for section {} for chunk ({} {})", var6, var4.x, var4.z);
+            LOGGER.warn("Discarding update data for section {} for chunk ({} {})", var5.getSectionYFromSectionIndex(var6), var4.x, var4.z);
          }
 
          this.index[var6] = null;
@@ -222,6 +225,13 @@ public class UpgradeData {
 
       var1.putByte("Sides", (byte)var3);
       return var1;
+   }
+
+   static {
+      EMPTY = new UpgradeData(EmptyBlockGetter.INSTANCE);
+      DIRECTIONS = Direction8.values();
+      MAP = new IdentityHashMap();
+      CHUNKY_FIXERS = Sets.newHashSet();
    }
 
    static enum BlockFixers implements UpgradeData.BlockFixer {

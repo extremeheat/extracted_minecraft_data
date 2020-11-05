@@ -69,7 +69,7 @@ public class SpongeBlock extends Block {
                      var3.add(new Tuple(var12, var7 + 1));
                   }
                } else if (var15 == Material.WATER_PLANT || var15 == Material.REPLACEABLE_WATER_PLANT) {
-                  BlockEntity var16 = var13.getBlock().isEntityBlock() ? var1.getBlockEntity(var12) : null;
+                  BlockEntity var16 = var13.hasBlockEntity() ? var1.getBlockEntity(var12) : null;
                   dropResources(var13, var1, var12, var16);
                   var1.setBlock(var12, Blocks.AIR.defaultBlockState(), 3);
                   ++var4;

@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -118,7 +118,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
             return true;
          }
 
-         Vec3 var8 = RandomPos.getPosTowards((PathfinderMob)var1, 10, 7, Vec3.atBottomCenterOf(var5));
+         Vec3 var8 = DefaultRandomPos.getPosTowards((PathfinderMob)var1, 10, 7, Vec3.atBottomCenterOf(var5), 1.5707963705062866D);
          if (var8 != null) {
             this.path = var1.getNavigation().createPath(var8.x, var8.y, var8.z, 0);
             return this.path != null;

@@ -17,7 +17,7 @@ public class PoweredRailBlock extends BaseRailBlock {
 
    protected PoweredRailBlock(BlockBehaviour.Properties var1) {
       super(true, var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(POWERED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(POWERED, false)).setValue(WATERLOGGED, false));
    }
 
    protected boolean findPoweredRailSignal(Level var1, BlockPos var2, BlockState var3, boolean var4, int var5) {
@@ -249,7 +249,7 @@ public class PoweredRailBlock extends BaseRailBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE, POWERED);
+      var1.add(SHAPE, POWERED, WATERLOGGED);
    }
 
    static {

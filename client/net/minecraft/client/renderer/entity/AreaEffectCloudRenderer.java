@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AreaEffectCloud;
 
 public class AreaEffectCloudRenderer extends EntityRenderer<AreaEffectCloud> {
-   public AreaEffectCloudRenderer(EntityRenderDispatcher var1) {
+   public AreaEffectCloudRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 

@@ -142,6 +142,10 @@ public class RegionFile implements AutoCloseable {
       }
    }
 
+   private static int getTimestamp() {
+      return (int)(Util.getEpochMillis() / 1000L);
+   }
+
    private static boolean isExternalStreamChunk(byte var0) {
       return (var0 & 128) != 0;
    }
@@ -248,6 +252,18 @@ public class RegionFile implements AutoCloseable {
       this.file.force(true);
    }
 
+   public void clear(ChunkPos var1) throws IOException {
+      int var2 = getOffsetIndex(var1);
+      int var3 = this.offsets.get(var2);
+      if (var3 != 0) {
+         this.offsets.put(var2, 0);
+         this.timestamps.put(var2, getTimestamp());
+         this.writeHeader();
+         Files.deleteIfExists(this.getExternalChunkPath(var1));
+         this.usedSectors.free(getSectorNumber(var3), getNumSectors(var3));
+      }
+   }
+
    protected synchronized void write(ChunkPos var1, ByteBuffer var2) throws IOException {
       int var3 = getOffsetIndex(var1);
       int var4 = this.offsets.get(var3);
@@ -273,9 +289,8 @@ public class RegionFile implements AutoCloseable {
          this.file.write(var2, (long)(var9 * 4096));
       }
 
-      int var13 = (int)(Util.getEpochMillis() / 1000L);
       this.offsets.put(var3, this.packSectorOffset(var9, var8));
-      this.timestamps.put(var3, var13);
+      this.timestamps.put(var3, getTimestamp());
       this.writeHeader();
       var10.run();
       if (var5 != 0) {

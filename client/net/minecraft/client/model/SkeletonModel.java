@@ -2,6 +2,12 @@ package net.minecraft.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -12,36 +18,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class SkeletonModel<T extends Mob & RangedAttackMob> extends HumanoidModel<T> {
-   public SkeletonModel() {
-      this(0.0F, false);
+   public SkeletonModel(ModelPart var1) {
+      super(var1);
    }
 
-   public SkeletonModel(float var1, boolean var2) {
-      super(var1);
-      if (!var2) {
-         this.rightArm = new ModelPart(this, 40, 16);
-         this.rightArm.addBox(-1.0F, -2.0F, -1.0F, 2.0F, 12.0F, 2.0F, var1);
-         this.rightArm.setPos(-5.0F, 2.0F, 0.0F);
-         this.leftArm = new ModelPart(this, 40, 16);
-         this.leftArm.mirror = true;
-         this.leftArm.addBox(-1.0F, -2.0F, -1.0F, 2.0F, 12.0F, 2.0F, var1);
-         this.leftArm.setPos(5.0F, 2.0F, 0.0F);
-         this.rightLeg = new ModelPart(this, 0, 16);
-         this.rightLeg.addBox(-1.0F, 0.0F, -1.0F, 2.0F, 12.0F, 2.0F, var1);
-         this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
-         this.leftLeg = new ModelPart(this, 0, 16);
-         this.leftLeg.mirror = true;
-         this.leftLeg.addBox(-1.0F, 0.0F, -1.0F, 2.0F, 12.0F, 2.0F, var1);
-         this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
-      }
-
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 12.0F, 2.0F), PartPose.offset(-5.0F, 2.0F, 0.0F));
+      var1.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 16).mirror().addBox(-1.0F, -2.0F, -1.0F, 2.0F, 12.0F, 2.0F), PartPose.offset(5.0F, 2.0F, 0.0F));
+      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 12.0F, 2.0F), PartPose.offset(-2.0F, 12.0F, 0.0F));
+      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-1.0F, 0.0F, -1.0F, 2.0F, 12.0F, 2.0F), PartPose.offset(2.0F, 12.0F, 0.0F));
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
       this.rightArmPose = HumanoidModel.ArmPose.EMPTY;
       this.leftArmPose = HumanoidModel.ArmPose.EMPTY;
       ItemStack var5 = var1.getItemInHand(InteractionHand.MAIN_HAND);
-      if (var5.getItem() == Items.BOW && var1.isAggressive()) {
+      if (var5.is(Items.BOW) && var1.isAggressive()) {
          if (var1.getMainArm() == HumanoidArm.RIGHT) {
             this.rightArmPose = HumanoidModel.ArmPose.BOW_AND_ARROW;
          } else {
@@ -55,7 +50,7 @@ public class SkeletonModel<T extends Mob & RangedAttackMob> extends HumanoidMode
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
       super.setupAnim((LivingEntity)var1, var2, var3, var4, var5, var6);
       ItemStack var7 = var1.getMainHandItem();
-      if (var1.isAggressive() && (var7.isEmpty() || var7.getItem() != Items.BOW)) {
+      if (var1.isAggressive() && (var7.isEmpty() || !var7.is(Items.BOW))) {
          float var8 = Mth.sin(this.attackTime * 3.1415927F);
          float var9 = Mth.sin((1.0F - (1.0F - this.attackTime) * (1.0F - this.attackTime)) * 3.1415927F);
          this.rightArm.zRot = 0.0F;

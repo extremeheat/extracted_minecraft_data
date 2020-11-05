@@ -1,34 +1,33 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
 
-public class LlamaSpitModel<T extends Entity> extends ListModel<T> {
-   private final ModelPart main;
+public class LlamaSpitModel<T extends Entity> extends HierarchicalModel<T> {
+   private final ModelPart root;
 
-   public LlamaSpitModel() {
-      this(0.0F);
+   public LlamaSpitModel(ModelPart var1) {
+      super();
+      this.root = var1;
    }
 
-   public LlamaSpitModel(float var1) {
-      super();
-      this.main = new ModelPart(this);
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
       boolean var2 = true;
-      this.main.texOffs(0, 0).addBox(-4.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(0.0F, -4.0F, 0.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(0.0F, 0.0F, -4.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(2.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(0.0F, 2.0F, 0.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.texOffs(0, 0).addBox(0.0F, 0.0F, 2.0F, 2.0F, 2.0F, 2.0F, var1);
-      this.main.setPos(0.0F, 0.0F, 0.0F);
+      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F).addBox(0.0F, -4.0F, 0.0F, 2.0F, 2.0F, 2.0F).addBox(0.0F, 0.0F, -4.0F, 2.0F, 2.0F, 2.0F).addBox(0.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F).addBox(2.0F, 0.0F, 0.0F, 2.0F, 2.0F, 2.0F).addBox(0.0F, 2.0F, 0.0F, 2.0F, 2.0F, 2.0F).addBox(0.0F, 0.0F, 2.0F, 2.0F, 2.0F, 2.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
    }
 
-   public Iterable<ModelPart> parts() {
-      return ImmutableList.of(this.main);
+   public ModelPart root() {
+      return this.root;
    }
 }

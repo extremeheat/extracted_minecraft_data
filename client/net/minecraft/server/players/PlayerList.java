@@ -172,8 +172,8 @@ public abstract class PlayerList {
       var13.send(new ClientboundLoginPacket(var2.getId(), var2.gameMode.getGameModeForPlayer(), var2.gameMode.getPreviousGameModeForPlayer(), BiomeManager.obfuscateSeed(var10.getSeed()), var12.isHardcore(), this.server.levelKeys(), this.registryHolder, var10.dimensionType(), var10.dimension(), this.getMaxPlayers(), this.viewDistance, var16, !var15, var10.isDebug(), var10.isFlat()));
       var13.send(new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.BRAND, (new FriendlyByteBuf(Unpooled.buffer())).writeUtf(this.getServer().getServerModName())));
       var13.send(new ClientboundChangeDifficultyPacket(var12.getDifficulty(), var12.isDifficultyLocked()));
-      var13.send(new ClientboundPlayerAbilitiesPacket(var2.abilities));
-      var13.send(new ClientboundSetCarriedItemPacket(var2.inventory.selected));
+      var13.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
+      var13.send(new ClientboundSetCarriedItemPacket(var2.getInventory().selected));
       var13.send(new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes()));
       var13.send(new ClientboundUpdateTagsPacket(this.server.getTags()));
       this.sendPlayerPermissionLevel(var2);
@@ -202,7 +202,7 @@ public abstract class PlayerList {
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendLevelInfo(var2, var10);
       if (!this.server.getResourcePack().isEmpty()) {
-         var2.sendTexturePack(this.server.getResourcePack(), this.server.getResourcePackHash());
+         var2.sendTexturePack(this.server.getResourcePack(), this.server.getResourcePackHash(), this.server.isResourcePackRequired());
       }
 
       Iterator var24 = var2.getActiveEffects().iterator();
@@ -243,12 +243,12 @@ public abstract class PlayerList {
 
             if (!var2.isPassenger()) {
                LOGGER.warn("Couldn't reattach entity to player");
-               var10.despawn(var26);
+               var26.discard();
                var21 = var26.getIndirectPassengers().iterator();
 
                while(var21.hasNext()) {
                   var22 = (Entity)var21.next();
-                  var10.despawn(var22);
+                  var22.discard();
                }
             }
          }
@@ -348,33 +348,26 @@ public abstract class PlayerList {
       this.save(var1);
       if (var1.isPassenger()) {
          Entity var3 = var1.getRootVehicle();
-         if (var3.hasOnePlayerPassenger()) {
+         if (var3.hasExactlyOnePlayerPassenger()) {
             LOGGER.debug("Removing player mount");
             var1.stopRiding();
-            var2.despawn(var3);
-            var3.removed = true;
-
-            Entity var5;
-            for(Iterator var4 = var3.getIndirectPassengers().iterator(); var4.hasNext(); var5.removed = true) {
-               var5 = (Entity)var4.next();
-               var2.despawn(var5);
-            }
-
-            var2.getChunk(var1.xChunk, var1.zChunk).markUnsaved();
+            var3.getPassengersAndSelf().forEach((var0) -> {
+               var0.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
+            });
          }
       }
 
       var1.unRide();
-      var2.removePlayerImmediately(var1);
+      var2.removePlayerImmediately(var1, Entity.RemovalReason.UNLOADED_WITH_PLAYER);
       var1.getAdvancements().stopListening();
       this.players.remove(var1);
       this.server.getCustomBossEvents().onPlayerDisconnect(var1);
-      UUID var6 = var1.getUUID();
-      ServerPlayer var7 = (ServerPlayer)this.playersByUUID.get(var6);
-      if (var7 == var1) {
-         this.playersByUUID.remove(var6);
-         this.stats.remove(var6);
-         this.advancements.remove(var6);
+      UUID var5 = var1.getUUID();
+      ServerPlayer var4 = (ServerPlayer)this.playersByUUID.get(var5);
+      if (var4 == var1) {
+         this.playersByUUID.remove(var5);
+         this.stats.remove(var5);
+         this.advancements.remove(var5);
       }
 
       this.broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, new ServerPlayer[]{var1}));
@@ -442,7 +435,7 @@ public abstract class PlayerList {
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2) {
       this.players.remove(var1);
-      var1.getLevel().removePlayerImmediately(var1);
+      var1.getLevel().removePlayerImmediately(var1, Entity.RemovalReason.DISCARDED);
       BlockPos var3 = var1.getRespawnPosition();
       float var4 = var1.getRespawnAngle();
       boolean var5 = var1.isRespawnForced();
@@ -495,7 +488,7 @@ public abstract class PlayerList {
          var10.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.NO_RESPAWN_BLOCK_AVAILABLE, 0.0F));
       }
 
-      while(!var9.noCollision(var10) && var10.getY() < 256.0D) {
+      while(!var9.noCollision(var10) && var10.getY() < (double)var9.getMaxBuildHeight()) {
          var10.setPos(var10.getX(), var10.getY() + 1.0D, var10.getZ());
       }
 
@@ -716,7 +709,7 @@ public abstract class PlayerList {
    public void sendAllPlayerInfo(ServerPlayer var1) {
       var1.refreshContainer(var1.inventoryMenu);
       var1.resetSentInfo();
-      var1.connection.send(new ClientboundSetCarriedItemPacket(var1.inventory.selected));
+      var1.connection.send(new ClientboundSetCarriedItemPacket(var1.getInventory().selected));
    }
 
    public int getPlayerCount() {

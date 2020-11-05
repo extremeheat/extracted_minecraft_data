@@ -18,4 +18,8 @@ public abstract class NumericTag implements Tag {
    public abstract float getAsFloat();
 
    public abstract Number getAsNumber();
+
+   public String toString() {
+      return this.getAsString();
+   }
 }

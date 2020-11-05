@@ -69,7 +69,7 @@ public class TripWireBlock extends Block {
    }
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().getItem() == Items.SHEARS) {
+      if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
          var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 4);
       }
 
@@ -145,11 +145,10 @@ public class TripWireBlock extends Block {
    }
 
    public boolean shouldConnectTo(BlockState var1, Direction var2) {
-      Block var3 = var1.getBlock();
-      if (var3 == this.hook) {
+      if (var1.is(this.hook)) {
          return var1.getValue(TripWireHookBlock.FACING) == var2.getOpposite();
       } else {
-         return var3 == this;
+         return var1.is(this);
       }
    }
 

@@ -3,12 +3,13 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,13 +20,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AttachedStemBlock extends BushBlock {
    public static final DirectionProperty FACING;
-   private final StemGrownBlock fruit;
    private static final Map<Direction, VoxelShape> AABBS;
+   private final StemGrownBlock fruit;
+   private final Supplier<Item> seedSupplier;
 
-   protected AttachedStemBlock(StemGrownBlock var1, BlockBehaviour.Properties var2) {
-      super(var2);
+   protected AttachedStemBlock(StemGrownBlock var1, Supplier<Item> var2, BlockBehaviour.Properties var3) {
+      super(var3);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
       this.fruit = var1;
+      this.seedSupplier = var2;
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -40,16 +43,8 @@ public class AttachedStemBlock extends BushBlock {
       return var1.is(Blocks.FARMLAND);
    }
 
-   protected Item getSeedItem() {
-      if (this.fruit == Blocks.PUMPKIN) {
-         return Items.PUMPKIN_SEEDS;
-      } else {
-         return this.fruit == Blocks.MELON ? Items.MELON_SEEDS : Items.AIR;
-      }
-   }
-
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return new ItemStack(this.getSeedItem());
+      return new ItemStack((ItemLike)this.seedSupplier.get());
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {

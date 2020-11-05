@@ -2,8 +2,6 @@ package net.minecraft.world.inventory;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 public class ShulkerBoxSlot extends Slot {
    public ShulkerBoxSlot(Container var1, int var2, int var3, int var4) {
@@ -11,6 +9,6 @@ public class ShulkerBoxSlot extends Slot {
    }
 
    public boolean mayPlace(ItemStack var1) {
-      return !(Block.byItem(var1.getItem()) instanceof ShulkerBoxBlock);
+      return var1.getItem().canFitInsideContainerItems();
    }
 }

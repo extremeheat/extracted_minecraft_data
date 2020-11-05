@@ -33,7 +33,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
@@ -251,7 +251,7 @@ public class Fox extends Animal {
       return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.30000001192092896D).add(Attributes.MAX_HEALTH, 10.0D).add(Attributes.FOLLOW_RANGE, 32.0D).add(Attributes.ATTACK_DAMAGE, 2.0D);
    }
 
-   public Fox getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Fox getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Fox var3 = (Fox)EntityType.FOX.create(var1);
       var3.setFoxType(this.random.nextBoolean() ? this.getFoxType() : ((Fox)var2).getFoxType());
       return var3;
@@ -459,7 +459,7 @@ public class Fox extends Animal {
          this.setItemSlot(EquipmentSlot.MAINHAND, var2.split(1));
          this.handDropChances[EquipmentSlot.MAINHAND.getIndex()] = 2.0F;
          this.take(var1, var2.getCount());
-         var1.remove();
+         var1.discard();
          this.ticksSinceEaten = 0;
       }
 
@@ -504,7 +504,7 @@ public class Fox extends Animal {
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.getItem() == Items.SWEET_BERRIES;
+      return var1.is(Items.SWEET_BERRIES);
    }
 
    protected void onOffspringSpawnedFromEgg(Player var1, Mob var2) {
@@ -651,7 +651,7 @@ public class Fox extends Animal {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -899,7 +899,7 @@ public class Fox extends Animal {
       }
    }
 
-   public static class FoxGroupData extends AgableMob.AgableMobGroupData {
+   public static class FoxGroupData extends AgeableMob.AgeableMobGroupData {
       public final Fox.Type type;
 
       public FoxGroupData(Fox.Type var1) {

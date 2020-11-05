@@ -7,20 +7,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Pack implements AutoCloseable {
    private static final Logger LOGGER = LogManager.getLogger();
-   private static final PackMetadataSection BROKEN_ASSETS_FALLBACK;
    private final String id;
    private final Supplier<PackResources> supplier;
    private final Component title;
@@ -40,17 +38,12 @@ public class Pack implements AutoCloseable {
          Pack var9;
          try {
             PackMetadataSection var8 = (PackMetadataSection)var6.getMetadataSection(PackMetadataSection.SERIALIZER);
-            if (var1 && var8 == null) {
-               LOGGER.error("Broken/missing pack.mcmeta detected, fudging it into existance. Please check that your launcher has downloaded all assets for the game correctly!");
-               var8 = BROKEN_ASSETS_FALLBACK;
-            }
-
             if (var8 == null) {
                LOGGER.warn("Couldn't find pack meta for pack {}", var0);
                return null;
             }
 
-            var9 = var3.create(var0, var1, var2, var6, var8, var4, var5);
+            var9 = var3.create(var0, new TextComponent(var6.getName()), var1, var2, var8, var4, var5);
          } catch (Throwable var20) {
             var7 = var20;
             throw var20;
@@ -89,8 +82,8 @@ public class Pack implements AutoCloseable {
       this.packSource = var9;
    }
 
-   public Pack(String var1, boolean var2, Supplier<PackResources> var3, PackResources var4, PackMetadataSection var5, Pack.Position var6, PackSource var7) {
-      this(var1, var2, var3, new TextComponent(var4.getName()), var5.getDescription(), PackCompatibility.forFormat(var5.getPackFormat()), var6, false, var7);
+   public Pack(String var1, Component var2, boolean var3, Supplier<PackResources> var4, PackMetadataSection var5, PackType var6, Pack.Position var7, PackSource var8) {
+      this(var1, var3, var4, var2, var5.getDescription(), PackCompatibility.forMetadata(var5, var6), var7, false, var8);
    }
 
    public Component getTitle() {
@@ -153,10 +146,6 @@ public class Pack implements AutoCloseable {
    public void close() {
    }
 
-   static {
-      BROKEN_ASSETS_FALLBACK = new PackMetadataSection((new TranslatableComponent("resourcePack.broken_assets")).withStyle(new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.ITALIC}), SharedConstants.getCurrentVersion().getPackVersion());
-   }
-
    public static enum Position {
       TOP,
       BOTTOM;
@@ -199,6 +188,6 @@ public class Pack implements AutoCloseable {
    @FunctionalInterface
    public interface PackConstructor {
       @Nullable
-      Pack create(String var1, boolean var2, Supplier<PackResources> var3, PackResources var4, PackMetadataSection var5, Pack.Position var6, PackSource var7);
+      Pack create(String var1, Component var2, boolean var3, Supplier<PackResources> var4, PackMetadataSection var5, Pack.Position var6, PackSource var7);
    }
 }

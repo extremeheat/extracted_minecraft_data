@@ -93,6 +93,7 @@ public class ModelTemplates {
    public static final ModelTemplate THREE_TURTLE_EGGS;
    public static final ModelTemplate FOUR_TURTLE_EGGS;
    public static final ModelTemplate SINGLE_FACE;
+   public static final ModelTemplate CAULDRON_FULL;
    public static final ModelTemplate FLAT_ITEM;
    public static final ModelTemplate FLAT_HANDHELD_ITEM;
    public static final ModelTemplate FLAT_HANDHELD_ROD_ITEM;
@@ -100,6 +101,11 @@ public class ModelTemplates {
    public static final ModelTemplate BED_INVENTORY;
    public static final ModelTemplate BANNER_INVENTORY;
    public static final ModelTemplate SKULL_INVENTORY;
+   public static final ModelTemplate CANDLE;
+   public static final ModelTemplate TWO_CANDLES;
+   public static final ModelTemplate THREE_CANDLES;
+   public static final ModelTemplate FOUR_CANDLES;
+   public static final ModelTemplate CANDLE_CAKE;
 
    private static ModelTemplate create(TextureSlot... var0) {
       return new ModelTemplate(Optional.empty(), Optional.empty(), var0);
@@ -210,6 +216,7 @@ public class ModelTemplates {
       THREE_TURTLE_EGGS = create("template_three_turtle_eggs", TextureSlot.ALL);
       FOUR_TURTLE_EGGS = create("template_four_turtle_eggs", TextureSlot.ALL);
       SINGLE_FACE = create("template_single_face", TextureSlot.TEXTURE);
+      CAULDRON_FULL = create("template_cauldron_full", TextureSlot.CONTENT, TextureSlot.INSIDE, TextureSlot.PARTICLE, TextureSlot.TOP, TextureSlot.BOTTOM, TextureSlot.SIDE);
       FLAT_ITEM = createItem("generated", TextureSlot.LAYER0);
       FLAT_HANDHELD_ITEM = createItem("handheld", TextureSlot.LAYER0);
       FLAT_HANDHELD_ROD_ITEM = createItem("handheld_rod", TextureSlot.LAYER0);
@@ -217,5 +224,10 @@ public class ModelTemplates {
       BED_INVENTORY = createItem("template_bed", TextureSlot.PARTICLE);
       BANNER_INVENTORY = createItem("template_banner");
       SKULL_INVENTORY = createItem("template_skull");
+      CANDLE = create("template_candle", TextureSlot.ALL, TextureSlot.PARTICLE);
+      TWO_CANDLES = create("template_two_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
+      THREE_CANDLES = create("template_three_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
+      FOUR_CANDLES = create("template_four_candles", TextureSlot.ALL, TextureSlot.PARTICLE);
+      CANDLE_CAKE = create("template_cake_with_candle", TextureSlot.CANDLE, TextureSlot.BOTTOM, TextureSlot.SIDE, TextureSlot.TOP, TextureSlot.PARTICLE);
    }
 }

@@ -5,8 +5,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -112,7 +112,7 @@ public class CommandFunction {
          this.function = new CommandFunction.CacheableFunction(var1);
       }
 
-      public void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) {
+      public void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) {
          this.function.get(var1).ifPresent((var4x) -> {
             CommandFunction.Entry[] var5 = var4x.getEntries();
             int var6 = var4 - var3.size();
@@ -138,7 +138,7 @@ public class CommandFunction {
          this.parse = var1;
       }
 
-      public void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException {
+      public void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException {
          var1.getDispatcher().execute(new ParseResults(this.parse.getContext().withSource(var2), this.parse.getReader(), this.parse.getExceptions()));
       }
 
@@ -148,6 +148,6 @@ public class CommandFunction {
    }
 
    public interface Entry {
-      void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException;
+      void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException;
    }
 }

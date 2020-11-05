@@ -3,8 +3,6 @@ package net.minecraft.nbt;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 public class EndTag implements Tag {
    public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
@@ -48,15 +46,15 @@ public class EndTag implements Tag {
    }
 
    public String toString() {
-      return "END";
+      return this.getAsString();
    }
 
    public EndTag copy() {
       return this;
    }
 
-   public Component getPrettyDisplay(String var1, int var2) {
-      return TextComponent.EMPTY;
+   public void accept(TagVisitor var1) {
+      var1.visitEnd(this);
    }
 
    // $FF: synthetic method

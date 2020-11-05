@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -48,19 +47,19 @@ public class FenceBlock extends CrossCollisionBlock {
 
    public boolean connectsTo(BlockState var1, boolean var2, Direction var3) {
       Block var4 = var1.getBlock();
-      boolean var5 = this.isSameFence(var4);
+      boolean var5 = this.isSameFence(var1);
       boolean var6 = var4 instanceof FenceGateBlock && FenceGateBlock.connectsToDirection(var1, var3);
-      return !isExceptionForConnection(var4) && var2 || var5 || var6;
+      return !isExceptionForConnection(var1) && var2 || var5 || var6;
    }
 
-   private boolean isSameFence(Block var1) {
-      return var1.is((Tag)BlockTags.FENCES) && var1.is((Tag)BlockTags.WOODEN_FENCES) == this.defaultBlockState().is(BlockTags.WOODEN_FENCES);
+   private boolean isSameFence(BlockState var1) {
+      return var1.is(BlockTags.FENCES) && var1.is(BlockTags.WOODEN_FENCES) == this.defaultBlockState().is(BlockTags.WOODEN_FENCES);
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
          ItemStack var7 = var4.getItemInHand(var5);
-         return var7.getItem() == Items.LEAD ? InteractionResult.SUCCESS : InteractionResult.PASS;
+         return var7.is(Items.LEAD) ? InteractionResult.SUCCESS : InteractionResult.PASS;
       } else {
          return LeadItem.bindPlayerMobs(var4, var2, var3);
       }

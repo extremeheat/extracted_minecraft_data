@@ -125,7 +125,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
    public void slotsChanged(Container var1) {
       ItemStack var2 = this.inputSlot.getItem();
-      if (var2.getItem() != this.input.getItem()) {
+      if (!var2.is(this.input.getItem())) {
          this.input = var2.copy();
          this.setupRecipeList(var1, var2);
       }
@@ -216,7 +216,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
       super.removed(var1);
       this.resultContainer.removeItemNoUpdate(1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, var1.level, this.container);
+         this.clearContainer(var1, this.container);
       });
    }
 }

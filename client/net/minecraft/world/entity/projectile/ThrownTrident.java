@@ -43,11 +43,6 @@ public class ThrownTrident extends AbstractArrow {
       this.entityData.set(ID_FOIL, var3.hasFoil());
    }
 
-   public ThrownTrident(Level var1, double var2, double var4, double var6) {
-      super(EntityType.TRIDENT, var2, var4, var6, var1);
-      this.tridentItem = new ItemStack(Items.TRIDENT);
-   }
-
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.entityData.define(ID_LOYALTY, (byte)0);
@@ -67,7 +62,7 @@ public class ThrownTrident extends AbstractArrow {
                this.spawnAtLocation(this.getPickupItem(), 0.1F);
             }
 
-            this.remove();
+            this.discard();
          } else if (var2 > 0) {
             this.setNoPhysics(true);
             Vec3 var3 = new Vec3(var1.getX() - this.getX(), var1.getEyeY() - this.getY(), var1.getZ() - this.getZ());
@@ -141,7 +136,7 @@ public class ThrownTrident extends AbstractArrow {
 
       this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01D, -0.1D, -0.01D));
       float var11 = 1.0F;
-      if (this.level instanceof ServerLevel && this.level.isThundering() && EnchantmentHelper.hasChanneling(this.tridentItem)) {
+      if (this.level instanceof ServerLevel && this.level.isThundering() && this.isChanneling()) {
          BlockPos var8 = var2.blockPosition();
          if (this.level.canSeeSky(var8)) {
             LightningBolt var9 = (LightningBolt)EntityType.LIGHTNING_BOLT.create(this.level);
@@ -154,6 +149,10 @@ public class ThrownTrident extends AbstractArrow {
       }
 
       this.playSound(var6, var11, 1.0F);
+   }
+
+   public boolean isChanneling() {
+      return EnchantmentHelper.hasChanneling(this.tridentItem);
    }
 
    protected SoundEvent getDefaultHitGroundSoundEvent() {

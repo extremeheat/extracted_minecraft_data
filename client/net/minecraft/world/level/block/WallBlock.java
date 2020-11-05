@@ -7,7 +7,6 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -130,7 +129,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    private boolean connectsTo(BlockState var1, boolean var2, Direction var3) {
       Block var4 = var1.getBlock();
       boolean var5 = var4 instanceof FenceGateBlock && FenceGateBlock.connectsToDirection(var1, var3);
-      return var1.is(BlockTags.WALLS) || !isExceptionForConnection(var4) && var2 || var4 instanceof IronBarsBlock || var5;
+      return var1.is(BlockTags.WALLS) || !isExceptionForConnection(var1) && var2 || var4 instanceof IronBarsBlock || var5;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -221,7 +220,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
             if (var14) {
                return false;
             } else {
-               return var2.getBlock().is((Tag)BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
+               return var2.is(BlockTags.WALL_POST_OVERRIDE) || isCovered(var3, POST_TEST);
             }
          }
       }

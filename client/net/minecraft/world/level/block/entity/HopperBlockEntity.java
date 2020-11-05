@@ -2,7 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -33,25 +33,25 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 
-public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper, TickableBlockEntity {
+public class HopperBlockEntity extends RandomizableContainerBlockEntity implements Hopper {
    private NonNullList<ItemStack> items;
    private int cooldownTime;
    private long tickedGameTime;
 
-   public HopperBlockEntity() {
-      super(BlockEntityType.HOPPER);
+   public HopperBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.HOPPER, var1, var2);
       this.items = NonNullList.withSize(5, ItemStack.EMPTY);
       this.cooldownTime = -1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
+   public void load(CompoundTag var1) {
+      super.load(var1);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var2)) {
-         ContainerHelper.loadAllItems(var2, this.items);
+      if (!this.tryLoadLootTable(var1)) {
+         ContainerHelper.loadAllItems(var1, this.items);
       }
 
-      this.cooldownTime = var2.getInt("TransferCooldown");
+      this.cooldownTime = var1.getInt("TransferCooldown");
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -86,41 +86,39 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return new TranslatableComponent("container.hopper");
    }
 
-   public void tick() {
-      if (this.level != null && !this.level.isClientSide) {
-         --this.cooldownTime;
-         this.tickedGameTime = this.level.getGameTime();
-         if (!this.isOnCooldown()) {
-            this.setCooldown(0);
-            this.tryMoveItems(() -> {
-               return suckInItems(this);
-            });
-         }
-
+   public static void pushItemsTick(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3) {
+      --var3.cooldownTime;
+      var3.tickedGameTime = var0.getGameTime();
+      if (!var3.isOnCooldown()) {
+         var3.setCooldown(0);
+         tryMoveItems(var0, var1, var2, var3, () -> {
+            return suckInItems(var0, var3);
+         });
       }
+
    }
 
-   private boolean tryMoveItems(Supplier<Boolean> var1) {
-      if (this.level != null && !this.level.isClientSide) {
-         if (!this.isOnCooldown() && (Boolean)this.getBlockState().getValue(HopperBlock.ENABLED)) {
-            boolean var2 = false;
-            if (!this.isEmpty()) {
-               var2 = this.ejectItems();
+   private static boolean tryMoveItems(Level var0, BlockPos var1, BlockState var2, HopperBlockEntity var3, BooleanSupplier var4) {
+      if (var0.isClientSide) {
+         return false;
+      } else {
+         if (!var3.isOnCooldown() && (Boolean)var2.getValue(HopperBlock.ENABLED)) {
+            boolean var5 = false;
+            if (!var3.isEmpty()) {
+               var5 = ejectItems(var0, var1, var2, var3);
             }
 
-            if (!this.inventoryFull()) {
-               var2 |= (Boolean)var1.get();
+            if (!var3.inventoryFull()) {
+               var5 |= var4.getAsBoolean();
             }
 
-            if (var2) {
-               this.setCooldown(8);
-               this.setChanged();
+            if (var5) {
+               var3.setCooldown(8);
+               setChanged(var0, var1, var2);
                return true;
             }
          }
 
-         return false;
-      } else {
          return false;
       }
    }
@@ -140,25 +138,25 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return false;
    }
 
-   private boolean ejectItems() {
-      Container var1 = this.getAttachedContainer();
-      if (var1 == null) {
+   private static boolean ejectItems(Level var0, BlockPos var1, BlockState var2, Container var3) {
+      Container var4 = getAttachedContainer(var0, var1, var2);
+      if (var4 == null) {
          return false;
       } else {
-         Direction var2 = ((Direction)this.getBlockState().getValue(HopperBlock.FACING)).getOpposite();
-         if (this.isFullContainer(var1, var2)) {
+         Direction var5 = ((Direction)var2.getValue(HopperBlock.FACING)).getOpposite();
+         if (isFullContainer(var4, var5)) {
             return false;
          } else {
-            for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
-               if (!this.getItem(var3).isEmpty()) {
-                  ItemStack var4 = this.getItem(var3).copy();
-                  ItemStack var5 = addItem(this, var1, this.removeItem(var3, 1), var2);
-                  if (var5.isEmpty()) {
-                     var1.setChanged();
+            for(int var6 = 0; var6 < var3.getContainerSize(); ++var6) {
+               if (!var3.getItem(var6).isEmpty()) {
+                  ItemStack var7 = var3.getItem(var6).copy();
+                  ItemStack var8 = addItem(var3, var4, var3.removeItem(var6, 1), var5);
+                  if (var8.isEmpty()) {
+                     var4.setChanged();
                      return true;
                   }
 
-                  this.setItem(var3, var4);
+                  var3.setItem(var6, var7);
                }
             }
 
@@ -171,9 +169,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var0 instanceof WorldlyContainer ? IntStream.of(((WorldlyContainer)var0).getSlotsForFace(var1)) : IntStream.range(0, var0.getContainerSize());
    }
 
-   private boolean isFullContainer(Container var1, Direction var2) {
-      return getSlots(var1, var2).allMatch((var1x) -> {
-         ItemStack var2 = var1.getItem(var1x);
+   private static boolean isFullContainer(Container var0, Direction var1) {
+      return getSlots(var0, var1).allMatch((var1x) -> {
+         ItemStack var2 = var0.getItem(var1x);
          return var2.getCount() >= var2.getMaxStackSize();
       });
    }
@@ -184,24 +182,24 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       });
    }
 
-   public static boolean suckInItems(Hopper var0) {
-      Container var1 = getSourceContainer(var0);
-      if (var1 != null) {
-         Direction var4 = Direction.DOWN;
-         return isEmptyContainer(var1, var4) ? false : getSlots(var1, var4).anyMatch((var3x) -> {
-            return tryTakeInItemFromSlot(var0, var1, var3x, var4);
+   public static boolean suckInItems(Level var0, Hopper var1) {
+      Container var2 = getSourceContainer(var0, var1);
+      if (var2 != null) {
+         Direction var5 = Direction.DOWN;
+         return isEmptyContainer(var2, var5) ? false : getSlots(var2, var5).anyMatch((var3x) -> {
+            return tryTakeInItemFromSlot(var1, var2, var3x, var5);
          });
       } else {
-         Iterator var2 = getItemsAtAndAbove(var0).iterator();
+         Iterator var3 = getItemsAtAndAbove(var0, var1).iterator();
 
-         ItemEntity var3;
+         ItemEntity var4;
          do {
-            if (!var2.hasNext()) {
+            if (!var3.hasNext()) {
                return false;
             }
 
-            var3 = (ItemEntity)var2.next();
-         } while(!addItem(var0, var3));
+            var4 = (ItemEntity)var3.next();
+         } while(!addItem(var1, var4));
 
          return true;
       }
@@ -229,7 +227,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       ItemStack var4 = addItem((Container)null, var0, var3, (Direction)null);
       if (var4.isEmpty()) {
          var2 = true;
-         var1.remove();
+         var1.discard();
       } else {
          var1.setItem(var4);
       }
@@ -309,19 +307,19 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    @Nullable
-   private Container getAttachedContainer() {
-      Direction var1 = (Direction)this.getBlockState().getValue(HopperBlock.FACING);
-      return getContainerAt(this.getLevel(), this.worldPosition.relative(var1));
+   private static Container getAttachedContainer(Level var0, BlockPos var1, BlockState var2) {
+      Direction var3 = (Direction)var2.getValue(HopperBlock.FACING);
+      return getContainerAt(var0, var1.relative(var3));
    }
 
    @Nullable
-   public static Container getSourceContainer(Hopper var0) {
-      return getContainerAt(var0.getLevel(), var0.getLevelX(), var0.getLevelY() + 1.0D, var0.getLevelZ());
+   private static Container getSourceContainer(Level var0, Hopper var1) {
+      return getContainerAt(var0, var1.getLevelX(), var1.getLevelY() + 1.0D, var1.getLevelZ());
    }
 
-   public static List<ItemEntity> getItemsAtAndAbove(Hopper var0) {
-      return (List)var0.getSuckShape().toAabbs().stream().flatMap((var1) -> {
-         return var0.getLevel().getEntitiesOfClass(ItemEntity.class, var1.move(var0.getLevelX() - 0.5D, var0.getLevelY() - 0.5D, var0.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
+   public static List<ItemEntity> getItemsAtAndAbove(Level var0, Hopper var1) {
+      return (List)var1.getSuckShape().toAabbs().stream().flatMap((var2) -> {
+         return var0.getEntitiesOfClass(ItemEntity.class, var2.move(var1.getLevelX() - 0.5D, var1.getLevelY() - 0.5D, var1.getLevelZ() - 0.5D), EntitySelector.ENTITY_STILL_ALIVE).stream();
       }).collect(Collectors.toList());
    }
 
@@ -331,14 +329,14 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    @Nullable
-   public static Container getContainerAt(Level var0, double var1, double var3, double var5) {
+   private static Container getContainerAt(Level var0, double var1, double var3, double var5) {
       Object var7 = null;
       BlockPos var8 = new BlockPos(var1, var3, var5);
       BlockState var9 = var0.getBlockState(var8);
       Block var10 = var9.getBlock();
       if (var10 instanceof WorldlyContainerHolder) {
          var7 = ((WorldlyContainerHolder)var10).getContainer(var9, var0, var8);
-      } else if (var10.isEntityBlock()) {
+      } else if (var9.hasBlockEntity()) {
          BlockEntity var11 = var0.getBlockEntity(var8);
          if (var11 instanceof Container) {
             var7 = (Container)var11;
@@ -359,7 +357,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      if (var0.getItem() != var1.getItem()) {
+      if (!var0.is(var1.getItem())) {
          return false;
       } else if (var0.getDamageValue() != var1.getDamageValue()) {
          return false;
@@ -402,14 +400,11 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       this.items = var1;
    }
 
-   public void entityInside(Entity var1) {
-      if (var1 instanceof ItemEntity) {
-         BlockPos var2 = this.getBlockPos();
-         if (Shapes.joinIsNotEmpty(Shapes.create(var1.getBoundingBox().move((double)(-var2.getX()), (double)(-var2.getY()), (double)(-var2.getZ()))), this.getSuckShape(), BooleanOp.AND)) {
-            this.tryMoveItems(() -> {
-               return addItem(this, (ItemEntity)var1);
-            });
-         }
+   public static void entityInside(Level var0, BlockPos var1, BlockState var2, Entity var3, HopperBlockEntity var4) {
+      if (var3 instanceof ItemEntity && Shapes.joinIsNotEmpty(Shapes.create(var3.getBoundingBox().move((double)(-var1.getX()), (double)(-var1.getY()), (double)(-var1.getZ()))), var4.getSuckShape(), BooleanOp.AND)) {
+         tryMoveItems(var0, var1, var2, var4, () -> {
+            return addItem(var4, (ItemEntity)var3);
+         });
       }
 
    }

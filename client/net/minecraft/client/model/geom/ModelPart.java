@@ -6,69 +6,42 @@ import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
-import net.minecraft.client.model.Model;
+import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 
-public class ModelPart {
-   private float xTexSize;
-   private float yTexSize;
-   private int xTexOffs;
-   private int yTexOffs;
+public final class ModelPart {
    public float x;
    public float y;
    public float z;
    public float xRot;
    public float yRot;
    public float zRot;
-   public boolean mirror;
-   public boolean visible;
-   private final ObjectList<ModelPart.Cube> cubes;
-   private final ObjectList<ModelPart> children;
+   public boolean visible = true;
+   private final List<ModelPart.Cube> cubes;
+   private final Map<String, ModelPart> children;
 
-   public ModelPart(Model var1) {
+   public ModelPart(List<ModelPart.Cube> var1, Map<String, ModelPart> var2) {
       super();
-      this.xTexSize = 64.0F;
-      this.yTexSize = 32.0F;
-      this.visible = true;
-      this.cubes = new ObjectArrayList();
-      this.children = new ObjectArrayList();
-      var1.accept(this);
-      this.setTexSize(var1.texWidth, var1.texHeight);
+      this.cubes = var1;
+      this.children = var2;
    }
 
-   public ModelPart(Model var1, int var2, int var3) {
-      this(var1.texWidth, var1.texHeight, var2, var3);
-      var1.accept(this);
+   public PartPose storePose() {
+      return PartPose.offsetAndRotation(this.x, this.y, this.z, this.xRot, this.yRot, this.zRot);
    }
 
-   public ModelPart(int var1, int var2, int var3, int var4) {
-      super();
-      this.xTexSize = 64.0F;
-      this.yTexSize = 32.0F;
-      this.visible = true;
-      this.cubes = new ObjectArrayList();
-      this.children = new ObjectArrayList();
-      this.setTexSize(var1, var2);
-      this.texOffs(var3, var4);
-   }
-
-   private ModelPart() {
-      super();
-      this.xTexSize = 64.0F;
-      this.yTexSize = 32.0F;
-      this.visible = true;
-      this.cubes = new ObjectArrayList();
-      this.children = new ObjectArrayList();
-   }
-
-   public ModelPart createShallowCopy() {
-      ModelPart var1 = new ModelPart();
-      var1.copyFrom(this);
-      return var1;
+   public void loadPose(PartPose var1) {
+      this.x = var1.x;
+      this.y = var1.y;
+      this.z = var1.z;
+      this.xRot = var1.xRot;
+      this.yRot = var1.yRot;
+      this.zRot = var1.zRot;
    }
 
    public void copyFrom(ModelPart var1) {
@@ -80,46 +53,13 @@ public class ModelPart {
       this.z = var1.z;
    }
 
-   public void addChild(ModelPart var1) {
-      this.children.add(var1);
-   }
-
-   public ModelPart texOffs(int var1, int var2) {
-      this.xTexOffs = var1;
-      this.yTexOffs = var2;
-      return this;
-   }
-
-   public ModelPart addBox(String var1, float var2, float var3, float var4, int var5, int var6, int var7, float var8, int var9, int var10) {
-      this.texOffs(var9, var10);
-      this.addBox(this.xTexOffs, this.yTexOffs, var2, var3, var4, (float)var5, (float)var6, (float)var7, var8, var8, var8, this.mirror, false);
-      return this;
-   }
-
-   public ModelPart addBox(float var1, float var2, float var3, float var4, float var5, float var6) {
-      this.addBox(this.xTexOffs, this.yTexOffs, var1, var2, var3, var4, var5, var6, 0.0F, 0.0F, 0.0F, this.mirror, false);
-      return this;
-   }
-
-   public ModelPart addBox(float var1, float var2, float var3, float var4, float var5, float var6, boolean var7) {
-      this.addBox(this.xTexOffs, this.yTexOffs, var1, var2, var3, var4, var5, var6, 0.0F, 0.0F, 0.0F, var7, false);
-      return this;
-   }
-
-   public void addBox(float var1, float var2, float var3, float var4, float var5, float var6, float var7) {
-      this.addBox(this.xTexOffs, this.yTexOffs, var1, var2, var3, var4, var5, var6, var7, var7, var7, this.mirror, false);
-   }
-
-   public void addBox(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9) {
-      this.addBox(this.xTexOffs, this.yTexOffs, var1, var2, var3, var4, var5, var6, var7, var8, var9, this.mirror, false);
-   }
-
-   public void addBox(float var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8) {
-      this.addBox(this.xTexOffs, this.yTexOffs, var1, var2, var3, var4, var5, var6, var7, var7, var7, var8, false);
-   }
-
-   private void addBox(int var1, int var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11, boolean var12, boolean var13) {
-      this.cubes.add(new ModelPart.Cube(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, this.xTexSize, this.yTexSize));
+   public ModelPart getChild(String var1) {
+      ModelPart var2 = (ModelPart)this.children.get(var1);
+      if (var2 == null) {
+         throw new NoSuchElementException("Can't find part " + var1);
+      } else {
+         return var2;
+      }
    }
 
    public void setPos(float var1, float var2, float var3) {
@@ -138,7 +78,7 @@ public class ModelPart {
             var1.pushPose();
             this.translateAndRotate(var1);
             this.compile(var1.last(), var2, var3, var4, var5, var6, var7, var8);
-            ObjectListIterator var9 = this.children.iterator();
+            Iterator var9 = this.children.values().iterator();
 
             while(var9.hasNext()) {
                ModelPart var10 = (ModelPart)var9.next();
@@ -167,45 +107,25 @@ public class ModelPart {
    }
 
    private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-      Matrix4f var9 = var1.pose();
-      Matrix3f var10 = var1.normal();
-      ObjectListIterator var11 = this.cubes.iterator();
+      Iterator var9 = this.cubes.iterator();
 
-      while(var11.hasNext()) {
-         ModelPart.Cube var12 = (ModelPart.Cube)var11.next();
-         ModelPart.Polygon[] var13 = var12.polygons;
-         int var14 = var13.length;
-
-         for(int var15 = 0; var15 < var14; ++var15) {
-            ModelPart.Polygon var16 = var13[var15];
-            Vector3f var17 = var16.normal.copy();
-            var17.transform(var10);
-            float var18 = var17.x();
-            float var19 = var17.y();
-            float var20 = var17.z();
-
-            for(int var21 = 0; var21 < 4; ++var21) {
-               ModelPart.Vertex var22 = var16.vertices[var21];
-               float var23 = var22.pos.x() / 16.0F;
-               float var24 = var22.pos.y() / 16.0F;
-               float var25 = var22.pos.z() / 16.0F;
-               Vector4f var26 = new Vector4f(var23, var24, var25, 1.0F);
-               var26.transform(var9);
-               var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var18, var19, var20);
-            }
-         }
+      while(var9.hasNext()) {
+         ModelPart.Cube var10 = (ModelPart.Cube)var9.next();
+         var10.compile(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
    }
 
-   public ModelPart setTexSize(int var1, int var2) {
-      this.xTexSize = (float)var1;
-      this.yTexSize = (float)var2;
-      return this;
-   }
-
    public ModelPart.Cube getRandomCube(Random var1) {
       return (ModelPart.Cube)this.cubes.get(var1.nextInt(this.cubes.size()));
+   }
+
+   public boolean isEmpty() {
+      return this.cubes.isEmpty();
+   }
+
+   public Stream<ModelPart> getAllParts() {
+      return Stream.concat(Stream.of(this), this.children.values().stream().flatMap(ModelPart::getAllParts));
    }
 
    static class Vertex {
@@ -316,6 +236,35 @@ public class ModelPart {
          this.polygons[4] = new ModelPart.Polygon(new ModelPart.Vertex[]{var19, var35, var21, var20}, var27, var33, var28, var34, var13, var14, var12, Direction.NORTH);
          this.polygons[0] = new ModelPart.Polygon(new ModelPart.Vertex[]{var23, var19, var20, var24}, var28, var33, var30, var34, var13, var14, var12, Direction.EAST);
          this.polygons[5] = new ModelPart.Polygon(new ModelPart.Vertex[]{var22, var23, var24, var25}, var30, var33, var31, var34, var13, var14, var12, Direction.SOUTH);
+      }
+
+      public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+         Matrix4f var9 = var1.pose();
+         Matrix3f var10 = var1.normal();
+         ModelPart.Polygon[] var11 = this.polygons;
+         int var12 = var11.length;
+
+         for(int var13 = 0; var13 < var12; ++var13) {
+            ModelPart.Polygon var14 = var11[var13];
+            Vector3f var15 = var14.normal.copy();
+            var15.transform(var10);
+            float var16 = var15.x();
+            float var17 = var15.y();
+            float var18 = var15.z();
+            ModelPart.Vertex[] var19 = var14.vertices;
+            int var20 = var19.length;
+
+            for(int var21 = 0; var21 < var20; ++var21) {
+               ModelPart.Vertex var22 = var19[var21];
+               float var23 = var22.pos.x() / 16.0F;
+               float var24 = var22.pos.y() / 16.0F;
+               float var25 = var22.pos.z() / 16.0F;
+               Vector4f var26 = new Vector4f(var23, var24, var25, 1.0F);
+               var26.transform(var9);
+               var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
+            }
+         }
+
       }
    }
 }

@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -42,12 +41,6 @@ public class ShulkerBullet extends Projectile {
    public ShulkerBullet(EntityType<? extends ShulkerBullet> var1, Level var2) {
       super(var1, var2);
       this.noPhysics = true;
-   }
-
-   public ShulkerBullet(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this(EntityType.SHULKER_BULLET, var1);
-      this.moveTo(var2, var4, var6, this.yRot, this.xRot);
-      this.setDeltaMovement(var8, var10, var12);
    }
 
    public ShulkerBullet(Level var1, LivingEntity var2, Entity var3, Direction.Axis var4) {
@@ -182,7 +175,7 @@ public class ShulkerBullet extends Projectile {
 
    public void checkDespawn() {
       if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
-         this.remove();
+         this.discard();
       }
 
    }
@@ -222,7 +215,7 @@ public class ShulkerBullet extends Projectile {
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level.isClientSide) {
          this.level.addParticle(ParticleTypes.END_ROD, this.getX() - var1.x, this.getY() - var1.y + 0.15D, this.getZ() - var1.z, 0.0D, 0.0D, 0.0D);
-      } else if (this.finalTarget != null && !this.finalTarget.removed) {
+      } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
             if (this.flightSteps == 0) {
@@ -285,7 +278,7 @@ public class ShulkerBullet extends Projectile {
 
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      this.remove();
+      this.discard();
    }
 
    public boolean isPickable() {
@@ -296,13 +289,17 @@ public class ShulkerBullet extends Projectile {
       if (!this.level.isClientSide) {
          this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
          ((ServerLevel)this.level).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2D, 0.2D, 0.2D, 0.0D);
-         this.remove();
+         this.discard();
       }
 
       return true;
    }
 
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      double var2 = var1.getXa();
+      double var4 = var1.getYa();
+      double var6 = var1.getZa();
+      this.setDeltaMovement(var2, var4, var6);
    }
 }

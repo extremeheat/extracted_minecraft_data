@@ -1,14 +1,11 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.monster.Giant;
 
 public class GiantZombieModel extends AbstractZombieModel<Giant> {
-   public GiantZombieModel() {
-      this(0.0F, false);
-   }
-
-   public GiantZombieModel(float var1, boolean var2) {
-      super(var1, 0.0F, 64, var2 ? 32 : 64);
+   public GiantZombieModel(ModelPart var1) {
+      super(var1);
    }
 
    public boolean isAggressive(Giant var1) {

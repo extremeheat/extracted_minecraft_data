@@ -181,7 +181,7 @@ public class BlockStateParser {
 
    private boolean hasBlockEntity(TagCollection<Block> var1) {
       if (this.state != null) {
-         return this.state.getBlock().isEntityBlock();
+         return this.state.hasBlockEntity();
       } else {
          if (this.tag != null) {
             Tag var2 = var1.getTag(this.tag);
@@ -190,7 +190,7 @@ public class BlockStateParser {
 
                while(var3.hasNext()) {
                   Block var4 = (Block)var3.next();
-                  if (var4.isEntityBlock()) {
+                  if (var4.defaultBlockState().hasBlockEntity()) {
                      return true;
                   }
                }
@@ -292,7 +292,7 @@ public class BlockStateParser {
             while(var6.hasNext()) {
                Block var7 = (Block)var6.next();
                var4 |= !var7.getStateDefinition().getProperties().isEmpty();
-               var5 |= var7.isEntityBlock();
+               var5 |= var7.defaultBlockState().hasBlockEntity();
                if (var4 && var5) {
                   break;
                }
@@ -317,7 +317,7 @@ public class BlockStateParser {
             var1.suggest(String.valueOf('['));
          }
 
-         if (this.state.getBlock().isEntityBlock()) {
+         if (this.state.hasBlockEntity()) {
             var1.suggest(String.valueOf('{'));
          }
       }

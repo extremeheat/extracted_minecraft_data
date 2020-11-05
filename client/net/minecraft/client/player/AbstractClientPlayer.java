@@ -16,6 +16,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
@@ -102,25 +103,30 @@ public abstract class AbstractClientPlayer extends Player {
 
    public float getFieldOfViewModifier() {
       float var1 = 1.0F;
-      if (this.abilities.flying) {
+      if (this.getAbilities().flying) {
          var1 *= 1.1F;
       }
 
-      var1 = (float)((double)var1 * ((this.getAttributeValue(Attributes.MOVEMENT_SPEED) / (double)this.abilities.getWalkingSpeed() + 1.0D) / 2.0D));
-      if (this.abilities.getWalkingSpeed() == 0.0F || Float.isNaN(var1) || Float.isInfinite(var1)) {
+      var1 = (float)((double)var1 * ((this.getAttributeValue(Attributes.MOVEMENT_SPEED) / (double)this.getAbilities().getWalkingSpeed() + 1.0D) / 2.0D));
+      if (this.getAbilities().getWalkingSpeed() == 0.0F || Float.isNaN(var1) || Float.isInfinite(var1)) {
          var1 = 1.0F;
       }
 
-      if (this.isUsingItem() && this.getUseItem().getItem() == Items.BOW) {
-         int var2 = this.getTicksUsingItem();
-         float var3 = (float)var2 / 20.0F;
-         if (var3 > 1.0F) {
-            var3 = 1.0F;
-         } else {
-            var3 *= var3;
-         }
+      ItemStack var2 = this.getUseItem();
+      if (this.isUsingItem()) {
+         if (var2.is(Items.BOW)) {
+            int var3 = this.getTicksUsingItem();
+            float var4 = (float)var3 / 20.0F;
+            if (var4 > 1.0F) {
+               var4 = 1.0F;
+            } else {
+               var4 *= var4;
+            }
 
-         var1 *= 1.0F - var3 * 0.15F;
+            var1 *= 1.0F - var4 * 0.15F;
+         } else if (Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()) {
+            return 0.1F;
+         }
       }
 
       return Mth.lerp(Minecraft.getInstance().options.fovEffectScale, 1.0F, var1);

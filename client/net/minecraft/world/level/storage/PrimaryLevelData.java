@@ -6,7 +6,6 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +29,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
@@ -75,7 +75,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private boolean wasModded;
    private final TimerQueue<MinecraftServer> scheduledEvents;
 
-   private PrimaryLevelData(@Nullable DataFixer var1, int var2, @Nullable CompoundTag var3, boolean var4, int var5, int var6, int var7, float var8, long var9, long var11, int var13, int var14, int var15, boolean var16, int var17, boolean var18, boolean var19, boolean var20, WorldBorder.Settings var21, int var22, int var23, @Nullable UUID var24, LinkedHashSet<String> var25, TimerQueue<MinecraftServer> var26, @Nullable CompoundTag var27, CompoundTag var28, LevelSettings var29, WorldGenSettings var30, Lifecycle var31) {
+   private PrimaryLevelData(@Nullable DataFixer var1, int var2, @Nullable CompoundTag var3, boolean var4, int var5, int var6, int var7, float var8, long var9, long var11, int var13, int var14, int var15, boolean var16, int var17, boolean var18, boolean var19, boolean var20, WorldBorder.Settings var21, int var22, int var23, @Nullable UUID var24, Set<String> var25, TimerQueue<MinecraftServer> var26, @Nullable CompoundTag var27, CompoundTag var28, LevelSettings var29, WorldGenSettings var30, Lifecycle var31) {
       super();
       this.fixerUpper = var1;
       this.wasModded = var4;
@@ -117,7 +117,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       CompoundTag var10 = (CompoundTag)var0.get("DragonFight").result().map(Dynamic::getValue).orElseGet(() -> {
          return (Tag)var0.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap().getValue();
       });
-      return new PrimaryLevelData(var1, var2, var3, var0.get("WasModded").asBoolean(false), var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0), var0.get("SpawnAngle").asFloat(0.0F), var8, var0.get("DayTime").asLong(var8), var5.levelDataVersion(), var0.get("clearWeatherTime").asInt(0), var0.get("rainTime").asInt(0), var0.get("raining").asBoolean(false), var0.get("thunderTime").asInt(0), var0.get("thundering").asBoolean(false), var0.get("initialized").asBoolean(true), var0.get("DifficultyLocked").asBoolean(false), WorldBorder.Settings.read(var0, WorldBorder.DEFAULT_SETTINGS), var0.get("WanderingTraderSpawnDelay").asInt(0), var0.get("WanderingTraderSpawnChance").asInt(0), (UUID)var0.get("WanderingTraderId").read(SerializableUUID.CODEC).result().orElse((Object)null), (LinkedHashSet)var0.get("ServerBrands").asStream().flatMap((var0x) -> {
+      return new PrimaryLevelData(var1, var2, var3, var0.get("WasModded").asBoolean(false), var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0), var0.get("SpawnAngle").asFloat(0.0F), var8, var0.get("DayTime").asLong(var8), var5.levelDataVersion(), var0.get("clearWeatherTime").asInt(0), var0.get("rainTime").asInt(0), var0.get("raining").asBoolean(false), var0.get("thunderTime").asInt(0), var0.get("thundering").asBoolean(false), var0.get("initialized").asBoolean(true), var0.get("DifficultyLocked").asBoolean(false), WorldBorder.Settings.read(var0, WorldBorder.DEFAULT_SETTINGS), var0.get("WanderingTraderSpawnDelay").asInt(0), var0.get("WanderingTraderSpawnChance").asInt(0), (UUID)var0.get("WanderingTraderId").read(SerializableUUID.CODEC).result().orElse((Object)null), (Set)var0.get("ServerBrands").asStream().flatMap((var0x) -> {
          return Util.toStream(var0x.asString().result());
       }).collect(Collectors.toCollection(Sets::newLinkedHashSet)), new TimerQueue(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()), (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(), var10, var4, var6, var7);
    }
@@ -372,8 +372,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.scheduledEvents;
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1) {
-      ServerLevelData.super.fillCrashReportCategory(var1);
+   public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
+      ServerLevelData.super.fillCrashReportCategory(var1, var2);
       WorldData.super.fillCrashReportCategory(var1);
    }
 

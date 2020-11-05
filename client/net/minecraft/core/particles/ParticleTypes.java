@@ -77,6 +77,7 @@ public class ParticleTypes {
    public static final SimpleParticleType LANDING_OBSIDIAN_TEAR;
    public static final SimpleParticleType REVERSE_PORTAL;
    public static final SimpleParticleType WHITE_ASH;
+   public static final SimpleParticleType SMALL_FLAME;
    public static final Codec<ParticleOptions> CODEC;
 
    private static SimpleParticleType register(String var0, boolean var1) {
@@ -163,6 +164,7 @@ public class ParticleTypes {
       LANDING_OBSIDIAN_TEAR = register("landing_obsidian_tear", false);
       REVERSE_PORTAL = register("reverse_portal", false);
       WHITE_ASH = register("white_ash", false);
+      SMALL_FLAME = register("small_flame", false);
       CODEC = Registry.PARTICLE_TYPE.dispatch("type", ParticleOptions::getType, ParticleType::codec);
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.model.DrownedModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.DrownedOuterLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -12,9 +13,9 @@ import net.minecraft.world.entity.monster.Zombie;
 public class DrownedRenderer extends AbstractZombieRenderer<Drowned, DrownedModel<Drowned>> {
    private static final ResourceLocation DROWNED_LOCATION = new ResourceLocation("textures/entity/zombie/drowned.png");
 
-   public DrownedRenderer(EntityRenderDispatcher var1) {
-      super(var1, new DrownedModel(0.0F, 0.0F, 64, 64), new DrownedModel(0.5F, true), new DrownedModel(1.0F, true));
-      this.addLayer(new DrownedOuterLayer(this));
+   public DrownedRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new DrownedModel(var1.getLayer(ModelLayers.DROWNED)), new DrownedModel(var1.getLayer(ModelLayers.DROWNED_INNER_ARMOR)), new DrownedModel(var1.getLayer(ModelLayers.DROWNED_OUTER_ARMOR)));
+      this.addLayer(new DrownedOuterLayer(this, var1.getModelSet()));
    }
 
    public ResourceLocation getTextureLocation(Zombie var1) {

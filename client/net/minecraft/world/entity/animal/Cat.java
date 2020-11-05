@@ -18,13 +18,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
@@ -298,7 +297,7 @@ public class Cat extends TamableAnimal {
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
-   public Cat getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cat var3 = (Cat)EntityType.CAT.create(var1);
       if (var2 instanceof Cat) {
          if (this.random.nextBoolean()) {
@@ -381,7 +380,7 @@ public class Cat extends TamableAnimal {
                DyeColor var5 = ((DyeItem)var4).getDyeColor();
                if (var5 != this.getCollarColor()) {
                   this.setCollarColor(var5);
-                  if (!var1.abilities.instabuild) {
+                  if (!var1.getAbilities().instabuild) {
                      var3.shrink(1);
                   }
 
@@ -437,7 +436,7 @@ public class Cat extends TamableAnimal {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
@@ -492,7 +491,7 @@ public class Cat extends TamableAnimal {
 
                BlockPos var2 = this.ownerPlayer.blockPosition();
                BlockState var3 = this.cat.level.getBlockState(var2);
-               if (var3.getBlock().is((Tag)BlockTags.BEDS)) {
+               if (var3.is(BlockTags.BEDS)) {
                   this.goalPos = (BlockPos)var3.getOptionalValue(BedBlock.FACING).map((var1x) -> {
                      return var2.relative(var1x.getOpposite());
                   }).orElseGet(() -> {

@@ -353,6 +353,13 @@ public final class Matrix4f {
       return new Matrix4f(this);
    }
 
+   public void multiplyWithTranslation(float var1, float var2, float var3) {
+      this.m03 += this.m00 * var1 + this.m01 * var2 + this.m02 * var3;
+      this.m13 += this.m10 * var1 + this.m11 * var2 + this.m12 * var3;
+      this.m23 += this.m20 * var1 + this.m21 * var2 + this.m22 * var3;
+      this.m33 += this.m30 * var1 + this.m31 * var2 + this.m32 * var3;
+   }
+
    public static Matrix4f createScaleMatrix(float var0, float var1, float var2) {
       Matrix4f var3 = new Matrix4f();
       var3.m00 = var0;

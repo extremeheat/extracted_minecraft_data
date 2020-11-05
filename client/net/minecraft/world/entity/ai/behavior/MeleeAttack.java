@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ProjectileWeaponItem;
 
 public class MeleeAttack extends Behavior<Mob> {
@@ -24,7 +25,8 @@ public class MeleeAttack extends Behavior<Mob> {
 
    private boolean isHoldingUsableProjectileWeapon(Mob var1) {
       return var1.isHolding((var1x) -> {
-         return var1x instanceof ProjectileWeaponItem && var1.canFireProjectileWeapon((ProjectileWeaponItem)var1x);
+         Item var2 = var1x.getItem();
+         return var2 instanceof ProjectileWeaponItem && var1.canFireProjectileWeapon((ProjectileWeaponItem)var2);
       });
    }
 

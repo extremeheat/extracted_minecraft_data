@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.ClientRecipeBook;
@@ -69,7 +70,6 @@ import net.minecraft.client.searchtree.MutableSearchTree;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.PositionImpl;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -78,6 +78,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -199,12 +200,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -213,46 +212,13 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.boss.EnderDragonPart;
-import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.decoration.ItemFrame;
-import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.decoration.Painting;
-import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.entity.projectile.DragonFireball;
-import net.minecraft.world.entity.projectile.EvokerFangs;
-import net.minecraft.world.entity.projectile.EyeOfEnder;
-import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.entity.projectile.LargeFireball;
-import net.minecraft.world.entity.projectile.LlamaSpit;
-import net.minecraft.world.entity.projectile.ShulkerBullet;
-import net.minecraft.world.entity.projectile.SmallFireball;
-import net.minecraft.world.entity.projectile.Snowball;
-import net.minecraft.world.entity.projectile.SpectralArrow;
-import net.minecraft.world.entity.projectile.ThrownEgg;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
-import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
-import net.minecraft.world.entity.projectile.ThrownPotion;
-import net.minecraft.world.entity.projectile.ThrownTrident;
-import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
-import net.minecraft.world.entity.vehicle.Minecart;
-import net.minecraft.world.entity.vehicle.MinecartChest;
-import net.minecraft.world.entity.vehicle.MinecartCommandBlock;
-import net.minecraft.world.entity.vehicle.MinecartFurnace;
-import net.minecraft.world.entity.vehicle.MinecartHopper;
-import net.minecraft.world.entity.vehicle.MinecartSpawner;
-import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
@@ -267,7 +233,6 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
@@ -282,6 +247,7 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkBiomeContainer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -306,7 +272,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
    private final Connection connection;
    private final GameProfile localGameProfile;
    private final Screen callbackScreen;
-   private Minecraft minecraft;
+   private final Minecraft minecraft;
    private ClientLevel level;
    private ClientLevel.ClientLevelData levelData;
    private boolean started;
@@ -384,12 +350,12 @@ public class ClientPacketListener implements ClientGamePacketListener {
       this.minecraft.debugRenderer.clear();
       this.minecraft.player.resetPos();
       int var8 = var1.getPlayerId();
+      this.minecraft.player.setId(var8);
       this.level.addPlayer(var8, this.minecraft.player);
       this.minecraft.player.input = new KeyboardInput(this.minecraft.options);
       this.minecraft.gameMode.adjustPlayer(this.minecraft.player);
       this.minecraft.cameraEntity = this.minecraft.player;
       this.minecraft.setScreen(new ReceivingLevelScreen());
-      this.minecraft.player.setId(var8);
       this.minecraft.player.setReducedDebugInfo(var1.isReducedDebugInfo());
       this.minecraft.player.setShowDeathScreen(var1.shouldShowDeathScreen());
       this.minecraft.gameMode.setLocalMode(var1.getGameType());
@@ -401,116 +367,14 @@ public class ClientPacketListener implements ClientGamePacketListener {
 
    public void handleAddEntity(ClientboundAddEntityPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      double var2 = var1.getX();
-      double var4 = var1.getY();
-      double var6 = var1.getZ();
-      EntityType var9 = var1.getType();
-      Object var8;
-      if (var9 == EntityType.CHEST_MINECART) {
-         var8 = new MinecartChest(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.FURNACE_MINECART) {
-         var8 = new MinecartFurnace(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.TNT_MINECART) {
-         var8 = new MinecartTNT(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.SPAWNER_MINECART) {
-         var8 = new MinecartSpawner(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.HOPPER_MINECART) {
-         var8 = new MinecartHopper(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.COMMAND_BLOCK_MINECART) {
-         var8 = new MinecartCommandBlock(this.level, var2, var4, var6);
-      } else if (var9 == EntityType.MINECART) {
-         var8 = new Minecart(this.level, var2, var4, var6);
-      } else {
-         Entity var10;
-         if (var9 == EntityType.FISHING_BOBBER) {
-            var10 = this.level.getEntity(var1.getData());
-            if (var10 instanceof Player) {
-               var8 = new FishingHook(this.level, (Player)var10, var2, var4, var6);
-            } else {
-               var8 = null;
-            }
-         } else if (var9 == EntityType.ARROW) {
-            var8 = new Arrow(this.level, var2, var4, var6);
-            var10 = this.level.getEntity(var1.getData());
-            if (var10 != null) {
-               ((AbstractArrow)var8).setOwner(var10);
-            }
-         } else if (var9 == EntityType.SPECTRAL_ARROW) {
-            var8 = new SpectralArrow(this.level, var2, var4, var6);
-            var10 = this.level.getEntity(var1.getData());
-            if (var10 != null) {
-               ((AbstractArrow)var8).setOwner(var10);
-            }
-         } else if (var9 == EntityType.TRIDENT) {
-            var8 = new ThrownTrident(this.level, var2, var4, var6);
-            var10 = this.level.getEntity(var1.getData());
-            if (var10 != null) {
-               ((AbstractArrow)var8).setOwner(var10);
-            }
-         } else if (var9 == EntityType.SNOWBALL) {
-            var8 = new Snowball(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.LLAMA_SPIT) {
-            var8 = new LlamaSpit(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.ITEM_FRAME) {
-            var8 = new ItemFrame(this.level, new BlockPos(var2, var4, var6), Direction.from3DDataValue(var1.getData()));
-         } else if (var9 == EntityType.LEASH_KNOT) {
-            var8 = new LeashFenceKnotEntity(this.level, new BlockPos(var2, var4, var6));
-         } else if (var9 == EntityType.ENDER_PEARL) {
-            var8 = new ThrownEnderpearl(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.EYE_OF_ENDER) {
-            var8 = new EyeOfEnder(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.FIREWORK_ROCKET) {
-            var8 = new FireworkRocketEntity(this.level, var2, var4, var6, ItemStack.EMPTY);
-         } else if (var9 == EntityType.FIREBALL) {
-            var8 = new LargeFireball(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.DRAGON_FIREBALL) {
-            var8 = new DragonFireball(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.SMALL_FIREBALL) {
-            var8 = new SmallFireball(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.WITHER_SKULL) {
-            var8 = new WitherSkull(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.SHULKER_BULLET) {
-            var8 = new ShulkerBullet(this.level, var2, var4, var6, var1.getXa(), var1.getYa(), var1.getZa());
-         } else if (var9 == EntityType.EGG) {
-            var8 = new ThrownEgg(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.EVOKER_FANGS) {
-            var8 = new EvokerFangs(this.level, var2, var4, var6, 0.0F, 0, (LivingEntity)null);
-         } else if (var9 == EntityType.POTION) {
-            var8 = new ThrownPotion(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.EXPERIENCE_BOTTLE) {
-            var8 = new ThrownExperienceBottle(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.BOAT) {
-            var8 = new Boat(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.TNT) {
-            var8 = new PrimedTnt(this.level, var2, var4, var6, (LivingEntity)null);
-         } else if (var9 == EntityType.ARMOR_STAND) {
-            var8 = new ArmorStand(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.END_CRYSTAL) {
-            var8 = new EndCrystal(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.ITEM) {
-            var8 = new ItemEntity(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.FALLING_BLOCK) {
-            var8 = new FallingBlockEntity(this.level, var2, var4, var6, Block.stateById(var1.getData()));
-         } else if (var9 == EntityType.AREA_EFFECT_CLOUD) {
-            var8 = new AreaEffectCloud(this.level, var2, var4, var6);
-         } else if (var9 == EntityType.LIGHTNING_BOLT) {
-            var8 = new LightningBolt(EntityType.LIGHTNING_BOLT, this.level);
-         } else {
-            var8 = null;
-         }
-      }
-
-      if (var8 != null) {
-         int var11 = var1.getId();
-         ((Entity)var8).setPacketCoordinates(var2, var4, var6);
-         ((Entity)var8).moveTo(var2, var4, var6);
-         ((Entity)var8).xRot = (float)(var1.getxRot() * 360) / 256.0F;
-         ((Entity)var8).yRot = (float)(var1.getyRot() * 360) / 256.0F;
-         ((Entity)var8).setId(var11);
-         ((Entity)var8).setUUID(var1.getUUID());
-         this.level.putNonPlayerEntity(var11, (Entity)var8);
-         if (var8 instanceof AbstractMinecart) {
-            this.minecraft.getSoundManager().play(new MinecartSoundInstance((AbstractMinecart)var8));
+      EntityType var2 = var1.getType();
+      Entity var3 = var2.create(this.level);
+      if (var3 != null) {
+         var3.recreateFromPacket(var1);
+         int var4 = var1.getId();
+         this.level.putNonPlayerEntity(var4, var3);
+         if (var3 instanceof AbstractMinecart) {
+            this.minecraft.getSoundManager().play(new MinecartSoundInstance((AbstractMinecart)var3));
          }
       }
 
@@ -591,7 +455,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
    public void handleSetCarriedItem(ClientboundSetCarriedItemPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       if (Inventory.isHotbarSlot(var1.getSlot())) {
-         this.minecraft.player.inventory.selected = var1.getSlot();
+         this.minecraft.player.getInventory().selected = var1.getSlot();
       }
 
    }
@@ -634,7 +498,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
 
       for(int var2 = 0; var2 < var1.getEntityIds().length; ++var2) {
          int var3 = var1.getEntityIds()[var2];
-         this.level.removeEntity(var3);
+         this.level.removeEntity(var3, Entity.RemovalReason.DISCARDED);
       }
 
    }
@@ -724,23 +588,22 @@ public class ClientPacketListener implements ClientGamePacketListener {
       int var2 = var1.getX();
       int var3 = var1.getZ();
       ChunkBiomeContainer var4 = var1.getBiomes() == null ? null : new ChunkBiomeContainer(this.registryAccess.registryOrThrow(Registry.BIOME_REGISTRY), var1.getBiomes());
-      LevelChunk var5 = this.level.getChunkSource().replaceWithPacketData(var2, var3, var4, var1.getReadBuffer(), var1.getHeightmaps(), var1.getAvailableSections(), var1.isFullChunk());
-      if (var5 != null && var1.isFullChunk()) {
-         this.level.reAddEntitiesToChunk(var5);
-      }
+      LevelChunk var5 = this.level.getChunkSource().replaceWithPacketData(var2, var3, var4, var1.getReadBuffer(), var1.getHeightmaps(), var1.getAvailableSections());
 
-      for(int var6 = 0; var6 < 16; ++var6) {
+      for(int var6 = this.level.getMinSection(); var6 < this.level.getMaxSection(); ++var6) {
          this.level.setSectionDirtyWithNeighbors(var2, var6, var3);
       }
 
-      Iterator var10 = var1.getBlockEntitiesTags().iterator();
+      if (var5 != null) {
+         Iterator var10 = var1.getBlockEntitiesTags().iterator();
 
-      while(var10.hasNext()) {
-         CompoundTag var7 = (CompoundTag)var10.next();
-         BlockPos var8 = new BlockPos(var7.getInt("x"), var7.getInt("y"), var7.getInt("z"));
-         BlockEntity var9 = this.level.getBlockEntity(var8);
-         if (var9 != null) {
-            var9.load(this.level.getBlockState(var8), var7);
+         while(var10.hasNext()) {
+            CompoundTag var7 = (CompoundTag)var10.next();
+            BlockPos var8 = new BlockPos(var7.getInt("x"), var7.getInt("y"), var7.getInt("z"));
+            BlockEntity var9 = var5.getBlockEntity(var8, LevelChunk.EntityCreationType.IMMEDIATE);
+            if (var9 != null) {
+               var9.load(var7);
+            }
          }
       }
 
@@ -754,7 +617,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
       var4.drop(var2, var3);
       LevelLightEngine var5 = var4.getLightEngine();
 
-      for(int var6 = 0; var6 < 16; ++var6) {
+      for(int var6 = this.level.getMinSection(); var6 < this.level.getMaxSection(); ++var6) {
          this.level.setSectionDirtyWithNeighbors(var2, var6, var3);
          var5.updateSectionStatus(SectionPos.of(var2, var6, var3), true);
       }
@@ -810,10 +673,10 @@ public class ClientPacketListener implements ClientGamePacketListener {
             ItemStack var5 = var4.getItem();
             var5.shrink(var1.getAmount());
             if (var5.isEmpty()) {
-               this.level.removeEntity(var1.getItemId());
+               this.level.removeEntity(var1.getItemId(), Entity.RemovalReason.DISCARDED);
             }
-         } else {
-            this.level.removeEntity(var1.getItemId());
+         } else if (!(var2 instanceof ExperienceOrb)) {
+            this.level.removeEntity(var1.getItemId(), Entity.RemovalReason.DISCARDED);
          }
       }
 
@@ -943,7 +806,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
       for(int var3 = 0; var3 < var2; ++var3) {
          InteractionHand var4 = var1[var3];
          ItemStack var5 = var0.getItemInHand(var4);
-         if (var5.getItem() == Items.TOTEM_OF_UNDYING) {
+         if (var5.is(Items.TOTEM_OF_UNDYING)) {
             return var5;
          }
       }
@@ -1002,7 +865,6 @@ public class ClientPacketListener implements ClientGamePacketListener {
          this.minecraft.setScreen(new ReceivingLevelScreen());
       }
 
-      this.level.removeAllPendingEntityRemovals();
       String var10 = var4.getServerBrand();
       this.minecraft.cameraEntity = null;
       LocalPlayer var11 = this.minecraft.gameMode.createPlayer(this.level, var4.getStats(), var4.getRecipeBook(), var4.isShiftKeyDown(), var4.isSprinting());
@@ -1048,9 +910,9 @@ public class ClientPacketListener implements ClientGamePacketListener {
          LocalPlayer var3 = this.minecraft.player;
          AbstractHorse var4 = (AbstractHorse)var2;
          SimpleContainer var5 = new SimpleContainer(var1.getSize());
-         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var3.inventory, var5, var4);
+         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var3.getInventory(), var5, var4);
          var3.containerMenu = var6;
-         this.minecraft.setScreen(new HorseInventoryScreen(var6, var3.inventory, var4));
+         this.minecraft.setScreen(new HorseInventoryScreen(var6, var3.getInventory(), var4));
       }
 
    }
@@ -1068,10 +930,10 @@ public class ClientPacketListener implements ClientGamePacketListener {
       this.minecraft.getTutorial().onGetItem(var3);
       if (var1.getContainerId() == -1) {
          if (!(this.minecraft.screen instanceof CreativeModeInventoryScreen)) {
-            var2.inventory.setCarried(var3);
+            var2.getInventory().setCarried(var3);
          }
       } else if (var1.getContainerId() == -2) {
-         var2.inventory.setItem(var4, var3);
+         var2.getInventory().setItem(var4, var3);
       } else {
          boolean var5 = false;
          if (this.minecraft.screen instanceof CreativeModeInventoryScreen) {
@@ -1124,13 +986,15 @@ public class ClientPacketListener implements ClientGamePacketListener {
 
    public void handleOpenSignEditor(ClientboundOpenSignEditorPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Object var2 = this.level.getBlockEntity(var1.getPos());
-      if (!(var2 instanceof SignBlockEntity)) {
-         var2 = new SignBlockEntity();
-         ((BlockEntity)var2).setLevelAndPosition(this.level, var1.getPos());
+      BlockPos var2 = var1.getPos();
+      Object var3 = this.level.getBlockEntity(var2);
+      if (!(var3 instanceof SignBlockEntity)) {
+         BlockState var4 = this.level.getBlockState(var2);
+         var3 = new SignBlockEntity(var2, var4);
+         ((BlockEntity)var3).setLevel(this.level);
       }
 
-      this.minecraft.player.openTextEdit((SignBlockEntity)var2);
+      this.minecraft.player.openTextEdit((SignBlockEntity)var3);
    }
 
    public void handleBlockEntityData(ClientboundBlockEntityDataPacket var1) {
@@ -1140,7 +1004,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
       int var4 = var1.getType();
       boolean var5 = var4 == 2 && var3 instanceof CommandBlockEntity;
       if (var4 == 1 && var3 instanceof SpawnerBlockEntity || var5 || var4 == 3 && var3 instanceof BeaconBlockEntity || var4 == 4 && var3 instanceof SkullBlockEntity || var4 == 6 && var3 instanceof BannerBlockEntity || var4 == 7 && var3 instanceof StructureBlockEntity || var4 == 8 && var3 instanceof TheEndGatewayBlockEntity || var4 == 9 && var3 instanceof SignBlockEntity || var4 == 11 && var3 instanceof BedBlockEntity || var4 == 5 && var3 instanceof ConduitBlockEntity || var4 == 12 && var3 instanceof JigsawBlockEntity || var4 == 13 && var3 instanceof CampfireBlockEntity || var4 == 14 && var3 instanceof BeehiveBlockEntity) {
-         var3.load(this.minecraft.level.getBlockState(var2), var1.getTag());
+         var3.load(var1.getTag());
       }
 
       if (var5 && this.minecraft.screen instanceof CommandBlockEditScreen) {
@@ -1560,12 +1424,12 @@ public class ClientPacketListener implements ClientGamePacketListener {
    public void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       LocalPlayer var2 = this.minecraft.player;
-      var2.abilities.flying = var1.isFlying();
-      var2.abilities.instabuild = var1.canInstabuild();
-      var2.abilities.invulnerable = var1.isInvulnerable();
-      var2.abilities.mayfly = var1.canFly();
-      var2.abilities.setFlyingSpeed(var1.getFlyingSpeed());
-      var2.abilities.setWalkingSpeed(var1.getWalkingSpeed());
+      var2.getAbilities().flying = var1.isFlying();
+      var2.getAbilities().instabuild = var1.canInstabuild();
+      var2.getAbilities().invulnerable = var1.isInvulnerable();
+      var2.getAbilities().mayfly = var1.canFly();
+      var2.getAbilities().setFlyingSpeed(var1.getFlyingSpeed());
+      var2.getAbilities().setWalkingSpeed(var1.getWalkingSpeed());
    }
 
    public void handleSoundEvent(ClientboundSoundPacket var1) {
@@ -1589,52 +1453,59 @@ public class ClientPacketListener implements ClientGamePacketListener {
    public void handleResourcePack(ClientboundResourcePackPacket var1) {
       String var2 = var1.getUrl();
       String var3 = var1.getHash();
+      boolean var4 = var1.isRequired();
       if (this.validateResourcePackUrl(var2)) {
          if (var2.startsWith("level://")) {
             try {
-               String var9 = URLDecoder.decode(var2.substring("level://".length()), StandardCharsets.UTF_8.toString());
-               File var5 = new File(this.minecraft.gameDirectory, "saves");
-               File var6 = new File(var5, var9);
-               if (var6.isFile()) {
+               String var10 = URLDecoder.decode(var2.substring("level://".length()), StandardCharsets.UTF_8.toString());
+               File var6 = new File(this.minecraft.gameDirectory, "saves");
+               File var7 = new File(var6, var10);
+               if (var7.isFile()) {
                   this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
-                  CompletableFuture var7 = this.minecraft.getClientPackSource().setServerPack(var6, PackSource.WORLD);
-                  this.downloadCallback(var7);
+                  CompletableFuture var8 = this.minecraft.getClientPackSource().setServerPack(var7, PackSource.WORLD);
+                  this.downloadCallback(var8);
                   return;
                }
-            } catch (UnsupportedEncodingException var8) {
+            } catch (UnsupportedEncodingException var9) {
             }
 
             this.send(ServerboundResourcePackPacket.Action.FAILED_DOWNLOAD);
          } else {
-            ServerData var4 = this.minecraft.getCurrentServer();
-            if (var4 != null && var4.getResourcePackStatus() == ServerData.ServerPackStatus.ENABLED) {
+            ServerData var5 = this.minecraft.getCurrentServer();
+            if (var5 != null && var5.getResourcePackStatus() == ServerData.ServerPackStatus.ENABLED) {
                this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
                this.downloadCallback(this.minecraft.getClientPackSource().downloadAndSelectResourcePack(var2, var3));
-            } else if (var4 != null && var4.getResourcePackStatus() != ServerData.ServerPackStatus.PROMPT) {
+            } else if (var5 != null && var5.getResourcePackStatus() != ServerData.ServerPackStatus.PROMPT) {
                this.send(ServerboundResourcePackPacket.Action.DECLINED);
+               if (var4) {
+                  this.connection.disconnect(new TranslatableComponent("multiplayer.requiredTexturePrompt.disconnect"));
+               }
             } else {
                this.minecraft.execute(() -> {
-                  this.minecraft.setScreen(new ConfirmScreen((var3x) -> {
-                     this.minecraft = Minecraft.getInstance();
-                     ServerData var4 = this.minecraft.getCurrentServer();
-                     if (var3x) {
-                        if (var4 != null) {
-                           var4.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
+                  this.minecraft.setScreen(new ConfirmScreen((var4x) -> {
+                     this.minecraft.setScreen((Screen)null);
+                     ServerData var5 = this.minecraft.getCurrentServer();
+                     if (var4x) {
+                        if (var5 != null) {
+                           var5.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
                         }
 
                         this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
                         this.downloadCallback(this.minecraft.getClientPackSource().downloadAndSelectResourcePack(var2, var3));
                      } else {
-                        if (var4 != null) {
-                           var4.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
-                        }
-
                         this.send(ServerboundResourcePackPacket.Action.DECLINED);
+                        if (var4) {
+                           this.connection.disconnect(new TranslatableComponent("multiplayer.requiredTexturePrompt.disconnect"));
+                        } else if (var5 != null) {
+                           var5.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
+                        }
                      }
 
-                     ServerList.saveSingleServer(var4);
-                     this.minecraft.setScreen((Screen)null);
-                  }, new TranslatableComponent("multiplayer.texturePrompt.line1"), new TranslatableComponent("multiplayer.texturePrompt.line2")));
+                     if (var5 != null) {
+                        ServerList.saveSingleServer(var5);
+                     }
+
+                  }, var4 ? new TranslatableComponent("multiplayer.requiredTexturePrompt.line1") : new TranslatableComponent("multiplayer.texturePrompt.line1"), (Component)(var4 ? (new TranslatableComponent("multiplayer.requiredTexturePrompt.line2")).withStyle(new ChatFormatting[]{ChatFormatting.YELLOW, ChatFormatting.BOLD}) : new TranslatableComponent("multiplayer.texturePrompt.line2")), (Component)(var4 ? new TranslatableComponent("gui.proceed") : CommonComponents.GUI_YES), (Component)(var4 ? new TranslatableComponent("menu.disconnect") : CommonComponents.GUI_NO)));
                });
             }
 
@@ -1701,7 +1572,7 @@ public class ClientPacketListener implements ClientGamePacketListener {
    public void handleOpenBook(ClientboundOpenBookPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       ItemStack var2 = this.minecraft.player.getItemInHand(var1.getHand());
-      if (var2.getItem() == Items.WRITTEN_BOOK) {
+      if (var2.is(Items.WRITTEN_BOOK)) {
          this.minecraft.setScreen(new BookViewScreen(new BookViewScreen.WrittenBookAccess(var2)));
       }
 
@@ -2151,14 +2022,14 @@ public class ClientPacketListener implements ClientGamePacketListener {
       int var2 = var1.getX();
       int var3 = var1.getZ();
       LevelLightEngine var4 = this.level.getChunkSource().getLightEngine();
-      int var5 = var1.getSkyYMask();
-      int var6 = var1.getEmptySkyYMask();
-      Iterator var7 = var1.getSkyUpdates().iterator();
-      this.readSectionList(var2, var3, var4, LightLayer.SKY, var5, var6, var7, var1.getTrustEdges());
-      int var8 = var1.getBlockYMask();
-      int var9 = var1.getEmptyBlockYMask();
-      Iterator var10 = var1.getBlockUpdates().iterator();
-      this.readSectionList(var2, var3, var4, LightLayer.BLOCK, var8, var9, var10, var1.getTrustEdges());
+      long var5 = var1.getSkyYMask();
+      long var7 = var1.getEmptySkyYMask();
+      Iterator var9 = var1.getSkyUpdates().iterator();
+      this.readSectionList(var2, var3, var4, LightLayer.SKY, var5, var7, var9, var1.getTrustEdges());
+      long var10 = var1.getBlockYMask();
+      long var12 = var1.getEmptyBlockYMask();
+      Iterator var14 = var1.getBlockUpdates().iterator();
+      this.readSectionList(var2, var3, var4, LightLayer.BLOCK, var10, var12, var14, var1.getTrustEdges());
    }
 
    public void handleMerchantOffers(ClientboundMerchantOffersPacket var1) {
@@ -2190,14 +2061,14 @@ public class ClientPacketListener implements ClientGamePacketListener {
       this.minecraft.gameMode.handleBlockBreakAck(this.level, var1.getPos(), var1.getState(), var1.action(), var1.allGood());
    }
 
-   private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, int var5, int var6, Iterator<byte[]> var7, boolean var8) {
-      for(int var9 = 0; var9 < 18; ++var9) {
-         int var10 = -1 + var9;
-         boolean var11 = (var5 & 1 << var9) != 0;
-         boolean var12 = (var6 & 1 << var9) != 0;
-         if (var11 || var12) {
-            var3.queueSectionData(var4, SectionPos.of(var1, var10, var2), var11 ? new DataLayer((byte[])((byte[])var7.next()).clone()) : new DataLayer(), var8);
-            this.level.setSectionDirtyWithNeighbors(var1, var10, var2);
+   private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, long var5, long var7, Iterator<byte[]> var9, boolean var10) {
+      for(int var11 = 0; var11 < var3.getLightSectionCount(); ++var11) {
+         int var12 = var3.getMinLightSection() + var11;
+         boolean var13 = (var5 & 1L << var11) != 0L;
+         boolean var14 = (var7 & 1L << var11) != 0L;
+         if (var13 || var14) {
+            var3.queueSectionData(var4, SectionPos.of(var1, var12, var2), var13 ? new DataLayer((byte[])((byte[])var9.next()).clone()) : new DataLayer(), var10);
+            this.level.setSectionDirtyWithNeighbors(var1, var12, var2);
          }
       }
 

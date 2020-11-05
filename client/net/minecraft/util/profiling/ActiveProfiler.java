@@ -149,7 +149,7 @@ public class ActiveProfiler implements ProfileCollector {
    static class PathEntry implements ProfilerPathEntry {
       private long duration;
       private long count;
-      private Object2LongOpenHashMap<String> counters;
+      private final Object2LongOpenHashMap<String> counters;
 
       private PathEntry() {
          super();

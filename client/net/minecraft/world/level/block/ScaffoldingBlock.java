@@ -54,7 +54,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().getItem() == this.asItem();
+      return var2.getItemInHand().is(this.asItem());
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

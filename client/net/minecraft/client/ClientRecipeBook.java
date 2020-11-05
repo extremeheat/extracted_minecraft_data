@@ -58,7 +58,7 @@ public class ClientRecipeBook extends RecipeBook {
 
       while(var3.hasNext()) {
          Recipe var4 = (Recipe)var3.next();
-         if (!var4.isSpecial()) {
+         if (!var4.isSpecial() && !var4.isIncomplete()) {
             RecipeBookCategories var5 = getCategory(var4);
             String var6 = var4.getGroup();
             if (var6.isEmpty()) {

@@ -50,7 +50,7 @@ public class PrimedTnt extends Entity {
    }
 
    public boolean isPickable() {
-      return !this.removed;
+      return !this.isRemoved();
    }
 
    public void tick() {
@@ -66,7 +66,7 @@ public class PrimedTnt extends Entity {
 
       --this.life;
       if (this.life <= 0) {
-         this.remove();
+         this.discard();
          if (!this.level.isClientSide) {
             this.explode();
          }

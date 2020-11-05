@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -18,6 +17,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -30,7 +30,7 @@ public class ServerTickList<T> implements TickList<T> {
    protected final Predicate<T> ignore;
    private final Function<T, ResourceLocation> toId;
    private final Set<TickNextTickData<T>> tickNextTickSet = Sets.newHashSet();
-   private final TreeSet<TickNextTickData<T>> tickNextTickList = Sets.newTreeSet(TickNextTickData.createTimeComparator());
+   private final Set<TickNextTickData<T>> tickNextTickList = Sets.newTreeSet(TickNextTickData.createTimeComparator());
    private final ServerLevel level;
    private final Queue<TickNextTickData<T>> currentlyTicking = Queues.newArrayDeque();
    private final List<TickNextTickData<T>> alreadyTicked = Lists.newArrayList();
@@ -82,7 +82,7 @@ public class ServerTickList<T> implements TickList<T> {
                } catch (Throwable var8) {
                   CrashReport var6 = CrashReport.forThrowable(var8, "Exception while ticking");
                   CrashReportCategory var7 = var6.addCategory("Block being ticked");
-                  CrashReportCategory.populateBlockDetails(var7, var4.pos, (BlockState)null);
+                  CrashReportCategory.populateBlockDetails(var7, this.level, var4.pos, (BlockState)null);
                   throw new ReportedException(var6);
                }
             } else {
@@ -101,11 +101,11 @@ public class ServerTickList<T> implements TickList<T> {
    }
 
    public List<TickNextTickData<T>> fetchTicksInChunk(ChunkPos var1, boolean var2, boolean var3) {
-      int var4 = (var1.x << 4) - 2;
+      int var4 = SectionPos.sectionToBlockCoord(var1.x) - 2;
       int var5 = var4 + 16 + 2;
-      int var6 = (var1.z << 4) - 2;
+      int var6 = SectionPos.sectionToBlockCoord(var1.z) - 2;
       int var7 = var6 + 16 + 2;
-      return this.fetchTicksInArea(new BoundingBox(var4, 0, var6, var5, 256, var7), var2, var3);
+      return this.fetchTicksInArea(new BoundingBox(var4, this.level.getMinBuildHeight(), var6, var5, this.level.getMaxBuildHeight(), var7), var2, var3);
    }
 
    public List<TickNextTickData<T>> fetchTicksInArea(BoundingBox var1, boolean var2, boolean var3) {

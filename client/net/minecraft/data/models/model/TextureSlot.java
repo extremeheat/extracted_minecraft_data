@@ -38,6 +38,9 @@ public final class TextureSlot {
    public static final TextureSlot TORCH;
    public static final TextureSlot LAYER0;
    public static final TextureSlot LIT_LOG;
+   public static final TextureSlot CANDLE;
+   public static final TextureSlot INSIDE;
+   public static final TextureSlot CONTENT;
    private final String id;
    @Nullable
    private final TextureSlot parent;
@@ -104,5 +107,8 @@ public final class TextureSlot {
       TORCH = create("torch");
       LAYER0 = create("layer0");
       LIT_LOG = create("lit_log");
+      CANDLE = create("candle");
+      INSIDE = create("inside");
+      CONTENT = create("content");
    }
 }

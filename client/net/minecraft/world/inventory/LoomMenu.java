@@ -206,7 +206,7 @@ public class LoomMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, var1.level, this.inputContainer);
+         this.clearContainer(var1, this.inputContainer);
       });
    }
 

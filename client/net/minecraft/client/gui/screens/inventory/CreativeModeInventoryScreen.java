@@ -69,7 +69,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    private final Map<ResourceLocation, Tag<Item>> visibleTags = Maps.newTreeMap();
 
    public CreativeModeInventoryScreen(Player var1) {
-      super(new CreativeModeInventoryScreen.ItemPickerMenu(var1), var1.inventory, TextComponent.EMPTY);
+      super(new CreativeModeInventoryScreen.ItemPickerMenu(var1), var1.getInventory(), TextComponent.EMPTY);
       var1.containerMenu = this.menu;
       this.passEvents = true;
       this.imageHeight = 136;
@@ -96,7 +96,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       ItemStack var7;
       Inventory var10;
       if (var1 == null && selectedTab != CreativeModeTab.TAB_INVENTORY.getId() && var4 != ClickType.QUICK_CRAFT) {
-         var10 = this.minecraft.player.inventory;
+         var10 = this.minecraft.player.getInventory();
          if (!var10.getCarried().isEmpty() && this.hasClickedOutside) {
             if (var3 == 0) {
                this.minecraft.player.drop(var10.getCarried(), true);
@@ -123,17 +123,17 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             ItemStack var6;
             if (selectedTab == CreativeModeTab.TAB_INVENTORY.getId()) {
                if (var1 == this.destroyItemSlot) {
-                  this.minecraft.player.inventory.setCarried(ItemStack.EMPTY);
+                  this.minecraft.player.getInventory().setCarried(ItemStack.EMPTY);
                } else if (var4 == ClickType.THROW && var1 != null && var1.hasItem()) {
                   var6 = var1.remove(var3 == 0 ? 1 : var1.getItem().getMaxStackSize());
                   var7 = var1.getItem();
                   this.minecraft.player.drop(var6, true);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(var6);
                   this.minecraft.gameMode.handleCreativeModeItemAdd(var7, ((CreativeModeInventoryScreen.SlotWrapper)var1).target.index);
-               } else if (var4 == ClickType.THROW && !this.minecraft.player.inventory.getCarried().isEmpty()) {
-                  this.minecraft.player.drop(this.minecraft.player.inventory.getCarried(), true);
-                  this.minecraft.gameMode.handleCreativeModeItemDrop(this.minecraft.player.inventory.getCarried());
-                  this.minecraft.player.inventory.setCarried(ItemStack.EMPTY);
+               } else if (var4 == ClickType.THROW && !this.minecraft.player.getInventory().getCarried().isEmpty()) {
+                  this.minecraft.player.drop(this.minecraft.player.getInventory().getCarried(), true);
+                  this.minecraft.gameMode.handleCreativeModeItemDrop(this.minecraft.player.getInventory().getCarried());
+                  this.minecraft.player.getInventory().setCarried(ItemStack.EMPTY);
                } else {
                   this.minecraft.player.inventoryMenu.clicked(var1 == null ? var2 : ((CreativeModeInventoryScreen.SlotWrapper)var1).target.index, var3, var4, this.minecraft.player);
                   this.minecraft.player.inventoryMenu.broadcastChanges();
@@ -141,14 +141,14 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             } else {
                ItemStack var9;
                if (var4 != ClickType.QUICK_CRAFT && var1.container == CONTAINER) {
-                  var10 = this.minecraft.player.inventory;
+                  var10 = this.minecraft.player.getInventory();
                   var7 = var10.getCarried();
                   ItemStack var13 = var1.getItem();
                   if (var4 == ClickType.SWAP) {
                      if (!var13.isEmpty()) {
                         var9 = var13.copy();
                         var9.setCount(var9.getMaxStackSize());
-                        this.minecraft.player.inventory.setItem(var3, var9);
+                        this.minecraft.player.getInventory().setItem(var3, var9);
                         this.minecraft.player.inventoryMenu.broadcastChanges();
                      }
 
@@ -277,7 +277,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    public void removed() {
       super.removed();
-      if (this.minecraft.player != null && this.minecraft.player.inventory != null) {
+      if (this.minecraft.player != null && this.minecraft.player.getInventory() != null) {
          this.minecraft.player.inventoryMenu.removeSlotListener(this.listener);
       }
 
@@ -616,7 +616,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          ArrayList var6 = Lists.newArrayList(var5);
          Item var7 = var2.getItem();
          CreativeModeTab var8 = var7.getItemCategory();
-         if (var8 == null && var7 == Items.ENCHANTED_BOOK) {
+         if (var8 == null && var2.is(Items.ENCHANTED_BOOK)) {
             Map var9 = EnchantmentHelper.getEnchantments(var2);
             if (var9.size() == 1) {
                Enchantment var10 = (Enchantment)var9.keySet().iterator().next();
@@ -634,7 +634,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          }
 
          this.visibleTags.forEach((var2x, var3x) -> {
-            if (var3x.contains(var7)) {
+            if (var2.is(var3x)) {
                var6.add(1, (new TextComponent("#" + var2x)).withStyle(ChatFormatting.DARK_PURPLE));
             }
 
@@ -778,14 +778,14 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       if (var2) {
          for(var7 = 0; var7 < Inventory.getSelectionSize(); ++var7) {
             ItemStack var8 = ((ItemStack)var6.get(var7)).copy();
-            var4.inventory.setItem(var7, var8);
+            var4.getInventory().setItem(var7, var8);
             var0.gameMode.handleCreativeModeItemAdd(var8, 36 + var7);
          }
 
          var4.inventoryMenu.broadcastChanges();
       } else if (var3) {
          for(var7 = 0; var7 < Inventory.getSelectionSize(); ++var7) {
-            var6.set(var7, var4.inventory.getItem(var7).copy());
+            var6.set(var7, var4.getInventory().getItem(var7).copy());
          }
 
          Component var9 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
@@ -877,7 +877,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
       public ItemPickerMenu(Player var1) {
          super((MenuType)null, 0);
-         Inventory var2 = var1.inventory;
+         Inventory var2 = var1.getInventory();
 
          int var3;
          for(var3 = 0; var3 < 5; ++var3) {

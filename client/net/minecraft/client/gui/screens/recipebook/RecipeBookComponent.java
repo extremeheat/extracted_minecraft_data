@@ -70,7 +70,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       this.menu = var5;
       var3.player.containerMenu = var5;
       this.book = var3.player.getRecipeBook();
-      this.timesInventoryChanged = var3.player.inventory.getTimesChanged();
+      this.timesInventoryChanged = var3.player.getInventory().getTimesChanged();
       if (this.isVisible()) {
          this.initVisuals(var4);
       }
@@ -83,7 +83,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       int var2 = (this.width - 147) / 2 - this.xOffset;
       int var3 = (this.height - 166) / 2;
       this.stackedContents.clear();
-      this.minecraft.player.inventory.fillStackedContents(this.stackedContents);
+      this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       String var4 = this.searchBox != null ? this.searchBox.getValue() : "";
       Font var10003 = this.minecraft.font;
@@ -232,9 +232,9 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
 
    public void tick() {
       if (this.isVisible()) {
-         if (this.timesInventoryChanged != this.minecraft.player.inventory.getTimesChanged()) {
+         if (this.timesInventoryChanged != this.minecraft.player.getInventory().getTimesChanged()) {
             this.updateStackedContents();
-            this.timesInventoryChanged = this.minecraft.player.inventory.getTimesChanged();
+            this.timesInventoryChanged = this.minecraft.player.getInventory().getTimesChanged();
          }
 
          this.searchBox.tick();
@@ -243,7 +243,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
 
    private void updateStackedContents() {
       this.stackedContents.clear();
-      this.minecraft.player.inventory.fillStackedContents(this.stackedContents);
+      this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       this.updateCollections(false);
    }

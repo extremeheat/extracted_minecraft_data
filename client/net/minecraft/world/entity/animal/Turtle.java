@@ -22,7 +22,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -45,7 +45,7 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -252,12 +252,12 @@ public class Turtle extends Animal {
    }
 
    @Nullable
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
-      return (AgableMob)EntityType.TURTLE.create(var1);
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return (AgeableMob)EntityType.TURTLE.create(var1);
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.getItem() == Blocks.SEAGRASS.asItem();
+      return var1.is(Blocks.SEAGRASS.asItem());
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -507,7 +507,7 @@ public class Turtle extends Animal {
 
          if (var1 != null) {
             var1.awardStat(Stats.ANIMALS_BRED);
-            CriteriaTriggers.BRED_ANIMALS.trigger(var1, this.animal, this.partner, (AgableMob)null);
+            CriteriaTriggers.BRED_ANIMALS.trigger(var1, this.animal, this.partner, (AgeableMob)null);
          }
 
          this.turtle.setHasEgg(true);
@@ -623,13 +623,13 @@ public class Turtle extends Animal {
 
          if (this.turtle.getNavigation().isDone()) {
             Vec3 var3 = Vec3.atBottomCenterOf(var1);
-            Vec3 var4 = RandomPos.getPosTowards(this.turtle, 16, 3, var3, 0.3141592741012573D);
+            Vec3 var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var3, 0.3141592741012573D);
             if (var4 == null) {
-               var4 = RandomPos.getPosTowards(this.turtle, 8, 7, var3);
+               var4 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var3, 1.5707963705062866D);
             }
 
             if (var4 != null && !var2 && !this.turtle.level.getBlockState(new BlockPos(var4)).is(Blocks.WATER)) {
-               var4 = RandomPos.getPosTowards(this.turtle, 16, 5, var3);
+               var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 5, var3, 1.5707963705062866D);
             }
 
             if (var4 == null) {
@@ -678,9 +678,9 @@ public class Turtle extends Animal {
       public void tick() {
          if (this.turtle.getNavigation().isDone()) {
             Vec3 var1 = Vec3.atBottomCenterOf(this.turtle.getTravelPos());
-            Vec3 var2 = RandomPos.getPosTowards(this.turtle, 16, 3, var1, 0.3141592741012573D);
+            Vec3 var2 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var1, 0.3141592741012573D);
             if (var2 == null) {
-               var2 = RandomPos.getPosTowards(this.turtle, 8, 7, var1);
+               var2 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var1, 1.5707963705062866D);
             }
 
             if (var2 != null) {

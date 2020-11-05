@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.CowModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.MushroomCowMushroomLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.MushroomCow;
@@ -14,8 +15,8 @@ public class MushroomCowRenderer extends MobRenderer<MushroomCow, CowModel<Mushr
       var0.put(MushroomCow.MushroomType.RED, new ResourceLocation("textures/entity/cow/red_mooshroom.png"));
    });
 
-   public MushroomCowRenderer(EntityRenderDispatcher var1) {
-      super(var1, new CowModel(), 0.7F);
+   public MushroomCowRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new CowModel(var1.getLayer(ModelLayers.MOOSHROOM)), 0.7F);
       this.addLayer(new MushroomCowMushroomLayer(this));
    }
 

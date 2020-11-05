@@ -23,7 +23,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -51,7 +51,6 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -230,7 +229,7 @@ public class Panda extends Animal {
    }
 
    @Nullable
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Panda var3 = (Panda)EntityType.PANDA.create(var1);
       if (var2 instanceof Panda) {
          var3.setGeneFromParents(this, (Panda)var2);
@@ -495,7 +494,7 @@ public class Panda extends Animal {
          this.setItemSlot(EquipmentSlot.MAINHAND, var2);
          this.handDropChances[EquipmentSlot.MAINHAND.getIndex()] = 2.0F;
          this.take(var1, var2.getCount());
-         var1.remove();
+         var1.discard();
       }
 
    }
@@ -511,7 +510,7 @@ public class Panda extends Animal {
       this.setHiddenGene(Panda.Gene.getRandom(this.random));
       this.setAttributes();
       if (var4 == null) {
-         var4 = new AgableMob.AgableMobGroupData(0.2F);
+         var4 = new AgeableMob.AgeableMobGroupData(0.2F);
       }
 
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
@@ -594,7 +593,7 @@ public class Panda extends Animal {
             this.tryToSit();
             this.eat(true);
             ItemStack var4 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (!var4.isEmpty() && !var1.abilities.instabuild) {
+            if (!var4.isEmpty() && !var1.getAbilities().instabuild) {
                this.spawnAtLocation(var4);
             }
 
@@ -622,11 +621,11 @@ public class Panda extends Animal {
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.getItem() == Blocks.BAMBOO.asItem();
+      return var1.is(Blocks.BAMBOO.asItem());
    }
 
    private boolean isFoodOrCake(ItemStack var1) {
-      return this.isFood(var1) || var1.getItem() == Blocks.CAKE.asItem();
+      return this.isFood(var1) || var1.is(Blocks.CAKE.asItem());
    }
 
    @Nullable
@@ -652,8 +651,8 @@ public class Panda extends Animal {
       DATA_ID_FLAGS = SynchedEntityData.defineId(Panda.class, EntityDataSerializers.BYTE);
       BREED_TARGETING = (new TargetingConditions()).range(8.0D).allowSameTeam().allowInvulnerable();
       PANDA_ITEMS = (var0) -> {
-         Item var1 = var0.getItem().getItem();
-         return (var1 == Blocks.BAMBOO.asItem() || var1 == Blocks.CAKE.asItem()) && var0.isAlive() && !var0.hasPickUpDelay();
+         ItemStack var1 = var0.getItem();
+         return (var1.is(Blocks.BAMBOO.asItem()) || var1.is(Blocks.CAKE.asItem())) && var0.isAlive() && !var0.hasPickUpDelay();
       };
    }
 
@@ -975,7 +974,9 @@ public class Panda extends Animal {
                if (this.lookAtType == Player.class) {
                   this.lookAt = this.mob.level.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
                } else {
-                  this.lookAt = this.mob.level.getNearestLoadedEntity(this.lookAtType, this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ(), this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0D, (double)this.lookDistance));
+                  this.lookAt = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0D, (double)this.lookDistance), (var0) -> {
+                     return true;
+                  }), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
                }
             }
 

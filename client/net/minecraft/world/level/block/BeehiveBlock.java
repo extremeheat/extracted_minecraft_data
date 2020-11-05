@@ -32,12 +32,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -78,7 +79,7 @@ public class BeehiveBlock extends BaseEntityBlock {
             this.angerNearbyBees(var1, var3);
          }
 
-         CriteriaTriggers.BEE_NEST_DESTROYED.trigger((ServerPlayer)var2, var4.getBlock(), var6, var7.getOccupantCount());
+         CriteriaTriggers.BEE_NEST_DESTROYED.trigger((ServerPlayer)var2, var4, var6, var7.getOccupantCount());
       }
 
    }
@@ -109,19 +110,19 @@ public class BeehiveBlock extends BaseEntityBlock {
       int var8 = (Integer)var1.getValue(HONEY_LEVEL);
       boolean var9 = false;
       if (var8 >= 5) {
-         if (var7.getItem() == Items.SHEARS) {
+         if (var7.is(Items.SHEARS)) {
             var2.playSound(var4, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.NEUTRAL, 1.0F, 1.0F);
             dropHoneycomb(var2, var3);
             var7.hurtAndBreak(1, var4, (var1x) -> {
                var1x.broadcastBreakEvent(var5);
             });
             var9 = true;
-         } else if (var7.getItem() == Items.GLASS_BOTTLE) {
+         } else if (var7.is(Items.GLASS_BOTTLE)) {
             var7.shrink(1);
             var2.playSound(var4, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
             if (var7.isEmpty()) {
                var4.setItemInHand(var5, new ItemStack(Items.HONEY_BOTTLE));
-            } else if (!var4.inventory.add(new ItemStack(Items.HONEY_BOTTLE))) {
+            } else if (!var4.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
                var4.drop(new ItemStack(Items.HONEY_BOTTLE), false);
             }
 
@@ -222,8 +223,13 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Nullable
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new BeehiveBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new BeehiveBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BEEHIVE, BeehiveBlockEntity::serverTick);
    }
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {

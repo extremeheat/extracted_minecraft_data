@@ -16,7 +16,7 @@ public class SnowballItem extends Item {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (random.nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       if (!var1.isClientSide) {
          Snowball var5 = new Snowball(var1, var2);
          var5.setItem(var4);
@@ -25,7 +25,7 @@ public class SnowballItem extends Item {
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));
-      if (!var2.abilities.instabuild) {
+      if (!var2.getAbilities().instabuild) {
          var4.shrink(1);
       }
 

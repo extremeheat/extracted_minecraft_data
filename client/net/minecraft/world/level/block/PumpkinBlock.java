@@ -22,7 +22,7 @@ public class PumpkinBlock extends StemGrownBlock {
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       ItemStack var7 = var4.getItemInHand(var5);
-      if (var7.getItem() == Items.SHEARS) {
+      if (var7.is(Items.SHEARS)) {
          if (!var2.isClientSide) {
             Direction var8 = var6.getDirection();
             Direction var9 = var8.getAxis() == Direction.Axis.Y ? var4.getDirection().getOpposite() : var8;

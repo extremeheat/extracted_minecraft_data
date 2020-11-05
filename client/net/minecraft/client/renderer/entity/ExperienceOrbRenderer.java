@@ -17,7 +17,7 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
    private static final ResourceLocation EXPERIENCE_ORB_LOCATION = new ResourceLocation("textures/entity/experience_orb.png");
    private static final RenderType RENDER_TYPE;
 
-   public ExperienceOrbRenderer(EntityRenderDispatcher var1) {
+   public ExperienceOrbRenderer(EntityRendererProvider.Context var1) {
       super(var1);
       this.shadowRadius = 0.15F;
       this.shadowStrength = 0.75F;

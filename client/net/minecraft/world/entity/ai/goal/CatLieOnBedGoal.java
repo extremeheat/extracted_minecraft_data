@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.level.LevelReader;
@@ -48,6 +47,6 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
    }
 
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).getBlock().is((Tag)BlockTags.BEDS);
+      return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).is(BlockTags.BEDS);
    }
 }

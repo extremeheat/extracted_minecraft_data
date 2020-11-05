@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -119,7 +121,7 @@ public abstract class Player extends LivingEntity {
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_LEFT;
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
    private long timeEntitySatOnShoulder;
-   public final Inventory inventory = new Inventory(this);
+   private final Inventory inventory = new Inventory(this);
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
    public AbstractContainerMenu containerMenu;
@@ -136,7 +138,7 @@ public abstract class Player extends LivingEntity {
    public double zCloak;
    private int sleepCounter;
    protected boolean wasUnderwater;
-   public final Abilities abilities = new Abilities();
+   private final Abilities abilities = new Abilities();
    public int experienceLevel;
    public int totalExperience;
    public float experienceProgress;
@@ -280,7 +282,7 @@ public abstract class Player extends LivingEntity {
 
    private void turtleHelmetTick() {
       ItemStack var1 = this.getItemBySlot(EquipmentSlot.HEAD);
-      if (var1.getItem() == Items.TURTLE_HELMET && !this.isEyeInFluid(FluidTags.WATER)) {
+      if (var1.is(Items.TURTLE_HELMET) && !this.isEyeInFluid(FluidTags.WATER)) {
          this.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 200, 0, false, false, true));
       }
 
@@ -491,19 +493,26 @@ public abstract class Player extends LivingEntity {
       this.bob += (var1 - this.bob) * 0.4F;
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
          AABB var2;
-         if (this.isPassenger() && !this.getVehicle().removed) {
+         if (this.isPassenger() && !this.getVehicle().isRemoved()) {
             var2 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0D, 0.0D, 1.0D);
          } else {
             var2 = this.getBoundingBox().inflate(1.0D, 0.5D, 1.0D);
          }
 
          List var3 = this.level.getEntities(this, var2);
+         ArrayList var4 = Lists.newArrayList();
 
-         for(int var4 = 0; var4 < var3.size(); ++var4) {
-            Entity var5 = (Entity)var3.get(var4);
-            if (!var5.removed) {
-               this.touch(var5);
+         for(int var5 = 0; var5 < var3.size(); ++var5) {
+            Entity var6 = (Entity)var3.get(var5);
+            if (var6.getType() == EntityType.EXPERIENCE_ORB) {
+               var4.add(var6);
+            } else if (!var6.isRemoved()) {
+               this.touch(var6);
             }
+         }
+
+         if (!var4.isEmpty()) {
+            this.touch((Entity)Util.getRandom((List)var4, this.random));
          }
       }
 
@@ -819,7 +828,7 @@ public abstract class Player extends LivingEntity {
    }
 
    protected void hurtCurrentlyUsedShield(float var1) {
-      if (this.useItem.getItem() == Items.SHIELD) {
+      if (this.useItem.is(Items.SHIELD)) {
          if (!this.level.isClientSide) {
             this.awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
          }
@@ -1220,8 +1229,8 @@ public abstract class Player extends LivingEntity {
    public void respawn() {
    }
 
-   public void remove() {
-      super.remove();
+   public void remove(Entity.RemovalReason var1) {
+      super.remove(var1);
       this.inventoryMenu.removed(this);
       if (this.containerMenu != null) {
          this.containerMenu.removed(this);
@@ -1235,6 +1244,14 @@ public abstract class Player extends LivingEntity {
 
    public GameProfile getGameProfile() {
       return this.gameProfile;
+   }
+
+   public Inventory getInventory() {
+      return this.inventory;
+   }
+
+   public Abilities getAbilities() {
+      return this.abilities;
    }
 
    public Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos var1) {
@@ -1464,7 +1481,7 @@ public abstract class Player extends LivingEntity {
    public boolean tryToStartFallFlying() {
       if (!this.onGround && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
          ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var1.getItem() == Items.ELYTRA && ElytraItem.isFlyEnabled(var1)) {
+         if (var1.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var1)) {
             this.startFallFlying();
             return true;
          }
@@ -1983,6 +2000,14 @@ public abstract class Player extends LivingEntity {
 
          return this.getPosition(var1).add((new Vec3(var2, -0.11D, 0.85D)).zRot(-var12).xRot(-var4).yRot(-var5));
       }
+   }
+
+   public boolean isAlwaysTicking() {
+      return true;
+   }
+
+   public boolean isScoping() {
+      return this.isUsingItem() && this.getUseItem().is(Items.SPYGLASS);
    }
 
    static {

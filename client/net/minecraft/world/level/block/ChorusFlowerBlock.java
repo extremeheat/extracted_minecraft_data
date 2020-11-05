@@ -41,32 +41,31 @@ public class ChorusFlowerBlock extends Block {
 
    public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
       BlockPos var5 = var3.above();
-      if (var2.isEmptyBlock(var5) && var5.getY() < 256) {
+      if (var2.isEmptyBlock(var5) && var5.getY() < var2.getMaxBuildHeight()) {
          int var6 = (Integer)var1.getValue(AGE);
          if (var6 < 5) {
             boolean var7 = false;
             boolean var8 = false;
             BlockState var9 = var2.getBlockState(var3.below());
-            Block var10 = var9.getBlock();
-            int var11;
-            if (var10 == Blocks.END_STONE) {
+            int var10;
+            if (var9.is(Blocks.END_STONE)) {
                var7 = true;
-            } else if (var10 == this.plant) {
-               var11 = 1;
+            } else if (var9.is(this.plant)) {
+               var10 = 1;
 
-               for(int var12 = 0; var12 < 4; ++var12) {
-                  Block var13 = var2.getBlockState(var3.below(var11 + 1)).getBlock();
-                  if (var13 != this.plant) {
-                     if (var13 == Blocks.END_STONE) {
+               for(int var11 = 0; var11 < 4; ++var11) {
+                  BlockState var12 = var2.getBlockState(var3.below(var10 + 1));
+                  if (!var12.is(this.plant)) {
+                     if (var12.is(Blocks.END_STONE)) {
                         var8 = true;
                      }
                      break;
                   }
 
-                  ++var11;
+                  ++var10;
                }
 
-               if (var11 < 2 || var11 <= var4.nextInt(var8 ? 5 : 4)) {
+               if (var10 < 2 || var10 <= var4.nextInt(var8 ? 5 : 4)) {
                   var7 = true;
                }
             } else if (var9.isAir()) {
@@ -77,23 +76,23 @@ public class ChorusFlowerBlock extends Block {
                var2.setBlock(var3, this.plant.getStateForPlacement(var2, var3), 2);
                this.placeGrownFlower(var2, var5, var6);
             } else if (var6 < 4) {
-               var11 = var4.nextInt(4);
+               var10 = var4.nextInt(4);
                if (var8) {
-                  ++var11;
+                  ++var10;
                }
 
-               boolean var16 = false;
+               boolean var15 = false;
 
-               for(int var17 = 0; var17 < var11; ++var17) {
-                  Direction var14 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
-                  BlockPos var15 = var3.relative(var14);
-                  if (var2.isEmptyBlock(var15) && var2.isEmptyBlock(var15.below()) && allNeighborsEmpty(var2, var15, var14.getOpposite())) {
-                     this.placeGrownFlower(var2, var15, var6 + 1);
-                     var16 = true;
+               for(int var16 = 0; var16 < var10; ++var16) {
+                  Direction var13 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
+                  BlockPos var14 = var3.relative(var13);
+                  if (var2.isEmptyBlock(var14) && var2.isEmptyBlock(var14.below()) && allNeighborsEmpty(var2, var14, var13.getOpposite())) {
+                     this.placeGrownFlower(var2, var14, var6 + 1);
+                     var15 = true;
                   }
                }
 
-               if (var16) {
+               if (var15) {
                   var2.setBlock(var3, this.plant.getStateForPlacement(var2, var3), 2);
                } else {
                   this.placeDeadFlower(var2, var3);
@@ -141,7 +140,7 @@ public class ChorusFlowerBlock extends Block {
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
-      if (var4.getBlock() != this.plant && !var4.is(Blocks.END_STONE)) {
+      if (!var4.is(this.plant) && !var4.is(Blocks.END_STONE)) {
          if (!var4.isAir()) {
             return false;
          } else {

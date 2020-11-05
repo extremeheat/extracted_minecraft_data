@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderCall;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import java.nio.ByteBuffer;
@@ -12,12 +13,14 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.util.Mth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -35,6 +38,15 @@ public class RenderSystem {
    private static int MAX_SUPPORTED_TEXTURE_SIZE = -1;
    private static boolean isInInit;
    private static double lastDrawTime = 4.9E-324D;
+   private static final RenderSystem.AutoStorageIndexBuffer sharedSequential = new RenderSystem.AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
+   private static final RenderSystem.AutoStorageIndexBuffer sharedSequentialQuad = new RenderSystem.AutoStorageIndexBuffer(4, 6, (var0, var1) -> {
+      var0.accept(var1 + 0);
+      var0.accept(var1 + 1);
+      var0.accept(var1 + 2);
+      var0.accept(var1 + 2);
+      var0.accept(var1 + 3);
+      var0.accept(var1 + 0);
+   });
 
    public RenderSystem() {
       super();
@@ -544,9 +556,9 @@ public class RenderSystem {
       GlStateManager._clearCurrentColor();
    }
 
-   public static void drawArrays(int var0, int var1, int var2) {
+   public static void drawElements(int var0, int var1, int var2) {
       assertThread(RenderSystem::isOnGameThread);
-      GlStateManager._drawArrays(var0, var1, var2);
+      GlStateManager._drawElements(var0, var1, var2, 0L);
    }
 
    public static void lineWidth(float var0) {
@@ -832,365 +844,451 @@ public class RenderSystem {
       }
    }
 
+   public static RenderSystem.AutoStorageIndexBuffer getSequentialBuffer(VertexFormat.Mode var0, int var1) {
+      assertThread(RenderSystem::isOnRenderThread);
+      RenderSystem.AutoStorageIndexBuffer var2 = var0 == VertexFormat.Mode.QUADS ? sharedSequentialQuad : sharedSequential;
+      var2.ensureStorage(var1);
+      return var2;
+   }
+
    // $FF: synthetic method
-   private static void lambda$setupGui3DDiffuseLighting$71(Vector3f var0, Vector3f var1) {
+   private static void lambda$setupGui3DDiffuseLighting$72(Vector3f var0, Vector3f var1) {
       GlStateManager.setupGui3DDiffuseLighting(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$setupGuiFlatDiffuseLighting$70(Vector3f var0, Vector3f var1) {
+   private static void lambda$setupGuiFlatDiffuseLighting$71(Vector3f var0, Vector3f var1) {
       GlStateManager.setupGuiFlatDiffuseLighting(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$setupLevelDiffuseLighting$69(Vector3f var0, Vector3f var1, Matrix4f var2) {
+   private static void lambda$setupLevelDiffuseLighting$70(Vector3f var0, Vector3f var1, Matrix4f var2) {
       GlStateManager.setupLevelDiffuseLighting(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$setupOverlayColor$68(IntSupplier var0, int var1) {
+   private static void lambda$setupOverlayColor$69(IntSupplier var0, int var1) {
       GlStateManager.setupOverlayColor(var0.getAsInt(), var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniformMatrix4$67(int var0, boolean var1, FloatBuffer var2) {
+   private static void lambda$glUniformMatrix4$68(int var0, boolean var1, FloatBuffer var2) {
       GlStateManager._glUniformMatrix4(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniformMatrix3$66(int var0, boolean var1, FloatBuffer var2) {
+   private static void lambda$glUniformMatrix3$67(int var0, boolean var1, FloatBuffer var2) {
       GlStateManager._glUniformMatrix3(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniformMatrix2$65(int var0, boolean var1, FloatBuffer var2) {
+   private static void lambda$glUniformMatrix2$66(int var0, boolean var1, FloatBuffer var2) {
       GlStateManager._glUniformMatrix2(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform4$64(int var0, FloatBuffer var1) {
+   private static void lambda$glUniform4$65(int var0, FloatBuffer var1) {
       GlStateManager._glUniform4(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform3$63(int var0, FloatBuffer var1) {
+   private static void lambda$glUniform3$64(int var0, FloatBuffer var1) {
       GlStateManager._glUniform3(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform2$62(int var0, FloatBuffer var1) {
+   private static void lambda$glUniform2$63(int var0, FloatBuffer var1) {
       GlStateManager._glUniform2(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform1$61(int var0, FloatBuffer var1) {
+   private static void lambda$glUniform1$62(int var0, FloatBuffer var1) {
       GlStateManager._glUniform1(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform4$60(int var0, IntBuffer var1) {
+   private static void lambda$glUniform4$61(int var0, IntBuffer var1) {
       GlStateManager._glUniform4(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform3$59(int var0, IntBuffer var1) {
+   private static void lambda$glUniform3$60(int var0, IntBuffer var1) {
       GlStateManager._glUniform3(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform2$58(int var0, IntBuffer var1) {
+   private static void lambda$glUniform2$59(int var0, IntBuffer var1) {
       GlStateManager._glUniform2(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform1$57(int var0, IntBuffer var1) {
+   private static void lambda$glUniform1$58(int var0, IntBuffer var1) {
       GlStateManager._glUniform1(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glUniform1i$56(int var0, int var1) {
+   private static void lambda$glUniform1i$57(int var0, int var1) {
       GlStateManager._glUniform1i(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$glDeleteBuffers$55(int var0) {
+   private static void lambda$glDeleteBuffers$56(int var0) {
       GlStateManager._glDeleteBuffers(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$glBindBuffer$54(int var0, Supplier var1) {
+   private static void lambda$glBindBuffer$55(int var0, Supplier var1) {
       GlStateManager._glBindBuffer(var0, (Integer)var1.get());
    }
 
    // $FF: synthetic method
-   private static void lambda$glMultiTexCoord2f$53(int var0, float var1, float var2) {
+   private static void lambda$glMultiTexCoord2f$54(int var0, float var1, float var2) {
       GlStateManager._glMultiTexCoord2f(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$renderCrosshair$52(int var0) {
+   private static void lambda$renderCrosshair$53(int var0) {
       GLX._renderCrosshair(var0, true, true, true);
    }
 
    // $FF: synthetic method
-   private static void lambda$getString$51(int var0, Consumer var1) {
+   private static void lambda$getString$52(int var0, Consumer var1) {
       String var2 = GlStateManager._getString(var0);
       var1.accept(var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$readPixels$50(int var0, int var1, int var2, int var3, int var4, int var5, ByteBuffer var6) {
+   private static void lambda$readPixels$51(int var0, int var1, int var2, int var3, int var4, int var5, ByteBuffer var6) {
       GlStateManager._readPixels(var0, var1, var2, var3, var4, var5, var6);
    }
 
    // $FF: synthetic method
-   private static void lambda$pixelTransfer$49(int var0, float var1) {
+   private static void lambda$pixelTransfer$50(int var0, float var1) {
       GlStateManager._pixelTransfer(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$pixelStore$48(int var0, int var1) {
+   private static void lambda$pixelStore$49(int var0, int var1) {
       GlStateManager._pixelStore(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$lineWidth$47(float var0) {
+   private static void lambda$lineWidth$48(float var0) {
       GlStateManager._lineWidth(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$drawArrays$46(int var0, int var1, int var2) {
-      GlStateManager._drawArrays(var0, var1, var2);
+   private static void lambda$drawElements$47(int var0, int var1, int var2) {
+      GlStateManager._drawElements(var0, var1, var2, 0L);
    }
 
    // $FF: synthetic method
-   private static void lambda$color3f$45(float var0, float var1, float var2) {
+   private static void lambda$color3f$46(float var0, float var1, float var2) {
       GlStateManager._color4f(var0, var1, var2, 1.0F);
    }
 
    // $FF: synthetic method
-   private static void lambda$color4f$44(float var0, float var1, float var2, float var3) {
+   private static void lambda$color4f$45(float var0, float var1, float var2, float var3) {
       GlStateManager._color4f(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$multMatrix$43(Matrix4f var0) {
+   private static void lambda$multMatrix$44(Matrix4f var0) {
       GlStateManager._multMatrix(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$translated$42(double var0, double var2, double var4) {
+   private static void lambda$translated$43(double var0, double var2, double var4) {
       GlStateManager._translated(var0, var2, var4);
    }
 
    // $FF: synthetic method
-   private static void lambda$translatef$41(float var0, float var1, float var2) {
+   private static void lambda$translatef$42(float var0, float var1, float var2) {
       GlStateManager._translatef(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$scaled$40(double var0, double var2, double var4) {
+   private static void lambda$scaled$41(double var0, double var2, double var4) {
       GlStateManager._scaled(var0, var2, var4);
    }
 
    // $FF: synthetic method
-   private static void lambda$scalef$39(float var0, float var1, float var2) {
+   private static void lambda$scalef$40(float var0, float var1, float var2) {
       GlStateManager._scalef(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$rotatef$38(float var0, float var1, float var2, float var3) {
+   private static void lambda$rotatef$39(float var0, float var1, float var2, float var3) {
       GlStateManager._rotatef(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$ortho$37(double var0, double var2, double var4, double var6, double var8, double var10) {
+   private static void lambda$ortho$38(double var0, double var2, double var4, double var6, double var8, double var10) {
       GlStateManager._ortho(var0, var2, var4, var6, var8, var10);
    }
 
    // $FF: synthetic method
-   private static void lambda$matrixMode$36(int var0) {
+   private static void lambda$matrixMode$37(int var0) {
       GlStateManager._matrixMode(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$clear$35(int var0, boolean var1) {
+   private static void lambda$clear$36(int var0, boolean var1) {
       GlStateManager._clear(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$clearStencil$34(int var0) {
+   private static void lambda$clearStencil$35(int var0) {
       GlStateManager._clearStencil(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$clearColor$33(float var0, float var1, float var2, float var3) {
+   private static void lambda$clearColor$34(float var0, float var1, float var2, float var3) {
       GlStateManager._clearColor(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$clearDepth$32(double var0) {
+   private static void lambda$clearDepth$33(double var0) {
       GlStateManager._clearDepth(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$stencilOp$31(int var0, int var1, int var2) {
+   private static void lambda$stencilOp$32(int var0, int var1, int var2) {
       GlStateManager._stencilOp(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$stencilMask$30(int var0) {
+   private static void lambda$stencilMask$31(int var0) {
       GlStateManager._stencilMask(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$stencilFunc$29(int var0, int var1, int var2) {
+   private static void lambda$stencilFunc$30(int var0, int var1, int var2) {
       GlStateManager._stencilFunc(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$colorMask$28(boolean var0, boolean var1, boolean var2, boolean var3) {
+   private static void lambda$colorMask$29(boolean var0, boolean var1, boolean var2, boolean var3) {
       GlStateManager._colorMask(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$viewport$27(int var0, int var1, int var2, int var3) {
+   private static void lambda$viewport$28(int var0, int var1, int var2, int var3) {
       GlStateManager._viewport(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$shadeModel$26(int var0) {
+   private static void lambda$shadeModel$27(int var0) {
       GlStateManager._shadeModel(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$bindTexture$25(int var0) {
+   private static void lambda$bindTexture$26(int var0) {
       GlStateManager._bindTexture(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$deleteTexture$24(int var0) {
+   private static void lambda$deleteTexture$25(int var0) {
       GlStateManager._deleteTexture(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$texParameter$23(int var0, int var1, int var2) {
+   private static void lambda$texParameter$24(int var0, int var1, int var2) {
       GlStateManager._texParameter(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$activeTexture$22(int var0) {
+   private static void lambda$activeTexture$23(int var0) {
       GlStateManager._activeTexture(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$logicOp$21(GlStateManager.LogicOp var0) {
+   private static void lambda$logicOp$22(GlStateManager.LogicOp var0) {
       GlStateManager._logicOp(var0.value);
    }
 
    // $FF: synthetic method
-   private static void lambda$polygonOffset$20(float var0, float var1) {
+   private static void lambda$polygonOffset$21(float var0, float var1) {
       GlStateManager._polygonOffset(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$polygonMode$19(int var0, int var1) {
+   private static void lambda$polygonMode$20(int var0, int var1) {
       GlStateManager._polygonMode(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$fogi$18(int var0, int var1) {
+   private static void lambda$fogi$19(int var0, int var1) {
       GlStateManager._fogi(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$fog$17(int var0, float var1, float var2, float var3, float var4) {
+   private static void lambda$fog$18(int var0, float var1, float var2, float var3, float var4) {
       GlStateManager._fog(var0, new float[]{var1, var2, var3, var4});
    }
 
    // $FF: synthetic method
-   private static void lambda$fogEnd$16(float var0) {
+   private static void lambda$fogEnd$17(float var0) {
       GlStateManager._fogEnd(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$fogStart$15(float var0) {
+   private static void lambda$fogStart$16(float var0) {
       GlStateManager._fogStart(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$fogDensity$14(float var0) {
+   private static void lambda$fogDensity$15(float var0) {
       GlStateManager._fogDensity(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$fogMode$13(int var0) {
+   private static void lambda$fogMode$14(int var0) {
       GlStateManager._fogMode(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$fogMode$12(GlStateManager.FogMode var0) {
+   private static void lambda$fogMode$13(GlStateManager.FogMode var0) {
       GlStateManager._fogMode(var0.value);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendColor$11(float var0, float var1, float var2, float var3) {
+   private static void lambda$blendColor$12(float var0, float var1, float var2, float var3) {
       GlStateManager._blendColor(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendEquation$10(int var0) {
+   private static void lambda$blendEquation$11(int var0) {
       GlStateManager._blendEquation(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendFuncSeparate$9(int var0, int var1, int var2, int var3) {
+   private static void lambda$blendFuncSeparate$10(int var0, int var1, int var2, int var3) {
       GlStateManager._blendFuncSeparate(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendFuncSeparate$8(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3) {
+   private static void lambda$blendFuncSeparate$9(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1, GlStateManager.SourceFactor var2, GlStateManager.DestFactor var3) {
       GlStateManager._blendFuncSeparate(var0.value, var1.value, var2.value, var3.value);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendFunc$7(int var0, int var1) {
+   private static void lambda$blendFunc$8(int var0, int var1) {
       GlStateManager._blendFunc(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$blendFunc$6(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1) {
+   private static void lambda$blendFunc$7(GlStateManager.SourceFactor var0, GlStateManager.DestFactor var1) {
       GlStateManager._blendFunc(var0.value, var1.value);
    }
 
    // $FF: synthetic method
-   private static void lambda$depthMask$5(boolean var0) {
+   private static void lambda$depthMask$6(boolean var0) {
       GlStateManager._depthMask(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$depthFunc$4(int var0) {
+   private static void lambda$depthFunc$5(int var0) {
       GlStateManager._depthFunc(var0);
    }
 
    // $FF: synthetic method
-   private static void lambda$enableScissor$3(int var0, int var1, int var2, int var3) {
+   private static void lambda$enableScissor$4(int var0, int var1, int var2, int var3) {
       GlStateManager._enableScissorTest();
       GlStateManager._scissorBox(var0, var1, var2, var3);
    }
 
    // $FF: synthetic method
-   private static void lambda$normal3f$2(float var0, float var1, float var2) {
+   private static void lambda$normal3f$3(float var0, float var1, float var2) {
       GlStateManager._normal3f(var0, var1, var2);
    }
 
    // $FF: synthetic method
-   private static void lambda$colorMaterial$1(int var0, int var1) {
+   private static void lambda$colorMaterial$2(int var0, int var1) {
       GlStateManager._colorMaterial(var0, var1);
    }
 
    // $FF: synthetic method
-   private static void lambda$alphaFunc$0(int var0, float var1) {
+   private static void lambda$alphaFunc$1(int var0, float var1) {
       GlStateManager._alphaFunc(var0, var1);
+   }
+
+   public static final class AutoStorageIndexBuffer {
+      private final int vertexStride;
+      private final int indexStride;
+      private final RenderSystem.AutoStorageIndexBuffer.IndexGenerator generator;
+      private int name;
+      private VertexFormat.IndexType type;
+      private int indexCount;
+
+      private AutoStorageIndexBuffer(int var1, int var2, RenderSystem.AutoStorageIndexBuffer.IndexGenerator var3) {
+         super();
+         this.type = VertexFormat.IndexType.BYTE;
+         this.vertexStride = var1;
+         this.indexStride = var2;
+         this.generator = var3;
+      }
+
+      private void ensureStorage(int var1) {
+         if (var1 > this.indexCount) {
+            RenderSystem.LOGGER.debug("Growing IndexBuffer: Old limit {}, new limit {}.", this.indexCount, var1);
+            if (this.name == 0) {
+               this.name = GlStateManager._glGenBuffers();
+            }
+
+            VertexFormat.IndexType var2 = VertexFormat.IndexType.least(var1);
+            int var3 = Mth.roundToward(var1 * var2.bytes, 4);
+            GlStateManager._glBindBuffer(34963, this.name);
+            GlStateManager._glBufferData(34963, (long)var3, 35044);
+            ByteBuffer var4 = GlStateManager._glMapBuffer(34963, 35001);
+            if (var4 == null) {
+               throw new RuntimeException("Failed to map GL buffer");
+            } else {
+               this.type = var2;
+               it.unimi.dsi.fastutil.ints.IntConsumer var5 = this.intConsumer(var4);
+
+               for(int var6 = 0; var6 < var1; var6 += this.indexStride) {
+                  this.generator.accept(var5, var6 * this.vertexStride / this.indexStride);
+               }
+
+               GlStateManager._glUnmapBuffer(34963);
+               GlStateManager._glBindBuffer(34963, 0);
+               this.indexCount = var1;
+            }
+         }
+      }
+
+      private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(ByteBuffer var1) {
+         switch(this.type) {
+         case BYTE:
+            return (var1x) -> {
+               var1.put((byte)var1x);
+            };
+         case SHORT:
+            return (var1x) -> {
+               var1.putShort((short)var1x);
+            };
+         case INT:
+         default:
+            return var1::putInt;
+         }
+      }
+
+      public int name() {
+         return this.name;
+      }
+
+      public VertexFormat.IndexType type() {
+         return this.type;
+      }
+
+      // $FF: synthetic method
+      AutoStorageIndexBuffer(int var1, int var2, RenderSystem.AutoStorageIndexBuffer.IndexGenerator var3, Object var4) {
+         this(var1, var2, var3);
+      }
+
+      interface IndexGenerator {
+         void accept(it.unimi.dsi.fastutil.ints.IntConsumer var1, int var2);
+      }
    }
 }

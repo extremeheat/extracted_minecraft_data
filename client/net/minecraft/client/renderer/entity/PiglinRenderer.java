@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PiglinModel;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -12,24 +14,24 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 
 public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
-   private static final Map<EntityType<?>, ResourceLocation> resourceLocations;
+   private static final Map<EntityType<?>, ResourceLocation> TEXTURES;
 
-   public PiglinRenderer(EntityRenderDispatcher var1, boolean var2) {
-      super(var1, createModel(var2), 0.5F, 1.0019531F, 1.0F, 1.0019531F);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(0.5F), new HumanoidModel(1.02F)));
+   public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, boolean var5) {
+      super(var1, createModel(var1.getModelSet(), var2, var5), 0.5F, 1.0019531F, 1.0F, 1.0019531F);
+      this.addLayer(new HumanoidArmorLayer(this, new HumanoidModel(var1.getLayer(var3)), new HumanoidModel(var1.getLayer(var4))));
    }
 
-   private static PiglinModel<Mob> createModel(boolean var0) {
-      PiglinModel var1 = new PiglinModel(0.0F, 64, 64);
-      if (var0) {
-         var1.earLeft.visible = false;
+   private static PiglinModel<Mob> createModel(EntityModelSet var0, ModelLayerLocation var1, boolean var2) {
+      PiglinModel var3 = new PiglinModel(var0.getLayer(var1));
+      if (var2) {
+         var3.rightEar.visible = false;
       }
 
-      return var1;
+      return var3;
    }
 
    public ResourceLocation getTextureLocation(Mob var1) {
-      ResourceLocation var2 = (ResourceLocation)resourceLocations.get(var1.getType());
+      ResourceLocation var2 = (ResourceLocation)TEXTURES.get(var1.getType());
       if (var2 == null) {
          throw new IllegalArgumentException("I don't know what texture to use for " + var1.getType());
       } else {
@@ -47,6 +49,6 @@ public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
    }
 
    static {
-      resourceLocations = ImmutableMap.of(EntityType.PIGLIN, new ResourceLocation("textures/entity/piglin/piglin.png"), EntityType.ZOMBIFIED_PIGLIN, new ResourceLocation("textures/entity/piglin/zombified_piglin.png"), EntityType.PIGLIN_BRUTE, new ResourceLocation("textures/entity/piglin/piglin_brute.png"));
+      TEXTURES = ImmutableMap.of(EntityType.PIGLIN, new ResourceLocation("textures/entity/piglin/piglin.png"), EntityType.ZOMBIFIED_PIGLIN, new ResourceLocation("textures/entity/piglin/zombified_piglin.png"), EntityType.PIGLIN_BRUTE, new ResourceLocation("textures/entity/piglin/piglin_brute.png"));
    }
 }

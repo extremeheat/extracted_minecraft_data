@@ -12,7 +12,7 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
       super();
    }
 
-   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
+   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) {
       var2.markReaderIndex();
       byte[] var4 = new byte[3];
 

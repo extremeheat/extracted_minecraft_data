@@ -33,7 +33,7 @@ public class BuriedTreasurePieces {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.x0, this.boundingBox.z0);
          BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(this.boundingBox.x0, var8, this.boundingBox.z0);
 
-         while(var9.getY() > 0) {
+         while(var9.getY() > var1.getMinBuildHeight()) {
             BlockState var10 = var1.getBlockState(var9);
             BlockState var11 = var1.getBlockState(var9.below());
             if (var11 == Blocks.SANDSTONE.defaultBlockState() || var11 == Blocks.STONE.defaultBlockState() || var11 == Blocks.ANDESITE.defaultBlockState() || var11 == Blocks.GRANITE.defaultBlockState() || var11 == Blocks.DIORITE.defaultBlockState()) {

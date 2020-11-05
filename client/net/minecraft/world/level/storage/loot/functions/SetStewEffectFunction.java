@@ -39,7 +39,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      if (var1.getItem() == Items.SUSPICIOUS_STEW && !this.effectDurationMap.isEmpty()) {
+      if (var1.is(Items.SUSPICIOUS_STEW) && !this.effectDurationMap.isEmpty()) {
          Random var3 = var2.getRandom();
          int var4 = var3.nextInt(this.effectDurationMap.size());
          Entry var5 = (Entry)Iterables.get(this.effectDurationMap.entrySet(), var4);

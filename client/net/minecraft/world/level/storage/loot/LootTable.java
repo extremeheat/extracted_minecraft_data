@@ -219,7 +219,7 @@ public class LootTable {
             if (var5 != null) {
                var4.addProperty("type", var5.toString());
             } else {
-               LootTable.LOGGER.warn("Failed to find id for param set " + var1.paramSet);
+               LootTable.LOGGER.warn("Failed to find id for param set {}", var1.paramSet);
             }
          }
 

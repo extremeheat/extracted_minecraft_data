@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.ItemCombinerMenu;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemCombinerScreen<T extends ItemCombinerMenu> extends AbstractContainerScreen<T> implements ContainerListener {
-   private ResourceLocation menuResource;
+   private final ResourceLocation menuResource;
 
    public ItemCombinerScreen(T var1, Inventory var2, Component var3, ResourceLocation var4) {
       super(var1, var2, var3);

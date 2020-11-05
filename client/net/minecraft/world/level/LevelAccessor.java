@@ -48,7 +48,7 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess {
 
    void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4);
 
-   default int getHeight() {
+   default int getLogicalHeight() {
       return this.dimensionType().logicalHeight();
    }
 

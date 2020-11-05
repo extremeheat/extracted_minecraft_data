@@ -15,7 +15,7 @@ public class RailBlock extends BaseRailBlock {
 
    protected RailBlock(BlockBehaviour.Properties var1) {
       super(false, var1);
-      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(WATERLOGGED, false));
    }
 
    protected void updateState(BlockState var1, Level var2, BlockPos var3, Block var4) {
@@ -146,7 +146,7 @@ public class RailBlock extends BaseRailBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE);
+      var1.add(SHAPE, WATERLOGGED);
    }
 
    static {

@@ -212,7 +212,7 @@ public class ItemInHandRenderer {
       ItemStack var11;
       if (var4.isUsingItem()) {
          var11 = var4.getUseItem();
-         if (var11.getItem() == Items.BOW || var11.getItem() == Items.CROSSBOW) {
+         if (var11.is(Items.BOW) || var11.is(Items.CROSSBOW)) {
             var9 = var4.getUsedItemHand() == InteractionHand.MAIN_HAND;
             var10 = !var9;
          }
@@ -220,18 +220,18 @@ public class ItemInHandRenderer {
          InteractionHand var12 = var4.getUsedItemHand();
          if (var12 == InteractionHand.MAIN_HAND) {
             ItemStack var13 = var4.getOffhandItem();
-            if (var13.getItem() == Items.CROSSBOW && CrossbowItem.isCharged(var13)) {
+            if (var13.is(Items.CROSSBOW) && CrossbowItem.isCharged(var13)) {
                var10 = false;
             }
          }
       } else {
          var11 = var4.getMainHandItem();
          ItemStack var16 = var4.getOffhandItem();
-         if (var11.getItem() == Items.CROSSBOW && CrossbowItem.isCharged(var11)) {
+         if (var11.is(Items.CROSSBOW) && CrossbowItem.isCharged(var11)) {
             var10 = !var9;
          }
 
-         if (var16.getItem() == Items.CROSSBOW && CrossbowItem.isCharged(var16)) {
+         if (var16.is(Items.CROSSBOW) && CrossbowItem.isCharged(var16)) {
             var9 = !var11.isEmpty();
             var10 = !var9;
          }
@@ -266,7 +266,7 @@ public class ItemInHandRenderer {
          if (var11 && !var1.isInvisible()) {
             this.renderPlayerArm(var8, var9, var10, var7, var5, var12);
          }
-      } else if (var6.getItem() == Items.FILLED_MAP) {
+      } else if (var6.is(Items.FILLED_MAP)) {
          if (var11 && this.offHandItem.isEmpty()) {
             this.renderTwoHandedMap(var8, var9, var10, var3, var7, var5);
          } else {
@@ -278,7 +278,7 @@ public class ItemInHandRenderer {
          float var17;
          float var18;
          float var19;
-         if (var6.getItem() == Items.CROSSBOW) {
+         if (var6.is(Items.CROSSBOW)) {
             var13 = CrossbowItem.isCharged(var6);
             boolean var14 = var12 == HumanoidArm.RIGHT;
             int var15 = var14 ? 1 : -1;

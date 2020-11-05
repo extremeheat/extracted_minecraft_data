@@ -121,7 +121,7 @@ public class Ravager extends Raider {
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
+      return this.getFirstPassenger();
    }
 
    public void aiStep() {
@@ -222,9 +222,9 @@ public class Ravager extends Raider {
       if (this.isAlive()) {
          List var1 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0D), NO_RAVAGER_AND_ALIVE);
 
-         Entity var3;
+         LivingEntity var3;
          for(Iterator var2 = var1.iterator(); var2.hasNext(); this.strongKnockback(var3)) {
-            var3 = (Entity)var2.next();
+            var3 = (LivingEntity)var2.next();
             if (!(var3 instanceof AbstractIllager)) {
                var3.hurt(DamageSource.mobAttack(this), 6.0F);
             }

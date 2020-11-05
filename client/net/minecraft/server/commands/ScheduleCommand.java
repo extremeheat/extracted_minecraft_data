@@ -63,7 +63,7 @@ public class ScheduleCommand {
             var7.schedule(var8, var4, new FunctionCallback(var6));
             var0.sendSuccess(new TranslatableComponent("commands.schedule.created.function", new Object[]{var6, var2, var4}), true);
          }).ifRight((var7x) -> {
-            String var8 = "#" + var6.toString();
+            String var8 = "#" + var6;
             if (var3) {
                var7.remove(var8);
             }

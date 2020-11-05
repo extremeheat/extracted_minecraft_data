@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
 
 public class PackRepository implements AutoCloseable {
    private final Set<RepositorySource> sources;
@@ -31,8 +32,10 @@ public class PackRepository implements AutoCloseable {
       this.sources = ImmutableSet.copyOf(var2);
    }
 
-   public PackRepository(RepositorySource... var1) {
-      this(Pack::new, var1);
+   public PackRepository(PackType var1, RepositorySource... var2) {
+      this((var1x, var2x, var3, var4, var5, var6, var7) -> {
+         return new Pack(var1x, var2x, var3, var4, var5, var1, var6, var7);
+      }, var2);
    }
 
    public void reload() {

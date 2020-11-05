@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.IntBuffer;
 
 public class RenderTarget {
@@ -255,7 +256,7 @@ public class RenderTarget {
       float var7 = (float)this.viewHeight / (float)this.height;
       Tesselator var8 = RenderSystem.renderThreadTesselator();
       BufferBuilder var9 = var8.getBuilder();
-      var9.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
       var9.vertex(0.0D, (double)var5, 0.0D).uv(0.0F, 0.0F).color(255, 255, 255, 255).endVertex();
       var9.vertex((double)var4, (double)var5, 0.0D).uv(var6, 0.0F).color(255, 255, 255, 255).endVertex();
       var9.vertex((double)var4, 0.0D, 0.0D).uv(var6, var7).color(255, 255, 255, 255).endVertex();

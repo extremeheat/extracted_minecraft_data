@@ -27,7 +27,7 @@ public class ImposterProtoChunk extends ProtoChunk {
    private final LevelChunk wrapped;
 
    public ImposterProtoChunk(LevelChunk var1) {
-      super(var1.getPos(), UpgradeData.EMPTY);
+      super(var1.getPos(), UpgradeData.EMPTY, var1);
       this.wrapped = var1;
    }
 
@@ -54,7 +54,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return null;
    }
 
-   public void setBlockEntity(BlockPos var1, BlockEntity var2) {
+   public void setBlockEntity(BlockEntity var1) {
    }
 
    public void addEntity(Entity var1) {
@@ -89,9 +89,6 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    public ChunkPos getPos() {
       return this.wrapped.getPos();
-   }
-
-   public void setLastSaveTime(long var1) {
    }
 
    @Nullable
@@ -167,13 +164,13 @@ public class ImposterProtoChunk extends ProtoChunk {
    public ProtoTickList<Block> getBlockTicks() {
       return new ProtoTickList((var0) -> {
          return var0.defaultBlockState().isAir();
-      }, this.getPos());
+      }, this.getPos(), this);
    }
 
    public ProtoTickList<Fluid> getLiquidTicks() {
       return new ProtoTickList((var0) -> {
          return var0 == Fluids.EMPTY;
-      }, this.getPos());
+      }, this.getPos(), this);
    }
 
    public BitSet getCarvingMask(GenerationStep.Carving var1) {

@@ -88,6 +88,7 @@ import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -103,7 +104,6 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.item.ComplexItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -289,7 +289,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
       Entity var6 = this.getRootVehicle();
       Entity var3 = this.getVehicle();
-      if (var3 != null && var6 != this && var6.hasOnePlayerPassenger()) {
+      if (var3 != null && var6 != this && var6.hasExactlyOnePlayerPassenger()) {
          CompoundTag var4 = new CompoundTag();
          CompoundTag var5 = new CompoundTag();
          var6.save(var5);
@@ -414,8 +414,8 @@ public class ServerPlayer extends Player implements ContainerListener {
             super.tick();
          }
 
-         for(int var1 = 0; var1 < this.inventory.getContainerSize(); ++var1) {
-            ItemStack var5 = this.inventory.getItem(var1);
+         for(int var1 = 0; var1 < this.getInventory().getContainerSize(); ++var1) {
+            ItemStack var5 = this.getInventory().getItem(var1);
             if (var5.getItem().isComplex()) {
                Packet var6 = ((ComplexItem)var5.getItem()).getUpdatePacket(var5, this.level, this);
                if (var6 != null) {
@@ -542,7 +542,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
    private void tellNeutralMobsThatIDied() {
       AABB var1 = (new AABB(this.blockPosition())).inflate(32.0D, 10.0D, 32.0D);
-      this.level.getLoadedEntitiesOfClass(Mob.class, var1).stream().filter((var0) -> {
+      this.level.getEntitiesOfClass(Mob.class, var1, EntitySelector.NO_SPECTATORS).stream().filter((var0) -> {
          return var0 instanceof NeutralMob;
       }).forEach((var1x) -> {
          ((NeutralMob)var1x).playerDied(this);
@@ -634,7 +634,7 @@ public class ServerPlayer extends Player implements ContainerListener {
       ResourceKey var3 = var2.dimension();
       if (var3 == Level.END && var1.dimension() == Level.OVERWORLD) {
          this.unRide();
-         this.getLevel().removePlayerImmediately(this);
+         this.getLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
          if (!this.wonGame) {
             this.wonGame = true;
             this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.WIN_GAME, this.seenCredits ? 0.0F : 1.0F));
@@ -648,8 +648,8 @@ public class ServerPlayer extends Player implements ContainerListener {
          this.connection.send(new ClientboundChangeDifficultyPacket(var4.getDifficulty(), var4.isDifficultyLocked()));
          PlayerList var5 = this.server.getPlayerList();
          var5.sendPlayerPermissionLevel(this);
-         var2.removePlayerImmediately(this);
-         this.removed = false;
+         var2.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+         this.unsetRemoved();
          PortalInfo var6 = this.findDimensionEntryPoint(var1);
          if (var6 != null) {
             var2.getProfiler().push("moving");
@@ -668,7 +668,7 @@ public class ServerPlayer extends Player implements ContainerListener {
             var2.getProfiler().pop();
             this.triggerDimensionChangeTriggers(var2);
             this.gameMode.setLevel(var1);
-            this.connection.send(new ClientboundPlayerAbilitiesPacket(this.abilities));
+            this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
             var5.sendLevelInfo(this, var1);
             var5.sendAllPlayerInfo(this);
             Iterator var7 = this.getActiveEffects().iterator();
@@ -849,7 +849,7 @@ public class ServerPlayer extends Player implements ContainerListener {
    }
 
    public boolean isInvulnerableTo(DamageSource var1) {
-      return super.isInvulnerableTo(var1) || this.isChangingDimension() || this.abilities.invulnerable && var1 == DamageSource.WITHER;
+      return super.isInvulnerableTo(var1) || this.isChangingDimension() || this.getAbilities().invulnerable && var1 == DamageSource.WITHER;
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
@@ -887,7 +887,7 @@ public class ServerPlayer extends Player implements ContainerListener {
          }
 
          this.nextContainerCounter();
-         AbstractContainerMenu var2 = var1.createMenu(this.containerCounter, this.inventory, this);
+         AbstractContainerMenu var2 = var1.createMenu(this.containerCounter, this.getInventory(), this);
          if (var2 == null) {
             if (this.isSpectator()) {
                this.displayClientMessage((new TranslatableComponent("container.spectatorCantOpen")).withStyle(ChatFormatting.RED), true);
@@ -914,13 +914,12 @@ public class ServerPlayer extends Player implements ContainerListener {
 
       this.nextContainerCounter();
       this.connection.send(new ClientboundHorseScreenOpenPacket(this.containerCounter, var2.getContainerSize(), var1.getId()));
-      this.containerMenu = new HorseInventoryMenu(this.containerCounter, this.inventory, var2, var1);
+      this.containerMenu = new HorseInventoryMenu(this.containerCounter, this.getInventory(), var2, var1);
       this.containerMenu.addSlotListener(this);
    }
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {
-      Item var3 = var1.getItem();
-      if (var3 == Items.WRITTEN_BOOK) {
+      if (var1.is(Items.WRITTEN_BOOK)) {
          if (WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(), this)) {
             this.containerMenu.broadcastChanges();
          }
@@ -938,7 +937,7 @@ public class ServerPlayer extends Player implements ContainerListener {
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
       if (!(var1.getSlot(var2) instanceof ResultSlot)) {
          if (var1 == this.inventoryMenu) {
-            CriteriaTriggers.INVENTORY_CHANGED.trigger(this, this.inventory, var3);
+            CriteriaTriggers.INVENTORY_CHANGED.trigger(this, this.getInventory(), var3);
          }
 
          if (!this.ignoreSlotUpdateHack) {
@@ -953,7 +952,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
    public void refreshContainer(AbstractContainerMenu var1, NonNullList<ItemStack> var2) {
       this.connection.send(new ClientboundContainerSetContentPacket(var1.containerId, var2));
-      this.connection.send(new ClientboundContainerSetSlotPacket(-1, -1, this.inventory.getCarried()));
+      this.connection.send(new ClientboundContainerSetSlotPacket(-1, -1, this.getInventory().getCarried()));
    }
 
    public void setContainerData(AbstractContainerMenu var1, int var2, int var3) {
@@ -967,7 +966,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
    public void broadcastCarriedItem() {
       if (!this.ignoreSlotUpdateHack) {
-         this.connection.send(new ClientboundContainerSetSlotPacket(-1, -1, this.inventory.getCarried()));
+         this.connection.send(new ClientboundContainerSetSlotPacket(-1, -1, this.getInventory().getCarried()));
       }
    }
 
@@ -1072,7 +1071,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
    public void restoreFrom(ServerPlayer var1, boolean var2) {
       if (var2) {
-         this.inventory.replaceWith(var1.inventory);
+         this.getInventory().replaceWith(var1.getInventory());
          this.setHealth(var1.getHealth());
          this.foodData = var1.foodData;
          this.experienceLevel = var1.experienceLevel;
@@ -1081,7 +1080,7 @@ public class ServerPlayer extends Player implements ContainerListener {
          this.setScore(var1.getScore());
          this.portalEntrancePos = var1.portalEntrancePos;
       } else if (this.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) || var1.isSpectator()) {
-         this.inventory.replaceWith(var1.inventory);
+         this.getInventory().replaceWith(var1.getInventory());
          this.experienceLevel = var1.experienceLevel;
          this.totalExperience = var1.totalExperience;
          this.experienceProgress = var1.experienceProgress;
@@ -1148,7 +1147,7 @@ public class ServerPlayer extends Player implements ContainerListener {
 
    public void onUpdateAbilities() {
       if (this.connection != null) {
-         this.connection.send(new ClientboundPlayerAbilitiesPacket(this.abilities));
+         this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
          this.updateInvisibilityStatus();
       }
    }
@@ -1213,8 +1212,8 @@ public class ServerPlayer extends Player implements ContainerListener {
       return this.chatVisibility;
    }
 
-   public void sendTexturePack(String var1, String var2) {
-      this.connection.send(new ClientboundResourcePackPacket(var1, var2));
+   public void sendTexturePack(String var1, String var2, boolean var3) {
+      this.connection.send(new ClientboundResourcePackPacket(var1, var2, var3));
    }
 
    protected int getPermissionLevel() {
@@ -1323,8 +1322,8 @@ public class ServerPlayer extends Player implements ContainerListener {
          this.connection.send(new ClientboundRespawnPacket(var1.dimensionType(), var1.dimension(), BiomeManager.obfuscateSeed(var1.getSeed()), this.gameMode.getGameModeForPlayer(), this.gameMode.getPreviousGameModeForPlayer(), var1.isDebug(), var1.isFlat(), true));
          this.connection.send(new ClientboundChangeDifficultyPacket(var11.getDifficulty(), var11.isDifficultyLocked()));
          this.server.getPlayerList().sendPlayerPermissionLevel(this);
-         var10.removePlayerImmediately(this);
-         this.removed = false;
+         var10.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+         this.unsetRemoved();
          this.moveTo(var2, var4, var6, var8, var9);
          this.setLevel(var1);
          var1.addDuringCommandTeleport(this);

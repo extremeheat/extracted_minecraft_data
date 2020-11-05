@@ -38,7 +38,6 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -334,7 +333,7 @@ public class EnderDragon extends Mob implements Enemy {
 
    private void checkCrystals() {
       if (this.nearestCrystal != null) {
-         if (this.nearestCrystal.removed) {
+         if (this.nearestCrystal.isRemoved()) {
             this.nearestCrystal = null;
          } else if (this.tickCount % 10 == 0 && this.getHealth() < this.getMaxHealth()) {
             this.setHealth(this.getHealth() + 1.0F);
@@ -414,9 +413,8 @@ public class EnderDragon extends Mob implements Enemy {
             for(int var12 = var4; var12 <= var7; ++var12) {
                BlockPos var13 = new BlockPos(var10, var11, var12);
                BlockState var14 = this.level.getBlockState(var13);
-               Block var15 = var14.getBlock();
                if (!var14.isAir() && var14.getMaterial() != Material.FIRE) {
-                  if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && !BlockTags.DRAGON_IMMUNE.contains(var15)) {
+                  if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && !var14.is(BlockTags.DRAGON_IMMUNE)) {
                      var9 = this.level.removeBlock(var13, false) || var9;
                   } else {
                      var8 = true;
@@ -427,8 +425,8 @@ public class EnderDragon extends Mob implements Enemy {
       }
 
       if (var9) {
-         BlockPos var16 = new BlockPos(var2 + this.random.nextInt(var5 - var2 + 1), var3 + this.random.nextInt(var6 - var3 + 1), var4 + this.random.nextInt(var7 - var4 + 1));
-         this.level.levelEvent(2008, var16, 0);
+         BlockPos var15 = new BlockPos(var2 + this.random.nextInt(var5 - var2 + 1), var3 + this.random.nextInt(var6 - var3 + 1), var4 + this.random.nextInt(var7 - var4 + 1));
+         this.level.levelEvent(2008, var15, 0);
       }
 
       return var8;
@@ -481,7 +479,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public void kill() {
-      this.remove();
+      this.remove(Entity.RemovalReason.KILLED);
       if (this.dragonFight != null) {
          this.dragonFight.updateDragon(this);
          this.dragonFight.setDragonKilled(this);
@@ -508,9 +506,9 @@ public class EnderDragon extends Mob implements Enemy {
          var5 = 12000;
       }
 
-      if (!this.level.isClientSide) {
+      if (this.level instanceof ServerLevel) {
          if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && var4) {
-            this.dropExperience(Mth.floor((float)var5 * 0.08F));
+            ExperienceOrb.award((ServerLevel)this.level, this.position(), Mth.floor((float)var5 * 0.08F));
          }
 
          if (this.dragonDeathTime == 1 && !this.isSilent()) {
@@ -521,25 +519,16 @@ public class EnderDragon extends Mob implements Enemy {
       this.move(MoverType.SELF, new Vec3(0.0D, 0.10000000149011612D, 0.0D));
       this.yRot += 20.0F;
       this.yBodyRot = this.yRot;
-      if (this.dragonDeathTime == 200 && !this.level.isClientSide) {
+      if (this.dragonDeathTime == 200 && this.level instanceof ServerLevel) {
          if (var4) {
-            this.dropExperience(Mth.floor((float)var5 * 0.2F));
+            ExperienceOrb.award((ServerLevel)this.level, this.position(), Mth.floor((float)var5 * 0.2F));
          }
 
          if (this.dragonFight != null) {
             this.dragonFight.setDragonKilled(this);
          }
 
-         this.remove();
-      }
-
-   }
-
-   private void dropExperience(int var1) {
-      while(var1 > 0) {
-         int var2 = ExperienceOrb.getExperienceValue(var1);
-         var1 -= var2;
-         this.level.addFreshEntity(new ExperienceOrb(this.level, this.getX(), this.getY(), this.getZ(), var2));
+         this.remove(Entity.RemovalReason.KILLED);
       }
 
    }

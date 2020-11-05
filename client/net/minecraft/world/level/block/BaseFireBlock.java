@@ -35,7 +35,7 @@ public abstract class BaseFireBlock extends Block {
    public static BlockState getState(BlockGetter var0, BlockPos var1) {
       BlockPos var2 = var1.below();
       BlockState var3 = var0.getBlockState(var2);
-      return SoulFireBlock.canSurviveOnBlock(var3.getBlock()) ? Blocks.SOUL_FIRE.defaultBlockState() : ((FireBlock)Blocks.FIRE).getStateForPlacement(var0, var1);
+      return SoulFireBlock.canSurviveOnBlock(var3) ? Blocks.SOUL_FIRE.defaultBlockState() : ((FireBlock)Blocks.FIRE).getStateForPlacement(var0, var1);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

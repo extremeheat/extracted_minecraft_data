@@ -58,7 +58,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    public void tick() {
       Entity var1 = this.getOwner();
-      if (this.level.isClientSide || (var1 == null || !var1.removed) && this.level.hasChunkAt(this.blockPosition())) {
+      if (this.level.isClientSide || (var1 == null || !var1.isRemoved()) && this.level.hasChunkAt(this.blockPosition())) {
          super.tick();
          if (this.shouldBurn()) {
             this.setSecondsOnFire(1);
@@ -89,7 +89,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          this.level.addParticle(this.getTrailParticle(), var4, var6 + 0.5D, var8, 0.0D, 0.0D, 0.0D);
          this.setPos(var4, var6, var8);
       } else {
-         this.remove();
+         this.discard();
       }
    }
 
@@ -163,5 +163,19 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       Entity var1 = this.getOwner();
       int var2 = var1 == null ? 0 : var1.getId();
       return new ClientboundAddEntityPacket(this.getId(), this.getUUID(), this.getX(), this.getY(), this.getZ(), this.xRot, this.yRot, this.getType(), var2, new Vec3(this.xPower, this.yPower, this.zPower));
+   }
+
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      double var2 = var1.getXa();
+      double var4 = var1.getYa();
+      double var6 = var1.getZa();
+      double var8 = (double)Mth.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
+      if (var8 != 0.0D) {
+         this.xPower = var2 / var8 * 0.1D;
+         this.yPower = var4 / var8 * 0.1D;
+         this.zPower = var6 / var8 * 0.1D;
+      }
+
    }
 }

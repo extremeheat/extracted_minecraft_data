@@ -30,7 +30,7 @@ public class ChatComponent extends GuiComponent {
    private final Deque<Component> chatQueue = Queues.newArrayDeque();
    private int chatScrollbarPos;
    private boolean newMessageSinceScroll;
-   private long lastMessage = 0L;
+   private long lastMessage;
 
    public ChatComponent(Minecraft var1) {
       super();

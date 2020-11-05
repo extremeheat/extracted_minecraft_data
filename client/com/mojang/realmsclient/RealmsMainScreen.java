@@ -572,7 +572,7 @@ public class RealmsMainScreen extends RealmsScreen {
                      RealmsMainScreen.REALMS_DATA_FETCHER.forceUpdate();
                   }
                } catch (RealmsServiceException var3) {
-                  RealmsMainScreen.LOGGER.error("Couldn't connect to Realms: " + var3);
+                  RealmsMainScreen.LOGGER.error("Couldn't connect to Realms: {}", var3.toString());
                }
 
             }
@@ -595,7 +595,7 @@ public class RealmsMainScreen extends RealmsScreen {
                      RealmsMainScreen.REALMS_DATA_FETCHER.forceUpdate();
                   }
                } catch (RealmsServiceException var3) {
-                  RealmsMainScreen.LOGGER.error("Couldn't connect to Realms: " + var3);
+                  RealmsMainScreen.LOGGER.error("Couldn't connect to Realms: {}", var3.toString());
                }
 
             }
@@ -806,7 +806,7 @@ public class RealmsMainScreen extends RealmsScreen {
          if (this.children.contains(this.realmSelectionList)) {
             RealmsMainScreen.RealmSelectionList var6 = this.realmSelectionList;
             if (!this.children.remove(var6)) {
-               LOGGER.error("Unable to remove widget: " + var6);
+               LOGGER.error("Unable to remove widget: {}", var6);
             }
          }
 
@@ -1410,7 +1410,7 @@ public class RealmsMainScreen extends RealmsScreen {
          if (var1 != 257 && var1 != 32 && var1 != 335) {
             return super.keyPressed(var1, var2, var3);
          } else {
-            ObjectSelectionList.Entry var4 = (ObjectSelectionList.Entry)this.getSelected();
+            RealmsMainScreen.Entry var4 = (RealmsMainScreen.Entry)this.getSelected();
             return var4 == null ? super.keyPressed(var1, var2, var3) : var4.mouseClicked(0.0D, 0.0D, 0);
          }
       }

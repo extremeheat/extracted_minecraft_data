@@ -58,16 +58,6 @@ public class BoundingBox {
       return new BoundingBox(Math.min(var0, var3), Math.min(var1, var4), Math.min(var2, var5), Math.max(var0, var3), Math.max(var1, var4), Math.max(var2, var5));
    }
 
-   public BoundingBox(BoundingBox var1) {
-      super();
-      this.x0 = var1.x0;
-      this.y0 = var1.y0;
-      this.z0 = var1.z0;
-      this.x1 = var1.x1;
-      this.y1 = var1.y1;
-      this.z1 = var1.z1;
-   }
-
    public BoundingBox(int var1, int var2, int var3, int var4, int var5, int var6) {
       super();
       this.x0 = var1;
@@ -86,16 +76,6 @@ public class BoundingBox {
       this.x1 = Math.max(var1.getX(), var2.getX());
       this.y1 = Math.max(var1.getY(), var2.getY());
       this.z1 = Math.max(var1.getZ(), var2.getZ());
-   }
-
-   public BoundingBox(int var1, int var2, int var3, int var4) {
-      super();
-      this.x0 = var1;
-      this.z0 = var2;
-      this.x1 = var3;
-      this.z1 = var4;
-      this.y0 = 1;
-      this.y1 = 512;
    }
 
    public boolean intersects(BoundingBox var1) {

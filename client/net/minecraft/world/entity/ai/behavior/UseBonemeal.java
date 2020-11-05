@@ -102,7 +102,7 @@ public class UseBonemeal extends Behavior<Villager> {
 
          for(int var9 = 0; var9 < var8; ++var9) {
             ItemStack var10 = var7.getItem(var9);
-            if (var10.getItem() == Items.BONE_MEAL) {
+            if (var10.is(Items.BONE_MEAL)) {
                var6 = var10;
                break;
             }

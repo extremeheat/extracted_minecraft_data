@@ -129,16 +129,16 @@ public class MapItem extends ComplexItem {
                               for(int var32 = 0; var32 < var4; ++var32) {
                                  int var33 = var22.getHeight(Heightmap.Types.WORLD_SURFACE, var31 + var24, var32 + var25) + 1;
                                  BlockState var34;
-                                 if (var33 <= 1) {
+                                 if (var33 <= var1.getMinBuildHeight() + 1) {
                                     var34 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
                                        --var33;
                                        var37.set(var23.getMinBlockX() + var31 + var24, var33, var23.getMinBlockZ() + var32 + var25);
                                        var34 = var22.getBlockState(var37);
-                                    } while(var34.getMapColor(var1, var37) == MaterialColor.NONE && var33 > 0);
+                                    } while(var34.getMapColor(var1, var37) == MaterialColor.NONE && var33 > var1.getMinBuildHeight());
 
-                                    if (var33 > 0 && !var34.getFluidState().isEmpty()) {
+                                    if (var33 > var1.getMinBuildHeight() && !var34.getFluidState().isEmpty()) {
                                        int var35 = var33 - 1;
                                        var30.set(var37);
 
@@ -147,7 +147,7 @@ public class MapItem extends ComplexItem {
                                           var30.setY(var35--);
                                           var36 = var22.getBlockState(var30);
                                           ++var26;
-                                       } while(var35 > 0 && !var36.getFluidState().isEmpty());
+                                       } while(var35 > var1.getMinBuildHeight() && !var36.getFluidState().isEmpty());
 
                                        var34 = this.getCorrectStateForFluidBlock(var1, var34, var37);
                                     }

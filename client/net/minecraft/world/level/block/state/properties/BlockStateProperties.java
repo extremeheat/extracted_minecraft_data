@@ -69,6 +69,7 @@ public class BlockStateProperties {
    public static final IntegerProperty AGE_15;
    public static final IntegerProperty AGE_25;
    public static final IntegerProperty BITES;
+   public static final IntegerProperty CANDLES;
    public static final IntegerProperty DELAY;
    public static final IntegerProperty DISTANCE;
    public static final IntegerProperty EGGS;
@@ -137,12 +138,13 @@ public class BlockStateProperties {
       AGE_15 = IntegerProperty.create("age", 0, 15);
       AGE_25 = IntegerProperty.create("age", 0, 25);
       BITES = IntegerProperty.create("bites", 0, 6);
+      CANDLES = IntegerProperty.create("candles", 1, 4);
       DELAY = IntegerProperty.create("delay", 1, 4);
       DISTANCE = IntegerProperty.create("distance", 1, 7);
       EGGS = IntegerProperty.create("eggs", 1, 4);
       HATCH = IntegerProperty.create("hatch", 0, 2);
       LAYERS = IntegerProperty.create("layers", 1, 8);
-      LEVEL_CAULDRON = IntegerProperty.create("level", 0, 3);
+      LEVEL_CAULDRON = IntegerProperty.create("level", 1, 3);
       LEVEL_COMPOSTER = IntegerProperty.create("level", 0, 8);
       LEVEL_FLOWING = IntegerProperty.create("level", 1, 8);
       LEVEL_HONEY = IntegerProperty.create("honey_level", 0, 5);

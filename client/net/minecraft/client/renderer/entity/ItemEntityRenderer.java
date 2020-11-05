@@ -19,9 +19,9 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
    private final ItemRenderer itemRenderer;
    private final Random random = new Random();
 
-   public ItemEntityRenderer(EntityRenderDispatcher var1, ItemRenderer var2) {
+   public ItemEntityRenderer(EntityRendererProvider.Context var1) {
       super(var1);
-      this.itemRenderer = var2;
+      this.itemRenderer = var1.getItemRenderer();
       this.shadowRadius = 0.15F;
       this.shadowStrength = 0.75F;
    }

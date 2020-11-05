@@ -44,7 +44,17 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    }
 
    private int calculateOutputSignal(Level var1, BlockPos var2, BlockState var3) {
-      return var3.getValue(MODE) == ComparatorMode.SUBTRACT ? Math.max(this.getInputSignal(var1, var2, var3) - this.getAlternateSignal(var1, var2, var3), 0) : this.getInputSignal(var1, var2, var3);
+      int var4 = this.getInputSignal(var1, var2, var3);
+      if (var4 == 0) {
+         return 0;
+      } else {
+         int var5 = this.getAlternateSignal(var1, var2, var3);
+         if (var5 > var4) {
+            return 0;
+         } else {
+            return var3.getValue(MODE) == ComparatorMode.SUBTRACT ? var4 - var5 : var4;
+         }
+      }
    }
 
    protected boolean shouldTurnOn(Level var1, BlockPos var2, BlockState var3) {
@@ -90,7 +100,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var4.abilities.mayBuild) {
+      if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          var1 = (BlockState)var1.cycle(MODE);
@@ -149,8 +159,8 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       return var6 != null && var6.triggerEvent(var4, var5);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new ComparatorBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new ComparatorBlockEntity(var1, var2);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

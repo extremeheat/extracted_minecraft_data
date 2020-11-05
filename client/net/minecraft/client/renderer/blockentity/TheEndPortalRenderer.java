@@ -13,16 +13,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 
-public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> extends BlockEntityRenderer<T> {
+public class TheEndPortalRenderer<T extends TheEndPortalBlockEntity> implements BlockEntityRenderer<T> {
    public static final ResourceLocation END_SKY_LOCATION = new ResourceLocation("textures/environment/end_sky.png");
    public static final ResourceLocation END_PORTAL_LOCATION = new ResourceLocation("textures/entity/end_portal.png");
    private static final Random RANDOM = new Random(31100L);
    private static final List<RenderType> RENDER_TYPES = (List)IntStream.range(0, 16).mapToObj((var0) -> {
       return RenderType.endPortal(var0 + 1);
    }).collect(ImmutableList.toImmutableList());
+   private final BlockEntityRenderDispatcher renderer;
 
-   public TheEndPortalRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
+   public TheEndPortalRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
+      this.renderer = var1.getBlockEntityRenderDispatcher();
    }
 
    public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

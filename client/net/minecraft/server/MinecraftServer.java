@@ -877,7 +877,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.profiler.popPush("players");
       this.playerList.tick();
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         GameTestTicker.singleton.tick();
+         GameTestTicker.SINGLETON.tick();
       }
 
       this.profiler.popPush("server gui refresh");
@@ -1570,7 +1570,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          final GameRules var5 = this.getGameRules();
          GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2) {
-               var4.add(String.format("%s=%s\n", var1.getId(), var5.getRule(var1).toString()));
+               var4.add(String.format("%s=%s\n", var1.getId(), var5.getRule(var1)));
             }
          });
          Iterator var6 = var4.iterator();
@@ -1723,6 +1723,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    @Nullable
    public TextFilter createTextFilterForPlayer(ServerPlayer var1) {
       return null;
+   }
+
+   public boolean isResourcePackRequired() {
+      return false;
    }
 
    // $FF: synthetic method

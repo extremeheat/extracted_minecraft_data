@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.RabbitModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Rabbit;
 
@@ -15,8 +16,8 @@ public class RabbitRenderer extends MobRenderer<Rabbit, RabbitModel<Rabbit>> {
    private static final ResourceLocation RABBIT_TOAST_LOCATION = new ResourceLocation("textures/entity/rabbit/toast.png");
    private static final ResourceLocation RABBIT_EVIL_LOCATION = new ResourceLocation("textures/entity/rabbit/caerbannog.png");
 
-   public RabbitRenderer(EntityRenderDispatcher var1) {
-      super(var1, new RabbitModel(), 0.3F);
+   public RabbitRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new RabbitModel(var1.getLayer(ModelLayers.RABBIT)), 0.3F);
    }
 
    public ResourceLocation getTextureLocation(Rabbit var1) {

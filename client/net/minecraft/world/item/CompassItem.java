@@ -66,19 +66,19 @@ public class CompassItem extends Item implements Vanishable {
          var3.playSound((Player)null, (BlockPos)var2, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
          Player var4 = var1.getPlayer();
          ItemStack var5 = var1.getItemInHand();
-         boolean var6 = !var4.abilities.instabuild && var5.getCount() == 1;
+         boolean var6 = !var4.getAbilities().instabuild && var5.getCount() == 1;
          if (var6) {
             this.addLodestoneTags(var3.dimension(), var2, var5.getOrCreateTag());
          } else {
             ItemStack var7 = new ItemStack(Items.COMPASS, 1);
             CompoundTag var8 = var5.hasTag() ? var5.getTag().copy() : new CompoundTag();
             var7.setTag(var8);
-            if (!var4.abilities.instabuild) {
+            if (!var4.getAbilities().instabuild) {
                var5.shrink(1);
             }
 
             this.addLodestoneTags(var3.dimension(), var2, var8);
-            if (!var4.inventory.add(var7)) {
+            if (!var4.getInventory().add(var7)) {
                var4.drop(var7, false);
             }
          }

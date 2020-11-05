@@ -39,42 +39,43 @@ public abstract class Language {
    private static Language loadDefault() {
       Builder var0 = ImmutableMap.builder();
       BiConsumer var1 = var0::put;
+      String var2 = "/assets/minecraft/lang/en_us.json";
 
       try {
-         InputStream var2 = Language.class.getResourceAsStream("/assets/minecraft/lang/en_us.json");
-         Throwable var3 = null;
+         InputStream var3 = Language.class.getResourceAsStream("/assets/minecraft/lang/en_us.json");
+         Throwable var4 = null;
 
          try {
-            loadFromJson(var2, var1);
-         } catch (Throwable var13) {
-            var3 = var13;
-            throw var13;
+            loadFromJson(var3, var1);
+         } catch (Throwable var14) {
+            var4 = var14;
+            throw var14;
          } finally {
-            if (var2 != null) {
-               if (var3 != null) {
+            if (var3 != null) {
+               if (var4 != null) {
                   try {
-                     var2.close();
-                  } catch (Throwable var12) {
-                     var3.addSuppressed(var12);
+                     var3.close();
+                  } catch (Throwable var13) {
+                     var4.addSuppressed(var13);
                   }
                } else {
-                  var2.close();
+                  var3.close();
                }
             }
 
          }
-      } catch (JsonParseException | IOException var15) {
-         LOGGER.error("Couldn't read strings from /assets/minecraft/lang/en_us.json", var15);
+      } catch (JsonParseException | IOException var16) {
+         LOGGER.error("Couldn't read strings from {}", "/assets/minecraft/lang/en_us.json", var16);
       }
 
-      final ImmutableMap var16 = var0.build();
+      final ImmutableMap var17 = var0.build();
       return new Language() {
          public String getOrDefault(String var1) {
-            return (String)var16.getOrDefault(var1, var1);
+            return (String)var17.getOrDefault(var1, var1);
          }
 
          public boolean has(String var1) {
-            return var16.containsKey(var1);
+            return var17.containsKey(var1);
          }
 
          public boolean isDefaultRightToLeft() {

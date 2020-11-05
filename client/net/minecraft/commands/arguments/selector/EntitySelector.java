@@ -20,10 +20,20 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class EntitySelector {
+   private static final EntityTypeTest<Entity, ?> ANY_TYPE = new EntityTypeTest<Entity, Entity>() {
+      public Entity tryCast(Entity var1) {
+         return var1;
+      }
+
+      public Class<? extends Entity> getBaseClass() {
+         return Entity.class;
+      }
+   };
    private final int maxResults;
    private final boolean includesEntities;
    private final boolean worldLimited;
@@ -38,8 +48,7 @@ public class EntitySelector {
    private final String playerName;
    @Nullable
    private final UUID entityUUID;
-   @Nullable
-   private final EntityType<?> type;
+   private EntityTypeTest<Entity, ?> type;
    private final boolean usesSelector;
 
    public EntitySelector(int var1, boolean var2, boolean var3, Predicate<Entity> var4, MinMaxBounds.Floats var5, Function<Vec3, Vec3> var6, @Nullable AABB var7, BiConsumer<Vec3, List<? extends Entity>> var8, boolean var9, @Nullable String var10, @Nullable UUID var11, @Nullable EntityType<?> var12, boolean var13) {
@@ -55,7 +64,7 @@ public class EntitySelector {
       this.currentEntity = var9;
       this.playerName = var10;
       this.entityUUID = var11;
-      this.type = var12;
+      this.type = (EntityTypeTest)(var12 == null ? ANY_TYPE : var12);
       this.usesSelector = var13;
    }
 
@@ -180,9 +189,7 @@ public class EntitySelector {
          } else {
             Object var4;
             if (this.isWorldLimited()) {
-               ServerLevel var10000 = var1.getLevel();
-               var3.getClass();
-               var4 = var10000.getPlayers(var3::test);
+               var4 = var1.getLevel().getPlayers(var3);
             } else {
                var4 = Lists.newArrayList();
                Iterator var5 = var1.getServer().getPlayerList().getPlayers().iterator();

@@ -30,7 +30,7 @@ public class TallGrassBlock extends BushBlock implements BonemealableBlock {
    }
 
    public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
-      DoublePlantBlock var5 = (DoublePlantBlock)((DoublePlantBlock)(this == Blocks.FERN ? Blocks.LARGE_FERN : Blocks.TALL_GRASS));
+      DoublePlantBlock var5 = (DoublePlantBlock)((DoublePlantBlock)(var4.is(Blocks.FERN) ? Blocks.LARGE_FERN : Blocks.TALL_GRASS));
       if (var5.defaultBlockState().canSurvive(var1, var3) && var1.isEmptyBlock(var3.above())) {
          var5.placeAt(var1, var3, 2);
       }

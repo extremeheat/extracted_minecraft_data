@@ -5,7 +5,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
@@ -43,7 +43,7 @@ public class Mule extends AbstractChestedHorse {
       this.playSound(SoundEvents.MULE_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
    }
 
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
-      return (AgableMob)EntityType.MULE.create(var1);
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return (AgeableMob)EntityType.MULE.create(var1);
    }
 }

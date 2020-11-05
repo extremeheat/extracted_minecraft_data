@@ -17,7 +17,7 @@ public class EndGatewayPlacementDecorator extends FeatureDecorator<NoneDecorator
          int var5 = var2.nextInt(16) + var4.getX();
          int var6 = var2.nextInt(16) + var4.getZ();
          int var7 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var5, var6);
-         if (var7 > 0) {
+         if (var7 > var1.getMinBuildHeight()) {
             int var8 = var7 + 3 + var2.nextInt(7);
             return Stream.of(new BlockPos(var5, var8, var6));
          }

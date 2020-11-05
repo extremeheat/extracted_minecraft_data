@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import java.util.List;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
@@ -42,9 +43,9 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
       super.start();
    }
 
-   private List<Mob> getNearbyMobsOfSameType() {
+   private List<? extends Mob> getNearbyMobsOfSameType() {
       double var1 = this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
       AABB var3 = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(var1, 10.0D, var1);
-      return this.mob.level.getLoadedEntitiesOfClass(this.mob.getClass(), var3);
+      return this.mob.level.getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
    }
 }

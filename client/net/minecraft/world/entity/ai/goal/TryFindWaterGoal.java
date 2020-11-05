@@ -20,7 +20,7 @@ public class TryFindWaterGoal extends Goal {
 
    public void start() {
       BlockPos var1 = null;
-      Iterable var2 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0D), Mth.floor(this.mob.getY() - 2.0D), Mth.floor(this.mob.getZ() - 2.0D), Mth.floor(this.mob.getX() + 2.0D), Mth.floor(this.mob.getY()), Mth.floor(this.mob.getZ() + 2.0D));
+      Iterable var2 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0D), Mth.floor(this.mob.getY() - 2.0D), Mth.floor(this.mob.getZ() - 2.0D), Mth.floor(this.mob.getX() + 2.0D), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + 2.0D));
       Iterator var3 = var2.iterator();
 
       while(var3.hasNext()) {

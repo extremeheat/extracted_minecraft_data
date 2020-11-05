@@ -81,29 +81,33 @@ public final class RegionFileStorage implements AutoCloseable {
       return var5;
    }
 
-   protected void write(ChunkPos var1, CompoundTag var2) throws IOException {
+   protected void write(ChunkPos var1, @Nullable CompoundTag var2) throws IOException {
       RegionFile var3 = this.getRegionFile(var1);
-      DataOutputStream var4 = var3.getChunkDataOutputStream(var1);
-      Throwable var5 = null;
+      if (var2 == null) {
+         var3.clear(var1);
+      } else {
+         DataOutputStream var4 = var3.getChunkDataOutputStream(var1);
+         Throwable var5 = null;
 
-      try {
-         NbtIo.write(var2, (DataOutput)var4);
-      } catch (Throwable var14) {
-         var5 = var14;
-         throw var14;
-      } finally {
-         if (var4 != null) {
-            if (var5 != null) {
-               try {
+         try {
+            NbtIo.write(var2, (DataOutput)var4);
+         } catch (Throwable var14) {
+            var5 = var14;
+            throw var14;
+         } finally {
+            if (var4 != null) {
+               if (var5 != null) {
+                  try {
+                     var4.close();
+                  } catch (Throwable var13) {
+                     var5.addSuppressed(var13);
+                  }
+               } else {
                   var4.close();
-               } catch (Throwable var13) {
-                  var5.addSuppressed(var13);
                }
-            } else {
-               var4.close();
             }
-         }
 
+         }
       }
 
    }

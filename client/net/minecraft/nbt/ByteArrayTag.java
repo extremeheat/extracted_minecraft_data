@@ -5,9 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class ByteArrayTag extends CollectionTag<ByteTag> {
@@ -70,17 +67,7 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder("[B;");
-
-      for(int var2 = 0; var2 < this.data.length; ++var2) {
-         if (var2 != 0) {
-            var1.append(',');
-         }
-
-         var1.append(this.data[var2]).append('B');
-      }
-
-      return var1.append(']').toString();
+      return this.getAsString();
    }
 
    public Tag copy() {
@@ -101,20 +88,8 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
       return Arrays.hashCode(this.data);
    }
 
-   public Component getPrettyDisplay(String var1, int var2) {
-      MutableComponent var3 = (new TextComponent("B")).withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
-      MutableComponent var4 = (new TextComponent("[")).append(var3).append(";");
-
-      for(int var5 = 0; var5 < this.data.length; ++var5) {
-         MutableComponent var6 = (new TextComponent(String.valueOf(this.data[var5]))).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
-         var4.append(" ").append((Component)var6).append((Component)var3);
-         if (var5 != this.data.length - 1) {
-            var4.append(",");
-         }
-      }
-
-      var4.append("]");
-      return var4;
+   public void accept(TagVisitor var1) {
+      var1.visitByteArray(this);
    }
 
    public byte[] getAsByteArray() {

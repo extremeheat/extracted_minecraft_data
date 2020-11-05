@@ -178,33 +178,33 @@ public class Slime extends Mob implements Enemy {
       return super.getType();
    }
 
-   public void remove() {
-      int var1 = this.getSize();
-      if (!this.level.isClientSide && var1 > 1 && this.isDeadOrDying()) {
-         Component var2 = this.getCustomName();
-         boolean var3 = this.isNoAi();
-         float var4 = (float)var1 / 4.0F;
-         int var5 = var1 / 2;
-         int var6 = 2 + this.random.nextInt(3);
+   public void remove(Entity.RemovalReason var1) {
+      int var2 = this.getSize();
+      if (!this.level.isClientSide && var2 > 1 && this.isDeadOrDying()) {
+         Component var3 = this.getCustomName();
+         boolean var4 = this.isNoAi();
+         float var5 = (float)var2 / 4.0F;
+         int var6 = var2 / 2;
+         int var7 = 2 + this.random.nextInt(3);
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            float var8 = ((float)(var7 % 2) - 0.5F) * var4;
-            float var9 = ((float)(var7 / 2) - 0.5F) * var4;
-            Slime var10 = (Slime)this.getType().create(this.level);
+         for(int var8 = 0; var8 < var7; ++var8) {
+            float var9 = ((float)(var8 % 2) - 0.5F) * var5;
+            float var10 = ((float)(var8 / 2) - 0.5F) * var5;
+            Slime var11 = (Slime)this.getType().create(this.level);
             if (this.isPersistenceRequired()) {
-               var10.setPersistenceRequired();
+               var11.setPersistenceRequired();
             }
 
-            var10.setCustomName(var2);
-            var10.setNoAi(var3);
-            var10.setInvulnerable(this.isInvulnerable());
-            var10.setSize(var5, true);
-            var10.moveTo(this.getX() + (double)var8, this.getY() + 0.5D, this.getZ() + (double)var9, this.random.nextFloat() * 360.0F, 0.0F);
-            this.level.addFreshEntity(var10);
+            var11.setCustomName(var3);
+            var11.setNoAi(var4);
+            var11.setInvulnerable(this.isInvulnerable());
+            var11.setSize(var6, true);
+            var11.moveTo(this.getX() + (double)var9, this.getY() + 0.5D, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+            this.level.addFreshEntity(var11);
          }
       }
 
-      super.remove();
+      super.remove(var1);
    }
 
    public void push(Entity var1) {
@@ -411,7 +411,7 @@ public class Slime extends Mob implements Enemy {
          } else if (!var1.isAlive()) {
             return false;
          } else {
-            return var1 instanceof Player && ((Player)var1).abilities.invulnerable ? false : this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
+            return var1 instanceof Player && ((Player)var1).getAbilities().invulnerable ? false : this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
          }
       }
 
@@ -426,7 +426,7 @@ public class Slime extends Mob implements Enemy {
             return false;
          } else if (!var1.isAlive()) {
             return false;
-         } else if (var1 instanceof Player && ((Player)var1).abilities.invulnerable) {
+         } else if (var1 instanceof Player && ((Player)var1).getAbilities().invulnerable) {
             return false;
          } else {
             return --this.growTiredTimer > 0;

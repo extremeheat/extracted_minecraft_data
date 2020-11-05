@@ -30,7 +30,6 @@ import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ConcretePowderBlock;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -92,12 +91,12 @@ public class FallingBlockEntity extends Entity {
    }
 
    public boolean isPickable() {
-      return !this.removed;
+      return !this.isRemoved();
    }
 
    public void tick() {
       if (this.blockState.isAir()) {
-         this.remove();
+         this.discard();
       } else {
          Block var1 = this.blockState.getBlock();
          BlockPos var2;
@@ -106,7 +105,7 @@ public class FallingBlockEntity extends Entity {
             if (this.level.getBlockState(var2).is(var1)) {
                this.level.removeBlock(var2, false);
             } else if (!this.level.isClientSide) {
-               this.remove();
+               this.discard();
                return;
             }
          }
@@ -130,18 +129,18 @@ public class FallingBlockEntity extends Entity {
             }
 
             if (!this.onGround && !var4) {
-               if (!this.level.isClientSide && (this.time > 100 && (var2.getY() < 1 || var2.getY() > 256) || this.time > 600)) {
+               if (!this.level.isClientSide && (this.time > 100 && (var2.getY() <= this.level.getMinBuildHeight() || var2.getY() > this.level.getMaxBuildHeight()) || this.time > 600)) {
                   if (this.dropItem && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                      this.spawnAtLocation(var1);
                   }
 
-                  this.remove();
+                  this.discard();
                }
             } else {
                BlockState var16 = this.level.getBlockState(var2);
                this.setDeltaMovement(this.getDeltaMovement().multiply(0.7D, -0.5D, 0.7D));
                if (!var16.is(Blocks.MOVING_PISTON)) {
-                  this.remove();
+                  this.discard();
                   if (!this.cancelDrop) {
                      boolean var8 = var16.canBeReplaced(new DirectionalPlaceContext(this.level, var2, Direction.DOWN, ItemStack.EMPTY, Direction.UP));
                      boolean var9 = FallingBlock.isFree(this.level.getBlockState(var2.below())) && (!var3 || !var4);
@@ -156,7 +155,7 @@ public class FallingBlockEntity extends Entity {
                               ((FallingBlock)var1).onLand(this.level, var2, this.blockState, var16, this);
                            }
 
-                           if (this.blockData != null && var1 instanceof EntityBlock) {
+                           if (this.blockData != null && this.blockState.hasBlockEntity()) {
                               BlockEntity var11 = this.level.getBlockEntity(var2);
                               if (var11 != null) {
                                  CompoundTag var12 = var11.save(new CompoundTag());
@@ -170,7 +169,7 @@ public class FallingBlockEntity extends Entity {
                                     }
                                  }
 
-                                 var11.load(this.blockState, var12);
+                                 var11.load(var12);
                                  var11.setChanged();
                               }
                            }
@@ -284,6 +283,17 @@ public class FallingBlockEntity extends Entity {
 
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, Block.getId(this.getBlockState()));
+   }
+
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      this.blockState = Block.stateById(var1.getData());
+      this.blocksBuilding = true;
+      double var2 = var1.getX();
+      double var4 = var1.getY();
+      double var6 = var1.getZ();
+      this.setPos(var2, var4 + (double)((1.0F - this.getBbHeight()) / 2.0F), var6);
+      this.setStartPos(this.blockPosition());
    }
 
    static {

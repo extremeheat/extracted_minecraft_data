@@ -4,6 +4,7 @@ import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.timers.TimerQueue;
 
@@ -20,8 +21,8 @@ public interface ServerLevelData extends WritableLevelData {
 
    int getThunderTime();
 
-   default void fillCrashReportCategory(CrashReportCategory var1) {
-      WritableLevelData.super.fillCrashReportCategory(var1);
+   default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
+      WritableLevelData.super.fillCrashReportCategory(var1, var2);
       var1.setDetail("Level name", this::getLevelName);
       var1.setDetail("Level game mode", () -> {
          return String.format("Game mode: %s (ID %d). Hardcore: %b. Cheats: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.getAllowCommands());

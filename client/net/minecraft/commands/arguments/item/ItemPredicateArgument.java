@@ -94,7 +94,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       }
 
       public boolean test(ItemStack var1) {
-         return this.tag.contains(var1.getItem()) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
+         return var1.is(this.tag) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
       }
 
       // $FF: synthetic method
@@ -115,7 +115,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       }
 
       public boolean test(ItemStack var1) {
-         return var1.getItem() == this.item && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
+         return var1.is(this.item) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
       }
 
       // $FF: synthetic method

@@ -29,23 +29,25 @@ public interface NeutralMob {
 
    }
 
-   default void readPersistentAngerSaveData(ServerLevel var1, CompoundTag var2) {
+   default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
       this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
-      if (!var2.hasUUID("AngryAt")) {
-         this.setPersistentAngerTarget((UUID)null);
-      } else {
-         UUID var3 = var2.getUUID("AngryAt");
-         this.setPersistentAngerTarget(var3);
-         Entity var4 = var1.getEntity(var3);
-         if (var4 != null) {
-            if (var4 instanceof Mob) {
-               this.setLastHurtByMob((Mob)var4);
-            }
+      if (var1 instanceof ServerLevel) {
+         if (!var2.hasUUID("AngryAt")) {
+            this.setPersistentAngerTarget((UUID)null);
+         } else {
+            UUID var3 = var2.getUUID("AngryAt");
+            this.setPersistentAngerTarget(var3);
+            Entity var4 = ((ServerLevel)var1).getEntity(var3);
+            if (var4 != null) {
+               if (var4 instanceof Mob) {
+                  this.setLastHurtByMob((Mob)var4);
+               }
 
-            if (var4.getType() == EntityType.PLAYER) {
-               this.setLastHurtByPlayer((Player)var4);
-            }
+               if (var4.getType() == EntityType.PLAYER) {
+                  this.setLastHurtByPlayer((Player)var4);
+               }
 
+            }
          }
       }
    }

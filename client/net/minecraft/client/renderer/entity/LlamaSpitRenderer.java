@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.model.LlamaSpitModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -12,10 +13,11 @@ import net.minecraft.world.entity.projectile.LlamaSpit;
 
 public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit> {
    private static final ResourceLocation LLAMA_SPIT_LOCATION = new ResourceLocation("textures/entity/llama/spit.png");
-   private final LlamaSpitModel<LlamaSpit> model = new LlamaSpitModel();
+   private final LlamaSpitModel<LlamaSpit> model;
 
-   public LlamaSpitRenderer(EntityRenderDispatcher var1) {
+   public LlamaSpitRenderer(EntityRendererProvider.Context var1) {
       super(var1);
+      this.model = new LlamaSpitModel(var1.getLayer(ModelLayers.LLAMA_SPIT));
    }
 
    public void render(LlamaSpit var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

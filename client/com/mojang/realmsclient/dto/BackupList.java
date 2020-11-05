@@ -31,7 +31,7 @@ public class BackupList extends ValueObject {
             }
          }
       } catch (Exception var5) {
-         LOGGER.error("Could not parse BackupList: " + var5.getMessage());
+         LOGGER.error("Could not parse BackupList: {}", var5.getMessage());
       }
 
       return var2;

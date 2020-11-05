@@ -3,6 +3,8 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.HorseModel;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -14,10 +16,11 @@ import net.minecraft.world.item.HorseArmorItem;
 import net.minecraft.world.item.ItemStack;
 
 public class HorseArmorLayer extends RenderLayer<Horse, HorseModel<Horse>> {
-   private final HorseModel<Horse> model = new HorseModel(0.1F);
+   private final HorseModel<Horse> model;
 
-   public HorseArmorLayer(RenderLayerParent<Horse, HorseModel<Horse>> var1) {
+   public HorseArmorLayer(RenderLayerParent<Horse, HorseModel<Horse>> var1, EntityModelSet var2) {
       super(var1);
+      this.model = new HorseModel(var2.getLayer(ModelLayers.HORSE_ARMOR));
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, Horse var4, float var5, float var6, float var7, float var8, float var9, float var10) {

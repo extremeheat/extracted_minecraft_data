@@ -6,6 +6,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.MinecartModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -17,11 +18,12 @@ import net.minecraft.world.phys.Vec3;
 
 public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer<T> {
    private static final ResourceLocation MINECART_LOCATION = new ResourceLocation("textures/entity/minecart.png");
-   protected final EntityModel<T> model = new MinecartModel();
+   protected final EntityModel<T> model;
 
-   public MinecartRenderer(EntityRenderDispatcher var1) {
+   public MinecartRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
       super(var1);
       this.shadowRadius = 0.7F;
+      this.model = new MinecartModel(var1.getLayer(var2));
    }
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

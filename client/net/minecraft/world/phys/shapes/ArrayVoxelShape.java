@@ -1,19 +1,13 @@
 package net.minecraft.world.phys.shapes;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import java.util.Arrays;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 
-public final class ArrayVoxelShape extends VoxelShape {
+public class ArrayVoxelShape extends VoxelShape {
    private final DoubleList xs;
    private final DoubleList ys;
    private final DoubleList zs;
-
-   protected ArrayVoxelShape(DiscreteVoxelShape var1, double[] var2, double[] var3, double[] var4) {
-      this(var1, (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var2, var1.getXSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var3, var1.getYSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var4, var1.getZSize() + 1)));
-   }
 
    ArrayVoxelShape(DiscreteVoxelShape var1, DoubleList var2, DoubleList var3, DoubleList var4) {
       super(var1);

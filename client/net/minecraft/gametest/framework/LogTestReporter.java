@@ -13,9 +13,9 @@ public class LogTestReporter implements TestReporter {
 
    public void onTestFailed(GameTestInfo var1) {
       if (var1.isRequired()) {
-         LOGGER.error(var1.getTestName() + " failed! " + Util.describeError(var1.getError()));
+         LOGGER.error("{} failed! {}", var1.getTestName(), Util.describeError(var1.getError()));
       } else {
-         LOGGER.warn("(optional) " + var1.getTestName() + " failed. " + Util.describeError(var1.getError()));
+         LOGGER.warn("(optional) {} failed. {}", var1.getTestName(), Util.describeError(var1.getError()));
       }
 
    }

@@ -18,7 +18,7 @@ public abstract class ShoulderRidingEntity extends TamableAnimal {
       var2.putString("id", this.getEncodeId());
       this.saveWithoutId(var2);
       if (var1.setEntityOnShoulder(var2)) {
-         this.remove();
+         this.discard();
          return true;
       } else {
          return false;

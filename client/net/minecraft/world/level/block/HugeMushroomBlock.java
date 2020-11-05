@@ -29,7 +29,7 @@ public class HugeMushroomBlock extends Block {
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, this != var2.getBlockState(var3.below()).getBlock())).setValue(UP, this != var2.getBlockState(var3.above()).getBlock())).setValue(NORTH, this != var2.getBlockState(var3.north()).getBlock())).setValue(EAST, this != var2.getBlockState(var3.east()).getBlock())).setValue(SOUTH, this != var2.getBlockState(var3.south()).getBlock())).setValue(WEST, this != var2.getBlockState(var3.west()).getBlock());
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, !var2.getBlockState(var3.below()).is(this))).setValue(UP, !var2.getBlockState(var3.above()).is(this))).setValue(NORTH, !var2.getBlockState(var3.north()).is(this))).setValue(EAST, !var2.getBlockState(var3.east()).is(this))).setValue(SOUTH, !var2.getBlockState(var3.south()).is(this))).setValue(WEST, !var2.getBlockState(var3.west()).is(this));
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {

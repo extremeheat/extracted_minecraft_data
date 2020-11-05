@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 
@@ -15,7 +16,7 @@ public interface ParticleRenderType {
          RenderSystem.defaultBlendFunc();
          RenderSystem.depthMask(true);
          var2.bind(TextureAtlas.LOCATION_BLOCKS);
-         var1.begin(7, DefaultVertexFormat.PARTICLE);
+         var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
 
       public void end(Tesselator var1) {
@@ -31,7 +32,7 @@ public interface ParticleRenderType {
          RenderSystem.disableBlend();
          RenderSystem.depthMask(true);
          var2.bind(TextureAtlas.LOCATION_PARTICLES);
-         var1.begin(7, DefaultVertexFormat.PARTICLE);
+         var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
 
       public void end(Tesselator var1) {
@@ -47,9 +48,9 @@ public interface ParticleRenderType {
          RenderSystem.depthMask(true);
          var2.bind(TextureAtlas.LOCATION_PARTICLES);
          RenderSystem.enableBlend();
-         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
          RenderSystem.alphaFunc(516, 0.003921569F);
-         var1.begin(7, DefaultVertexFormat.PARTICLE);
+         var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
 
       public void end(Tesselator var1) {
@@ -65,7 +66,7 @@ public interface ParticleRenderType {
          RenderSystem.disableBlend();
          RenderSystem.depthMask(true);
          var2.bind(TextureAtlas.LOCATION_PARTICLES);
-         var1.begin(7, DefaultVertexFormat.PARTICLE);
+         var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
 
       public void end(Tesselator var1) {

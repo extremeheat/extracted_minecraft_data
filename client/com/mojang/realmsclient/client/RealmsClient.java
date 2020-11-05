@@ -339,14 +339,14 @@ public class RealmsClient {
                return var6;
             } else if (var2 == 401) {
                String var7 = var1.getHeader("WWW-Authenticate");
-               LOGGER.info("Could not authorize you against Realms server: " + var7);
+               LOGGER.info("Could not authorize you against Realms server: {}", var7);
                throw new RealmsServiceException(var2, var7, -1, var7);
             } else if (var6 != null && var6.length() != 0) {
                RealmsError var4 = RealmsError.create(var6);
-               LOGGER.error("Realms http code: " + var2 + " -  error code: " + var4.getErrorCode() + " -  message: " + var4.getErrorMessage() + " - raw body: " + var6);
+               LOGGER.error("Realms http code: {} -  error code: {} -  message: {} - raw body: {}", var2, var4.getErrorCode(), var4.getErrorMessage(), var6);
                throw new RealmsServiceException(var2, var6, var4);
             } else {
-               LOGGER.error("Realms error code: " + var2 + " message: " + var6);
+               LOGGER.error("Realms error code: {} message: {}", var2, var6);
                throw new RealmsServiceException(var2, var6, var2, "");
             }
          } else {

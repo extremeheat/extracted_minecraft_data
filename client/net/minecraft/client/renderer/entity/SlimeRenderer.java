@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.SlimeModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.resources.ResourceLocation;
@@ -12,9 +13,9 @@ import net.minecraft.world.entity.monster.Slime;
 public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
    private static final ResourceLocation SLIME_LOCATION = new ResourceLocation("textures/entity/slime/slime.png");
 
-   public SlimeRenderer(EntityRenderDispatcher var1) {
-      super(var1, new SlimeModel(16), 0.25F);
-      this.addLayer(new SlimeOuterLayer(this));
+   public SlimeRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new SlimeModel(var1.getLayer(ModelLayers.SLIME)), 0.25F);
+      this.addLayer(new SlimeOuterLayer(this, var1.getModelSet()));
    }
 
    public void render(Slime var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

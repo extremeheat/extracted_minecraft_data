@@ -26,18 +26,15 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
       }
 
       GrowingPlantHeadBlock var7 = this.getHeadBlock();
-      if (var2 == this.growthDirection) {
-         Block var8 = var3.getBlock();
-         if (var8 != this && var8 != var7) {
-            return var7.getStateForPlacement(var4);
+      if (var2 == this.growthDirection && !var3.is(this) && !var3.is(var7)) {
+         return var7.getStateForPlacement(var4);
+      } else {
+         if (this.scheduleFluidTicks) {
+            var4.getLiquidTicks().scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
          }
-      }
 
-      if (this.scheduleFluidTicks) {
-         var4.getLiquidTicks().scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         return super.updateShape(var1, var2, var3, var4, var5, var6);
       }
-
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
@@ -65,18 +62,18 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    private Optional<BlockPos> getHeadPos(BlockGetter var1, BlockPos var2, BlockState var3) {
       BlockPos var4 = var2;
 
-      Block var5;
+      BlockState var5;
       do {
          var4 = var4.relative(this.growthDirection);
-         var5 = var1.getBlockState(var4).getBlock();
-      } while(var5 == var3.getBlock());
+         var5 = var1.getBlockState(var4);
+      } while(var5.is(var3.getBlock()));
 
-      return var5 == this.getHeadBlock() ? Optional.of(var4) : Optional.empty();
+      return var5.is(this.getHeadBlock()) ? Optional.of(var4) : Optional.empty();
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       boolean var3 = super.canBeReplaced(var1, var2);
-      return var3 && var2.getItemInHand().getItem() == this.getHeadBlock().asItem() ? false : var3;
+      return var3 && var2.getItemInHand().is(this.getHeadBlock().asItem()) ? false : var3;
    }
 
    protected Block getBodyBlock() {

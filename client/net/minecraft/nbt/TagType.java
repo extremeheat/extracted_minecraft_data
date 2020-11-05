@@ -16,7 +16,7 @@ public interface TagType<T extends Tag> {
 
    static TagType<EndTag> createInvalid(final int var0) {
       return new TagType<EndTag>() {
-         public EndTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+         public EndTag load(DataInput var1, int var2, NbtAccounter var3) {
             throw new IllegalArgumentException("Invalid tag id: " + var0);
          }
 

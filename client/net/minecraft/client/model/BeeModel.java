@@ -2,12 +2,17 @@ package net.minecraft.client.model;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Bee;
 
 public class BeeModel<T extends Bee> extends AgeableListModel<T> {
    private final ModelPart bone;
-   private final ModelPart body;
    private final ModelPart rightWing;
    private final ModelPart leftWing;
    private final ModelPart frontLeg;
@@ -18,54 +23,36 @@ public class BeeModel<T extends Bee> extends AgeableListModel<T> {
    private final ModelPart rightAntenna;
    private float rollAmount;
 
-   public BeeModel() {
+   public BeeModel(ModelPart var1) {
       super(false, 24.0F, 0.0F);
-      this.texWidth = 64;
-      this.texHeight = 64;
-      this.bone = new ModelPart(this);
-      this.bone.setPos(0.0F, 19.0F, 0.0F);
-      this.body = new ModelPart(this, 0, 0);
-      this.body.setPos(0.0F, 0.0F, 0.0F);
-      this.bone.addChild(this.body);
-      this.body.addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F, 0.0F);
-      this.stinger = new ModelPart(this, 26, 7);
-      this.stinger.addBox(0.0F, -1.0F, 5.0F, 0.0F, 1.0F, 2.0F, 0.0F);
-      this.body.addChild(this.stinger);
-      this.leftAntenna = new ModelPart(this, 2, 0);
-      this.leftAntenna.setPos(0.0F, -2.0F, -5.0F);
-      this.leftAntenna.addBox(1.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F, 0.0F);
-      this.rightAntenna = new ModelPart(this, 2, 3);
-      this.rightAntenna.setPos(0.0F, -2.0F, -5.0F);
-      this.rightAntenna.addBox(-2.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F, 0.0F);
-      this.body.addChild(this.leftAntenna);
-      this.body.addChild(this.rightAntenna);
-      this.rightWing = new ModelPart(this, 0, 18);
-      this.rightWing.setPos(-1.5F, -4.0F, -3.0F);
-      this.rightWing.xRot = 0.0F;
-      this.rightWing.yRot = -0.2618F;
-      this.rightWing.zRot = 0.0F;
-      this.bone.addChild(this.rightWing);
-      this.rightWing.addBox(-9.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F, 0.001F);
-      this.leftWing = new ModelPart(this, 0, 18);
-      this.leftWing.setPos(1.5F, -4.0F, -3.0F);
-      this.leftWing.xRot = 0.0F;
-      this.leftWing.yRot = 0.2618F;
-      this.leftWing.zRot = 0.0F;
-      this.leftWing.mirror = true;
-      this.bone.addChild(this.leftWing);
-      this.leftWing.addBox(0.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F, 0.001F);
-      this.frontLeg = new ModelPart(this);
-      this.frontLeg.setPos(1.5F, 3.0F, -2.0F);
-      this.bone.addChild(this.frontLeg);
-      this.frontLeg.addBox("frontLegBox", -5.0F, 0.0F, 0.0F, 7, 2, 0, 0.0F, 26, 1);
-      this.midLeg = new ModelPart(this);
-      this.midLeg.setPos(1.5F, 3.0F, 0.0F);
-      this.bone.addChild(this.midLeg);
-      this.midLeg.addBox("midLegBox", -5.0F, 0.0F, 0.0F, 7, 2, 0, 0.0F, 26, 3);
-      this.backLeg = new ModelPart(this);
-      this.backLeg.setPos(1.5F, 3.0F, 2.0F);
-      this.bone.addChild(this.backLeg);
-      this.backLeg.addBox("backLegBox", -5.0F, 0.0F, 0.0F, 7, 2, 0, 0.0F, 26, 5);
+      this.bone = var1.getChild("bone");
+      ModelPart var2 = this.bone.getChild("body");
+      this.stinger = var2.getChild("stinger");
+      this.leftAntenna = var2.getChild("left_antenna");
+      this.rightAntenna = var2.getChild("right_antenna");
+      this.rightWing = this.bone.getChild("right_wing");
+      this.leftWing = this.bone.getChild("left_wing");
+      this.frontLeg = this.bone.getChild("front_legs");
+      this.midLeg = this.bone.getChild("middle_legs");
+      this.backLeg = this.bone.getChild("back_legs");
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      float var0 = 19.0F;
+      MeshDefinition var1 = new MeshDefinition();
+      PartDefinition var2 = var1.getRoot();
+      PartDefinition var3 = var2.addOrReplaceChild("bone", CubeListBuilder.create(), PartPose.offset(0.0F, 19.0F, 0.0F));
+      PartDefinition var4 = var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.5F, -4.0F, -5.0F, 7.0F, 7.0F, 10.0F), PartPose.ZERO);
+      var4.addOrReplaceChild("stinger", CubeListBuilder.create().texOffs(26, 7).addBox(0.0F, -1.0F, 5.0F, 0.0F, 1.0F, 2.0F), PartPose.ZERO);
+      var4.addOrReplaceChild("left_antenna", CubeListBuilder.create().texOffs(2, 0).addBox(1.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F), PartPose.offset(0.0F, -2.0F, -5.0F));
+      var4.addOrReplaceChild("right_antenna", CubeListBuilder.create().texOffs(2, 3).addBox(-2.5F, -2.0F, -3.0F, 1.0F, 2.0F, 3.0F), PartPose.offset(0.0F, -2.0F, -5.0F));
+      CubeDeformation var5 = new CubeDeformation(0.001F);
+      var3.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(0, 18).addBox(-9.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F, var5), PartPose.offsetAndRotation(-1.5F, -4.0F, -3.0F, 0.0F, -0.2618F, 0.0F));
+      var3.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(0, 18).mirror().addBox(0.0F, 0.0F, 0.0F, 9.0F, 0.0F, 6.0F, var5), PartPose.offsetAndRotation(1.5F, -4.0F, -3.0F, 0.0F, 0.2618F, 0.0F));
+      var3.addOrReplaceChild("front_legs", CubeListBuilder.create().addBox("front_legs", -5.0F, 0.0F, 0.0F, 7, 2, 0, 26, 1), PartPose.offset(1.5F, 3.0F, -2.0F));
+      var3.addOrReplaceChild("middle_legs", CubeListBuilder.create().addBox("middle_legs", -5.0F, 0.0F, 0.0F, 7, 2, 0, 26, 3), PartPose.offset(1.5F, 3.0F, 0.0F));
+      var3.addOrReplaceChild("back_legs", CubeListBuilder.create().addBox("back_legs", -5.0F, 0.0F, 0.0F, 7, 2, 0, 26, 5), PartPose.offset(1.5F, 3.0F, 2.0F));
+      return LayerDefinition.create(var1, 64, 64);
    }
 
    public void prepareMobModel(T var1, float var2, float var3, float var4) {
@@ -79,7 +66,6 @@ public class BeeModel<T extends Bee> extends AgeableListModel<T> {
       this.leftAntenna.xRot = 0.0F;
       this.rightAntenna.xRot = 0.0F;
       this.bone.xRot = 0.0F;
-      this.bone.y = 19.0F;
       boolean var7 = var1.isOnGround() && var1.getDeltaMovement().lengthSqr() < 1.0E-7D;
       float var8;
       if (var7) {

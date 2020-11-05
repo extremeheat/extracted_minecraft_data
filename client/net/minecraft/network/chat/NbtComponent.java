@@ -75,7 +75,7 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
                MutableComponent var4 = Component.Serializer.fromJson(var3x);
                return Stream.of(ComponentUtils.updateForEntity(var1, var4, var2, var3));
             } catch (Exception var5) {
-               LOGGER.warn("Failed to parse component: " + var3x, var5);
+               LOGGER.warn("Failed to parse component: {}", var3x, var5);
                return Stream.of();
             }
          }).reduce((var0, var1x) -> {

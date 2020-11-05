@@ -74,7 +74,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().getItem() == this.asItem() && (Integer)var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
+      return var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

@@ -6,6 +6,7 @@ import com.mojang.math.Vector3f;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.PandaModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PandaHoldsItemLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -22,8 +23,8 @@ public class PandaRenderer extends MobRenderer<Panda, PandaModel<Panda>> {
       var0.put(Panda.Gene.AGGRESSIVE, new ResourceLocation("textures/entity/panda/aggressive_panda.png"));
    });
 
-   public PandaRenderer(EntityRenderDispatcher var1) {
-      super(var1, new PandaModel(9, 0.0F), 0.9F);
+   public PandaRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new PandaModel(var1.getLayer(ModelLayers.PANDA)), 0.9F);
       this.addLayer(new PandaHoldsItemLayer(this));
    }
 

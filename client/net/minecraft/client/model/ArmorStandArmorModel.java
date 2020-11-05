@@ -1,14 +1,11 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 public class ArmorStandArmorModel extends HumanoidModel<ArmorStand> {
-   public ArmorStandArmorModel(float var1) {
-      this(var1, 64, 32);
-   }
-
-   protected ArmorStandArmorModel(float var1, int var2, int var3) {
-      super(var1, 0.0F, var2, var3);
+   public ArmorStandArmorModel(ModelPart var1) {
+      super(var1);
    }
 
    public void setupAnim(ArmorStand var1, float var2, float var3, float var4, float var5, float var6) {

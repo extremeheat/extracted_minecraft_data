@@ -32,10 +32,6 @@ public class WitherSkull extends AbstractHurtingProjectile {
       super(EntityType.WITHER_SKULL, var2, var3, var5, var7, var1);
    }
 
-   public WitherSkull(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      super(EntityType.WITHER_SKULL, var2, var4, var6, var8, var10, var12, var1);
-   }
-
    protected float getInertia() {
       return this.isDangerous() ? 0.73F : super.getInertia();
    }
@@ -89,7 +85,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
       if (!this.level.isClientSide) {
          Explosion.BlockInteraction var2 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE;
          this.level.explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, false, var2);
-         this.remove();
+         this.discard();
       }
 
    }

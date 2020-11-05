@@ -32,10 +32,10 @@ public class HoneyBottleItem extends Item {
       if (var1.isEmpty()) {
          return new ItemStack(Items.GLASS_BOTTLE);
       } else {
-         if (var3 instanceof Player && !((Player)var3).abilities.instabuild) {
+         if (var3 instanceof Player && !((Player)var3).getAbilities().instabuild) {
             ItemStack var6 = new ItemStack(Items.GLASS_BOTTLE);
             Player var5 = (Player)var3;
-            if (!var5.inventory.add(var6)) {
+            if (!var5.getInventory().add(var6)) {
                var5.drop(var6, false);
             }
          }
@@ -61,6 +61,6 @@ public class HoneyBottleItem extends Item {
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      return ItemUtils.useDrink(var1, var2, var3);
+      return ItemUtils.startUsingInstantly(var1, var2, var3);
    }
 }

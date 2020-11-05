@@ -3,6 +3,7 @@ package net.minecraft;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.bridge.game.GameVersion;
+import com.mojang.bridge.game.PackType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,20 +23,22 @@ public class DetectedVersion implements GameVersion {
    private final boolean stable;
    private final int worldVersion;
    private final int protocolVersion;
-   private final int packVersion;
+   private final int resourcePackVersion;
+   private final int dataPackVersion;
    private final Date buildTime;
    private final String releaseTarget;
 
    private DetectedVersion() {
       super();
       this.id = UUID.randomUUID().toString().replaceAll("-", "");
-      this.name = "1.16.4";
-      this.stable = true;
-      this.worldVersion = 2584;
+      this.name = "20w45a";
+      this.stable = false;
+      this.worldVersion = 2681;
       this.protocolVersion = SharedConstants.getProtocolVersion();
-      this.packVersion = 6;
+      this.resourcePackVersion = 7;
+      this.dataPackVersion = 6;
       this.buildTime = new Date();
-      this.releaseTarget = "1.16.4";
+      this.releaseTarget = "1.17";
    }
 
    private DetectedVersion(JsonObject var1) {
@@ -46,7 +49,9 @@ public class DetectedVersion implements GameVersion {
       this.stable = GsonHelper.getAsBoolean(var1, "stable");
       this.worldVersion = GsonHelper.getAsInt(var1, "world_version");
       this.protocolVersion = GsonHelper.getAsInt(var1, "protocol_version");
-      this.packVersion = GsonHelper.getAsInt(var1, "pack_version");
+      JsonObject var2 = GsonHelper.getAsJsonObject(var1, "pack_version");
+      this.resourcePackVersion = GsonHelper.getAsInt(var2, "resource");
+      this.dataPackVersion = GsonHelper.getAsInt(var2, "data");
       this.buildTime = Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var1, "build_time")).toInstant());
    }
 
@@ -133,8 +138,8 @@ public class DetectedVersion implements GameVersion {
       return this.protocolVersion;
    }
 
-   public int getPackVersion() {
-      return this.packVersion;
+   public int getPackVersion(PackType var1) {
+      return var1 == PackType.DATA ? this.dataPackVersion : this.resourcePackVersion;
    }
 
    public Date getBuildTime() {

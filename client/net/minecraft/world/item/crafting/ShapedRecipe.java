@@ -177,6 +177,15 @@ public class ShapedRecipe implements CraftingRecipe {
       }
    }
 
+   public boolean isIncomplete() {
+      NonNullList var1 = this.getIngredients();
+      return var1.isEmpty() || var1.stream().filter((var0) -> {
+         return !var0.isEmpty();
+      }).anyMatch((var0) -> {
+         return var0.getItems().length == 0;
+      });
+   }
+
    private static int firstNonSpace(String var0) {
       int var1;
       for(var1 = 0; var1 < var0.length() && var0.charAt(var1) == ' '; ++var1) {

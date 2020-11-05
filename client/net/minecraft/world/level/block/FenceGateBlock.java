@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -100,7 +99,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    private boolean isWall(BlockState var1) {
-      return var1.getBlock().is((Tag)BlockTags.WALLS);
+      return var1.is(BlockTags.WALLS);
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {

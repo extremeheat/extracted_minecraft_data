@@ -60,13 +60,6 @@ public class RemotePlayer extends AbstractClientPlayer {
          var7 = 0.0F;
       }
 
-      float var2;
-      if (!this.onGround && !this.isDeadOrDying()) {
-         var2 = (float)Math.atan(-this.getDeltaMovement().y * 0.20000000298023224D) * 15.0F;
-      } else {
-         var2 = 0.0F;
-      }
-
       this.bob += (var7 - this.bob) * 0.4F;
       this.level.getProfiler().push("push");
       this.pushEntities();

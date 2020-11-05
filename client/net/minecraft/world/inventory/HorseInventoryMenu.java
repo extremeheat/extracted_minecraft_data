@@ -21,7 +21,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       boolean var6 = true;
       this.addSlot(new Slot(var3, 0, 8, 18) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.getItem() == Items.SADDLE && !this.hasItem() && var4.isSaddleable();
+            return var1.is(Items.SADDLE) && !this.hasItem() && var4.isSaddleable();
          }
 
          public boolean isActive() {

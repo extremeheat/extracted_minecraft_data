@@ -8,7 +8,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -38,7 +38,7 @@ public class StrollThroughVillageGoal extends Goal {
          if (!var1.isCloseToVillage(var2, 6)) {
             return false;
          } else {
-            Vec3 var3 = RandomPos.getLandPos(this.mob, 15, 7, (var1x) -> {
+            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> {
                return (double)(-var1.sectionsToVillage(SectionPos.of(var1x)));
             });
             this.wantedPos = var3 == null ? null : new BlockPos(var3);

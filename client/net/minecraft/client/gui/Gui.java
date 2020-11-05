@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,6 +83,7 @@ public class Gui extends GuiComponent {
    private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
    private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
    private static final ResourceLocation PUMPKIN_BLUR_LOCATION = new ResourceLocation("textures/misc/pumpkinblur.png");
+   private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = new ResourceLocation("textures/misc/spyglass_scope.png");
    private static final Component DEMO_EXPIRED_TEXT = new TranslatableComponent("demo.demoExpired");
    private final Random random = new Random();
    private final Minecraft minecraft;
@@ -163,9 +165,13 @@ public class Gui extends GuiComponent {
          RenderSystem.defaultBlendFunc();
       }
 
-      ItemStack var4 = this.minecraft.player.inventory.getArmor(3);
-      if (this.minecraft.options.getCameraType().isFirstPerson() && var4.getItem() == Blocks.CARVED_PUMPKIN.asItem()) {
-         this.renderPumpkin();
+      ItemStack var4 = this.minecraft.player.getInventory().getArmor(3);
+      if (this.minecraft.options.getCameraType().isFirstPerson()) {
+         if (this.minecraft.player.isScoping()) {
+            this.renderFullScreenOverlay(SPYGLASS_SCOPE_LOCATION, 0.5F, -16777216);
+         } else if (var4.is(Blocks.CARVED_PUMPKIN.asItem())) {
+            this.renderFullScreenOverlay(PUMPKIN_BLUR_LOCATION);
+         }
       }
 
       float var5 = Mth.lerp(var2, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime);
@@ -489,7 +495,7 @@ public class Gui extends GuiComponent {
          boolean var9 = true;
          this.setBlitOffset(-90);
          this.blit(var2, var6 - 91, this.screenHeight - 22, 0, 0, 182, 22);
-         this.blit(var2, var6 - 91 - 1 + var3.inventory.selected * 20, this.screenHeight - 22 - 1, 0, 22, 24, 22);
+         this.blit(var2, var6 - 91 - 1 + var3.getInventory().selected * 20, this.screenHeight - 22 - 1, 0, 22, 24, 22);
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
                this.blit(var2, var6 - 91 - 29, this.screenHeight - 23, 24, 22, 29, 24);
@@ -509,7 +515,7 @@ public class Gui extends GuiComponent {
          for(var10 = 0; var10 < 9; ++var10) {
             var11 = var6 - 90 + var10 * 20 + 2;
             var12 = this.screenHeight - 16 - 3;
-            this.renderSlot(var11, var12, var1, var3, (ItemStack)var3.inventory.items.get(var10));
+            this.renderSlot(var11, var12, var1, var3, (ItemStack)var3.getInventory().items.get(var10));
          }
 
          if (!var4.isEmpty()) {
@@ -966,21 +972,72 @@ public class Gui extends GuiComponent {
       }
    }
 
-   private void renderPumpkin() {
+   private void renderFullScreenOverlay(ResourceLocation var1) {
+      this.renderFullScreenOverlay(var1, 0.0F, 0);
+   }
+
+   private void renderFullScreenOverlay(ResourceLocation var1, float var2, int var3) {
       RenderSystem.disableDepthTest();
       RenderSystem.depthMask(false);
       RenderSystem.defaultBlendFunc();
       RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.disableAlphaTest();
-      this.minecraft.getTextureManager().bind(PUMPKIN_BLUR_LOCATION);
-      Tesselator var1 = Tesselator.getInstance();
-      BufferBuilder var2 = var1.getBuilder();
-      var2.begin(7, DefaultVertexFormat.POSITION_TEX);
-      var2.vertex(0.0D, (double)this.screenHeight, -90.0D).uv(0.0F, 1.0F).endVertex();
-      var2.vertex((double)this.screenWidth, (double)this.screenHeight, -90.0D).uv(1.0F, 1.0F).endVertex();
-      var2.vertex((double)this.screenWidth, 0.0D, -90.0D).uv(1.0F, 0.0F).endVertex();
-      var2.vertex(0.0D, 0.0D, -90.0D).uv(0.0F, 0.0F).endVertex();
-      var1.end();
+      this.minecraft.getTextureManager().bind(var1);
+      Tesselator var4 = Tesselator.getInstance();
+      BufferBuilder var5 = var4.getBuilder();
+      if (var2 == 0.0F) {
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         var5.vertex(0.0D, (double)this.screenHeight, -90.0D).uv(0.0F, 1.0F).endVertex();
+         var5.vertex((double)this.screenWidth, (double)this.screenHeight, -90.0D).uv(1.0F, 1.0F).endVertex();
+         var5.vertex((double)this.screenWidth, 0.0D, -90.0D).uv(1.0F, 0.0F).endVertex();
+         var5.vertex(0.0D, 0.0D, -90.0D).uv(0.0F, 0.0F).endVertex();
+         var4.end();
+      } else {
+         float var6 = (float)Math.min(this.screenWidth, this.screenHeight);
+         float var7 = var6 * var2;
+         float var8 = Math.min((float)this.screenWidth / var6, (float)this.screenHeight / var7);
+         float var9 = var6 * var8;
+         float var10 = var7 * var8;
+         float var11 = ((float)this.screenWidth - var9) / 2.0F;
+         float var12 = ((float)this.screenHeight - var10) / 2.0F;
+         float var13 = var11 + var9;
+         float var14 = var12 + var10;
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         var5.vertex((double)var11, (double)var14, -90.0D).uv(0.0F, 1.0F).endVertex();
+         var5.vertex((double)var13, (double)var14, -90.0D).uv(1.0F, 1.0F).endVertex();
+         var5.vertex((double)var13, (double)var12, -90.0D).uv(1.0F, 0.0F).endVertex();
+         var5.vertex((double)var11, (double)var12, -90.0D).uv(0.0F, 0.0F).endVertex();
+         var4.end();
+         int var15 = FastColor.ARGB32.red(var3);
+         int var16 = FastColor.ARGB32.green(var3);
+         int var17 = FastColor.ARGB32.blue(var3);
+         int var18 = FastColor.ARGB32.alpha(var3);
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+         var5.vertex(0.0D, (double)this.screenHeight, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, (double)this.screenHeight, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex(0.0D, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var4.end();
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+         var5.vertex(0.0D, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, 0.0D, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex(0.0D, 0.0D, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var4.end();
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+         var5.vertex(0.0D, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)var11, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)var11, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex(0.0D, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var4.end();
+         var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+         var5.vertex((double)var13, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, (double)var14, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)this.screenWidth, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var5.vertex((double)var13, (double)var12, -90.0D).color(var15, var16, var17, var18).endVertex();
+         var4.end();
+      }
+
       RenderSystem.depthMask(true);
       RenderSystem.enableDepthTest();
       RenderSystem.enableAlphaTest();
@@ -1017,7 +1074,7 @@ public class Gui extends GuiComponent {
       this.minecraft.getTextureManager().bind(VIGNETTE_LOCATION);
       Tesselator var8 = Tesselator.getInstance();
       BufferBuilder var9 = var8.getBuilder();
-      var9.begin(7, DefaultVertexFormat.POSITION_TEX);
+      var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
       var9.vertex(0.0D, (double)this.screenHeight, -90.0D).uv(0.0F, 1.0F).endVertex();
       var9.vertex((double)this.screenWidth, (double)this.screenHeight, -90.0D).uv(1.0F, 1.0F).endVertex();
       var9.vertex((double)this.screenWidth, 0.0D, -90.0D).uv(1.0F, 0.0F).endVertex();
@@ -1049,7 +1106,7 @@ public class Gui extends GuiComponent {
       float var6 = var2.getV1();
       Tesselator var7 = Tesselator.getInstance();
       BufferBuilder var8 = var7.getBuilder();
-      var8.begin(7, DefaultVertexFormat.POSITION_TEX);
+      var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
       var8.vertex(0.0D, (double)this.screenHeight, -90.0D).uv(var3, var6).endVertex();
       var8.vertex((double)this.screenWidth, (double)this.screenHeight, -90.0D).uv(var5, var6).endVertex();
       var8.vertex((double)this.screenWidth, 0.0D, -90.0D).uv(var5, var4).endVertex();
@@ -1101,10 +1158,10 @@ public class Gui extends GuiComponent {
       }
 
       if (this.minecraft.player != null) {
-         ItemStack var2 = this.minecraft.player.inventory.getSelected();
+         ItemStack var2 = this.minecraft.player.getInventory().getSelected();
          if (var2.isEmpty()) {
             this.toolHighlightTimer = 0;
-         } else if (!this.lastToolHighlight.isEmpty() && var2.getItem() == this.lastToolHighlight.getItem() && var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {
+         } else if (!this.lastToolHighlight.isEmpty() && var2.is(this.lastToolHighlight.getItem()) && var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {
             if (this.toolHighlightTimer > 0) {
                --this.toolHighlightTimer;
             }
@@ -1201,6 +1258,8 @@ public class Gui extends GuiComponent {
       this.tabList.reset();
       this.bossOverlay.reset();
       this.minecraft.getToasts().clear();
+      this.minecraft.options.renderDebug = false;
+      this.chat.clearMessages(true);
    }
 
    public BossHealthOverlay getBossOverlay() {

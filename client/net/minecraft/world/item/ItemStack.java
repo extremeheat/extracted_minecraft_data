@@ -57,7 +57,9 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.DigDurabilityEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -152,7 +154,7 @@ public final class ItemStack {
    public boolean isEmpty() {
       if (this == EMPTY) {
          return true;
-      } else if (this.getItem() != null && this.getItem() != Items.AIR) {
+      } else if (this.getItem() != null && !this.is(Items.AIR)) {
          return this.count <= 0;
       } else {
          return true;
@@ -171,11 +173,19 @@ public final class ItemStack {
       return this.emptyCacheFlag ? Items.AIR : this.item;
    }
 
+   public boolean is(Tag<Item> var1) {
+      return var1.contains(this.getItem());
+   }
+
+   public boolean is(Item var1) {
+      return this.getItem() == var1;
+   }
+
    public InteractionResult useOn(UseOnContext var1) {
       Player var2 = var1.getPlayer();
       BlockPos var3 = var1.getClickedPos();
       BlockInWorld var4 = new BlockInWorld(var1.getLevel(), var3, false);
-      if (var2 != null && !var2.abilities.mayBuild && !this.hasAdventureModePlaceTagForBlock(var1.getLevel().getTagManager(), var4)) {
+      if (var2 != null && !var2.getAbilities().mayBuild && !this.hasAdventureModePlaceTagForBlock(var1.getLevel().getTagManager(), var4)) {
          return InteractionResult.PASS;
       } else {
          Item var5 = this.getItem();
@@ -276,7 +286,7 @@ public final class ItemStack {
    }
 
    public <T extends LivingEntity> void hurtAndBreak(int var1, T var2, Consumer<T> var3) {
-      if (!var2.level.isClientSide && (!(var2 instanceof Player) || !((Player)var2).abilities.instabuild)) {
+      if (!var2.level.isClientSide && (!(var2 instanceof Player) || !((Player)var2).getAbilities().instabuild)) {
          if (this.isDamageableItem()) {
             if (this.hurt(var1, var2.getRandom(), var2 instanceof ServerPlayer ? (ServerPlayer)var2 : null)) {
                var3.accept(var2);
@@ -291,6 +301,26 @@ public final class ItemStack {
 
          }
       }
+   }
+
+   public boolean isBarVisible() {
+      return this.item.isBarVisible(this);
+   }
+
+   public int getBarWidth() {
+      return this.item.getBarWidth(this);
+   }
+
+   public int getBarColor() {
+      return this.item.getBarColor(this);
+   }
+
+   public boolean overrideStackedOnOther(ItemStack var1, ClickAction var2, Inventory var3) {
+      return this.getItem().overrideStackedOnOther(this, var1, var2, var3);
+   }
+
+   public boolean overrideOtherStackedOnMe(ItemStack var1, ClickAction var2, Inventory var3) {
+      return this.getItem().overrideOtherStackedOnMe(this, var1, var2, var3);
    }
 
    public void hurtEnemy(LivingEntity var1, Player var2) {
@@ -356,7 +386,7 @@ public final class ItemStack {
    private boolean matches(ItemStack var1) {
       if (this.count != var1.count) {
          return false;
-      } else if (this.getItem() != var1.getItem()) {
+      } else if (!this.is(var1.getItem())) {
          return false;
       } else if (this.tag == null && var1.tag != null) {
          return false;
@@ -382,15 +412,19 @@ public final class ItemStack {
    }
 
    public boolean sameItem(ItemStack var1) {
-      return !var1.isEmpty() && this.getItem() == var1.getItem();
+      return !var1.isEmpty() && this.is(var1.getItem());
    }
 
    public boolean sameItemStackIgnoreDurability(ItemStack var1) {
       if (!this.isDamageableItem()) {
          return this.sameItem(var1);
       } else {
-         return !var1.isEmpty() && this.getItem() == var1.getItem();
+         return !var1.isEmpty() && this.is(var1.getItem());
       }
+   }
+
+   public static boolean isSameItemSameTags(ItemStack var0, ItemStack var1) {
+      return var0.is(var1.getItem()) && tagMatches(var0, var1);
    }
 
    public String getDescriptionId() {
@@ -544,7 +578,7 @@ public final class ItemStack {
       }
 
       var3.add(var4);
-      if (!var2.isAdvanced() && !this.hasCustomHoverName() && this.getItem() == Items.FILLED_MAP) {
+      if (!var2.isAdvanced() && !this.hasCustomHoverName() && this.is(Items.FILLED_MAP)) {
          var3.add((new TextComponent("#" + MapItem.getMapId(this))).withStyle(ChatFormatting.GRAY));
       }
 
@@ -968,6 +1002,11 @@ public final class ItemStack {
       return this.getItem().getEatingSound();
    }
 
+   @Nullable
+   public SoundEvent getEquipSound() {
+      return this.getItem().getEquipSound();
+   }
+
    static {
       LORE_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withItalic(true);
    }
@@ -981,7 +1020,7 @@ public final class ItemStack {
       ADDITIONAL,
       DYE;
 
-      private int mask = 1 << this.ordinal();
+      private final int mask = 1 << this.ordinal();
 
       private TooltipPart() {
       }

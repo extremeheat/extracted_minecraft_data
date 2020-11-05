@@ -63,14 +63,14 @@ public class TridentItem extends Item implements Vanishable {
                   if (var7 == 0) {
                      ThrownTrident var8 = new ThrownTrident(var2, var5, var1);
                      var8.shootFromRotation(var5, var5.xRot, var5.yRot, 0.0F, 2.5F + (float)var7 * 0.5F, 1.0F);
-                     if (var5.abilities.instabuild) {
+                     if (var5.getAbilities().instabuild) {
                         var8.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                      }
 
                      var2.addFreshEntity(var8);
                      var2.playSound((Player)null, (Entity)var8, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
-                     if (!var5.abilities.instabuild) {
-                        var5.inventory.removeItem(var1);
+                     if (!var5.getAbilities().instabuild) {
+                        var5.getInventory().removeItem(var1);
                      }
                   }
                }

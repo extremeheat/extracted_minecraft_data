@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -25,7 +26,7 @@ public class JunglePyramidFeature extends StructureFeature<NoneFeatureConfigurat
       }
 
       public void generatePieces(RegistryAccess var1, ChunkGenerator var2, StructureManager var3, int var4, int var5, Biome var6, NoneFeatureConfiguration var7) {
-         JunglePyramidPiece var8 = new JunglePyramidPiece(this.random, var4 * 16, var5 * 16);
+         JunglePyramidPiece var8 = new JunglePyramidPiece(this.random, SectionPos.sectionToBlockCoord(var4), SectionPos.sectionToBlockCoord(var5));
          this.pieces.add(var8);
          this.calculateBoundingBox();
       }

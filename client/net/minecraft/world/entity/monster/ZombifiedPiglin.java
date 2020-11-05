@@ -13,6 +13,7 @@ import net.minecraft.util.TimeUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -126,7 +127,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private void alertOthers() {
       double var1 = this.getAttributeValue(Attributes.FOLLOW_RANGE);
       AABB var3 = AABB.unitCubeFromLowerCorner(this.position()).inflate(var1, 10.0D, var1);
-      this.level.getLoadedEntitiesOfClass(ZombifiedPiglin.class, var3).stream().filter((var1x) -> {
+      this.level.getEntitiesOfClass(ZombifiedPiglin.class, var3, EntitySelector.NO_SPECTATORS).stream().filter((var1x) -> {
          return var1x != this;
       }).filter((var0) -> {
          return var0.getTarget() == null;
@@ -159,7 +160,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    public static boolean checkZombifiedPiglinSpawnRules(EntityType<ZombifiedPiglin> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL && var1.getBlockState(var3.below()).getBlock() != Blocks.NETHER_WART_BLOCK;
+      return var1.getDifficulty() != Difficulty.PEACEFUL && !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
    }
 
    public boolean checkSpawnObstruction(LevelReader var1) {
@@ -173,7 +174,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.readPersistentAngerSaveData((ServerLevel)this.level, var1);
+      this.readPersistentAngerSaveData(this.level, var1);
    }
 
    public void setRemainingPersistentAngerTime(int var1) {

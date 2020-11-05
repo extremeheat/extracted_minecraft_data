@@ -39,7 +39,8 @@ public class DoublePlantBlock extends BushBlock {
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
-      return var2.getY() < 255 && var1.getLevel().getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
+      Level var3 = var1.getLevel();
+      return var2.getY() < var3.getMaxBuildHeight() - 1 && var3.getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
@@ -81,7 +82,7 @@ public class DoublePlantBlock extends BushBlock {
       if (var4 == DoubleBlockHalf.UPPER) {
          BlockPos var5 = var1.below();
          BlockState var6 = var0.getBlockState(var5);
-         if (var6.getBlock() == var2.getBlock() && var6.getValue(HALF) == DoubleBlockHalf.LOWER) {
+         if (var6.is(var2.getBlock()) && var6.getValue(HALF) == DoubleBlockHalf.LOWER) {
             var0.setBlock(var5, Blocks.AIR.defaultBlockState(), 35);
             var0.levelEvent(var3, 2001, var5, Block.getId(var6));
          }

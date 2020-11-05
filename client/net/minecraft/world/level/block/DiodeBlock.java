@@ -67,7 +67,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       if (var1.canSurvive(var2, var3)) {
          this.checkTickOnNeighbor(var2, var3, var1);
       } else {
-         BlockEntity var7 = this.isEntityBlock() ? var2.getBlockEntity(var3) : null;
+         BlockEntity var7 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
          dropResources(var1, var2, var3, var7);
          var2.removeBlock(var3, false);
          Direction[] var8 = Direction.values();

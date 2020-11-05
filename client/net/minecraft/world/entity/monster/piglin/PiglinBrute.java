@@ -69,7 +69,7 @@ public class PiglinBrute extends AbstractPiglin {
    }
 
    public boolean wantsToPickUp(ItemStack var1) {
-      return var1.getItem() == Items.GOLDEN_AXE ? super.wantsToPickUp(var1) : false;
+      return var1.is(Items.GOLDEN_AXE) ? super.wantsToPickUp(var1) : false;
    }
 
    protected void customServerAiStep() {

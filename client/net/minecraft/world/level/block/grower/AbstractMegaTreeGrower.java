@@ -57,6 +57,6 @@ public abstract class AbstractMegaTreeGrower extends AbstractTreeGrower {
 
    public static boolean isTwoByTwoSapling(BlockState var0, BlockGetter var1, BlockPos var2, int var3, int var4) {
       Block var5 = var0.getBlock();
-      return var5 == var1.getBlockState(var2.offset(var3, 0, var4)).getBlock() && var5 == var1.getBlockState(var2.offset(var3 + 1, 0, var4)).getBlock() && var5 == var1.getBlockState(var2.offset(var3, 0, var4 + 1)).getBlock() && var5 == var1.getBlockState(var2.offset(var3 + 1, 0, var4 + 1)).getBlock();
+      return var1.getBlockState(var2.offset(var3, 0, var4)).is(var5) && var1.getBlockState(var2.offset(var3 + 1, 0, var4)).is(var5) && var1.getBlockState(var2.offset(var3, 0, var4 + 1)).is(var5) && var1.getBlockState(var2.offset(var3 + 1, 0, var4 + 1)).is(var5);
    }
 }

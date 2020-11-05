@@ -9,7 +9,8 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class VillageBoundRandomStroll extends Behavior<PathfinderMob> {
@@ -45,14 +46,14 @@ public class VillageBoundRandomStroll extends Behavior<PathfinderMob> {
    }
 
    private void setTargetedPos(PathfinderMob var1, SectionPos var2) {
-      Optional var3 = Optional.ofNullable(RandomPos.getPosTowards(var1, this.maxXyDist, this.maxYDist, Vec3.atBottomCenterOf(var2.center())));
+      Optional var3 = Optional.ofNullable(DefaultRandomPos.getPosTowards(var1, this.maxXyDist, this.maxYDist, Vec3.atBottomCenterOf(var2.center()), 1.5707963705062866D));
       var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var3.map((var1x) -> {
          return new WalkTarget(var1x, this.speedModifier, 0);
       }));
    }
 
    private void setRandomPos(PathfinderMob var1) {
-      Optional var2 = Optional.ofNullable(RandomPos.getLandPos(var1, this.maxXyDist, this.maxYDist));
+      Optional var2 = Optional.ofNullable(LandRandomPos.getPos(var1, this.maxXyDist, this.maxYDist));
       var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var2.map((var1x) -> {
          return new WalkTarget(var1x, this.speedModifier, 0);
       }));

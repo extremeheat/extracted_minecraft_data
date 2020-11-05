@@ -12,6 +12,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -186,7 +187,7 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          BlockState var8 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var6)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
          var2.setBlock(var3, var8, 20);
-         var2.setBlockEntity(var3, MovingPistonBlock.newMovingBlockEntity((BlockState)this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true));
+         var2.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var3, var8, (BlockState)this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true));
          var2.blockUpdated(var3, var8.getBlock());
          var8.updateNeighbourShapes(var2, var3, 2);
          if (this.isSticky) {
@@ -222,11 +223,11 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    public static boolean isPushable(BlockState var0, Level var1, BlockPos var2, Direction var3, boolean var4, Direction var5) {
-      if (var2.getY() >= 0 && var2.getY() <= var1.getMaxBuildHeight() - 1 && var1.getWorldBorder().isWithinBounds(var2)) {
+      if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() <= var1.getMaxBuildHeight() - 1 && var1.getWorldBorder().isWithinBounds(var2)) {
          if (var0.isAir()) {
             return true;
          } else if (!var0.is(Blocks.OBSIDIAN) && !var0.is(Blocks.CRYING_OBSIDIAN) && !var0.is(Blocks.RESPAWN_ANCHOR)) {
-            if (var3 == Direction.DOWN && var2.getY() == 0) {
+            if (var3 == Direction.DOWN && var2.getY() == var1.getMinBuildHeight()) {
                return false;
             } else if (var3 == Direction.UP && var2.getY() == var1.getMaxBuildHeight() - 1) {
                return false;
@@ -248,7 +249,7 @@ public class PistonBaseBlock extends DirectionalBlock {
                   return false;
                }
 
-               return !var0.getBlock().isEntityBlock();
+               return !var0.hasBlockEntity();
             }
          } else {
             return false;
@@ -290,9 +291,13 @@ public class PistonBaseBlock extends DirectionalBlock {
          for(var14 = var19.size() - 1; var14 >= 0; --var14) {
             var15 = (BlockPos)var19.get(var14);
             var16 = var1.getBlockState(var15);
-            BlockEntity var17 = var16.getBlock().isEntityBlock() ? var1.getBlockEntity(var15) : null;
+            BlockEntity var17 = var16.hasBlockEntity() ? var1.getBlockEntity(var15) : null;
             dropResources(var16, var1, var15, var17);
             var1.setBlock(var15, Blocks.AIR.defaultBlockState(), 18);
+            if (!var16.is(BlockTags.FIRE)) {
+               var1.addDestroyBlockEffect(var15, var16);
+            }
+
             var20[var13++] = var16;
          }
 
@@ -301,8 +306,9 @@ public class PistonBaseBlock extends DirectionalBlock {
             var16 = var1.getBlockState(var15);
             var15 = var15.relative(var21);
             var7.remove(var15);
-            var1.setBlock(var15, (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3), 68);
-            var1.setBlockEntity(var15, MovingPistonBlock.newMovingBlockEntity((BlockState)var9.get(var14), var3, var4, false));
+            BlockState var28 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
+            var1.setBlock(var15, var28, 68);
+            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var15, var28, (BlockState)var9.get(var14), var3, var4, false));
             var20[var13++] = var16;
          }
 
@@ -312,7 +318,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             var16 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var3)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
             var7.remove(var5);
             var1.setBlock(var5, var16, 68);
-            var1.setBlockEntity(var5, MovingPistonBlock.newMovingBlockEntity(var24, var3, true, true));
+            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var16, var24, var3, true, true));
          }
 
          BlockState var23 = Blocks.AIR.defaultBlockState();
@@ -325,14 +331,14 @@ public class PistonBaseBlock extends DirectionalBlock {
 
          var25 = var7.entrySet().iterator();
 
-         BlockPos var29;
+         BlockPos var30;
          while(var25.hasNext()) {
-            Entry var28 = (Entry)var25.next();
-            var29 = (BlockPos)var28.getKey();
-            BlockState var18 = (BlockState)var28.getValue();
-            var18.updateIndirectNeighbourShapes(var1, var29, 2);
-            var23.updateNeighbourShapes(var1, var29, 2);
-            var23.updateIndirectNeighbourShapes(var1, var29, 2);
+            Entry var29 = (Entry)var25.next();
+            var30 = (BlockPos)var29.getKey();
+            BlockState var18 = (BlockState)var29.getValue();
+            var18.updateIndirectNeighbourShapes(var1, var30, 2);
+            var23.updateNeighbourShapes(var1, var30, 2);
+            var23.updateIndirectNeighbourShapes(var1, var30, 2);
          }
 
          var13 = 0;
@@ -340,9 +346,9 @@ public class PistonBaseBlock extends DirectionalBlock {
          int var27;
          for(var27 = var19.size() - 1; var27 >= 0; --var27) {
             var16 = var20[var13++];
-            var29 = (BlockPos)var19.get(var27);
-            var16.updateIndirectNeighbourShapes(var1, var29, 2);
-            var1.updateNeighborsAt(var29, var16.getBlock());
+            var30 = (BlockPos)var19.get(var27);
+            var16.updateIndirectNeighbourShapes(var1, var30, 2);
+            var1.updateNeighborsAt(var30, var16.getBlock());
          }
 
          for(var27 = var8.size() - 1; var27 >= 0; --var27) {

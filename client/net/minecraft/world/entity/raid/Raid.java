@@ -433,7 +433,7 @@ public class Raid {
 
                Raider var5 = (Raider)var4.next();
                BlockPos var6 = var5.blockPosition();
-               if (!var5.removed && var5.level.dimension() == this.level.dimension() && this.center.distSqr(var6) < 12544.0D) {
+               if (!var5.isRemoved() && var5.level.dimension() == this.level.dimension() && this.center.distSqr(var6) < 12544.0D) {
                   if (var5.tickCount > 600) {
                      if (this.level.getEntity(var5.getUUID()) == null) {
                         var2.add(var5);

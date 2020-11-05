@@ -11,9 +11,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.entity.CampfireBlockEntity;
 
-public class CampfireRenderer extends BlockEntityRenderer<CampfireBlockEntity> {
-   public CampfireRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
+public class CampfireRenderer implements BlockEntityRenderer<CampfireBlockEntity> {
+   public CampfireRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
    }
 
    public void render(CampfireBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

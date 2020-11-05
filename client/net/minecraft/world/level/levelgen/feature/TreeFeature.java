@@ -16,11 +16,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelSimulatedRW;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -64,8 +62,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
 
    private static boolean isGrassOrDirtOrFarmland(LevelSimulatedReader var0, BlockPos var1) {
       return var0.isStateAtPosition(var1, (var0x) -> {
-         Block var1 = var0x.getBlock();
-         return isDirt(var1) || var1 == Blocks.FARMLAND;
+         return isDirt(var0x) || var0x.is(Blocks.FARMLAND);
       });
    }
 
@@ -84,7 +81,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       return isAirOrLeaves(var0, var1) || isReplaceablePlant(var0, var1) || isBlockWater(var0, var1);
    }
 
-   private boolean doPlace(LevelSimulatedRW var1, Random var2, BlockPos var3, Set<BlockPos> var4, Set<BlockPos> var5, BoundingBox var6, TreeConfiguration var7) {
+   private boolean doPlace(WorldGenLevel var1, Random var2, BlockPos var3, Set<BlockPos> var4, Set<BlockPos> var5, BoundingBox var6, TreeConfiguration var7) {
       int var8 = var7.trunkPlacer.getTreeHeight(var2);
       int var9 = var7.foliagePlacer.foliageHeight(var2, var8, var7);
       int var10 = var8 - var9;
@@ -112,7 +109,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var12 = var3;
       }
 
-      if (var12.getY() >= 1 && var12.getY() + var8 + 1 <= 256) {
+      if (var12.getY() >= var1.getMinBuildHeight() + 1 && var12.getY() + var8 + 1 <= var1.getMaxBuildHeight()) {
          if (!isGrassOrDirtOrFarmland(var1, var12.below())) {
             return false;
          } else {
@@ -197,7 +194,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       while(var9.hasNext()) {
          var10 = (BlockPos)var9.next();
          if (var2.isInside(var10)) {
-            var6.setFull(var10.getX() - var2.x0, var10.getY() - var2.y0, var10.getZ() - var2.z0, true, true);
+            var6.fill(var10.getX() - var2.x0, var10.getY() - var2.y0, var10.getZ() - var2.z0);
          }
       }
 
@@ -206,7 +203,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       while(var9.hasNext()) {
          var10 = (BlockPos)var9.next();
          if (var2.isInside(var10)) {
-            var6.setFull(var10.getX() - var2.x0, var10.getY() - var2.y0, var10.getZ() - var2.z0, true, true);
+            var6.fill(var10.getX() - var2.x0, var10.getY() - var2.y0, var10.getZ() - var2.z0);
          }
 
          Direction[] var11 = Direction.values();
@@ -221,7 +218,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
                   ((Set)var5.get(0)).add(var21.immutable());
                   setBlockKnownShape(var1, var21, (BlockState)var15.setValue(BlockStateProperties.DISTANCE, 1));
                   if (var2.isInside(var21)) {
-                     var6.setFull(var21.getX() - var2.x0, var21.getY() - var2.y0, var21.getZ() - var2.z0, true, true);
+                     var6.fill(var21.getX() - var2.x0, var21.getY() - var2.y0, var21.getZ() - var2.z0);
                   }
                }
             }
@@ -236,7 +233,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          while(var25.hasNext()) {
             BlockPos var26 = (BlockPos)var25.next();
             if (var2.isInside(var26)) {
-               var6.setFull(var26.getX() - var2.x0, var26.getY() - var2.y0, var26.getZ() - var2.z0, true, true);
+               var6.fill(var26.getX() - var2.x0, var26.getY() - var2.y0, var26.getZ() - var2.z0);
             }
 
             Direction[] var27 = Direction.values();
@@ -253,7 +250,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
                         BlockState var20 = (BlockState)var18.setValue(BlockStateProperties.DISTANCE, var22 + 1);
                         setBlockKnownShape(var1, var21, var20);
                         if (var2.isInside(var21)) {
-                           var6.setFull(var21.getX() - var2.x0, var21.getY() - var2.y0, var21.getZ() - var2.z0, true, true);
+                           var6.fill(var21.getX() - var2.x0, var21.getY() - var2.y0, var21.getZ() - var2.z0);
                         }
 
                         var24.add(var21.immutable());

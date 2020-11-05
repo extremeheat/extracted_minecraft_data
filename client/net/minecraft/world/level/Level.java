@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -18,6 +17,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -33,7 +33,8 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -43,8 +44,7 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.TickableBlockEntity;
+import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -52,6 +52,8 @@ import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
@@ -71,10 +73,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final ResourceKey<Level> NETHER;
    public static final ResourceKey<Level> END;
    private static final Direction[] DIRECTIONS;
-   public final List<BlockEntity> blockEntityList = Lists.newArrayList();
-   public final List<BlockEntity> tickableBlockEntities = Lists.newArrayList();
-   protected final List<BlockEntity> pendingBlockEntities = Lists.newArrayList();
-   protected final List<BlockEntity> blockEntitiesToUnload = Lists.newArrayList();
+   protected final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList();
+   private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
+   private boolean tickingBlockEntities;
    private final Thread thread;
    private final boolean isDebug;
    private int skyDarken;
@@ -89,7 +90,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    protected final WritableLevelData levelData;
    private final Supplier<ProfilerFiller> profiler;
    public final boolean isClientSide;
-   protected boolean updatingBlockEntities;
    private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
@@ -129,8 +129,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return null;
    }
 
-   public static boolean isInWorldBounds(BlockPos var0) {
-      return !isOutsideBuildHeight(var0) && isInWorldBoundsHorizontal(var0);
+   public boolean isInWorldBounds(BlockPos var1) {
+      return !this.isOutsideBuildHeight(var1) && isInWorldBoundsHorizontal(var1);
    }
 
    public static boolean isInSpawnableBounds(BlockPos var0) {
@@ -145,16 +145,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return var0 < -20000000 || var0 >= 20000000;
    }
 
-   public static boolean isOutsideBuildHeight(BlockPos var0) {
-      return isOutsideBuildHeight(var0.getY());
-   }
-
-   public static boolean isOutsideBuildHeight(int var0) {
-      return var0 < 0 || var0 >= 256;
-   }
-
    public LevelChunk getChunkAt(BlockPos var1) {
-      return this.getChunk(var1.getX() >> 4, var1.getZ() >> 4);
+      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    public LevelChunk getChunk(int var1, int var2) {
@@ -175,7 +167,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public boolean setBlock(BlockPos var1, BlockState var2, int var3, int var4) {
-      if (isOutsideBuildHeight(var1)) {
+      if (this.isOutsideBuildHeight(var1)) {
          return false;
       } else if (!this.isClientSide && this.isDebug()) {
          return false;
@@ -243,12 +235,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          }
 
          if (var2) {
-            BlockEntity var7 = var5.getBlock().isEntityBlock() ? this.getBlockEntity(var1) : null;
+            BlockEntity var7 = var5.hasBlockEntity() ? this.getBlockEntity(var1) : null;
             Block.dropResources(var5, this, var1, var7, var3, ItemStack.EMPTY);
          }
 
          return this.setBlock(var1, var6.createLegacyBlock(), 3, var4);
       }
+   }
+
+   public void addDestroyBlockEffect(BlockPos var1, BlockState var2) {
    }
 
    public boolean setBlockAndUpdate(BlockPos var1, BlockState var2) {
@@ -312,7 +307,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                   return "ID #" + Registry.BLOCK.getKey(var2);
                }
             });
-            CrashReportCategory.populateBlockDetails(var7, var1, var4);
+            CrashReportCategory.populateBlockDetails(var7, this, var1, var4);
             throw new ReportedException(var6);
          }
       }
@@ -321,10 +316,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public int getHeight(Heightmap.Types var1, int var2, int var3) {
       int var4;
       if (var2 >= -30000000 && var3 >= -30000000 && var2 < 30000000 && var3 < 30000000) {
-         if (this.hasChunk(var2 >> 4, var3 >> 4)) {
-            var4 = this.getChunk(var2 >> 4, var3 >> 4).getHeight(var1, var2 & 15, var3 & 15) + 1;
+         if (this.hasChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3))) {
+            var4 = this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
          } else {
-            var4 = 0;
+            var4 = this.getMinBuildHeight();
          }
       } else {
          var4 = this.getSeaLevel() + 1;
@@ -338,16 +333,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public BlockState getBlockState(BlockPos var1) {
-      if (isOutsideBuildHeight(var1)) {
+      if (this.isOutsideBuildHeight(var1)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
-         LevelChunk var2 = this.getChunk(var1.getX() >> 4, var1.getZ() >> 4);
+         LevelChunk var2 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
          return var2.getBlockState(var1);
       }
    }
 
    public FluidState getFluidState(BlockPos var1) {
-      if (isOutsideBuildHeight(var1)) {
+      if (this.isOutsideBuildHeight(var1)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
          LevelChunk var2 = this.getChunkAt(var1);
@@ -391,113 +386,35 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return var2 * 6.2831855F;
    }
 
-   public boolean addBlockEntity(BlockEntity var1) {
-      if (this.updatingBlockEntities) {
-         LOGGER.error("Adding block entity while ticking: {} @ {}", new org.apache.logging.log4j.util.Supplier[]{() -> {
-            return Registry.BLOCK_ENTITY_TYPE.getKey(var1.getType());
-         }, var1::getBlockPos});
-      }
-
-      boolean var2 = this.blockEntityList.add(var1);
-      if (var2 && var1 instanceof TickableBlockEntity) {
-         this.tickableBlockEntities.add(var1);
-      }
-
-      if (this.isClientSide) {
-         BlockPos var3 = var1.getBlockPos();
-         BlockState var4 = this.getBlockState(var3);
-         this.sendBlockUpdated(var3, var4, var4, 2);
-      }
-
-      return var2;
+   public void addBlockEntityTicker(TickingBlockEntity var1) {
+      (this.tickingBlockEntities ? this.pendingBlockEntityTickers : this.blockEntityTickers).add(var1);
    }
 
-   public void addAllPendingBlockEntities(Collection<BlockEntity> var1) {
-      if (this.updatingBlockEntities) {
-         this.pendingBlockEntities.addAll(var1);
-      } else {
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            BlockEntity var3 = (BlockEntity)var2.next();
-            this.addBlockEntity(var3);
-         }
-      }
-
-   }
-
-   public void tickBlockEntities() {
+   protected void tickBlockEntities() {
       ProfilerFiller var1 = this.getProfiler();
       var1.push("blockEntities");
-      if (!this.blockEntitiesToUnload.isEmpty()) {
-         this.tickableBlockEntities.removeAll(this.blockEntitiesToUnload);
-         this.blockEntityList.removeAll(this.blockEntitiesToUnload);
-         this.blockEntitiesToUnload.clear();
+      this.tickingBlockEntities = true;
+      if (!this.pendingBlockEntityTickers.isEmpty()) {
+         this.blockEntityTickers.addAll(this.pendingBlockEntityTickers);
+         this.pendingBlockEntityTickers.clear();
       }
 
-      this.updatingBlockEntities = true;
-      Iterator var2 = this.tickableBlockEntities.iterator();
+      Iterator var2 = this.blockEntityTickers.iterator();
 
       while(var2.hasNext()) {
-         BlockEntity var3 = (BlockEntity)var2.next();
-         if (!var3.isRemoved() && var3.hasLevel()) {
-            BlockPos var4 = var3.getBlockPos();
-            if (this.getChunkSource().isTickingChunk(var4) && this.getWorldBorder().isWithinBounds(var4)) {
-               try {
-                  var1.push(() -> {
-                     return String.valueOf(BlockEntityType.getKey(var3.getType()));
-                  });
-                  if (var3.getType().isValid(this.getBlockState(var4).getBlock())) {
-                     ((TickableBlockEntity)var3).tick();
-                  } else {
-                     var3.logInvalidState();
-                  }
-
-                  var1.pop();
-               } catch (Throwable var8) {
-                  CrashReport var6 = CrashReport.forThrowable(var8, "Ticking block entity");
-                  CrashReportCategory var7 = var6.addCategory("Block entity being ticked");
-                  var3.fillCrashReportCategory(var7);
-                  throw new ReportedException(var6);
-               }
-            }
-         }
-
+         TickingBlockEntity var3 = (TickingBlockEntity)var2.next();
          if (var3.isRemoved()) {
             var2.remove();
-            this.blockEntityList.remove(var3);
-            if (this.hasChunkAt(var3.getBlockPos())) {
-               this.getChunkAt(var3.getBlockPos()).removeBlockEntity(var3.getBlockPos());
-            }
+         } else {
+            var3.tick();
          }
       }
 
-      this.updatingBlockEntities = false;
-      var1.popPush("pendingBlockEntities");
-      if (!this.pendingBlockEntities.isEmpty()) {
-         for(int var9 = 0; var9 < this.pendingBlockEntities.size(); ++var9) {
-            BlockEntity var10 = (BlockEntity)this.pendingBlockEntities.get(var9);
-            if (!var10.isRemoved()) {
-               if (!this.blockEntityList.contains(var10)) {
-                  this.addBlockEntity(var10);
-               }
-
-               if (this.hasChunkAt(var10.getBlockPos())) {
-                  LevelChunk var5 = this.getChunkAt(var10.getBlockPos());
-                  BlockState var11 = var5.getBlockState(var10.getBlockPos());
-                  var5.setBlockEntity(var10.getBlockPos(), var10);
-                  this.sendBlockUpdated(var10.getBlockPos(), var11, var11, 3);
-               }
-            }
-         }
-
-         this.pendingBlockEntities.clear();
-      }
-
+      this.tickingBlockEntities = false;
       var1.pop();
    }
 
-   public void guardEntityTick(Consumer<Entity> var1, Entity var2) {
+   public <T extends Entity> void guardEntityTick(Consumer<T> var1, T var2) {
       try {
          var1.accept(var2);
       } catch (Throwable var6) {
@@ -523,97 +440,37 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return var13;
    }
 
-   public String gatherChunkSourceStats() {
-      return this.getChunkSource().gatherStats();
-   }
-
    @Nullable
    public BlockEntity getBlockEntity(BlockPos var1) {
-      if (isOutsideBuildHeight(var1)) {
-         return null;
-      } else if (!this.isClientSide && Thread.currentThread() != this.thread) {
+      if (this.isOutsideBuildHeight(var1)) {
          return null;
       } else {
-         BlockEntity var2 = null;
-         if (this.updatingBlockEntities) {
-            var2 = this.getPendingBlockEntityAt(var1);
-         }
-
-         if (var2 == null) {
-            var2 = this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
-         }
-
-         if (var2 == null) {
-            var2 = this.getPendingBlockEntityAt(var1);
-         }
-
-         return var2;
+         return !this.isClientSide && Thread.currentThread() != this.thread ? null : this.getChunkAt(var1).getBlockEntity(var1, LevelChunk.EntityCreationType.IMMEDIATE);
       }
    }
 
-   @Nullable
-   private BlockEntity getPendingBlockEntityAt(BlockPos var1) {
-      for(int var2 = 0; var2 < this.pendingBlockEntities.size(); ++var2) {
-         BlockEntity var3 = (BlockEntity)this.pendingBlockEntities.get(var2);
-         if (!var3.isRemoved() && var3.getBlockPos().equals(var1)) {
-            return var3;
-         }
-      }
-
-      return null;
-   }
-
-   public void setBlockEntity(BlockPos var1, @Nullable BlockEntity var2) {
-      if (!isOutsideBuildHeight(var1)) {
-         if (var2 != null && !var2.isRemoved()) {
-            if (this.updatingBlockEntities) {
-               var2.setLevelAndPosition(this, var1);
-               Iterator var3 = this.pendingBlockEntities.iterator();
-
-               while(var3.hasNext()) {
-                  BlockEntity var4 = (BlockEntity)var3.next();
-                  if (var4.getBlockPos().equals(var1)) {
-                     var4.setRemoved();
-                     var3.remove();
-                  }
-               }
-
-               this.pendingBlockEntities.add(var2);
-            } else {
-               this.getChunkAt(var1).setBlockEntity(var1, var2);
-               this.addBlockEntity(var2);
-            }
-         }
-
+   public void setBlockEntity(BlockEntity var1) {
+      BlockPos var2 = var1.getBlockPos();
+      if (!this.isOutsideBuildHeight(var2)) {
+         this.getChunkAt(var2).addAndRegisterBlockEntity(var1);
       }
    }
 
    public void removeBlockEntity(BlockPos var1) {
-      BlockEntity var2 = this.getBlockEntity(var1);
-      if (var2 != null && this.updatingBlockEntities) {
-         var2.setRemoved();
-         this.pendingBlockEntities.remove(var2);
-      } else {
-         if (var2 != null) {
-            this.pendingBlockEntities.remove(var2);
-            this.blockEntityList.remove(var2);
-            this.tickableBlockEntities.remove(var2);
-         }
-
+      if (!this.isOutsideBuildHeight(var1)) {
          this.getChunkAt(var1).removeBlockEntity(var1);
       }
-
    }
 
    public boolean isLoaded(BlockPos var1) {
-      return isOutsideBuildHeight(var1) ? false : this.getChunkSource().hasChunk(var1.getX() >> 4, var1.getZ() >> 4);
+      return this.isOutsideBuildHeight(var1) ? false : this.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    public boolean loadedAndEntityCanStandOnFace(BlockPos var1, Entity var2, Direction var3) {
-      if (isOutsideBuildHeight(var1)) {
+      if (this.isOutsideBuildHeight(var1)) {
          return false;
       } else {
-         ChunkAccess var4 = this.getChunk(var1.getX() >> 4, var1.getZ() >> 4, ChunkStatus.FULL, false);
+         ChunkAccess var4 = this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false);
          return var4 == null ? false : var4.getBlockState(var1).entityCanStandOnFace(this, var1, var2, var3);
       }
    }
@@ -652,93 +509,59 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.getChunk(var1, var2, ChunkStatus.FULL, false);
    }
 
-   public List<Entity> getEntities(@Nullable Entity var1, AABB var2, @Nullable Predicate<? super Entity> var3) {
+   public List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3) {
       this.getProfiler().incrementCounter("getEntities");
       ArrayList var4 = Lists.newArrayList();
-      int var5 = Mth.floor((var2.minX - 2.0D) / 16.0D);
-      int var6 = Mth.floor((var2.maxX + 2.0D) / 16.0D);
-      int var7 = Mth.floor((var2.minZ - 2.0D) / 16.0D);
-      int var8 = Mth.floor((var2.maxZ + 2.0D) / 16.0D);
-      ChunkSource var9 = this.getChunkSource();
+      this.getEntities().get(var2, (var3x) -> {
+         if (var3x != var1 && var3.test(var3x)) {
+            var4.add(var3x);
+         }
 
-      for(int var10 = var5; var10 <= var6; ++var10) {
-         for(int var11 = var7; var11 <= var8; ++var11) {
-            LevelChunk var12 = var9.getChunk(var10, var11, false);
-            if (var12 != null) {
-               var12.getEntities((Entity)var1, var2, var4, var3);
+         if (var3x instanceof EnderDragon) {
+            EnderDragonPart[] var4x = ((EnderDragon)var3x).getSubEntities();
+            int var5 = var4x.length;
+
+            for(int var6 = 0; var6 < var5; ++var6) {
+               EnderDragonPart var7 = var4x[var6];
+               if (var3x != var1 && var3.test(var7)) {
+                  var4.add(var7);
+               }
             }
          }
-      }
 
+      });
       return var4;
    }
 
-   public <T extends Entity> List<T> getEntities(@Nullable EntityType<T> var1, AABB var2, Predicate<? super T> var3) {
+   public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
       this.getProfiler().incrementCounter("getEntities");
-      int var4 = Mth.floor((var2.minX - 2.0D) / 16.0D);
-      int var5 = Mth.ceil((var2.maxX + 2.0D) / 16.0D);
-      int var6 = Mth.floor((var2.minZ - 2.0D) / 16.0D);
-      int var7 = Mth.ceil((var2.maxZ + 2.0D) / 16.0D);
-      ArrayList var8 = Lists.newArrayList();
+      ArrayList var4 = Lists.newArrayList();
+      this.getEntities().get(var1, var2, (var3x) -> {
+         if (var3.test(var3x)) {
+            var4.add(var3x);
+         }
 
-      for(int var9 = var4; var9 < var5; ++var9) {
-         for(int var10 = var6; var10 < var7; ++var10) {
-            LevelChunk var11 = this.getChunkSource().getChunk(var9, var10, false);
-            if (var11 != null) {
-               var11.getEntities((EntityType)var1, var2, var8, var3);
+         if (var3x instanceof EnderDragon) {
+            EnderDragonPart[] var4x = ((EnderDragon)var3x).getSubEntities();
+            int var5 = var4x.length;
+
+            for(int var6 = 0; var6 < var5; ++var6) {
+               EnderDragonPart var7 = var4x[var6];
+               Entity var8 = (Entity)var1.tryCast(var7);
+               if (var8 != null && var3.test(var8)) {
+                  var4.add(var8);
+               }
             }
          }
-      }
 
-      return var8;
-   }
-
-   public <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> var1, AABB var2, @Nullable Predicate<? super T> var3) {
-      this.getProfiler().incrementCounter("getEntities");
-      int var4 = Mth.floor((var2.minX - 2.0D) / 16.0D);
-      int var5 = Mth.ceil((var2.maxX + 2.0D) / 16.0D);
-      int var6 = Mth.floor((var2.minZ - 2.0D) / 16.0D);
-      int var7 = Mth.ceil((var2.maxZ + 2.0D) / 16.0D);
-      ArrayList var8 = Lists.newArrayList();
-      ChunkSource var9 = this.getChunkSource();
-
-      for(int var10 = var4; var10 < var5; ++var10) {
-         for(int var11 = var6; var11 < var7; ++var11) {
-            LevelChunk var12 = var9.getChunk(var10, var11, false);
-            if (var12 != null) {
-               var12.getEntitiesOfClass(var1, var2, var8, var3);
-            }
-         }
-      }
-
-      return var8;
-   }
-
-   public <T extends Entity> List<T> getLoadedEntitiesOfClass(Class<? extends T> var1, AABB var2, @Nullable Predicate<? super T> var3) {
-      this.getProfiler().incrementCounter("getLoadedEntities");
-      int var4 = Mth.floor((var2.minX - 2.0D) / 16.0D);
-      int var5 = Mth.ceil((var2.maxX + 2.0D) / 16.0D);
-      int var6 = Mth.floor((var2.minZ - 2.0D) / 16.0D);
-      int var7 = Mth.ceil((var2.maxZ + 2.0D) / 16.0D);
-      ArrayList var8 = Lists.newArrayList();
-      ChunkSource var9 = this.getChunkSource();
-
-      for(int var10 = var4; var10 < var5; ++var10) {
-         for(int var11 = var6; var11 < var7; ++var11) {
-            LevelChunk var12 = var9.getChunkNow(var10, var11);
-            if (var12 != null) {
-               var12.getEntitiesOfClass(var1, var2, var8, var3);
-            }
-         }
-      }
-
-      return var8;
+      });
+      return var4;
    }
 
    @Nullable
    public abstract Entity getEntity(int var1);
 
-   public void blockEntityChanged(BlockPos var1, BlockEntity var2) {
+   public void blockEntityChanged(BlockPos var1) {
       if (this.hasChunkAt(var1)) {
          this.getChunkAt(var1).markUnsaved();
       }
@@ -926,7 +749,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       });
 
       try {
-         this.levelData.fillCrashReportCategory(var2);
+         this.levelData.fillCrashReportCategory(var2, this);
       } catch (Throwable var4) {
          var2.setDetailError("Level Data Unobtainable", var4);
       }
@@ -1034,6 +857,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public final boolean isDebug() {
       return this.isDebug;
    }
+
+   public int getSectionsCount() {
+      return 16;
+   }
+
+   public int getMinSection() {
+      return 0;
+   }
+
+   protected abstract LevelEntityGetter<Entity> getEntities();
 
    // $FF: synthetic method
    public ChunkAccess getChunk(int var1, int var2) {

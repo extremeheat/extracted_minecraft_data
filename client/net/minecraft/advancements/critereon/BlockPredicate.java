@@ -41,17 +41,16 @@ public class BlockPredicate {
          return false;
       } else {
          BlockState var3 = var1.getBlockState(var2);
-         Block var4 = var3.getBlock();
-         if (this.tag != null && !this.tag.contains(var4)) {
+         if (this.tag != null && !var3.is(this.tag)) {
             return false;
-         } else if (this.block != null && var4 != this.block) {
+         } else if (this.block != null && !var3.is(this.block)) {
             return false;
          } else if (!this.properties.matches(var3)) {
             return false;
          } else {
             if (this.nbt != NbtPredicate.ANY) {
-               BlockEntity var5 = var1.getBlockEntity(var2);
-               if (var5 == null || !this.nbt.matches((net.minecraft.nbt.Tag)var5.save(new CompoundTag()))) {
+               BlockEntity var4 = var1.getBlockEntity(var2);
+               if (var4 == null || !this.nbt.matches((net.minecraft.nbt.Tag)var4.save(new CompoundTag()))) {
                   return false;
                }
             }

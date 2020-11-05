@@ -3,12 +3,12 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.IntRange;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public class BabyFollowAdult<E extends AgableMob> extends Behavior<E> {
+public class BabyFollowAdult<E extends AgeableMob> extends Behavior<E> {
    private final IntRange followRange;
    private final float speedModifier;
 
@@ -22,7 +22,7 @@ public class BabyFollowAdult<E extends AgableMob> extends Behavior<E> {
       if (!var2.isBaby()) {
          return false;
       } else {
-         AgableMob var3 = this.getNearestAdult(var2);
+         AgeableMob var3 = this.getNearestAdult(var2);
          return var2.closerThan(var3, (double)(this.followRange.getMaxInclusive() + 1)) && !var2.closerThan(var3, (double)this.followRange.getMinInclusive());
       }
    }
@@ -31,7 +31,7 @@ public class BabyFollowAdult<E extends AgableMob> extends Behavior<E> {
       BehaviorUtils.setWalkAndLookTargetMemories(var2, (Entity)this.getNearestAdult(var2), this.speedModifier, this.followRange.getMinInclusive() - 1);
    }
 
-   private AgableMob getNearestAdult(E var1) {
-      return (AgableMob)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT).get();
+   private AgeableMob getNearestAdult(E var1) {
+      return (AgeableMob)var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT).get();
    }
 }

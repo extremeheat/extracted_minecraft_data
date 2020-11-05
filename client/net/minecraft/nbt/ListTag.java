@@ -1,20 +1,14 @@
 package net.minecraft.nbt;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.bytes.ByteOpenHashSet;
-import it.unimi.dsi.fastutil.bytes.ByteSet;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 
 public class ListTag extends CollectionTag<Tag> {
    public static final TagType<ListTag> TYPE = new TagType<ListTag>() {
@@ -54,7 +48,6 @@ public class ListTag extends CollectionTag<Tag> {
          return this.load(var1, var2, var3);
       }
    };
-   private static final ByteSet INLINE_ELEMENT_TYPES = new ByteOpenHashSet(Arrays.asList(1, 2, 3, 4, 5, 6));
    private final List<Tag> list;
    private byte type;
 
@@ -95,17 +88,7 @@ public class ListTag extends CollectionTag<Tag> {
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder("[");
-
-      for(int var2 = 0; var2 < this.list.size(); ++var2) {
-         if (var2 != 0) {
-            var1.append(',');
-         }
-
-         var1.append(this.list.get(var2));
-      }
-
-      return var1.append(']').toString();
+      return this.getAsString();
    }
 
    private void updateTypeAfterRemove() {
@@ -281,51 +264,8 @@ public class ListTag extends CollectionTag<Tag> {
       return this.list.hashCode();
    }
 
-   public Component getPrettyDisplay(String var1, int var2) {
-      if (this.isEmpty()) {
-         return new TextComponent("[]");
-      } else {
-         int var5;
-         if (INLINE_ELEMENT_TYPES.contains(this.type) && this.size() <= 8) {
-            String var7 = ", ";
-            TextComponent var8 = new TextComponent("[");
-
-            for(var5 = 0; var5 < this.list.size(); ++var5) {
-               if (var5 != 0) {
-                  var8.append(", ");
-               }
-
-               var8.append(((Tag)this.list.get(var5)).getPrettyDisplay());
-            }
-
-            var8.append("]");
-            return var8;
-         } else {
-            TextComponent var3 = new TextComponent("[");
-            if (!var1.isEmpty()) {
-               var3.append("\n");
-            }
-
-            String var4 = String.valueOf(',');
-
-            for(var5 = 0; var5 < this.list.size(); ++var5) {
-               TextComponent var6 = new TextComponent(Strings.repeat(var1, var2 + 1));
-               var6.append(((Tag)this.list.get(var5)).getPrettyDisplay(var1, var2 + 1));
-               if (var5 != this.list.size() - 1) {
-                  var6.append(var4).append(var1.isEmpty() ? " " : "\n");
-               }
-
-               var3.append((Component)var6);
-            }
-
-            if (!var1.isEmpty()) {
-               var3.append("\n").append(Strings.repeat(var1, var2));
-            }
-
-            var3.append("]");
-            return var3;
-         }
-      }
+   public void accept(TagVisitor var1) {
+      var1.visitList(this);
    }
 
    public byte getElementType() {

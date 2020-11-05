@@ -205,7 +205,7 @@ public class EndDragonFight {
          this.dragonKilled = false;
          if (!var1) {
             LOGGER.info("But we didn't have a portal, let's remove it.");
-            var3.remove();
+            var3.discard();
             this.dragonUUID = null;
          }
       }
@@ -296,7 +296,7 @@ public class EndDragonFight {
 
       var1 = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.END_PODIUM_LOCATION).getY();
 
-      for(var2 = var1; var2 >= 0; --var2) {
+      for(var2 = var1; var2 >= this.level.getMinBuildHeight(); --var2) {
          BlockPattern.BlockPatternMatch var8 = this.exitPortalPattern.find(this.level, new BlockPos(EndPodiumFeature.END_PODIUM_LOCATION.getX(), var2, EndPodiumFeature.END_PODIUM_LOCATION.getZ()));
          if (var8 != null) {
             if (this.portalLocation == null) {

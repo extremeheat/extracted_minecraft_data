@@ -1,7 +1,5 @@
 package net.minecraft.nbt;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -9,8 +7,6 @@ import com.mojang.serialization.Dynamic;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,15 +20,9 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class CompoundTag implements Tag {
    public static final Codec<CompoundTag> CODEC;
-   private static final Logger LOGGER;
    private static final Pattern SIMPLE_VALUE;
    public static final TagType<CompoundTag> TYPE;
    private final Map<String, Tag> tags;
@@ -320,23 +310,7 @@ public class CompoundTag implements Tag {
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder("{");
-      Object var2 = this.tags.keySet();
-      if (LOGGER.isDebugEnabled()) {
-         ArrayList var3 = Lists.newArrayList(this.tags.keySet());
-         Collections.sort(var3);
-         var2 = var3;
-      }
-
-      String var4;
-      for(Iterator var5 = ((Collection)var2).iterator(); var5.hasNext(); var1.append(handleEscape(var4)).append(':').append(this.tags.get(var4))) {
-         var4 = (String)var5.next();
-         if (var1.length() != 1) {
-            var1.append(',');
-         }
-      }
-
-      return var1.append('}').toString();
+      return this.getAsString();
    }
 
    public boolean isEmpty() {
@@ -420,53 +394,8 @@ public class CompoundTag implements Tag {
       return this;
    }
 
-   protected static String handleEscape(String var0) {
-      return SIMPLE_VALUE.matcher(var0).matches() ? var0 : StringTag.quoteAndEscape(var0);
-   }
-
-   protected static Component handleEscapePretty(String var0) {
-      if (SIMPLE_VALUE.matcher(var0).matches()) {
-         return (new TextComponent(var0)).withStyle(SYNTAX_HIGHLIGHTING_KEY);
-      } else {
-         String var1 = StringTag.quoteAndEscape(var0);
-         String var2 = var1.substring(0, 1);
-         MutableComponent var3 = (new TextComponent(var1.substring(1, var1.length() - 1))).withStyle(SYNTAX_HIGHLIGHTING_KEY);
-         return (new TextComponent(var2)).append(var3).append(var2);
-      }
-   }
-
-   public Component getPrettyDisplay(String var1, int var2) {
-      if (this.tags.isEmpty()) {
-         return new TextComponent("{}");
-      } else {
-         TextComponent var3 = new TextComponent("{");
-         Object var4 = this.tags.keySet();
-         if (LOGGER.isDebugEnabled()) {
-            ArrayList var5 = Lists.newArrayList(this.tags.keySet());
-            Collections.sort(var5);
-            var4 = var5;
-         }
-
-         if (!var1.isEmpty()) {
-            var3.append("\n");
-         }
-
-         MutableComponent var7;
-         for(Iterator var8 = ((Collection)var4).iterator(); var8.hasNext(); var3.append((Component)var7)) {
-            String var6 = (String)var8.next();
-            var7 = (new TextComponent(Strings.repeat(var1, var2 + 1))).append(handleEscapePretty(var6)).append(String.valueOf(':')).append(" ").append(((Tag)this.tags.get(var6)).getPrettyDisplay(var1, var2 + 1));
-            if (var8.hasNext()) {
-               var7.append(String.valueOf(',')).append(var1.isEmpty() ? " " : "\n");
-            }
-         }
-
-         if (!var1.isEmpty()) {
-            var3.append("\n").append(Strings.repeat(var1, var2));
-         }
-
-         var3.append("}");
-         return var3;
-      }
+   public void accept(TagVisitor var1) {
+      var1.visitCompound(this);
    }
 
    protected Map<String, Tag> entries() {
@@ -485,7 +414,6 @@ public class CompoundTag implements Tag {
       }, (var0) -> {
          return new Dynamic(NbtOps.INSTANCE, var0);
       });
-      LOGGER = LogManager.getLogger();
       SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
       TYPE = new TagType<CompoundTag>() {
          public CompoundTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {

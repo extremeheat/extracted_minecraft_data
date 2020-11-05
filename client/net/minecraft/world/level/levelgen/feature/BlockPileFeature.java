@@ -18,7 +18,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, BlockPileConfiguration var5) {
-      if (var4.getY() < 5) {
+      if (var4.getY() < var1.getMinBuildHeight() + 5) {
          return false;
       } else {
          int var6 = 2 + var3.nextInt(2);
@@ -43,7 +43,7 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
    private boolean mayPlaceOn(LevelAccessor var1, BlockPos var2, Random var3) {
       BlockPos var4 = var2.below();
       BlockState var5 = var1.getBlockState(var4);
-      return var5.is(Blocks.GRASS_PATH) ? var3.nextBoolean() : var5.isFaceSturdy(var1, var4, Direction.UP);
+      return var5.is(Blocks.DIRT_PATH) ? var3.nextBoolean() : var5.isFaceSturdy(var1, var4, Direction.UP);
    }
 
    private void tryPlaceBlock(LevelAccessor var1, BlockPos var2, Random var3, BlockPileConfiguration var4) {

@@ -105,8 +105,8 @@ public class DoorBlock extends Block {
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
-      if (var2.getY() < 255 && var1.getLevel().getBlockState(var2.above()).canBeReplaced(var1)) {
-         Level var3 = var1.getLevel();
+      Level var3 = var1.getLevel();
+      if (var2.getY() < var3.getMaxBuildHeight() - 1 && var3.getBlockState(var2.above()).canBeReplaced(var1)) {
          boolean var4 = var3.hasNeighborSignal(var2) || var3.hasNeighborSignal(var2.above());
          return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection())).setValue(HINGE, this.getHinge(var1))).setValue(POWERED, var4)).setValue(OPEN, var4)).setValue(HALF, DoubleBlockHalf.LOWER);
       } else {
@@ -176,7 +176,7 @@ public class DoorBlock extends Block {
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.relative(var1.getValue(HALF) == DoubleBlockHalf.LOWER ? Direction.UP : Direction.DOWN));
-      if (var4 != this && var7 != (Boolean)var1.getValue(POWERED)) {
+      if (!this.defaultBlockState().is(var4) && var7 != (Boolean)var1.getValue(POWERED)) {
          if (var7 != (Boolean)var1.getValue(OPEN)) {
             this.playSound(var2, var3, var7);
          }

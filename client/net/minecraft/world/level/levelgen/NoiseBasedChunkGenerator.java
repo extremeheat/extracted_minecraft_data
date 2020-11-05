@@ -382,8 +382,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       int var7 = var6.getBedrockFloorPosition();
       int var8 = this.height - 1 - var6.getBedrockRoofPosition();
       boolean var9 = true;
-      boolean var10 = var8 + 4 >= 0 && var8 < this.height;
-      boolean var11 = var7 + 4 >= 0 && var7 < this.height;
+      boolean var10 = var8 + 5 - 1 >= 0 && var8 < this.height;
+      boolean var11 = var7 + 5 - 1 >= 0 && var7 < this.height;
       if (var10 || var11) {
          Iterator var12 = BlockPos.betweenClosed(var4, 0, var5, var4 + 15, 0, var5 + 15).iterator();
 
@@ -420,8 +420,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       ChunkPos var6 = var3.getPos();
       int var7 = var6.x;
       int var8 = var6.z;
-      int var9 = var7 << 4;
-      int var10 = var8 << 4;
+      int var9 = SectionPos.sectionToBlockCoord(var7);
+      int var10 = SectionPos.sectionToBlockCoord(var8);
       Iterator var11 = StructureFeature.NOISE_AFFECTING_FEATURES.iterator();
 
       while(var11.hasNext()) {
@@ -487,7 +487,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          }
 
          for(var19 = 0; var19 < this.chunkCountZ; ++var19) {
-            LevelChunkSection var20 = var77.getOrCreateSection(15);
+            LevelChunkSection var20 = var77.getOrCreateSection(var77.getSectionsCount() - 1);
             var20.acquire();
 
             for(int var21 = this.chunkCountY - 1; var21 >= 0; --var21) {
@@ -503,8 +503,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
                for(int var38 = this.chunkHeight - 1; var38 >= 0; --var38) {
                   int var39 = var21 * this.chunkHeight + var38;
                   int var40 = var39 & 15;
-                  int var41 = var39 >> 4;
-                  if (var20.bottomBlockY() >> 4 != var41) {
+                  int var41 = var77.getSectionIndex(var39);
+                  if (var77.getSectionIndex(var20.bottomBlockY()) != var41) {
                      var20.release();
                      var20 = var77.getOrCreateSection(var41);
                      var20.acquire();
@@ -644,7 +644,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          int var3 = var1.getCenterZ();
          Biome var4 = var1.getBiome((new ChunkPos(var2, var3)).getWorldPosition());
          WorldgenRandom var5 = new WorldgenRandom();
-         var5.setDecorationSeed(var1.getSeed(), var2 << 4, var3 << 4);
+         var5.setDecorationSeed(var1.getSeed(), SectionPos.sectionToBlockCoord(var2), SectionPos.sectionToBlockCoord(var3));
          NaturalSpawner.spawnMobsForChunkGeneration(var1, var4, var2, var3, var5);
       }
    }

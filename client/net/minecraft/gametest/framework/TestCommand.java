@@ -29,7 +29,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.TagParser;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -112,7 +112,7 @@ public class TestCommand {
             for(int var9 = 0; var9 < var4; ++var9) {
                BlockPos var10 = new BlockPos(var7.getX() + var8, var7.getY() + 1, var7.getZ() + var9);
                Block var11 = Blocks.POLISHED_ANDESITE;
-               BlockInput var12 = new BlockInput(var11.defaultBlockState(), Collections.EMPTY_SET, (CompoundTag)null);
+               BlockInput var12 = new BlockInput(var11.defaultBlockState(), Collections.emptySet(), (CompoundTag)null);
                var12.place(var5, var10, 2);
             }
          }
@@ -193,7 +193,7 @@ public class TestCommand {
       runTestPreparation(var5, var0);
       AABB var7 = StructureUtils.getStructureBounds(var3);
       BlockPos var8 = new BlockPos(var7.minX, var7.minY, var7.minZ);
-      GameTestRunner.runTest(var6, var8, GameTestTicker.singleton);
+      GameTestRunner.runTest(var6, var8, GameTestTicker.SINGLETON);
    }
 
    private static void showTestSummaryIfAllDone(ServerLevel var0, MultipleTestTracker var1) {
@@ -216,7 +216,7 @@ public class TestCommand {
       ServerLevel var2 = var0.getLevel();
       GameTestRunner.clearMarkers(var2);
       BlockPos var3 = new BlockPos(var0.getPosition().x, (double)var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, new BlockPos(var0.getPosition())).getY(), var0.getPosition().z);
-      GameTestRunner.clearAllTests(var2, var3, GameTestTicker.singleton, Mth.clamp(var1, 0, 1024));
+      GameTestRunner.clearAllTests(var2, var3, GameTestTicker.SINGLETON, Mth.clamp(var1, 0, 1024));
       return 1;
    }
 
@@ -229,7 +229,7 @@ public class TestCommand {
       runTestPreparation(var1, var3);
       Rotation var7 = StructureUtils.getRotationForRotationSteps(var2);
       GameTestInfo var8 = new GameTestInfo(var1, var7, var3);
-      GameTestRunner.runTest(var8, var6, GameTestTicker.singleton);
+      GameTestRunner.runTest(var8, var6, GameTestTicker.SINGLETON);
       return 1;
    }
 
@@ -283,7 +283,7 @@ public class TestCommand {
       BlockPos var5 = new BlockPos(var4.getX(), var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var4).getY(), var4.getZ() + 3);
       ServerLevel var6 = var0.getLevel();
       Rotation var7 = StructureUtils.getRotationForRotationSteps(var2);
-      Collection var8 = GameTestRunner.runTests(var1, var5, var7, var6, GameTestTicker.singleton, var3);
+      Collection var8 = GameTestRunner.runTests(var1, var5, var7, var6, GameTestTicker.SINGLETON, var3);
       MultipleTestTracker var9 = new MultipleTestTracker(var8);
       var9.addListener(new TestCommand.TestSummaryDisplayer(var6, var9));
       var9.addFailureListener((var0x) -> {
@@ -344,7 +344,7 @@ public class TestCommand {
          Throwable var8 = null;
 
          try {
-            NbtIo.writeCompressed(TagParser.parseTag(var6), var7);
+            NbtIo.writeCompressed(NbtUtils.snbtToStructure(var6), var7);
          } catch (Throwable var18) {
             var8 = var18;
             throw var18;

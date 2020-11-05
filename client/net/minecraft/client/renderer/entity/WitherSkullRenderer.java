@@ -3,6 +3,12 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.SkullModel;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
@@ -13,10 +19,18 @@ import net.minecraft.world.entity.projectile.WitherSkull;
 public class WitherSkullRenderer extends EntityRenderer<WitherSkull> {
    private static final ResourceLocation WITHER_INVULNERABLE_LOCATION = new ResourceLocation("textures/entity/wither/wither_invulnerable.png");
    private static final ResourceLocation WITHER_LOCATION = new ResourceLocation("textures/entity/wither/wither.png");
-   private final SkullModel model = new SkullModel();
+   private final SkullModel model;
 
-   public WitherSkullRenderer(EntityRenderDispatcher var1) {
+   public WitherSkullRenderer(EntityRendererProvider.Context var1) {
       super(var1);
+      this.model = new SkullModel(var1.getLayer(ModelLayers.WITHER_SKULL));
+   }
+
+   public static LayerDefinition createSkullLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 35).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 64);
    }
 
    protected int getBlockLightLevel(WitherSkull var1, BlockPos var2) {

@@ -41,6 +41,7 @@ import net.minecraft.resources.RegistryReadOps;
 import net.minecraft.resources.RegistryWriteOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerResources;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.PackSource;
@@ -159,7 +160,7 @@ public class WorldGenSettingsComponent implements TickableWidget, Widget {
          String var5 = TinyFileDialogs.tinyfd_openFileDialog(var4.getString(), (CharSequence)null, (PointerBuffer)null, (CharSequence)null, false);
          if (var5 != null) {
             RegistryAccess.RegistryHolder var6 = RegistryAccess.builtin();
-            PackRepository var7 = new PackRepository(new RepositorySource[]{new ServerPacksSource(), new FolderRepositorySource(var1.getTempDataPackDir().toFile(), PackSource.WORLD)});
+            PackRepository var7 = new PackRepository(PackType.SERVER_DATA, new RepositorySource[]{new ServerPacksSource(), new FolderRepositorySource(var1.getTempDataPackDir().toFile(), PackSource.WORLD)});
 
             ServerResources var8;
             try {

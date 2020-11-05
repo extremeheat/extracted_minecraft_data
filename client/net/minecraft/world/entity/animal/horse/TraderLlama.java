@@ -4,7 +4,7 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -73,14 +73,14 @@ public class TraderLlama extends Llama {
          this.despawnDelay = this.isLeashedToWanderingTrader() ? ((WanderingTrader)this.getLeashHolder()).getDespawnDelay() - 1 : this.despawnDelay - 1;
          if (this.despawnDelay <= 0) {
             this.dropLeash(true, false);
-            this.remove();
+            this.discard();
          }
 
       }
    }
 
    private boolean canDespawn() {
-      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasOnePlayerPassenger();
+      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasExactlyOnePlayerPassenger();
    }
 
    private boolean isLeashedToWanderingTrader() {
@@ -98,7 +98,7 @@ public class TraderLlama extends Llama {
       }
 
       if (var4 == null) {
-         var4 = new AgableMob.AgableMobGroupData(false);
+         var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);

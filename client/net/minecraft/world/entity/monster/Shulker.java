@@ -45,6 +45,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.piston.PistonHeadBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -70,7 +71,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       this.goalSelector.addGoal(4, new Shulker.ShulkerAttackGoal());
       this.goalSelector.addGoal(7, new Shulker.ShulkerPeekGoal());
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
+      this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{this.getClass()})).setAlertOthers());
       this.targetSelector.addGoal(2, new Shulker.ShulkerNearestAttackGoal(this));
       this.targetSelector.addGoal(3, new Shulker.ShulkerDefenseAttackGoal(this));
    }
@@ -288,9 +289,10 @@ public class Shulker extends AbstractGolem implements Enemy {
 
          for(int var2 = 0; var2 < 5; ++var2) {
             BlockPos var3 = var1.offset(8 - this.random.nextInt(17), 8 - this.random.nextInt(17), 8 - this.random.nextInt(17));
-            if (var3.getY() > 0 && this.level.isEmptyBlock(var3) && this.level.getWorldBorder().isWithinBounds(var3) && this.level.noCollision(this, new AABB(var3))) {
+            if (var3.getY() > this.level.getMinBuildHeight() && this.level.isEmptyBlock(var3) && this.level.getWorldBorder().isWithinBounds(var3) && this.level.noCollision(this, new AABB(var3))) {
                Direction var4 = this.findAttachableFace(var3);
                if (var4 != null) {
+                  this.unRide();
                   this.entityData.set(DATA_ATTACH_FACE_ID, var4);
                   this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
                   this.entityData.set(DATA_ATTACH_POS_ID, Optional.of(var3));
@@ -303,7 +305,7 @@ public class Shulker extends AbstractGolem implements Enemy {
 
          return false;
       } else {
-         return true;
+         return false;
       }
    }
 
@@ -339,26 +341,51 @@ public class Shulker extends AbstractGolem implements Enemy {
    }
 
    public boolean hurt(DamageSource var1, float var2) {
+      Entity var3;
       if (this.isClosed()) {
-         Entity var3 = var1.getDirectEntity();
+         var3 = var1.getDirectEntity();
          if (var3 instanceof AbstractArrow) {
             return false;
          }
       }
 
-      if (super.hurt(var1, var2)) {
+      if (!super.hurt(var1, var2)) {
+         return false;
+      } else {
          if ((double)this.getHealth() < (double)this.getMaxHealth() * 0.5D && this.random.nextInt(4) == 0) {
             this.teleportSomewhere();
+         } else if (var1.isProjectile()) {
+            var3 = var1.getDirectEntity();
+            if (var3 != null && var3.getType() == EntityType.SHULKER_BULLET) {
+               this.hitByShulkerBullet();
+            }
          }
 
          return true;
-      } else {
-         return false;
       }
    }
 
    private boolean isClosed() {
       return this.getRawPeekAmount() == 0;
+   }
+
+   private void hitByShulkerBullet() {
+      Vec3 var1 = this.position();
+      AABB var2 = this.getBoundingBox();
+      if (!this.isClosed() && this.teleportSomewhere()) {
+         int var3 = this.level.getEntities((EntityTypeTest)EntityType.SHULKER, var2.inflate(8.0D), Entity::isAlive).size();
+         float var4 = (float)(var3 - 1) / 5.0F;
+         if (this.level.random.nextFloat() >= var4) {
+            Shulker var5 = (Shulker)EntityType.SHULKER.create(this.level);
+            DyeColor var6 = this.getColor();
+            if (var6 != null) {
+               var5.setColor(var6);
+            }
+
+            var5.moveTo(var1);
+            this.level.addFreshEntity(var5);
+         }
+      }
    }
 
    public boolean canBeCollidedWith() {
@@ -431,9 +458,13 @@ public class Shulker extends AbstractGolem implements Enemy {
       return this.oldAttachPosition != null && this.getAttachPosition() != null;
    }
 
+   public void setColor(DyeColor var1) {
+      this.entityData.set(DATA_COLOR_ID, (byte)var1.getId());
+   }
+
    @Nullable
    public DyeColor getColor() {
-      Byte var1 = (Byte)this.entityData.get(DATA_COLOR_ID);
+      byte var1 = (Byte)this.entityData.get(DATA_COLOR_ID);
       return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
    }
 

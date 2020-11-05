@@ -45,7 +45,7 @@ public class FlatLevelSource extends ChunkGenerator {
       for(int var2 = 0; var2 < var1.length; ++var2) {
          BlockState var3 = var1[var2] == null ? Blocks.AIR.defaultBlockState() : var1[var2];
          if (!Heightmap.Types.MOTION_BLOCKING.isOpaque().test(var3)) {
-            return var2 - 1;
+            return this.settings.getMinBuildHeight() + var2 - 1;
          }
       }
 
@@ -61,11 +61,13 @@ public class FlatLevelSource extends ChunkGenerator {
       for(int var8 = 0; var8 < var4.length; ++var8) {
          BlockState var9 = var4[var8];
          if (var9 != null) {
-            for(int var10 = 0; var10 < 16; ++var10) {
-               for(int var11 = 0; var11 < 16; ++var11) {
-                  var3.setBlockState(var5.set(var10, var8, var11), var9, false);
-                  var6.update(var10, var8, var11, var9);
-                  var7.update(var10, var8, var11, var9);
+            int var10 = var1.getMinBuildHeight() + var8;
+
+            for(int var11 = 0; var11 < 16; ++var11) {
+               for(int var12 = 0; var12 < 16; ++var12) {
+                  var3.setBlockState(var5.set(var11, var10, var12), var9, false);
+                  var6.update(var11, var10, var12, var9);
+                  var7.update(var11, var10, var12, var9);
                }
             }
          }
@@ -79,7 +81,7 @@ public class FlatLevelSource extends ChunkGenerator {
       for(int var5 = var4.length - 1; var5 >= 0; --var5) {
          BlockState var6 = var4[var5];
          if (var6 != null && var3.isOpaque().test(var6)) {
-            return var5 + 1;
+            return this.settings.getMinBuildHeight() + var5 + 1;
          }
       }
 

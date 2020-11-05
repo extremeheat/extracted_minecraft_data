@@ -91,29 +91,24 @@ public class Library {
          int var3 = ALC10.alcGetInteger(this.device, 4098);
          if (OpenAlUtil.checkALCError(this.device, "Get attributes size")) {
             throw new IllegalStateException("Failed to get OpenAL attributes");
-         } else {
-            IntBuffer var4 = var1.mallocInt(var3);
-            ALC10.alcGetIntegerv(this.device, 4099, var4);
-            if (OpenAlUtil.checkALCError(this.device, "Get attributes")) {
-               throw new IllegalStateException("Failed to get OpenAL attributes");
-            } else {
-               int var5 = 0;
+         }
 
-               int var6;
-               int var7;
-               do {
-                  if (var5 >= var3) {
-                     return 30;
-                  }
+         IntBuffer var4 = var1.mallocInt(var3);
+         ALC10.alcGetIntegerv(this.device, 4099, var4);
+         if (OpenAlUtil.checkALCError(this.device, "Get attributes")) {
+            throw new IllegalStateException("Failed to get OpenAL attributes");
+         }
 
-                  var6 = var4.get(var5++);
-                  if (var6 == 0) {
-                     return 30;
-                  }
+         int var5 = 0;
 
-                  var7 = var4.get(var5++);
-               } while(var6 != 4112);
+         while(var5 < var3) {
+            int var6 = var4.get(var5++);
+            if (var6 == 0) {
+               break;
+            }
 
+            int var7 = var4.get(var5++);
+            if (var6 == 4112) {
                int var8 = var7;
                return var8;
             }
@@ -135,6 +130,8 @@ public class Library {
          }
 
       }
+
+      return 30;
    }
 
    private static long tryOpenDevice() {

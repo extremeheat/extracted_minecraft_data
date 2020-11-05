@@ -28,4 +28,12 @@ public final class NoiseColumn implements BlockGetter {
    public FluidState getFluidState(BlockPos var1) {
       return this.getBlockState(var1).getFluidState();
    }
+
+   public int getSectionsCount() {
+      return 16;
+   }
+
+   public int getMinSection() {
+      return 0;
+   }
 }

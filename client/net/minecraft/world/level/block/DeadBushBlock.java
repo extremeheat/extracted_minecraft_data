@@ -19,7 +19,6 @@ public class DeadBushBlock extends BushBlock {
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      Block var4 = var1.getBlock();
-      return var4 == Blocks.SAND || var4 == Blocks.RED_SAND || var4 == Blocks.TERRACOTTA || var4 == Blocks.WHITE_TERRACOTTA || var4 == Blocks.ORANGE_TERRACOTTA || var4 == Blocks.MAGENTA_TERRACOTTA || var4 == Blocks.LIGHT_BLUE_TERRACOTTA || var4 == Blocks.YELLOW_TERRACOTTA || var4 == Blocks.LIME_TERRACOTTA || var4 == Blocks.PINK_TERRACOTTA || var4 == Blocks.GRAY_TERRACOTTA || var4 == Blocks.LIGHT_GRAY_TERRACOTTA || var4 == Blocks.CYAN_TERRACOTTA || var4 == Blocks.PURPLE_TERRACOTTA || var4 == Blocks.BLUE_TERRACOTTA || var4 == Blocks.BROWN_TERRACOTTA || var4 == Blocks.GREEN_TERRACOTTA || var4 == Blocks.RED_TERRACOTTA || var4 == Blocks.BLACK_TERRACOTTA || var4 == Blocks.DIRT || var4 == Blocks.COARSE_DIRT || var4 == Blocks.PODZOL;
+      return var1.is(Blocks.SAND) || var1.is(Blocks.RED_SAND) || var1.is(Blocks.TERRACOTTA) || var1.is(Blocks.WHITE_TERRACOTTA) || var1.is(Blocks.ORANGE_TERRACOTTA) || var1.is(Blocks.MAGENTA_TERRACOTTA) || var1.is(Blocks.LIGHT_BLUE_TERRACOTTA) || var1.is(Blocks.YELLOW_TERRACOTTA) || var1.is(Blocks.LIME_TERRACOTTA) || var1.is(Blocks.PINK_TERRACOTTA) || var1.is(Blocks.GRAY_TERRACOTTA) || var1.is(Blocks.LIGHT_GRAY_TERRACOTTA) || var1.is(Blocks.CYAN_TERRACOTTA) || var1.is(Blocks.PURPLE_TERRACOTTA) || var1.is(Blocks.BLUE_TERRACOTTA) || var1.is(Blocks.BROWN_TERRACOTTA) || var1.is(Blocks.GREEN_TERRACOTTA) || var1.is(Blocks.RED_TERRACOTTA) || var1.is(Blocks.BLACK_TERRACOTTA) || var1.is(Blocks.DIRT) || var1.is(Blocks.COARSE_DIRT) || var1.is(Blocks.PODZOL);
    }
 }

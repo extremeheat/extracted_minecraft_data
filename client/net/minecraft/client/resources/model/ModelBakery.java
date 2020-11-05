@@ -223,7 +223,7 @@ public class ModelBakery {
                if (!var3.hasNext()) {
                   Block var10 = (Block)var0.getOwner();
                   return (var2x) -> {
-                     if (var2x != null && var10 == var2x.getBlock()) {
+                     if (var2x != null && var2x.is(var10)) {
                         Iterator var3 = var2.entrySet().iterator();
 
                         Entry var4;
@@ -331,9 +331,9 @@ public class ModelBakery {
             });
             boolean var25 = false;
 
-            label97: {
+            label98: {
                try {
-                  label112: {
+                  label107: {
                      List var13;
                      try {
                         var25 = true;
@@ -371,7 +371,7 @@ public class ModelBakery {
                      } catch (IOException var26) {
                         LOGGER.warn("Exception loading blockstate definition: {}: {}", var9, var26);
                         var25 = false;
-                        break label112;
+                        break label107;
                      }
 
                      Iterator var14 = var13.iterator();
@@ -414,7 +414,7 @@ public class ModelBakery {
                      }
 
                      var25 = false;
-                     break label97;
+                     break label98;
                   }
                } catch (ModelBakery.BlockStateDefinitionException var27) {
                   throw var27;
@@ -585,41 +585,42 @@ public class ModelBakery {
       Object var2 = null;
       Resource var3 = null;
 
-      BlockModel var5;
+      BlockModel var11;
       try {
          String var4 = var1.getPath();
-         if (!"builtin/generated".equals(var4)) {
-            if ("builtin/entity".equals(var4)) {
-               var5 = BLOCK_ENTITY_MARKER;
-               return var5;
-            }
-
-            if (var4.startsWith("builtin/")) {
-               String var10 = var4.substring("builtin/".length());
-               String var6 = (String)BUILTIN_MODELS.get(var10);
-               if (var6 == null) {
-                  throw new FileNotFoundException(var1.toString());
-               }
-
-               var2 = new StringReader(var6);
-            } else {
-               var3 = this.resourceManager.getResource(new ResourceLocation(var1.getNamespace(), "models/" + var1.getPath() + ".json"));
-               var2 = new InputStreamReader(var3.getInputStream(), StandardCharsets.UTF_8);
-            }
-
-            var5 = BlockModel.fromStream((Reader)var2);
-            var5.name = var1.toString();
-            BlockModel var11 = var5;
-            return var11;
+         BlockModel var10;
+         if ("builtin/generated".equals(var4)) {
+            var10 = GENERATION_MARKER;
+            return var10;
          }
 
-         var5 = GENERATION_MARKER;
+         if ("builtin/entity".equals(var4)) {
+            var10 = BLOCK_ENTITY_MARKER;
+            return var10;
+         }
+
+         if (var4.startsWith("builtin/")) {
+            String var5 = var4.substring("builtin/".length());
+            String var6 = (String)BUILTIN_MODELS.get(var5);
+            if (var6 == null) {
+               throw new FileNotFoundException(var1.toString());
+            }
+
+            var2 = new StringReader(var6);
+         } else {
+            var3 = this.resourceManager.getResource(new ResourceLocation(var1.getNamespace(), "models/" + var1.getPath() + ".json"));
+            var2 = new InputStreamReader(var3.getInputStream(), StandardCharsets.UTF_8);
+         }
+
+         var10 = BlockModel.fromStream((Reader)var2);
+         var10.name = var1.toString();
+         var11 = var10;
       } finally {
          IOUtils.closeQuietly((Reader)var2);
          IOUtils.closeQuietly(var3);
       }
 
-      return var5;
+      return var11;
    }
 
    public Map<ResourceLocation, BakedModel> getBakedTopLevelModels() {

@@ -35,10 +35,8 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.CommandBlock;
-import net.minecraft.world.level.block.JigsawBlock;
+import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.StructureBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -73,7 +71,7 @@ public class MultiPlayerGameMode {
    }
 
    public void adjustPlayer(Player var1) {
-      this.localPlayerMode.updatePlayerAbilities(var1.abilities);
+      this.localPlayerMode.updatePlayerAbilities(var1.getAbilities());
    }
 
    public void setPreviousLocalMode(GameType var1) {
@@ -86,7 +84,7 @@ public class MultiPlayerGameMode {
       }
 
       this.localPlayerMode = var1;
-      this.localPlayerMode.updatePlayerAbilities(this.minecraft.player.abilities);
+      this.localPlayerMode.updatePlayerAbilities(this.minecraft.player.getAbilities());
    }
 
    public boolean canHurtPlayer() {
@@ -103,7 +101,7 @@ public class MultiPlayerGameMode {
             return false;
          } else {
             Block var4 = var3.getBlock();
-            if ((var4 instanceof CommandBlock || var4 instanceof StructureBlock || var4 instanceof JigsawBlock) && !this.minecraft.player.canUseGameMasterBlocks()) {
+            if (var4 instanceof GameMasterBlock && !this.minecraft.player.canUseGameMasterBlocks()) {
                return false;
             } else if (var3.isAir()) {
                return false;
@@ -240,14 +238,14 @@ public class MultiPlayerGameMode {
       ItemStack var2 = this.minecraft.player.getMainHandItem();
       boolean var3 = this.destroyingItem.isEmpty() && var2.isEmpty();
       if (!this.destroyingItem.isEmpty() && !var2.isEmpty()) {
-         var3 = var2.getItem() == this.destroyingItem.getItem() && ItemStack.tagMatches(var2, this.destroyingItem) && (var2.isDamageableItem() || var2.getDamageValue() == this.destroyingItem.getDamageValue());
+         var3 = var2.is(this.destroyingItem.getItem()) && ItemStack.tagMatches(var2, this.destroyingItem) && (var2.isDamageableItem() || var2.getDamageValue() == this.destroyingItem.getDamageValue());
       }
 
       return var1.equals(this.destroyBlockPos) && var3;
    }
 
    private void ensureHasSentCarriedItem() {
-      int var1 = this.minecraft.player.inventory.selected;
+      int var1 = this.minecraft.player.getInventory().selected;
       if (var1 != this.carriedIndex) {
          this.carriedIndex = var1;
          this.connection.send((Packet)(new ServerboundSetCarriedItemPacket(this.carriedIndex)));
@@ -350,7 +348,7 @@ public class MultiPlayerGameMode {
    }
 
    public ItemStack handleInventoryMouseClick(int var1, int var2, int var3, ClickType var4, Player var5) {
-      short var6 = var5.containerMenu.backup(var5.inventory);
+      short var6 = var5.containerMenu.backup(var5.getInventory());
       ItemStack var7 = var5.containerMenu.clicked(var2, var3, var4, var5);
       this.connection.send((Packet)(new ServerboundContainerClickPacket(var1, var2, var3, var4, var7, var6)));
       return var7;
@@ -444,7 +442,7 @@ public class MultiPlayerGameMode {
       while(this.unAckedActions.size() >= 50) {
          Pair var9 = (Pair)this.unAckedActions.firstKey();
          this.unAckedActions.removeFirst();
-         LOGGER.error("Too many unacked block actions, dropping " + var9);
+         LOGGER.error("Too many unacked block actions, dropping {}", var9);
       }
 
    }

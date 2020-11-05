@@ -7,7 +7,6 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -89,8 +88,7 @@ public class BadlandsSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseCon
                      }
                   } else {
                      var2.setBlockState(var27, var21, false);
-                     Block var31 = var21.getBlock();
-                     if (var31 == Blocks.WHITE_TERRACOTTA || var31 == Blocks.ORANGE_TERRACOTTA || var31 == Blocks.MAGENTA_TERRACOTTA || var31 == Blocks.LIGHT_BLUE_TERRACOTTA || var31 == Blocks.YELLOW_TERRACOTTA || var31 == Blocks.LIME_TERRACOTTA || var31 == Blocks.PINK_TERRACOTTA || var31 == Blocks.GRAY_TERRACOTTA || var31 == Blocks.LIGHT_GRAY_TERRACOTTA || var31 == Blocks.CYAN_TERRACOTTA || var31 == Blocks.PURPLE_TERRACOTTA || var31 == Blocks.BLUE_TERRACOTTA || var31 == Blocks.BROWN_TERRACOTTA || var31 == Blocks.GREEN_TERRACOTTA || var31 == Blocks.RED_TERRACOTTA || var31 == Blocks.BLACK_TERRACOTTA) {
+                     if (var21.is(Blocks.WHITE_TERRACOTTA) || var21.is(Blocks.ORANGE_TERRACOTTA) || var21.is(Blocks.MAGENTA_TERRACOTTA) || var21.is(Blocks.LIGHT_BLUE_TERRACOTTA) || var21.is(Blocks.YELLOW_TERRACOTTA) || var21.is(Blocks.LIME_TERRACOTTA) || var21.is(Blocks.PINK_TERRACOTTA) || var21.is(Blocks.GRAY_TERRACOTTA) || var21.is(Blocks.LIGHT_GRAY_TERRACOTTA) || var21.is(Blocks.CYAN_TERRACOTTA) || var21.is(Blocks.PURPLE_TERRACOTTA) || var21.is(Blocks.BLUE_TERRACOTTA) || var21.is(Blocks.BROWN_TERRACOTTA) || var21.is(Blocks.GREEN_TERRACOTTA) || var21.is(Blocks.RED_TERRACOTTA) || var21.is(Blocks.BLACK_TERRACOTTA)) {
                         var2.setBlockState(var27, ORANGE_TERRACOTTA, false);
                      }
                   }

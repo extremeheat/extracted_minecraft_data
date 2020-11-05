@@ -21,11 +21,11 @@ public class LakeFeature extends Feature<BlockStateConfiguration> {
    }
 
    public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, BlockStateConfiguration var5) {
-      while(var4.getY() > 5 && var1.isEmptyBlock(var4)) {
+      while(var4.getY() > var1.getMinBuildHeight() + 5 && var1.isEmptyBlock(var4)) {
          var4 = var4.below();
       }
 
-      if (var4.getY() <= 4) {
+      if (var4.getY() <= var1.getMinBuildHeight() + 4) {
          return false;
       } else {
          var4 = var4.below(4);
@@ -96,7 +96,7 @@ public class LakeFeature extends Feature<BlockStateConfiguration> {
                   for(var10 = 4; var10 < 8; ++var10) {
                      if (var6[(var8 * 16 + var32) * 8 + var10]) {
                         var34 = var4.offset(var8, var10 - 1, var32);
-                        if (isDirt(var1.getBlockState(var34).getBlock()) && var1.getBrightness(LightLayer.SKY, var4.offset(var8, var10, var32)) > 0) {
+                        if (isDirt(var1.getBlockState(var34)) && var1.getBrightness(LightLayer.SKY, var4.offset(var8, var10, var32)) > 0) {
                            Biome var35 = var1.getBiome(var34);
                            if (var35.getGenerationSettings().getSurfaceBuilderConfig().getTopMaterial().is(Blocks.MYCELIUM)) {
                               var1.setBlock(var34, Blocks.MYCELIUM.defaultBlockState(), 2);

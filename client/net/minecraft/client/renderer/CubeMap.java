@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -53,7 +54,7 @@ public class CubeMap {
 
          for(int var12 = 0; var12 < 6; ++var12) {
             var1.getTextureManager().bind(this.images[var12]);
-            var6.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+            var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             int var13 = Math.round(255.0F * var4) / (var8 + 1);
             if (var12 == 0) {
                var6.vertex(-1.0D, -1.0D, 1.0D).uv(0.0F, 0.0F).color(255, 255, 255, var13).endVertex();

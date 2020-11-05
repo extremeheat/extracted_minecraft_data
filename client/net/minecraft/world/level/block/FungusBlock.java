@@ -33,8 +33,8 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
 
    public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {
       Block var5 = ((HugeFungusConfiguration)((ConfiguredFeature)this.feature.get()).config).validBaseState.getBlock();
-      Block var6 = var1.getBlockState(var2.below()).getBlock();
-      return var6 == var5;
+      BlockState var6 = var1.getBlockState(var2.below());
+      return var6.is(var5);
    }
 
    public boolean isBonemealSuccess(Level var1, Random var2, BlockPos var3, BlockState var4) {

@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 
 public class ChunkPos {
    public static final long INVALID_CHUNK_POS = asLong(1875016, 1875016);
@@ -20,8 +21,8 @@ public class ChunkPos {
 
    public ChunkPos(BlockPos var1) {
       super();
-      this.x = var1.getX() >> 4;
-      this.z = var1.getZ() >> 4;
+      this.x = SectionPos.blockToSectionCoord(var1.getX());
+      this.z = SectionPos.blockToSectionCoord(var1.getZ());
    }
 
    public ChunkPos(long var1) {
@@ -64,19 +65,19 @@ public class ChunkPos {
    }
 
    public int getMinBlockX() {
-      return this.x << 4;
+      return SectionPos.sectionToBlockCoord(this.x);
    }
 
    public int getMinBlockZ() {
-      return this.z << 4;
+      return SectionPos.sectionToBlockCoord(this.z);
    }
 
    public int getMaxBlockX() {
-      return (this.x << 4) + 15;
+      return SectionPos.sectionToBlockCoord(this.x, 15);
    }
 
    public int getMaxBlockZ() {
-      return (this.z << 4) + 15;
+      return SectionPos.sectionToBlockCoord(this.z, 15);
    }
 
    public int getRegionX() {

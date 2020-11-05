@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -72,7 +72,7 @@ public class Cow extends Animal {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.getItem() == Items.BUCKET && !this.isBaby()) {
+      if (var3.is(Items.BUCKET) && !this.isBaby()) {
          var1.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
          ItemStack var4 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
          var1.setItemInHand(var2, var4);
@@ -82,7 +82,7 @@ public class Cow extends Animal {
       }
    }
 
-   public Cow getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (Cow)EntityType.COW.create(var1);
    }
 
@@ -91,7 +91,7 @@ public class Cow extends Animal {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 }

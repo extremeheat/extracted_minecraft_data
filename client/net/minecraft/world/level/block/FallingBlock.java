@@ -30,7 +30,7 @@ public class FallingBlock extends Block {
    }
 
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= 0) {
+      if (isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinBuildHeight()) {
          FallingBlockEntity var5 = new FallingBlockEntity(var2, (double)var3.getX() + 0.5D, (double)var3.getY(), (double)var3.getZ() + 0.5D, var2.getBlockState(var3));
          this.falling(var5);
          var2.addFreshEntity(var5);

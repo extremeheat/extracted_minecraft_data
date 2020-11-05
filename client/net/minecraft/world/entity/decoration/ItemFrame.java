@@ -190,7 +190,7 @@ public class ItemFrame extends HangingEntity {
          } else {
             if (var1 instanceof Player) {
                Player var4 = (Player)var1;
-               if (var4.abilities.instabuild) {
+               if (var4.getAbilities().instabuild) {
                   this.removeFramedMap(var3);
                   return;
                }
@@ -213,7 +213,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    private void removeFramedMap(ItemStack var1) {
-      if (var1.getItem() == Items.FILLED_MAP) {
+      if (var1.is(Items.FILLED_MAP)) {
          MapItemSavedData var2 = MapItem.getOrCreateSavedData(var1, this.level);
          var2.removedFromFrame(this.pos, this.getId());
          var2.setDirty(true);
@@ -330,9 +330,9 @@ public class ItemFrame extends HangingEntity {
          return InteractionResult.PASS;
       } else if (!this.level.isClientSide) {
          if (!var4) {
-            if (var5 && !this.removed) {
+            if (var5 && !this.isRemoved()) {
                this.setItem(var3);
-               if (!var1.abilities.instabuild) {
+               if (!var1.getAbilities().instabuild) {
                   var3.shrink(1);
                }
             }
@@ -353,6 +353,16 @@ public class ItemFrame extends HangingEntity {
 
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, this.getType(), this.direction.get3DDataValue(), this.getPos());
+   }
+
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      this.setDirection(Direction.from3DDataValue(var1.getData()));
+   }
+
+   public ItemStack getPickResult() {
+      ItemStack var1 = this.getItem();
+      return var1.isEmpty() ? new ItemStack(Items.ITEM_FRAME) : var1.copy();
    }
 
    static {

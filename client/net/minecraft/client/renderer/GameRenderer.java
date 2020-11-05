@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import java.io.IOException;
@@ -355,7 +356,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
 
    private void renderItemInHand(PoseStack var1, Camera var2, float var3) {
       if (!this.panoramicMode) {
-         this.resetProjectionMatrix(this.getProjectionMatrix(var2, var3, false));
+         this.resetProjectionMatrix(this.getProjectionMatrix(this.getFov(var2, var3, false)));
          PoseStack.Pose var4 = var1.last();
          var4.pose().setIdentity();
          var4.normal().setIdentity();
@@ -392,16 +393,16 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       RenderSystem.matrixMode(5888);
    }
 
-   public Matrix4f getProjectionMatrix(Camera var1, float var2, boolean var3) {
-      PoseStack var4 = new PoseStack();
-      var4.last().pose().setIdentity();
+   public Matrix4f getProjectionMatrix(double var1) {
+      PoseStack var3 = new PoseStack();
+      var3.last().pose().setIdentity();
       if (this.zoom != 1.0F) {
-         var4.translate((double)this.zoomX, (double)(-this.zoomY), 0.0D);
-         var4.scale(this.zoom, this.zoom, 1.0F);
+         var3.translate((double)this.zoomX, (double)(-this.zoomY), 0.0D);
+         var3.scale(this.zoom, this.zoom, 1.0F);
       }
 
-      var4.last().pose().multiply(Matrix4f.perspective(this.getFov(var1, var2, var3), (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.renderDistance * 4.0F));
-      return var4.last().pose();
+      var3.last().pose().multiply(Matrix4f.perspective(var1, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.renderDistance * 4.0F));
+      return var3.last().pose();
    }
 
    public static float getNightVisionScale(LivingEntity var0, float var1) {
@@ -567,7 +568,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       } else {
          Entity var1 = this.minecraft.getCameraEntity();
          boolean var2 = var1 instanceof Player && !this.minecraft.options.hideGui;
-         if (var2 && !((Player)var1).abilities.mayBuild) {
+         if (var2 && !((Player)var1).getAbilities().mayBuild) {
             ItemStack var3 = ((LivingEntity)var1).getMainHandItem();
             HitResult var4 = this.minecraft.hitResult;
             if (var4 != null && var4.getType() == HitResult.Type.BLOCK) {
@@ -599,30 +600,32 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       Camera var6 = this.mainCamera;
       this.renderDistance = (float)(this.minecraft.options.renderDistance * 16);
       PoseStack var7 = new PoseStack();
-      var7.last().pose().multiply(this.getProjectionMatrix(var6, var1, true));
+      double var8 = this.getFov(var6, var1, true);
+      var7.last().pose().multiply(this.getProjectionMatrix(var8));
       this.bobHurt(var7, var1);
       if (this.minecraft.options.bobView) {
          this.bobView(var7, var1);
       }
 
-      float var8 = Mth.lerp(var1, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime) * this.minecraft.options.screenEffectScale * this.minecraft.options.screenEffectScale;
-      if (var8 > 0.0F) {
-         int var9 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
-         float var10 = 5.0F / (var8 * var8 + 5.0F) - var8 * 0.04F;
-         var10 *= var10;
-         Vector3f var11 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
-         var7.mulPose(var11.rotationDegrees(((float)this.tick + var1) * (float)var9));
-         var7.scale(1.0F / var10, 1.0F, 1.0F);
-         float var12 = -((float)this.tick + var1) * (float)var9;
-         var7.mulPose(var11.rotationDegrees(var12));
+      float var10 = Mth.lerp(var1, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime) * this.minecraft.options.screenEffectScale * this.minecraft.options.screenEffectScale;
+      if (var10 > 0.0F) {
+         int var11 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
+         float var12 = 5.0F / (var10 * var10 + 5.0F) - var10 * 0.04F;
+         var12 *= var12;
+         Vector3f var13 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
+         var7.mulPose(var13.rotationDegrees(((float)this.tick + var1) * (float)var11));
+         var7.scale(1.0F / var12, 1.0F, 1.0F);
+         float var14 = -((float)this.tick + var1) * (float)var11;
+         var7.mulPose(var13.rotationDegrees(var14));
       }
 
-      Matrix4f var13 = var7.last().pose();
-      this.resetProjectionMatrix(var13);
+      Matrix4f var15 = var7.last().pose();
+      this.resetProjectionMatrix(var15);
       var6.setup(this.minecraft.level, (Entity)(this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity()), !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), var1);
       var4.mulPose(Vector3f.XP.rotationDegrees(var6.getXRot()));
       var4.mulPose(Vector3f.YP.rotationDegrees(var6.getYRot() + 180.0F));
-      this.minecraft.levelRenderer.renderLevel(var4, var1, var2, var5, var6, this, this.lightTexture, var13);
+      this.minecraft.levelRenderer.prepareCullFrustum(var4, var6.getPosition(), this.getProjectionMatrix(Math.max(var8, this.minecraft.options.fov)));
+      this.minecraft.levelRenderer.renderLevel(var4, var1, var2, var5, var6, this, this.lightTexture, var15);
       this.minecraft.getProfiler().popPush("hand");
       if (this.renderHand) {
          RenderSystem.clear(256, Minecraft.ON_OSX);
@@ -702,7 +705,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       this.minecraft.getTextureManager().bind(NAUSEA_LOCATION);
       Tesselator var17 = Tesselator.getInstance();
       BufferBuilder var18 = var17.getBuilder();
-      var18.begin(7, DefaultVertexFormat.POSITION_TEX);
+      var18.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
       var18.vertex(var13, var15 + var11, -90.0D).uv(0.0F, 1.0F).endVertex();
       var18.vertex(var13 + var9, var15 + var11, -90.0D).uv(1.0F, 1.0F).endVertex();
       var18.vertex(var13 + var9, var15, -90.0D).uv(1.0F, 0.0F).endVertex();

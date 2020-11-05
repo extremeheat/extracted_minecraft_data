@@ -12,6 +12,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,8 +39,13 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
       var1.add(WATERLOGGED);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new ConduitBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new ConduitBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.CONDUIT, var1.isClientSide ? ConduitBlockEntity::clientTick : ConduitBlockEntity::serverTick);
    }
 
    public RenderShape getRenderShape(BlockState var1) {

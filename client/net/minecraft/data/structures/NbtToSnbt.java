@@ -9,9 +9,8 @@ import javax.annotation.Nullable;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,39 +50,40 @@ public class NbtToSnbt implements DataProvider {
    @Nullable
    public static Path convertStructure(Path var0, String var1, Path var2) {
       try {
-         CompoundTag var3 = NbtIo.readCompressed(Files.newInputStream(var0));
-         Component var4 = var3.getPrettyDisplay("    ", 0);
-         String var5 = var4.getString() + "\n";
-         Path var6 = var2.resolve(var1 + ".snbt");
-         Files.createDirectories(var6.getParent());
-         BufferedWriter var7 = Files.newBufferedWriter(var6);
-         Throwable var8 = null;
-
-         try {
-            var7.write(var5);
-         } catch (Throwable var18) {
-            var8 = var18;
-            throw var18;
-         } finally {
-            if (var7 != null) {
-               if (var8 != null) {
-                  try {
-                     var7.close();
-                  } catch (Throwable var17) {
-                     var8.addSuppressed(var17);
-                  }
-               } else {
-                  var7.close();
-               }
-            }
-
-         }
-
+         writeSnbt(var2.resolve(var1 + ".snbt"), NbtUtils.structureToSnbt(NbtIo.readCompressed(Files.newInputStream(var0))));
          LOGGER.info("Converted {} from NBT to SNBT", var1);
-         return var6;
-      } catch (IOException var20) {
-         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", var1, var0, var20);
+         return var2.resolve(var1 + ".snbt");
+      } catch (IOException var4) {
+         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", var1, var0, var4);
          return null;
       }
+   }
+
+   public static void writeSnbt(Path var0, String var1) throws IOException {
+      Files.createDirectories(var0.getParent());
+      BufferedWriter var2 = Files.newBufferedWriter(var0);
+      Throwable var3 = null;
+
+      try {
+         var2.write(var1);
+         var2.write(10);
+      } catch (Throwable var12) {
+         var3 = var12;
+         throw var12;
+      } finally {
+         if (var2 != null) {
+            if (var3 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var11) {
+                  var3.addSuppressed(var11);
+               }
+            } else {
+               var2.close();
+            }
+         }
+
+      }
+
    }
 }

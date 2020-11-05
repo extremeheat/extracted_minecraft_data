@@ -10,11 +10,13 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
    private final Player player;
    private final AbstractMinecart minecart;
+   private final boolean underwaterSound;
 
-   public RidingMinecartSoundInstance(Player var1, AbstractMinecart var2) {
-      super(SoundEvents.MINECART_INSIDE, SoundSource.NEUTRAL);
+   public RidingMinecartSoundInstance(Player var1, AbstractMinecart var2, boolean var3) {
+      super(var3 ? SoundEvents.MINECART_INSIDE_UNDERWATER : SoundEvents.MINECART_INSIDE, SoundSource.NEUTRAL);
       this.player = var1;
       this.minecart = var2;
+      this.underwaterSound = var3;
       this.attenuation = SoundInstance.Attenuation.NONE;
       this.looping = true;
       this.delay = 0;
@@ -30,14 +32,18 @@ public class RidingMinecartSoundInstance extends AbstractTickableSoundInstance {
    }
 
    public void tick() {
-      if (!this.minecart.removed && this.player.isPassenger() && this.player.getVehicle() == this.minecart) {
-         float var1 = Mth.sqrt(Entity.getHorizontalDistanceSqr(this.minecart.getDeltaMovement()));
-         if ((double)var1 >= 0.01D) {
-            this.volume = 0.0F + Mth.clamp(var1, 0.0F, 1.0F) * 0.75F;
-         } else {
+      if (!this.minecart.isRemoved() && this.player.isPassenger() && this.player.getVehicle() == this.minecart) {
+         if (this.underwaterSound != this.player.isUnderWater()) {
             this.volume = 0.0F;
-         }
+         } else {
+            float var1 = Mth.sqrt(Entity.getHorizontalDistanceSqr(this.minecart.getDeltaMovement()));
+            if ((double)var1 >= 0.01D) {
+               this.volume = 0.0F + Mth.clamp(var1, 0.0F, 1.0F) * 0.75F;
+            } else {
+               this.volume = 0.0F;
+            }
 
+         }
       } else {
          this.stop();
       }

@@ -16,7 +16,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -77,7 +77,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
+      return this.getFirstPassenger();
    }
 
    public boolean canBeControlledByRider() {
@@ -86,7 +86,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
          return false;
       } else {
          Player var2 = (Player)var1;
-         return var2.getMainHandItem().getItem() == Items.CARROT_ON_A_STICK || var2.getOffhandItem().getItem() == Items.CARROT_ON_A_STICK;
+         return var2.getMainHandItem().is(Items.CARROT_ON_A_STICK) || var2.getOffhandItem().is(Items.CARROT_ON_A_STICK);
       }
    }
 
@@ -142,7 +142,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
             ItemStack var5 = var1.getItemInHand(var2);
-            return var5.getItem() == Items.SADDLE ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS;
+            return var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS;
          } else {
             return var4;
          }
@@ -221,7 +221,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
          var3.setPersistenceRequired();
          var1.addFreshEntity(var3);
-         this.remove();
+         this.discard();
       } else {
          super.thunderHit(var1, var2);
       }
@@ -244,7 +244,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       return this.steering.boost(this.getRandom());
    }
 
-   public Pig getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (Pig)EntityType.PIG.create(var1);
    }
 
@@ -257,7 +257,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

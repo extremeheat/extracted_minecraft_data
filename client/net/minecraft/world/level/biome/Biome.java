@@ -176,7 +176,7 @@ public final class Biome {
       if (this.getTemperature(var2) >= 0.15F) {
          return false;
       } else {
-         if (var2.getY() >= 0 && var2.getY() < 256 && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
+         if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
             BlockState var4 = var1.getBlockState(var2);
             FluidState var5 = var1.getFluidState(var2);
             if (var5.getType() == Fluids.WATER && var4.getBlock() instanceof LiquidBlock) {
@@ -199,7 +199,7 @@ public final class Biome {
       if (this.getTemperature(var2) >= 0.15F) {
          return false;
       } else {
-         if (var2.getY() >= 0 && var2.getY() < 256 && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
+         if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
             BlockState var3 = var1.getBlockState(var2);
             if (var3.isAir() && Blocks.SNOW.defaultBlockState().canSurvive(var1, var2)) {
                return true;
@@ -226,14 +226,14 @@ public final class Biome {
             for(Iterator var13 = var12.iterator(); var13.hasNext(); ++var11) {
                StructureFeature var14 = (StructureFeature)var13.next();
                var6.setFeatureSeed(var4, var11, var10);
-               int var15 = var7.getX() >> 4;
-               int var16 = var7.getZ() >> 4;
-               int var17 = var15 << 4;
-               int var18 = var16 << 4;
+               int var15 = SectionPos.blockToSectionCoord(var7.getX());
+               int var16 = SectionPos.blockToSectionCoord(var7.getZ());
+               int var17 = SectionPos.sectionToBlockCoord(var15);
+               int var18 = SectionPos.sectionToBlockCoord(var16);
 
                try {
                   var1.startsForFeature(SectionPos.of(var7), var14).forEach((var8x) -> {
-                     var8x.placeInChunk(var3, var1, var2, var6, new BoundingBox(var17, var18, var17 + 15, var18 + 15), new ChunkPos(var15, var16));
+                     var8x.placeInChunk(var3, var1, var2, var6, new BoundingBox(var17, var3.getMinBuildHeight() + 1, var18, var17 + 15, var3.getMaxBuildHeight(), var18 + 15), new ChunkPos(var15, var16));
                   });
                } catch (Exception var21) {
                   CrashReport var20 = CrashReport.forThrowable(var21, "Feature placement");

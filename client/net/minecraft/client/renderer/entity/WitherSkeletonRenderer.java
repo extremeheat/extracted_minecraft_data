@@ -1,14 +1,15 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 
 public class WitherSkeletonRenderer extends SkeletonRenderer {
    private static final ResourceLocation WITHER_SKELETON_LOCATION = new ResourceLocation("textures/entity/skeleton/wither_skeleton.png");
 
-   public WitherSkeletonRenderer(EntityRenderDispatcher var1) {
-      super(var1);
+   public WitherSkeletonRenderer(EntityRendererProvider.Context var1) {
+      super(var1, ModelLayers.WITHER_SKELETON, ModelLayers.WITHER_SKELETON_INNER_ARMOR, ModelLayers.WITHER_SKELETON_OUTER_ARMOR);
    }
 
    public ResourceLocation getTextureLocation(AbstractSkeleton var1) {

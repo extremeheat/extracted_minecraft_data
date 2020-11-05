@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +40,7 @@ public class ShieldItem extends Item {
    }
 
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return ItemTags.PLANKS.contains(var2.getItem()) || super.isValidRepairItem(var1, var2);
+      return var2.is((Tag)ItemTags.PLANKS) || super.isValidRepairItem(var1, var2);
    }
 
    public static DyeColor getColor(ItemStack var0) {

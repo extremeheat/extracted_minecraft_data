@@ -5,7 +5,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Vector3f;
 import java.util.List;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
@@ -21,22 +27,26 @@ import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BannerRenderer extends BlockEntityRenderer<BannerBlockEntity> {
-   private final ModelPart flag = makeFlag();
-   private final ModelPart pole = new ModelPart(64, 64, 44, 0);
+public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
+   private final ModelPart flag;
+   private final ModelPart pole;
    private final ModelPart bar;
 
-   public BannerRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
-      this.pole.addBox(-1.0F, -30.0F, -1.0F, 2.0F, 42.0F, 2.0F, 0.0F);
-      this.bar = new ModelPart(64, 64, 0, 42);
-      this.bar.addBox(-10.0F, -32.0F, -1.0F, 20.0F, 2.0F, 2.0F, 0.0F);
+   public BannerRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
+      ModelPart var2 = var1.getLayer(ModelLayers.BANNER);
+      this.flag = var2.getChild("flag");
+      this.pole = var2.getChild("pole");
+      this.bar = var2.getChild("bar");
    }
 
-   public static ModelPart makeFlag() {
-      ModelPart var0 = new ModelPart(64, 64, 0, 0);
-      var0.addBox(-10.0F, 0.0F, -2.0F, 20.0F, 40.0F, 1.0F, 0.0F);
-      return var0;
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("flag", CubeListBuilder.create().texOffs(0, 0).addBox(-10.0F, 0.0F, -2.0F, 20.0F, 40.0F, 1.0F), PartPose.ZERO);
+      var1.addOrReplaceChild("pole", CubeListBuilder.create().texOffs(44, 0).addBox(-1.0F, -30.0F, -1.0F, 2.0F, 42.0F, 2.0F), PartPose.ZERO);
+      var1.addOrReplaceChild("bar", CubeListBuilder.create().texOffs(0, 42).addBox(-10.0F, -32.0F, -1.0F, 20.0F, 2.0F, 2.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 64);
    }
 
    public void render(BannerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

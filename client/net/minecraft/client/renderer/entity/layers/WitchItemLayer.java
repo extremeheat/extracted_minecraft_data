@@ -17,7 +17,7 @@ public class WitchItemLayer<T extends LivingEntity> extends CrossedArmsItemLayer
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getMainHandItem();
       var1.pushPose();
-      if (var11.getItem() == Items.POTION) {
+      if (var11.is(Items.POTION)) {
          ((WitchModel)this.getParentModel()).getHead().translateAndRotate(var1);
          ((WitchModel)this.getParentModel()).getNose().translateAndRotate(var1);
          var1.translate(0.0625D, 0.25D, 0.0D);

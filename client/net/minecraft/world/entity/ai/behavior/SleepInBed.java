@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -41,7 +40,7 @@ public class SleepInBed extends Behavior<LivingEntity> {
             }
 
             BlockState var8 = var1.getBlockState(var4.pos());
-            return var4.pos().closerThan(var2.position(), 2.0D) && var8.getBlock().is((Tag)BlockTags.BEDS) && !(Boolean)var8.getValue(BedBlock.OCCUPIED);
+            return var4.pos().closerThan(var2.position(), 2.0D) && var8.is(BlockTags.BEDS) && !(Boolean)var8.getValue(BedBlock.OCCUPIED);
          }
       }
    }

@@ -6,9 +6,9 @@ import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
 public abstract class IllagerRenderer<T extends AbstractIllager> extends MobRenderer<T, IllagerModel<T>> {
-   protected IllagerRenderer(EntityRenderDispatcher var1, IllagerModel<T> var2, float var3) {
+   protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<T> var2, float var3) {
       super(var1, var2, var3);
-      this.addLayer(new CustomHeadLayer(this));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
    }
 
    protected void scale(T var1, PoseStack var2, float var3) {

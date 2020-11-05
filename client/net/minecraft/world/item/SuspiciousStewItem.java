@@ -43,6 +43,6 @@ public class SuspiciousStewItem extends Item {
          }
       }
 
-      return var3 instanceof Player && ((Player)var3).abilities.instabuild ? var4 : new ItemStack(Items.BOWL);
+      return var3 instanceof Player && ((Player)var3).getAbilities().instabuild ? var4 : new ItemStack(Items.BOWL);
    }
 }

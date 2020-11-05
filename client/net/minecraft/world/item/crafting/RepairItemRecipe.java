@@ -28,7 +28,7 @@ public class RepairItemRecipe extends CustomRecipe {
             var3.add(var5);
             if (var3.size() > 1) {
                ItemStack var6 = (ItemStack)var3.get(0);
-               if (var5.getItem() != var6.getItem() || var6.getCount() != 1 || var5.getCount() != 1 || !var6.getItem().canBeDepleted()) {
+               if (!var5.is(var6.getItem()) || var6.getCount() != 1 || var5.getCount() != 1 || !var6.getItem().canBeDepleted()) {
                   return false;
                }
             }
@@ -48,7 +48,7 @@ public class RepairItemRecipe extends CustomRecipe {
             var2.add(var4);
             if (var2.size() > 1) {
                ItemStack var5 = (ItemStack)var2.get(0);
-               if (var4.getItem() != var5.getItem() || var5.getCount() != 1 || var4.getCount() != 1 || !var5.getItem().canBeDepleted()) {
+               if (!var4.is(var5.getItem()) || var5.getCount() != 1 || var4.getCount() != 1 || !var5.getItem().canBeDepleted()) {
                   return ItemStack.EMPTY;
                }
             }
@@ -58,7 +58,7 @@ public class RepairItemRecipe extends CustomRecipe {
       if (var2.size() == 2) {
          ItemStack var14 = (ItemStack)var2.get(0);
          var4 = (ItemStack)var2.get(1);
-         if (var14.getItem() == var4.getItem() && var14.getCount() == 1 && var4.getCount() == 1 && var14.getItem().canBeDepleted()) {
+         if (var14.is(var4.getItem()) && var14.getCount() == 1 && var4.getCount() == 1 && var14.getItem().canBeDepleted()) {
             Item var15 = var14.getItem();
             int var6 = var15.getMaxDamage() - var14.getDamageValue();
             int var7 = var15.getMaxDamage() - var4.getDamageValue();

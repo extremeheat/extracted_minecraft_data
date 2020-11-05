@@ -18,10 +18,10 @@ public class AmbientMoodSettings {
       })).apply(var0, AmbientMoodSettings::new);
    });
    public static final AmbientMoodSettings LEGACY_CAVE_SETTINGS;
-   private SoundEvent soundEvent;
-   private int tickDelay;
-   private int blockSearchExtent;
-   private double soundPositionOffset;
+   private final SoundEvent soundEvent;
+   private final int tickDelay;
+   private final int blockSearchExtent;
+   private final double soundPositionOffset;
 
    public AmbientMoodSettings(SoundEvent var1, int var2, int var3, double var4) {
       super();

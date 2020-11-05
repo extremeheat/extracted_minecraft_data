@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -26,7 +26,7 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
       return new BredAnimalsTrigger.TriggerInstance(var2, var4, var5, var6);
    }
 
-   public void trigger(ServerPlayer var1, Animal var2, Animal var3, @Nullable AgableMob var4) {
+   public void trigger(ServerPlayer var1, Animal var2, Animal var3, @Nullable AgeableMob var4) {
       LootContext var5 = EntityPredicate.createContext(var1, var2);
       LootContext var6 = EntityPredicate.createContext(var1, var3);
       LootContext var7 = var4 != null ? EntityPredicate.createContext(var1, var4) : null;

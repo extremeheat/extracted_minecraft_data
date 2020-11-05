@@ -16,15 +16,15 @@ public class ThrownItemRenderer<T extends Entity & ItemSupplier> extends EntityR
    private final float scale;
    private final boolean fullBright;
 
-   public ThrownItemRenderer(EntityRenderDispatcher var1, ItemRenderer var2, float var3, boolean var4) {
+   public ThrownItemRenderer(EntityRendererProvider.Context var1, float var2, boolean var3) {
       super(var1);
-      this.itemRenderer = var2;
-      this.scale = var3;
-      this.fullBright = var4;
+      this.itemRenderer = var1.getItemRenderer();
+      this.scale = var2;
+      this.fullBright = var3;
    }
 
-   public ThrownItemRenderer(EntityRenderDispatcher var1, ItemRenderer var2) {
-      this(var1, var2, 1.0F, false);
+   public ThrownItemRenderer(EntityRendererProvider.Context var1) {
+      this(var1, 1.0F, false);
    }
 
    protected int getBlockLightLevel(T var1, BlockPos var2) {

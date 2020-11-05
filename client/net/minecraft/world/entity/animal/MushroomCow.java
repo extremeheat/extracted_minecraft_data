@@ -14,10 +14,11 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -75,7 +76,7 @@ public class MushroomCow extends Cow implements Shearable {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.getItem() == Items.BOWL && !this.isBaby()) {
+      if (var3.is(Items.BOWL) && !this.isBaby()) {
          boolean var10 = false;
          ItemStack var9;
          if (this.effect != null) {
@@ -99,7 +100,7 @@ public class MushroomCow extends Cow implements Shearable {
 
          this.playSound(var7, 1.0F, 1.0F);
          return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (var3.getItem() == Items.SHEARS && this.readyForShearing()) {
+      } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          this.shear(SoundSource.PLAYERS);
          if (!this.level.isClientSide) {
             var3.hurtAndBreak(1, var1, (var1x) -> {
@@ -108,7 +109,7 @@ public class MushroomCow extends Cow implements Shearable {
          }
 
          return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (this.getMushroomType() == MushroomCow.MushroomType.BROWN && var3.getItem().is(ItemTags.SMALL_FLOWERS)) {
+      } else if (this.getMushroomType() == MushroomCow.MushroomType.BROWN && var3.is((Tag)ItemTags.SMALL_FLOWERS)) {
          if (this.effect != null) {
             for(int var4 = 0; var4 < 2; ++var4) {
                this.level.addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0D, this.getY(0.5D), this.getZ() + this.random.nextDouble() / 2.0D, 0.0D, this.random.nextDouble() / 5.0D, 0.0D);
@@ -120,7 +121,7 @@ public class MushroomCow extends Cow implements Shearable {
             }
 
             Pair var5 = (Pair)var8.get();
-            if (!var1.abilities.instabuild) {
+            if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 
@@ -143,7 +144,7 @@ public class MushroomCow extends Cow implements Shearable {
       this.level.playSound((Player)null, (Entity)this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level.isClientSide()) {
          ((ServerLevel)this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5D), this.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
-         this.remove();
+         this.discard();
          Cow var2 = (Cow)EntityType.COW.create(this.level);
          var2.moveTo(this.getX(), this.getY(), this.getZ(), this.yRot, this.xRot);
          var2.setHealth(this.getHealth());
@@ -215,7 +216,7 @@ public class MushroomCow extends Cow implements Shearable {
       return MushroomCow.MushroomType.byType((String)this.entityData.get(DATA_TYPE));
    }
 
-   public MushroomCow getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public MushroomCow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       MushroomCow var3 = (MushroomCow)EntityType.MOOSHROOM.create(var1);
       var3.setMushroomType(this.getOffspringType((MushroomCow)var2));
       return var3;
@@ -235,12 +236,12 @@ public class MushroomCow extends Cow implements Shearable {
    }
 
    // $FF: synthetic method
-   public Cow getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

@@ -48,7 +48,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    }
 
    public static class PackEntry extends ObjectSelectionList.Entry<TransferableSelectionList.PackEntry> {
-      private TransferableSelectionList parent;
+      private final TransferableSelectionList parent;
       protected final Minecraft minecraft;
       protected final Screen screen;
       private final PackSelectionModel.Entry pack;

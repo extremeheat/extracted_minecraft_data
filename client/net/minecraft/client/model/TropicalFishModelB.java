@@ -1,47 +1,40 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
-public class TropicalFishModelB<T extends Entity> extends ColorableListModel<T> {
-   private final ModelPart body;
+public class TropicalFishModelB<T extends Entity> extends ColorableHierarchicalModel<T> {
+   private final ModelPart root;
    private final ModelPart tail;
-   private final ModelPart leftFin;
-   private final ModelPart rightFin;
-   private final ModelPart topFin;
-   private final ModelPart bottomFin;
 
-   public TropicalFishModelB(float var1) {
+   public TropicalFishModelB(ModelPart var1) {
       super();
-      this.texWidth = 32;
-      this.texHeight = 32;
-      boolean var2 = true;
-      this.body = new ModelPart(this, 0, 20);
-      this.body.addBox(-1.0F, -3.0F, -3.0F, 2.0F, 6.0F, 6.0F, var1);
-      this.body.setPos(0.0F, 19.0F, 0.0F);
-      this.tail = new ModelPart(this, 21, 16);
-      this.tail.addBox(0.0F, -3.0F, 0.0F, 0.0F, 6.0F, 5.0F, var1);
-      this.tail.setPos(0.0F, 19.0F, 3.0F);
-      this.leftFin = new ModelPart(this, 2, 16);
-      this.leftFin.addBox(-2.0F, 0.0F, 0.0F, 2.0F, 2.0F, 0.0F, var1);
-      this.leftFin.setPos(-1.0F, 20.0F, 0.0F);
-      this.leftFin.yRot = 0.7853982F;
-      this.rightFin = new ModelPart(this, 2, 12);
-      this.rightFin.addBox(0.0F, 0.0F, 0.0F, 2.0F, 2.0F, 0.0F, var1);
-      this.rightFin.setPos(1.0F, 20.0F, 0.0F);
-      this.rightFin.yRot = -0.7853982F;
-      this.topFin = new ModelPart(this, 20, 11);
-      this.topFin.addBox(0.0F, -4.0F, 0.0F, 0.0F, 4.0F, 6.0F, var1);
-      this.topFin.setPos(0.0F, 16.0F, -3.0F);
-      this.bottomFin = new ModelPart(this, 20, 21);
-      this.bottomFin.addBox(0.0F, 0.0F, 0.0F, 0.0F, 4.0F, 6.0F, var1);
-      this.bottomFin.setPos(0.0F, 22.0F, -3.0F);
+      this.root = var1;
+      this.tail = var1.getChild("tail");
    }
 
-   public Iterable<ModelPart> parts() {
-      return ImmutableList.of(this.body, this.tail, this.leftFin, this.rightFin, this.topFin, this.bottomFin);
+   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
+      MeshDefinition var1 = new MeshDefinition();
+      PartDefinition var2 = var1.getRoot();
+      boolean var3 = true;
+      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 20).addBox(-1.0F, -3.0F, -3.0F, 2.0F, 6.0F, 6.0F, var0), PartPose.offset(0.0F, 19.0F, 0.0F));
+      var2.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(21, 16).addBox(0.0F, -3.0F, 0.0F, 0.0F, 6.0F, 5.0F, var0), PartPose.offset(0.0F, 19.0F, 3.0F));
+      var2.addOrReplaceChild("right_fin", CubeListBuilder.create().texOffs(2, 16).addBox(-2.0F, 0.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0), PartPose.offsetAndRotation(-1.0F, 20.0F, 0.0F, 0.0F, 0.7853982F, 0.0F));
+      var2.addOrReplaceChild("left_fin", CubeListBuilder.create().texOffs(2, 12).addBox(0.0F, 0.0F, 0.0F, 2.0F, 2.0F, 0.0F, var0), PartPose.offsetAndRotation(1.0F, 20.0F, 0.0F, 0.0F, -0.7853982F, 0.0F));
+      var2.addOrReplaceChild("top_fin", CubeListBuilder.create().texOffs(20, 11).addBox(0.0F, -4.0F, 0.0F, 0.0F, 4.0F, 6.0F, var0), PartPose.offset(0.0F, 16.0F, -3.0F));
+      var2.addOrReplaceChild("bottom_fin", CubeListBuilder.create().texOffs(20, 21).addBox(0.0F, 0.0F, 0.0F, 0.0F, 4.0F, 6.0F, var0), PartPose.offset(0.0F, 22.0F, -3.0F));
+      return LayerDefinition.create(var1, 32, 32);
+   }
+
+   public ModelPart root() {
+      return this.root;
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {

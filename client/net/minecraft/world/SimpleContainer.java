@@ -102,7 +102,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
       while(var3.hasNext()) {
          ItemStack var4 = (ItemStack)var3.next();
-         if (var4.isEmpty() || this.isSameItem(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
+         if (var4.isEmpty() || ItemStack.isSameItemSameTags(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
             var2 = true;
             break;
          }
@@ -201,7 +201,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    private void moveItemToOccupiedSlotsWithSameType(ItemStack var1) {
       for(int var2 = 0; var2 < this.size; ++var2) {
          ItemStack var3 = this.getItem(var2);
-         if (this.isSameItem(var3, var1)) {
+         if (ItemStack.isSameItemSameTags(var3, var1)) {
             this.moveItemsBetweenStacks(var1, var3);
             if (var1.isEmpty()) {
                return;
@@ -209,10 +209,6 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
          }
       }
 
-   }
-
-   private boolean isSameItem(ItemStack var1, ItemStack var2) {
-      return var1.getItem() == var2.getItem() && ItemStack.tagMatches(var1, var2);
    }
 
    private void moveItemsBetweenStacks(ItemStack var1, ItemStack var2) {

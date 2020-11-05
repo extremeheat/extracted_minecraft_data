@@ -19,7 +19,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.IntRange;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeUtil;
@@ -180,12 +179,12 @@ public class EnderMan extends Monster implements NeutralMob {
       }
 
       this.setCarriedBlock(var2);
-      this.readPersistentAngerSaveData((ServerLevel)this.level, var1);
+      this.readPersistentAngerSaveData(this.level, var1);
    }
 
    private boolean isLookingAtMe(Player var1) {
-      ItemStack var2 = (ItemStack)var1.inventory.armor.get(3);
-      if (var2.getItem() == Blocks.CARVED_PUMPKIN.asItem()) {
+      ItemStack var2 = (ItemStack)var1.getInventory().armor.get(3);
+      if (var2.is(Blocks.CARVED_PUMPKIN.asItem())) {
          return false;
       } else {
          Vec3 var3 = var1.getViewVector(1.0F).normalize();
@@ -256,7 +255,7 @@ public class EnderMan extends Monster implements NeutralMob {
    private boolean teleport(double var1, double var3, double var5) {
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos(var1, var3, var5);
 
-      while(var7.getY() > 0 && !this.level.getBlockState(var7).getMaterial().blocksMotion()) {
+      while(var7.getY() > this.level.getMinBuildHeight() && !this.level.getBlockState(var7).getMaterial().blocksMotion()) {
          var7.move(Direction.DOWN);
       }
 
@@ -380,12 +379,11 @@ public class EnderMan extends Monster implements NeutralMob {
          int var5 = Mth.floor(this.enderman.getZ() - 2.0D + var1.nextDouble() * 4.0D);
          BlockPos var6 = new BlockPos(var3, var4, var5);
          BlockState var7 = var2.getBlockState(var6);
-         Block var8 = var7.getBlock();
-         Vec3 var9 = new Vec3((double)Mth.floor(this.enderman.getX()) + 0.5D, (double)var4 + 0.5D, (double)Mth.floor(this.enderman.getZ()) + 0.5D);
-         Vec3 var10 = new Vec3((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D);
-         BlockHitResult var11 = var2.clip(new ClipContext(var9, var10, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, this.enderman));
-         boolean var12 = var11.getBlockPos().equals(var6);
-         if (var8.is((Tag)BlockTags.ENDERMAN_HOLDABLE) && var12) {
+         Vec3 var8 = new Vec3((double)this.enderman.getBlockX() + 0.5D, (double)var4 + 0.5D, (double)this.enderman.getBlockZ() + 0.5D);
+         Vec3 var9 = new Vec3((double)var3 + 0.5D, (double)var4 + 0.5D, (double)var5 + 0.5D);
+         BlockHitResult var10 = var2.clip(new ClipContext(var8, var9, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, this.enderman));
+         boolean var11 = var10.getBlockPos().equals(var6);
+         if (var7.is(BlockTags.ENDERMAN_HOLDABLE) && var11) {
             var2.removeBlock(var6, false);
             this.enderman.setCarriedBlock(var7.getBlock().defaultBlockState());
          }

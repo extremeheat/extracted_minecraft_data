@@ -1,11 +1,15 @@
 package net.minecraft.world.entity;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
@@ -13,16 +17,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class ExperienceOrb extends Entity {
-   public int tickCount;
-   public int age;
-   public int throwTime;
+   private int age;
    private int health;
    private int value;
+   private int count;
    private Player followingPlayer;
-   private int followingTime;
 
    public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
       this(EntityType.EXPERIENCE_ORB, var1);
@@ -35,6 +39,7 @@ public class ExperienceOrb extends Entity {
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
       super(var1, var2);
       this.health = 5;
+      this.count = 1;
    }
 
    protected boolean isMovementNoisy() {
@@ -46,10 +51,6 @@ public class ExperienceOrb extends Entity {
 
    public void tick() {
       super.tick();
-      if (this.throwTime > 0) {
-         --this.throwTime;
-      }
-
       this.xo = this.getX();
       this.yo = this.getY();
       this.zo = this.getZ();
@@ -68,45 +69,97 @@ public class ExperienceOrb extends Entity {
          this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
       }
 
-      double var1 = 8.0D;
-      if (this.followingTime < this.tickCount - 20 + this.getId() % 100) {
-         if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0D) {
-            this.followingPlayer = this.level.getNearestPlayer(this, 8.0D);
-         }
-
-         this.followingTime = this.tickCount;
+      if (this.tickCount % 20 == 1) {
+         this.scanForEntities();
       }
 
-      if (this.followingPlayer != null && this.followingPlayer.isSpectator()) {
+      if (this.followingPlayer != null && (this.followingPlayer.isSpectator() || this.followingPlayer.isDeadOrDying())) {
          this.followingPlayer = null;
       }
 
       if (this.followingPlayer != null) {
-         Vec3 var3 = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0D - this.getY(), this.followingPlayer.getZ() - this.getZ());
-         double var4 = var3.lengthSqr();
-         if (var4 < 64.0D) {
-            double var6 = 1.0D - Math.sqrt(var4) / 8.0D;
-            this.setDeltaMovement(this.getDeltaMovement().add(var3.normalize().scale(var6 * var6 * 0.1D)));
+         Vec3 var1 = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0D - this.getY(), this.followingPlayer.getZ() - this.getZ());
+         double var2 = var1.lengthSqr();
+         if (var2 < 64.0D) {
+            double var4 = 1.0D - Math.sqrt(var2) / 8.0D;
+            this.setDeltaMovement(this.getDeltaMovement().add(var1.normalize().scale(var4 * var4 * 0.1D)));
          }
       }
 
       this.move(MoverType.SELF, this.getDeltaMovement());
-      float var8 = 0.98F;
+      float var6 = 0.98F;
       if (this.onGround) {
-         var8 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getBlock().getFriction() * 0.98F;
+         var6 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getBlock().getFriction() * 0.98F;
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var8, 0.98D, (double)var8));
+      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var6, 0.98D, (double)var6));
       if (this.onGround) {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, -0.9D, 1.0D));
       }
 
-      ++this.tickCount;
       ++this.age;
       if (this.age >= 6000) {
-         this.remove();
+         this.discard();
       }
 
+   }
+
+   private void scanForEntities() {
+      if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0D) {
+         this.followingPlayer = this.level.getNearestPlayer(this, 8.0D);
+      }
+
+      if (this.level instanceof ServerLevel) {
+         List var1 = this.level.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5D), this::canMerge);
+         Iterator var2 = var1.iterator();
+
+         while(var2.hasNext()) {
+            ExperienceOrb var3 = (ExperienceOrb)var2.next();
+            this.merge(var3);
+         }
+      }
+
+   }
+
+   public static void award(ServerLevel var0, Vec3 var1, int var2) {
+      while(var2 > 0) {
+         int var3 = getExperienceValue(var2);
+         var2 -= var3;
+         if (!tryMergeToExisting(var0, var1, var3)) {
+            var0.addFreshEntity(new ExperienceOrb(var0, var1.x(), var1.y(), var1.z(), var3));
+         }
+      }
+
+   }
+
+   private static boolean tryMergeToExisting(ServerLevel var0, Vec3 var1, int var2) {
+      AABB var3 = AABB.ofSize(1.0D, 1.0D, 1.0D).move(var1);
+      int var4 = var0.getRandom().nextInt(40);
+      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, (var2x) -> {
+         return canMerge(var2x, var4, var2);
+      });
+      if (!var5.isEmpty()) {
+         ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
+         ++var6.count;
+         var6.age = 0;
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   private boolean canMerge(ExperienceOrb var1) {
+      return var1 != this && canMerge(var1, this.getId(), this.value);
+   }
+
+   private static boolean canMerge(ExperienceOrb var0, int var1, int var2) {
+      return !var0.isRemoved() && (var0.getId() - var1) % 40 == 0 && var0.value == var2;
+   }
+
+   private void merge(ExperienceOrb var1) {
+      this.count += var1.count;
+      this.age = Math.min(this.age, var1.age);
+      var1.discard();
    }
 
    private void setUnderwaterMovement() {
@@ -124,7 +177,7 @@ public class ExperienceOrb extends Entity {
          this.markHurt();
          this.health = (int)((float)this.health - var2);
          if (this.health <= 0) {
-            this.remove();
+            this.discard();
          }
 
          return false;
@@ -135,17 +188,19 @@ public class ExperienceOrb extends Entity {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("Value", (short)this.value);
+      var1.putInt("Count", this.count);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       this.health = var1.getShort("Health");
       this.age = var1.getShort("Age");
       this.value = var1.getShort("Value");
+      this.count = Math.max(var1.getInt("Count"), 1);
    }
 
    public void playerTouch(Player var1) {
       if (!this.level.isClientSide) {
-         if (this.throwTime == 0 && var1.takeXpDelay == 0) {
+         if (var1.takeXpDelay == 0) {
             var1.takeXpDelay = 2;
             var1.take(this, 1);
             Entry var2 = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, var1, ItemStack::isDamaged);
@@ -162,7 +217,10 @@ public class ExperienceOrb extends Entity {
                var1.giveExperiencePoints(this.value);
             }
 
-            this.remove();
+            --this.count;
+            if (this.count == 0) {
+               this.discard();
+            }
          }
 
       }
@@ -234,5 +292,9 @@ public class ExperienceOrb extends Entity {
 
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddExperienceOrbPacket(this);
+   }
+
+   public SoundSource getSoundSource() {
+      return SoundSource.AMBIENT;
    }
 }

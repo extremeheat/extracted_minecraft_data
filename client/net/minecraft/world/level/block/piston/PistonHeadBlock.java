@@ -95,7 +95,7 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.abilities.instabuild) {
+      if (!var1.isClientSide && var4.getAbilities().instabuild) {
          BlockPos var5 = var2.relative(((Direction)var3.getValue(FACING)).getOpposite());
          if (this.isFittingBase(var3, var1.getBlockState(var5))) {
             var1.destroyBlock(var5, false);

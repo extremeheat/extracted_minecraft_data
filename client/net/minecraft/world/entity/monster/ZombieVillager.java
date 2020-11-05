@@ -41,8 +41,8 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.Logger;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
@@ -130,9 +130,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.getItem() == Items.GOLDEN_APPLE) {
+      if (var3.is(Items.GOLDEN_APPLE)) {
          if (this.hasEffect(MobEffects.WEAKNESS)) {
-            if (!var1.abilities.instabuild) {
+            if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 
@@ -236,8 +236,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          for(int var4 = (int)this.getX() - 4; var4 < (int)this.getX() + 4 && var2 < 14; ++var4) {
             for(int var5 = (int)this.getY() - 4; var5 < (int)this.getY() + 4 && var2 < 14; ++var5) {
                for(int var6 = (int)this.getZ() - 4; var6 < (int)this.getZ() + 4 && var2 < 14; ++var6) {
-                  Block var7 = this.level.getBlockState(var3.set(var4, var5, var6)).getBlock();
-                  if (var7 == Blocks.IRON_BARS || var7 instanceof BedBlock) {
+                  BlockState var7 = this.level.getBlockState(var3.set(var4, var5, var6));
+                  if (var7.is(Blocks.IRON_BARS) || var7.getBlock() instanceof BedBlock) {
                      if (this.random.nextFloat() < 0.3F) {
                         ++var1;
                      }

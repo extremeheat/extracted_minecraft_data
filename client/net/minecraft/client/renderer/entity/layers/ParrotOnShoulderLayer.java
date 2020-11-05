@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.ParrotModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ParrotRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
@@ -13,10 +15,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 
 public class ParrotOnShoulderLayer<T extends Player> extends RenderLayer<T, PlayerModel<T>> {
-   private final ParrotModel model = new ParrotModel();
+   private final ParrotModel model;
 
-   public ParrotOnShoulderLayer(RenderLayerParent<T, PlayerModel<T>> var1) {
+   public ParrotOnShoulderLayer(RenderLayerParent<T, PlayerModel<T>> var1, EntityModelSet var2) {
       super(var1);
+      this.model = new ParrotModel(var2.getLayer(ModelLayers.PARROT));
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {

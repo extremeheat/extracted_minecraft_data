@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.List;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
@@ -25,8 +26,8 @@ public class PillagerOutpostFeature extends JigsawFeature {
    }
 
    protected boolean isFeatureChunk(ChunkGenerator var1, BiomeSource var2, long var3, WorldgenRandom var5, int var6, int var7, Biome var8, ChunkPos var9, JigsawConfiguration var10) {
-      int var11 = var6 >> 4;
-      int var12 = var7 >> 4;
+      int var11 = SectionPos.blockToSectionCoord(var6);
+      int var12 = SectionPos.blockToSectionCoord(var7);
       var5.setSeed((long)(var11 ^ var12 << 4) ^ var3);
       var5.nextInt();
       if (var5.nextInt(5) != 0) {

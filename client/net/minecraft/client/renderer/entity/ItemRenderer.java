@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import java.util.Iterator;
 import java.util.List;
@@ -62,17 +63,19 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    private final ItemModelShaper itemModelShaper;
    private final TextureManager textureManager;
    private final ItemColors itemColors;
+   private final BlockEntityWithoutLevelRenderer blockEntityRenderer;
 
-   public ItemRenderer(TextureManager var1, ModelManager var2, ItemColors var3) {
+   public ItemRenderer(TextureManager var1, ModelManager var2, ItemColors var3, BlockEntityWithoutLevelRenderer var4) {
       super();
       this.textureManager = var1;
       this.itemModelShaper = new ItemModelShaper(var2);
-      Iterator var4 = Registry.ITEM.iterator();
+      this.blockEntityRenderer = var4;
+      Iterator var5 = Registry.ITEM.iterator();
 
-      while(var4.hasNext()) {
-         Item var5 = (Item)var4.next();
-         if (!IGNORED.contains(var5)) {
-            this.itemModelShaper.register(var5, new ModelResourceLocation(Registry.ITEM.getKey(var5), "inventory"));
+      while(var5.hasNext()) {
+         Item var6 = (Item)var5.next();
+         if (!IGNORED.contains(var6)) {
+            this.itemModelShaper.register(var6, new ModelResourceLocation(Registry.ITEM.getKey(var6), "inventory"));
          }
       }
 
@@ -103,14 +106,14 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       if (!var1.isEmpty()) {
          var4.pushPose();
          boolean var9 = var2 == ItemTransforms.TransformType.GUI || var2 == ItemTransforms.TransformType.GROUND || var2 == ItemTransforms.TransformType.FIXED;
-         if (var1.getItem() == Items.TRIDENT && var9) {
+         if (var1.is(Items.TRIDENT) && var9) {
             var8 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:trident#inventory"));
          }
 
          var8.getTransforms().getTransform(var2).apply(var3, var4);
          var4.translate(-0.5D, -0.5D, -0.5D);
-         if (var8.isCustomRenderer() || var1.getItem() == Items.TRIDENT && !var9) {
-            BlockEntityWithoutLevelRenderer.instance.renderByItem(var1, var2, var4, var5, var6, var7);
+         if (var8.isCustomRenderer() || var1.is(Items.TRIDENT) && !var9) {
+            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
          } else {
             boolean var10;
             if (var2 != ItemTransforms.TransformType.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem) {
@@ -122,7 +125,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
             RenderType var14 = ItemBlockRenderTypes.getRenderType(var1, var10);
             VertexConsumer var12;
-            if (var1.getItem() == Items.COMPASS && var1.hasFoil()) {
+            if (var1.is(Items.COMPASS) && var1.hasFoil()) {
                var4.pushPose();
                PoseStack.Pose var13 = var4.last();
                if (var2 == ItemTransforms.TransformType.GUI) {
@@ -196,17 +199,16 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    }
 
    public BakedModel getModel(ItemStack var1, @Nullable Level var2, @Nullable LivingEntity var3) {
-      Item var5 = var1.getItem();
       BakedModel var4;
-      if (var5 == Items.TRIDENT) {
+      if (var1.is(Items.TRIDENT)) {
          var4 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:trident_in_hand#inventory"));
       } else {
          var4 = this.itemModelShaper.getItemModel(var1);
       }
 
-      ClientLevel var6 = var2 instanceof ClientLevel ? (ClientLevel)var2 : null;
-      BakedModel var7 = var4.getOverrides().resolve(var4, var1, var6, var3);
-      return var7 == null ? this.itemModelShaper.getModelManager().getMissingModel() : var7;
+      ClientLevel var5 = var2 instanceof ClientLevel ? (ClientLevel)var2 : null;
+      BakedModel var6 = var4.getOverrides().resolve(var4, var1, var5, var3);
+      return var6 == null ? this.itemModelShaper.getModelManager().getMissingModel() : var6;
    }
 
    public void renderStatic(ItemStack var1, ItemTransforms.TransformType var2, int var3, int var4, PoseStack var5, MultiBufferSource var6) {
@@ -312,36 +314,33 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             var8.endBatch();
          }
 
-         if (var2.isDamaged()) {
+         if (var2.isBarVisible()) {
             RenderSystem.disableDepthTest();
             RenderSystem.disableTexture();
             RenderSystem.disableAlphaTest();
             RenderSystem.disableBlend();
-            Tesselator var14 = Tesselator.getInstance();
-            BufferBuilder var16 = var14.getBuilder();
-            float var9 = (float)var2.getDamageValue();
-            float var10 = (float)var2.getMaxDamage();
-            float var11 = Math.max(0.0F, (var10 - var9) / var10);
-            int var12 = Math.round(13.0F - var9 * 13.0F / var10);
-            int var13 = Mth.hsvToRgb(var11 / 3.0F, 1.0F, 1.0F);
-            this.fillRect(var16, var3 + 2, var4 + 13, 13, 2, 0, 0, 0, 255);
-            this.fillRect(var16, var3 + 2, var4 + 13, var12, 1, var13 >> 16 & 255, var13 >> 8 & 255, var13 & 255, 255);
+            Tesselator var11 = Tesselator.getInstance();
+            BufferBuilder var13 = var11.getBuilder();
+            int var9 = var2.getBarWidth();
+            int var10 = var2.getBarColor();
+            this.fillRect(var13, var3 + 2, var4 + 13, 13, 2, 0, 0, 0, 255);
+            this.fillRect(var13, var3 + 2, var4 + 13, var9, 1, var10 >> 16 & 255, var10 >> 8 & 255, var10 & 255, 255);
             RenderSystem.enableBlend();
             RenderSystem.enableAlphaTest();
             RenderSystem.enableTexture();
             RenderSystem.enableDepthTest();
          }
 
-         LocalPlayer var15 = Minecraft.getInstance().player;
-         float var17 = var15 == null ? 0.0F : var15.getCooldowns().getCooldownPercent(var2.getItem(), Minecraft.getInstance().getFrameTime());
-         if (var17 > 0.0F) {
+         LocalPlayer var12 = Minecraft.getInstance().player;
+         float var14 = var12 == null ? 0.0F : var12.getCooldowns().getCooldownPercent(var2.getItem(), Minecraft.getInstance().getFrameTime());
+         if (var14 > 0.0F) {
             RenderSystem.disableDepthTest();
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            Tesselator var18 = Tesselator.getInstance();
-            BufferBuilder var19 = var18.getBuilder();
-            this.fillRect(var19, var3, var4 + Mth.floor(16.0F * (1.0F - var17)), 16, Mth.ceil(16.0F * var17), 255, 255, 255, 127);
+            Tesselator var15 = Tesselator.getInstance();
+            BufferBuilder var16 = var15.getBuilder();
+            this.fillRect(var16, var3, var4 + Mth.floor(16.0F * (1.0F - var14)), 16, Mth.ceil(16.0F * var14), 255, 255, 255, 127);
             RenderSystem.enableTexture();
             RenderSystem.enableDepthTest();
          }
@@ -350,7 +349,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    }
 
    private void fillRect(BufferBuilder var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      var1.begin(7, DefaultVertexFormat.POSITION_COLOR);
+      var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
       var1.vertex((double)(var2 + 0), (double)(var3 + 0), 0.0D).color(var6, var7, var8, var9).endVertex();
       var1.vertex((double)(var2 + 0), (double)(var3 + var5), 0.0D).color(var6, var7, var8, var9).endVertex();
       var1.vertex((double)(var2 + var4), (double)(var3 + var5), 0.0D).color(var6, var7, var8, var9).endVertex();

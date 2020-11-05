@@ -155,14 +155,14 @@ public class MapItemSavedData extends SavedData {
          this.carriedBy.add(var3);
       }
 
-      if (!var1.inventory.contains(var2)) {
+      if (!var1.getInventory().contains(var2)) {
          this.decorations.remove(var1.getName().getString());
       }
 
       for(int var7 = 0; var7 < this.carriedBy.size(); ++var7) {
          MapItemSavedData.HoldingPlayer var4 = (MapItemSavedData.HoldingPlayer)this.carriedBy.get(var7);
          String var5 = var4.player.getName().getString();
-         if (!var4.player.removed && (var4.player.inventory.contains(var2) || var2.isFramed())) {
+         if (!var4.player.isRemoved() && (var4.player.getInventory().contains(var2) || var2.isFramed())) {
             if (!var2.isFramed() && var4.player.level.dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(MapDecoration.Type.PLAYER, var4.player.level, var5, var4.player.getX(), var4.player.getZ(), (double)var4.player.yRot, (Component)null);
             }

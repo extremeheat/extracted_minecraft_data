@@ -4,14 +4,13 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 public class LeadItem extends Item {
@@ -22,8 +21,8 @@ public class LeadItem extends Item {
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
-      Block var4 = var2.getBlockState(var3).getBlock();
-      if (var4.is((Tag)BlockTags.FENCES)) {
+      BlockState var4 = var2.getBlockState(var3);
+      if (var4.is(BlockTags.FENCES)) {
          Player var5 = var1.getPlayer();
          if (!var2.isClientSide && var5 != null) {
             bindPlayerMobs(var5, var2, var3);

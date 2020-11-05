@@ -2,7 +2,6 @@ package net.minecraft.world.item;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -15,7 +14,7 @@ public class ShearsItem extends Item {
    }
 
    public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
-      if (!var2.isClientSide && !var3.getBlock().is((Tag)BlockTags.FIRE)) {
+      if (!var2.isClientSide && !var3.is(BlockTags.FIRE)) {
          var1.hurtAndBreak(1, var5, (var0) -> {
             var0.broadcastBreakEvent(EquipmentSlot.MAINHAND);
          });

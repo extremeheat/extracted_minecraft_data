@@ -53,7 +53,7 @@ public class EnchantmentHelper {
    }
 
    public static Map<Enchantment, Integer> getEnchantments(ItemStack var0) {
-      ListTag var1 = var0.getItem() == Items.ENCHANTED_BOOK ? EnchantedBookItem.getEnchantments(var0) : var0.getEnchantmentTags();
+      ListTag var1 = var0.is(Items.ENCHANTED_BOOK) ? EnchantedBookItem.getEnchantments(var0) : var0.getEnchantmentTags();
       return deserializeEnchantments(var1);
    }
 
@@ -83,7 +83,7 @@ public class EnchantmentHelper {
             var7.putString("id", String.valueOf(Registry.ENCHANTMENT.getKey(var5)));
             var7.putShort("lvl", (short)var6);
             var2.add(var7);
-            if (var1.getItem() == Items.ENCHANTED_BOOK) {
+            if (var1.is(Items.ENCHANTED_BOOK)) {
                EnchantedBookItem.addEnchantment(var1, new EnchantmentInstance(var5, var6));
             }
          }
@@ -91,7 +91,7 @@ public class EnchantmentHelper {
 
       if (var2.isEmpty()) {
          var1.removeTagKey("Enchantments");
-      } else if (var1.getItem() != Items.ENCHANTED_BOOK) {
+      } else if (!var1.is(Items.ENCHANTED_BOOK)) {
          var1.addTagElement("Enchantments", var2);
       }
 
@@ -304,7 +304,7 @@ public class EnchantmentHelper {
 
    public static ItemStack enchantItem(Random var0, ItemStack var1, int var2, boolean var3) {
       List var4 = selectEnchantment(var0, var1, var2, var3);
-      boolean var5 = var1.getItem() == Items.BOOK;
+      boolean var5 = var1.is(Items.BOOK);
       if (var5) {
          var1 = new ItemStack(Items.ENCHANTED_BOOK);
       }
@@ -381,7 +381,7 @@ public class EnchantmentHelper {
    public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, boolean var2) {
       ArrayList var3 = Lists.newArrayList();
       Item var4 = var1.getItem();
-      boolean var5 = var1.getItem() == Items.BOOK;
+      boolean var5 = var1.is(Items.BOOK);
       Iterator var6 = Registry.ENCHANTMENT.iterator();
 
       while(true) {

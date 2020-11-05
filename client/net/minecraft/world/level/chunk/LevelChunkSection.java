@@ -23,11 +23,15 @@ public class LevelChunkSection {
 
    public LevelChunkSection(int var1, short var2, short var3, short var4) {
       super();
-      this.bottomBlockY = var1;
+      this.bottomBlockY = getBottomBlockY(var1);
       this.nonEmptyBlockCount = var2;
       this.tickingBlockCount = var3;
       this.tickingFluidCount = var4;
       this.states = new PalettedContainer(GLOBAL_BLOCKSTATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());
+   }
+
+   public static int getBottomBlockY(int var0) {
+      return var0 << 4;
    }
 
    public BlockState getBlockState(int var1, int var2, int var3) {

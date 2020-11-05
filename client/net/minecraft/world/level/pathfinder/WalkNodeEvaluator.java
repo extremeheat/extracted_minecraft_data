@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
@@ -54,13 +53,13 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
    public Node getStart() {
       BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
-      int var1 = Mth.floor(this.mob.getY());
+      int var1 = this.mob.getBlockY();
       BlockState var3 = this.level.getBlockState(var2.set(this.mob.getX(), (double)var1, this.mob.getZ()));
       BlockPos var4;
       if (!this.mob.canStandOnFluid(var3.getFluidState().getType())) {
          if (this.canFloat() && this.mob.isInWater()) {
             while(true) {
-               if (var3.getBlock() != Blocks.WATER && var3.getFluidState() != Fluids.WATER.getSource(false)) {
+               if (!var3.is(Blocks.WATER) && var3.getFluidState() != Fluids.WATER.getSource(false)) {
                   --var1;
                   break;
                }
@@ -71,7 +70,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          } else if (this.mob.isOnGround()) {
             var1 = Mth.floor(this.mob.getY() + 0.5D);
          } else {
-            for(var4 = this.mob.blockPosition(); (this.level.getBlockState(var4).isAir() || this.level.getBlockState(var4).isPathfindable(this.level, var4, PathComputationType.LAND)) && var4.getY() > 0; var4 = var4.below()) {
+            for(var4 = this.mob.blockPosition(); (this.level.getBlockState(var4).isAir() || this.level.getBlockState(var4).isPathfindable(this.level, var4, PathComputationType.LAND)) && var4.getY() > this.mob.level.getMinBuildHeight(); var4 = var4.below()) {
             }
 
             var1 = var4.above().getY();
@@ -254,7 +253,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   return var9;
                }
 
-               while(var2 > 0) {
+               while(var2 > this.mob.level.getMinBuildHeight()) {
                   --var2;
                   var13 = this.getCachedBlockType(this.mob, var1, var2, var3);
                   if (var13 != BlockPathTypes.WATER) {
@@ -274,7 +273,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                while(var13 == BlockPathTypes.OPEN) {
                   --var2;
                   Node var23;
-                  if (var2 < 0) {
+                  if (var2 < this.mob.level.getMinBuildHeight()) {
                      var23 = this.getNode(var1, var18, var3);
                      var23.type = BlockPathTypes.BLOCKED;
                      var23.costMalus = -1.0F;
@@ -416,7 +415,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       int var3 = var1.getY();
       int var4 = var1.getZ();
       BlockPathTypes var5 = getBlockPathTypeRaw(var0, var1);
-      if (var5 == BlockPathTypes.OPEN && var3 >= 1) {
+      if (var5 == BlockPathTypes.OPEN && var3 >= var0.getMinBuildHeight() + 1) {
          BlockPathTypes var6 = getBlockPathTypeRaw(var0, var1.set(var2, var3 - 1, var4));
          var5 = var6 != BlockPathTypes.WALKABLE && var6 != BlockPathTypes.OPEN && var6 != BlockPathTypes.WATER && var6 != BlockPathTypes.LAVA ? BlockPathTypes.WALKABLE : BlockPathTypes.OPEN;
          if (var6 == BlockPathTypes.DAMAGE_FIRE) {
@@ -510,7 +509,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                return BlockPathTypes.RAIL;
             } else if (var3 instanceof LeavesBlock) {
                return BlockPathTypes.LEAVES;
-            } else if (!var3.is((Tag)BlockTags.FENCES) && !var3.is((Tag)BlockTags.WALLS) && (!(var3 instanceof FenceGateBlock) || (Boolean)var2.getValue(FenceGateBlock.OPEN))) {
+            } else if (!var2.is(BlockTags.FENCES) && !var2.is(BlockTags.WALLS) && (!(var3 instanceof FenceGateBlock) || (Boolean)var2.getValue(FenceGateBlock.OPEN))) {
                return !var2.isPathfindable(var0, var1, PathComputationType.LAND) ? BlockPathTypes.BLOCKED : BlockPathTypes.OPEN;
             } else {
                return BlockPathTypes.FENCE;

@@ -162,7 +162,7 @@ public class ServerStatusPinger {
    private void pingLegacyServer(final ServerData var1) {
       final ServerAddress var2 = ServerAddress.parseString(var1.ip);
       ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1x) throws Exception {
+         protected void initChannel(Channel var1x) {
             try {
                var1x.config().setOption(ChannelOption.TCP_NODELAY, true);
             } catch (ChannelException var3) {
@@ -208,7 +208,7 @@ public class ServerStatusPinger {
                   }
                }
 
-               protected void channelRead0(ChannelHandlerContext var1x, ByteBuf var2x) throws Exception {
+               protected void channelRead0(ChannelHandlerContext var1x, ByteBuf var2x) {
                   short var3 = var2x.readUnsignedByte();
                   if (var3 == 255) {
                      String var4 = new String(var2x.readBytes(var2x.readShort() * 2).array(), StandardCharsets.UTF_16BE);
@@ -229,7 +229,7 @@ public class ServerStatusPinger {
                   var1x.close();
                }
 
-               public void exceptionCaught(ChannelHandlerContext var1x, Throwable var2x) throws Exception {
+               public void exceptionCaught(ChannelHandlerContext var1x, Throwable var2x) {
                   var1x.close();
                }
 

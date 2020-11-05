@@ -144,19 +144,19 @@ public class OggAudioStream implements AudioStream {
                      int var10 = var5.get(0);
                      PointerBuffer var11 = var4.getPointerBuffer(var10);
                      boolean var12;
-                     if (var10 == 1) {
-                        this.convertMono(var11.getFloatBuffer(0, var9), var1);
-                        var12 = true;
-                        return var12;
+                     if (var10 != 1) {
+                        if (var10 == 2) {
+                           this.convertStereo(var11.getFloatBuffer(0, var9), var11.getFloatBuffer(1, var9), var1);
+                           var12 = true;
+                           return var12;
+                        }
+
+                        throw new IllegalStateException("Invalid number of channels: " + var10);
                      }
 
-                     if (var10 == 2) {
-                        this.convertStereo(var11.getFloatBuffer(0, var9), var11.getFloatBuffer(1, var9), var1);
-                        var12 = true;
-                        return var12;
-                     }
-
-                     throw new IllegalStateException("Invalid number of channels: " + var10);
+                     this.convertMono(var11.getFloatBuffer(0, var9), var1);
+                     var12 = true;
+                     return var12;
                   }
                }
             }

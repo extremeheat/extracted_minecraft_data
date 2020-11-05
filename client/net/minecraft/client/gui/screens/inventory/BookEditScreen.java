@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,7 +221,7 @@ public class BookEditScreen extends Screen {
             this.book.addTagElement("title", StringTag.valueOf(this.title.trim()));
          }
 
-         int var3 = this.hand == InteractionHand.MAIN_HAND ? this.owner.inventory.selected : 40;
+         int var3 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().selected : 40;
          this.minecraft.getConnection().send((Packet)(new ServerboundEditBookPacket(this.book, var1, var3)));
       }
    }
@@ -447,7 +448,7 @@ public class BookEditScreen extends Screen {
       RenderSystem.disableTexture();
       RenderSystem.enableColorLogicOp();
       RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      var3.begin(7, DefaultVertexFormat.POSITION);
+      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
       Rect2i[] var4 = var1;
       int var5 = var1.length;
 

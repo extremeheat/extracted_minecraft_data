@@ -24,7 +24,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -106,8 +105,8 @@ public class DispenserBlock extends BaseEntityBlock {
       this.dispenseFrom(var2, var3);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new DispenserBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new DispenserBlockEntity(var1, var2);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

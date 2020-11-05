@@ -1,15 +1,15 @@
 package net.minecraft.world.level.block;
 
 import java.util.Random;
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,10 +23,12 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
    public static final IntegerProperty AGE;
    protected static final VoxelShape[] SHAPE_BY_AGE;
    private final StemGrownBlock fruit;
+   private final Supplier<Item> seedSupplier;
 
-   protected StemBlock(StemGrownBlock var1, BlockBehaviour.Properties var2) {
-      super(var2);
+   protected StemBlock(StemGrownBlock var1, Supplier<Item> var2, BlockBehaviour.Properties var3) {
+      super(var3);
       this.fruit = var1;
+      this.seedSupplier = var2;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
@@ -60,18 +62,8 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
       }
    }
 
-   @Nullable
-   protected Item getSeedItem() {
-      if (this.fruit == Blocks.PUMPKIN) {
-         return Items.PUMPKIN_SEEDS;
-      } else {
-         return this.fruit == Blocks.MELON ? Items.MELON_SEEDS : null;
-      }
-   }
-
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      Item var4 = this.getSeedItem();
-      return var4 == null ? ItemStack.EMPTY : new ItemStack(var4);
+      return new ItemStack((ItemLike)this.seedSupplier.get());
    }
 
    public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {

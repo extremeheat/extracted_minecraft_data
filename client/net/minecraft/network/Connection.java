@@ -35,6 +35,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
+import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
@@ -93,7 +94,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       LOGGER.debug("Enabled auto read");
    }
 
-   public void channelInactive(ChannelHandlerContext var1) throws Exception {
+   public void channelInactive(ChannelHandlerContext var1) {
       this.disconnect(new TranslatableComponent("disconnect.endOfStream"));
    }
 
@@ -111,7 +112,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                TranslatableComponent var4 = new TranslatableComponent("disconnect.genericReason", new Object[]{"Internal Exception: " + var2});
                if (var3) {
                   LOGGER.debug("Failed to sent packet", var2);
-                  this.send(new ClientboundDisconnectPacket(var4), (var2x) -> {
+                  ConnectionProtocol var5 = this.getCurrentProtocol();
+                  Object var6 = var5 == ConnectionProtocol.LOGIN ? new ClientboundLoginDisconnectPacket(var4) : new ClientboundDisconnectPacket(var4);
+                  this.send((Packet)var6, (var2x) -> {
                      this.disconnect(var4);
                   });
                   this.setReadOnly();
@@ -125,7 +128,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   protected void channelRead0(ChannelHandlerContext var1, Packet<?> var2) throws Exception {
+   protected void channelRead0(ChannelHandlerContext var1, Packet<?> var2) {
       if (this.channel.isOpen()) {
          try {
             genericsFtw(var2, this.packetListener);
@@ -162,7 +165,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    private void sendPacket(Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2) {
       ConnectionProtocol var3 = ConnectionProtocol.getProtocolForPacket(var1);
-      ConnectionProtocol var4 = (ConnectionProtocol)this.channel.attr(ATTRIBUTE_PROTOCOL).get();
+      ConnectionProtocol var4 = this.getCurrentProtocol();
       ++this.sentPackets;
       if (var4 != var3) {
          LOGGER.debug("Disabled auto read");
@@ -195,6 +198,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          });
       }
 
+   }
+
+   private ConnectionProtocol getCurrentProtocol() {
+      return (ConnectionProtocol)this.channel.attr(ATTRIBUTE_PROTOCOL).get();
    }
 
    private void flushQueue() {
@@ -265,7 +272,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
 
       ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)var5.get())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1) throws Exception {
+         protected void initChannel(Channel var1) {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);
             } catch (ChannelException var3x) {
@@ -280,7 +287,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static Connection connectToLocalServer(SocketAddress var0) {
       final Connection var1 = new Connection(PacketFlow.CLIENTBOUND);
       ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)LOCAL_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1x) throws Exception {
+         protected void initChannel(Channel var1x) {
             var1x.pipeline().addLast("packet_handler", var1);
          }
       })).channel(LocalChannel.class)).connect(var0).syncUninterruptibly();

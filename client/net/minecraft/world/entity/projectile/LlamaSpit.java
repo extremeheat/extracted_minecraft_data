@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -27,18 +26,6 @@ public class LlamaSpit extends Projectile {
       this.setPos(var2.getX() - (double)(var2.getBbWidth() + 1.0F) * 0.5D * (double)Mth.sin(var2.yBodyRot * 0.017453292F), var2.getEyeY() - 0.10000000149011612D, var2.getZ() + (double)(var2.getBbWidth() + 1.0F) * 0.5D * (double)Mth.cos(var2.yBodyRot * 0.017453292F));
    }
 
-   public LlamaSpit(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      this(EntityType.LLAMA_SPIT, var1);
-      this.setPos(var2, var4, var6);
-
-      for(int var14 = 0; var14 < 7; ++var14) {
-         double var15 = 0.4D + 0.1D * (double)var14;
-         var1.addParticle(ParticleTypes.SPIT, var2, var4, var6, var8 * var15, var10, var12 * var15);
-      }
-
-      this.setDeltaMovement(var8, var10, var12);
-   }
-
    public void tick() {
       super.tick();
       Vec3 var1 = this.getDeltaMovement();
@@ -54,9 +41,9 @@ public class LlamaSpit extends Projectile {
       float var9 = 0.99F;
       float var10 = 0.06F;
       if (this.level.getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
-         this.remove();
+         this.discard();
       } else if (this.isInWaterOrBubble()) {
-         this.remove();
+         this.discard();
       } else {
          this.setDeltaMovement(var1.scale(0.9900000095367432D));
          if (!this.isNoGravity()) {
@@ -79,7 +66,7 @@ public class LlamaSpit extends Projectile {
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       if (!this.level.isClientSide) {
-         this.remove();
+         this.discard();
       }
 
    }
@@ -87,7 +74,17 @@ public class LlamaSpit extends Projectile {
    protected void defineSynchedData() {
    }
 
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      double var2 = var1.getXa();
+      double var4 = var1.getYa();
+      double var6 = var1.getZa();
+
+      for(int var8 = 0; var8 < 7; ++var8) {
+         double var9 = 0.4D + 0.1D * (double)var8;
+         this.level.addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), var2 * var9, var4, var6 * var9);
+      }
+
+      this.setDeltaMovement(var2, var4, var6);
    }
 }

@@ -38,7 +38,7 @@ public class WorldTemplate extends ValueObject {
          var1.recommendedPlayers = JsonUtils.getStringOr("recommendedPlayers", var0, "");
          var1.type = WorldTemplate.WorldTemplateType.valueOf(JsonUtils.getStringOr("type", var0, WorldTemplate.WorldTemplateType.WORLD_TEMPLATE.name()));
       } catch (Exception var3) {
-         LOGGER.error("Could not parse WorldTemplate: " + var3.getMessage());
+         LOGGER.error("Could not parse WorldTemplate: {}", var3.getMessage());
       }
 
       return var1;

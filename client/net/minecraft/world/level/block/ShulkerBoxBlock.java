@@ -32,6 +32,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -57,8 +59,13 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.UP));
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new ShulkerBoxBlockEntity(this.color);
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new ShulkerBoxBlockEntity(this.color, var1, var2);
+   }
+
+   @Nullable
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.SHULKER_BOX, ShulkerBoxBlockEntity::tick);
    }
 
    public RenderShape getRenderShape(BlockState var1) {

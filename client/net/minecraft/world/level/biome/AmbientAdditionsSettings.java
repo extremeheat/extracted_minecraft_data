@@ -12,8 +12,8 @@ public class AmbientAdditionsSettings {
          return var0x.tickChance;
       })).apply(var0, AmbientAdditionsSettings::new);
    });
-   private SoundEvent soundEvent;
-   private double tickChance;
+   private final SoundEvent soundEvent;
+   private final double tickChance;
 
    public AmbientAdditionsSettings(SoundEvent var1, double var2) {
       super();

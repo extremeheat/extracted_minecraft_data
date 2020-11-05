@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
 import javax.annotation.Nullable;
@@ -79,7 +80,7 @@ public class ScreenEffectRenderer {
       float var12 = var1.getV0();
       float var13 = var1.getV1();
       Matrix4f var14 = var2.last().pose();
-      var3.begin(7, DefaultVertexFormat.POSITION_COLOR_TEX);
+      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
       var3.vertex(var14, -1.0F, -1.0F, -0.5F).color(0.1F, 0.1F, 0.1F, 1.0F).uv(var11, var13).endVertex();
       var3.vertex(var14, 1.0F, -1.0F, -0.5F).color(0.1F, 0.1F, 0.1F, 1.0F).uv(var10, var13).endVertex();
       var3.vertex(var14, 1.0F, 1.0F, -0.5F).color(0.1F, 0.1F, 0.1F, 1.0F).uv(var10, var12).endVertex();
@@ -104,7 +105,7 @@ public class ScreenEffectRenderer {
       float var10 = -var0.player.yRot / 64.0F;
       float var11 = var0.player.xRot / 64.0F;
       Matrix4f var12 = var1.last().pose();
-      var2.begin(7, DefaultVertexFormat.POSITION_COLOR_TEX);
+      var2.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
       var2.vertex(var12, -1.0F, -1.0F, -0.5F).color(var3, var3, var3, 0.1F).uv(4.0F + var10, 4.0F + var11).endVertex();
       var2.vertex(var12, 1.0F, -1.0F, -0.5F).color(var3, var3, var3, 0.1F).uv(0.0F + var10, 4.0F + var11).endVertex();
       var2.vertex(var12, 1.0F, 1.0F, -0.5F).color(var3, var3, var3, 0.1F).uv(0.0F + var10, 0.0F + var11).endVertex();
@@ -146,7 +147,7 @@ public class ScreenEffectRenderer {
          var1.translate((double)((float)(-(var16 * 2 - 1)) * 0.24F), -0.30000001192092896D, 0.0D);
          var1.mulPose(Vector3f.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
          Matrix4f var22 = var1.last().pose();
-         var2.begin(7, DefaultVertexFormat.POSITION_COLOR_TEX);
+         var2.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
          var2.vertex(var22, -0.5F, -0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(var12, var14).endVertex();
          var2.vertex(var22, 0.5F, -0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(var11, var14).endVertex();
          var2.vertex(var22, 0.5F, 0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(var11, var13).endVertex();

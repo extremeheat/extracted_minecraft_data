@@ -5,7 +5,14 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -14,27 +21,54 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 
-public class ConduitRenderer extends BlockEntityRenderer<ConduitBlockEntity> {
+public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> {
    public static final Material SHELL_TEXTURE;
    public static final Material ACTIVE_SHELL_TEXTURE;
    public static final Material WIND_TEXTURE;
    public static final Material VERTICAL_WIND_TEXTURE;
    public static final Material OPEN_EYE_TEXTURE;
    public static final Material CLOSED_EYE_TEXTURE;
-   private final ModelPart eye = new ModelPart(16, 16, 0, 0);
+   private final ModelPart eye;
    private final ModelPart wind;
    private final ModelPart shell;
    private final ModelPart cage;
+   private final BlockEntityRenderDispatcher renderer;
 
-   public ConduitRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
-      this.eye.addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 0.0F, 0.01F);
-      this.wind = new ModelPart(64, 32, 0, 0);
-      this.wind.addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F);
-      this.shell = new ModelPart(32, 16, 0, 0);
-      this.shell.addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F);
-      this.cage = new ModelPart(32, 16, 0, 0);
-      this.cage.addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F);
+   public ConduitRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
+      this.renderer = var1.getBlockEntityRenderDispatcher();
+      this.eye = var1.getLayer(ModelLayers.CONDUIT_EYE);
+      this.wind = var1.getLayer(ModelLayers.CONDUIT_WIND);
+      this.shell = var1.getLayer(ModelLayers.CONDUIT_SHELL);
+      this.cage = var1.getLayer(ModelLayers.CONDUIT_CAGE);
+   }
+
+   public static LayerDefinition createEyeLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 0.0F, new CubeDeformation(0.01F)), PartPose.ZERO);
+      return LayerDefinition.create(var0, 16, 16);
+   }
+
+   public static LayerDefinition createWindLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("wind", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 32);
+   }
+
+   public static LayerDefinition createShellLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 32, 16);
+   }
+
+   public static LayerDefinition createCageLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      var1.addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 32, 16);
    }
 
    public void render(ConduitBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

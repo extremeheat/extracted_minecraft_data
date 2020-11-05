@@ -11,7 +11,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.SerializableUUID;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -40,7 +40,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<LivingEntity> ATTACK_TARGET;
    public static final MemoryModuleType<Boolean> ATTACK_COOLING_DOWN;
    public static final MemoryModuleType<LivingEntity> INTERACTION_TARGET;
-   public static final MemoryModuleType<AgableMob> BREED_TARGET;
+   public static final MemoryModuleType<AgeableMob> BREED_TARGET;
    public static final MemoryModuleType<Entity> RIDE_TARGET;
    public static final MemoryModuleType<Path> PATH;
    public static final MemoryModuleType<List<GlobalPos>> INTERACTABLE_DOORS;
@@ -57,7 +57,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Long> LAST_SLEPT;
    public static final MemoryModuleType<Long> LAST_WOKEN;
    public static final MemoryModuleType<Long> LAST_WORKED_AT_POI;
-   public static final MemoryModuleType<AgableMob> NEAREST_VISIBLE_ADULT;
+   public static final MemoryModuleType<AgeableMob> NEAREST_VISIBLE_ADULT;
    public static final MemoryModuleType<ItemEntity> NEAREST_VISIBLE_WANTED_ITEM;
    public static final MemoryModuleType<Mob> NEAREST_VISIBLE_NEMESIS;
    public static final MemoryModuleType<UUID> ANGRY_AT;

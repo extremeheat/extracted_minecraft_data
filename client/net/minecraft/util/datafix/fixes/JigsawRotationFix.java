@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class JigsawRotationFix extends DataFix {
-   private static final Map<String, String> renames = ImmutableMap.builder().put("down", "down_south").put("up", "up_north").put("north", "north_up").put("south", "south_up").put("west", "west_up").put("east", "east_up").build();
+   private static final Map<String, String> RENAMES = ImmutableMap.builder().put("down", "down_south").put("up", "up_north").put("north", "north_up").put("south", "south_up").put("west", "west_up").put("east", "east_up").build();
 
    public JigsawRotationFix(Schema var1, boolean var2) {
       super(var1, var2);
@@ -20,7 +20,7 @@ public class JigsawRotationFix extends DataFix {
       Optional var1 = var0.get("Name").asString().result();
       return var1.equals(Optional.of("minecraft:jigsaw")) ? var0.update("Properties", (var0x) -> {
          String var1 = var0x.get("facing").asString("north");
-         return var0x.remove("facing").set("orientation", var0x.createString((String)renames.getOrDefault(var1, var1)));
+         return var0x.remove("facing").set("orientation", var0x.createString((String)RENAMES.getOrDefault(var1, var1)));
       }) : var0;
    }
 

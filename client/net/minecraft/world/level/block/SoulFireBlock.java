@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -19,11 +18,11 @@ public class SoulFireBlock extends BaseFireBlock {
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return canSurviveOnBlock(var2.getBlockState(var3.below()).getBlock());
+      return canSurviveOnBlock(var2.getBlockState(var3.below()));
    }
 
-   public static boolean canSurviveOnBlock(Block var0) {
-      return var0.is((Tag)BlockTags.SOUL_FIRE_BASE_BLOCKS);
+   public static boolean canSurviveOnBlock(BlockState var0) {
+      return var0.is(BlockTags.SOUL_FIRE_BASE_BLOCKS);
    }
 
    protected boolean canBurn(BlockState var1) {

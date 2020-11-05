@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Iterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -70,7 +71,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.WEST)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var18, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
@@ -81,7 +82,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.SOUTH)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var18, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
@@ -92,7 +93,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.EAST)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var24, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
@@ -103,7 +104,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.NORTH)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var24, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
@@ -114,7 +115,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.DOWN)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var18, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
@@ -125,7 +126,7 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
             if (var13.isFaceSturdy(var9, var12, Direction.UP)) {
                var34 = Tesselator.getInstance();
                var35 = var34.getBuilder();
-               var35.begin(5, DefaultVertexFormat.POSITION_COLOR);
+               var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
                var35.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var18, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                var35.vertex(var24, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();

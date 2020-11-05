@@ -50,9 +50,9 @@ public class ClearInventoryCommands {
 
       while(var5.hasNext()) {
          ServerPlayer var6 = (ServerPlayer)var5.next();
-         var4 += var6.inventory.clearOrCountMatchingItems(var2, var3, var6.inventoryMenu.getCraftSlots());
+         var4 += var6.getInventory().clearOrCountMatchingItems(var2, var3, var6.inventoryMenu.getCraftSlots());
          var6.containerMenu.broadcastChanges();
-         var6.inventoryMenu.slotsChanged(var6.inventory);
+         var6.inventoryMenu.slotsChanged(var6.getInventory());
          var6.broadcastCarriedItem();
       }
 

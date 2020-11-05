@@ -48,7 +48,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       Random var4 = var2.getRandom();
       Enchantment var3;
       if (this.enchantments.isEmpty()) {
-         boolean var5 = var1.getItem() == Items.BOOK;
+         boolean var5 = var1.is(Items.BOOK);
          List var6 = (List)Registry.ENCHANTMENT.stream().filter(Enchantment::isDiscoverable).filter((var2x) -> {
             return var5 || var2x.canEnchant(var1);
          }).collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
 
    private static ItemStack enchantItem(ItemStack var0, Enchantment var1, Random var2) {
       int var3 = Mth.nextInt(var2, var1.getMinLevel(), var1.getMaxLevel());
-      if (var0.getItem() == Items.BOOK) {
+      if (var0.is(Items.BOOK)) {
          var0 = new ItemStack(Items.ENCHANTED_BOOK);
          EnchantedBookItem.addEnchantment(var0, new EnchantmentInstance(var1, var3));
       } else {

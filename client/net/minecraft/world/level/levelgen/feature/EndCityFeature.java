@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -48,8 +49,8 @@ public class EndCityFeature extends StructureFeature<NoneFeatureConfiguration> {
          var6 = -5;
       }
 
-      int var7 = (var0 << 4) + 7;
-      int var8 = (var1 << 4) + 7;
+      int var7 = SectionPos.sectionToBlockCoord(var0, 7);
+      int var8 = SectionPos.sectionToBlockCoord(var1, 7);
       int var9 = var2.getFirstOccupiedHeight(var7, var8, Heightmap.Types.WORLD_SURFACE_WG);
       int var10 = var2.getFirstOccupiedHeight(var7, var8 + var6, Heightmap.Types.WORLD_SURFACE_WG);
       int var11 = var2.getFirstOccupiedHeight(var7 + var5, var8, Heightmap.Types.WORLD_SURFACE_WG);
@@ -66,7 +67,7 @@ public class EndCityFeature extends StructureFeature<NoneFeatureConfiguration> {
          Rotation var8 = Rotation.getRandom(this.random);
          int var9 = EndCityFeature.getYPositionForFeature(var4, var5, var2);
          if (var9 >= 60) {
-            BlockPos var10 = new BlockPos(var4 * 16 + 8, var9, var5 * 16 + 8);
+            BlockPos var10 = new BlockPos(SectionPos.sectionToBlockCoord(var4, 8), var9, SectionPos.sectionToBlockCoord(var5, 8));
             EndCityPieces.startHouseTower(var3, var10, var8, this.pieces, this.random);
             this.calculateBoundingBox();
          }

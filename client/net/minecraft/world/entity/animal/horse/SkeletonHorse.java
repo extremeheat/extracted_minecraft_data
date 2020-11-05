@@ -9,7 +9,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -102,7 +102,7 @@ public class SkeletonHorse extends AbstractHorse {
    public void aiStep() {
       super.aiStep();
       if (this.isTrap() && this.trapTime++ >= 18000) {
-         this.remove();
+         this.discard();
       }
 
    }
@@ -144,8 +144,8 @@ public class SkeletonHorse extends AbstractHorse {
    }
 
    @Nullable
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
-      return (AgableMob)EntityType.SKELETON_HORSE.create(var1);
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return (AgeableMob)EntityType.SKELETON_HORSE.create(var1);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
@@ -161,7 +161,7 @@ public class SkeletonHorse extends AbstractHorse {
          return super.mobInteract(var1, var2);
       } else {
          if (!var3.isEmpty()) {
-            if (var3.getItem() == Items.SADDLE && !this.isSaddled()) {
+            if (var3.is(Items.SADDLE) && !this.isSaddled()) {
                this.openInventory(var1);
                return InteractionResult.sidedSuccess(this.level.isClientSide);
             }

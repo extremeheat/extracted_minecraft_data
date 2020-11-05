@@ -14,7 +14,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -34,12 +34,12 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class SpawnEggItem extends Item {
-   private static final Map<EntityType<?>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
+   private static final Map<EntityType<? extends Mob>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
    private final int color1;
    private final int color2;
    private final EntityType<?> defaultType;
 
-   public SpawnEggItem(EntityType<?> var1, int var2, int var3, Item.Properties var4) {
+   public SpawnEggItem(EntityType<? extends Mob> var1, int var2, int var3, Item.Properties var4) {
       super(var4);
       this.defaultType = var1;
       this.color1 = var2;
@@ -102,7 +102,7 @@ public class SpawnEggItem extends Item {
             if (var8.spawn((ServerLevel)var1, var4, var2, var7, MobSpawnType.SPAWN_EGG, false, false) == null) {
                return InteractionResultHolder.pass(var4);
             } else {
-               if (!var2.abilities.instabuild) {
+               if (!var2.getAbilities().instabuild) {
                   var4.shrink(1);
                }
 
@@ -148,8 +148,8 @@ public class SpawnEggItem extends Item {
          return Optional.empty();
       } else {
          Object var7;
-         if (var2 instanceof AgableMob) {
-            var7 = ((AgableMob)var2).getBreedOffspring(var4, (AgableMob)var2);
+         if (var2 instanceof AgeableMob) {
+            var7 = ((AgeableMob)var2).getBreedOffspring(var4, (AgeableMob)var2);
          } else {
             var7 = (Mob)var3.create(var4);
          }
@@ -167,7 +167,7 @@ public class SpawnEggItem extends Item {
                   ((Mob)var7).setCustomName(var6.getHoverName());
                }
 
-               if (!var1.abilities.instabuild) {
+               if (!var1.getAbilities().instabuild) {
                   var6.shrink(1);
                }
 

@@ -48,7 +48,7 @@ public class GiveCommand {
                int var7 = Math.min(var1.getItem().getMaxStackSize(), var6);
                var6 -= var7;
                ItemStack var8 = var1.createItemStack(var7, false);
-               boolean var9 = var5.inventory.add(var8);
+               boolean var9 = var5.getInventory().add(var8);
                ItemEntity var10;
                if (var9 && var8.isEmpty()) {
                   var8.setCount(1);

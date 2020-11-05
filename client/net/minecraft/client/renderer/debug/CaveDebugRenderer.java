@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class CaveDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       BlockPos var9 = new BlockPos(var3, 0.0D, var7);
       Tesselator var10 = Tesselator.getInstance();
       BufferBuilder var11 = var10.getBuilder();
-      var11.begin(5, DefaultVertexFormat.POSITION_COLOR);
+      var11.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
       Iterator var12 = this.tunnelsList.entrySet().iterator();
 
       while(var12.hasNext()) {

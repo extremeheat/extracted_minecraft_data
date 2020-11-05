@@ -23,7 +23,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.level.progress.ChunkProgressListener;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.entity.Entity;
@@ -39,6 +38,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -64,17 +64,17 @@ public class ServerChunkCache extends ChunkSource {
    @Nullable
    private NaturalSpawner.SpawnState lastSpawnState;
 
-   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureManager var4, Executor var5, ChunkGenerator var6, int var7, boolean var8, ChunkProgressListener var9, Supplier<DimensionDataStorage> var10) {
+   public ServerChunkCache(ServerLevel var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, StructureManager var4, Executor var5, ChunkGenerator var6, int var7, boolean var8, ChunkProgressListener var9, ChunkStatusUpdateListener var10, Supplier<DimensionDataStorage> var11) {
       super();
       this.level = var1;
       this.mainThreadProcessor = new ServerChunkCache.MainThreadExecutor(var1);
       this.generator = var6;
       this.mainThread = Thread.currentThread();
-      File var11 = var2.getDimensionPath(var1.dimension());
-      File var12 = new File(var11, "data");
-      var12.mkdirs();
-      this.dataStorage = new DimensionDataStorage(var12, var3);
-      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, this.getGenerator(), var9, var10, var7, var8);
+      File var12 = var2.getDimensionPath(var1.dimension());
+      File var13 = new File(var12, "data");
+      var13.mkdirs();
+      this.dataStorage = new DimensionDataStorage(var13, var3);
+      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, this.getGenerator(), var9, var10, var11, var7, var8);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.clearCache();
@@ -278,17 +278,12 @@ public class ServerChunkCache extends ChunkSource {
       }
    }
 
-   public boolean isEntityTickingChunk(Entity var1) {
-      long var2 = ChunkPos.asLong(Mth.floor(var1.getX()) >> 4, Mth.floor(var1.getZ()) >> 4);
-      return this.checkChunkFuture(var2, ChunkHolder::getEntityTickingChunkFuture);
-   }
-
    public boolean isEntityTickingChunk(ChunkPos var1) {
       return this.checkChunkFuture(var1.toLong(), ChunkHolder::getEntityTickingChunkFuture);
    }
 
    public boolean isTickingChunk(BlockPos var1) {
-      long var2 = ChunkPos.asLong(var1.getX() >> 4, var1.getZ() >> 4);
+      long var2 = ChunkPos.asLong(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
       return this.checkChunkFuture(var2, ChunkHolder::getTickingChunkFuture);
    }
 
@@ -385,7 +380,7 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    public String gatherStats() {
-      return "ServerChunkCache: " + this.getLoadedChunksCount();
+      return Integer.toString(this.getLoadedChunksCount());
    }
 
    @VisibleForTesting
@@ -402,8 +397,8 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    public void blockChanged(BlockPos var1) {
-      int var2 = var1.getX() >> 4;
-      int var3 = var1.getZ() >> 4;
+      int var2 = SectionPos.blockToSectionCoord(var1.getX());
+      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
       ChunkHolder var4 = this.getVisibleChunkIfPresent(ChunkPos.asLong(var2, var3));
       if (var4 != null) {
          var4.blockChanged(var1);

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
@@ -40,7 +41,7 @@ public class MineshaftFeature extends StructureFeature<MineshaftConfiguration> {
       }
 
       public void generatePieces(RegistryAccess var1, ChunkGenerator var2, StructureManager var3, int var4, int var5, Biome var6, MineshaftConfiguration var7) {
-         MineShaftPieces.MineShaftRoom var8 = new MineShaftPieces.MineShaftRoom(0, this.random, (var4 << 4) + 2, (var5 << 4) + 2, var7.type);
+         MineShaftPieces.MineShaftRoom var8 = new MineShaftPieces.MineShaftRoom(0, this.random, SectionPos.sectionToBlockCoord(var4, 2), SectionPos.sectionToBlockCoord(var5, 2), var7.type);
          this.pieces.add(var8);
          var8.addChildren(var8, this.pieces, this.random);
          this.calculateBoundingBox();

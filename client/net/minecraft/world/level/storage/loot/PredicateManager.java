@@ -58,7 +58,7 @@ public class PredicateManager extends SimpleJsonResourceReloadListener {
          var2x.validate(var6.enterCondition("{" + var1x + "}", var1x));
       });
       var6.getProblems().forEach((var0, var1x) -> {
-         LOGGER.warn("Found validation problem in " + var0 + ": " + var1x);
+         LOGGER.warn("Found validation problem in {}: {}", var0, var1x);
       });
       this.conditions = var5;
    }

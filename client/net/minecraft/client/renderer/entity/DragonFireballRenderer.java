@@ -16,7 +16,7 @@ public class DragonFireballRenderer extends EntityRenderer<DragonFireball> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon_fireball.png");
    private static final RenderType RENDER_TYPE;
 
-   public DragonFireballRenderer(EntityRenderDispatcher var1) {
+   public DragonFireballRenderer(EntityRendererProvider.Context var1) {
       super(var1);
    }
 

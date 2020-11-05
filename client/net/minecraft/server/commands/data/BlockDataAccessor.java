@@ -12,6 +12,7 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -51,7 +52,7 @@ public class BlockDataAccessor implements DataAccessor {
       var1.putInt("y", this.pos.getY());
       var1.putInt("z", this.pos.getZ());
       BlockState var2 = this.entity.getLevel().getBlockState(this.pos);
-      this.entity.load(var2, var1);
+      this.entity.load(var1);
       this.entity.setChanged();
       this.entity.getLevel().sendBlockUpdated(this.pos, var2, var2, 3);
    }
@@ -65,7 +66,7 @@ public class BlockDataAccessor implements DataAccessor {
    }
 
    public Component getPrintSuccess(Tag var1) {
-      return new TranslatableComponent("commands.data.block.query", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ(), var1.getPrettyDisplay()});
+      return new TranslatableComponent("commands.data.block.query", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtUtils.toPrettyComponent(var1)});
    }
 
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {

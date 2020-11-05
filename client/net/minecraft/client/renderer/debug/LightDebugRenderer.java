@@ -37,7 +37,7 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          int var16 = Mth.hsvToRgb(var15, 0.9F, 0.9F);
          long var17 = SectionPos.blockToSection(var13.asLong());
          if (var11.add(var17)) {
-            DebugRenderer.renderFloatingText(var9.getChunkSource().getLightEngine().getDebugData(LightLayer.SKY, SectionPos.of(var17)), (double)(SectionPos.x(var17) * 16 + 8), (double)(SectionPos.y(var17) * 16 + 8), (double)(SectionPos.z(var17) * 16 + 8), 16711680, 0.3F);
+            DebugRenderer.renderFloatingText(var9.getChunkSource().getLightEngine().getDebugData(LightLayer.SKY, SectionPos.of(var17)), (double)SectionPos.sectionToBlockCoord(SectionPos.x(var17), 8), (double)SectionPos.sectionToBlockCoord(SectionPos.y(var17), 8), (double)SectionPos.sectionToBlockCoord(SectionPos.z(var17), 8), 16711680, 0.3F);
          }
 
          if (var14 != 15) {

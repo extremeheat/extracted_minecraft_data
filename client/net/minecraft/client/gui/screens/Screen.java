@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.io.File;
 import java.net.URI;
@@ -163,7 +164,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
          boolean var13 = true;
          Tesselator var14 = Tesselator.getInstance();
          BufferBuilder var15 = var14.getBuilder();
-         var15.begin(7, DefaultVertexFormat.POSITION_COLOR);
+         var15.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
          Matrix4f var16 = var1.last().pose();
          fillGradient(var16, var15, var20 - 3, var21 - 4, var20 + var5 + 3, var21 - 3, 400, -267386864, -267386864);
          fillGradient(var16, var15, var20 - 3, var21 + var9 + 3, var20 + var5 + 3, var21 + var9 + 4, 400, -267386864, -267386864);
@@ -343,7 +344,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
       this.minecraft.getTextureManager().bind(BACKGROUND_LOCATION);
       RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       float var4 = 32.0F;
-      var3.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
       var3.vertex(0.0D, (double)this.height, 0.0D).uv(0.0F, (float)this.height / 32.0F + (float)var1).color(64, 64, 64, 255).endVertex();
       var3.vertex((double)this.width, (double)this.height, 0.0D).uv((float)this.width / 32.0F, (float)this.height / 32.0F + (float)var1).color(64, 64, 64, 255).endVertex();
       var3.vertex((double)this.width, 0.0D, 0.0D).uv((float)this.width / 32.0F, (float)var1).color(64, 64, 64, 255).endVertex();

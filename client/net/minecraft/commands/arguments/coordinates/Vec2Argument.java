@@ -32,7 +32,7 @@ public class Vec2Argument implements ArgumentType<Coordinates> {
       return new Vec2Argument(true);
    }
 
-   public static Vec2 getVec2(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static Vec2 getVec2(CommandContext<CommandSourceStack> var0, String var1) {
       Vec3 var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getPosition((CommandSourceStack)var0.getSource());
       return new Vec2((float)var2.x, (float)var2.z);
    }

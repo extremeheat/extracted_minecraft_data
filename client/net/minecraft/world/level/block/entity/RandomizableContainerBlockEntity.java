@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -26,8 +27,8 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
    protected ResourceLocation lootTable;
    protected long lootTableSeed;
 
-   protected RandomizableContainerBlockEntity(BlockEntityType<?> var1) {
-      super(var1);
+   protected RandomizableContainerBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
+      super(var1, var2, var3);
    }
 
    public static void setLootTable(BlockGetter var0, Random var1, BlockPos var2, ResourceLocation var3) {

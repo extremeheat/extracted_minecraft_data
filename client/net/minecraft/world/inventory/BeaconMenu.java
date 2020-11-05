@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import javax.annotation.Nullable;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
@@ -23,7 +24,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       super(MenuType.BEACON, var1);
       this.beacon = new SimpleContainer(1) {
          public boolean canPlaceItem(int var1, ItemStack var2) {
-            return var2.getItem().is(ItemTags.BEACON_PAYMENT_ITEMS);
+            return var2.is((Tag)ItemTags.BEACON_PAYMENT_ITEMS);
          }
 
          public int getMaxStackSize() {
@@ -149,7 +150,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       }
 
       public boolean mayPlace(ItemStack var1) {
-         return var1.getItem().is(ItemTags.BEACON_PAYMENT_ITEMS);
+         return var1.is((Tag)ItemTags.BEACON_PAYMENT_ITEMS);
       }
 
       public int getMaxStackSize() {

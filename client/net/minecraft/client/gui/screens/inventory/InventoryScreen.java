@@ -29,7 +29,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    private boolean buttonClicked;
 
    public InventoryScreen(Player var1) {
-      super(var1.inventoryMenu, var1.inventory, new TranslatableComponent("container.crafting"));
+      super(var1.inventoryMenu, var1.getInventory(), new TranslatableComponent("container.crafting"));
       this.passEvents = true;
       this.titleLabelX = 97;
    }

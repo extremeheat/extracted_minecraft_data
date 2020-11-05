@@ -43,14 +43,14 @@ public class FlowerPotBlock extends Block {
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       ItemStack var7 = var4.getItemInHand(var5);
       Item var8 = var7.getItem();
-      Block var9 = var8 instanceof BlockItem ? (Block)POTTED_BY_CONTENT.getOrDefault(((BlockItem)var8).getBlock(), Blocks.AIR) : Blocks.AIR;
-      boolean var10 = var9 == Blocks.AIR;
-      boolean var11 = this.content == Blocks.AIR;
+      BlockState var9 = (var8 instanceof BlockItem ? (Block)POTTED_BY_CONTENT.getOrDefault(((BlockItem)var8).getBlock(), Blocks.AIR) : Blocks.AIR).defaultBlockState();
+      boolean var10 = var9.is(Blocks.AIR);
+      boolean var11 = this.isEmpty();
       if (var10 != var11) {
          if (var11) {
-            var2.setBlock(var3, var9.defaultBlockState(), 3);
+            var2.setBlock(var3, var9, 3);
             var4.awardStat(Stats.POT_FLOWER);
-            if (!var4.abilities.instabuild) {
+            if (!var4.getAbilities().instabuild) {
                var7.shrink(1);
             }
          } else {
@@ -71,7 +71,11 @@ public class FlowerPotBlock extends Block {
    }
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return this.content == Blocks.AIR ? super.getCloneItemStack(var1, var2, var3) : new ItemStack(this.content);
+      return this.isEmpty() ? super.getCloneItemStack(var1, var2, var3) : new ItemStack(this.content);
+   }
+
+   private boolean isEmpty() {
+      return this.content == Blocks.AIR;
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {

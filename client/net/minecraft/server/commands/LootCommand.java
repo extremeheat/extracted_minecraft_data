@@ -178,7 +178,7 @@ public class LootCommand {
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      return var0.getItem() == var1.getItem() && var0.getDamageValue() == var1.getDamageValue() && var0.getCount() <= var0.getMaxStackSize() && Objects.equals(var0.getTag(), var1.getTag());
+      return var0.is(var1.getItem()) && var0.getDamageValue() == var1.getDamageValue() && var0.getCount() <= var0.getMaxStackSize() && Objects.equals(var0.getTag(), var1.getTag());
    }
 
    private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, LootCommand.Callback var2) throws CommandSyntaxException {
@@ -191,7 +191,7 @@ public class LootCommand {
 
          while(var6.hasNext()) {
             ServerPlayer var7 = (ServerPlayer)var6.next();
-            if (var7.inventory.add(var5.copy())) {
+            if (var7.getInventory().add(var5.copy())) {
                var3.add(var5);
             }
          }

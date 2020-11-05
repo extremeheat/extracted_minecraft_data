@@ -1,15 +1,12 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.data.worldgen.biome.Biomes;
 import net.minecraft.server.level.ChunkHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -19,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.AABB;
 
 public class EmptyLevelChunk extends LevelChunk {
    private static final Biome[] BIOMES;
@@ -50,36 +46,21 @@ public class EmptyLevelChunk extends LevelChunk {
       return 0;
    }
 
-   public void addEntity(Entity var1) {
-   }
-
-   public void removeEntity(Entity var1) {
-   }
-
-   public void removeEntity(Entity var1, int var2) {
-   }
-
    @Nullable
    public BlockEntity getBlockEntity(BlockPos var1, LevelChunk.EntityCreationType var2) {
       return null;
    }
 
-   public void addBlockEntity(BlockEntity var1) {
+   public void addAndRegisterBlockEntity(BlockEntity var1) {
    }
 
-   public void setBlockEntity(BlockPos var1, BlockEntity var2) {
+   public void setBlockEntity(BlockEntity var1) {
    }
 
    public void removeBlockEntity(BlockPos var1) {
    }
 
    public void markUnsaved() {
-   }
-
-   public void getEntities(@Nullable Entity var1, AABB var2, List<Entity> var3, Predicate<? super Entity> var4) {
-   }
-
-   public <T extends Entity> void getEntitiesOfClass(Class<? extends T> var1, AABB var2, List<T> var3, Predicate<? super T> var4) {
    }
 
    public boolean isEmpty() {

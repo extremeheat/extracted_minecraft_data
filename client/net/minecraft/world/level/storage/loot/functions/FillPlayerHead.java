@@ -34,7 +34,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      if (var1.getItem() == Items.PLAYER_HEAD) {
+      if (var1.is(Items.PLAYER_HEAD)) {
          Entity var3 = (Entity)var2.getParamOrNull(this.entityTarget.getParam());
          if (var3 instanceof Player) {
             GameProfile var4 = ((Player)var3).getGameProfile();

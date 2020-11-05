@@ -1,41 +1,49 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.Arrays;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
 
-public class SquidModel<T extends Entity> extends ListModel<T> {
-   private final ModelPart body;
+public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
    private final ModelPart[] tentacles = new ModelPart[8];
-   private final ImmutableList<ModelPart> parts;
+   private final ModelPart root;
 
-   public SquidModel() {
+   public SquidModel(ModelPart var1) {
       super();
-      boolean var1 = true;
-      this.body = new ModelPart(this, 0, 0);
-      this.body.addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F);
-      ModelPart var10000 = this.body;
-      var10000.y += 8.0F;
+      this.root = var1;
+      Arrays.setAll(this.tentacles, (var1x) -> {
+         return var1.getChild(createTentacleName(var1x));
+      });
+   }
 
-      for(int var2 = 0; var2 < this.tentacles.length; ++var2) {
-         this.tentacles[var2] = new ModelPart(this, 48, 0);
-         double var3 = (double)var2 * 3.141592653589793D * 2.0D / (double)this.tentacles.length;
-         float var5 = (float)Math.cos(var3) * 5.0F;
-         float var6 = (float)Math.sin(var3) * 5.0F;
-         this.tentacles[var2].addBox(-1.0F, 0.0F, -1.0F, 2.0F, 18.0F, 2.0F);
-         this.tentacles[var2].x = var5;
-         this.tentacles[var2].z = var6;
-         this.tentacles[var2].y = 15.0F;
-         var3 = (double)var2 * 3.141592653589793D * -2.0D / (double)this.tentacles.length + 1.5707963267948966D;
-         this.tentacles[var2].yRot = (float)var3;
+   private static String createTentacleName(int var0) {
+      return "tentacle" + var0;
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      boolean var2 = true;
+      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+      boolean var3 = true;
+      CubeListBuilder var4 = CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 18.0F, 2.0F);
+
+      for(int var5 = 0; var5 < 8; ++var5) {
+         double var6 = (double)var5 * 3.141592653589793D * 2.0D / 8.0D;
+         float var8 = (float)Math.cos(var6) * 5.0F;
+         float var9 = 15.0F;
+         float var10 = (float)Math.sin(var6) * 5.0F;
+         var6 = (double)var5 * 3.141592653589793D * -2.0D / 8.0D + 1.5707963267948966D;
+         float var11 = (float)var6;
+         var1.addOrReplaceChild(createTentacleName(var5), var4, PartPose.offsetAndRotation(var8, 15.0F, var10, 0.0F, var11, 0.0F));
       }
 
-      Builder var7 = ImmutableList.builder();
-      var7.add(this.body);
-      var7.addAll(Arrays.asList(this.tentacles));
-      this.parts = var7.build();
+      return LayerDefinition.create(var0, 64, 32);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
@@ -49,7 +57,7 @@ public class SquidModel<T extends Entity> extends ListModel<T> {
 
    }
 
-   public Iterable<ModelPart> parts() {
-      return this.parts;
+   public ModelPart root() {
+      return this.root;
    }
 }

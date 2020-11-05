@@ -21,7 +21,7 @@ public class MilkBucketItem extends Item {
          var4.awardStat(Stats.ITEM_USED.get(this));
       }
 
-      if (var3 instanceof Player && !((Player)var3).abilities.instabuild) {
+      if (var3 instanceof Player && !((Player)var3).getAbilities().instabuild) {
          var1.shrink(1);
       }
 
@@ -41,6 +41,6 @@ public class MilkBucketItem extends Item {
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      return ItemUtils.useDrink(var1, var2, var3);
+      return ItemUtils.startUsingInstantly(var1, var2, var3);
    }
 }

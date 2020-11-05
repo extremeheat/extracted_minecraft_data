@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -131,7 +130,7 @@ public class SynchedEntityData {
       return this.isDirty;
    }
 
-   public static void pack(List<SynchedEntityData.DataItem<?>> var0, FriendlyByteBuf var1) throws IOException {
+   public static void pack(List<SynchedEntityData.DataItem<?>> var0, FriendlyByteBuf var1) {
       if (var0 != null) {
          int var2 = 0;
 
@@ -186,7 +185,7 @@ public class SynchedEntityData {
       return var1;
    }
 
-   private static <T> void writeDataItem(FriendlyByteBuf var0, SynchedEntityData.DataItem<T> var1) throws IOException {
+   private static <T> void writeDataItem(FriendlyByteBuf var0, SynchedEntityData.DataItem<T> var1) {
       EntityDataAccessor var2 = var1.getAccessor();
       int var3 = EntityDataSerializers.getSerializedId(var2.getSerializer());
       if (var3 < 0) {
@@ -199,7 +198,7 @@ public class SynchedEntityData {
    }
 
    @Nullable
-   public static List<SynchedEntityData.DataItem<?>> unpack(FriendlyByteBuf var0) throws IOException {
+   public static List<SynchedEntityData.DataItem<?>> unpack(FriendlyByteBuf var0) {
       ArrayList var1 = null;
 
       short var2;

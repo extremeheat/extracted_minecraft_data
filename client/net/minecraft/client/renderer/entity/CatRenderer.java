@@ -5,6 +5,7 @@ import com.mojang.math.Vector3f;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.model.CatModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.CatCollarLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -14,9 +15,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 
 public class CatRenderer extends MobRenderer<Cat, CatModel<Cat>> {
-   public CatRenderer(EntityRenderDispatcher var1) {
-      super(var1, new CatModel(0.0F), 0.4F);
-      this.addLayer(new CatCollarLayer(this));
+   public CatRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new CatModel(var1.getLayer(ModelLayers.CAT)), 0.4F);
+      this.addLayer(new CatCollarLayer(this, var1.getModelSet()));
    }
 
    public ResourceLocation getTextureLocation(Cat var1) {

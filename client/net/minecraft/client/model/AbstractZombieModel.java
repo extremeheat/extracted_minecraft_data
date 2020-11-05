@@ -1,11 +1,12 @@
 package net.minecraft.client.model;
 
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
 
 public abstract class AbstractZombieModel<T extends Monster> extends HumanoidModel<T> {
-   protected AbstractZombieModel(float var1, float var2, int var3, int var4) {
-      super(var1, var2, var3, var4);
+   protected AbstractZombieModel(ModelPart var1) {
+      super(var1);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {

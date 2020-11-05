@@ -103,7 +103,7 @@ public class HoverEvent {
          return HoverEvent.ItemStackInfo.create(var0);
       });
       public static final HoverEvent.Action<HoverEvent.EntityTooltipInfo> SHOW_ENTITY = new HoverEvent.Action("show_entity", true, HoverEvent.EntityTooltipInfo::create, HoverEvent.EntityTooltipInfo::serialize, HoverEvent.EntityTooltipInfo::create);
-      private static final Map<String, HoverEvent.Action> LOOKUP;
+      private static final Map<String, HoverEvent.Action<?>> LOOKUP;
       private final String name;
       private final boolean allowFromServer;
       private final Function<JsonElement, T> argDeserializer;
@@ -128,7 +128,7 @@ public class HoverEvent {
       }
 
       @Nullable
-      public static HoverEvent.Action getByName(String var0) {
+      public static HoverEvent.Action<?> getByName(String var0) {
          return (HoverEvent.Action)LOOKUP.get(var0);
       }
 

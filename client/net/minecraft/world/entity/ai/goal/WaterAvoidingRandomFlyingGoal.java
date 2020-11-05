@@ -5,12 +5,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.util.RandomPos;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class WaterAvoidingRandomFlyingGoal extends WaterAvoidingRandomStrollGoal {
@@ -22,7 +21,7 @@ public class WaterAvoidingRandomFlyingGoal extends WaterAvoidingRandomStrollGoal
    protected Vec3 getPosition() {
       Vec3 var1 = null;
       if (this.mob.isInWater()) {
-         var1 = RandomPos.getLandPos(this.mob, 15, 15);
+         var1 = LandRandomPos.getPos(this.mob, 15, 15);
       }
 
       if (this.mob.getRandom().nextFloat() >= this.probability) {
@@ -51,8 +50,8 @@ public class WaterAvoidingRandomFlyingGoal extends WaterAvoidingRandomStrollGoal
             var6 = (BlockPos)var5.next();
          } while(var1.equals(var6));
 
-         Block var7 = this.mob.level.getBlockState(var3.setWithOffset(var6, Direction.DOWN)).getBlock();
-         var8 = var7 instanceof LeavesBlock || var7.is((Tag)BlockTags.LOGS);
+         BlockState var7 = this.mob.level.getBlockState(var3.setWithOffset(var6, Direction.DOWN));
+         var8 = var7.getBlock() instanceof LeavesBlock || var7.is(BlockTags.LOGS);
       } while(!var8 || !this.mob.level.isEmptyBlock(var6) || !this.mob.level.isEmptyBlock(var2.setWithOffset(var6, Direction.UP)));
 
       return Vec3.atBottomCenterOf(var6);

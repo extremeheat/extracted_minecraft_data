@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureFeatureManager;
@@ -35,13 +36,13 @@ public class OceanMonumentFeature extends StructureFeature<NoneFeatureConfigurat
    }
 
    protected boolean isFeatureChunk(ChunkGenerator var1, BiomeSource var2, long var3, WorldgenRandom var5, int var6, int var7, Biome var8, ChunkPos var9, NoneFeatureConfiguration var10) {
-      Set var11 = var2.getBiomesWithin(var6 * 16 + 9, var1.getSeaLevel(), var7 * 16 + 9, 16);
+      Set var11 = var2.getBiomesWithin(SectionPos.sectionToBlockCoord(var6, 9), var1.getSeaLevel(), SectionPos.sectionToBlockCoord(var7, 9), 16);
       Iterator var12 = var11.iterator();
 
       Biome var13;
       do {
          if (!var12.hasNext()) {
-            Set var15 = var2.getBiomesWithin(var6 * 16 + 9, var1.getSeaLevel(), var7 * 16 + 9, 29);
+            Set var15 = var2.getBiomesWithin(SectionPos.sectionToBlockCoord(var6, 9), var1.getSeaLevel(), SectionPos.sectionToBlockCoord(var7, 9), 29);
             Iterator var16 = var15.iterator();
 
             Biome var14;
@@ -86,8 +87,8 @@ public class OceanMonumentFeature extends StructureFeature<NoneFeatureConfigurat
       }
 
       private void generatePieces(int var1, int var2) {
-         int var3 = var1 * 16 - 29;
-         int var4 = var2 * 16 - 29;
+         int var3 = SectionPos.sectionToBlockCoord(var1) - 29;
+         int var4 = SectionPos.sectionToBlockCoord(var2) - 29;
          Direction var5 = Direction.Plane.HORIZONTAL.getRandomDirection(this.random);
          this.pieces.add(new OceanMonumentPieces.MonumentBuilding(this.random, var3, var4, var5));
          this.calculateBoundingBox();

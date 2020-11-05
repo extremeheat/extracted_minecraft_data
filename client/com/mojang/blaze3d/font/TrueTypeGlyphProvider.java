@@ -72,31 +72,31 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          MemoryStack var2 = MemoryStack.stackPush();
          Throwable var3 = null;
 
-         TrueTypeGlyphProvider.Glyph var13;
+         Object var9;
          try {
             IntBuffer var4 = var2.mallocInt(1);
             IntBuffer var5 = var2.mallocInt(1);
             IntBuffer var6 = var2.mallocInt(1);
             IntBuffer var7 = var2.mallocInt(1);
             int var8 = STBTruetype.stbtt_FindGlyphIndex(this.font, var1);
-            if (var8 == 0) {
-               Object var26 = null;
-               return (TrueTypeGlyphProvider.Glyph)var26;
-            }
+            if (var8 != 0) {
+               STBTruetype.stbtt_GetGlyphBitmapBoxSubpixel(this.font, var8, this.pointScale, this.pointScale, this.shiftX, this.shiftY, var4, var5, var6, var7);
+               int var26 = var6.get(0) - var4.get(0);
+               int var10 = var7.get(0) - var5.get(0);
+               IntBuffer var11;
+               if (var26 != 0 && var10 != 0) {
+                  var11 = var2.mallocInt(1);
+                  IntBuffer var12 = var2.mallocInt(1);
+                  STBTruetype.stbtt_GetGlyphHMetrics(this.font, var8, var11, var12);
+                  TrueTypeGlyphProvider.Glyph var13 = new TrueTypeGlyphProvider.Glyph(var4.get(0), var6.get(0), -var5.get(0), -var7.get(0), (float)var11.get(0) * this.pointScale, (float)var12.get(0) * this.pointScale, var8);
+                  return var13;
+               }
 
-            STBTruetype.stbtt_GetGlyphBitmapBoxSubpixel(this.font, var8, this.pointScale, this.pointScale, this.shiftX, this.shiftY, var4, var5, var6, var7);
-            int var9 = var6.get(0) - var4.get(0);
-            int var10 = var7.get(0) - var5.get(0);
-            IntBuffer var11;
-            if (var9 == 0 || var10 == 0) {
                var11 = null;
                return var11;
             }
 
-            var11 = var2.mallocInt(1);
-            IntBuffer var12 = var2.mallocInt(1);
-            STBTruetype.stbtt_GetGlyphHMetrics(this.font, var8, var11, var12);
-            var13 = new TrueTypeGlyphProvider.Glyph(var4.get(0), var6.get(0), -var5.get(0), -var7.get(0), (float)var11.get(0) * this.pointScale, (float)var12.get(0) * this.pointScale, var8);
+            var9 = null;
          } catch (Throwable var24) {
             var3 = var24;
             throw var24;
@@ -115,7 +115,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
          }
 
-         return var13;
+         return (TrueTypeGlyphProvider.Glyph)var9;
       }
    }
 

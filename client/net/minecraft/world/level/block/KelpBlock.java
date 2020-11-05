@@ -30,8 +30,8 @@ public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockConta
       return Blocks.KELP_PLANT;
    }
 
-   protected boolean canAttachToBlock(Block var1) {
-      return var1 != Blocks.MAGMA_BLOCK;
+   protected boolean canAttachTo(BlockState var1) {
+      return !var1.is(Blocks.MAGMA_BLOCK);
    }
 
    public boolean canPlaceLiquid(BlockGetter var1, BlockPos var2, BlockState var3, Fluid var4) {

@@ -57,7 +57,7 @@ public class PortalForcer {
       double var7 = -1.0D;
       BlockPos var9 = null;
       WorldBorder var10 = this.level.getWorldBorder();
-      int var11 = this.level.getHeight() - 1;
+      int var11 = this.level.getMinBuildHeight() + this.level.getLogicalHeight() - 1;
       BlockPos.MutableBlockPos var12 = var1.mutable();
       Iterator var13 = BlockPos.spiralAround(var1, 16, Direction.EAST, Direction.SOUTH).iterator();
 
@@ -74,7 +74,7 @@ public class PortalForcer {
 
                   int var24;
                   if (var4 == -1.0D) {
-                     var6 = (new BlockPos(var1.getX(), Mth.clamp(var1.getY(), 70, this.level.getHeight() - 10), var1.getZ())).immutable();
+                     var6 = (new BlockPos(var1.getX(), Mth.clamp(var1.getY(), 70, this.level.getMinBuildHeight() + this.level.getLogicalHeight() - 10), var1.getZ())).immutable();
                      Direction var22 = var3.getClockWise();
                      if (!var10.isWithinBounds(var6)) {
                         return Optional.empty();
@@ -120,11 +120,11 @@ public class PortalForcer {
 
          var14.move(var3.getOpposite(), 1);
 
-         for(int var17 = var15; var17 >= 0; --var17) {
+         for(int var17 = var15; var17 >= this.level.getMinBuildHeight(); --var17) {
             var14.setY(var17);
             if (this.level.isEmptyBlock(var14)) {
                int var18;
-               for(var18 = var17; var17 > 0 && this.level.isEmptyBlock(var14.move(Direction.DOWN)); --var17) {
+               for(var18 = var17; var17 > this.level.getMinBuildHeight() && this.level.isEmptyBlock(var14.move(Direction.DOWN)); --var17) {
                }
 
                if (var17 + 4 <= var11) {

@@ -39,7 +39,7 @@ public class RealmsServerPlayerList extends ValueObject {
             var1.players = Lists.newArrayList();
          }
       } catch (Exception var4) {
-         LOGGER.error("Could not parse RealmsServerPlayerList: " + var4.getMessage());
+         LOGGER.error("Could not parse RealmsServerPlayerList: {}", var4.getMessage());
       }
 
       return var1;

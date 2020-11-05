@@ -43,7 +43,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -232,7 +232,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.getItem() != Items.VILLAGER_SPAWN_EGG && this.isAlive() && !this.isTrading() && !this.isSleeping()) {
+      if (!var3.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isSleeping()) {
          if (this.isBaby()) {
             this.setUnhappy();
             return InteractionResult.sidedSuccess(this.level.isClientSide);
@@ -686,7 +686,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 
-   public Villager getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public Villager getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       double var4 = this.random.nextDouble();
       VillagerType var3;
       if (var4 < 0.5D) {
@@ -717,7 +717,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          var3.setPersistenceRequired();
          var1.addFreshEntityWithPassengers(var3);
          this.releaseAllPois();
-         this.remove();
+         this.discard();
       } else {
          super.thunderHit(var1, var2);
       }
@@ -737,7 +737,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.take(var1, var2.getCount());
          ItemStack var5 = var3.addItem(var2);
          if (var5.isEmpty()) {
-            var1.remove();
+            var1.discard();
          } else {
             var2.setCount(var5.getCount());
          }
@@ -840,7 +840,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
                   return var9;
                }
 
-               var9.remove();
+               var9.discard();
             }
          }
       }
@@ -929,7 +929,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    // $FF: synthetic method
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
    }
 

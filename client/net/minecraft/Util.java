@@ -356,6 +356,10 @@ public class Util {
       return var0[var1.nextInt(var0.length)];
    }
 
+   public static <T> T getRandom(List<T> var0, Random var1) {
+      return var0.get(var1.nextInt(var0.size()));
+   }
+
    private static BooleanSupplier createRenamer(final Path var0, final Path var1) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {

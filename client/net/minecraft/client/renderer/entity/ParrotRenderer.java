@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.ParrotModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Parrot;
@@ -8,8 +9,8 @@ import net.minecraft.world.entity.animal.Parrot;
 public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
    public static final ResourceLocation[] PARROT_LOCATIONS = new ResourceLocation[]{new ResourceLocation("textures/entity/parrot/parrot_red_blue.png"), new ResourceLocation("textures/entity/parrot/parrot_blue.png"), new ResourceLocation("textures/entity/parrot/parrot_green.png"), new ResourceLocation("textures/entity/parrot/parrot_yellow_blue.png"), new ResourceLocation("textures/entity/parrot/parrot_grey.png")};
 
-   public ParrotRenderer(EntityRenderDispatcher var1) {
-      super(var1, new ParrotModel(), 0.3F);
+   public ParrotRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new ParrotModel(var1.getLayer(ModelLayers.PARROT)), 0.3F);
    }
 
    public ResourceLocation getTextureLocation(Parrot var1) {

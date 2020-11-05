@@ -15,7 +15,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
@@ -194,7 +194,7 @@ public class Horse extends AbstractHorse {
             return InteractionResult.sidedSuccess(this.level.isClientSide);
          }
 
-         boolean var5 = !this.isBaby() && !this.isSaddled() && var3.getItem() == Items.SADDLE;
+         boolean var5 = !this.isBaby() && !this.isSaddled() && var3.is(Items.SADDLE);
          if (this.isArmor(var3) || var5) {
             this.openInventory(var1);
             return InteractionResult.sidedSuccess(this.level.isClientSide);
@@ -219,7 +219,7 @@ public class Horse extends AbstractHorse {
       }
    }
 
-   public AgableMob getBreedOffspring(ServerLevel var1, AgableMob var2) {
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       AbstractHorse var3;
       if (var2 instanceof Donkey) {
          var3 = (AbstractHorse)EntityType.MULE.create(var1);
@@ -279,7 +279,7 @@ public class Horse extends AbstractHorse {
       DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(Horse.class, EntityDataSerializers.INT);
    }
 
-   public static class HorseGroupData extends AgableMob.AgableMobGroupData {
+   public static class HorseGroupData extends AgeableMob.AgeableMobGroupData {
       public final Variant variant;
 
       public HorseGroupData(Variant var1) {

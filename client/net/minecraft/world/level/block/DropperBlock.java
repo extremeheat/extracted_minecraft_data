@@ -8,12 +8,12 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class DropperBlock extends DispenserBlock {
    private static final DispenseItemBehavior DISPENSE_BEHAVIOUR = new DefaultDispenseItemBehavior();
@@ -26,8 +26,8 @@ public class DropperBlock extends DispenserBlock {
       return DISPENSE_BEHAVIOUR;
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new DropperBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new DropperBlockEntity(var1, var2);
    }
 
    protected void dispenseFrom(ServerLevel var1, BlockPos var2) {

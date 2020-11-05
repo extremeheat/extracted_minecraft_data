@@ -45,6 +45,7 @@ public final class Material {
    public static final Material VEGETABLE;
    public static final Material EGG;
    public static final Material CAKE;
+   public static final Material AMETHYST;
    private final MaterialColor color;
    private final PushReaction pushReaction;
    private final boolean blocksMotion;
@@ -143,6 +144,7 @@ public final class Material {
       VEGETABLE = (new Material.Builder(MaterialColor.PLANT)).destroyOnPush().build();
       EGG = (new Material.Builder(MaterialColor.PLANT)).destroyOnPush().build();
       CAKE = (new Material.Builder(MaterialColor.NONE)).destroyOnPush().build();
+      AMETHYST = (new Material.Builder(MaterialColor.COLOR_PURPLE)).notSolidBlocking().destroyOnPush().build();
    }
 
    public static class Builder {

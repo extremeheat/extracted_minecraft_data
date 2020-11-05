@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.realmsclient.Unit;
 import com.mojang.realmsclient.client.FileDownload;
 import com.mojang.realmsclient.dto.WorldDownload;
@@ -173,7 +174,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       RenderSystem.disableTexture();
       Tesselator var4 = Tesselator.getInstance();
       BufferBuilder var5 = var4.getBuilder();
-      var5.begin(7, DefaultVertexFormat.POSITION_COLOR);
+      var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
       double var6 = (double)(this.width / 2 - 100);
       double var8 = 0.5D;
       var5.vertex(var6 - 0.5D, 95.5D, 0.0D).color(217, 210, 210, 255).endVertex();
@@ -221,68 +222,71 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void downloadSave() {
       (new Thread(() -> {
          try {
-            if (!DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
-               this.status = new TranslatableComponent("mco.download.failed");
-               return;
-            }
-
-            if (this.cancelled) {
-               this.downloadCancelled();
-               return;
-            }
-
-            this.status = new TranslatableComponent("mco.download.downloading", new Object[]{this.worldName});
-            FileDownload var1 = new FileDownload();
-            var1.contentLength(this.worldDownload.downloadLink);
-            var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
-
-            while(!var1.isFinished()) {
-               if (var1.isError()) {
-                  var1.cancel();
-                  this.errorMessage = new TranslatableComponent("mco.download.failed");
-                  this.cancelButton.setMessage(CommonComponents.GUI_DONE);
+            try {
+               if (!DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
+                  this.status = new TranslatableComponent("mco.download.failed");
                   return;
                }
 
-               if (var1.isExtracting()) {
-                  if (!this.extracting) {
-                     this.status = new TranslatableComponent("mco.download.extracting");
-                  }
-
-                  this.extracting = true;
-               }
-
                if (this.cancelled) {
-                  var1.cancel();
                   this.downloadCancelled();
                   return;
                }
 
-               try {
-                  Thread.sleep(500L);
-               } catch (InterruptedException var8) {
-                  LOGGER.error("Failed to check Realms backup download status");
+               this.status = new TranslatableComponent("mco.download.downloading", new Object[]{this.worldName});
+               FileDownload var1 = new FileDownload();
+               var1.contentLength(this.worldDownload.downloadLink);
+               var1.download(this.worldDownload, this.worldName, this.downloadStatus, this.minecraft.getLevelSource());
+
+               while(!var1.isFinished()) {
+                  if (var1.isError()) {
+                     var1.cancel();
+                     this.errorMessage = new TranslatableComponent("mco.download.failed");
+                     this.cancelButton.setMessage(CommonComponents.GUI_DONE);
+                     return;
+                  }
+
+                  if (var1.isExtracting()) {
+                     if (!this.extracting) {
+                        this.status = new TranslatableComponent("mco.download.extracting");
+                     }
+
+                     this.extracting = true;
+                  }
+
+                  if (this.cancelled) {
+                     var1.cancel();
+                     this.downloadCancelled();
+                     return;
+                  }
+
+                  try {
+                     Thread.sleep(500L);
+                  } catch (InterruptedException var8) {
+                     LOGGER.error("Failed to check Realms backup download status");
+                  }
                }
+
+               this.finished = true;
+               this.status = new TranslatableComponent("mco.download.done");
+               this.cancelButton.setMessage(CommonComponents.GUI_DONE);
+               return;
+            } catch (InterruptedException var9) {
+               LOGGER.error("Could not acquire upload lock");
+            } catch (Exception var10) {
+               this.errorMessage = new TranslatableComponent("mco.download.failed");
+               var10.printStackTrace();
             }
 
-            this.finished = true;
-            this.status = new TranslatableComponent("mco.download.done");
-            this.cancelButton.setMessage(CommonComponents.GUI_DONE);
-         } catch (InterruptedException var9) {
-            LOGGER.error("Could not acquire upload lock");
-         } catch (Exception var10) {
-            this.errorMessage = new TranslatableComponent("mco.download.failed");
-            var10.printStackTrace();
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {
                return;
+            } else {
+               DOWNLOAD_LOCK.unlock();
+               this.showDots = false;
+               this.finished = true;
             }
-
-            DOWNLOAD_LOCK.unlock();
-            this.showDots = false;
-            this.finished = true;
          }
-
       })).start();
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -45,7 +46,7 @@ public class StrongholdFeature extends StructureFeature<NoneFeatureConfiguration
             this.boundingBox = BoundingBox.getUnknownBox();
             this.random.setLargeFeatureSeed(this.seed + (long)(var8++), var4, var5);
             StrongholdPieces.resetPieces();
-            var9 = new StrongholdPieces.StartPiece(this.random, (var4 << 4) + 2, (var5 << 4) + 2);
+            var9 = new StrongholdPieces.StartPiece(this.random, SectionPos.sectionToBlockCoord(var4, 2), SectionPos.sectionToBlockCoord(var5, 2));
             this.pieces.add(var9);
             var9.addChildren(var9, this.pieces, this.random);
             List var10 = var9.pendingChildren;

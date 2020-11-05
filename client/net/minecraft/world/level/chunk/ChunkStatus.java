@@ -89,7 +89,7 @@ public class ChunkStatus {
       return var1.getStatus().isOrAfter(var0) && var1.isLightCorrect();
    }
 
-   public static ChunkStatus getStatus(int var0) {
+   public static ChunkStatus getStatusAroundFullChunk(int var0) {
       if (var0 >= STATUS_BY_RANGE.size()) {
          return EMPTY;
       } else {

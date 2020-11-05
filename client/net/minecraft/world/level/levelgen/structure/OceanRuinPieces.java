@@ -11,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
@@ -213,7 +212,7 @@ public class OceanRuinPieces {
             BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos(var10, var12, var11);
             BlockState var14 = var2.getBlockState(var13);
 
-            for(FluidState var15 = var2.getFluidState(var13); (var14.isAir() || var15.is(FluidTags.WATER) || var14.getBlock().is((Tag)BlockTags.ICE)) && var12 > 1; var15 = var2.getFluidState(var13)) {
+            for(FluidState var15 = var2.getFluidState(var13); (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1; var15 = var2.getFluidState(var13)) {
                --var12;
                var13.set(var10, var12, var11);
                var14 = var2.getBlockState(var13);

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.AgableMob;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -72,7 +72,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
 
    private boolean hasBreedTargetOfRightType(Animal var1) {
       Brain var2 = var1.getBrain();
-      return var2.hasMemoryValue(MemoryModuleType.BREED_TARGET) && ((AgableMob)var2.getMemory(MemoryModuleType.BREED_TARGET).get()).getType() == this.partnerType;
+      return var2.hasMemoryValue(MemoryModuleType.BREED_TARGET) && ((AgeableMob)var2.getMemory(MemoryModuleType.BREED_TARGET).get()).getType() == this.partnerType;
    }
 
    private Optional<? extends Animal> findValidBreedPartner(Animal var1) {

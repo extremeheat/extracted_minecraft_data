@@ -11,6 +11,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.CandleBlock;
+import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
@@ -24,20 +26,10 @@ public class FlintAndSteelItem extends Item {
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       BlockState var5 = var3.getBlockState(var4);
-      if (CampfireBlock.canLight(var5)) {
-         var3.playSound(var2, var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.4F + 0.8F);
-         var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
-         if (var2 != null) {
-            var1.getItemInHand().hurtAndBreak(1, var2, (var1x) -> {
-               var1x.broadcastBreakEvent(var1.getHand());
-            });
-         }
-
-         return InteractionResult.sidedSuccess(var3.isClientSide());
-      } else {
+      if (!CampfireBlock.canLight(var5) && !CandleBlock.canLight(var5) && !CandleCakeBlock.canLight(var5)) {
          BlockPos var6 = var4.relative(var1.getClickedFace());
          if (BaseFireBlock.canBePlacedAt(var3, var6, var1.getHorizontalDirection())) {
-            var3.playSound(var2, var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.4F + 0.8F);
+            var3.playSound(var2, var6, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
             BlockState var7 = BaseFireBlock.getState(var3, var6);
             var3.setBlock(var6, var7, 11);
             ItemStack var8 = var1.getItemInHand();
@@ -52,6 +44,16 @@ public class FlintAndSteelItem extends Item {
          } else {
             return InteractionResult.FAIL;
          }
+      } else {
+         var3.playSound(var2, var4, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, var3.getRandom().nextFloat() * 0.4F + 0.8F);
+         var3.setBlock(var4, (BlockState)var5.setValue(BlockStateProperties.LIT, true), 11);
+         if (var2 != null) {
+            var1.getItemInHand().hurtAndBreak(1, var2, (var1x) -> {
+               var1x.broadcastBreakEvent(var1.getHand());
+            });
+         }
+
+         return InteractionResult.sidedSuccess(var3.isClientSide());
       }
    }
 }

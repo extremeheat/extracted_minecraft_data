@@ -54,6 +54,7 @@ public class PoiType {
    public static final PoiType BEE_NEST;
    public static final PoiType NETHER_PORTAL;
    public static final PoiType LODESTONE;
+   public static final PoiType LIGHTNING_ROD;
    protected static final Set<BlockState> ALL_STATES;
    private final String name;
    private final Set<BlockState> matchingStates;
@@ -151,6 +152,7 @@ public class PoiType {
       BEE_NEST = register("bee_nest", getBlockStates(Blocks.BEE_NEST), 0, 1);
       NETHER_PORTAL = register("nether_portal", getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
       LODESTONE = register("lodestone", getBlockStates(Blocks.LODESTONE), 0, 1);
+      LIGHTNING_ROD = register("lightning_rod", getBlockStates(Blocks.LIGHTNING_ROD), 0, 1);
       ALL_STATES = new ObjectOpenHashSet(TYPE_BY_STATE.keySet());
    }
 }

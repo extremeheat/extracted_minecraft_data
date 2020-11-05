@@ -26,6 +26,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.FolderPackResources;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.Pack;
@@ -42,8 +43,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ClientPackSource implements RepositorySource {
-   private static final Logger LOGGER = LogManager.getLogger();
-   private static final Pattern SHA1 = Pattern.compile("^[a-fA-F0-9]{40}$");
+   private static final PackMetadataSection BUILT_IN;
+   private static final Logger LOGGER;
+   private static final Pattern SHA1;
    private final VanillaPackResources vanillaPack;
    private final File serverPackDir;
    private final ReentrantLock downloadLock = new ReentrantLock();
@@ -57,7 +59,7 @@ public class ClientPackSource implements RepositorySource {
       super();
       this.serverPackDir = var1;
       this.assetIndex = var2;
-      this.vanillaPack = new DefaultClientPackResources(var2);
+      this.vanillaPack = new DefaultClientPackResources(BUILT_IN, var2);
    }
 
    public void loadPacks(Consumer<Pack> var1, Pack.PackConstructor var2) {
@@ -89,7 +91,7 @@ public class ClientPackSource implements RepositorySource {
       var0.put("X-Minecraft-UUID", Minecraft.getInstance().getUser().getUuid());
       var0.put("X-Minecraft-Version", SharedConstants.getCurrentVersion().getName());
       var0.put("X-Minecraft-Version-ID", SharedConstants.getCurrentVersion().getId());
-      var0.put("X-Minecraft-Pack-Format", String.valueOf(SharedConstants.getCurrentVersion().getPackVersion()));
+      var0.put("X-Minecraft-Pack-Format", String.valueOf(PackType.CLIENT_RESOURCES.getVersion(SharedConstants.getCurrentVersion())));
       var0.put("User-Agent", "Minecraft Java/" + SharedConstants.getCurrentVersion().getName());
       return var0;
    }
@@ -258,7 +260,7 @@ public class ClientPackSource implements RepositorySource {
       LOGGER.info("Applying server pack {}", var1);
       this.serverPack = new Pack("server", true, () -> {
          return new FilePackResources(var1);
-      }, new TranslatableComponent("resourcePack.server.name"), var3.getDescription(), PackCompatibility.forFormat(var3.getPackFormat()), Pack.Position.TOP, true, var2);
+      }, new TranslatableComponent("resourcePack.server.name"), var3.getDescription(), PackCompatibility.forMetadata(var3, PackType.CLIENT_RESOURCES), Pack.Position.TOP, true, var2);
       return Minecraft.getInstance().delayTextureReload();
    }
 
@@ -303,5 +305,11 @@ public class ClientPackSource implements RepositorySource {
             return "Programmer Art";
          }
       };
+   }
+
+   static {
+      BUILT_IN = new PackMetadataSection(new TranslatableComponent("resourcePack.vanilla.description"), PackType.CLIENT_RESOURCES.getVersion(SharedConstants.getCurrentVersion()));
+      LOGGER = LogManager.getLogger();
+      SHA1 = Pattern.compile("^[a-fA-F0-9]{40}$");
    }
 }

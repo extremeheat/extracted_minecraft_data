@@ -4,6 +4,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
@@ -98,7 +99,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
    }
 
    default ChunkAccess getChunk(BlockPos var1) {
-      return this.getChunk(var1.getX() >> 4, var1.getZ() >> 4);
+      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    default ChunkAccess getChunk(int var1, int var2) {
@@ -151,7 +152,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
 
    @Deprecated
    default boolean hasChunkAt(BlockPos var1) {
-      return this.hasChunk(var1.getX() >> 4, var1.getZ() >> 4);
+      return this.hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
    }
 
    @Deprecated
@@ -161,7 +162,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
 
    @Deprecated
    default boolean hasChunksAt(int var1, int var2, int var3, int var4, int var5, int var6) {
-      if (var5 >= 0 && var2 < 256) {
+      if (var5 >= this.getMinBuildHeight() && var2 < this.getMaxBuildHeight()) {
          var1 >>= 4;
          var3 >>= 4;
          var4 >>= 4;

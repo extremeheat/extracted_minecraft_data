@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.timers.TimerQueue;
 
@@ -166,8 +167,8 @@ public class DerivedLevelData implements ServerLevelData {
    public void setWanderingTraderId(UUID var1) {
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1) {
+   public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
       var1.setDetail("Derived", (Object)true);
-      this.wrapped.fillCrashReportCategory(var1);
+      this.wrapped.fillCrashReportCategory(var1, var2);
    }
 }

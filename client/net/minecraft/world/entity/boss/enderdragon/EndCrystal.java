@@ -14,6 +14,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -84,8 +86,8 @@ public class EndCrystal extends Entity {
       } else if (var1.getEntity() instanceof EnderDragon) {
          return false;
       } else {
-         if (!this.removed && !this.level.isClientSide) {
-            this.remove();
+         if (!this.isRemoved() && !this.level.isClientSide) {
+            this.remove(Entity.RemovalReason.KILLED);
             if (!var1.isExplosion()) {
                this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), 6.0F, Explosion.BlockInteraction.DESTROY);
             }
@@ -131,6 +133,10 @@ public class EndCrystal extends Entity {
 
    public boolean shouldRenderAtSqrDistance(double var1) {
       return super.shouldRenderAtSqrDistance(var1) || this.getBeamTarget() != null;
+   }
+
+   public ItemStack getPickResult() {
+      return new ItemStack(Items.END_CRYSTAL);
    }
 
    public Packet<?> getAddEntityPacket() {

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -45,7 +46,7 @@ public class RedStoneWireBlock extends Block {
    private static final VoxelShape SHAPE_DOT;
    private static final Map<Direction, VoxelShape> SHAPES_FLOOR;
    private static final Map<Direction, VoxelShape> SHAPES_UP;
-   private final Map<BlockState, VoxelShape> SHAPES_CACHE = Maps.newHashMap();
+   private static final Map<BlockState, VoxelShape> SHAPES_CACHE;
    private static final Vector3f[] COLORS;
    private final BlockState crossState;
    private boolean shouldSignal = true;
@@ -59,7 +60,7 @@ public class RedStoneWireBlock extends Block {
       while(var2.hasNext()) {
          BlockState var3 = (BlockState)var2.next();
          if ((Integer)var3.getValue(POWER) == 0) {
-            this.SHAPES_CACHE.put(var3, this.calculateShape(var3));
+            SHAPES_CACHE.put(var3, this.calculateShape(var3));
          }
       }
 
@@ -83,7 +84,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.SHAPES_CACHE.get(var1.setValue(POWER, 0));
+      return (VoxelShape)SHAPES_CACHE.get(var1.setValue(POWER, 0));
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -463,7 +464,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var4.abilities.mayBuild) {
+      if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          if (isCross(var1) || isDot(var1)) {
@@ -504,15 +505,16 @@ public class RedStoneWireBlock extends Block {
       SHAPE_DOT = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 1.0D, 13.0D);
       SHAPES_FLOOR = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.box(3.0D, 0.0D, 0.0D, 13.0D, 1.0D, 13.0D), Direction.SOUTH, Block.box(3.0D, 0.0D, 3.0D, 13.0D, 1.0D, 16.0D), Direction.EAST, Block.box(3.0D, 0.0D, 3.0D, 16.0D, 1.0D, 13.0D), Direction.WEST, Block.box(0.0D, 0.0D, 3.0D, 13.0D, 1.0D, 13.0D)));
       SHAPES_UP = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.NORTH), Block.box(3.0D, 0.0D, 0.0D, 13.0D, 16.0D, 1.0D)), Direction.SOUTH, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.SOUTH), Block.box(3.0D, 0.0D, 15.0D, 13.0D, 16.0D, 16.0D)), Direction.EAST, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.EAST), Block.box(15.0D, 0.0D, 3.0D, 16.0D, 16.0D, 13.0D)), Direction.WEST, Shapes.or((VoxelShape)SHAPES_FLOOR.get(Direction.WEST), Block.box(0.0D, 0.0D, 3.0D, 1.0D, 16.0D, 13.0D))));
-      COLORS = new Vector3f[16];
+      SHAPES_CACHE = Maps.newHashMap();
+      COLORS = (Vector3f[])Util.make(new Vector3f[16], (var0) -> {
+         for(int var1 = 0; var1 <= 15; ++var1) {
+            float var2 = (float)var1 / 15.0F;
+            float var3 = var2 * 0.6F + (var2 > 0.0F ? 0.4F : 0.3F);
+            float var4 = Mth.clamp(var2 * var2 * 0.7F - 0.5F, 0.0F, 1.0F);
+            float var5 = Mth.clamp(var2 * var2 * 0.6F - 0.7F, 0.0F, 1.0F);
+            var0[var1] = new Vector3f(var3, var4, var5);
+         }
 
-      for(int var0 = 0; var0 <= 15; ++var0) {
-         float var1 = (float)var0 / 15.0F;
-         float var2 = var1 * 0.6F + (var1 > 0.0F ? 0.4F : 0.3F);
-         float var3 = Mth.clamp(var1 * var1 * 0.7F - 0.5F, 0.0F, 1.0F);
-         float var4 = Mth.clamp(var1 * var1 * 0.6F - 0.7F, 0.0F, 1.0F);
-         COLORS[var0] = new Vector3f(var2, var3, var4);
-      }
-
+      });
    }
 }

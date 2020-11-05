@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -53,11 +53,13 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
    }
 
    public boolean canUse() {
-      this.toAvoid = this.mob.level.getNearestLoadedEntity(this.avoidClass, this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ(), this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0D, (double)this.maxDist));
+      this.toAvoid = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0D, (double)this.maxDist), (var0) -> {
+         return true;
+      }), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if (this.toAvoid == null) {
          return false;
       } else {
-         Vec3 var1 = RandomPos.getPosAvoid(this.mob, 16, 7, this.toAvoid.position());
+         Vec3 var1 = DefaultRandomPos.getPosAway(this.mob, 16, 7, this.toAvoid.position());
          if (var1 == null) {
             return false;
          } else if (this.toAvoid.distanceToSqr(var1.x, var1.y, var1.z) < this.toAvoid.distanceToSqr(this.mob)) {

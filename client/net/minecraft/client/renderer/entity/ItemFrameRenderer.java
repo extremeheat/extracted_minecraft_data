@@ -28,9 +28,9 @@ public class ItemFrameRenderer extends EntityRenderer<ItemFrame> {
    private final Minecraft minecraft = Minecraft.getInstance();
    private final ItemRenderer itemRenderer;
 
-   public ItemFrameRenderer(EntityRenderDispatcher var1, ItemRenderer var2) {
+   public ItemFrameRenderer(EntityRendererProvider.Context var1) {
       super(var1);
-      this.itemRenderer = var2;
+      this.itemRenderer = var1.getItemRenderer();
    }
 
    public void render(ItemFrame var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
@@ -44,40 +44,40 @@ public class ItemFrameRenderer extends EntityRenderer<ItemFrame> {
       var4.mulPose(Vector3f.XP.rotationDegrees(var1.xRot));
       var4.mulPose(Vector3f.YP.rotationDegrees(180.0F - var1.yRot));
       boolean var11 = var1.isInvisible();
+      ItemStack var12 = var1.getItem();
       if (!var11) {
-         BlockRenderDispatcher var12 = this.minecraft.getBlockRenderer();
-         ModelManager var13 = var12.getBlockModelShaper().getModelManager();
-         ModelResourceLocation var14 = var1.getItem().getItem() == Items.FILLED_MAP ? MAP_FRAME_LOCATION : FRAME_LOCATION;
+         BlockRenderDispatcher var13 = this.minecraft.getBlockRenderer();
+         ModelManager var14 = var13.getBlockModelShaper().getModelManager();
+         ModelResourceLocation var15 = var12.is(Items.FILLED_MAP) ? MAP_FRAME_LOCATION : FRAME_LOCATION;
          var4.pushPose();
          var4.translate(-0.5D, -0.5D, -0.5D);
-         var12.getModelRenderer().renderModel(var4.last(), var5.getBuffer(Sheets.solidBlockSheet()), (BlockState)null, var13.getModel(var14), 1.0F, 1.0F, 1.0F, var6, OverlayTexture.NO_OVERLAY);
+         var13.getModelRenderer().renderModel(var4.last(), var5.getBuffer(Sheets.solidBlockSheet()), (BlockState)null, var14.getModel(var15), 1.0F, 1.0F, 1.0F, var6, OverlayTexture.NO_OVERLAY);
          var4.popPose();
       }
 
-      ItemStack var17 = var1.getItem();
-      if (!var17.isEmpty()) {
-         boolean var18 = var17.getItem() == Items.FILLED_MAP;
+      if (!var12.isEmpty()) {
+         boolean var17 = var12.is(Items.FILLED_MAP);
          if (var11) {
             var4.translate(0.0D, 0.0D, 0.5D);
          } else {
             var4.translate(0.0D, 0.0D, 0.4375D);
          }
 
-         int var19 = var18 ? var1.getRotation() % 4 * 2 : var1.getRotation();
-         var4.mulPose(Vector3f.ZP.rotationDegrees((float)var19 * 360.0F / 8.0F));
-         if (var18) {
+         int var18 = var17 ? var1.getRotation() % 4 * 2 : var1.getRotation();
+         var4.mulPose(Vector3f.ZP.rotationDegrees((float)var18 * 360.0F / 8.0F));
+         if (var17) {
             var4.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-            float var15 = 0.0078125F;
+            float var19 = 0.0078125F;
             var4.scale(0.0078125F, 0.0078125F, 0.0078125F);
             var4.translate(-64.0D, -64.0D, 0.0D);
-            MapItemSavedData var16 = MapItem.getOrCreateSavedData(var17, var1.level);
+            MapItemSavedData var16 = MapItem.getOrCreateSavedData(var12, var1.level);
             var4.translate(0.0D, 0.0D, -1.0D);
             if (var16 != null) {
                this.minecraft.gameRenderer.getMapRenderer().render(var4, var5, var16, true, var6);
             }
          } else {
             var4.scale(0.5F, 0.5F, 0.5F);
-            this.itemRenderer.renderStatic(var17, ItemTransforms.TransformType.FIXED, var6, OverlayTexture.NO_OVERLAY, var4, var5);
+            this.itemRenderer.renderStatic(var12, ItemTransforms.TransformType.FIXED, var6, OverlayTexture.NO_OVERLAY, var4, var5);
          }
       }
 

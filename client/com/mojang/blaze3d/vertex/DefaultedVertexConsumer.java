@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
 public abstract class DefaultedVertexConsumer implements VertexConsumer {
-   protected boolean defaultColorSet = false;
+   protected boolean defaultColorSet;
    protected int defaultR = 255;
    protected int defaultG = 255;
    protected int defaultB = 255;

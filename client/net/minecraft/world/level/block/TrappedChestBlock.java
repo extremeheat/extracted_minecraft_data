@@ -21,8 +21,8 @@ public class TrappedChestBlock extends ChestBlock {
       });
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new TrappedChestBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new TrappedChestBlockEntity(var1, var2);
    }
 
    protected Stat<ResourceLocation> getOpenChestStat() {

@@ -6,8 +6,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -40,10 +40,10 @@ public class GroundPathNavigation extends PathNavigation {
    public Path createPath(BlockPos var1, int var2) {
       BlockPos var3;
       if (this.level.getBlockState(var1).isAir()) {
-         for(var3 = var1.below(); var3.getY() > 0 && this.level.getBlockState(var3).isAir(); var3 = var3.below()) {
+         for(var3 = var1.below(); var3.getY() > this.level.getMinBuildHeight() && this.level.getBlockState(var3).isAir(); var3 = var3.below()) {
          }
 
-         if (var3.getY() > 0) {
+         if (var3.getY() > this.level.getMinBuildHeight()) {
             return super.createPath(var3.above(), var2);
          }
 
@@ -70,21 +70,21 @@ public class GroundPathNavigation extends PathNavigation {
 
    private int getSurfaceY() {
       if (this.mob.isInWater() && this.canFloat()) {
-         int var1 = Mth.floor(this.mob.getY());
-         Block var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ())).getBlock();
+         int var1 = this.mob.getBlockY();
+         BlockState var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ()));
          int var3 = 0;
 
          do {
-            if (var2 != Blocks.WATER) {
+            if (!var2.is(Blocks.WATER)) {
                return var1;
             }
 
             ++var1;
-            var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ())).getBlock();
+            var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ()));
             ++var3;
          } while(var3 <= 16);
 
-         return Mth.floor(this.mob.getY());
+         return this.mob.getBlockY();
       } else {
          return Mth.floor(this.mob.getY() + 0.5D);
       }

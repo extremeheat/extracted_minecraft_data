@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -16,6 +17,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
 
 public class GrindstoneMenu extends AbstractContainerMenu {
    private final Container resultSlots;
@@ -38,12 +40,12 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       this.access = var3;
       this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || var1.getItem() == Items.ENCHANTED_BOOK || var1.isEnchanted();
+            return var1.isDamageableItem() || var1.is(Items.ENCHANTED_BOOK) || var1.isEnchanted();
          }
       });
       this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || var1.getItem() == Items.ENCHANTED_BOOK || var1.isEnchanted();
+            return var1.isDamageableItem() || var1.is(Items.ENCHANTED_BOOK) || var1.isEnchanted();
          }
       });
       this.addSlot(new Slot(this.resultSlots, 2, 129, 34) {
@@ -53,12 +55,8 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
          public ItemStack onTake(Player var1, ItemStack var2) {
             var3.execute((var1x, var2x) -> {
-               int var3x = this.getExperienceAmount(var1x);
-
-               while(var3x > 0) {
-                  int var4 = ExperienceOrb.getExperienceValue(var3x);
-                  var3x -= var4;
-                  var1x.addFreshEntity(new ExperienceOrb(var1x, (double)var2x.getX(), (double)var2x.getY() + 0.5D, (double)var2x.getZ() + 0.5D, var4));
+               if (var1x instanceof ServerLevel) {
+                  ExperienceOrb.award((ServerLevel)var1x, Vec3.atCenterOf(var2x), this.getExperienceAmount(var1x));
                }
 
                var1x.levelEvent(1042, var2x, 0);
@@ -127,7 +125,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       if (!var3) {
          this.resultSlots.setItem(0, ItemStack.EMPTY);
       } else {
-         boolean var5 = !var1.isEmpty() && var1.getItem() != Items.ENCHANTED_BOOK && !var1.isEnchanted() || !var2.isEmpty() && var2.getItem() != Items.ENCHANTED_BOOK && !var2.isEnchanted();
+         boolean var5 = !var1.isEmpty() && !var1.is(Items.ENCHANTED_BOOK) && !var1.isEnchanted() || !var2.isEmpty() && !var2.is(Items.ENCHANTED_BOOK) && !var2.isEnchanted();
          if (var1.getCount() > 1 || var2.getCount() > 1 || !var4 && var5) {
             this.resultSlots.setItem(0, ItemStack.EMPTY);
             this.broadcastChanges();
@@ -138,7 +136,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          int var6;
          ItemStack var8;
          if (var4) {
-            if (var1.getItem() != var2.getItem()) {
+            if (!var1.is(var2.getItem())) {
                this.resultSlots.setItem(0, ItemStack.EMPTY);
                this.broadcastChanges();
                return;
@@ -208,7 +206,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       }).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
       EnchantmentHelper.setEnchantments(var5, var4);
       var4.setRepairCost(0);
-      if (var4.getItem() == Items.ENCHANTED_BOOK && var5.size() == 0) {
+      if (var4.is(Items.ENCHANTED_BOOK) && var5.size() == 0) {
          var4 = new ItemStack(Items.BOOK);
          if (var1.hasCustomHoverName()) {
             var4.setHoverName(var1.getHoverName());
@@ -225,7 +223,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, var2, this.repairSlots);
+         this.clearContainer(var1, this.repairSlots);
       });
    }
 

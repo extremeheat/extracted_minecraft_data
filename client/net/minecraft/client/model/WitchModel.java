@@ -1,44 +1,33 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
 public class WitchModel<T extends Entity> extends VillagerModel<T> {
    private boolean holdingItem;
-   private final ModelPart mole = (new ModelPart(this)).setTexSize(64, 128);
 
-   public WitchModel(float var1) {
-      super(var1, 64, 128);
-      this.mole.setPos(0.0F, -2.0F, 0.0F);
-      this.mole.texOffs(0, 0).addBox(0.0F, 3.0F, -6.75F, 1.0F, 1.0F, 1.0F, -0.25F);
-      this.nose.addChild(this.mole);
-      this.head = (new ModelPart(this)).setTexSize(64, 128);
-      this.head.setPos(0.0F, 0.0F, 0.0F);
-      this.head.texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F, var1);
-      this.hat = (new ModelPart(this)).setTexSize(64, 128);
-      this.hat.setPos(-5.0F, -10.03125F, -5.0F);
-      this.hat.texOffs(0, 64).addBox(0.0F, 0.0F, 0.0F, 10.0F, 2.0F, 10.0F);
-      this.head.addChild(this.hat);
-      this.head.addChild(this.nose);
-      ModelPart var2 = (new ModelPart(this)).setTexSize(64, 128);
-      var2.setPos(1.75F, -4.0F, 2.0F);
-      var2.texOffs(0, 76).addBox(0.0F, 0.0F, 0.0F, 7.0F, 4.0F, 7.0F);
-      var2.xRot = -0.05235988F;
-      var2.zRot = 0.02617994F;
-      this.hat.addChild(var2);
-      ModelPart var3 = (new ModelPart(this)).setTexSize(64, 128);
-      var3.setPos(1.75F, -4.0F, 2.0F);
-      var3.texOffs(0, 87).addBox(0.0F, 0.0F, 0.0F, 4.0F, 4.0F, 4.0F);
-      var3.xRot = -0.10471976F;
-      var3.zRot = 0.05235988F;
-      var2.addChild(var3);
-      ModelPart var4 = (new ModelPart(this)).setTexSize(64, 128);
-      var4.setPos(1.75F, -2.0F, 2.0F);
-      var4.texOffs(0, 95).addBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F, 0.25F);
-      var4.xRot = -0.20943952F;
-      var4.zRot = 0.10471976F;
-      var3.addChild(var4);
+   public WitchModel(ModelPart var1) {
+      super(var1);
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = VillagerModel.createBodyModel();
+      PartDefinition var1 = var0.getRoot();
+      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F), PartPose.ZERO);
+      PartDefinition var3 = var2.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(0, 64).addBox(0.0F, 0.0F, 0.0F, 10.0F, 2.0F, 10.0F), PartPose.offset(-5.0F, -10.03125F, -5.0F));
+      PartDefinition var4 = var3.addOrReplaceChild("hat2", CubeListBuilder.create().texOffs(0, 76).addBox(0.0F, 0.0F, 0.0F, 7.0F, 4.0F, 7.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.05235988F, 0.0F, 0.02617994F));
+      PartDefinition var5 = var4.addOrReplaceChild("hat3", CubeListBuilder.create().texOffs(0, 87).addBox(0.0F, 0.0F, 0.0F, 4.0F, 4.0F, 4.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.10471976F, 0.0F, 0.05235988F));
+      var5.addOrReplaceChild("hat4", CubeListBuilder.create().texOffs(0, 95).addBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.25F)), PartPose.offsetAndRotation(1.75F, -2.0F, 2.0F, -0.20943952F, 0.0F, 0.10471976F));
+      PartDefinition var6 = var2.getChild("nose");
+      var6.addOrReplaceChild("mole", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 3.0F, -6.75F, 1.0F, 1.0F, 1.0F, new CubeDeformation(-0.25F)), PartPose.offset(0.0F, -2.0F, 0.0F));
+      return LayerDefinition.create(var0, 64, 128);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {

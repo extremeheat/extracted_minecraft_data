@@ -7,7 +7,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.DeltaFeatureCon
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.LayerConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -90,6 +90,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<SimpleRandomFeatureConfiguration> SIMPLE_RANDOM_SELECTOR;
    public static final Feature<RandomBooleanFeatureConfiguration> RANDOM_BOOLEAN_SELECTOR;
    public static final Feature<DecoratedFeatureConfiguration> DECORATED;
+   public static final Feature<GeodeConfiguration> GEODE;
    private final Codec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
@@ -119,18 +120,16 @@ public abstract class Feature<FC extends FeatureConfiguration> {
 
    public abstract boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, FC var5);
 
-   protected static boolean isStone(Block var0) {
-      return var0 == Blocks.STONE || var0 == Blocks.GRANITE || var0 == Blocks.DIORITE || var0 == Blocks.ANDESITE;
+   protected static boolean isStone(BlockState var0) {
+      return var0.is(Blocks.STONE) || var0.is(Blocks.GRANITE) || var0.is(Blocks.DIORITE) || var0.is(Blocks.ANDESITE);
    }
 
-   public static boolean isDirt(Block var0) {
-      return var0 == Blocks.DIRT || var0 == Blocks.GRASS_BLOCK || var0 == Blocks.PODZOL || var0 == Blocks.COARSE_DIRT || var0 == Blocks.MYCELIUM;
+   public static boolean isDirt(BlockState var0) {
+      return var0.is(Blocks.DIRT) || var0.is(Blocks.GRASS_BLOCK) || var0.is(Blocks.PODZOL) || var0.is(Blocks.COARSE_DIRT) || var0.is(Blocks.MYCELIUM);
    }
 
    public static boolean isGrassOrDirt(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> {
-         return isDirt(var0x.getBlock());
-      });
+      return var0.isStateAtPosition(var1, Feature::isDirt);
    }
 
    public static boolean isAir(LevelSimulatedReader var0, BlockPos var1) {
@@ -190,5 +189,6 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       SIMPLE_RANDOM_SELECTOR = register("simple_random_selector", new SimpleRandomSelectorFeature(SimpleRandomFeatureConfiguration.CODEC));
       RANDOM_BOOLEAN_SELECTOR = register("random_boolean_selector", new RandomBooleanSelectorFeature(RandomBooleanFeatureConfiguration.CODEC));
       DECORATED = register("decorated", new DecoratedFeature(DecoratedFeatureConfiguration.CODEC));
+      GEODE = register("geode", new GeodeFeature(GeodeConfiguration.CODEC));
    }
 }

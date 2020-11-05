@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.model.FoxModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.FoxHeldItemLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -14,8 +15,8 @@ public class FoxRenderer extends MobRenderer<Fox, FoxModel<Fox>> {
    private static final ResourceLocation SNOW_FOX_TEXTURE = new ResourceLocation("textures/entity/fox/snow_fox.png");
    private static final ResourceLocation SNOW_FOX_SLEEP_TEXTURE = new ResourceLocation("textures/entity/fox/snow_fox_sleep.png");
 
-   public FoxRenderer(EntityRenderDispatcher var1) {
-      super(var1, new FoxModel(), 0.4F);
+   public FoxRenderer(EntityRendererProvider.Context var1) {
+      super(var1, new FoxModel(var1.getLayer(ModelLayers.FOX)), 0.4F);
       this.addLayer(new FoxHeldItemLayer(this));
    }
 

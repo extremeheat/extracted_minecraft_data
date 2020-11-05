@@ -119,7 +119,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
 
                   }
                } catch (RuntimeException var45) {
-                  LOGGER.warn("Invalid sounds.json in resourcepack: '{}'", var8.getSourceName(), var45);
+                  LOGGER.warn("Invalid {} in resourcepack: '{}'", "sounds.json", var8.getSourceName(), var45);
                }
             }
          } catch (IOException var46) {

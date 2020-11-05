@@ -1,10 +1,14 @@
 package net.minecraft.world.entity;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -12,13 +16,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
@@ -133,12 +137,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class EntityType<T extends Entity> {
+public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
    private static final Logger LOGGER = LogManager.getLogger();
    public static final EntityType<AreaEffectCloud> AREA_EFFECT_CLOUD;
    public static final EntityType<ArmorStand> ARMOR_STAND;
@@ -455,10 +460,10 @@ public class EntityType<T extends Entity> {
    public boolean isBlockDangerous(BlockState var1) {
       if (this.immuneTo.contains(var1.getBlock())) {
          return false;
-      } else if (!this.fireImmune && (var1.is(BlockTags.FIRE) || var1.is(Blocks.MAGMA_BLOCK) || CampfireBlock.isLitCampfire(var1) || var1.is(Blocks.LAVA))) {
-         return true;
-      } else {
+      } else if (this.fireImmune || !var1.is(BlockTags.FIRE) && !var1.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(var1) && !var1.is(Blocks.LAVA)) {
          return var1.is(Blocks.WITHER_ROSE) || var1.is(Blocks.SWEET_BERRY_BUSH) || var1.is(Blocks.CACTUS);
+      } else {
+         return true;
       }
    }
 
@@ -488,6 +493,32 @@ public class EntityType<T extends Entity> {
       }).orElse((Object)null);
    }
 
+   public static Stream<Entity> loadEntitiesRecursive(final List<? extends Tag> var0, final Level var1) {
+      final Spliterator var2 = var0.spliterator();
+      return StreamSupport.stream(new Spliterator<Entity>() {
+         public boolean tryAdvance(Consumer<? super Entity> var1x) {
+            return var2.tryAdvance((var2x) -> {
+               EntityType.loadEntityRecursive((CompoundTag)var2x, var1, (var1xx) -> {
+                  var1x.accept(var1xx);
+                  return var1xx;
+               });
+            });
+         }
+
+         public Spliterator<Entity> trySplit() {
+            return null;
+         }
+
+         public long estimateSize() {
+            return (long)var0.size();
+         }
+
+         public int characteristics() {
+            return 1297;
+         }
+      }, false);
+   }
+
    private static Optional<Entity> loadStaticEntity(CompoundTag var0, Level var1) {
       try {
          return create(var0, var1);
@@ -509,8 +540,17 @@ public class EntityType<T extends Entity> {
       return this != PLAYER && this != LLAMA_SPIT && this != WITHER && this != BAT && this != ITEM_FRAME && this != LEASH_KNOT && this != PAINTING && this != END_CRYSTAL && this != EVOKER_FANGS;
    }
 
-   public boolean is(Tag<EntityType<?>> var1) {
+   public boolean is(net.minecraft.tags.Tag<EntityType<?>> var1) {
       return var1.contains(this);
+   }
+
+   @Nullable
+   public T tryCast(Entity var1) {
+      return var1.getType() == this ? var1 : null;
+   }
+
+   public Class<? extends Entity> getBaseClass() {
+      return Entity.class;
    }
 
    static {
@@ -554,7 +594,7 @@ public class EntityType<T extends Entity> {
       ITEM = register("item", EntityType.Builder.of(ItemEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(6).updateInterval(20));
       ITEM_FRAME = register("item_frame", EntityType.Builder.of(ItemFrame::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
       FIREBALL = register("fireball", EntityType.Builder.of(LargeFireball::new, MobCategory.MISC).sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10));
-      LEASH_KNOT = register("leash_knot", EntityType.Builder.of(LeashFenceKnotEntity::new, MobCategory.MISC).noSave().sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
+      LEASH_KNOT = register("leash_knot", EntityType.Builder.of(LeashFenceKnotEntity::new, MobCategory.MISC).noSave().sized(0.375F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
       LIGHTNING_BOLT = register("lightning_bolt", EntityType.Builder.of(LightningBolt::new, MobCategory.MISC).noSave().sized(0.0F, 0.0F).clientTrackingRange(16).updateInterval(2147483647));
       LLAMA = register("llama", EntityType.Builder.of(Llama::new, MobCategory.CREATURE).sized(0.9F, 1.87F).clientTrackingRange(10));
       LLAMA_SPIT = register("llama_spit", EntityType.Builder.of(LlamaSpit::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
@@ -621,7 +661,7 @@ public class EntityType<T extends Entity> {
       ZOMBIE_VILLAGER = register("zombie_villager", EntityType.Builder.of(ZombieVillager::new, MobCategory.MONSTER).sized(0.6F, 1.95F).clientTrackingRange(8));
       ZOMBIFIED_PIGLIN = register("zombified_piglin", EntityType.Builder.of(ZombifiedPiglin::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.95F).clientTrackingRange(8));
       PLAYER = register("player", EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).clientTrackingRange(32).updateInterval(2));
-      FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5));
+      FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.of(FishingHook::new, MobCategory.MISC).noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5));
    }
 
    public interface EntityFactory<T extends Entity> {

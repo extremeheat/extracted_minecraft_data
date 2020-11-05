@@ -26,13 +26,13 @@ public class ChorusPlantBlock extends PipeBlock {
    }
 
    public BlockState getStateForPlacement(BlockGetter var1, BlockPos var2) {
-      Block var3 = var1.getBlockState(var2.below()).getBlock();
-      Block var4 = var1.getBlockState(var2.above()).getBlock();
-      Block var5 = var1.getBlockState(var2.north()).getBlock();
-      Block var6 = var1.getBlockState(var2.east()).getBlock();
-      Block var7 = var1.getBlockState(var2.south()).getBlock();
-      Block var8 = var1.getBlockState(var2.west()).getBlock();
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, var3 == this || var3 == Blocks.CHORUS_FLOWER || var3 == Blocks.END_STONE)).setValue(UP, var4 == this || var4 == Blocks.CHORUS_FLOWER)).setValue(NORTH, var5 == this || var5 == Blocks.CHORUS_FLOWER)).setValue(EAST, var6 == this || var6 == Blocks.CHORUS_FLOWER)).setValue(SOUTH, var7 == this || var7 == Blocks.CHORUS_FLOWER)).setValue(WEST, var8 == this || var8 == Blocks.CHORUS_FLOWER);
+      BlockState var3 = var1.getBlockState(var2.below());
+      BlockState var4 = var1.getBlockState(var2.above());
+      BlockState var5 = var1.getBlockState(var2.north());
+      BlockState var6 = var1.getBlockState(var2.east());
+      BlockState var7 = var1.getBlockState(var2.south());
+      BlockState var8 = var1.getBlockState(var2.west());
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, var3.is(this) || var3.is(Blocks.CHORUS_FLOWER) || var3.is(Blocks.END_STONE))).setValue(UP, var4.is(this) || var4.is(Blocks.CHORUS_FLOWER))).setValue(NORTH, var5.is(this) || var5.is(Blocks.CHORUS_FLOWER))).setValue(EAST, var6.is(this) || var6.is(Blocks.CHORUS_FLOWER))).setValue(SOUTH, var7.is(this) || var7.is(Blocks.CHORUS_FLOWER))).setValue(WEST, var8.is(this) || var8.is(Blocks.CHORUS_FLOWER));
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
@@ -40,7 +40,7 @@ public class ChorusPlantBlock extends PipeBlock {
          var4.getBlockTicks().scheduleTick(var5, this, 1);
          return super.updateShape(var1, var2, var3, var4, var5, var6);
       } else {
-         boolean var7 = var3.getBlock() == this || var3.is(Blocks.CHORUS_FLOWER) || var2 == Direction.DOWN && var3.is(Blocks.END_STONE);
+         boolean var7 = var3.is(this) || var3.is(Blocks.CHORUS_FLOWER) || var2 == Direction.DOWN && var3.is(Blocks.END_STONE);
          return (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), var7);
       }
    }
@@ -57,27 +57,26 @@ public class ChorusPlantBlock extends PipeBlock {
       boolean var5 = !var2.getBlockState(var3.above()).isAir() && !var4.isAir();
       Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-      Block var10;
+      BlockState var10;
       do {
          BlockPos var8;
-         Block var9;
+         BlockState var9;
          do {
             if (!var6.hasNext()) {
-               Block var11 = var4.getBlock();
-               return var11 == this || var11 == Blocks.END_STONE;
+               return var4.is(this) || var4.is(Blocks.END_STONE);
             }
 
             Direction var7 = (Direction)var6.next();
             var8 = var3.relative(var7);
-            var9 = var2.getBlockState(var8).getBlock();
-         } while(var9 != this);
+            var9 = var2.getBlockState(var8);
+         } while(!var9.is(this));
 
          if (var5) {
             return false;
          }
 
-         var10 = var2.getBlockState(var8.below()).getBlock();
-      } while(var10 != this && var10 != Blocks.END_STONE);
+         var10 = var2.getBlockState(var8.below());
+      } while(!var10.is(this) && !var10.is(Blocks.END_STONE));
 
       return true;
    }

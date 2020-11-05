@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
@@ -110,8 +110,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    private int page;
    private int pageCount;
 
-   public LecternBlockEntity() {
-      super(BlockEntityType.LECTERN);
+   public LecternBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.LECTERN, var1, var2);
       this.book = ItemStack.EMPTY;
    }
 
@@ -120,8 +120,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public boolean hasBook() {
-      Item var1 = this.book.getItem();
-      return var1 == Items.WRITABLE_BOOK || var1 == Items.WRITTEN_BOOK;
+      return this.book.is(Items.WRITABLE_BOOK) || this.book.is(Items.WRITTEN_BOOK);
    }
 
    public void setBook(ItemStack var1) {
@@ -161,7 +160,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
-      if (this.level instanceof ServerLevel && var1.getItem() == Items.WRITTEN_BOOK) {
+      if (this.level instanceof ServerLevel && var1.is(Items.WRITTEN_BOOK)) {
          WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2), var2);
       }
 
@@ -187,16 +186,16 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       return true;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      if (var2.contains("Book", 10)) {
-         this.book = this.resolveBook(ItemStack.of(var2.getCompound("Book")), (Player)null);
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      if (var1.contains("Book", 10)) {
+         this.book = this.resolveBook(ItemStack.of(var1.getCompound("Book")), (Player)null);
       } else {
          this.book = ItemStack.EMPTY;
       }
 
       this.pageCount = WrittenBookItem.getPageCount(this.book);
-      this.page = Mth.clamp(var2.getInt("Page"), 0, this.pageCount - 1);
+      this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
    }
 
    public CompoundTag save(CompoundTag var1) {

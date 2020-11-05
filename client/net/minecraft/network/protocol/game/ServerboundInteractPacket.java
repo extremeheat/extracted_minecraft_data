@@ -4,9 +4,9 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class ServerboundInteractPacket implements Packet<ServerGamePacketListener> {
@@ -79,8 +79,8 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
    }
 
    @Nullable
-   public Entity getTarget(Level var1) {
-      return var1.getEntity(this.entityId);
+   public Entity getTarget(ServerLevel var1) {
+      return var1.getEntityOrPart(this.entityId);
    }
 
    public ServerboundInteractPacket.Action getAction() {

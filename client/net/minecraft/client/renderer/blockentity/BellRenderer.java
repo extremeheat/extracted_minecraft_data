@@ -2,7 +2,13 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -12,18 +18,22 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 
-public class BellRenderer extends BlockEntityRenderer<BellBlockEntity> {
+public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
    public static final Material BELL_RESOURCE_LOCATION;
-   private final ModelPart bellBody = new ModelPart(32, 32, 0, 0);
+   private final ModelPart bellBody;
 
-   public BellRenderer(BlockEntityRenderDispatcher var1) {
-      super(var1);
-      this.bellBody.addBox(-3.0F, -6.0F, -3.0F, 6.0F, 7.0F, 6.0F);
-      this.bellBody.setPos(8.0F, 12.0F, 8.0F);
-      ModelPart var2 = new ModelPart(32, 32, 0, 13);
-      var2.addBox(4.0F, 4.0F, 4.0F, 8.0F, 2.0F, 8.0F);
-      var2.setPos(-8.0F, -12.0F, -8.0F);
-      this.bellBody.addChild(var2);
+   public BellRenderer(BlockEntityRendererProvider.Context var1) {
+      super();
+      ModelPart var2 = var1.getLayer(ModelLayers.BELL);
+      this.bellBody = var2.getChild("bell_body");
+   }
+
+   public static LayerDefinition createBodyLayer() {
+      MeshDefinition var0 = new MeshDefinition();
+      PartDefinition var1 = var0.getRoot();
+      PartDefinition var2 = var1.addOrReplaceChild("bell_body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -6.0F, -3.0F, 6.0F, 7.0F, 6.0F), PartPose.offset(8.0F, 12.0F, 8.0F));
+      var2.addOrReplaceChild("bell_base", CubeListBuilder.create().texOffs(0, 13).addBox(4.0F, 4.0F, 4.0F, 8.0F, 2.0F, 8.0F), PartPose.offset(-8.0F, -12.0F, -8.0F));
+      return LayerDefinition.create(var0, 32, 32);
    }
 
    public void render(BellBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.model.EvokerFangsModel;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -11,10 +12,11 @@ import net.minecraft.world.entity.projectile.EvokerFangs;
 
 public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/illager/evoker_fangs.png");
-   private final EvokerFangsModel<EvokerFangs> model = new EvokerFangsModel();
+   private final EvokerFangsModel<EvokerFangs> model;
 
-   public EvokerFangsRenderer(EntityRenderDispatcher var1) {
+   public EvokerFangsRenderer(EntityRendererProvider.Context var1) {
       super(var1);
+      this.model = new EvokerFangsModel(var1.getLayer(ModelLayers.EVOKER_FANGS));
    }
 
    public void render(EvokerFangs var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {

@@ -10,13 +10,14 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 
 public class DefaultClientPackResources extends VanillaPackResources {
    private final AssetIndex assetIndex;
 
-   public DefaultClientPackResources(AssetIndex var1) {
-      super("minecraft", "realms");
-      this.assetIndex = var1;
+   public DefaultClientPackResources(PackMetadataSection var1, AssetIndex var2) {
+      super(var1, "minecraft", "realms");
+      this.assetIndex = var2;
    }
 
    @Nullable

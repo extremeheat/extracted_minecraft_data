@@ -163,7 +163,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
          if (var5 == BedPart.FOOT) {
             BlockPos var6 = var2.relative(getNeighbourDirection(var5, (Direction)var3.getValue(FACING)));
             BlockState var7 = var1.getBlockState(var6);
-            if (var7.getBlock() == this && var7.getValue(PART) == BedPart.HEAD) {
+            if (var7.is(this) && var7.getValue(PART) == BedPart.HEAD) {
                var1.setBlock(var6, Blocks.AIR.defaultBlockState(), 35);
                var1.levelEvent(var4, 2001, var6, Block.getId(var7));
             }
@@ -279,8 +279,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       var1.add(FACING, PART, OCCUPIED);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new BedBlockEntity(this.color);
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new BedBlockEntity(var1, var2, this.color);
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {

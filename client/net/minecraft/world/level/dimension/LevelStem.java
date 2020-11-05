@@ -8,7 +8,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.core.MappedRegistry;
@@ -28,7 +28,7 @@ public final class LevelStem {
    public static final ResourceKey<LevelStem> OVERWORLD;
    public static final ResourceKey<LevelStem> NETHER;
    public static final ResourceKey<LevelStem> END;
-   private static final LinkedHashSet<ResourceKey<LevelStem>> BUILTIN_ORDER;
+   private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER;
    private final Supplier<DimensionType> type;
    private final ChunkGenerator generator;
 

@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -66,8 +65,7 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    public final boolean attachsTo(BlockState var1, boolean var2) {
-      Block var3 = var1.getBlock();
-      return !isExceptionForConnection(var3) && var2 || var3 instanceof IronBarsBlock || var3.is((Tag)BlockTags.WALLS);
+      return !isExceptionForConnection(var1) && var2 || var1.getBlock() instanceof IronBarsBlock || var1.is(BlockTags.WALLS);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

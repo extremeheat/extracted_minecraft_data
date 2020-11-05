@@ -9,7 +9,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
@@ -21,15 +20,15 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class StructureBlock extends BaseEntityBlock {
+public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final EnumProperty<StructureMode> MODE;
 
    protected StructureBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
 
-   public BlockEntity newBlockEntity(BlockGetter var1) {
-      return new StructureBlockEntity();
+   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+      return new StructureBlockEntity(var1, var2);
    }
 
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {

@@ -16,7 +16,11 @@ public class StructureUpdater implements SnbtToNbt.Filter {
    }
 
    public CompoundTag apply(String var1, CompoundTag var2) {
-      return var1.startsWith("data/minecraft/structures/") ? updateStructure(var1, patchVersion(var2)) : var2;
+      return var1.startsWith("data/minecraft/structures/") ? update(var1, var2) : var2;
+   }
+
+   public static CompoundTag update(String var0, CompoundTag var1) {
+      return updateStructure(var0, patchVersion(var1));
    }
 
    private static CompoundTag patchVersion(CompoundTag var0) {
@@ -31,8 +35,8 @@ public class StructureUpdater implements SnbtToNbt.Filter {
       StructureTemplate var2 = new StructureTemplate();
       int var3 = var1.getInt("DataVersion");
       boolean var4 = true;
-      if (var3 < 2532) {
-         LOGGER.warn("SNBT Too old, do not forget to update: " + var3 + " < " + 2532 + ": " + var0);
+      if (var3 < 2678) {
+         LOGGER.warn("SNBT Too old, do not forget to update: {} < {}: {}", var3, 2678, var0);
       }
 
       CompoundTag var5 = NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.STRUCTURE, var1, var3);

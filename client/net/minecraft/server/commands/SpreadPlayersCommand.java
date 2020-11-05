@@ -45,7 +45,7 @@ public class SpreadPlayersCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spreadplayers").requires((var0x) -> {
          return var0x.hasPermission(2);
       })).then(Commands.argument("center", Vec2Argument.vec2()).then(Commands.argument("spreadDistance", FloatArgumentType.floatArg(0.0F)).then(((RequiredArgumentBuilder)Commands.argument("maxRange", FloatArgumentType.floatArg(1.0F)).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
-         return spreadPlayers((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "center"), FloatArgumentType.getFloat(var0x, "spreadDistance"), FloatArgumentType.getFloat(var0x, "maxRange"), 256, BoolArgumentType.getBool(var0x, "respectTeams"), EntityArgument.getEntities(var0x, "targets"));
+         return spreadPlayers((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "center"), FloatArgumentType.getFloat(var0x, "spreadDistance"), FloatArgumentType.getFloat(var0x, "maxRange"), ((CommandSourceStack)var0x.getSource()).getLevel().getMaxBuildHeight(), BoolArgumentType.getBool(var0x, "respectTeams"), EntityArgument.getEntities(var0x, "targets"));
       })))).then(Commands.literal("under").then(Commands.argument("maxHeight", IntegerArgumentType.integer(0)).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
          return spreadPlayers((CommandSourceStack)var0x.getSource(), Vec2Argument.getVec2(var0x, "center"), FloatArgumentType.getFloat(var0x, "spreadDistance"), FloatArgumentType.getFloat(var0x, "maxRange"), IntegerArgumentType.getInteger(var0x, "maxHeight"), BoolArgumentType.getBool(var0x, "respectTeams"), EntityArgument.getEntities(var0x, "targets"));
       })))))))));
@@ -265,7 +265,7 @@ public class SpreadPlayersCommand {
          var3.move(Direction.DOWN);
 
          boolean var6;
-         for(boolean var5 = var1.getBlockState(var3).isAir(); var3.getY() > 0; var5 = var6) {
+         for(boolean var5 = var1.getBlockState(var3).isAir(); var3.getY() > var1.getMinBuildHeight(); var5 = var6) {
             var3.move(Direction.DOWN);
             var6 = var1.getBlockState(var3).isAir();
             if (!var6 && var5 && var4) {

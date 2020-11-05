@@ -44,7 +44,6 @@ import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -148,7 +147,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setPlayerCreated(var1.getBoolean("PlayerCreated"));
-      this.readPersistentAngerSaveData((ServerLevel)this.level, var1);
+      this.readPersistentAngerSaveData(this.level, var1);
    }
 
    public void startPersistentAngerTimer() {
@@ -243,18 +242,17 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      Item var4 = var3.getItem();
-      if (var4 != Items.IRON_INGOT) {
+      if (!var3.is(Items.IRON_INGOT)) {
          return InteractionResult.PASS;
       } else {
-         float var5 = this.getHealth();
+         float var4 = this.getHealth();
          this.heal(25.0F);
-         if (this.getHealth() == var5) {
+         if (this.getHealth() == var4) {
             return InteractionResult.PASS;
          } else {
-            float var6 = 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F;
-            this.playSound(SoundEvents.IRON_GOLEM_REPAIR, 1.0F, var6);
-            if (!var1.abilities.instabuild) {
+            float var5 = 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F;
+            this.playSound(SoundEvents.IRON_GOLEM_REPAIR, 1.0F, var5);
+            if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 

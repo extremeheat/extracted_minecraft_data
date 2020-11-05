@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,8 @@ public class GameTestBatchRunner {
    private final GameTestTicker testTicker;
    private final int testsPerRow;
    private final List<GameTestInfo> allTestInfos = Lists.newArrayList();
-   private final Map<GameTestInfo, BlockPos> northWestCorners = Maps.newHashMap();
    private final List<Pair<GameTestBatch, Collection<GameTestInfo>>> batches = Lists.newArrayList();
-   private MultipleTestTracker currentBatchTracker;
-   private int currentBatchIndex = 0;
-   private BlockPos.MutableBlockPos nextTestNorthWestCorner;
+   private final BlockPos.MutableBlockPos nextTestNorthWestCorner;
 
    public GameTestBatchRunner(Collection<GameTestBatch> var1, BlockPos var2, Rotation var3, ServerLevel var4, GameTestTicker var5, int var6) {
       super();
@@ -60,60 +58,62 @@ public class GameTestBatchRunner {
       this.runBatch(0);
    }
 
-   private void runBatch(int var1) {
-      this.currentBatchIndex = var1;
-      this.currentBatchTracker = new MultipleTestTracker();
+   private void runBatch(final int var1) {
       if (var1 < this.batches.size()) {
-         Pair var2 = (Pair)this.batches.get(this.currentBatchIndex);
-         GameTestBatch var3 = (GameTestBatch)var2.getFirst();
+         Pair var2 = (Pair)this.batches.get(var1);
+         final GameTestBatch var3 = (GameTestBatch)var2.getFirst();
          Collection var4 = (Collection)var2.getSecond();
-         this.createStructuresForBatch(var4);
+         Map var5 = this.createStructuresForBatch(var4);
+         String var6 = var3.getName();
+         LOGGER.info("Running test batch '{}' ({} tests)...", var6, var4.size());
          var3.runBeforeBatchFunction(this.level);
-         String var5 = var3.getName();
-         LOGGER.info("Running test batch '" + var5 + "' (" + var4.size() + " tests)...");
-         var4.forEach((var1x) -> {
-            this.currentBatchTracker.addTestToTrack(var1x);
-            this.currentBatchTracker.addListener(new GameTestListener() {
-               public void testStructureLoaded(GameTestInfo var1) {
+         final MultipleTestTracker var7 = new MultipleTestTracker();
+         var4.forEach(var7::addTestToTrack);
+         var7.addListener(new GameTestListener() {
+            private void testCompleted() {
+               if (var7.isDone()) {
+                  var3.runAfterBatchFunction(GameTestBatchRunner.this.level);
+                  GameTestBatchRunner.this.runBatch(var1 + 1);
                }
 
-               public void testFailed(GameTestInfo var1) {
-                  GameTestBatchRunner.this.testCompleted(var1);
-               }
-            });
-            BlockPos var2 = (BlockPos)this.northWestCorners.get(var1x);
-            GameTestRunner.runTest(var1x, var2, this.testTicker);
+            }
+
+            public void testStructureLoaded(GameTestInfo var1x) {
+            }
+
+            public void testFailed(GameTestInfo var1x) {
+               this.testCompleted();
+            }
+         });
+         var4.forEach((var2x) -> {
+            BlockPos var3 = (BlockPos)var5.get(var2x);
+            GameTestRunner.runTest(var2x, var3, this.testTicker);
          });
       }
    }
 
-   private void testCompleted(GameTestInfo var1) {
-      if (this.currentBatchTracker.isDone()) {
-         this.runBatch(this.currentBatchIndex + 1);
-      }
+   private Map<GameTestInfo, BlockPos> createStructuresForBatch(Collection<GameTestInfo> var1) {
+      HashMap var2 = Maps.newHashMap();
+      int var3 = 0;
+      AABB var4 = new AABB(this.nextTestNorthWestCorner);
+      Iterator var5 = var1.iterator();
 
-   }
-
-   private void createStructuresForBatch(Collection<GameTestInfo> var1) {
-      int var2 = 0;
-      AABB var3 = new AABB(this.nextTestNorthWestCorner);
-      Iterator var4 = var1.iterator();
-
-      while(var4.hasNext()) {
-         GameTestInfo var5 = (GameTestInfo)var4.next();
-         BlockPos var6 = new BlockPos(this.nextTestNorthWestCorner);
-         StructureBlockEntity var7 = StructureUtils.spawnStructure(var5.getStructureName(), var6, var5.getRotation(), 2, this.level, true);
-         AABB var8 = StructureUtils.getStructureBounds(var7);
-         var5.setStructureBlockPos(var7.getBlockPos());
-         this.northWestCorners.put(var5, new BlockPos(this.nextTestNorthWestCorner));
-         var3 = var3.minmax(var8);
-         this.nextTestNorthWestCorner.move((int)var8.getXsize() + 5, 0, 0);
-         if (var2++ % this.testsPerRow == this.testsPerRow - 1) {
-            this.nextTestNorthWestCorner.move(0, 0, (int)var3.getZsize() + 6);
+      while(var5.hasNext()) {
+         GameTestInfo var6 = (GameTestInfo)var5.next();
+         BlockPos var7 = new BlockPos(this.nextTestNorthWestCorner);
+         StructureBlockEntity var8 = StructureUtils.spawnStructure(var6.getStructureName(), var7, var6.getRotation(), 2, this.level, true);
+         AABB var9 = StructureUtils.getStructureBounds(var8);
+         var6.setStructureBlockPos(var8.getBlockPos());
+         var2.put(var6, new BlockPos(this.nextTestNorthWestCorner));
+         var4 = var4.minmax(var9);
+         this.nextTestNorthWestCorner.move((int)var9.getXsize() + 5, 0, 0);
+         if (var3++ % this.testsPerRow == this.testsPerRow - 1) {
+            this.nextTestNorthWestCorner.move(0, 0, (int)var4.getZsize() + 6);
             this.nextTestNorthWestCorner.setX(this.firstTestNorthWestCorner.getX());
-            var3 = new AABB(this.nextTestNorthWestCorner);
+            var4 = new AABB(this.nextTestNorthWestCorner);
          }
       }
 
+      return var2;
    }
 }

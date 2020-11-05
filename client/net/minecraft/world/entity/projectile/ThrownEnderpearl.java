@@ -26,10 +26,6 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       super(EntityType.ENDER_PEARL, var2, var1);
    }
 
-   public ThrownEnderpearl(Level var1, double var2, double var4, double var6) {
-      super(EntityType.ENDER_PEARL, var2, var4, var6, var1);
-   }
-
    protected Item getDefaultItem() {
       return Items.ENDER_PEARL;
    }
@@ -47,7 +43,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          this.level.addParticle(ParticleTypes.PORTAL, this.getX(), this.getY() + this.random.nextDouble() * 2.0D, this.getZ(), this.random.nextGaussian(), 0.0D, this.random.nextGaussian());
       }
 
-      if (!this.level.isClientSide && !this.removed) {
+      if (!this.level.isClientSide && !this.isRemoved()) {
          if (var2 instanceof ServerPlayer) {
             ServerPlayer var5 = (ServerPlayer)var2;
             if (var5.connection.getConnection().isConnected() && var5.level == this.level && !var5.isSleeping()) {
@@ -71,7 +67,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             var2.fallDistance = 0.0F;
          }
 
-         this.remove();
+         this.discard();
       }
 
    }
@@ -79,7 +75,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    public void tick() {
       Entity var1 = this.getOwner();
       if (var1 instanceof Player && !var1.isAlive()) {
-         this.remove();
+         this.discard();
       } else {
          super.tick();
       }

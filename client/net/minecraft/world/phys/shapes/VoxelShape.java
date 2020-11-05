@@ -99,18 +99,8 @@ public abstract class VoxelShape {
 
    protected int findIndex(Direction.Axis var1, double var2) {
       return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> {
-         if (var4 < 0) {
-            return false;
-         } else if (var4 > this.shape.getSize(var1)) {
-            return true;
-         } else {
-            return var2 < this.get(var1, var4);
-         }
+         return var2 < this.get(var1, var4);
       }) - 1;
-   }
-
-   protected boolean isFullWide(double var1, double var3, double var5) {
-      return this.shape.isFullWide(this.findIndex(Direction.Axis.X, var1), this.findIndex(Direction.Axis.Y, var3), this.findIndex(Direction.Axis.Z, var5));
    }
 
    @Nullable
@@ -123,7 +113,7 @@ public abstract class VoxelShape {
             return null;
          } else {
             Vec3 var5 = var1.add(var4.scale(0.001D));
-            return this.isFullWide(var5.x - (double)var3.getX(), var5.y - (double)var3.getY(), var5.z - (double)var3.getZ()) ? new BlockHitResult(var5, Direction.getNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true) : AABB.clip(this.toAabbs(), var1, var2, var3);
+            return this.shape.isFullWide(this.findIndex(Direction.Axis.X, var5.x - (double)var3.getX()), this.findIndex(Direction.Axis.Y, var5.y - (double)var3.getY()), this.findIndex(Direction.Axis.Z, var5.z - (double)var3.getZ())) ? new BlockHitResult(var5, Direction.getNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true) : AABB.clip(this.toAabbs(), var1, var2, var3);
          }
       }
    }
@@ -150,12 +140,12 @@ public abstract class VoxelShape {
 
    private VoxelShape calculateFace(Direction var1) {
       Direction.Axis var2 = var1.getAxis();
-      Direction.AxisDirection var3 = var1.getAxisDirection();
-      DoubleList var4 = this.getCoords(var2);
-      if (var4.size() == 2 && DoubleMath.fuzzyEquals(var4.getDouble(0), 0.0D, 1.0E-7D) && DoubleMath.fuzzyEquals(var4.getDouble(1), 1.0D, 1.0E-7D)) {
+      DoubleList var3 = this.getCoords(var2);
+      if (var3.size() == 2 && DoubleMath.fuzzyEquals(var3.getDouble(0), 0.0D, 1.0E-7D) && DoubleMath.fuzzyEquals(var3.getDouble(1), 1.0D, 1.0E-7D)) {
          return this;
       } else {
-         int var5 = this.findIndex(var2, var3 == Direction.AxisDirection.POSITIVE ? 0.9999999D : 1.0E-7D);
+         Direction.AxisDirection var4 = var1.getAxisDirection();
+         int var5 = this.findIndex(var2, var4 == Direction.AxisDirection.POSITIVE ? 0.9999999D : 1.0E-7D);
          return new SliceShape(this, var2, var5);
       }
    }

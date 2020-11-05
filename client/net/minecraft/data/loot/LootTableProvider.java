@@ -72,7 +72,7 @@ public class LootTableProvider implements DataProvider {
       Multimap var8 = var4.getProblems();
       if (!var8.isEmpty()) {
          var8.forEach((var0, var1x) -> {
-            LOGGER.warn("Found validation problem in " + var0 + ": " + var1x);
+            LOGGER.warn("Found validation problem in {}: {}", var0, var1x);
          });
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {

@@ -45,8 +45,8 @@ public class CommandBlockEntity extends BlockEntity {
       }
    };
 
-   public CommandBlockEntity() {
-      super(BlockEntityType.COMMAND_BLOCK);
+   public CommandBlockEntity(BlockPos var1, BlockState var2) {
+      super(BlockEntityType.COMMAND_BLOCK, var1, var2);
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -58,12 +58,12 @@ public class CommandBlockEntity extends BlockEntity {
       return var1;
    }
 
-   public void load(BlockState var1, CompoundTag var2) {
-      super.load(var1, var2);
-      this.commandBlock.load(var2);
-      this.powered = var2.getBoolean("powered");
-      this.conditionMet = var2.getBoolean("conditionMet");
-      this.setAutomatic(var2.getBoolean("auto"));
+   public void load(CompoundTag var1) {
+      super.load(var1);
+      this.commandBlock.load(var1);
+      this.powered = var1.getBoolean("powered");
+      this.conditionMet = var1.getBoolean("conditionMet");
+      this.setAutomatic(var1.getBoolean("auto"));
    }
 
    @Nullable
@@ -164,11 +164,6 @@ public class CommandBlockEntity extends BlockEntity {
    public boolean isConditional() {
       BlockState var1 = this.level.getBlockState(this.getBlockPos());
       return var1.getBlock() instanceof CommandBlock ? (Boolean)var1.getValue(CommandBlock.CONDITIONAL) : false;
-   }
-
-   public void clearRemoved() {
-      this.clearCache();
-      super.clearRemoved();
    }
 
    public static enum Mode {
