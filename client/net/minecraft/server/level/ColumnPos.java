@@ -18,6 +18,14 @@ public class ColumnPos {
       this.z = var1.getZ();
    }
 
+   public long toLong() {
+      return asLong(this.x, this.z);
+   }
+
+   public static long asLong(int var0, int var1) {
+      return (long)var0 & 4294967295L | ((long)var1 & 4294967295L) << 32;
+   }
+
    public String toString() {
       return "[" + this.x + ", " + this.z + "]";
    }

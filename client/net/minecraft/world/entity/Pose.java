@@ -6,7 +6,7 @@ public enum Pose {
    SLEEPING,
    SWIMMING,
    SPIN_ATTACK,
-   CROUCHING,
+   SNEAKING,
    DYING;
 
    private Pose() {

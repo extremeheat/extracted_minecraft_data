@@ -12,6 +12,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -35,6 +36,10 @@ public abstract class WaterFluid extends FlowingFluid {
       return Fluids.WATER;
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.TRANSLUCENT;
+   }
+
    public Item getBucket() {
       return Items.WATER_BUCKET;
    }
@@ -45,7 +50,7 @@ public abstract class WaterFluid extends FlowingFluid {
             var1.playLocalSound((double)var2.getX() + 0.5D, (double)var2.getY() + 0.5D, (double)var2.getZ() + 0.5D, SoundEvents.WATER_AMBIENT, SoundSource.BLOCKS, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
          }
       } else if (var4.nextInt(10) == 0) {
-         var1.addParticle(ParticleTypes.UNDERWATER, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), 0.0D, 0.0D, 0.0D);
+         var1.addParticle(ParticleTypes.UNDERWATER, (double)((float)var2.getX() + var4.nextFloat()), (double)((float)var2.getY() + var4.nextFloat()), (double)((float)var2.getZ() + var4.nextFloat()), 0.0D, 0.0D, 0.0D);
       }
 
    }
@@ -60,8 +65,8 @@ public abstract class WaterFluid extends FlowingFluid {
    }
 
    protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
-      Block.dropResources(var3, var1, var2, var4);
+      BlockEntity var4 = var3.getBlock().isEntityBlock() ? var1.getBlockEntity(var2) : null;
+      Block.dropResources(var3, var1.getLevel(), var2, var4);
    }
 
    public int getSlopeFindDistance(LevelReader var1) {

@@ -27,7 +27,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
 
                var4 = var6;
             } else {
-               if (!var6.is(Items.SHIELD)) {
+               if (var6.getItem() != Items.SHIELD) {
                   return false;
                }
 
@@ -60,7 +60,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
          if (!var5.isEmpty()) {
             if (var5.getItem() instanceof BannerItem) {
                var2 = var5;
-            } else if (var5.is(Items.SHIELD)) {
+            } else if (var5.getItem() == Items.SHIELD) {
                var3 = var5.copy();
             }
          }

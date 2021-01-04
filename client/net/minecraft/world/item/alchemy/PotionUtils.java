@@ -1,7 +1,6 @@
 package net.minecraft.world.item.alchemy;
 
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,10 +13,10 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -26,8 +25,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
 public class PotionUtils {
-   private static final MutableComponent NO_EFFECT;
-
    public static List<MobEffectInstance> getMobEffects(ItemStack var0) {
       return getAllEffects(var0.getTag());
    }
@@ -162,11 +159,11 @@ public class PotionUtils {
       TranslatableComponent var7;
       MobEffect var8;
       if (var3.isEmpty()) {
-         var1.add(NO_EFFECT);
+         var1.add((new TranslatableComponent("effect.none", new Object[0])).withStyle(ChatFormatting.GRAY));
       } else {
          for(var5 = var3.iterator(); var5.hasNext(); var1.add(var7.withStyle(var8.getCategory().getTooltipFormatting()))) {
             MobEffectInstance var6 = (MobEffectInstance)var5.next();
-            var7 = new TranslatableComponent(var6.getDescriptionId());
+            var7 = new TranslatableComponent(var6.getDescriptionId(), new Object[0]);
             var8 = var6.getEffect();
             Map var9 = var8.getAttributeModifiers();
             if (!var9.isEmpty()) {
@@ -176,48 +173,44 @@ public class PotionUtils {
                   Entry var11 = (Entry)var10.next();
                   AttributeModifier var12 = (AttributeModifier)var11.getValue();
                   AttributeModifier var13 = new AttributeModifier(var12.getName(), var8.getAttributeModifierValue(var6.getAmplifier(), var12), var12.getOperation());
-                  var4.add(new Pair(var11.getKey(), var13));
+                  var4.add(new Tuple(((Attribute)var11.getKey()).getName(), var13));
                }
             }
 
             if (var6.getAmplifier() > 0) {
-               var7 = new TranslatableComponent("potion.withAmplifier", new Object[]{var7, new TranslatableComponent("potion.potency." + var6.getAmplifier())});
+               var7.append(" ").append((Component)(new TranslatableComponent("potion.potency." + var6.getAmplifier(), new Object[0])));
             }
 
             if (var6.getDuration() > 20) {
-               var7 = new TranslatableComponent("potion.withDuration", new Object[]{var7, MobEffectUtil.formatDuration(var6, var2)});
+               var7.append(" (").append(MobEffectUtil.formatDuration(var6, var2)).append(")");
             }
          }
       }
 
       if (!var4.isEmpty()) {
-         var1.add(TextComponent.EMPTY);
-         var1.add((new TranslatableComponent("potion.whenDrank")).withStyle(ChatFormatting.DARK_PURPLE));
+         var1.add(new TextComponent(""));
+         var1.add((new TranslatableComponent("potion.whenDrank", new Object[0])).withStyle(ChatFormatting.DARK_PURPLE));
          var5 = var4.iterator();
 
          while(var5.hasNext()) {
-            Pair var14 = (Pair)var5.next();
-            AttributeModifier var16 = (AttributeModifier)var14.getSecond();
-            double var15 = var16.getAmount();
+            Tuple var14 = (Tuple)var5.next();
+            AttributeModifier var15 = (AttributeModifier)var14.getB();
+            double var16 = var15.getAmount();
             double var17;
-            if (var16.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var16.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
-               var17 = var16.getAmount();
+            if (var15.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var15.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
+               var17 = var15.getAmount();
             } else {
-               var17 = var16.getAmount() * 100.0D;
+               var17 = var15.getAmount() * 100.0D;
             }
 
-            if (var15 > 0.0D) {
-               var1.add((new TranslatableComponent("attribute.modifier.plus." + var16.getOperation().toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17), new TranslatableComponent(((Attribute)var14.getFirst()).getDescriptionId())})).withStyle(ChatFormatting.BLUE));
-            } else if (var15 < 0.0D) {
+            if (var16 > 0.0D) {
+               var1.add((new TranslatableComponent("attribute.modifier.plus." + var15.getOperation().toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17), new TranslatableComponent("attribute.name." + (String)var14.getA(), new Object[0])})).withStyle(ChatFormatting.BLUE));
+            } else if (var16 < 0.0D) {
                var17 *= -1.0D;
-               var1.add((new TranslatableComponent("attribute.modifier.take." + var16.getOperation().toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17), new TranslatableComponent(((Attribute)var14.getFirst()).getDescriptionId())})).withStyle(ChatFormatting.RED));
+               var1.add((new TranslatableComponent("attribute.modifier.take." + var15.getOperation().toValue(), new Object[]{ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17), new TranslatableComponent("attribute.name." + (String)var14.getA(), new Object[0])})).withStyle(ChatFormatting.RED));
             }
          }
       }
 
-   }
-
-   static {
-      NO_EFFECT = (new TranslatableComponent("effect.none")).withStyle(ChatFormatting.GRAY);
    }
 }

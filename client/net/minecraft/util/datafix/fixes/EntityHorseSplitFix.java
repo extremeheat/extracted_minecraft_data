@@ -1,13 +1,13 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import java.util.Objects;
+import java.util.Optional;
 
 public class EntityHorseSplitFix extends EntityRenameFix {
    public EntityHorseSplitFix(Schema var1, boolean var2) {
@@ -39,11 +39,9 @@ public class EntityHorseSplitFix extends EntityRenameFix {
 
          var3.remove("Type");
          Type var6 = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(var4);
-         DataResult var10001 = var2.write();
-         var6.getClass();
-         return Pair.of(var4, ((Pair)var10001.flatMap(var6::readTyped).result().orElseThrow(() -> {
+         return Pair.of(var4, ((Optional)var6.readTyped(var2.write()).getSecond()).orElseThrow(() -> {
             return new IllegalStateException("Could not parse the new horse");
-         })).getFirst());
+         }));
       } else {
          return Pair.of(var1, var2);
       }

@@ -1,33 +1,118 @@
 package com.mojang.blaze3d.vertex;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.stream.Collectors;
+import com.google.common.collect.Lists;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VertexFormat {
-   private final ImmutableList<VertexFormatElement> elements;
-   private final IntList offsets = new IntArrayList();
-   private final int vertexSize;
+   private static final Logger LOGGER = LogManager.getLogger();
+   private final List<VertexFormatElement> elements;
+   private final List<Integer> offsets;
+   private int vertexSize;
+   private int colorOffset;
+   private final List<Integer> texOffset;
+   private int normalOffset;
 
-   public VertexFormat(ImmutableList<VertexFormatElement> var1) {
-      super();
-      this.elements = var1;
-      int var2 = 0;
+   public VertexFormat(VertexFormat var1) {
+      this();
 
-      VertexFormatElement var4;
-      for(UnmodifiableIterator var3 = var1.iterator(); var3.hasNext(); var2 += var4.getByteSize()) {
-         var4 = (VertexFormatElement)var3.next();
-         this.offsets.add(var2);
+      for(int var2 = 0; var2 < var1.getElementCount(); ++var2) {
+         this.addElement(var1.getElement(var2));
       }
 
-      this.vertexSize = var2;
+      this.vertexSize = var1.getVertexSize();
+   }
+
+   public VertexFormat() {
+      super();
+      this.elements = Lists.newArrayList();
+      this.offsets = Lists.newArrayList();
+      this.colorOffset = -1;
+      this.texOffset = Lists.newArrayList();
+      this.normalOffset = -1;
+   }
+
+   public void clear() {
+      this.elements.clear();
+      this.offsets.clear();
+      this.colorOffset = -1;
+      this.texOffset.clear();
+      this.normalOffset = -1;
+      this.vertexSize = 0;
+   }
+
+   public VertexFormat addElement(VertexFormatElement var1) {
+      if (var1.isPosition() && this.hasPositionElement()) {
+         LOGGER.warn("VertexFormat error: Trying to add a position VertexFormatElement when one already exists, ignoring.");
+         return this;
+      } else {
+         this.elements.add(var1);
+         this.offsets.add(this.vertexSize);
+         switch(var1.getUsage()) {
+         case NORMAL:
+            this.normalOffset = this.vertexSize;
+            break;
+         case COLOR:
+            this.colorOffset = this.vertexSize;
+            break;
+         case UV:
+            this.texOffset.add(var1.getIndex(), this.vertexSize);
+         }
+
+         this.vertexSize += var1.getByteSize();
+         return this;
+      }
+   }
+
+   public boolean hasNormal() {
+      return this.normalOffset >= 0;
+   }
+
+   public int getNormalOffset() {
+      return this.normalOffset;
+   }
+
+   public boolean hasColor() {
+      return this.colorOffset >= 0;
+   }
+
+   public int getColorOffset() {
+      return this.colorOffset;
+   }
+
+   public boolean hasUv(int var1) {
+      return this.texOffset.size() - 1 >= var1;
+   }
+
+   public int getUvOffset(int var1) {
+      return (Integer)this.texOffset.get(var1);
    }
 
    public String toString() {
-      return "format: " + this.elements.size() + " elements: " + (String)this.elements.stream().map(Object::toString).collect(Collectors.joining(" "));
+      String var1 = "format: " + this.elements.size() + " elements: ";
+
+      for(int var2 = 0; var2 < this.elements.size(); ++var2) {
+         var1 = var1 + ((VertexFormatElement)this.elements.get(var2)).toString();
+         if (var2 != this.elements.size() - 1) {
+            var1 = var1 + " ";
+         }
+      }
+
+      return var1;
+   }
+
+   private boolean hasPositionElement() {
+      int var1 = 0;
+
+      for(int var2 = this.elements.size(); var1 < var2; ++var1) {
+         VertexFormatElement var3 = (VertexFormatElement)this.elements.get(var1);
+         if (var3.isPosition()) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public int getIntegerSize() {
@@ -38,8 +123,20 @@ public class VertexFormat {
       return this.vertexSize;
    }
 
-   public ImmutableList<VertexFormatElement> getElements() {
+   public List<VertexFormatElement> getElements() {
       return this.elements;
+   }
+
+   public int getElementCount() {
+      return this.elements.size();
+   }
+
+   public VertexFormatElement getElement(int var1) {
+      return (VertexFormatElement)this.elements.get(var1);
+   }
+
+   public int getOffset(int var1) {
+      return (Integer)this.offsets.get(var1);
    }
 
    public boolean equals(Object var1) {
@@ -47,104 +144,20 @@ public class VertexFormat {
          return true;
       } else if (var1 != null && this.getClass() == var1.getClass()) {
          VertexFormat var2 = (VertexFormat)var1;
-         return this.vertexSize != var2.vertexSize ? false : this.elements.equals(var2.elements);
+         if (this.vertexSize != var2.vertexSize) {
+            return false;
+         } else {
+            return !this.elements.equals(var2.elements) ? false : this.offsets.equals(var2.offsets);
+         }
       } else {
          return false;
       }
    }
 
    public int hashCode() {
-      return this.elements.hashCode();
-   }
-
-   public void setupBufferState(long var1) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            this.setupBufferState(var1);
-         });
-      } else {
-         int var3 = this.getVertexSize();
-         ImmutableList var4 = this.getElements();
-
-         for(int var5 = 0; var5 < var4.size(); ++var5) {
-            ((VertexFormatElement)var4.get(var5)).setupBufferState(var1 + (long)this.offsets.getInt(var5), var3);
-         }
-
-      }
-   }
-
-   public void clearBufferState() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::clearBufferState);
-      } else {
-         UnmodifiableIterator var1 = this.getElements().iterator();
-
-         while(var1.hasNext()) {
-            VertexFormatElement var2 = (VertexFormatElement)var1.next();
-            var2.clearBufferState();
-         }
-
-      }
-   }
-
-   public static enum Mode {
-      LINES(1, 2, 2),
-      LINE_STRIP(3, 2, 1),
-      TRIANGLES(4, 3, 3),
-      TRIANGLE_STRIP(5, 3, 1),
-      TRIANGLE_FAN(6, 3, 1),
-      QUADS(4, 4, 4);
-
-      public final int asGLMode;
-      public final int primitiveLength;
-      public final int primitiveStride;
-
-      private Mode(int var3, int var4, int var5) {
-         this.asGLMode = var3;
-         this.primitiveLength = var4;
-         this.primitiveStride = var5;
-      }
-
-      public int indexCount(int var1) {
-         int var2;
-         switch(this) {
-         case LINES:
-         case LINE_STRIP:
-         case TRIANGLES:
-         case TRIANGLE_STRIP:
-         case TRIANGLE_FAN:
-            var2 = var1;
-            break;
-         case QUADS:
-            var2 = var1 / 4 * 6;
-            break;
-         default:
-            var2 = 0;
-         }
-
-         return var2;
-      }
-   }
-
-   public static enum IndexType {
-      BYTE(5121, 1),
-      SHORT(5123, 2),
-      INT(5125, 4);
-
-      public final int asGLType;
-      public final int bytes;
-
-      private IndexType(int var3, int var4) {
-         this.asGLType = var3;
-         this.bytes = var4;
-      }
-
-      public static VertexFormat.IndexType least(int var0) {
-         if ((var0 & -65536) != 0) {
-            return INT;
-         } else {
-            return (var0 & '\uff00') != 0 ? SHORT : BYTE;
-         }
-      }
+      int var1 = this.elements.hashCode();
+      var1 = 31 * var1 + this.offsets.hashCode();
+      var1 = 31 * var1 + this.vertexSize;
+      return var1;
    }
 }

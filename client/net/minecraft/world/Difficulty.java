@@ -28,7 +28,7 @@ public enum Difficulty {
    }
 
    public Component getDisplayName() {
-      return new TranslatableComponent("options.difficulty." + this.key);
+      return new TranslatableComponent("options.difficulty." + this.key, new Object[0]);
    }
 
    public static Difficulty byId(int var0) {
@@ -52,9 +52,5 @@ public enum Difficulty {
 
    public String getKey() {
       return this.key;
-   }
-
-   public Difficulty nextById() {
-      return BY_ID[(this.id + 1) % BY_ID.length];
    }
 }

@@ -5,16 +5,21 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
 import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -37,11 +42,11 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       this.compositeFunction = LootItemFunctions.compose(var4);
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      super.validate(var1, var2, var3, var4);
 
-      for(int var2 = 0; var2 < this.functions.length; ++var2) {
-         this.functions[var2].validate(var1.forChild(".functions[" + var2 + "]"));
+      for(int var5 = 0; var5 < this.functions.length; ++var5) {
+         this.functions[var5].validate(var1.forChild(".functions[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -62,11 +67,11 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
    }
 
    public abstract static class Serializer<T extends LootPoolSingletonContainer> extends LootPoolEntryContainer.Serializer<T> {
-      public Serializer() {
-         super();
+      public Serializer(ResourceLocation var1, Class<T> var2) {
+         super(var1, var2);
       }
 
-      public void serializeCustom(JsonObject var1, T var2, JsonSerializationContext var3) {
+      public void serialize(JsonObject var1, T var2, JsonSerializationContext var3) {
          if (var2.weight != 1) {
             var1.addProperty("weight", var2.weight);
          }
@@ -81,7 +86,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
 
       }
 
-      public final T deserializeCustom(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
+      public final T deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
          int var4 = GsonHelper.getAsInt(var1, "weight", 1);
          int var5 = GsonHelper.getAsInt(var1, "quality", 0);
          LootItemFunction[] var6 = (LootItemFunction[])GsonHelper.getAsObject(var1, "functions", new LootItemFunction[0], var2, LootItemFunction[].class);
@@ -91,8 +96,8 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       protected abstract T deserialize(JsonObject var1, JsonDeserializationContext var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6);
 
       // $FF: synthetic method
-      public LootPoolEntryContainer deserializeCustom(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         return this.deserializeCustom(var1, var2, var3);
+      public LootPoolEntryContainer deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
+         return this.deserialize(var1, var2, var3);
       }
    }
 

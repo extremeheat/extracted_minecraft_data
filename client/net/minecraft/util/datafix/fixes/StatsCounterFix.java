@@ -5,12 +5,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class StatsCounterFix extends DataFix {
       return this.fixTypeEverywhereTyped("StatsCounterFix", this.getInputSchema().getType(References.STATS), var1, (var2) -> {
          Dynamic var3 = (Dynamic)var2.get(DSL.remainderFinder());
          HashMap var4 = Maps.newHashMap();
-         Optional var5 = var3.getMapValues().result();
+         Optional var5 = var3.getMapValues();
          if (var5.isPresent()) {
             Iterator var6 = ((Map)var5.get()).entrySet().iterator();
 
@@ -49,13 +48,13 @@ public class StatsCounterFix extends DataFix {
                   do {
                      do {
                         if (!var6.hasNext()) {
-                           return (Typed)((Pair)var1.readTyped(var3.emptyMap().set("stats", var3.createMap(var4))).result().orElseThrow(() -> {
+                           return (Typed)((Optional)var1.readTyped(var3.emptyMap().set("stats", var3.createMap(var4))).getSecond()).orElseThrow(() -> {
                               return new IllegalStateException("Could not parse new stats object.");
-                           })).getFirst();
+                           });
                         }
 
                         var7 = (Entry)var6.next();
-                     } while(!((Dynamic)var7.getValue()).asNumber().result().isPresent());
+                     } while(!((Dynamic)var7.getValue()).asNumber().isPresent());
 
                      var8 = ((Dynamic)var7.getKey()).asString("");
                   } while(SKIP.contains(var8));
@@ -100,9 +99,9 @@ public class StatsCounterFix extends DataFix {
                var4.put(var15, var16.set(var10, (Dynamic)var7.getValue()));
             }
          } else {
-            return (Typed)((Pair)var1.readTyped(var3.emptyMap().set("stats", var3.createMap(var4))).result().orElseThrow(() -> {
+            return (Typed)((Optional)var1.readTyped(var3.emptyMap().set("stats", var3.createMap(var4))).getSecond()).orElseThrow(() -> {
                return new IllegalStateException("Could not parse new stats object.");
-            })).getFirst();
+            });
          }
       });
    }

@@ -31,18 +31,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerAdvancementManager;
 import net.minecraft.server.ServerScoreboard;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Team;
@@ -55,9 +51,9 @@ public class EntitySelectorOptions {
    public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("argument.entity.options.inapplicable", new Object[]{var0});
    });
-   public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.distance.negative"));
-   public static final SimpleCommandExceptionType ERROR_LEVEL_NEGATIVE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.level.negative"));
-   public static final SimpleCommandExceptionType ERROR_LIMIT_TOO_SMALL = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.limit.toosmall"));
+   public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.distance.negative", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_LEVEL_NEGATIVE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.level.negative", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_LIMIT_TOO_SMALL = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.limit.toosmall", new Object[0]));
    public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("argument.entity.options.sort.irreversible", new Object[]{var0});
    });
@@ -89,12 +85,12 @@ public class EntitySelectorOptions {
                }
 
                var0.addPredicate((var2x) -> {
-                  return var2x.getName().getString().equals(var3) != var2;
+                  return var2x.getName().getContents().equals(var3) != var2;
                });
             }
          }, (var0) -> {
             return !var0.hasNameEquals();
-         }, new TranslatableComponent("argument.entity.options.name.description"));
+         }, new TranslatableComponent("argument.entity.options.name.description", new Object[0]));
          register("distance", (var0) -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Floats var2 = MinMaxBounds.Floats.fromReader(var0.getReader());
@@ -107,7 +103,7 @@ public class EntitySelectorOptions {
             }
          }, (var0) -> {
             return var0.getDistance().isAny();
-         }, new TranslatableComponent("argument.entity.options.distance.description"));
+         }, new TranslatableComponent("argument.entity.options.distance.description", new Object[0]));
          register("level", (var0) -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Ints var2 = MinMaxBounds.Ints.fromReader(var0.getReader());
@@ -120,53 +116,53 @@ public class EntitySelectorOptions {
             }
          }, (var0) -> {
             return var0.getLevel().isAny();
-         }, new TranslatableComponent("argument.entity.options.level.description"));
+         }, new TranslatableComponent("argument.entity.options.level.description", new Object[0]));
          register("x", (var0) -> {
             var0.setWorldLimited();
             var0.setX(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getX() == null;
-         }, new TranslatableComponent("argument.entity.options.x.description"));
+         }, new TranslatableComponent("argument.entity.options.x.description", new Object[0]));
          register("y", (var0) -> {
             var0.setWorldLimited();
             var0.setY(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getY() == null;
-         }, new TranslatableComponent("argument.entity.options.y.description"));
+         }, new TranslatableComponent("argument.entity.options.y.description", new Object[0]));
          register("z", (var0) -> {
             var0.setWorldLimited();
             var0.setZ(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getZ() == null;
-         }, new TranslatableComponent("argument.entity.options.z.description"));
+         }, new TranslatableComponent("argument.entity.options.z.description", new Object[0]));
          register("dx", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaX(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getDeltaX() == null;
-         }, new TranslatableComponent("argument.entity.options.dx.description"));
+         }, new TranslatableComponent("argument.entity.options.dx.description", new Object[0]));
          register("dy", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaY(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getDeltaY() == null;
-         }, new TranslatableComponent("argument.entity.options.dy.description"));
+         }, new TranslatableComponent("argument.entity.options.dy.description", new Object[0]));
          register("dz", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaZ(var0.getReader().readDouble());
          }, (var0) -> {
             return var0.getDeltaZ() == null;
-         }, new TranslatableComponent("argument.entity.options.dz.description"));
+         }, new TranslatableComponent("argument.entity.options.dz.description", new Object[0]));
          register("x_rotation", (var0) -> {
             var0.setRotX(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees));
          }, (var0) -> {
             return var0.getRotX() == WrappedMinMaxBounds.ANY;
-         }, new TranslatableComponent("argument.entity.options.x_rotation.description"));
+         }, new TranslatableComponent("argument.entity.options.x_rotation.description", new Object[0]));
          register("y_rotation", (var0) -> {
             var0.setRotY(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees));
          }, (var0) -> {
             return var0.getRotY() == WrappedMinMaxBounds.ANY;
-         }, new TranslatableComponent("argument.entity.options.y_rotation.description"));
+         }, new TranslatableComponent("argument.entity.options.y_rotation.description", new Object[0]));
          register("limit", (var0) -> {
             int var1 = var0.getReader().getCursor();
             int var2 = var0.getReader().readInt();
@@ -179,7 +175,7 @@ public class EntitySelectorOptions {
             }
          }, (var0) -> {
             return !var0.isCurrentEntity() && !var0.isLimited();
-         }, new TranslatableComponent("argument.entity.options.limit.description"));
+         }, new TranslatableComponent("argument.entity.options.limit.description", new Object[0]));
          register("sort", (var0) -> {
             int var1 = var0.getReader().getCursor();
             String var2 = var0.getReader().readUnquotedString();
@@ -232,7 +228,7 @@ public class EntitySelectorOptions {
             var0.setSorted(true);
          }, (var0) -> {
             return !var0.isCurrentEntity() && !var0.isSorted();
-         }, new TranslatableComponent("argument.entity.options.sort.description"));
+         }, new TranslatableComponent("argument.entity.options.sort.description", new Object[0]));
          register("gamemode", (var0) -> {
             var0.setSuggestions((var1x, var2x) -> {
                String var3 = var1x.getRemaining().toLowerCase(Locale.ROOT);
@@ -296,7 +292,7 @@ public class EntitySelectorOptions {
             }
          }, (var0) -> {
             return !var0.hasGamemodeEquals();
-         }, new TranslatableComponent("argument.entity.options.gamemode.description"));
+         }, new TranslatableComponent("argument.entity.options.gamemode.description", new Object[0]));
          register("team", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
@@ -317,7 +313,7 @@ public class EntitySelectorOptions {
 
          }, (var0) -> {
             return !var0.hasTeamEquals();
-         }, new TranslatableComponent("argument.entity.options.team.description"));
+         }, new TranslatableComponent("argument.entity.options.team.description", new Object[0]));
          register("type", (var0) -> {
             var0.setSuggestions((var1x, var2x) -> {
                SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
@@ -342,31 +338,37 @@ public class EntitySelectorOptions {
                ResourceLocation var3;
                if (var0.isTag()) {
                   var3 = ResourceLocation.read(var0.getReader());
+                  Tag var4 = EntityTypeTags.getAllTags().getTag(var3);
+                  if (var4 == null) {
+                     var0.getReader().setCursor(var1);
+                     throw ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var3.toString());
+                  }
+
                   var0.addPredicate((var2x) -> {
-                     return var2x.getType().is(var2x.getServer().getTags().getEntityTypes().getTagOrEmpty(var3)) != var2;
+                     return var4.contains(var2x.getType()) != var2;
                   });
                } else {
                   var3 = ResourceLocation.read(var0.getReader());
-                  EntityType var4 = (EntityType)Registry.ENTITY_TYPE.getOptional(var3).orElseThrow(() -> {
+                  EntityType var5 = (EntityType)Registry.ENTITY_TYPE.getOptional(var3).orElseThrow(() -> {
                      var0.getReader().setCursor(var1);
                      return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var3.toString());
                   });
-                  if (Objects.equals(EntityType.PLAYER, var4) && !var2) {
+                  if (Objects.equals(EntityType.PLAYER, var5) && !var2) {
                      var0.setIncludesEntities(false);
                   }
 
                   var0.addPredicate((var2x) -> {
-                     return Objects.equals(var4, var2x.getType()) != var2;
+                     return Objects.equals(var5, var2x.getType()) != var2;
                   });
                   if (!var2) {
-                     var0.limitToType(var4);
+                     var0.limitToType(var5);
                   }
                }
 
             }
          }, (var0) -> {
             return !var0.isTypeLimited();
-         }, new TranslatableComponent("argument.entity.options.type.description"));
+         }, new TranslatableComponent("argument.entity.options.type.description", new Object[0]));
          register("tag", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
@@ -379,14 +381,14 @@ public class EntitySelectorOptions {
             });
          }, (var0) -> {
             return true;
-         }, new TranslatableComponent("argument.entity.options.tag.description"));
+         }, new TranslatableComponent("argument.entity.options.tag.description", new Object[0]));
          register("nbt", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             CompoundTag var2 = (new TagParser(var0.getReader())).readStruct();
             var0.addPredicate((var2x) -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
                if (var2x instanceof ServerPlayer) {
-                  ItemStack var4 = ((ServerPlayer)var2x).getInventory().getSelected();
+                  ItemStack var4 = ((ServerPlayer)var2x).inventory.getSelected();
                   if (!var4.isEmpty()) {
                      var3.put("SelectedItem", var4.save(new CompoundTag()));
                   }
@@ -396,7 +398,7 @@ public class EntitySelectorOptions {
             });
          }, (var0) -> {
             return true;
-         }, new TranslatableComponent("argument.entity.options.nbt.description"));
+         }, new TranslatableComponent("argument.entity.options.nbt.description", new Object[0]));
          register("scores", (var0) -> {
             StringReader var1 = var0.getReader();
             HashMap var2 = Maps.newHashMap();
@@ -452,7 +454,7 @@ public class EntitySelectorOptions {
             var0.setHasScores(true);
          }, (var0) -> {
             return !var0.hasScores();
-         }, new TranslatableComponent("argument.entity.options.scores.description"));
+         }, new TranslatableComponent("argument.entity.options.scores.description", new Object[0]));
          register("advancements", (var0) -> {
             StringReader var1 = var0.getReader();
             HashMap var2 = Maps.newHashMap();
@@ -550,27 +552,7 @@ public class EntitySelectorOptions {
             var0.setHasAdvancements(true);
          }, (var0) -> {
             return !var0.hasAdvancements();
-         }, new TranslatableComponent("argument.entity.options.advancements.description"));
-         register("predicate", (var0) -> {
-            boolean var1 = var0.shouldInvertValue();
-            ResourceLocation var2 = ResourceLocation.read(var0.getReader());
-            var0.addPredicate((var2x) -> {
-               if (!(var2x.level instanceof ServerLevel)) {
-                  return false;
-               } else {
-                  ServerLevel var3 = (ServerLevel)var2x.level;
-                  LootItemCondition var4 = var3.getServer().getPredicateManager().get(var2);
-                  if (var4 == null) {
-                     return false;
-                  } else {
-                     LootContext var5 = (new LootContext.Builder(var3)).withParameter(LootContextParams.THIS_ENTITY, var2x).withParameter(LootContextParams.ORIGIN, var2x.position()).create(LootContextParamSets.SELECTOR);
-                     return var1 ^ var4.test(var5);
-                  }
-               }
-            });
-         }, (var0) -> {
-            return true;
-         }, new TranslatableComponent("argument.entity.options.predicate.description"));
+         }, new TranslatableComponent("argument.entity.options.advancements.description", new Object[0]));
       }
    }
 

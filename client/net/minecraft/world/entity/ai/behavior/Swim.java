@@ -2,20 +2,21 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
 public class Swim extends Behavior<Mob> {
+   private final float height;
    private final float chance;
 
-   public Swim(float var1) {
+   public Swim(float var1, float var2) {
       super(ImmutableMap.of());
-      this.chance = var1;
+      this.height = var1;
+      this.chance = var2;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
-      return var2.isInWater() && var2.getFluidHeight(FluidTags.WATER) > var2.getFluidJumpThreshold() || var2.isInLava();
+      return var2.isInWater() && var2.getWaterHeight() > (double)this.height || var2.isInLava();
    }
 
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {

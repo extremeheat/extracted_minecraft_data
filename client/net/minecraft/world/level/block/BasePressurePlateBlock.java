@@ -3,13 +3,11 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
@@ -21,7 +19,7 @@ public abstract class BasePressurePlateBlock extends Block {
    protected static final VoxelShape AABB = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 1.0D, 15.0D);
    protected static final AABB TOUCH_AABB = new AABB(0.125D, 0.0D, 0.125D, 0.875D, 0.25D, 0.875D);
 
-   protected BasePressurePlateBlock(BlockBehaviour.Properties var1) {
+   protected BasePressurePlateBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -29,7 +27,7 @@ public abstract class BasePressurePlateBlock extends Block {
       return this.getSignalForState(var1) > 0 ? PRESSED_AABB : AABB;
    }
 
-   protected int getPressedTime() {
+   public int getTickDelay(LevelReader var1) {
       return 20;
    }
 
@@ -46,12 +44,14 @@ public abstract class BasePressurePlateBlock extends Block {
       return canSupportRigidBlock(var2, var4) || canSupportCenter(var2, var4, Direction.UP);
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      int var5 = this.getSignalForState(var1);
-      if (var5 > 0) {
-         this.checkPressed(var2, var3, var1, var5);
-      }
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide) {
+         int var5 = this.getSignalForState(var1);
+         if (var5 > 0) {
+            this.checkPressed(var2, var3, var1, var5);
+         }
 
+      }
    }
 
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
@@ -82,7 +82,7 @@ public abstract class BasePressurePlateBlock extends Block {
       }
 
       if (var7) {
-         var1.getBlockTicks().scheduleTick(new BlockPos(var2), this, this.getPressedTime());
+         var1.getBlockTicks().scheduleTick(new BlockPos(var2), this, this.getTickDelay(var1));
       }
 
    }
@@ -92,7 +92,7 @@ public abstract class BasePressurePlateBlock extends Block {
    protected abstract void playOffSound(LevelAccessor var1, BlockPos var2);
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          if (this.getSignalForState(var1) > 0) {
             this.updateNeighbours(var2, var3);
          }

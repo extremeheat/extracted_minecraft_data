@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -21,39 +20,44 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
       this.passEvents = false;
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      this.minecraft.getTextureManager().bind(HORSE_INVENTORY_LOCATION);
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      if (this.horse instanceof AbstractChestedHorse) {
-         AbstractChestedHorse var7 = (AbstractChestedHorse)this.horse;
-         if (var7.hasChest()) {
-            this.blit(var1, var5 + 79, var6 + 17, 0, this.imageHeight, var7.getInventoryColumns() * 18, 54);
-         }
-      }
-
-      if (this.horse.isSaddleable()) {
-         this.blit(var1, var5 + 7, var6 + 35 - 18, 18, this.imageHeight + 54, 18, 18);
-      }
-
-      if (this.horse.canWearArmor()) {
-         if (this.horse instanceof Llama) {
-            this.blit(var1, var5 + 7, var6 + 35, 36, this.imageHeight + 54, 18, 18);
-         } else {
-            this.blit(var1, var5 + 7, var6 + 35, 0, this.imageHeight + 54, 18, 18);
-         }
-      }
-
-      InventoryScreen.renderEntityInInventory(var5 + 51, var6 + 60, 17, (float)(var5 + 51) - this.xMouse, (float)(var6 + 75 - 50) - this.yMouse, this.horse);
+   protected void renderLabels(int var1, int var2) {
+      this.font.draw(this.title.getColoredString(), 8.0F, 6.0F, 4210752);
+      this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 96 + 2), 4210752);
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.xMouse = (float)var2;
-      this.yMouse = (float)var3;
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      this.minecraft.getTextureManager().bind(HORSE_INVENTORY_LOCATION);
+      int var4 = (this.width - this.imageWidth) / 2;
+      int var5 = (this.height - this.imageHeight) / 2;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
+      if (this.horse instanceof AbstractChestedHorse) {
+         AbstractChestedHorse var6 = (AbstractChestedHorse)this.horse;
+         if (var6.hasChest()) {
+            this.blit(var4 + 79, var5 + 17, 0, this.imageHeight, var6.getInventoryColumns() * 18, 54);
+         }
+      }
+
+      if (this.horse.canBeSaddled()) {
+         this.blit(var4 + 7, var5 + 35 - 18, 18, this.imageHeight + 54, 18, 18);
+      }
+
+      if (this.horse.wearsArmor()) {
+         if (this.horse instanceof Llama) {
+            this.blit(var4 + 7, var5 + 35, 36, this.imageHeight + 54, 18, 18);
+         } else {
+            this.blit(var4 + 7, var5 + 35, 0, this.imageHeight + 54, 18, 18);
+         }
+      }
+
+      InventoryScreen.renderPlayerModel(var4 + 51, var5 + 60, 17, (float)(var4 + 51) - this.xMouse, (float)(var5 + 75 - 50) - this.yMouse, this.horse);
+   }
+
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.xMouse = (float)var1;
+      this.yMouse = (float)var2;
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
    }
 }

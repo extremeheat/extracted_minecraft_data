@@ -4,9 +4,9 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class ServerboundInteractPacket implements Packet<ServerGamePacketListener> {
@@ -14,34 +14,30 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
    private ServerboundInteractPacket.Action action;
    private Vec3 location;
    private InteractionHand hand;
-   private boolean usingSecondaryAction;
 
    public ServerboundInteractPacket() {
       super();
    }
 
-   public ServerboundInteractPacket(Entity var1, boolean var2) {
+   public ServerboundInteractPacket(Entity var1) {
       super();
       this.entityId = var1.getId();
       this.action = ServerboundInteractPacket.Action.ATTACK;
-      this.usingSecondaryAction = var2;
    }
 
-   public ServerboundInteractPacket(Entity var1, InteractionHand var2, boolean var3) {
+   public ServerboundInteractPacket(Entity var1, InteractionHand var2) {
       super();
       this.entityId = var1.getId();
       this.action = ServerboundInteractPacket.Action.INTERACT;
       this.hand = var2;
-      this.usingSecondaryAction = var3;
    }
 
-   public ServerboundInteractPacket(Entity var1, InteractionHand var2, Vec3 var3, boolean var4) {
+   public ServerboundInteractPacket(Entity var1, InteractionHand var2, Vec3 var3) {
       super();
       this.entityId = var1.getId();
       this.action = ServerboundInteractPacket.Action.INTERACT_AT;
       this.hand = var2;
       this.location = var3;
-      this.usingSecondaryAction = var4;
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
@@ -55,7 +51,6 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
          this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
       }
 
-      this.usingSecondaryAction = var1.readBoolean();
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
@@ -71,7 +66,6 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
          var1.writeEnum(this.hand);
       }
 
-      var1.writeBoolean(this.usingSecondaryAction);
    }
 
    public void handle(ServerGamePacketListener var1) {
@@ -79,25 +73,20 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
    }
 
    @Nullable
-   public Entity getTarget(ServerLevel var1) {
-      return var1.getEntityOrPart(this.entityId);
+   public Entity getTarget(Level var1) {
+      return var1.getEntity(this.entityId);
    }
 
    public ServerboundInteractPacket.Action getAction() {
       return this.action;
    }
 
-   @Nullable
    public InteractionHand getHand() {
       return this.hand;
    }
 
    public Vec3 getLocation() {
       return this.location;
-   }
-
-   public boolean isUsingSecondaryAction() {
-      return this.usingSecondaryAction;
    }
 
    public static enum Action {

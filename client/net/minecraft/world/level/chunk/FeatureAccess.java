@@ -3,20 +3,20 @@ package net.minecraft.world.level.chunk;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 
-public interface FeatureAccess {
+public interface FeatureAccess extends BlockGetter {
    @Nullable
-   StructureStart<?> getStartForFeature(StructureFeature<?> var1);
+   StructureStart getStartForFeature(String var1);
 
-   void setStartForFeature(StructureFeature<?> var1, StructureStart<?> var2);
+   void setStartForFeature(String var1, StructureStart var2);
 
-   LongSet getReferencesForFeature(StructureFeature<?> var1);
+   LongSet getReferencesForFeature(String var1);
 
-   void addReferenceForFeature(StructureFeature<?> var1, long var2);
+   void addReferenceForFeature(String var1, long var2);
 
-   Map<StructureFeature<?>, LongSet> getAllReferences();
+   Map<String, LongSet> getAllReferences();
 
-   void setAllReferences(Map<StructureFeature<?>, LongSet> var1);
+   void setAllReferences(Map<String, LongSet> var1);
 }

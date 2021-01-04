@@ -26,20 +26,16 @@ public interface SoundInstance {
 
    float getPitch();
 
-   double getX();
+   float getX();
 
-   double getY();
+   float getY();
 
-   double getZ();
+   float getZ();
 
    SoundInstance.Attenuation getAttenuation();
 
    default boolean canStartSilent() {
       return false;
-   }
-
-   default boolean canPlaySound() {
-      return true;
    }
 
    public static enum Attenuation {

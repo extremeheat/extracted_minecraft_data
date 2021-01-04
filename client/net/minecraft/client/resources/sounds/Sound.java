@@ -73,10 +73,6 @@ public class Sound implements Weighted<Sound> {
       return this.attenuationDistance;
    }
 
-   public String toString() {
-      return "Sound[" + this.location + "]";
-   }
-
    // $FF: synthetic method
    public Object getSound() {
       return this.getSound();

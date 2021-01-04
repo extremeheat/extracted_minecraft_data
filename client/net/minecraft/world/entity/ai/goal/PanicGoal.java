@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
 
@@ -16,7 +16,6 @@ public class PanicGoal extends Goal {
    protected double posX;
    protected double posY;
    protected double posZ;
-   protected boolean isRunning;
 
    public PanicGoal(PathfinderMob var1, double var2) {
       super();
@@ -44,7 +43,7 @@ public class PanicGoal extends Goal {
    }
 
    protected boolean findRandomPosition() {
-      Vec3 var1 = DefaultRandomPos.getPos(this.mob, 5, 4);
+      Vec3 var1 = RandomPos.getPos(this.mob, 5, 4);
       if (var1 == null) {
          return false;
       } else {
@@ -55,17 +54,8 @@ public class PanicGoal extends Goal {
       }
    }
 
-   public boolean isRunning() {
-      return this.isRunning;
-   }
-
    public void start() {
       this.mob.getNavigation().moveTo(this.posX, this.posY, this.posZ, this.speedModifier);
-      this.isRunning = true;
-   }
-
-   public void stop() {
-      this.isRunning = false;
    }
 
    public boolean canContinueToUse() {
@@ -74,7 +64,7 @@ public class PanicGoal extends Goal {
 
    @Nullable
    protected BlockPos lookForWater(BlockGetter var1, Entity var2, int var3, int var4) {
-      BlockPos var5 = var2.blockPosition();
+      BlockPos var5 = new BlockPos(var2);
       int var6 = var5.getX();
       int var7 = var5.getY();
       int var8 = var5.getZ();

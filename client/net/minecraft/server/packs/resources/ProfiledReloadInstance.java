@@ -22,12 +22,12 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
       super(var3, var4, var1, var2, (var1x, var2x, var3x, var4x, var5x) -> {
          AtomicLong var6 = new AtomicLong();
          AtomicLong var7 = new AtomicLong();
-         ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> {
+         ActiveProfiler var8 = new ActiveProfiler(Util.getNanos(), () -> {
             return 0;
-         }, false);
-         ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> {
+         });
+         ActiveProfiler var9 = new ActiveProfiler(Util.getNanos(), () -> {
             return 0;
-         }, false);
+         });
          CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, (var2) -> {
             var4x.execute(() -> {
                long var2x = Util.getNanos();
@@ -42,7 +42,7 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
             });
          });
          return var10.thenApplyAsync((var5) -> {
-            return new ProfiledReloadInstance.State(var3x.getName(), var8.getResults(), var9.getResults(), var6, var7);
+            return new ProfiledReloadInstance.State(var3x.getClass().getSimpleName(), var8.getResults(), var9.getResults(), var6, var7);
          }, var4);
       }, var5);
       this.total.start();
@@ -52,7 +52,7 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
    private void finish(List<ProfiledReloadInstance.State> var1) {
       this.total.stop();
       int var2 = 0;
-      LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
+      LOGGER.info("Resource reload finished after " + this.total.elapsed(TimeUnit.MILLISECONDS) + " ms");
 
       int var8;
       for(Iterator var3 = var1.iterator(); var3.hasNext(); var2 += var8) {
@@ -63,10 +63,21 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
          var8 = (int)((double)var4.reloadNanos.get() / 1000000.0D);
          int var9 = var7 + var8;
          String var10 = var4.name;
-         LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", var10, var9, var7, var8);
+         LOGGER.info(var10 + " took approximately " + var9 + " ms (" + var7 + " ms preparing, " + var8 + " ms applying)");
+         String var11 = var5.getProfilerResults();
+         if (var11.length() > 0) {
+            LOGGER.debug(var10 + " preparations:\n" + var11);
+         }
+
+         String var12 = var6.getProfilerResults();
+         if (var12.length() > 0) {
+            LOGGER.debug(var10 + " reload:\n" + var12);
+         }
+
+         LOGGER.info("----------");
       }
 
-      LOGGER.info("Total blocking time: {} ms", var2);
+      LOGGER.info("Total blocking time: " + var2 + " ms");
    }
 
    public static class State {

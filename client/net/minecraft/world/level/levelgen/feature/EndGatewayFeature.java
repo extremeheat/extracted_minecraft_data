@@ -1,22 +1,23 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
-   public EndGatewayFeature(Codec<EndGatewayConfiguration> var1) {
+   public EndGatewayFeature(Function<Dynamic<?>, ? extends EndGatewayConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, EndGatewayConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, EndGatewayConfiguration var5) {
       Iterator var6 = BlockPos.betweenClosed(var4.offset(-1, -2, -1), var4.offset(1, 2, 1)).iterator();
 
       while(true) {

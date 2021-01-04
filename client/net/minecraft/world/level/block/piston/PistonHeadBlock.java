@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.piston;
 
-import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -47,38 +45,28 @@ public class PistonHeadBlock extends DirectionalBlock {
    protected static final VoxelShape SHORT_NORTH_ARM_AABB;
    protected static final VoxelShape SHORT_EAST_ARM_AABB;
    protected static final VoxelShape SHORT_WEST_ARM_AABB;
-   private static final VoxelShape[] SHAPES_SHORT;
-   private static final VoxelShape[] SHAPES_LONG;
 
-   private static VoxelShape[] makeShapes(boolean var0) {
-      return (VoxelShape[])Arrays.stream(Direction.values()).map((var1) -> {
-         return calculateShape(var1, var0);
-      }).toArray((var0x) -> {
-         return new VoxelShape[var0x];
-      });
-   }
-
-   private static VoxelShape calculateShape(Direction var0, boolean var1) {
-      switch(var0) {
-      case DOWN:
-      default:
-         return Shapes.or(DOWN_AABB, var1 ? SHORT_DOWN_ARM_AABB : DOWN_ARM_AABB);
-      case UP:
-         return Shapes.or(UP_AABB, var1 ? SHORT_UP_ARM_AABB : UP_ARM_AABB);
-      case NORTH:
-         return Shapes.or(NORTH_AABB, var1 ? SHORT_NORTH_ARM_AABB : NORTH_ARM_AABB);
-      case SOUTH:
-         return Shapes.or(SOUTH_AABB, var1 ? SHORT_SOUTH_ARM_AABB : SOUTH_ARM_AABB);
-      case WEST:
-         return Shapes.or(WEST_AABB, var1 ? SHORT_WEST_ARM_AABB : WEST_ARM_AABB);
-      case EAST:
-         return Shapes.or(EAST_AABB, var1 ? SHORT_EAST_ARM_AABB : EAST_ARM_AABB);
-      }
-   }
-
-   public PistonHeadBlock(BlockBehaviour.Properties var1) {
+   public PistonHeadBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, PistonType.DEFAULT)).setValue(SHORT, false));
+   }
+
+   private VoxelShape getBaseShape(BlockState var1) {
+      switch((Direction)var1.getValue(FACING)) {
+      case DOWN:
+      default:
+         return DOWN_AABB;
+      case UP:
+         return UP_AABB;
+      case NORTH:
+         return NORTH_AABB;
+      case SOUTH:
+         return SOUTH_AABB;
+      case WEST:
+         return WEST_AABB;
+      case EAST:
+         return EAST_AABB;
+      }
    }
 
    public boolean useShapeForLightOcclusion(BlockState var1) {
@@ -86,19 +74,34 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return ((Boolean)var1.getValue(SHORT) ? SHAPES_SHORT : SHAPES_LONG)[((Direction)var1.getValue(FACING)).ordinal()];
+      return Shapes.or(this.getBaseShape(var1), this.getArmShape(var1));
    }
 
-   private boolean isFittingBase(BlockState var1, BlockState var2) {
-      Block var3 = var1.getValue(TYPE) == PistonType.DEFAULT ? Blocks.PISTON : Blocks.STICKY_PISTON;
-      return var2.is(var3) && (Boolean)var2.getValue(PistonBaseBlock.EXTENDED) && var2.getValue(FACING) == var1.getValue(FACING);
+   private VoxelShape getArmShape(BlockState var1) {
+      boolean var2 = (Boolean)var1.getValue(SHORT);
+      switch((Direction)var1.getValue(FACING)) {
+      case DOWN:
+      default:
+         return var2 ? SHORT_DOWN_ARM_AABB : DOWN_ARM_AABB;
+      case UP:
+         return var2 ? SHORT_UP_ARM_AABB : UP_ARM_AABB;
+      case NORTH:
+         return var2 ? SHORT_NORTH_ARM_AABB : NORTH_ARM_AABB;
+      case SOUTH:
+         return var2 ? SHORT_SOUTH_ARM_AABB : SOUTH_ARM_AABB;
+      case WEST:
+         return var2 ? SHORT_WEST_ARM_AABB : WEST_ARM_AABB;
+      case EAST:
+         return var2 ? SHORT_EAST_ARM_AABB : EAST_ARM_AABB;
+      }
    }
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.getAbilities().instabuild) {
+      if (!var1.isClientSide && var4.abilities.instabuild) {
          BlockPos var5 = var2.relative(((Direction)var3.getValue(FACING)).getOpposite());
-         if (this.isFittingBase(var3, var1.getBlockState(var5))) {
-            var1.destroyBlock(var5, false);
+         Block var6 = var1.getBlockState(var5).getBlock();
+         if (var6 == Blocks.PISTON || var6 == Blocks.STICKY_PISTON) {
+            var1.removeBlock(var5, false);
          }
       }
 
@@ -106,11 +109,14 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          super.onRemove(var1, var2, var3, var4, var5);
-         BlockPos var6 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
-         if (this.isFittingBase(var1, var2.getBlockState(var6))) {
-            var2.destroyBlock(var6, true);
+         Direction var6 = ((Direction)var1.getValue(FACING)).getOpposite();
+         var3 = var3.relative(var6);
+         BlockState var7 = var2.getBlockState(var3);
+         if ((var7.getBlock() == Blocks.PISTON || var7.getBlock() == Blocks.STICKY_PISTON) && (Boolean)var7.getValue(PistonBaseBlock.EXTENDED)) {
+            dropResources(var7, var2, var3);
+            var2.removeBlock(var3, false);
          }
 
       }
@@ -121,8 +127,8 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.relative(((Direction)var1.getValue(FACING)).getOpposite()));
-      return this.isFittingBase(var1, var4) || var4.is(Blocks.MOVING_PISTON) && var4.getValue(FACING) == var1.getValue(FACING);
+      Block var4 = var2.getBlockState(var3.relative(((Direction)var1.getValue(FACING)).getOpposite())).getBlock();
+      return var4 == Blocks.PISTON || var4 == Blocks.STICKY_PISTON || var4 == Blocks.MOVING_PISTON;
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
@@ -174,7 +180,5 @@ public class PistonHeadBlock extends DirectionalBlock {
       SHORT_NORTH_ARM_AABB = Block.box(6.0D, 6.0D, 4.0D, 10.0D, 10.0D, 16.0D);
       SHORT_EAST_ARM_AABB = Block.box(0.0D, 6.0D, 6.0D, 12.0D, 10.0D, 10.0D);
       SHORT_WEST_ARM_AABB = Block.box(4.0D, 6.0D, 6.0D, 16.0D, 10.0D, 10.0D);
-      SHAPES_SHORT = makeShapes(true);
-      SHAPES_LONG = makeShapes(false);
    }
 }

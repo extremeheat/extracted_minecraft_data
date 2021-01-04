@@ -77,19 +77,19 @@ public class FollowMobGoal extends Goal {
          this.mob.getLookControl().setLookAt(this.followingMob, 10.0F, (float)this.mob.getMaxHeadXRot());
          if (--this.timeToRecalcPath <= 0) {
             this.timeToRecalcPath = 10;
-            double var1 = this.mob.getX() - this.followingMob.getX();
-            double var3 = this.mob.getY() - this.followingMob.getY();
-            double var5 = this.mob.getZ() - this.followingMob.getZ();
+            double var1 = this.mob.x - this.followingMob.x;
+            double var3 = this.mob.y - this.followingMob.y;
+            double var5 = this.mob.z - this.followingMob.z;
             double var7 = var1 * var1 + var3 * var3 + var5 * var5;
             if (var7 > (double)(this.stopDistance * this.stopDistance)) {
                this.navigation.moveTo((Entity)this.followingMob, this.speedModifier);
             } else {
                this.navigation.stop();
                LookControl var9 = this.followingMob.getLookControl();
-               if (var7 <= (double)this.stopDistance || var9.getWantedX() == this.mob.getX() && var9.getWantedY() == this.mob.getY() && var9.getWantedZ() == this.mob.getZ()) {
-                  double var10 = this.followingMob.getX() - this.mob.getX();
-                  double var12 = this.followingMob.getZ() - this.mob.getZ();
-                  this.navigation.moveTo(this.mob.getX() - var10, this.mob.getY(), this.mob.getZ() - var12, this.speedModifier);
+               if (var7 <= (double)this.stopDistance || var9.getWantedX() == this.mob.x && var9.getWantedY() == this.mob.y && var9.getWantedZ() == this.mob.z) {
+                  double var10 = this.followingMob.x - this.mob.x;
+                  double var12 = this.followingMob.z - this.mob.z;
+                  this.navigation.moveTo(this.mob.x - var10, this.mob.y, this.mob.z - var12, this.speedModifier);
                }
 
             }

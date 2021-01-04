@@ -1,18 +1,22 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Option;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionButton;
 import net.minecraft.client.gui.components.VolumeSlider;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundSource;
 
-public class SoundOptionsScreen extends OptionsSubScreen {
+public class SoundOptionsScreen extends Screen {
+   private final Screen lastScreen;
+   private final Options options;
+
    public SoundOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, new TranslatableComponent("options.sounds.title"));
+      super(new TranslatableComponent("options.sounds.title", new Object[0]));
+      this.lastScreen = var1;
+      this.options = var2;
    }
 
    protected void init() {
@@ -38,14 +42,18 @@ public class SoundOptionsScreen extends OptionsSubScreen {
          var1x.setMessage(Option.SHOW_SUBTITLES.getMessage(this.minecraft.options));
          this.minecraft.options.save();
       }));
-      this.addButton(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, I18n.get("gui.done"), (var1x) -> {
          this.minecraft.setScreen(this.lastScreen);
       }));
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 15, 16777215);
-      super.render(var1, var2, var3, var4);
+   public void removed() {
+      this.minecraft.options.save();
+   }
+
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 15, 16777215);
+      super.render(var1, var2, var3);
    }
 }

@@ -10,8 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
@@ -27,7 +26,6 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.SlabType;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -231,90 +229,90 @@ public class StrongholdPieces {
          return isOkBox(var6) && StructurePiece.findCollisionPiece(var0, var6) == null ? new StrongholdPieces.PortalRoom(var5, var6, var4) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 10, 7, 15, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.GRATES, 4, 1, 0);
-         byte var8 = 6;
-         this.generateBox(var1, var5, 1, var8, 1, 1, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 9, var8, 1, 9, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 2, var8, 1, 8, var8, 2, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 2, var8, 14, 8, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 1, 1, 1, 2, 1, 4, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 8, 1, 1, 9, 1, 4, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 1, 1, 1, 1, 1, 3, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
-         this.generateBox(var1, var5, 9, 1, 1, 9, 1, 3, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
-         this.generateBox(var1, var5, 3, 1, 8, 7, 1, 12, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 1, 9, 6, 1, 11, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
-         BlockState var9 = (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true);
-         BlockState var10 = (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 10, 7, 15, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, StrongholdPieces.StrongholdPiece.SmallDoorType.GRATES, 4, 1, 0);
+         byte var5 = 6;
+         this.generateBox(var1, var3, 1, var5, 1, 1, var5, 14, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 9, var5, 1, 9, var5, 14, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 2, var5, 1, 8, var5, 2, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 2, var5, 14, 8, var5, 14, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 1, 1, 1, 2, 1, 4, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 8, 1, 1, 9, 1, 4, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 1, 1, 1, 1, 1, 3, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
+         this.generateBox(var1, var3, 9, 1, 1, 9, 1, 3, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
+         this.generateBox(var1, var3, 3, 1, 8, 7, 1, 12, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 1, 9, 6, 1, 11, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
+         BlockState var6 = (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true);
+         BlockState var7 = (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true);
 
-         int var11;
-         for(var11 = 3; var11 < 14; var11 += 2) {
-            this.generateBox(var1, var5, 0, 3, var11, 0, 4, var11, var9, var9, false);
-            this.generateBox(var1, var5, 10, 3, var11, 10, 4, var11, var9, var9, false);
+         int var8;
+         for(var8 = 3; var8 < 14; var8 += 2) {
+            this.generateBox(var1, var3, 0, 3, var8, 0, 4, var8, var6, var6, false);
+            this.generateBox(var1, var3, 10, 3, var8, 10, 4, var8, var6, var6, false);
          }
 
-         for(var11 = 2; var11 < 9; var11 += 2) {
-            this.generateBox(var1, var5, var11, 3, 15, var11, 4, 15, var10, var10, false);
+         for(var8 = 2; var8 < 9; var8 += 2) {
+            this.generateBox(var1, var3, var8, 3, 15, var8, 4, 15, var7, var7, false);
          }
 
-         BlockState var21 = (BlockState)Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
-         this.generateBox(var1, var5, 4, 1, 5, 6, 1, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 2, 6, 6, 2, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 3, 7, 6, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         BlockState var18 = (BlockState)Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         this.generateBox(var1, var3, 4, 1, 5, 6, 1, 7, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 2, 6, 6, 2, 7, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 3, 7, 6, 3, 7, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
-         for(int var12 = 4; var12 <= 6; ++var12) {
-            this.placeBlock(var1, var21, var12, 1, 4, var5);
-            this.placeBlock(var1, var21, var12, 2, 5, var5);
-            this.placeBlock(var1, var21, var12, 3, 6, var5);
+         for(int var9 = 4; var9 <= 6; ++var9) {
+            this.placeBlock(var1, var18, var9, 1, 4, var3);
+            this.placeBlock(var1, var18, var9, 2, 5, var3);
+            this.placeBlock(var1, var18, var9, 3, 6, var3);
          }
 
-         BlockState var22 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
-         BlockState var13 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.SOUTH);
-         BlockState var14 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.EAST);
-         BlockState var15 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.WEST);
-         boolean var16 = true;
-         boolean[] var17 = new boolean[12];
+         BlockState var19 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
+         BlockState var10 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.SOUTH);
+         BlockState var11 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.EAST);
+         BlockState var12 = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.WEST);
+         boolean var13 = true;
+         boolean[] var14 = new boolean[12];
 
-         for(int var18 = 0; var18 < var17.length; ++var18) {
-            var17[var18] = var4.nextFloat() > 0.9F;
-            var16 &= var17[var18];
+         for(int var15 = 0; var15 < var14.length; ++var15) {
+            var14[var15] = var2.nextFloat() > 0.9F;
+            var13 &= var14[var15];
          }
 
-         this.placeBlock(var1, (BlockState)var22.setValue(EndPortalFrameBlock.HAS_EYE, var17[0]), 4, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var22.setValue(EndPortalFrameBlock.HAS_EYE, var17[1]), 5, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var22.setValue(EndPortalFrameBlock.HAS_EYE, var17[2]), 6, 3, 8, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[3]), 4, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[4]), 5, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var13.setValue(EndPortalFrameBlock.HAS_EYE, var17[5]), 6, 3, 12, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[6]), 3, 3, 9, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[7]), 3, 3, 10, var5);
-         this.placeBlock(var1, (BlockState)var14.setValue(EndPortalFrameBlock.HAS_EYE, var17[8]), 3, 3, 11, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[9]), 7, 3, 9, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[10]), 7, 3, 10, var5);
-         this.placeBlock(var1, (BlockState)var15.setValue(EndPortalFrameBlock.HAS_EYE, var17[11]), 7, 3, 11, var5);
-         if (var16) {
-            BlockState var23 = Blocks.END_PORTAL.defaultBlockState();
-            this.placeBlock(var1, var23, 4, 3, 9, var5);
-            this.placeBlock(var1, var23, 5, 3, 9, var5);
-            this.placeBlock(var1, var23, 6, 3, 9, var5);
-            this.placeBlock(var1, var23, 4, 3, 10, var5);
-            this.placeBlock(var1, var23, 5, 3, 10, var5);
-            this.placeBlock(var1, var23, 6, 3, 10, var5);
-            this.placeBlock(var1, var23, 4, 3, 11, var5);
-            this.placeBlock(var1, var23, 5, 3, 11, var5);
-            this.placeBlock(var1, var23, 6, 3, 11, var5);
+         this.placeBlock(var1, (BlockState)var19.setValue(EndPortalFrameBlock.HAS_EYE, var14[0]), 4, 3, 8, var3);
+         this.placeBlock(var1, (BlockState)var19.setValue(EndPortalFrameBlock.HAS_EYE, var14[1]), 5, 3, 8, var3);
+         this.placeBlock(var1, (BlockState)var19.setValue(EndPortalFrameBlock.HAS_EYE, var14[2]), 6, 3, 8, var3);
+         this.placeBlock(var1, (BlockState)var10.setValue(EndPortalFrameBlock.HAS_EYE, var14[3]), 4, 3, 12, var3);
+         this.placeBlock(var1, (BlockState)var10.setValue(EndPortalFrameBlock.HAS_EYE, var14[4]), 5, 3, 12, var3);
+         this.placeBlock(var1, (BlockState)var10.setValue(EndPortalFrameBlock.HAS_EYE, var14[5]), 6, 3, 12, var3);
+         this.placeBlock(var1, (BlockState)var11.setValue(EndPortalFrameBlock.HAS_EYE, var14[6]), 3, 3, 9, var3);
+         this.placeBlock(var1, (BlockState)var11.setValue(EndPortalFrameBlock.HAS_EYE, var14[7]), 3, 3, 10, var3);
+         this.placeBlock(var1, (BlockState)var11.setValue(EndPortalFrameBlock.HAS_EYE, var14[8]), 3, 3, 11, var3);
+         this.placeBlock(var1, (BlockState)var12.setValue(EndPortalFrameBlock.HAS_EYE, var14[9]), 7, 3, 9, var3);
+         this.placeBlock(var1, (BlockState)var12.setValue(EndPortalFrameBlock.HAS_EYE, var14[10]), 7, 3, 10, var3);
+         this.placeBlock(var1, (BlockState)var12.setValue(EndPortalFrameBlock.HAS_EYE, var14[11]), 7, 3, 11, var3);
+         if (var13) {
+            BlockState var20 = Blocks.END_PORTAL.defaultBlockState();
+            this.placeBlock(var1, var20, 4, 3, 9, var3);
+            this.placeBlock(var1, var20, 5, 3, 9, var3);
+            this.placeBlock(var1, var20, 6, 3, 9, var3);
+            this.placeBlock(var1, var20, 4, 3, 10, var3);
+            this.placeBlock(var1, var20, 5, 3, 10, var3);
+            this.placeBlock(var1, var20, 6, 3, 10, var3);
+            this.placeBlock(var1, var20, 4, 3, 11, var3);
+            this.placeBlock(var1, var20, 5, 3, 11, var3);
+            this.placeBlock(var1, var20, 6, 3, 11, var3);
          }
 
          if (!this.hasPlacedSpawner) {
-            int var20 = this.getWorldY(3);
-            BlockPos var24 = new BlockPos(this.getWorldX(5, 6), var20, this.getWorldZ(5, 6));
-            if (var5.isInside(var24)) {
+            int var17 = this.getWorldY(3);
+            BlockPos var21 = new BlockPos(this.getWorldX(5, 6), var17, this.getWorldZ(5, 6));
+            if (var3.isInside(var21)) {
                this.hasPlacedSpawner = true;
-               var1.setBlock(var24, Blocks.SPAWNER.defaultBlockState(), 2);
-               BlockEntity var19 = var1.getBlockEntity(var24);
-               if (var19 instanceof SpawnerBlockEntity) {
-                  ((SpawnerBlockEntity)var19).getSpawner().setEntityId(EntityType.SILVERFISH);
+               var1.setBlock(var21, Blocks.SPAWNER.defaultBlockState(), 2);
+               BlockEntity var16 = var1.getBlockEntity(var21);
+               if (var16 instanceof SpawnerBlockEntity) {
+                  ((SpawnerBlockEntity)var16).getSpawner().setEntityId(EntityType.SILVERFISH);
                }
             }
          }
@@ -389,40 +387,40 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.FiveCrossing(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 9, 8, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 3, 0);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 9, 8, 10, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 4, 3, 0);
          if (this.leftLow) {
-            this.generateBox(var1, var5, 0, 3, 1, 0, 5, 3, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 0, 3, 1, 0, 5, 3, CAVE_AIR, CAVE_AIR, false);
          }
 
          if (this.rightLow) {
-            this.generateBox(var1, var5, 9, 3, 1, 9, 5, 3, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 9, 3, 1, 9, 5, 3, CAVE_AIR, CAVE_AIR, false);
          }
 
          if (this.leftHigh) {
-            this.generateBox(var1, var5, 0, 5, 7, 0, 7, 9, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 0, 5, 7, 0, 7, 9, CAVE_AIR, CAVE_AIR, false);
          }
 
          if (this.rightHigh) {
-            this.generateBox(var1, var5, 9, 5, 7, 9, 7, 9, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 9, 5, 7, 9, 7, 9, CAVE_AIR, CAVE_AIR, false);
          }
 
-         this.generateBox(var1, var5, 5, 1, 10, 7, 3, 10, CAVE_AIR, CAVE_AIR, false);
-         this.generateBox(var1, var5, 1, 2, 1, 8, 2, 6, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 1, 5, 4, 4, 9, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 8, 1, 5, 8, 4, 9, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 1, 4, 7, 3, 4, 9, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 1, 3, 5, 3, 3, 6, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 1, 3, 4, 3, 3, 4, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 1, 4, 6, 3, 4, 6, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 1, 7, 7, 1, 8, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 5, 1, 9, 7, 1, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 2, 7, 7, 2, 7, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 4, 5, 7, 4, 5, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 8, 5, 7, 8, 5, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 5, 7, 7, 5, 9, (BlockState)Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE), (BlockState)Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE), false);
-         this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH), 6, 5, 6, var5);
+         this.generateBox(var1, var3, 5, 1, 10, 7, 3, 10, CAVE_AIR, CAVE_AIR, false);
+         this.generateBox(var1, var3, 1, 2, 1, 8, 2, 6, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 1, 5, 4, 4, 9, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 8, 1, 5, 8, 4, 9, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 1, 4, 7, 3, 4, 9, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 1, 3, 5, 3, 3, 6, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 1, 3, 4, 3, 3, 4, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 1, 4, 6, 3, 4, 6, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 5, 1, 7, 7, 1, 8, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 5, 1, 9, 7, 1, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 5, 2, 7, 7, 2, 7, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 4, 5, 7, 4, 5, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 8, 5, 7, 8, 5, 9, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), false);
+         this.generateBox(var1, var3, 5, 5, 7, 7, 5, 9, (BlockState)Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE), (BlockState)Blocks.SMOOTH_STONE_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.DOUBLE), false);
+         this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH), 6, 5, 6, var3);
          return true;
       }
    }
@@ -460,108 +458,108 @@ public class StrongholdPieces {
          return new StrongholdPieces.Library(var6, var1, var7, var5);
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         byte var8 = 11;
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         byte var5 = 11;
          if (!this.isTall) {
-            var8 = 6;
+            var5 = 6;
          }
 
-         this.generateBox(var1, var5, 0, 0, 0, 13, var8 - 1, 14, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 1, 0);
-         this.generateMaybeBox(var1, var5, var4, 0.07F, 2, 1, 1, 11, 4, 13, Blocks.COBWEB.defaultBlockState(), Blocks.COBWEB.defaultBlockState(), false, false);
-         boolean var9 = true;
-         boolean var10 = true;
+         this.generateBox(var1, var3, 0, 0, 0, 13, var5 - 1, 14, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 4, 1, 0);
+         this.generateMaybeBox(var1, var3, var2, 0.07F, 2, 1, 1, 11, 4, 13, Blocks.COBWEB.defaultBlockState(), Blocks.COBWEB.defaultBlockState(), false, false);
+         boolean var6 = true;
+         boolean var7 = true;
 
-         int var11;
-         for(var11 = 1; var11 <= 13; ++var11) {
-            if ((var11 - 1) % 4 == 0) {
-               this.generateBox(var1, var5, 1, 1, var11, 1, 4, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-               this.generateBox(var1, var5, 12, 1, var11, 12, 4, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-               this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST), 2, 3, var11, var5);
-               this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST), 11, 3, var11, var5);
+         int var8;
+         for(var8 = 1; var8 <= 13; ++var8) {
+            if ((var8 - 1) % 4 == 0) {
+               this.generateBox(var1, var3, 1, 1, var8, 1, 4, var8, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+               this.generateBox(var1, var3, 12, 1, var8, 12, 4, var8, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+               this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST), 2, 3, var8, var3);
+               this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST), 11, 3, var8, var3);
                if (this.isTall) {
-                  this.generateBox(var1, var5, 1, 6, var11, 1, 9, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-                  this.generateBox(var1, var5, 12, 6, var11, 12, 9, var11, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+                  this.generateBox(var1, var3, 1, 6, var8, 1, 9, var8, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+                  this.generateBox(var1, var3, 12, 6, var8, 12, 9, var8, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
                }
             } else {
-               this.generateBox(var1, var5, 1, 1, var11, 1, 4, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
-               this.generateBox(var1, var5, 12, 1, var11, 12, 4, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+               this.generateBox(var1, var3, 1, 1, var8, 1, 4, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+               this.generateBox(var1, var3, 12, 1, var8, 12, 4, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
                if (this.isTall) {
-                  this.generateBox(var1, var5, 1, 6, var11, 1, 9, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
-                  this.generateBox(var1, var5, 12, 6, var11, 12, 9, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+                  this.generateBox(var1, var3, 1, 6, var8, 1, 9, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+                  this.generateBox(var1, var3, 12, 6, var8, 12, 9, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
                }
             }
          }
 
-         for(var11 = 3; var11 < 12; var11 += 2) {
-            this.generateBox(var1, var5, 3, 1, var11, 4, 3, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
-            this.generateBox(var1, var5, 6, 1, var11, 7, 3, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
-            this.generateBox(var1, var5, 9, 1, var11, 10, 3, var11, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+         for(var8 = 3; var8 < 12; var8 += 2) {
+            this.generateBox(var1, var3, 3, 1, var8, 4, 3, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+            this.generateBox(var1, var3, 6, 1, var8, 7, 3, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
+            this.generateBox(var1, var3, 9, 1, var8, 10, 3, var8, Blocks.BOOKSHELF.defaultBlockState(), Blocks.BOOKSHELF.defaultBlockState(), false);
          }
 
          if (this.isTall) {
-            this.generateBox(var1, var5, 1, 5, 1, 3, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-            this.generateBox(var1, var5, 10, 5, 1, 12, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-            this.generateBox(var1, var5, 4, 5, 1, 9, 5, 2, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-            this.generateBox(var1, var5, 4, 5, 12, 9, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
-            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 9, 5, 11, var5);
-            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 8, 5, 11, var5);
-            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 9, 5, 10, var5);
-            BlockState var20 = (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST, true)).setValue(FenceBlock.EAST, true);
-            BlockState var12 = (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.SOUTH, true);
-            this.generateBox(var1, var5, 3, 6, 3, 3, 6, 11, var12, var12, false);
-            this.generateBox(var1, var5, 10, 6, 3, 10, 6, 9, var12, var12, false);
-            this.generateBox(var1, var5, 4, 6, 2, 9, 6, 2, var20, var20, false);
-            this.generateBox(var1, var5, 4, 6, 12, 7, 6, 12, var20, var20, false);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.EAST, true), 3, 6, 2, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.SOUTH, true)).setValue(FenceBlock.EAST, true), 3, 6, 12, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.WEST, true), 10, 6, 2, var5);
+            this.generateBox(var1, var3, 1, 5, 1, 3, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+            this.generateBox(var1, var3, 10, 5, 1, 12, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+            this.generateBox(var1, var3, 4, 5, 1, 9, 5, 2, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+            this.generateBox(var1, var3, 4, 5, 12, 9, 5, 13, Blocks.OAK_PLANKS.defaultBlockState(), Blocks.OAK_PLANKS.defaultBlockState(), false);
+            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 9, 5, 11, var3);
+            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 8, 5, 11, var3);
+            this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 9, 5, 10, var3);
+            BlockState var17 = (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST, true)).setValue(FenceBlock.EAST, true);
+            BlockState var9 = (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.SOUTH, true);
+            this.generateBox(var1, var3, 3, 6, 3, 3, 6, 11, var9, var9, false);
+            this.generateBox(var1, var3, 10, 6, 3, 10, 6, 9, var9, var9, false);
+            this.generateBox(var1, var3, 4, 6, 2, 9, 6, 2, var17, var17, false);
+            this.generateBox(var1, var3, 4, 6, 12, 7, 6, 12, var17, var17, false);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.EAST, true), 3, 6, 2, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.SOUTH, true)).setValue(FenceBlock.EAST, true), 3, 6, 12, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.WEST, true), 10, 6, 2, var3);
 
-            for(int var13 = 0; var13 <= 2; ++var13) {
-               this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.SOUTH, true)).setValue(FenceBlock.WEST, true), 8 + var13, 6, 12 - var13, var5);
-               if (var13 != 2) {
-                  this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.EAST, true), 8 + var13, 6, 11 - var13, var5);
+            for(int var10 = 0; var10 <= 2; ++var10) {
+               this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.SOUTH, true)).setValue(FenceBlock.WEST, true), 8 + var10, 6, 12 - var10, var3);
+               if (var10 != 2) {
+                  this.placeBlock(var1, (BlockState)((BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.NORTH, true)).setValue(FenceBlock.EAST, true), 8 + var10, 6, 11 - var10, var3);
                }
             }
 
-            BlockState var21 = (BlockState)Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
-            this.placeBlock(var1, var21, 10, 1, 13, var5);
-            this.placeBlock(var1, var21, 10, 2, 13, var5);
-            this.placeBlock(var1, var21, 10, 3, 13, var5);
-            this.placeBlock(var1, var21, 10, 4, 13, var5);
-            this.placeBlock(var1, var21, 10, 5, 13, var5);
-            this.placeBlock(var1, var21, 10, 6, 13, var5);
-            this.placeBlock(var1, var21, 10, 7, 13, var5);
-            boolean var14 = true;
-            boolean var15 = true;
-            BlockState var16 = (BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.EAST, true);
-            this.placeBlock(var1, var16, 6, 9, 7, var5);
-            BlockState var17 = (BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST, true);
-            this.placeBlock(var1, var17, 7, 9, 7, var5);
-            this.placeBlock(var1, var16, 6, 8, 7, var5);
-            this.placeBlock(var1, var17, 7, 8, 7, var5);
-            BlockState var18 = (BlockState)((BlockState)var12.setValue(FenceBlock.WEST, true)).setValue(FenceBlock.EAST, true);
-            this.placeBlock(var1, var18, 6, 7, 7, var5);
-            this.placeBlock(var1, var18, 7, 7, 7, var5);
-            this.placeBlock(var1, var16, 5, 7, 7, var5);
-            this.placeBlock(var1, var17, 8, 7, 7, var5);
-            this.placeBlock(var1, (BlockState)var16.setValue(FenceBlock.NORTH, true), 6, 7, 6, var5);
-            this.placeBlock(var1, (BlockState)var16.setValue(FenceBlock.SOUTH, true), 6, 7, 8, var5);
-            this.placeBlock(var1, (BlockState)var17.setValue(FenceBlock.NORTH, true), 7, 7, 6, var5);
-            this.placeBlock(var1, (BlockState)var17.setValue(FenceBlock.SOUTH, true), 7, 7, 8, var5);
-            BlockState var19 = Blocks.TORCH.defaultBlockState();
-            this.placeBlock(var1, var19, 5, 8, 7, var5);
-            this.placeBlock(var1, var19, 8, 8, 7, var5);
-            this.placeBlock(var1, var19, 6, 8, 6, var5);
-            this.placeBlock(var1, var19, 6, 8, 8, var5);
-            this.placeBlock(var1, var19, 7, 8, 6, var5);
-            this.placeBlock(var1, var19, 7, 8, 8, var5);
+            BlockState var18 = (BlockState)Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
+            this.placeBlock(var1, var18, 10, 1, 13, var3);
+            this.placeBlock(var1, var18, 10, 2, 13, var3);
+            this.placeBlock(var1, var18, 10, 3, 13, var3);
+            this.placeBlock(var1, var18, 10, 4, 13, var3);
+            this.placeBlock(var1, var18, 10, 5, 13, var3);
+            this.placeBlock(var1, var18, 10, 6, 13, var3);
+            this.placeBlock(var1, var18, 10, 7, 13, var3);
+            boolean var11 = true;
+            boolean var12 = true;
+            BlockState var13 = (BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.EAST, true);
+            this.placeBlock(var1, var13, 6, 9, 7, var3);
+            BlockState var14 = (BlockState)Blocks.OAK_FENCE.defaultBlockState().setValue(FenceBlock.WEST, true);
+            this.placeBlock(var1, var14, 7, 9, 7, var3);
+            this.placeBlock(var1, var13, 6, 8, 7, var3);
+            this.placeBlock(var1, var14, 7, 8, 7, var3);
+            BlockState var15 = (BlockState)((BlockState)var9.setValue(FenceBlock.WEST, true)).setValue(FenceBlock.EAST, true);
+            this.placeBlock(var1, var15, 6, 7, 7, var3);
+            this.placeBlock(var1, var15, 7, 7, 7, var3);
+            this.placeBlock(var1, var13, 5, 7, 7, var3);
+            this.placeBlock(var1, var14, 8, 7, 7, var3);
+            this.placeBlock(var1, (BlockState)var13.setValue(FenceBlock.NORTH, true), 6, 7, 6, var3);
+            this.placeBlock(var1, (BlockState)var13.setValue(FenceBlock.SOUTH, true), 6, 7, 8, var3);
+            this.placeBlock(var1, (BlockState)var14.setValue(FenceBlock.NORTH, true), 7, 7, 6, var3);
+            this.placeBlock(var1, (BlockState)var14.setValue(FenceBlock.SOUTH, true), 7, 7, 8, var3);
+            BlockState var16 = Blocks.TORCH.defaultBlockState();
+            this.placeBlock(var1, var16, 5, 8, 7, var3);
+            this.placeBlock(var1, var16, 8, 8, 7, var3);
+            this.placeBlock(var1, var16, 6, 8, 6, var3);
+            this.placeBlock(var1, var16, 6, 8, 8, var3);
+            this.placeBlock(var1, var16, 7, 8, 6, var3);
+            this.placeBlock(var1, var16, 7, 8, 8, var3);
          }
 
-         this.createChest(var1, var5, var4, 3, 3, 5, BuiltInLootTables.STRONGHOLD_LIBRARY);
+         this.createChest(var1, var3, var2, 3, 3, 5, BuiltInLootTables.STRONGHOLD_LIBRARY);
          if (this.isTall) {
-            this.placeBlock(var1, CAVE_AIR, 12, 9, 1, var5);
-            this.createChest(var1, var5, var4, 12, 8, 1, BuiltInLootTables.STRONGHOLD_LIBRARY);
+            this.placeBlock(var1, CAVE_AIR, 12, 9, 1, var3);
+            this.createChest(var1, var3, var2, 12, 8, 1, BuiltInLootTables.STRONGHOLD_LIBRARY);
          }
 
          return true;
@@ -589,32 +587,32 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.PrisonHall(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 8, 4, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
-         this.generateBox(var1, var5, 1, 1, 10, 3, 3, 10, CAVE_AIR, CAVE_AIR, false);
-         this.generateBox(var1, var5, 4, 1, 1, 4, 3, 1, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 1, 3, 4, 3, 3, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 1, 7, 4, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 4, 1, 9, 4, 3, 9, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 8, 4, 10, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 1, 0);
+         this.generateBox(var1, var3, 1, 1, 10, 3, 3, 10, CAVE_AIR, CAVE_AIR, false);
+         this.generateBox(var1, var3, 4, 1, 1, 4, 3, 1, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 1, 3, 4, 3, 3, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 1, 7, 4, 3, 7, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var3, 4, 1, 9, 4, 3, 9, false, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
-         for(int var8 = 1; var8 <= 3; ++var8) {
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, var8, 4, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true)).setValue(IronBarsBlock.EAST, true), 4, var8, 5, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, var8, 6, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 5, var8, 5, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 6, var8, 5, var5);
-            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 7, var8, 5, var5);
+         for(int var5 = 1; var5 <= 3; ++var5) {
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, var5, 4, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true)).setValue(IronBarsBlock.EAST, true), 4, var5, 5, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, var5, 6, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 5, var5, 5, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 6, var5, 5, var3);
+            this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.WEST, true)).setValue(IronBarsBlock.EAST, true), 7, var5, 5, var3);
          }
 
-         this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, 3, 2, var5);
-         this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, 3, 8, var5);
-         BlockState var10 = (BlockState)Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.WEST);
-         BlockState var9 = (BlockState)((BlockState)Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.WEST)).setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
-         this.placeBlock(var1, var10, 4, 1, 2, var5);
-         this.placeBlock(var1, var9, 4, 2, 2, var5);
-         this.placeBlock(var1, var10, 4, 1, 8, var5);
-         this.placeBlock(var1, var9, 4, 2, 8, var5);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, 3, 2, var3);
+         this.placeBlock(var1, (BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, true)).setValue(IronBarsBlock.SOUTH, true), 4, 3, 8, var3);
+         BlockState var7 = (BlockState)Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.WEST);
+         BlockState var6 = (BlockState)((BlockState)Blocks.IRON_DOOR.defaultBlockState().setValue(DoorBlock.FACING, Direction.WEST)).setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
+         this.placeBlock(var1, var7, 4, 1, 2, var3);
+         this.placeBlock(var1, var6, 4, 2, 2, var3);
+         this.placeBlock(var1, var7, 4, 1, 8, var3);
+         this.placeBlock(var1, var6, 4, 2, 8, var3);
          return true;
       }
    }
@@ -651,91 +649,91 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.RoomCrossing(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 10, 6, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 1, 0);
-         this.generateBox(var1, var5, 4, 1, 10, 6, 3, 10, CAVE_AIR, CAVE_AIR, false);
-         this.generateBox(var1, var5, 0, 1, 4, 0, 3, 6, CAVE_AIR, CAVE_AIR, false);
-         this.generateBox(var1, var5, 10, 1, 4, 10, 3, 6, CAVE_AIR, CAVE_AIR, false);
-         int var8;
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 10, 6, 10, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 4, 1, 0);
+         this.generateBox(var1, var3, 4, 1, 10, 6, 3, 10, CAVE_AIR, CAVE_AIR, false);
+         this.generateBox(var1, var3, 0, 1, 4, 0, 3, 6, CAVE_AIR, CAVE_AIR, false);
+         this.generateBox(var1, var3, 10, 1, 4, 10, 3, 6, CAVE_AIR, CAVE_AIR, false);
+         int var5;
          switch(this.type) {
          case 0:
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 1, 5, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 2, 5, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 3, 5, var5);
-            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST), 4, 3, 5, var5);
-            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST), 6, 3, 5, var5);
-            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH), 5, 3, 4, var5);
-            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.NORTH), 5, 3, 6, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 4, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 5, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 6, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 4, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 5, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 6, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 5, 1, 4, var5);
-            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 5, 1, 6, var5);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 1, 5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 2, 5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 3, 5, var3);
+            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST), 4, 3, 5, var3);
+            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST), 6, 3, 5, var3);
+            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH), 5, 3, 4, var3);
+            this.placeBlock(var1, (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.NORTH), 5, 3, 6, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 4, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 5, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 4, 1, 6, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 4, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 5, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 6, 1, 6, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 5, 1, 4, var3);
+            this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 5, 1, 6, var3);
             break;
          case 1:
-            for(var8 = 0; var8 < 5; ++var8) {
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 1, 3 + var8, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 7, 1, 3 + var8, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3 + var8, 1, 3, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3 + var8, 1, 7, var5);
+            for(var5 = 0; var5 < 5; ++var5) {
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 1, 3 + var5, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 7, 1, 3 + var5, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3 + var5, 1, 3, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3 + var5, 1, 7, var3);
             }
 
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 1, 5, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 2, 5, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 3, 5, var5);
-            this.placeBlock(var1, Blocks.WATER.defaultBlockState(), 5, 4, 5, var5);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 1, 5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 2, 5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 5, 3, 5, var3);
+            this.placeBlock(var1, Blocks.WATER.defaultBlockState(), 5, 4, 5, var3);
             break;
          case 2:
-            for(var8 = 1; var8 <= 9; ++var8) {
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 1, 3, var8, var5);
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 9, 3, var8, var5);
+            for(var5 = 1; var5 <= 9; ++var5) {
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 1, 3, var5, var3);
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 9, 3, var5, var3);
             }
 
-            for(var8 = 1; var8 <= 9; ++var8) {
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var8, 3, 1, var5);
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var8, 3, 9, var5);
+            for(var5 = 1; var5 <= 9; ++var5) {
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var5, 3, 1, var3);
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), var5, 3, 9, var3);
             }
 
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 1, 4, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 1, 6, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 3, 4, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 3, 6, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, 1, 5, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, 1, 5, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, 3, 5, var5);
-            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, 3, 5, var5);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 1, 4, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 1, 6, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 3, 4, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 5, 3, 6, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, 1, 5, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, 1, 5, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, 3, 5, var3);
+            this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, 3, 5, var3);
 
-            for(var8 = 1; var8 <= 3; ++var8) {
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var8, 4, var5);
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, var8, 4, var5);
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var8, 6, var5);
-               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, var8, 6, var5);
+            for(var5 = 1; var5 <= 3; ++var5) {
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var5, 4, var3);
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, var5, 4, var3);
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 4, var5, 6, var3);
+               this.placeBlock(var1, Blocks.COBBLESTONE.defaultBlockState(), 6, var5, 6, var3);
             }
 
-            this.placeBlock(var1, Blocks.TORCH.defaultBlockState(), 5, 3, 5, var5);
+            this.placeBlock(var1, Blocks.TORCH.defaultBlockState(), 5, 3, 5, var3);
 
-            for(var8 = 2; var8 <= 8; ++var8) {
-               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 2, 3, var8, var5);
-               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 3, 3, var8, var5);
-               if (var8 <= 3 || var8 >= 7) {
-                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 4, 3, var8, var5);
-                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 5, 3, var8, var5);
-                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 6, 3, var8, var5);
+            for(var5 = 2; var5 <= 8; ++var5) {
+               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 2, 3, var5, var3);
+               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 3, 3, var5, var3);
+               if (var5 <= 3 || var5 >= 7) {
+                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 4, 3, var5, var3);
+                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 5, 3, var5, var3);
+                  this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 6, 3, var5, var3);
                }
 
-               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 7, 3, var8, var5);
-               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 8, 3, var8, var5);
+               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 7, 3, var5, var3);
+               this.placeBlock(var1, Blocks.OAK_PLANKS.defaultBlockState(), 8, 3, var5, var3);
             }
 
-            BlockState var9 = (BlockState)Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST);
-            this.placeBlock(var1, var9, 9, 1, 3, var5);
-            this.placeBlock(var1, var9, 9, 2, 3, var5);
-            this.placeBlock(var1, var9, 9, 3, 3, var5);
-            this.createChest(var1, var5, var4, 3, 4, 8, BuiltInLootTables.STRONGHOLD_CROSSING);
+            BlockState var6 = (BlockState)Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.WEST);
+            this.placeBlock(var1, var6, 9, 1, 3, var3);
+            this.placeBlock(var1, var6, 9, 2, 3, var3);
+            this.placeBlock(var1, var6, 9, 3, 3, var3);
+            this.createChest(var1, var3, var2, 3, 4, 8, BuiltInLootTables.STRONGHOLD_CROSSING);
          }
 
          return true;
@@ -769,14 +767,14 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.RightTurn(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 4, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
-         Direction var8 = this.getOrientation();
-         if (var8 != Direction.NORTH && var8 != Direction.EAST) {
-            this.generateBox(var1, var5, 0, 1, 1, 0, 3, 3, CAVE_AIR, CAVE_AIR, false);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 4, 4, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 1, 0);
+         Direction var5 = this.getOrientation();
+         if (var5 != Direction.NORTH && var5 != Direction.EAST) {
+            this.generateBox(var1, var3, 0, 1, 1, 0, 3, 3, CAVE_AIR, CAVE_AIR, false);
          } else {
-            this.generateBox(var1, var5, 4, 1, 1, 4, 3, 3, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 4, 1, 1, 4, 3, 3, CAVE_AIR, CAVE_AIR, false);
          }
 
          return true;
@@ -810,14 +808,14 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.LeftTurn(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 4, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
-         Direction var8 = this.getOrientation();
-         if (var8 != Direction.NORTH && var8 != Direction.EAST) {
-            this.generateBox(var1, var5, 4, 1, 1, 4, 3, 3, CAVE_AIR, CAVE_AIR, false);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 4, 4, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 1, 0);
+         Direction var5 = this.getOrientation();
+         if (var5 != Direction.NORTH && var5 != Direction.EAST) {
+            this.generateBox(var1, var3, 4, 1, 1, 4, 3, 3, CAVE_AIR, CAVE_AIR, false);
          } else {
-            this.generateBox(var1, var5, 0, 1, 1, 0, 3, 3, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 0, 1, 1, 0, 3, 3, CAVE_AIR, CAVE_AIR, false);
          }
 
          return true;
@@ -855,20 +853,20 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.StraightStairsDown(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 10, 7, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 7, 0);
-         this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 7);
-         BlockState var8 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 10, 7, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 7, 0);
+         this.generateSmallDoor(var1, var2, var3, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 7);
+         BlockState var5 = (BlockState)Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
 
-         for(int var9 = 0; var9 < 6; ++var9) {
-            this.placeBlock(var1, var8, 1, 6 - var9, 1 + var9, var5);
-            this.placeBlock(var1, var8, 2, 6 - var9, 1 + var9, var5);
-            this.placeBlock(var1, var8, 3, 6 - var9, 1 + var9, var5);
-            if (var9 < 5) {
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5 - var9, 1 + var9, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 5 - var9, 1 + var9, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 5 - var9, 1 + var9, var5);
+         for(int var6 = 0; var6 < 6; ++var6) {
+            this.placeBlock(var1, var5, 1, 6 - var6, 1 + var6, var3);
+            this.placeBlock(var1, var5, 2, 6 - var6, 1 + var6, var3);
+            this.placeBlock(var1, var5, 3, 6 - var6, 1 + var6, var3);
+            if (var6 < 5) {
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5 - var6, 1 + var6, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 5 - var6, 1 + var6, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 5 - var6, 1 + var6, var3);
             }
          }
 
@@ -905,23 +903,23 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.ChestCorridor(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 4, 6, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
-         this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
-         this.generateBox(var1, var5, 3, 1, 2, 3, 1, 4, Blocks.STONE_BRICKS.defaultBlockState(), Blocks.STONE_BRICKS.defaultBlockState(), false);
-         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 1, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 1, 5, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 2, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 4, var5);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 4, 6, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 1, 0);
+         this.generateSmallDoor(var1, var2, var3, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
+         this.generateBox(var1, var3, 3, 1, 2, 3, 1, 4, Blocks.STONE_BRICKS.defaultBlockState(), Blocks.STONE_BRICKS.defaultBlockState(), false);
+         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 1, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 1, 5, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 2, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 3, 2, 4, var3);
 
-         for(int var8 = 2; var8 <= 4; ++var8) {
-            this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 2, 1, var8, var5);
+         for(int var5 = 2; var5 <= 4; ++var5) {
+            this.placeBlock(var1, Blocks.STONE_BRICK_SLAB.defaultBlockState(), 2, 1, var5, var3);
          }
 
-         if (!this.hasPlacedChest && var5.isInside(new BlockPos(this.getWorldX(3, 3), this.getWorldY(2), this.getWorldZ(3, 3)))) {
+         if (!this.hasPlacedChest && var3.isInside(new BlockPos(this.getWorldX(3, 3), this.getWorldY(2), this.getWorldZ(3, 3)))) {
             this.hasPlacedChest = true;
-            this.createChest(var1, var5, var4, 3, 2, 3, BuiltInLootTables.STRONGHOLD_CORRIDOR);
+            this.createChest(var1, var3, var2, 3, 2, 3, BuiltInLootTables.STRONGHOLD_CORRIDOR);
          }
 
          return true;
@@ -970,22 +968,22 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.Straight(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 4, 6, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
-         this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
-         BlockState var8 = (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST);
-         BlockState var9 = (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST);
-         this.maybeGenerateBlock(var1, var5, var4, 0.1F, 1, 2, 1, var8);
-         this.maybeGenerateBlock(var1, var5, var4, 0.1F, 3, 2, 1, var9);
-         this.maybeGenerateBlock(var1, var5, var4, 0.1F, 1, 2, 5, var8);
-         this.maybeGenerateBlock(var1, var5, var4, 0.1F, 3, 2, 5, var9);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 4, 6, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 1, 0);
+         this.generateSmallDoor(var1, var2, var3, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
+         BlockState var5 = (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.EAST);
+         BlockState var6 = (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST);
+         this.maybeGenerateBlock(var1, var3, var2, 0.1F, 1, 2, 1, var5);
+         this.maybeGenerateBlock(var1, var3, var2, 0.1F, 3, 2, 1, var6);
+         this.maybeGenerateBlock(var1, var3, var2, 0.1F, 1, 2, 5, var5);
+         this.maybeGenerateBlock(var1, var3, var2, 0.1F, 3, 2, 5, var6);
          if (this.leftChild) {
-            this.generateBox(var1, var5, 0, 1, 2, 0, 3, 4, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 0, 1, 2, 0, 3, 4, CAVE_AIR, CAVE_AIR, false);
          }
 
          if (this.rightChild) {
-            this.generateBox(var1, var5, 4, 1, 2, 4, 3, 4, CAVE_AIR, CAVE_AIR, false);
+            this.generateBox(var1, var3, 4, 1, 2, 4, 3, 4, CAVE_AIR, CAVE_AIR, false);
          }
 
          return true;
@@ -1058,27 +1056,27 @@ public class StrongholdPieces {
          return isOkBox(var7) && StructurePiece.findCollisionPiece(var0, var7) == null ? new StrongholdPieces.StairsDown(var6, var1, var7, var5) : null;
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         this.generateBox(var1, var5, 0, 0, 0, 4, 10, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 7, 0);
-         this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 4);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 6, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5, 1, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 6, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5, 2, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 4, 3, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 5, 3, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 4, 3, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 3, 3, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 3, 4, 3, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 3, 2, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 2, 1, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 3, 3, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 2, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 1, 1, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 2, 1, var5);
-         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 1, 2, var5);
-         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 1, 3, var5);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         this.generateBox(var1, var3, 0, 0, 0, 4, 10, 4, true, var2, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateSmallDoor(var1, var2, var3, this.entryDoor, 1, 7, 0);
+         this.generateSmallDoor(var1, var2, var3, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 4);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 6, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5, 1, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 6, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 5, 2, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 4, 3, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 5, 3, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 4, 3, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 3, 3, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 3, 4, 3, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 3, 2, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 2, 1, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 3, 3, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 2, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 1, 1, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 2, 1, var3);
+         this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 1, 2, var3);
+         this.placeBlock(var1, Blocks.SMOOTH_STONE_SLAB.defaultBlockState(), 1, 1, 3, var3);
          return true;
       }
    }
@@ -1123,27 +1121,27 @@ public class StrongholdPieces {
          }
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         for(int var8 = 0; var8 < this.steps; ++var8) {
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 0, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 0, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 0, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 0, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, 0, var8, var5);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         for(int var5 = 0; var5 < this.steps; ++var5) {
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 0, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 0, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 0, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 0, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, 0, var5, var3);
 
-            for(int var9 = 1; var9 <= 3; ++var9) {
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, var9, var8, var5);
-               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 1, var9, var8, var5);
-               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 2, var9, var8, var5);
-               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 3, var9, var8, var5);
-               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, var9, var8, var5);
+            for(int var6 = 1; var6 <= 3; ++var6) {
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, var6, var5, var3);
+               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 1, var6, var5, var3);
+               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 2, var6, var5, var3);
+               this.placeBlock(var1, Blocks.CAVE_AIR.defaultBlockState(), 3, var6, var5, var3);
+               this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, var6, var5, var3);
             }
 
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 4, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 4, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 4, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 4, var8, var5);
-            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, 4, var8, var5);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 4, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 4, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 2, 4, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 3, 4, var5, var3);
+            this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 4, 4, var5, var3);
          }
 
          return true;
@@ -1168,7 +1166,7 @@ public class StrongholdPieces {
          var1.putString("EntryDoor", this.entryDoor.name());
       }
 
-      protected void generateSmallDoor(WorldGenLevel var1, Random var2, BoundingBox var3, StrongholdPieces.StrongholdPiece.SmallDoorType var4, int var5, int var6, int var7) {
+      protected void generateSmallDoor(LevelAccessor var1, Random var2, BoundingBox var3, StrongholdPieces.StrongholdPiece.SmallDoorType var4, int var5, int var6, int var7) {
          switch(var4) {
          case OPENING:
             this.generateBox(var1, var3, var5, var6, var7, var5 + 3 - 1, var6 + 3 - 1, var7, CAVE_AIR, CAVE_AIR, false);

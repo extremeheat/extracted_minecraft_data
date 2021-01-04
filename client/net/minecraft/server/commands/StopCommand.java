@@ -11,7 +11,7 @@ public class StopCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("stop").requires((var0x) -> {
          return var0x.hasPermission(4);
       })).executes((var0x) -> {
-         ((CommandSourceStack)var0x.getSource()).sendSuccess(new TranslatableComponent("commands.stop.stopping"), true);
+         ((CommandSourceStack)var0x.getSource()).sendSuccess(new TranslatableComponent("commands.stop.stopping", new Object[0]), true);
          ((CommandSourceStack)var0x.getSource()).getServer().halt(false);
          return 1;
       }));

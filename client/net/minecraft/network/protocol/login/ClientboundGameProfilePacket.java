@@ -3,7 +3,6 @@ package net.minecraft.network.protocol.login;
 import com.mojang.authlib.GameProfile;
 import java.io.IOException;
 import java.util.UUID;
-import net.minecraft.core.SerializableUUID;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 
@@ -20,26 +19,15 @@ public class ClientboundGameProfilePacket implements Packet<ClientLoginPacketLis
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
-      int[] var2 = new int[4];
-
-      for(int var3 = 0; var3 < var2.length; ++var3) {
-         var2[var3] = var1.readInt();
-      }
-
-      UUID var5 = SerializableUUID.uuidFromIntArray(var2);
-      String var4 = var1.readUtf(16);
-      this.gameProfile = new GameProfile(var5, var4);
+      String var2 = var1.readUtf(36);
+      String var3 = var1.readUtf(16);
+      UUID var4 = UUID.fromString(var2);
+      this.gameProfile = new GameProfile(var4, var3);
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
-      int[] var2 = SerializableUUID.uuidToIntArray(this.gameProfile.getId());
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int var5 = var2[var4];
-         var1.writeInt(var5);
-      }
-
+      UUID var2 = this.gameProfile.getId();
+      var1.writeUtf(var2 == null ? "" : var2.toString());
       var1.writeUtf(this.gameProfile.getName());
    }
 

@@ -8,7 +8,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -34,11 +34,11 @@ public class StrollThroughVillageGoal extends Goal {
          return false;
       } else {
          ServerLevel var1 = (ServerLevel)this.mob.level;
-         BlockPos var2 = this.mob.blockPosition();
-         if (!var1.isCloseToVillage(var2, 6)) {
+         BlockPos var2 = new BlockPos(this.mob);
+         if (!var1.closeToVillage(var2, 6)) {
             return false;
          } else {
-            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> {
+            Vec3 var3 = RandomPos.getLandPos(this.mob, 15, 7, (var1x) -> {
                return (double)(-var1.sectionsToVillage(SectionPos.of(var1x)));
             });
             this.wantedPos = var3 == null ? null : new BlockPos(var3);
@@ -55,8 +55,8 @@ public class StrollThroughVillageGoal extends Goal {
       if (this.wantedPos != null) {
          PathNavigation var1 = this.mob.getNavigation();
          if (var1.isDone() && !this.wantedPos.closerThan(this.mob.position(), 10.0D)) {
-            Vec3 var2 = Vec3.atBottomCenterOf(this.wantedPos);
-            Vec3 var3 = this.mob.position();
+            Vec3 var2 = new Vec3(this.wantedPos);
+            Vec3 var3 = new Vec3(this.mob.x, this.mob.y, this.mob.z);
             Vec3 var4 = var3.subtract(var2);
             var2 = var4.scale(0.4D).add(var2);
             Vec3 var5 = var2.subtract(var3).normalize().scale(10.0D).add(var3);
@@ -72,7 +72,7 @@ public class StrollThroughVillageGoal extends Goal {
 
    private void moveRandomly() {
       Random var1 = this.mob.getRandom();
-      BlockPos var2 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
+      BlockPos var2 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (new BlockPos(this.mob)).offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
       this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), 1.0D);
    }
 }

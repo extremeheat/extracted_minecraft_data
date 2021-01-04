@@ -1,11 +1,9 @@
 package net.minecraft.world.entity.animal.horse;
 
-import javax.annotation.Nullable;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.Level;
@@ -20,19 +18,9 @@ public class Donkey extends AbstractChestedHorse {
       return SoundEvents.DONKEY_AMBIENT;
    }
 
-   protected SoundEvent getAngrySound() {
-      super.getAngrySound();
-      return SoundEvents.DONKEY_ANGRY;
-   }
-
    protected SoundEvent getDeathSound() {
       super.getDeathSound();
       return SoundEvents.DONKEY_DEATH;
-   }
-
-   @Nullable
-   protected SoundEvent getEatingSound() {
-      return SoundEvents.DONKEY_EAT;
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
@@ -50,10 +38,10 @@ public class Donkey extends AbstractChestedHorse {
       }
    }
 
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      EntityType var3 = var2 instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
-      AbstractHorse var4 = (AbstractHorse)var3.create(var1);
-      this.setOffspringAttributes(var2, var4);
-      return var4;
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      EntityType var2 = var1 instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
+      AbstractHorse var3 = (AbstractHorse)var2.create(this.level);
+      this.setOffspringAttributes(var1, var3);
+      return var3;
    }
 }

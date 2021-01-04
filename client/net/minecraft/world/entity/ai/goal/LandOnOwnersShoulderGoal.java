@@ -15,8 +15,8 @@ public class LandOnOwnersShoulderGoal extends Goal {
 
    public boolean canUse() {
       ServerPlayer var1 = (ServerPlayer)this.entity.getOwner();
-      boolean var2 = var1 != null && !var1.isSpectator() && !var1.getAbilities().flying && !var1.isInWater();
-      return !this.entity.isOrderedToSit() && var2 && this.entity.canSitOnShoulder();
+      boolean var2 = var1 != null && !var1.isSpectator() && !var1.abilities.flying && !var1.isInWater();
+      return !this.entity.isSitting() && var2 && this.entity.canSitOnShoulder();
    }
 
    public boolean isInterruptable() {
@@ -29,7 +29,7 @@ public class LandOnOwnersShoulderGoal extends Goal {
    }
 
    public void tick() {
-      if (!this.isSittingOnShoulder && !this.entity.isInSittingPose() && !this.entity.isLeashed()) {
+      if (!this.isSittingOnShoulder && !this.entity.isSitting() && !this.entity.isLeashed()) {
          if (this.entity.getBoundingBox().intersects(this.owner.getBoundingBox())) {
             this.isSittingOnShoulder = this.entity.setEntityOnShoulder(this.owner);
          }

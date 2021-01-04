@@ -1,9 +1,9 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class EntityShulkerColorFix extends NamedEntityFix {
    public EntityShulkerColorFix(Schema var1, boolean var2) {
@@ -11,7 +11,7 @@ public class EntityShulkerColorFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return !var1.get("Color").map(Dynamic::asNumber).result().isPresent() ? var1.set("Color", var1.createByte((byte)10)) : var1;
+      return !var1.get("Color").map(Dynamic::asNumber).isPresent() ? var1.set("Color", var1.createByte((byte)10)) : var1;
    }
 
    protected Typed<?> fix(Typed<?> var1) {

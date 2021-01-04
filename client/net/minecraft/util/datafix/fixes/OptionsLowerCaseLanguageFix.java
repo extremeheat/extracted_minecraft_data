@@ -15,7 +15,7 @@ public class OptionsLowerCaseLanguageFix extends DataFix {
    public TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped("OptionsLowerCaseLanguageFix", this.getInputSchema().getType(References.OPTIONS), (var0) -> {
          return var0.update(DSL.remainderFinder(), (var0x) -> {
-            Optional var1 = var0x.get("lang").asString().result();
+            Optional var1 = var0x.get("lang").asString();
             return var1.isPresent() ? var0x.set("lang", var0x.createString(((String)var1.get()).toLowerCase(Locale.ROOT))) : var0x;
          });
       });

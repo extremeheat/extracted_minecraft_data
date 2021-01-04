@@ -10,7 +10,6 @@ import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class HangingEntityItem extends Item {
@@ -36,7 +35,7 @@ public class HangingEntityItem extends Item {
             var8 = new Painting(var7, var4, var3);
          } else {
             if (this.type != EntityType.ITEM_FRAME) {
-               return InteractionResult.sidedSuccess(var7.isClientSide);
+               return InteractionResult.SUCCESS;
             }
 
             var8 = new ItemFrame(var7, var4, var3);
@@ -54,10 +53,9 @@ public class HangingEntityItem extends Item {
             }
 
             var6.shrink(1);
-            return InteractionResult.sidedSuccess(var7.isClientSide);
-         } else {
-            return InteractionResult.CONSUME;
          }
+
+         return InteractionResult.SUCCESS;
       }
    }
 

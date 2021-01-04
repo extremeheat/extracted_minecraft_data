@@ -5,22 +5,14 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class StructureUpdater implements SnbtToNbt.Filter {
-   private static final Logger LOGGER = LogManager.getLogger();
-
    public StructureUpdater() {
       super();
    }
 
    public CompoundTag apply(String var1, CompoundTag var2) {
-      return var1.startsWith("data/minecraft/structures/") ? update(var1, var2) : var2;
-   }
-
-   public static CompoundTag update(String var0, CompoundTag var1) {
-      return updateStructure(var0, patchVersion(var1));
+      return var1.startsWith("data/minecraft/structures/") ? updateStructure(patchVersion(var2)) : var2;
    }
 
    private static CompoundTag patchVersion(CompoundTag var0) {
@@ -31,16 +23,9 @@ public class StructureUpdater implements SnbtToNbt.Filter {
       return var0;
    }
 
-   private static CompoundTag updateStructure(String var0, CompoundTag var1) {
-      StructureTemplate var2 = new StructureTemplate();
-      int var3 = var1.getInt("DataVersion");
-      boolean var4 = true;
-      if (var3 < 2678) {
-         LOGGER.warn("SNBT Too old, do not forget to update: {} < {}: {}", var3, 2678, var0);
-      }
-
-      CompoundTag var5 = NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.STRUCTURE, var1, var3);
-      var2.load(var5);
-      return var2.save(new CompoundTag());
+   private static CompoundTag updateStructure(CompoundTag var0) {
+      StructureTemplate var1 = new StructureTemplate();
+      var1.load(NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.STRUCTURE, var0, var0.getInt("DataVersion")));
+      return var1.save(new CompoundTag());
    }
 }

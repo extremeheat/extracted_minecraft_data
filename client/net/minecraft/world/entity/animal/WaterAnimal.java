@@ -7,12 +7,10 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 
 public abstract class WaterAnimal extends PathfinderMob {
    protected WaterAnimal(EntityType<? extends WaterAnimal> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
    }
 
    public boolean canBreatheUnderwater() {
@@ -54,7 +52,7 @@ public abstract class WaterAnimal extends PathfinderMob {
       this.handleAirSupply(var1);
    }
 
-   public boolean isPushedByFluid() {
+   public boolean isPushedByWater() {
       return false;
    }
 

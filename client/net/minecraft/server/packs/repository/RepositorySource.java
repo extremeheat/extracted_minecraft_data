@@ -1,7 +1,7 @@
 package net.minecraft.server.packs.repository;
 
-import java.util.function.Consumer;
+import java.util.Map;
 
 public interface RepositorySource {
-   void loadPacks(Consumer<Pack> var1, Pack.PackConstructor var2);
+   <T extends UnopenedPack> void loadPacks(Map<String, T> var1, UnopenedPack.UnopenedPackConstructor<T> var2);
 }

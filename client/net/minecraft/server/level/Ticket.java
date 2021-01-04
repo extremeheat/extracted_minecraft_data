@@ -6,13 +6,14 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
    private final TicketType<T> type;
    private final int ticketLevel;
    private final T key;
-   private long createdTick;
+   private final long createdTick;
 
-   protected Ticket(TicketType<T> var1, int var2, T var3) {
+   protected Ticket(TicketType<T> var1, int var2, T var3, long var4) {
       super();
       this.type = var1;
       this.ticketLevel = var2;
       this.key = var3;
+      this.createdTick = var4;
    }
 
    public int compareTo(Ticket<?> var1) {
@@ -52,11 +53,7 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
       return this.ticketLevel;
    }
 
-   protected void setCreatedTick(long var1) {
-      this.createdTick = var1;
-   }
-
-   protected boolean timedOut(long var1) {
+   public boolean timedOut(long var1) {
       long var3 = this.type.timeout();
       return var3 != 0L && var1 - this.createdTick > var3;
    }

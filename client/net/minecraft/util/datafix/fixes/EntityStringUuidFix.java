@@ -15,7 +15,7 @@ public class EntityStringUuidFix extends DataFix {
    public TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped("EntityStringUuidFix", this.getInputSchema().getType(References.ENTITY), (var0) -> {
          return var0.update(DSL.remainderFinder(), (var0x) -> {
-            Optional var1 = var0x.get("UUID").asString().result();
+            Optional var1 = var0x.get("UUID").asString();
             if (var1.isPresent()) {
                UUID var2 = UUID.fromString((String)var1.get());
                return var0x.remove("UUID").set("UUIDMost", var0x.createLong(var2.getMostSignificantBits())).set("UUIDLeast", var0x.createLong(var2.getLeastSignificantBits()));

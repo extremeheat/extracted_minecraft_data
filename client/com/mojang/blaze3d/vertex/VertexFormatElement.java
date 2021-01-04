@@ -1,7 +1,5 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import java.util.function.IntConsumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +9,6 @@ public class VertexFormatElement {
    private final VertexFormatElement.Usage usage;
    private final int index;
    private final int count;
-   private final int byteSize;
 
    public VertexFormatElement(int var1, VertexFormatElement.Type var2, VertexFormatElement.Usage var3, int var4) {
       super();
@@ -25,10 +22,9 @@ public class VertexFormatElement {
       this.type = var2;
       this.index = var1;
       this.count = var4;
-      this.byteSize = var2.getSize() * this.count;
    }
 
-   private boolean supportsUsage(int var1, VertexFormatElement.Usage var2) {
+   private final boolean supportsUsage(int var1, VertexFormatElement.Usage var2) {
       return var1 == 0 || var2 == VertexFormatElement.Usage.UV;
    }
 
@@ -40,6 +36,10 @@ public class VertexFormatElement {
       return this.usage;
    }
 
+   public final int getCount() {
+      return this.count;
+   }
+
    public final int getIndex() {
       return this.index;
    }
@@ -49,7 +49,11 @@ public class VertexFormatElement {
    }
 
    public final int getByteSize() {
-      return this.byteSize;
+      return this.type.getSize() * this.count;
+   }
+
+   public final boolean isPosition() {
+      return this.usage == VertexFormatElement.Usage.POSITION;
    }
 
    public boolean equals(Object var1) {
@@ -77,14 +81,6 @@ public class VertexFormatElement {
       var1 = 31 * var1 + this.index;
       var1 = 31 * var1 + this.count;
       return var1;
-   }
-
-   public void setupBufferState(long var1, int var3) {
-      this.usage.setupBufferState(this.count, this.type.getGlType(), var3, var1, this.index);
-   }
-
-   public void clearBufferState() {
-      this.usage.clearBufferState(this.index);
    }
 
    public static enum Type {
@@ -120,67 +116,22 @@ public class VertexFormatElement {
    }
 
    public static enum Usage {
-      POSITION("Position", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._vertexPointer(var0, var1, var2, var3);
-         GlStateManager._enableClientState(32884);
-      }, (var0) -> {
-         GlStateManager._disableClientState(32884);
-      }),
-      NORMAL("Normal", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._normalPointer(var1, var2, var3);
-         GlStateManager._enableClientState(32885);
-      }, (var0) -> {
-         GlStateManager._disableClientState(32885);
-      }),
-      COLOR("Vertex Color", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._colorPointer(var0, var1, var2, var3);
-         GlStateManager._enableClientState(32886);
-      }, (var0) -> {
-         GlStateManager._disableClientState(32886);
-         GlStateManager._clearCurrentColor();
-      }),
-      UV("UV", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._glClientActiveTexture('\u84c0' + var5);
-         GlStateManager._texCoordPointer(var0, var1, var2, var3);
-         GlStateManager._enableClientState(32888);
-         GlStateManager._glClientActiveTexture(33984);
-      }, (var0) -> {
-         GlStateManager._glClientActiveTexture('\u84c0' + var0);
-         GlStateManager._disableClientState(32888);
-         GlStateManager._glClientActiveTexture(33984);
-      }),
-      PADDING("Padding", (var0, var1, var2, var3, var5) -> {
-      }, (var0) -> {
-      }),
-      GENERIC("Generic", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._enableVertexAttribArray(var5);
-         GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
-      }, GlStateManager::_disableVertexAttribArray);
+      POSITION("Position"),
+      NORMAL("Normal"),
+      COLOR("Vertex Color"),
+      UV("UV"),
+      MATRIX("Bone Matrix"),
+      BLEND_WEIGHT("Blend Weight"),
+      PADDING("Padding");
 
       private final String name;
-      private final VertexFormatElement.Usage.SetupState setupState;
-      private final IntConsumer clearState;
 
-      private Usage(String var3, VertexFormatElement.Usage.SetupState var4, IntConsumer var5) {
+      private Usage(String var3) {
          this.name = var3;
-         this.setupState = var4;
-         this.clearState = var5;
-      }
-
-      private void setupBufferState(int var1, int var2, int var3, long var4, int var6) {
-         this.setupState.setupBufferState(var1, var2, var3, var4, var6);
-      }
-
-      public void clearBufferState(int var1) {
-         this.clearState.accept(var1);
       }
 
       public String getName() {
          return this.name;
-      }
-
-      interface SetupState {
-         void setupBufferState(int var1, int var2, int var3, long var4, int var6);
       }
    }
 }

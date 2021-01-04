@@ -1,8 +1,9 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class MoveTowardsRestrictionGoal extends Goal {
@@ -23,13 +24,14 @@ public class MoveTowardsRestrictionGoal extends Goal {
       if (this.mob.isWithinRestriction()) {
          return false;
       } else {
-         Vec3 var1 = DefaultRandomPos.getPosTowards(this.mob, 16, 7, Vec3.atBottomCenterOf(this.mob.getRestrictCenter()), 1.5707963705062866D);
-         if (var1 == null) {
+         BlockPos var1 = this.mob.getRestrictCenter();
+         Vec3 var2 = RandomPos.getPosTowards(this.mob, 16, 7, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()));
+         if (var2 == null) {
             return false;
          } else {
-            this.wantedX = var1.x;
-            this.wantedY = var1.y;
-            this.wantedZ = var1.z;
+            this.wantedX = var2.x;
+            this.wantedY = var2.y;
+            this.wantedZ = var2.z;
             return true;
          }
       }

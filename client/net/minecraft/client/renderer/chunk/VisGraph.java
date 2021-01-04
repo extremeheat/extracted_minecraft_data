@@ -70,6 +70,10 @@ public class VisGraph {
       return var1;
    }
 
+   public Set<Direction> floodFill(BlockPos var1) {
+      return this.floodFill(getIndex(var1));
+   }
+
    private Set<Direction> floodFill(int var1) {
       EnumSet var2 = EnumSet.noneOf(Direction.class);
       IntArrayFIFOQueue var3 = new IntArrayFIFOQueue();

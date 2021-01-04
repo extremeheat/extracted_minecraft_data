@@ -16,7 +16,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.AbstractIllager;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -559,19 +559,19 @@ public class WoodlandMansionPieces {
                      var22 = var22.relative(var2.rotate(Direction.EAST), (var21 - this.startX) * 8);
                      var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "corridor_floor", var22, var2));
                      if (var17.get(var21, var20 - 1) == 1 || (var16.get(var21, var20 - 1) & 8388608) == 8388608) {
-                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "carpet_north", var22.relative((Direction)var2.rotate(Direction.EAST), 1).above(), var2));
+                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "carpet_north", var22.relative(var2.rotate(Direction.EAST), 1).above(), var2));
                      }
 
                      if (var17.get(var21 + 1, var20) == 1 || (var16.get(var21 + 1, var20) & 8388608) == 8388608) {
-                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "carpet_east", var22.relative((Direction)var2.rotate(Direction.SOUTH), 1).relative((Direction)var2.rotate(Direction.EAST), 5).above(), var2));
+                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "carpet_east", var22.relative(var2.rotate(Direction.SOUTH), 1).relative(var2.rotate(Direction.EAST), 5).above(), var2));
                      }
 
                      if (var17.get(var21, var20 + 1) == 1 || (var16.get(var21, var20 + 1) & 8388608) == 8388608) {
-                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var18, var22.relative((Direction)var2.rotate(Direction.SOUTH), 5).relative((Direction)var2.rotate(Direction.WEST), 1), var2));
+                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var18, var22.relative(var2.rotate(Direction.SOUTH), 5).relative(var2.rotate(Direction.WEST), 1), var2));
                      }
 
                      if (var17.get(var21 - 1, var20) == 1 || (var16.get(var21 - 1, var20) & 8388608) == 8388608) {
-                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var19, var22.relative((Direction)var2.rotate(Direction.WEST), 1).relative((Direction)var2.rotate(Direction.NORTH), 1), var2));
+                        var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var19, var22.relative(var2.rotate(Direction.WEST), 1).relative(var2.rotate(Direction.NORTH), 1), var2));
                      }
                   }
                }
@@ -616,19 +616,19 @@ public class WoodlandMansionPieces {
 
                      BlockPos var31;
                      if (var17.get(var24 + 1, var23) == 1 && !var25) {
-                        var31 = var38.relative((Direction)var2.rotate(Direction.EAST), 8);
+                        var31 = var38.relative(var2.rotate(Direction.EAST), 8);
                         var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var37 == Direction.EAST ? var35 : var34, var31, var2));
                      }
 
                      if (WoodlandMansionPieces.MansionGrid.isHouse(var17, var24, var23 + 1) && !var4.isRoomId(var17, var24, var23 + 1, var14, var28)) {
-                        var31 = var38.relative((Direction)var2.rotate(Direction.SOUTH), 7);
-                        var31 = var31.relative((Direction)var2.rotate(Direction.EAST), 7);
+                        var31 = var38.relative(var2.rotate(Direction.SOUTH), 7);
+                        var31 = var31.relative(var2.rotate(Direction.EAST), 7);
                         var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var37 == Direction.SOUTH ? var35 : var34, var31, var2.getRotated(Rotation.CLOCKWISE_90)));
                      }
 
                      if (var17.get(var24, var23 - 1) == 1 && !var25) {
-                        var31 = var38.relative((Direction)var2.rotate(Direction.NORTH), 1);
-                        var31 = var31.relative((Direction)var2.rotate(Direction.EAST), 7);
+                        var31 = var38.relative(var2.rotate(Direction.NORTH), 1);
+                        var31 = var31.relative(var2.rotate(Direction.EAST), 7);
                         var3.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var37 == Direction.NORTH ? var35 : var34, var31, var2.getRotated(Rotation.CLOCKWISE_90)));
                      }
 
@@ -700,24 +700,24 @@ public class WoodlandMansionPieces {
                if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6) && !var9) {
                   var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof", var8.above(3), var3));
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 6);
+                     var10 = var8.relative(var3.rotate(Direction.EAST), 6);
                      var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_front", var10, var3));
                   }
 
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 0);
-                     var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 7);
+                     var10 = var8.relative(var3.rotate(Direction.EAST), 0);
+                     var10 = var10.relative(var3.rotate(Direction.SOUTH), 7);
                      var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_front", var10, var3.getRotated(Rotation.CLOCKWISE_180)));
                   }
 
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.WEST), 1);
+                     var10 = var8.relative(var3.rotate(Direction.WEST), 1);
                      var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_front", var10, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
                   }
 
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 6);
-                     var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+                     var10 = var8.relative(var3.rotate(Direction.EAST), 6);
+                     var10 = var10.relative(var3.rotate(Direction.SOUTH), 6);
                      var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_front", var10, var3.getRotated(Rotation.CLOCKWISE_90)));
                   }
                }
@@ -732,52 +732,52 @@ public class WoodlandMansionPieces {
                   var9 = WoodlandMansionPieces.MansionGrid.isHouse(var5, var7, var6);
                   if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6) && var9) {
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6)) {
-                        var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 7);
+                        var10 = var8.relative(var3.rotate(Direction.EAST), 7);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall", var10, var3));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6)) {
-                        var10 = var8.relative((Direction)var3.rotate(Direction.WEST), 1);
-                        var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+                        var10 = var8.relative(var3.rotate(Direction.WEST), 1);
+                        var10 = var10.relative(var3.rotate(Direction.SOUTH), 6);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall", var10, var3.getRotated(Rotation.CLOCKWISE_180)));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
-                        var10 = var8.relative((Direction)var3.rotate(Direction.WEST), 0);
-                        var10 = var10.relative((Direction)var3.rotate(Direction.NORTH), 1);
+                        var10 = var8.relative(var3.rotate(Direction.WEST), 0);
+                        var10 = var10.relative(var3.rotate(Direction.NORTH), 1);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall", var10, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                        var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 6);
-                        var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 7);
+                        var10 = var8.relative(var3.rotate(Direction.EAST), 6);
+                        var10 = var10.relative(var3.rotate(Direction.SOUTH), 7);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall", var10, var3.getRotated(Rotation.CLOCKWISE_90)));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6)) {
                         if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
-                           var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 7);
-                           var10 = var10.relative((Direction)var3.rotate(Direction.NORTH), 2);
+                           var10 = var8.relative(var3.rotate(Direction.EAST), 7);
+                           var10 = var10.relative(var3.rotate(Direction.NORTH), 2);
                            var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall_corner", var10, var3));
                         }
 
                         if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                           var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 8);
-                           var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 7);
+                           var10 = var8.relative(var3.rotate(Direction.EAST), 8);
+                           var10 = var10.relative(var3.rotate(Direction.SOUTH), 7);
                            var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall_corner", var10, var3.getRotated(Rotation.CLOCKWISE_90)));
                         }
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6)) {
                         if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
-                           var10 = var8.relative((Direction)var3.rotate(Direction.WEST), 2);
-                           var10 = var10.relative((Direction)var3.rotate(Direction.NORTH), 1);
+                           var10 = var8.relative(var3.rotate(Direction.WEST), 2);
+                           var10 = var10.relative(var3.rotate(Direction.NORTH), 1);
                            var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall_corner", var10, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
                         }
 
                         if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                           var10 = var8.relative((Direction)var3.rotate(Direction.WEST), 1);
-                           var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 8);
+                           var10 = var8.relative(var3.rotate(Direction.WEST), 1);
+                           var10 = var10.relative(var3.rotate(Direction.SOUTH), 8);
                            var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "small_wall_corner", var10, var3.getRotated(Rotation.CLOCKWISE_180)));
                         }
                      }
@@ -794,40 +794,40 @@ public class WoodlandMansionPieces {
                if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6) && !var9) {
                   BlockPos var11;
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 6);
+                     var10 = var8.relative(var3.rotate(Direction.EAST), 6);
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                        var11 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+                        var11 = var10.relative(var3.rotate(Direction.SOUTH), 6);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_corner", var11, var3));
                      } else if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6 + 1)) {
-                        var11 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 5);
+                        var11 = var10.relative(var3.rotate(Direction.SOUTH), 5);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_inner_corner", var11, var3));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_corner", var10, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
                      } else if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 + 1, var6 - 1)) {
-                        var11 = var8.relative((Direction)var3.rotate(Direction.EAST), 9);
-                        var11 = var11.relative((Direction)var3.rotate(Direction.NORTH), 2);
+                        var11 = var8.relative(var3.rotate(Direction.EAST), 9);
+                        var11 = var11.relative(var3.rotate(Direction.NORTH), 2);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_inner_corner", var11, var3.getRotated(Rotation.CLOCKWISE_90)));
                      }
                   }
 
                   if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6)) {
-                     var10 = var8.relative((Direction)var3.rotate(Direction.EAST), 0);
-                     var10 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 0);
+                     var10 = var8.relative(var3.rotate(Direction.EAST), 0);
+                     var10 = var10.relative(var3.rotate(Direction.SOUTH), 0);
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 + 1)) {
-                        var11 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+                        var11 = var10.relative(var3.rotate(Direction.SOUTH), 6);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_corner", var11, var3.getRotated(Rotation.CLOCKWISE_90)));
                      } else if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6 + 1)) {
-                        var11 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 8);
-                        var11 = var11.relative((Direction)var3.rotate(Direction.WEST), 3);
+                        var11 = var10.relative(var3.rotate(Direction.SOUTH), 8);
+                        var11 = var11.relative(var3.rotate(Direction.WEST), 3);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_inner_corner", var11, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
                      }
 
                      if (!WoodlandMansionPieces.MansionGrid.isHouse(var4, var7, var6 - 1)) {
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_corner", var10, var3.getRotated(Rotation.CLOCKWISE_180)));
                      } else if (WoodlandMansionPieces.MansionGrid.isHouse(var4, var7 - 1, var6 - 1)) {
-                        var11 = var10.relative((Direction)var3.rotate(Direction.SOUTH), 1);
+                        var11 = var10.relative(var3.rotate(Direction.SOUTH), 1);
                         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "roof_inner_corner", var11, var3.getRotated(Rotation.CLOCKWISE_180)));
                      }
                   }
@@ -839,26 +839,26 @@ public class WoodlandMansionPieces {
 
       private void entrance(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, WoodlandMansionPieces.PlacementData var2) {
          Direction var3 = var2.rotation.rotate(Direction.WEST);
-         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "entrance", var2.position.relative((Direction)var3, 9), var2.rotation));
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.SOUTH), 16);
+         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "entrance", var2.position.relative(var3, 9), var2.rotation));
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.SOUTH), 16);
       }
 
       private void traverseWallPiece(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, WoodlandMansionPieces.PlacementData var2) {
-         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var2.wallType, var2.position.relative((Direction)var2.rotation.rotate(Direction.EAST), 7), var2.rotation));
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.SOUTH), 8);
+         var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var2.wallType, var2.position.relative(var2.rotation.rotate(Direction.EAST), 7), var2.rotation));
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.SOUTH), 8);
       }
 
       private void traverseTurn(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, WoodlandMansionPieces.PlacementData var2) {
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.SOUTH), -1);
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.SOUTH), -1);
          var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, "wall_corner", var2.position, var2.rotation));
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.SOUTH), -7);
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.WEST), -6);
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.SOUTH), -7);
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.WEST), -6);
          var2.rotation = var2.rotation.getRotated(Rotation.CLOCKWISE_90);
       }
 
       private void traverseInnerTurn(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, WoodlandMansionPieces.PlacementData var2) {
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.SOUTH), 6);
-         var2.position = var2.position.relative((Direction)var2.rotation.rotate(Direction.EAST), 8);
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.SOUTH), 6);
+         var2.position = var2.position.relative(var2.rotation.rotate(Direction.EAST), 8);
          var2.rotation = var2.rotation.getRotated(Rotation.COUNTERCLOCKWISE_90);
       }
 
@@ -887,54 +887,54 @@ public class WoodlandMansionPieces {
       private void addRoom1x2(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, BlockPos var2, Rotation var3, Direction var4, Direction var5, WoodlandMansionPieces.FloorRoomCollection var6, boolean var7) {
          BlockPos var8;
          if (var5 == Direction.EAST && var4 == Direction.SOUTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3));
          } else if (var5 == Direction.EAST && var4 == Direction.NORTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 6);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3, Mirror.LEFT_RIGHT));
          } else if (var5 == Direction.WEST && var4 == Direction.NORTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 7);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 7);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 6);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_180)));
          } else if (var5 == Direction.WEST && var4 == Direction.SOUTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 7);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 7);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3, Mirror.FRONT_BACK));
          } else if (var5 == Direction.SOUTH && var4 == Direction.EAST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_90), Mirror.LEFT_RIGHT));
          } else if (var5 == Direction.SOUTH && var4 == Direction.WEST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 7);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 7);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_90)));
          } else if (var5 == Direction.NORTH && var4 == Direction.WEST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 7);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 7);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 6);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_90), Mirror.FRONT_BACK));
          } else if (var5 == Direction.NORTH && var4 == Direction.EAST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 6);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2SideEntrance(this.random, var7), var8, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
          } else if (var5 == Direction.SOUTH && var4 == Direction.NORTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
-            var8 = var8.relative((Direction)var3.rotate(Direction.NORTH), 8);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
+            var8 = var8.relative(var3.rotate(Direction.NORTH), 8);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2FrontEntrance(this.random, var7), var8, var3));
          } else if (var5 == Direction.NORTH && var4 == Direction.SOUTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 7);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 14);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 7);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 14);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2FrontEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_180)));
          } else if (var5 == Direction.WEST && var4 == Direction.EAST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 15);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 15);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2FrontEntrance(this.random, var7), var8, var3.getRotated(Rotation.CLOCKWISE_90)));
          } else if (var5 == Direction.EAST && var4 == Direction.WEST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.WEST), 7);
-            var8 = var8.relative((Direction)var3.rotate(Direction.SOUTH), 6);
+            var8 = var2.relative(var3.rotate(Direction.WEST), 7);
+            var8 = var8.relative(var3.rotate(Direction.SOUTH), 6);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2FrontEntrance(this.random, var7), var8, var3.getRotated(Rotation.COUNTERCLOCKWISE_90)));
          } else if (var5 == Direction.UP && var4 == Direction.EAST) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 15);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 15);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2Secret(this.random), var8, var3.getRotated(Rotation.CLOCKWISE_90)));
          } else if (var5 == Direction.UP && var4 == Direction.SOUTH) {
-            var8 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
-            var8 = var8.relative((Direction)var3.rotate(Direction.NORTH), 0);
+            var8 = var2.relative(var3.rotate(Direction.EAST), 1);
+            var8 = var8.relative(var3.rotate(Direction.NORTH), 0);
             var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get1x2Secret(this.random), var8, var3));
          }
 
@@ -978,13 +978,13 @@ public class WoodlandMansionPieces {
             var10 = Mirror.FRONT_BACK;
          }
 
-         BlockPos var11 = var2.relative((Direction)var3.rotate(Direction.EAST), var7);
-         var11 = var11.relative((Direction)var3.rotate(Direction.SOUTH), var8);
+         BlockPos var11 = var2.relative(var3.rotate(Direction.EAST), var7);
+         var11 = var11.relative(var3.rotate(Direction.SOUTH), var8);
          var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var6.get2x2(this.random), var11, var9, var10));
       }
 
       private void addRoom2x2Secret(List<WoodlandMansionPieces.WoodlandMansionPiece> var1, BlockPos var2, Rotation var3, WoodlandMansionPieces.FloorRoomCollection var4) {
-         BlockPos var5 = var2.relative((Direction)var3.rotate(Direction.EAST), 1);
+         BlockPos var5 = var2.relative(var3.rotate(Direction.EAST), 1);
          var1.add(new WoodlandMansionPieces.WoodlandMansionPiece(this.structureManager, var4.get2x2Secret(this.random), var5, var3, Mirror.NONE));
       }
    }
@@ -1043,7 +1043,7 @@ public class WoodlandMansionPieces {
          var1.putString("Mi", this.placeSettings.getMirror().name());
       }
 
-      protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, Random var4, BoundingBox var5) {
+      protected void handleDataMarker(String var1, BlockPos var2, LevelAccessor var3, Random var4, BoundingBox var5) {
          if (var1.startsWith("Chest")) {
             Rotation var6 = this.placeSettings.getRotation();
             BlockState var7 = Blocks.CHEST.defaultBlockState();
@@ -1086,8 +1086,8 @@ public class WoodlandMansionPieces {
 
             var9.setPersistenceRequired();
             var9.moveTo(var2, 0.0F, 0.0F);
-            var9.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var9.blockPosition()), MobSpawnType.STRUCTURE, (SpawnGroupData)null, (CompoundTag)null);
-            var3.addFreshEntityWithPassengers(var9);
+            var9.finalizeSpawn(var3, var3.getCurrentDifficultyAt(new BlockPos(var9)), MobSpawnType.STRUCTURE, (SpawnGroupData)null, (CompoundTag)null);
+            var3.addFreshEntity(var9);
             var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
          }
 

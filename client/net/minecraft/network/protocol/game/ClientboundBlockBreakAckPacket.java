@@ -20,7 +20,7 @@ public class ClientboundBlockBreakAckPacket implements Packet<ClientGamePacketLi
       super();
    }
 
-   public ClientboundBlockBreakAckPacket(BlockPos var1, BlockState var2, ServerboundPlayerActionPacket.Action var3, boolean var4, String var5) {
+   public ClientboundBlockBreakAckPacket(BlockPos var1, BlockState var2, ServerboundPlayerActionPacket.Action var3, boolean var4) {
       super();
       this.pos = var1.immutable();
       this.state = var2;

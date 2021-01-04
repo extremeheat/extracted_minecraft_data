@@ -1,8 +1,5 @@
 package net.minecraft.server.level;
 
-import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Pair;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -14,9 +11,8 @@ import net.minecraft.network.protocol.game.ClientboundAddMobPacket;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEquippedItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
@@ -28,7 +24,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.ModifiableAttributeMap;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -71,7 +67,7 @@ public class ServerEntity {
       this.yRotp = Mth.floor(var2.yRot * 256.0F / 360.0F);
       this.xRotp = Mth.floor(var2.xRot * 256.0F / 360.0F);
       this.yHeadRotp = Mth.floor(var2.getYHeadRot() * 256.0F / 360.0F);
-      this.wasOnGround = var2.isOnGround();
+      this.wasOnGround = var2.onGround;
    }
 
    public void sendChanges() {
@@ -109,7 +105,7 @@ public class ServerEntity {
             var17 = Mth.floor(this.entity.xRot * 256.0F / 360.0F);
             boolean var19 = Math.abs(var16 - this.yRotp) >= 1 || Math.abs(var17 - this.xRotp) >= 1;
             if (var19) {
-               this.broadcast.accept(new ClientboundMoveEntityPacket.Rot(this.entity.getId(), (byte)var16, (byte)var17, this.entity.isOnGround()));
+               this.broadcast.accept(new ClientboundMoveEntityPacket.Rot(this.entity.getId(), (byte)var16, (byte)var17, this.entity.onGround));
                this.yRotp = var16;
                this.xRotp = var17;
             }
@@ -121,7 +117,7 @@ public class ServerEntity {
             ++this.teleportDelay;
             var16 = Mth.floor(this.entity.yRot * 256.0F / 360.0F);
             var17 = Mth.floor(this.entity.xRot * 256.0F / 360.0F);
-            Vec3 var18 = this.entity.position().subtract(ClientboundMoveEntityPacket.packetToEntity(this.xp, this.yp, this.zp));
+            Vec3 var18 = (new Vec3(this.entity.x, this.entity.y, this.entity.z)).subtract(ClientboundMoveEntityPacket.packetToEntity(this.xp, this.yp, this.zp));
             boolean var20 = var18.lengthSqr() >= 7.62939453125E-6D;
             Object var21 = null;
             boolean var22 = var20 || this.tickCount % 60 == 0;
@@ -131,18 +127,18 @@ public class ServerEntity {
                long var11 = ClientboundMoveEntityPacket.entityToPacket(var18.y);
                long var13 = ClientboundMoveEntityPacket.entityToPacket(var18.z);
                boolean var15 = var9 < -32768L || var9 > 32767L || var11 < -32768L || var11 > 32767L || var13 < -32768L || var13 > 32767L;
-               if (!var15 && this.teleportDelay <= 400 && !this.wasRiding && this.wasOnGround == this.entity.isOnGround()) {
+               if (!var15 && this.teleportDelay <= 400 && !this.wasRiding && this.wasOnGround == this.entity.onGround) {
                   if ((!var22 || !var8) && !(this.entity instanceof AbstractArrow)) {
                      if (var22) {
-                        var21 = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)((int)var9), (short)((int)var11), (short)((int)var13), this.entity.isOnGround());
+                        var21 = new ClientboundMoveEntityPacket.Pos(this.entity.getId(), (short)((int)var9), (short)((int)var11), (short)((int)var13), this.entity.onGround);
                      } else if (var8) {
-                        var21 = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), (byte)var16, (byte)var17, this.entity.isOnGround());
+                        var21 = new ClientboundMoveEntityPacket.Rot(this.entity.getId(), (byte)var16, (byte)var17, this.entity.onGround);
                      }
                   } else {
-                     var21 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var9), (short)((int)var11), (short)((int)var13), (byte)var16, (byte)var17, this.entity.isOnGround());
+                     var21 = new ClientboundMoveEntityPacket.PosRot(this.entity.getId(), (short)((int)var9), (short)((int)var11), (short)((int)var13), (byte)var16, (byte)var17, this.entity.onGround);
                   }
                } else {
-                  this.wasOnGround = this.entity.isOnGround();
+                  this.wasOnGround = this.entity.onGround;
                   this.teleportDelay = 0;
                   var21 = new ClientboundTeleportEntityPacket(this.entity);
                }
@@ -204,8 +200,8 @@ public class ServerEntity {
    }
 
    public void sendPairingData(Consumer<Packet<?>> var1) {
-      if (this.entity.isRemoved()) {
-         LOGGER.warn("Fetching packet for removed entity {}", this.entity);
+      if (this.entity.removed) {
+         LOGGER.warn("Fetching packet for removed entity " + this.entity);
       }
 
       Packet var2 = this.entity.getAddEntityPacket();
@@ -217,9 +213,10 @@ public class ServerEntity {
 
       boolean var3 = this.trackDelta;
       if (this.entity instanceof LivingEntity) {
-         Collection var4 = ((LivingEntity)this.entity).getAttributes().getSyncableAttributes();
-         if (!var4.isEmpty()) {
-            var1.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), var4));
+         ModifiableAttributeMap var4 = (ModifiableAttributeMap)((LivingEntity)this.entity).getAttributes();
+         Collection var5 = var4.getSyncableAttributes();
+         if (!var5.isEmpty()) {
+            var1.accept(new ClientboundUpdateAttributesPacket(this.entity.getId(), var5));
          }
 
          if (((LivingEntity)this.entity).isFallFlying()) {
@@ -233,30 +230,25 @@ public class ServerEntity {
       }
 
       if (this.entity instanceof LivingEntity) {
-         ArrayList var10 = Lists.newArrayList();
-         EquipmentSlot[] var5 = EquipmentSlot.values();
-         int var6 = var5.length;
+         EquipmentSlot[] var9 = EquipmentSlot.values();
+         int var11 = var9.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            EquipmentSlot var8 = var5[var7];
-            ItemStack var9 = ((LivingEntity)this.entity).getItemBySlot(var8);
-            if (!var9.isEmpty()) {
-               var10.add(Pair.of(var8, var9.copy()));
+         for(int var6 = 0; var6 < var11; ++var6) {
+            EquipmentSlot var7 = var9[var6];
+            ItemStack var8 = ((LivingEntity)this.entity).getItemBySlot(var7);
+            if (!var8.isEmpty()) {
+               var1.accept(new ClientboundSetEquippedItemPacket(this.entity.getId(), var7, var8));
             }
-         }
-
-         if (!var10.isEmpty()) {
-            var1.accept(new ClientboundSetEquipmentPacket(this.entity.getId(), var10));
          }
       }
 
       if (this.entity instanceof LivingEntity) {
-         LivingEntity var11 = (LivingEntity)this.entity;
-         Iterator var13 = var11.getActiveEffects().iterator();
+         LivingEntity var10 = (LivingEntity)this.entity;
+         Iterator var12 = var10.getActiveEffects().iterator();
 
-         while(var13.hasNext()) {
-            MobEffectInstance var14 = (MobEffectInstance)var13.next();
-            var1.accept(new ClientboundUpdateMobEffectPacket(this.entity.getId(), var14));
+         while(var12.hasNext()) {
+            MobEffectInstance var13 = (MobEffectInstance)var12.next();
+            var1.accept(new ClientboundUpdateMobEffectPacket(this.entity.getId(), var13));
          }
       }
 
@@ -268,13 +260,6 @@ public class ServerEntity {
          var1.accept(new ClientboundSetPassengersPacket(this.entity.getVehicle()));
       }
 
-      if (this.entity instanceof Mob) {
-         Mob var12 = (Mob)this.entity;
-         if (var12.isLeashed()) {
-            var1.accept(new ClientboundSetEntityLinkPacket(var12, var12.getLeashHolder()));
-         }
-      }
-
    }
 
    private void sendDirtyEntityData() {
@@ -284,20 +269,21 @@ public class ServerEntity {
       }
 
       if (this.entity instanceof LivingEntity) {
-         Set var2 = ((LivingEntity)this.entity).getAttributes().getDirtyAttributes();
-         if (!var2.isEmpty()) {
-            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), var2));
+         ModifiableAttributeMap var2 = (ModifiableAttributeMap)((LivingEntity)this.entity).getAttributes();
+         Set var3 = var2.getDirtyAttributes();
+         if (!var3.isEmpty()) {
+            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), var3));
          }
 
-         var2.clear();
+         var3.clear();
       }
 
    }
 
    private void updateSentPos() {
-      this.xp = ClientboundMoveEntityPacket.entityToPacket(this.entity.getX());
-      this.yp = ClientboundMoveEntityPacket.entityToPacket(this.entity.getY());
-      this.zp = ClientboundMoveEntityPacket.entityToPacket(this.entity.getZ());
+      this.xp = ClientboundMoveEntityPacket.entityToPacket(this.entity.x);
+      this.yp = ClientboundMoveEntityPacket.entityToPacket(this.entity.y);
+      this.zp = ClientboundMoveEntityPacket.entityToPacket(this.entity.z);
    }
 
    public Vec3 sentPos() {

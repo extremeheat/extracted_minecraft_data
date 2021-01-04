@@ -2,28 +2,20 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.chat.NarratorChatListener;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,12 +25,10 @@ public class WinScreen extends Screen {
    private static final ResourceLocation LOGO_LOCATION = new ResourceLocation("textures/gui/title/minecraft.png");
    private static final ResourceLocation EDITION_LOCATION = new ResourceLocation("textures/gui/title/edition.png");
    private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
-   private static final String OBFUSCATE_TOKEN;
    private final boolean poem;
    private final Runnable onFinished;
    private float time;
-   private List<FormattedCharSequence> lines;
-   private IntSet centeredLines;
+   private List<String> lines;
    private int totalScrollLength;
    private float scrollSpeed = 0.5F;
 
@@ -74,81 +64,65 @@ public class WinScreen extends Screen {
    protected void init() {
       if (this.lines == null) {
          this.lines = Lists.newArrayList();
-         this.centeredLines = new IntOpenHashSet();
          Resource var1 = null;
 
          try {
-            boolean var2 = true;
-            InputStream var3;
-            BufferedReader var4;
+            String var2 = "" + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + ChatFormatting.GREEN + ChatFormatting.AQUA;
+            boolean var3 = true;
+            InputStream var4;
+            BufferedReader var5;
             if (this.poem) {
                var1 = this.minecraft.getResourceManager().getResource(new ResourceLocation("texts/end.txt"));
-               var3 = var1.getInputStream();
-               var4 = new BufferedReader(new InputStreamReader(var3, StandardCharsets.UTF_8));
-               Random var5 = new Random(8124371L);
+               var4 = var1.getInputStream();
+               var5 = new BufferedReader(new InputStreamReader(var4, StandardCharsets.UTF_8));
+               Random var6 = new Random(8124371L);
 
-               label152:
+               label113:
                while(true) {
-                  String var6;
-                  int var7;
-                  if ((var6 = var4.readLine()) == null) {
-                     var3.close();
-                     var7 = 0;
+                  String var7;
+                  int var8;
+                  if ((var7 = var5.readLine()) == null) {
+                     var4.close();
+                     var8 = 0;
 
                      while(true) {
-                        if (var7 >= 8) {
-                           break label152;
+                        if (var8 >= 8) {
+                           break label113;
                         }
 
-                        this.lines.add(FormattedCharSequence.EMPTY);
-                        ++var7;
+                        this.lines.add("");
+                        ++var8;
                      }
                   }
 
-                  String var8;
                   String var9;
-                  for(var6 = var6.replaceAll("PLAYERNAME", this.minecraft.getUser().getName()); (var7 = var6.indexOf(OBFUSCATE_TOKEN)) != -1; var6 = var8 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var5.nextInt(4) + 3) + var9) {
-                     var8 = var6.substring(0, var7);
-                     var9 = var6.substring(var7 + OBFUSCATE_TOKEN.length());
+                  String var10;
+                  for(var7 = var7.replaceAll("PLAYERNAME", this.minecraft.getUser().getName()); var7.contains(var2); var7 = var9 + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + "XXXXXXXX".substring(0, var6.nextInt(4) + 3) + var10) {
+                     var8 = var7.indexOf(var2);
+                     var9 = var7.substring(0, var8);
+                     var10 = var7.substring(var8 + var2.length());
                   }
 
-                  this.lines.addAll(this.minecraft.font.split(new TextComponent(var6), 274));
-                  this.lines.add(FormattedCharSequence.EMPTY);
+                  this.lines.addAll(this.minecraft.font.split(var7, 274));
+                  this.lines.add("");
                }
             }
 
-            var3 = this.minecraft.getResourceManager().getResource(new ResourceLocation("texts/credits.txt")).getInputStream();
-            var4 = new BufferedReader(new InputStreamReader(var3, StandardCharsets.UTF_8));
+            var4 = this.minecraft.getResourceManager().getResource(new ResourceLocation("texts/credits.txt")).getInputStream();
+            var5 = new BufferedReader(new InputStreamReader(var4, StandardCharsets.UTF_8));
 
-            String var15;
-            while((var15 = var4.readLine()) != null) {
-               var15 = var15.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
-               var15 = var15.replaceAll("\t", "    ");
-               boolean var16;
-               if (var15.startsWith("[C]")) {
-                  var15 = var15.substring(3);
-                  var16 = true;
-               } else {
-                  var16 = false;
-               }
-
-               List var17 = this.minecraft.font.split(new TextComponent(var15), 274);
-
-               FormattedCharSequence var19;
-               for(Iterator var18 = var17.iterator(); var18.hasNext(); this.lines.add(var19)) {
-                  var19 = (FormattedCharSequence)var18.next();
-                  if (var16) {
-                     this.centeredLines.add(this.lines.size());
-                  }
-               }
-
-               this.lines.add(FormattedCharSequence.EMPTY);
+            String var16;
+            while((var16 = var5.readLine()) != null) {
+               var16 = var16.replaceAll("PLAYERNAME", this.minecraft.getUser().getName());
+               var16 = var16.replaceAll("\t", "    ");
+               this.lines.addAll(this.minecraft.font.split(var16, 274));
+               this.lines.add("");
             }
 
-            var3.close();
+            var4.close();
             this.totalScrollLength = this.lines.size() * 12;
-         } catch (Exception var13) {
-            LOGGER.error("Couldn't load credits", var13);
+         } catch (Exception var14) {
+            LOGGER.error("Couldn't load credits", var14);
          } finally {
             IOUtils.closeQuietly(var1);
          }
@@ -177,78 +151,70 @@ public class WinScreen extends Screen {
       var8 = var8 * 96.0F / 255.0F;
       Tesselator var11 = Tesselator.getInstance();
       BufferBuilder var12 = var11.getBuilder();
-      var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var12.vertex(0.0D, (double)this.height, (double)this.getBlitOffset()).uv(0.0F, var5 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
-      var12.vertex((double)var4, (double)this.height, (double)this.getBlitOffset()).uv((float)var4 * 0.015625F, var5 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
-      var12.vertex((double)var4, 0.0D, (double)this.getBlitOffset()).uv((float)var4 * 0.015625F, var6 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
-      var12.vertex(0.0D, 0.0D, (double)this.getBlitOffset()).uv(0.0F, var6 * 0.015625F).color(var8, var8, var8, 1.0F).endVertex();
+      var12.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var12.vertex(0.0D, (double)this.height, (double)this.blitOffset).uv(0.0D, (double)(var5 * 0.015625F)).color(var8, var8, var8, 1.0F).endVertex();
+      var12.vertex((double)var4, (double)this.height, (double)this.blitOffset).uv((double)((float)var4 * 0.015625F), (double)(var5 * 0.015625F)).color(var8, var8, var8, 1.0F).endVertex();
+      var12.vertex((double)var4, 0.0D, (double)this.blitOffset).uv((double)((float)var4 * 0.015625F), (double)(var6 * 0.015625F)).color(var8, var8, var8, 1.0F).endVertex();
+      var12.vertex(0.0D, 0.0D, (double)this.blitOffset).uv(0.0D, (double)(var6 * 0.015625F)).color(var8, var8, var8, 1.0F).endVertex();
       var11.end();
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBg(var2, var3, var4);
-      boolean var5 = true;
-      int var6 = this.width / 2 - 137;
-      int var7 = this.height + 50;
-      this.time += var4;
-      float var8 = -this.time * this.scrollSpeed;
-      RenderSystem.pushMatrix();
-      RenderSystem.translatef(0.0F, var8, 0.0F);
+   public void render(int var1, int var2, float var3) {
+      this.renderBg(var1, var2, var3);
+      boolean var4 = true;
+      int var5 = this.width / 2 - 137;
+      int var6 = this.height + 50;
+      this.time += var3;
+      float var7 = -this.time * this.scrollSpeed;
+      GlStateManager.pushMatrix();
+      GlStateManager.translatef(0.0F, var7, 0.0F);
       this.minecraft.getTextureManager().bind(LOGO_LOCATION);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      RenderSystem.enableAlphaTest();
-      RenderSystem.enableBlend();
-      this.blitOutlineBlack(var6, var7, (var2x, var3x) -> {
-         this.blit(var1, var2x + 0, var3x, 0, 0, 155, 44);
-         this.blit(var1, var2x + 155, var3x, 0, 45, 155, 44);
-      });
-      RenderSystem.disableBlend();
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.enableAlphaTest();
+      this.blit(var5, var6, 0, 0, 155, 44);
+      this.blit(var5 + 155, var6, 0, 45, 155, 44);
       this.minecraft.getTextureManager().bind(EDITION_LOCATION);
-      blit(var1, var6 + 88, var7 + 37, 0.0F, 0.0F, 98, 14, 128, 16);
-      RenderSystem.disableAlphaTest();
-      int var9 = var7 + 100;
+      blit(var5 + 88, var6 + 37, 0.0F, 0.0F, 98, 14, 128, 16);
+      GlStateManager.disableAlphaTest();
+      int var8 = var6 + 100;
 
-      int var10;
-      for(var10 = 0; var10 < this.lines.size(); ++var10) {
-         if (var10 == this.lines.size() - 1) {
-            float var11 = (float)var9 + var8 - (float)(this.height / 2 - 6);
-            if (var11 < 0.0F) {
-               RenderSystem.translatef(0.0F, -var11, 0.0F);
+      int var9;
+      for(var9 = 0; var9 < this.lines.size(); ++var9) {
+         if (var9 == this.lines.size() - 1) {
+            float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
+            if (var10 < 0.0F) {
+               GlStateManager.translatef(0.0F, -var10, 0.0F);
             }
          }
 
-         if ((float)var9 + var8 + 12.0F + 8.0F > 0.0F && (float)var9 + var8 < (float)this.height) {
-            FormattedCharSequence var14 = (FormattedCharSequence)this.lines.get(var10);
-            if (this.centeredLines.contains(var10)) {
-               this.font.drawShadow(var1, var14, (float)(var6 + (274 - this.font.width(var14)) / 2), (float)var9, 16777215);
+         if ((float)var8 + var7 + 12.0F + 8.0F > 0.0F && (float)var8 + var7 < (float)this.height) {
+            String var13 = (String)this.lines.get(var9);
+            if (var13.startsWith("[C]")) {
+               this.font.drawShadow(var13.substring(3), (float)(var5 + (274 - this.font.width(var13.substring(3))) / 2), (float)var8, 16777215);
             } else {
-               this.font.random.setSeed((long)((float)((long)var10 * 4238972211L) + this.time / 4.0F));
-               this.font.drawShadow(var1, var14, (float)var6, (float)var9, 16777215);
+               this.font.random.setSeed((long)((float)((long)var9 * 4238972211L) + this.time / 4.0F));
+               this.font.drawShadow(var13, (float)var5, (float)var8, 16777215);
             }
          }
 
-         var9 += 12;
+         var8 += 12;
       }
 
-      RenderSystem.popMatrix();
+      GlStateManager.popMatrix();
       this.minecraft.getTextureManager().bind(VIGNETTE_LOCATION);
-      RenderSystem.enableBlend();
-      RenderSystem.blendFunc(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR);
-      var10 = this.width;
-      int var15 = this.height;
-      Tesselator var12 = Tesselator.getInstance();
-      BufferBuilder var13 = var12.getBuilder();
-      var13.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var13.vertex(0.0D, (double)var15, (double)this.getBlitOffset()).uv(0.0F, 1.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-      var13.vertex((double)var10, (double)var15, (double)this.getBlitOffset()).uv(1.0F, 1.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-      var13.vertex((double)var10, 0.0D, (double)this.getBlitOffset()).uv(1.0F, 0.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-      var13.vertex(0.0D, 0.0D, (double)this.getBlitOffset()).uv(0.0F, 0.0F).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-      var12.end();
-      RenderSystem.disableBlend();
-      super.render(var1, var2, var3, var4);
-   }
-
-   static {
-      OBFUSCATE_TOKEN = "" + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + ChatFormatting.GREEN + ChatFormatting.AQUA;
+      GlStateManager.enableBlend();
+      GlStateManager.blendFunc(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR);
+      var9 = this.width;
+      int var14 = this.height;
+      Tesselator var11 = Tesselator.getInstance();
+      BufferBuilder var12 = var11.getBuilder();
+      var12.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var12.vertex(0.0D, (double)var14, (double)this.blitOffset).uv(0.0D, 1.0D).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+      var12.vertex((double)var9, (double)var14, (double)this.blitOffset).uv(1.0D, 1.0D).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+      var12.vertex((double)var9, 0.0D, (double)this.blitOffset).uv(1.0D, 0.0D).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+      var12.vertex(0.0D, 0.0D, (double)this.blitOffset).uv(0.0D, 0.0D).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+      var11.end();
+      GlStateManager.disableBlend();
+      super.render(var1, var2, var3);
    }
 }

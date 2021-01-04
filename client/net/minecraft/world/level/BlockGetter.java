@@ -2,8 +2,6 @@ package net.minecraft.world.level;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,12 +9,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public interface BlockGetter extends LevelHeightAccessor {
+public interface BlockGetter {
    @Nullable
    BlockEntity getBlockEntity(BlockPos var1);
 
@@ -32,8 +29,8 @@ public interface BlockGetter extends LevelHeightAccessor {
       return 15;
    }
 
-   default Stream<BlockState> getBlockStates(AABB var1) {
-      return BlockPos.betweenClosedStream(var1).map(this::getBlockState);
+   default int getMaxBuildHeight() {
+      return 256;
    }
 
    default BlockHitResult clip(ClipContext var1) {
@@ -66,22 +63,6 @@ public interface BlockGetter extends LevelHeightAccessor {
       }
 
       return var6;
-   }
-
-   default double getBlockFloorHeight(VoxelShape var1, Supplier<VoxelShape> var2) {
-      if (!var1.isEmpty()) {
-         return var1.max(Direction.Axis.Y);
-      } else {
-         double var3 = ((VoxelShape)var2.get()).max(Direction.Axis.Y);
-         return var3 >= 1.0D ? var3 - 1.0D : -1.0D / 0.0;
-      }
-   }
-
-   default double getBlockFloorHeight(BlockPos var1) {
-      return this.getBlockFloorHeight(this.getBlockState(var1).getCollisionShape(this, var1), () -> {
-         BlockPos var2 = var1.below();
-         return this.getBlockState(var2).getCollisionShape(this, var2);
-      });
    }
 
    static <T> T traverseBlocks(ClipContext var0, BiFunction<ClipContext, BlockPos, T> var1, Function<ClipContext, T> var2) {

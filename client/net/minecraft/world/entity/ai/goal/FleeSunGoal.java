@@ -32,7 +32,7 @@ public class FleeSunGoal extends Goal {
          return false;
       } else if (!this.mob.isOnFire()) {
          return false;
-      } else if (!this.level.canSeeSky(this.mob.blockPosition())) {
+      } else if (!this.level.canSeeSky(new BlockPos(this.mob.x, this.mob.getBoundingBox().minY, this.mob.z))) {
          return false;
       } else {
          return !this.mob.getItemBySlot(EquipmentSlot.HEAD).isEmpty() ? false : this.setWantedPos();
@@ -62,12 +62,12 @@ public class FleeSunGoal extends Goal {
    @Nullable
    protected Vec3 getHidePos() {
       Random var1 = this.mob.getRandom();
-      BlockPos var2 = this.mob.blockPosition();
+      BlockPos var2 = new BlockPos(this.mob.x, this.mob.getBoundingBox().minY, this.mob.z);
 
       for(int var3 = 0; var3 < 10; ++var3) {
          BlockPos var4 = var2.offset(var1.nextInt(20) - 10, var1.nextInt(6) - 3, var1.nextInt(20) - 10);
          if (!this.level.canSeeSky(var4) && this.mob.getWalkTargetValue(var4) < 0.0F) {
-            return Vec3.atBottomCenterOf(var4);
+            return new Vec3((double)var4.getX(), (double)var4.getY(), (double)var4.getZ());
          }
       }
 

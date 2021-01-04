@@ -58,17 +58,17 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
 
    private void navigateToNextPathNode() {
       if (this.currentPath != null) {
-         this.currentPath.advance();
+         this.currentPath.next();
          if (!this.currentPath.isDone()) {
-            BlockPos var1 = this.currentPath.getNextNodePos();
-            this.currentPath.advance();
+            Vec3 var1 = this.currentPath.currentPos();
+            this.currentPath.next();
 
             double var2;
             do {
-               var2 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-            } while(var2 < (double)var1.getY());
+               var2 = var1.y + (double)(this.dragon.getRandom().nextFloat() * 20.0F);
+            } while(var2 < var1.y);
 
-            this.targetLocation = new Vec3((double)var1.getX(), var2, (double)var1.getZ());
+            this.targetLocation = new Vec3(var1.x, var2, var1.z);
          }
       }
 

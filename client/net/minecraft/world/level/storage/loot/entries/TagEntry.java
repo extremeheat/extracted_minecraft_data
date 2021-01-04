@@ -7,7 +7,7 @@ import com.google.gson.JsonSerializationContext;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.SerializationTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -24,10 +24,6 @@ public class TagEntry extends LootPoolSingletonContainer {
       super(var3, var4, var5, var6);
       this.tag = var1;
       this.expand = var2;
-   }
-
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.TAG;
    }
 
    public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
@@ -72,18 +68,18 @@ public class TagEntry extends LootPoolSingletonContainer {
 
    public static class Serializer extends LootPoolSingletonContainer.Serializer<TagEntry> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("tag"), TagEntry.class);
       }
 
-      public void serializeCustom(JsonObject var1, TagEntry var2, JsonSerializationContext var3) {
-         super.serializeCustom(var1, (LootPoolSingletonContainer)var2, var3);
-         var1.addProperty("name", SerializationTags.getInstance().getItems().getIdOrThrow(var2.tag).toString());
+      public void serialize(JsonObject var1, TagEntry var2, JsonSerializationContext var3) {
+         super.serialize(var1, (LootPoolSingletonContainer)var2, var3);
+         var1.addProperty("name", var2.tag.getId().toString());
          var1.addProperty("expand", var2.expand);
       }
 
       protected TagEntry deserialize(JsonObject var1, JsonDeserializationContext var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6) {
          ResourceLocation var7 = new ResourceLocation(GsonHelper.getAsString(var1, "name"));
-         Tag var8 = SerializationTags.getInstance().getItems().getTag(var7);
+         Tag var8 = ItemTags.getAllTags().getTag(var7);
          if (var8 == null) {
             throw new JsonParseException("Can't find tag: " + var7);
          } else {

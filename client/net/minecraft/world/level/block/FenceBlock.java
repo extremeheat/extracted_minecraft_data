@@ -4,16 +4,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.LeadItem;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -21,13 +19,12 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FenceBlock extends CrossCollisionBlock {
    private final VoxelShape[] occlusionByIndex;
 
-   public FenceBlock(BlockBehaviour.Properties var1) {
+   public FenceBlock(Block.Properties var1) {
       super(2.0F, 2.0F, 16.0F, 16.0F, 24.0F, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
       this.occlusionByIndex = this.makeShapes(2.0F, 1.0F, 16.0F, 6.0F, 15.0F);
@@ -37,31 +34,23 @@ public class FenceBlock extends CrossCollisionBlock {
       return this.occlusionByIndex[this.getAABBIndex(var1)];
    }
 
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getShape(var1, var2, var3, var4);
-   }
-
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
       return false;
    }
 
    public boolean connectsTo(BlockState var1, boolean var2, Direction var3) {
       Block var4 = var1.getBlock();
-      boolean var5 = this.isSameFence(var1);
+      boolean var5 = var4.is(BlockTags.FENCES) && var1.getMaterial() == this.material;
       boolean var6 = var4 instanceof FenceGateBlock && FenceGateBlock.connectsToDirection(var1, var3);
-      return !isExceptionForConnection(var1) && var2 || var5 || var6;
+      return !isExceptionForConnection(var4) && var2 || var5 || var6;
    }
 
-   private boolean isSameFence(BlockState var1) {
-      return var1.is(BlockTags.FENCES) && var1.is(BlockTags.WOODEN_FENCES) == this.defaultBlockState().is(BlockTags.WOODEN_FENCES);
-   }
-
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var2.isClientSide) {
-         ItemStack var7 = var4.getItemInHand(var5);
-         return var7.is(Items.LEAD) ? InteractionResult.SUCCESS : InteractionResult.PASS;
-      } else {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      if (!var2.isClientSide) {
          return LeadItem.bindPlayerMobs(var4, var2, var3);
+      } else {
+         ItemStack var7 = var4.getItemInHand(var5);
+         return var7.getItem() == Items.LEAD || var7.isEmpty();
       }
    }
 

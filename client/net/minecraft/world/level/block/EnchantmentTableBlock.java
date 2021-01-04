@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.SimpleMenuProvider;
@@ -18,10 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.EnchantmentTableBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -31,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class EnchantmentTableBlock extends BaseEntityBlock {
    protected static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D);
 
-   protected EnchantmentTableBlock(BlockBehaviour.Properties var1) {
+   protected EnchantmentTableBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -55,7 +51,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
             if (var4.nextInt(16) == 0) {
                for(int var7 = 0; var7 <= 1; ++var7) {
                   BlockPos var8 = var3.offset(var5, var7, var6);
-                  if (var2.getBlockState(var8).is(Blocks.BOOKSHELF)) {
+                  if (var2.getBlockState(var8).getBlock() == Blocks.BOOKSHELF) {
                      if (!var2.isEmptyBlock(var3.offset(var5 / 2, 0, var6 / 2))) {
                         break;
                      }
@@ -73,21 +69,16 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
       return RenderShape.MODEL;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new EnchantmentTableBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new EnchantmentTableBlockEntity();
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENCHANTING_TABLE, EnchantmentTableBlockEntity::bookAnimationTick) : null;
-   }
-
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          var4.openMenu(var1.getMenuProvider(var2, var3));
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 

@@ -32,6 +32,6 @@ public class RandomLookAroundGoal extends Goal {
 
    public void tick() {
       --this.lookTime;
-      this.mob.getLookControl().setLookAt(this.mob.getX() + this.relX, this.mob.getEyeY(), this.mob.getZ() + this.relZ);
+      this.mob.getLookControl().setLookAt(this.mob.x + this.relX, this.mob.y + (double)this.mob.getEyeHeight(), this.mob.z + this.relZ);
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.spectator;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.Component;
 
 public interface SpectatorMenuItem {
@@ -8,7 +7,7 @@ public interface SpectatorMenuItem {
 
    Component getName();
 
-   void renderIcon(PoseStack var1, float var2, int var3);
+   void renderIcon(float var1, int var2);
 
    boolean isEnabled();
 }

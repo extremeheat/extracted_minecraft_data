@@ -3,7 +3,6 @@ package net.minecraft.world.entity;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -14,6 +13,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.goal.SitGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
@@ -23,7 +23,7 @@ import net.minecraft.world.scores.Team;
 public abstract class TamableAnimal extends Animal {
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
    protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNERUUID_ID;
-   private boolean orderedToSit;
+   protected SitGoal sitGoal;
 
    protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
       super(var1, var2);
@@ -38,34 +38,39 @@ public abstract class TamableAnimal extends Animal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.getOwnerUUID() != null) {
-         var1.putUUID("Owner", this.getOwnerUUID());
+      if (this.getOwnerUUID() == null) {
+         var1.putString("OwnerUUID", "");
+      } else {
+         var1.putString("OwnerUUID", this.getOwnerUUID().toString());
       }
 
-      var1.putBoolean("Sitting", this.orderedToSit);
+      var1.putBoolean("Sitting", this.isSitting());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      UUID var2;
-      if (var1.hasUUID("Owner")) {
-         var2 = var1.getUUID("Owner");
+      String var2;
+      if (var1.contains("OwnerUUID", 8)) {
+         var2 = var1.getString("OwnerUUID");
       } else {
          String var3 = var1.getString("Owner");
          var2 = OldUsersConverter.convertMobOwnerIfNecessary(this.getServer(), var3);
       }
 
-      if (var2 != null) {
+      if (!var2.isEmpty()) {
          try {
-            this.setOwnerUUID(var2);
+            this.setOwnerUUID(UUID.fromString(var2));
             this.setTame(true);
          } catch (Throwable var4) {
             this.setTame(false);
          }
       }
 
-      this.orderedToSit = var1.getBoolean("Sitting");
-      this.setInSittingPose(this.orderedToSit);
+      if (this.sitGoal != null) {
+         this.sitGoal.wantToSit(var1.getBoolean("Sitting"));
+      }
+
+      this.setSitting(var1.getBoolean("Sitting"));
    }
 
    public boolean canBeLeashed(Player var1) {
@@ -82,7 +87,7 @@ public abstract class TamableAnimal extends Animal {
          double var4 = this.random.nextGaussian() * 0.02D;
          double var6 = this.random.nextGaussian() * 0.02D;
          double var8 = this.random.nextGaussian() * 0.02D;
-         this.level.addParticle(var2, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), var4, var6, var8);
+         this.level.addParticle(var2, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 0.5D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), var4, var6, var8);
       }
 
    }
@@ -116,11 +121,11 @@ public abstract class TamableAnimal extends Animal {
    protected void reassessTameGoals() {
    }
 
-   public boolean isInSittingPose() {
+   public boolean isSitting() {
       return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }
 
-   public void setInSittingPose(boolean var1) {
+   public void setSitting(boolean var1) {
       byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
          this.entityData.set(DATA_FLAGS_ID, (byte)(var2 | 1));
@@ -166,6 +171,10 @@ public abstract class TamableAnimal extends Animal {
       return var1 == this.getOwner();
    }
 
+   public SitGoal getSitGoal() {
+      return this.sitGoal;
+   }
+
    public boolean wantsToAttack(LivingEntity var1, LivingEntity var2) {
       return true;
    }
@@ -198,18 +207,10 @@ public abstract class TamableAnimal extends Animal {
 
    public void die(DamageSource var1) {
       if (!this.level.isClientSide && this.level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES) && this.getOwner() instanceof ServerPlayer) {
-         this.getOwner().sendMessage(this.getCombatTracker().getDeathMessage(), Util.NIL_UUID);
+         this.getOwner().sendMessage(this.getCombatTracker().getDeathMessage());
       }
 
       super.die(var1);
-   }
-
-   public boolean isOrderedToSit() {
-      return this.orderedToSit;
-   }
-
-   public void setOrderedToSit(boolean var1) {
-      this.orderedToSit = var1;
    }
 
    static {

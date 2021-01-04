@@ -3,12 +3,11 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Optional;
@@ -66,25 +65,25 @@ public class ItemStackEnchantmentNamesFix extends DataFix {
    }
 
    private Dynamic<?> fixTag(Dynamic<?> var1) {
-      DataResult var10000 = var1.get("ench").asStreamOpt().map((var0) -> {
+      Optional var10000 = var1.get("ench").asStreamOpt().map((var0) -> {
          return var0.map((var0x) -> {
             return var0x.set("id", var0x.createString((String)MAP.getOrDefault(var0x.get("id").asInt(0), "null")));
          });
       });
       var1.getClass();
-      Optional var2 = var10000.map(var1::createList).result();
+      Optional var2 = var10000.map(var1::createList);
       if (var2.isPresent()) {
          var1 = var1.remove("ench").set("Enchantments", (Dynamic)var2.get());
       }
 
       return var1.update("StoredEnchantments", (var0) -> {
-         DataResult var10000 = var0.asStreamOpt().map((var0x) -> {
+         Optional var10000 = var0.asStreamOpt().map((var0x) -> {
             return var0x.map((var0) -> {
                return var0.set("id", var0.createString((String)MAP.getOrDefault(var0.get("id").asInt(0), "null")));
             });
          });
          var0.getClass();
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList).result(), var0);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList), var0);
       });
    }
 }

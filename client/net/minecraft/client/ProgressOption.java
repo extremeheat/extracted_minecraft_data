@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.SliderButton;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public class ProgressOption extends Option {
@@ -14,9 +13,9 @@ public class ProgressOption extends Option {
    protected double maxValue;
    private final Function<Options, Double> getter;
    private final BiConsumer<Options, Double> setter;
-   private final BiFunction<Options, ProgressOption, Component> toString;
+   private final BiFunction<Options, ProgressOption, String> toString;
 
-   public ProgressOption(String var1, double var2, double var4, float var6, Function<Options, Double> var7, BiConsumer<Options, Double> var8, BiFunction<Options, ProgressOption, Component> var9) {
+   public ProgressOption(String var1, double var2, double var4, float var6, Function<Options, Double> var7, BiConsumer<Options, Double> var8, BiFunction<Options, ProgressOption, String> var9) {
       super(var1);
       this.minValue = var2;
       this.maxValue = var4;
@@ -66,7 +65,7 @@ public class ProgressOption extends Option {
       return (Double)this.getter.apply(var1);
    }
 
-   public Component getMessage(Options var1) {
-      return (Component)this.toString.apply(var1, this);
+   public String getMessage(Options var1) {
+      return (String)this.toString.apply(var1, this);
    }
 }

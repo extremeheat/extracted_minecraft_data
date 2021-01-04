@@ -1,11 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.SkeletonModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
@@ -13,14 +10,21 @@ import net.minecraft.world.entity.monster.RangedAttackMob;
 
 public class StrayClothingLayer<T extends Mob & RangedAttackMob, M extends EntityModel<T>> extends RenderLayer<T, M> {
    private static final ResourceLocation STRAY_CLOTHES_LOCATION = new ResourceLocation("textures/entity/skeleton/stray_overlay.png");
-   private final SkeletonModel<T> layerModel;
+   private final SkeletonModel<T> layerModel = new SkeletonModel(0.25F, true);
 
-   public StrayClothingLayer(RenderLayerParent<T, M> var1, EntityModelSet var2) {
+   public StrayClothingLayer(RenderLayerParent<T, M> var1) {
       super(var1);
-      this.layerModel = new SkeletonModel(var2.getLayer(ModelLayers.STRAY_OUTER_LAYER));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      coloredCutoutModelCopyLayerRender(this.getParentModel(), this.layerModel, STRAY_CLOTHES_LOCATION, var1, var2, var3, var4, var5, var6, var8, var9, var10, var7, 1.0F, 1.0F, 1.0F);
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      this.getParentModel().copyPropertiesTo(this.layerModel);
+      this.layerModel.prepareMobModel(var1, var2, var3, var4);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      this.bindTexture(STRAY_CLOTHES_LOCATION);
+      this.layerModel.render(var1, var2, var3, var5, var6, var7, var8);
+   }
+
+   public boolean colorsOnDamage() {
+      return true;
    }
 }

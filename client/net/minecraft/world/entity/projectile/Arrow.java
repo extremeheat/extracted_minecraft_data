@@ -47,7 +47,7 @@ public class Arrow extends AbstractArrow {
    }
 
    public void setEffectsFromItem(ItemStack var1) {
-      if (var1.is(Items.TIPPED_ARROW)) {
+      if (var1.getItem() == Items.TIPPED_ARROW) {
          this.potion = PotionUtils.getPotion(var1);
          List var2 = PotionUtils.getCustomEffects(var1);
          if (!var2.isEmpty()) {
@@ -65,7 +65,7 @@ public class Arrow extends AbstractArrow {
          } else {
             this.setFixedColor(var5);
          }
-      } else if (var1.is(Items.ARROW)) {
+      } else if (var1.getItem() == Items.ARROW) {
          this.potion = Potions.EMPTY;
          this.effects.clear();
          this.entityData.set(ID_EFFECT_COLOR, -1);
@@ -80,12 +80,7 @@ public class Arrow extends AbstractArrow {
 
    private void updateColor() {
       this.fixedColor = false;
-      if (this.potion == Potions.EMPTY && this.effects.isEmpty()) {
-         this.entityData.set(ID_EFFECT_COLOR, -1);
-      } else {
-         this.entityData.set(ID_EFFECT_COLOR, PotionUtils.getColor((Collection)PotionUtils.getAllEffects(this.potion, this.effects)));
-      }
-
+      this.entityData.set(ID_EFFECT_COLOR, PotionUtils.getColor((Collection)PotionUtils.getAllEffects(this.potion, this.effects)));
    }
 
    public void addEffect(MobEffectInstance var1) {
@@ -125,7 +120,7 @@ public class Arrow extends AbstractArrow {
          double var7 = (double)(var2 >> 0 & 255) / 255.0D;
 
          for(int var9 = 0; var9 < var1; ++var9) {
-            this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5D), this.getRandomY(), this.getRandomZ(0.5D), var3, var5, var7);
+            this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), this.y + this.random.nextDouble() * (double)this.getBbHeight(), this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), var3, var5, var7);
          }
 
       }
@@ -230,7 +225,7 @@ public class Arrow extends AbstractArrow {
             double var7 = (double)(var2 >> 0 & 255) / 255.0D;
 
             for(int var9 = 0; var9 < 20; ++var9) {
-               this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5D), this.getRandomY(), this.getRandomZ(0.5D), var3, var5, var7);
+               this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), this.y + this.random.nextDouble() * (double)this.getBbHeight(), this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), var3, var5, var7);
             }
          }
       } else {

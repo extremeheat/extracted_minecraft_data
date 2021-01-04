@@ -9,24 +9,29 @@ import java.util.List;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.stats.RecipeBookSettings;
 
 public class ClientboundRecipePacket implements Packet<ClientGamePacketListener> {
    private ClientboundRecipePacket.State state;
    private List<ResourceLocation> recipes;
    private List<ResourceLocation> toHighlight;
-   private RecipeBookSettings bookSettings;
+   private boolean guiOpen;
+   private boolean filteringCraftable;
+   private boolean furnaceGuiOpen;
+   private boolean furnaceFilteringCraftable;
 
    public ClientboundRecipePacket() {
       super();
    }
 
-   public ClientboundRecipePacket(ClientboundRecipePacket.State var1, Collection<ResourceLocation> var2, Collection<ResourceLocation> var3, RecipeBookSettings var4) {
+   public ClientboundRecipePacket(ClientboundRecipePacket.State var1, Collection<ResourceLocation> var2, Collection<ResourceLocation> var3, boolean var4, boolean var5, boolean var6, boolean var7) {
       super();
       this.state = var1;
       this.recipes = ImmutableList.copyOf(var2);
       this.toHighlight = ImmutableList.copyOf(var3);
-      this.bookSettings = var4;
+      this.guiOpen = var4;
+      this.filteringCraftable = var5;
+      this.furnaceGuiOpen = var6;
+      this.furnaceFilteringCraftable = var7;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -35,7 +40,10 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
 
    public void read(FriendlyByteBuf var1) throws IOException {
       this.state = (ClientboundRecipePacket.State)var1.readEnum(ClientboundRecipePacket.State.class);
-      this.bookSettings = RecipeBookSettings.read(var1);
+      this.guiOpen = var1.readBoolean();
+      this.filteringCraftable = var1.readBoolean();
+      this.furnaceGuiOpen = var1.readBoolean();
+      this.furnaceFilteringCraftable = var1.readBoolean();
       int var2 = var1.readVarInt();
       this.recipes = Lists.newArrayList();
 
@@ -57,7 +65,10 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
 
    public void write(FriendlyByteBuf var1) throws IOException {
       var1.writeEnum(this.state);
-      this.bookSettings.write(var1);
+      var1.writeBoolean(this.guiOpen);
+      var1.writeBoolean(this.filteringCraftable);
+      var1.writeBoolean(this.furnaceGuiOpen);
+      var1.writeBoolean(this.furnaceFilteringCraftable);
       var1.writeVarInt(this.recipes.size());
       Iterator var2 = this.recipes.iterator();
 
@@ -87,8 +98,20 @@ public class ClientboundRecipePacket implements Packet<ClientGamePacketListener>
       return this.toHighlight;
    }
 
-   public RecipeBookSettings getBookSettings() {
-      return this.bookSettings;
+   public boolean isGuiOpen() {
+      return this.guiOpen;
+   }
+
+   public boolean isFilteringCraftable() {
+      return this.filteringCraftable;
+   }
+
+   public boolean isFurnaceGuiOpen() {
+      return this.furnaceGuiOpen;
+   }
+
+   public boolean isFurnaceFilteringCraftable() {
+      return this.furnaceFilteringCraftable;
    }
 
    public ClientboundRecipePacket.State getState() {

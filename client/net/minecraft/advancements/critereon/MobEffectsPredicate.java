@@ -6,8 +6,8 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ public class MobEffectsPredicate {
    }
 
    public static MobEffectsPredicate effects() {
-      return new MobEffectsPredicate(Maps.newLinkedHashMap());
+      return new MobEffectsPredicate(Maps.newHashMap());
    }
 
    public MobEffectsPredicate and(MobEffect var1) {
@@ -73,7 +73,7 @@ public class MobEffectsPredicate {
    public static MobEffectsPredicate fromJson(@Nullable JsonElement var0) {
       if (var0 != null && !var0.isJsonNull()) {
          JsonObject var1 = GsonHelper.convertToJsonObject(var0, "effects");
-         LinkedHashMap var2 = Maps.newLinkedHashMap();
+         HashMap var2 = Maps.newHashMap();
          Iterator var3 = var1.entrySet().iterator();
 
          while(var3.hasNext()) {

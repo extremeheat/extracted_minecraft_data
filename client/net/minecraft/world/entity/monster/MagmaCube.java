@@ -13,8 +13,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -27,8 +25,9 @@ public class MagmaCube extends Slime {
       super(var1, var2);
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.20000000298023224D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.20000000298023224D);
    }
 
    public static boolean checkMagmaCubeSpawnRules(EntityType<MagmaCube> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
@@ -41,7 +40,11 @@ public class MagmaCube extends Slime {
 
    protected void setSize(int var1, boolean var2) {
       super.setSize(var1, var2);
-      this.getAttribute(Attributes.ARMOR).setBaseValue((double)(var1 * 3));
+      this.getAttribute(SharedMonsterAttributes.ARMOR).setBaseValue((double)(var1 * 3));
+   }
+
+   public int getLightColor() {
+      return 15728880;
    }
 
    public float getBrightness() {
@@ -70,7 +73,7 @@ public class MagmaCube extends Slime {
 
    protected void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x, (double)(this.getJumpPower() + (float)this.getSize() * 0.1F), var1.z);
+      this.setDeltaMovement(var1.x, (double)(0.42F + (float)this.getSize() * 0.1F), var1.z);
       this.hasImpulse = true;
    }
 
@@ -85,16 +88,15 @@ public class MagmaCube extends Slime {
 
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    protected boolean isDealsDamage() {
       return this.isEffectiveAi();
    }
 
-   protected float getAttackDamage() {
-      return super.getAttackDamage() + 2.0F;
+   protected int getAttackDamage() {
+      return super.getAttackDamage() + 2;
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {

@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -46,7 +45,7 @@ public class DebugStickItem extends Item {
          this.handleInteraction(var2, var3.getBlockState(var4), var3, var4, true, var1.getItemInHand());
       }
 
-      return InteractionResult.sidedSuccess(var3.isClientSide);
+      return InteractionResult.SUCCESS;
    }
 
    private void handleInteraction(Player var1, BlockState var2, LevelAccessor var3, BlockPos var4, boolean var5, ItemStack var6) {
@@ -66,11 +65,11 @@ public class DebugStickItem extends Item {
                   var13 = (Property)var9.iterator().next();
                }
 
-               BlockState var14 = cycleState(var2, var13, var1.isSecondaryUseActive());
+               BlockState var14 = cycleState(var2, var13, var1.isSneaking());
                var3.setBlock(var4, var14, 18);
                message(var1, new TranslatableComponent(this.getDescriptionId() + ".update", new Object[]{var13.getName(), getNameHelper(var14, var13)}));
             } else {
-               var13 = (Property)getRelative(var9, var13, var1.isSecondaryUseActive());
+               var13 = (Property)getRelative(var9, var13, var1.isSneaking());
                String var15 = var13.getName();
                var11.putString(var10, var15);
                message(var1, new TranslatableComponent(this.getDescriptionId() + ".select", new Object[]{var15, getNameHelper(var2, var13)}));
@@ -89,7 +88,7 @@ public class DebugStickItem extends Item {
    }
 
    private static void message(Player var0, Component var1) {
-      ((ServerPlayer)var0).sendMessage(var1, ChatType.GAME_INFO, Util.NIL_UUID);
+      ((ServerPlayer)var0).sendMessage(var1, ChatType.GAME_INFO);
    }
 
    private static <T extends Comparable<T>> String getNameHelper(BlockState var0, Property<T> var1) {

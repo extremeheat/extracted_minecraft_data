@@ -7,12 +7,10 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -33,7 +31,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected static final VoxelShape DOWN_AABB_Z;
    protected static final VoxelShape DOWN_AABB_X;
 
-   protected LeverBlock(BlockBehaviour.Properties var1) {
+   protected LeverBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(FACE, AttachFace.WALL));
    }
@@ -72,28 +70,22 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       }
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      BlockState var7;
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      var1 = (BlockState)var1.cycle(POWERED);
+      boolean var7 = (Boolean)var1.getValue(POWERED);
       if (var2.isClientSide) {
-         var7 = (BlockState)var1.cycle(POWERED);
-         if ((Boolean)var7.getValue(POWERED)) {
-            makeParticle(var7, var2, var3, 1.0F);
+         if (var7) {
+            makeParticle(var1, var2, var3, 1.0F);
          }
 
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
-         var7 = this.pull(var1, var2, var3);
-         float var8 = (Boolean)var7.getValue(POWERED) ? 0.6F : 0.5F;
+         var2.setBlock(var3, var1, 3);
+         float var8 = var7 ? 0.6F : 0.5F;
          var2.playSound((Player)null, (BlockPos)var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var8);
-         return InteractionResult.CONSUME;
+         this.updateNeighbours(var1, var2, var3);
+         return true;
       }
-   }
-
-   public BlockState pull(BlockState var1, Level var2, BlockPos var3) {
-      var1 = (BlockState)var1.cycle(POWERED);
-      var2.setBlock(var3, var1, 3);
-      this.updateNeighbours(var1, var2, var3);
-      return var1;
    }
 
    private static void makeParticle(BlockState var0, LevelAccessor var1, BlockPos var2, float var3) {
@@ -113,7 +105,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          if ((Boolean)var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
          }

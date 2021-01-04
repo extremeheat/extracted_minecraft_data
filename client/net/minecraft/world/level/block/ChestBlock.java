@@ -1,45 +1,33 @@
 package net.minecraft.world.level.block;
 
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.function.BiPredicate;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
-import net.minecraft.world.level.block.entity.LidBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -55,7 +43,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
+public class ChestBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final DirectionProperty FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
@@ -64,21 +52,16 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    protected static final VoxelShape WEST_AABB;
    protected static final VoxelShape EAST_AABB;
    protected static final VoxelShape AABB;
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER;
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER;
+   private static final ChestBlock.ChestSearchCallback<Container> CHEST_COMBINER;
+   private static final ChestBlock.ChestSearchCallback<MenuProvider> MENU_PROVIDER_COMBINER;
 
-   protected ChestBlock(BlockBehaviour.Properties var1, Supplier<BlockEntityType<? extends ChestBlockEntity>> var2) {
-      super(var1, var2);
+   protected ChestBlock(Block.Properties var1) {
+      super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, ChestType.SINGLE)).setValue(WATERLOGGED, false));
    }
 
-   public static DoubleBlockCombiner.BlockType getBlockType(BlockState var0) {
-      ChestType var1 = (ChestType)var0.getValue(TYPE);
-      if (var1 == ChestType.SINGLE) {
-         return DoubleBlockCombiner.BlockType.SINGLE;
-      } else {
-         return var1 == ChestType.RIGHT ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
-      }
+   public boolean hasCustomBreakingProgress(BlockState var1) {
+      return true;
    }
 
    public RenderShape getRenderShape(BlockState var1) {
@@ -90,7 +73,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          var4.getLiquidTicks().scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
 
-      if (var3.is(this) && var2.getAxis().isHorizontal()) {
+      if (var3.getBlock() == this && var2.getAxis().isHorizontal()) {
          ChestType var7 = (ChestType)var3.getValue(TYPE);
          if (var1.getValue(TYPE) == ChestType.SINGLE && var7 != ChestType.SINGLE && var1.getValue(FACING) == var3.getValue(FACING) && getConnectedDirection(var3) == var2.getOpposite()) {
             return (BlockState)var1.setValue(TYPE, var7.getOpposite());
@@ -129,7 +112,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       ChestType var2 = ChestType.SINGLE;
       Direction var3 = var1.getHorizontalDirection().getOpposite();
       FluidState var4 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var5 = var1.isSecondaryUseActive();
+      boolean var5 = var1.isSneaking();
       Direction var6 = var1.getClickedFace();
       if (var6.getAxis().isHorizontal() && var5) {
          Direction var7 = this.candidatePartnerFacing(var1, var6.getOpposite());
@@ -157,7 +140,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    @Nullable
    private Direction candidatePartnerFacing(BlockPlaceContext var1, Direction var2) {
       BlockState var3 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var2));
-      return var3.is(this) && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
+      return var3.getBlock() == this && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
@@ -171,7 +154,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof Container) {
             Containers.dropContents(var2, var3, (Container)var6);
@@ -182,18 +165,17 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       }
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          MenuProvider var7 = this.getMenuProvider(var1, var2, var3);
          if (var7 != null) {
             var4.openMenu(var7);
             var4.awardStat(this.getOpenChestStat());
-            PiglinAi.angerNearbyPiglins(var4, true);
          }
 
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 
@@ -201,67 +183,57 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return Stats.CUSTOM.get(Stats.OPEN_CHEST);
    }
 
-   public BlockEntityType<? extends ChestBlockEntity> blockEntityType() {
-      return (BlockEntityType)this.blockEntityType.get();
+   @Nullable
+   public static <T> T combineWithNeigbour(BlockState var0, LevelAccessor var1, BlockPos var2, boolean var3, ChestBlock.ChestSearchCallback<T> var4) {
+      BlockEntity var5 = var1.getBlockEntity(var2);
+      if (!(var5 instanceof ChestBlockEntity)) {
+         return null;
+      } else if (!var3 && isChestBlockedAt(var1, var2)) {
+         return null;
+      } else {
+         ChestBlockEntity var6 = (ChestBlockEntity)var5;
+         ChestType var7 = (ChestType)var0.getValue(TYPE);
+         if (var7 == ChestType.SINGLE) {
+            return var4.acceptSingle(var6);
+         } else {
+            BlockPos var8 = var2.relative(getConnectedDirection(var0));
+            BlockState var9 = var1.getBlockState(var8);
+            if (var9.getBlock() == var0.getBlock()) {
+               ChestType var10 = (ChestType)var9.getValue(TYPE);
+               if (var10 != ChestType.SINGLE && var7 != var10 && var9.getValue(FACING) == var0.getValue(FACING)) {
+                  if (!var3 && isChestBlockedAt(var1, var8)) {
+                     return null;
+                  }
+
+                  BlockEntity var11 = var1.getBlockEntity(var8);
+                  if (var11 instanceof ChestBlockEntity) {
+                     ChestBlockEntity var12 = var7 == ChestType.RIGHT ? var6 : (ChestBlockEntity)var11;
+                     ChestBlockEntity var13 = var7 == ChestType.RIGHT ? (ChestBlockEntity)var11 : var6;
+                     return var4.acceptDouble(var12, var13);
+                  }
+               }
+            }
+
+            return var4.acceptSingle(var6);
+         }
+      }
    }
 
    @Nullable
-   public static Container getContainer(ChestBlock var0, BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      return (Container)((Optional)var0.combine(var1, var2, var3, var4).apply(CHEST_COMBINER)).orElse((Object)null);
-   }
-
-   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      BiPredicate var5;
-      if (var4) {
-         var5 = (var0, var1x) -> {
-            return false;
-         };
-      } else {
-         var5 = ChestBlock::isChestBlockedAt;
-      }
-
-      return DoubleBlockCombiner.combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, var1, var2, var3, var5);
+   public static Container getContainer(BlockState var0, Level var1, BlockPos var2, boolean var3) {
+      return (Container)combineWithNeigbour(var0, var1, var2, var3, CHEST_COMBINER);
    }
 
    @Nullable
    public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return (MenuProvider)((Optional)this.combine(var1, var2, var3, false).apply(MENU_PROVIDER_COMBINER)).orElse((Object)null);
+      return (MenuProvider)combineWithNeigbour(var1, var2, var3, false, MENU_PROVIDER_COMBINER);
    }
 
-   public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity var0) {
-      return new DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction>() {
-         public Float2FloatFunction acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
-            return (var2x) -> {
-               return Math.max(var1.getOpenNess(var2x), var2.getOpenNess(var2x));
-            };
-         }
-
-         public Float2FloatFunction acceptSingle(ChestBlockEntity var1) {
-            return var1::getOpenNess;
-         }
-
-         public Float2FloatFunction acceptNone() {
-            LidBlockEntity var10000 = var0;
-            return var10000::getOpenNess;
-         }
-
-         // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
-         }
-      };
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new ChestBlockEntity();
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ChestBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
-   }
-
-   public static boolean isChestBlockedAt(LevelAccessor var0, BlockPos var1) {
+   private static boolean isChestBlockedAt(LevelAccessor var0, BlockPos var1) {
       return isBlockedChestByBlock(var0, var1) || isCatSittingOnChest(var0, var1);
    }
 
@@ -277,7 +249,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
          while(var3.hasNext()) {
             Cat var4 = (Cat)var3.next();
-            if (var4.isInSittingPose()) {
+            if (var4.isSitting()) {
                return true;
             }
          }
@@ -291,7 +263,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(this, var1, var2, var3, false));
+      return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(var1, var2, var3, false));
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {
@@ -310,14 +282,6 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return false;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof ChestBlockEntity) {
-         ((ChestBlockEntity)var5).recheckOpen();
-      }
-
-   }
-
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       TYPE = BlockStateProperties.CHEST_TYPE;
@@ -327,28 +291,29 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       WEST_AABB = Block.box(0.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
       EAST_AABB = Block.box(1.0D, 0.0D, 1.0D, 16.0D, 14.0D, 15.0D);
       AABB = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
-      CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>() {
-         public Optional<Container> acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
-            return Optional.of(new CompoundContainer(var1, var2));
+      CHEST_COMBINER = new ChestBlock.ChestSearchCallback<Container>() {
+         public Container acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
+            return new CompoundContainer(var1, var2);
          }
 
-         public Optional<Container> acceptSingle(ChestBlockEntity var1) {
-            return Optional.of(var1);
-         }
-
-         public Optional<Container> acceptNone() {
-            return Optional.empty();
+         public Container acceptSingle(ChestBlockEntity var1) {
+            return var1;
          }
 
          // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
+         public Object acceptSingle(ChestBlockEntity var1) {
+            return this.acceptSingle(var1);
+         }
+
+         // $FF: synthetic method
+         public Object acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
+            return this.acceptDouble(var1, var2);
          }
       };
-      MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
-         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
+      MENU_PROVIDER_COMBINER = new ChestBlock.ChestSearchCallback<MenuProvider>() {
+         public MenuProvider acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
             final CompoundContainer var3 = new CompoundContainer(var1, var2);
-            return Optional.of(new MenuProvider() {
+            return new MenuProvider() {
                @Nullable
                public AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
                   if (var1.canOpen(var3x) && var2.canOpen(var3x)) {
@@ -364,24 +329,31 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
                   if (var1.hasCustomName()) {
                      return var1.getDisplayName();
                   } else {
-                     return (Component)(var2.hasCustomName() ? var2.getDisplayName() : new TranslatableComponent("container.chestDouble"));
+                     return (Component)(var2.hasCustomName() ? var2.getDisplayName() : new TranslatableComponent("container.chestDouble", new Object[0]));
                   }
                }
-            });
+            };
          }
 
-         public Optional<MenuProvider> acceptSingle(ChestBlockEntity var1) {
-            return Optional.of(var1);
-         }
-
-         public Optional<MenuProvider> acceptNone() {
-            return Optional.empty();
+         public MenuProvider acceptSingle(ChestBlockEntity var1) {
+            return var1;
          }
 
          // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
+         public Object acceptSingle(ChestBlockEntity var1) {
+            return this.acceptSingle(var1);
+         }
+
+         // $FF: synthetic method
+         public Object acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
+            return this.acceptDouble(var1, var2);
          }
       };
+   }
+
+   interface ChestSearchCallback<T> {
+      T acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2);
+
+      T acceptSingle(ChestBlockEntity var1);
    }
 }

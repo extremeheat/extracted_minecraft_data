@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -50,32 +50,38 @@ public class GhostRecipe {
       this.recipe = var1;
    }
 
-   public void render(PoseStack var1, Minecraft var2, int var3, int var4, boolean var5, float var6) {
+   public void render(Minecraft var1, int var2, int var3, boolean var4, float var5) {
       if (!Screen.hasControlDown()) {
-         this.time += var6;
+         this.time += var5;
       }
 
-      for(int var7 = 0; var7 < this.ingredients.size(); ++var7) {
-         GhostRecipe.GhostIngredient var8 = (GhostRecipe.GhostIngredient)this.ingredients.get(var7);
-         int var9 = var8.getX() + var3;
-         int var10 = var8.getY() + var4;
-         if (var7 == 0 && var5) {
-            GuiComponent.fill(var1, var9 - 4, var10 - 4, var9 + 20, var10 + 20, 822018048);
+      Lighting.turnOnGui();
+      GlStateManager.disableLighting();
+
+      for(int var6 = 0; var6 < this.ingredients.size(); ++var6) {
+         GhostRecipe.GhostIngredient var7 = (GhostRecipe.GhostIngredient)this.ingredients.get(var6);
+         int var8 = var7.getX() + var2;
+         int var9 = var7.getY() + var3;
+         if (var6 == 0 && var4) {
+            GuiComponent.fill(var8 - 4, var9 - 4, var8 + 20, var9 + 20, 822018048);
          } else {
-            GuiComponent.fill(var1, var9, var10, var9 + 16, var10 + 16, 822018048);
+            GuiComponent.fill(var8, var9, var8 + 16, var9 + 16, 822018048);
          }
 
-         ItemStack var11 = var8.getItem();
-         ItemRenderer var12 = var2.getItemRenderer();
-         var12.renderAndDecorateFakeItem(var11, var9, var10);
-         RenderSystem.depthFunc(516);
-         GuiComponent.fill(var1, var9, var10, var9 + 16, var10 + 16, 822083583);
-         RenderSystem.depthFunc(515);
-         if (var7 == 0) {
-            var12.renderGuiItemDecorations(var2.font, var11, var9, var10);
+         ItemStack var10 = var7.getItem();
+         ItemRenderer var11 = var1.getItemRenderer();
+         var11.renderAndDecorateItem(var1.player, var10, var8, var9);
+         GlStateManager.depthFunc(516);
+         GuiComponent.fill(var8, var9, var8 + 16, var9 + 16, 822083583);
+         GlStateManager.depthFunc(515);
+         if (var6 == 0) {
+            var11.renderGuiItemDecorations(var1.font, var10, var8, var9);
          }
+
+         GlStateManager.enableLighting();
       }
 
+      Lighting.turnOff();
    }
 
    public class GhostIngredient {

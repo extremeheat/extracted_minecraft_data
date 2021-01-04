@@ -9,15 +9,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
-import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -28,7 +25,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
 import net.minecraft.world.level.material.FluidState;
@@ -76,7 +72,7 @@ public abstract class StructurePiece {
    public void addChildren(StructurePiece var1, List<StructurePiece> var2, Random var3) {
    }
 
-   public abstract boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7);
+   public abstract boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4);
 
    public BoundingBox getBoundingBox() {
       return this.boundingBox;
@@ -87,8 +83,8 @@ public abstract class StructurePiece {
    }
 
    public boolean isCloseToChunk(ChunkPos var1, int var2) {
-      int var3 = SectionPos.sectionToBlockCoord(var1.x);
-      int var4 = SectionPos.sectionToBlockCoord(var1.z);
+      int var3 = var1.x << 4;
+      int var4 = var1.z << 4;
       return this.boundingBox.intersects(var3 - var2, var4 - var2, var3 + 15 + var2, var4 + 15 + var2);
    }
 
@@ -199,7 +195,7 @@ public abstract class StructurePiece {
       }
    }
 
-   protected void placeBlock(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
+   protected void placeBlock(LevelAccessor var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
       BlockPos var7 = new BlockPos(this.getWorldX(var3, var5), this.getWorldY(var4), this.getWorldZ(var3, var5));
       if (var6.isInside(var7)) {
          if (this.mirror != Mirror.NONE) {
@@ -243,7 +239,7 @@ public abstract class StructurePiece {
       }
    }
 
-   protected void generateAirBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+   protected void generateAirBox(LevelAccessor var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8) {
       for(int var9 = var4; var9 <= var7; ++var9) {
          for(int var10 = var3; var10 <= var6; ++var10) {
             for(int var11 = var5; var11 <= var8; ++var11) {
@@ -254,7 +250,7 @@ public abstract class StructurePiece {
 
    }
 
-   protected void generateBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, BlockState var10, boolean var11) {
+   protected void generateBox(LevelAccessor var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, BlockState var10, boolean var11) {
       for(int var12 = var4; var12 <= var7; ++var12) {
          for(int var13 = var3; var13 <= var6; ++var13) {
             for(int var14 = var5; var14 <= var8; ++var14) {
@@ -271,7 +267,7 @@ public abstract class StructurePiece {
 
    }
 
-   protected void generateBox(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, Random var10, StructurePiece.BlockSelector var11) {
+   protected void generateBox(LevelAccessor var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, Random var10, StructurePiece.BlockSelector var11) {
       for(int var12 = var4; var12 <= var7; ++var12) {
          for(int var13 = var3; var13 <= var6; ++var13) {
             for(int var14 = var5; var14 <= var8; ++var14) {
@@ -285,7 +281,7 @@ public abstract class StructurePiece {
 
    }
 
-   protected void generateMaybeBox(WorldGenLevel var1, BoundingBox var2, Random var3, float var4, int var5, int var6, int var7, int var8, int var9, int var10, BlockState var11, BlockState var12, boolean var13, boolean var14) {
+   protected void generateMaybeBox(LevelAccessor var1, BoundingBox var2, Random var3, float var4, int var5, int var6, int var7, int var8, int var9, int var10, BlockState var11, BlockState var12, boolean var13, boolean var14) {
       for(int var15 = var6; var15 <= var9; ++var15) {
          for(int var16 = var5; var16 <= var8; ++var16) {
             for(int var17 = var7; var17 <= var10; ++var17) {
@@ -302,14 +298,14 @@ public abstract class StructurePiece {
 
    }
 
-   protected void maybeGenerateBlock(WorldGenLevel var1, BoundingBox var2, Random var3, float var4, int var5, int var6, int var7, BlockState var8) {
+   protected void maybeGenerateBlock(LevelAccessor var1, BoundingBox var2, Random var3, float var4, int var5, int var6, int var7, BlockState var8) {
       if (var3.nextFloat() < var4) {
          this.placeBlock(var1, var8, var5, var6, var7, var2);
       }
 
    }
 
-   protected void generateUpperHalfSphere(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, boolean var10) {
+   protected void generateUpperHalfSphere(LevelAccessor var1, BoundingBox var2, int var3, int var4, int var5, int var6, int var7, int var8, BlockState var9, boolean var10) {
       float var11 = (float)(var6 - var3 + 1);
       float var12 = (float)(var7 - var4 + 1);
       float var13 = (float)(var8 - var5 + 1);
@@ -336,12 +332,12 @@ public abstract class StructurePiece {
 
    }
 
-   protected void fillColumnDown(WorldGenLevel var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
+   protected void fillColumnDown(LevelAccessor var1, BlockState var2, int var3, int var4, int var5, BoundingBox var6) {
       int var7 = this.getWorldX(var3, var5);
       int var8 = this.getWorldY(var4);
       int var9 = this.getWorldZ(var3, var5);
       if (var6.isInside(new BlockPos(var7, var8, var9))) {
-         while((var1.isEmptyBlock(new BlockPos(var7, var8, var9)) || var1.getBlockState(new BlockPos(var7, var8, var9)).getMaterial().isLiquid()) && var8 > var1.getMinBuildHeight() + 1) {
+         while((var1.isEmptyBlock(new BlockPos(var7, var8, var9)) || var1.getBlockState(new BlockPos(var7, var8, var9)).getMaterial().isLiquid()) && var8 > 1) {
             var1.setBlock(new BlockPos(var7, var8, var9), var2, 2);
             --var8;
          }
@@ -349,7 +345,7 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createChest(WorldGenLevel var1, BoundingBox var2, Random var3, int var4, int var5, int var6, ResourceLocation var7) {
+   protected boolean createChest(LevelAccessor var1, BoundingBox var2, Random var3, int var4, int var5, int var6, ResourceLocation var7) {
       BlockPos var8 = new BlockPos(this.getWorldX(var4, var6), this.getWorldY(var5), this.getWorldZ(var4, var6));
       return this.createChest(var1, var2, var3, var8, var7, (BlockState)null);
    }
@@ -362,7 +358,7 @@ public abstract class StructurePiece {
          Direction var5 = (Direction)var4.next();
          BlockPos var6 = var1.relative(var5);
          BlockState var7 = var0.getBlockState(var6);
-         if (var7.is(Blocks.CHEST)) {
+         if (var7.getBlock() == Blocks.CHEST) {
             return var2;
          }
 
@@ -400,8 +396,8 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createChest(ServerLevelAccessor var1, BoundingBox var2, Random var3, BlockPos var4, ResourceLocation var5, @Nullable BlockState var6) {
-      if (var2.isInside(var4) && !var1.getBlockState(var4).is(Blocks.CHEST)) {
+   protected boolean createChest(LevelAccessor var1, BoundingBox var2, Random var3, BlockPos var4, ResourceLocation var5, @Nullable BlockState var6) {
+      if (var2.isInside(var4) && var1.getBlockState(var4).getBlock() != Blocks.CHEST) {
          if (var6 == null) {
             var6 = reorient(var1, var4, Blocks.CHEST.defaultBlockState());
          }
@@ -418,9 +414,9 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createDispenser(WorldGenLevel var1, BoundingBox var2, Random var3, int var4, int var5, int var6, Direction var7, ResourceLocation var8) {
+   protected boolean createDispenser(LevelAccessor var1, BoundingBox var2, Random var3, int var4, int var5, int var6, Direction var7, ResourceLocation var8) {
       BlockPos var9 = new BlockPos(this.getWorldX(var4, var6), this.getWorldY(var5), this.getWorldZ(var4, var6));
-      if (var2.isInside(var9) && !var1.getBlockState(var9).is(Blocks.DISPENSER)) {
+      if (var2.isInside(var9) && var1.getBlockState(var9).getBlock() != Blocks.DISPENSER) {
          this.placeBlock(var1, (BlockState)Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, var7), var4, var5, var6, var2);
          BlockEntity var10 = var1.getBlockEntity(var9);
          if (var10 instanceof DispenserBlockEntity) {

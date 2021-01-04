@@ -1,5 +1,6 @@
 package net.minecraft.world.level;
 
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 
 public class EmptyTickList<T> implements TickList<T> {
@@ -25,5 +26,8 @@ public class EmptyTickList<T> implements TickList<T> {
 
    public boolean willTickThisTick(BlockPos var1, T var2) {
       return false;
+   }
+
+   public void addAll(Stream<TickNextTickData<T>> var1) {
    }
 }

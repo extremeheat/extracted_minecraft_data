@@ -17,8 +17,6 @@ public interface BakedModel {
 
    boolean isGui3d();
 
-   boolean usesBlockLight();
-
    boolean isCustomRenderer();
 
    TextureAtlasSprite getParticleIcon();

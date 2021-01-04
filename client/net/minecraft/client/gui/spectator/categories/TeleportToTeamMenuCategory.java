@@ -1,8 +1,7 @@
 package net.minecraft.client.gui.spectator.categories;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -22,8 +21,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.scores.PlayerTeam;
 
 public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
-   private static final Component TELEPORT_TEXT = new TranslatableComponent("spectatorMenu.team_teleport");
-   private static final Component TELEPORT_PROMPT = new TranslatableComponent("spectatorMenu.team_teleport.prompt");
    private final List<SpectatorMenuItem> items = Lists.newArrayList();
 
    public TeleportToTeamMenuCategory() {
@@ -43,7 +40,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    public Component getPrompt() {
-      return TELEPORT_PROMPT;
+      return new TranslatableComponent("spectatorMenu.team_teleport.prompt", new Object[0]);
    }
 
    public void selectItem(SpectatorMenu var1) {
@@ -51,12 +48,12 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    public Component getName() {
-      return TELEPORT_TEXT;
+      return new TranslatableComponent("spectatorMenu.team_teleport", new Object[0]);
    }
 
-   public void renderIcon(PoseStack var1, float var2, int var3) {
+   public void renderIcon(float var1, int var2) {
       Minecraft.getInstance().getTextureManager().bind(SpectatorGui.SPECTATOR_LOCATION);
-      GuiComponent.blit(var1, 0, 0, 16.0F, 0.0F, 16, 16, 256, 256);
+      GuiComponent.blit(0, 0, 16.0F, 0.0F, 16, 16, 256, 256);
    }
 
    public boolean isEnabled() {
@@ -111,19 +108,19 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          return this.team.getDisplayName();
       }
 
-      public void renderIcon(PoseStack var1, float var2, int var3) {
-         Integer var4 = this.team.getColor().getColor();
-         if (var4 != null) {
-            float var5 = (float)(var4 >> 16 & 255) / 255.0F;
-            float var6 = (float)(var4 >> 8 & 255) / 255.0F;
-            float var7 = (float)(var4 & 255) / 255.0F;
-            GuiComponent.fill(var1, 1, 1, 15, 15, Mth.color(var5 * var2, var6 * var2, var7 * var2) | var3 << 24);
+      public void renderIcon(float var1, int var2) {
+         Integer var3 = this.team.getColor().getColor();
+         if (var3 != null) {
+            float var4 = (float)(var3 >> 16 & 255) / 255.0F;
+            float var5 = (float)(var3 >> 8 & 255) / 255.0F;
+            float var6 = (float)(var3 & 255) / 255.0F;
+            GuiComponent.fill(1, 1, 15, 15, Mth.color(var4 * var1, var5 * var1, var6 * var1) | var2 << 24);
          }
 
          Minecraft.getInstance().getTextureManager().bind(this.location);
-         RenderSystem.color4f(var2, var2, var2, (float)var3 / 255.0F);
-         GuiComponent.blit(var1, 2, 2, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
-         GuiComponent.blit(var1, 2, 2, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
+         GlStateManager.color4f(var1, var1, var1, (float)var2 / 255.0F);
+         GuiComponent.blit(2, 2, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
+         GuiComponent.blit(2, 2, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
       }
 
       public boolean isEnabled() {

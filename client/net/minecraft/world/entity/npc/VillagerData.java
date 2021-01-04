@@ -1,24 +1,13 @@
 package net.minecraft.world.entity.npc;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 
 public class VillagerData {
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Registry.VILLAGER_TYPE.fieldOf("type").orElseGet(() -> {
-         return VillagerType.PLAINS;
-      }).forGetter((var0x) -> {
-         return var0x.type;
-      }), Registry.VILLAGER_PROFESSION.fieldOf("profession").orElseGet(() -> {
-         return VillagerProfession.NONE;
-      }).forGetter((var0x) -> {
-         return var0x.profession;
-      }), Codec.INT.fieldOf("level").orElse(1).forGetter((var0x) -> {
-         return var0x.level;
-      })).apply(var0, VillagerData::new);
-   });
    private final VillagerType type;
    private final VillagerProfession profession;
    private final int level;
@@ -28,6 +17,10 @@ public class VillagerData {
       this.type = var1;
       this.profession = var2;
       this.level = Math.max(1, var3);
+   }
+
+   public VillagerData(Dynamic<?> var1) {
+      this((VillagerType)Registry.VILLAGER_TYPE.get(ResourceLocation.tryParse(var1.get("type").asString(""))), (VillagerProfession)Registry.VILLAGER_PROFESSION.get(ResourceLocation.tryParse(var1.get("profession").asString(""))), var1.get("level").asInt(1));
    }
 
    public VillagerType getType() {
@@ -52,6 +45,10 @@ public class VillagerData {
 
    public VillagerData setLevel(int var1) {
       return new VillagerData(this.type, this.profession, var1);
+   }
+
+   public <T> T serialize(DynamicOps<T> var1) {
+      return var1.createMap(ImmutableMap.of(var1.createString("type"), var1.createString(Registry.VILLAGER_TYPE.getKey(this.type).toString()), var1.createString("profession"), var1.createString(Registry.VILLAGER_PROFESSION.getKey(this.profession).toString()), var1.createString("level"), var1.createInt(this.level)));
    }
 
    public static int getMinXpPerLevel(int var0) {

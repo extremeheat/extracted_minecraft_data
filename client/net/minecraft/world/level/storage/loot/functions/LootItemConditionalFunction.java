@@ -5,12 +5,16 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
@@ -32,11 +36,11 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
 
    protected abstract ItemStack run(ItemStack var1, LootContext var2);
 
-   public void validate(ValidationContext var1) {
-      LootItemFunction.super.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      LootItemFunction.super.validate(var1, var2, var3, var4);
 
-      for(int var2 = 0; var2 < this.predicates.length; ++var2) {
-         this.predicates[var2].validate(var1.forChild(".conditions[" + var2 + "]"));
+      for(int var5 = 0; var5 < this.predicates.length; ++var5) {
+         this.predicates[var5].validate(var1.forChild(".conditions[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -50,9 +54,9 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       return this.apply((ItemStack)var1, (LootContext)var2);
    }
 
-   public abstract static class Serializer<T extends LootItemConditionalFunction> implements net.minecraft.world.level.storage.loot.Serializer<T> {
-      public Serializer() {
-         super();
+   public abstract static class Serializer<T extends LootItemConditionalFunction> extends LootItemFunction.Serializer<T> {
+      public Serializer(ResourceLocation var1, Class<T> var2) {
+         super(var1, var2);
       }
 
       public void serialize(JsonObject var1, T var2, JsonSerializationContext var3) {
@@ -70,7 +74,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       public abstract T deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3);
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemFunction deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

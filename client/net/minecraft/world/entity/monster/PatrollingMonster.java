@@ -19,7 +19,6 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -57,7 +56,7 @@ public abstract class PatrollingMonster extends Monster {
       this.patrolling = var1.getBoolean("Patrolling");
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return -0.45D;
    }
 
@@ -66,7 +65,7 @@ public abstract class PatrollingMonster extends Monster {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       if (var3 != MobSpawnType.PATROL && var3 != MobSpawnType.EVENT && var3 != MobSpawnType.STRUCTURE && this.random.nextFloat() < 0.06F && this.canBeLeader()) {
          this.patrolLeader = true;
       }
@@ -118,7 +117,7 @@ public abstract class PatrollingMonster extends Monster {
    }
 
    public void findPatrolTarget() {
-      this.patrolTarget = this.blockPosition().offset(-500 + this.random.nextInt(1000), 0, -500 + this.random.nextInt(1000));
+      this.patrolTarget = (new BlockPos(this)).offset(-500 + this.random.nextInt(1000), 0, -500 + this.random.nextInt(1000));
       this.patrolling = true;
    }
 
@@ -126,28 +125,21 @@ public abstract class PatrollingMonster extends Monster {
       return this.patrolling;
    }
 
-   protected void setPatrolling(boolean var1) {
-      this.patrolling = var1;
-   }
-
    public static class LongDistancePatrolGoal<T extends PatrollingMonster> extends Goal {
       private final T mob;
       private final double speedModifier;
       private final double leaderSpeedModifier;
-      private long cooldownUntil;
 
       public LongDistancePatrolGoal(T var1, double var2, double var4) {
          super();
          this.mob = var1;
          this.speedModifier = var2;
          this.leaderSpeedModifier = var4;
-         this.cooldownUntil = -1L;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
       public boolean canUse() {
-         boolean var1 = this.mob.level.getGameTime() < this.cooldownUntil;
-         return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasPatrolTarget() && !var1;
+         return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasPatrolTarget();
       }
 
       public void start() {
@@ -160,28 +152,27 @@ public abstract class PatrollingMonster extends Monster {
          boolean var1 = this.mob.isPatrolLeader();
          PathNavigation var2 = this.mob.getNavigation();
          if (var2.isDone()) {
-            List var3 = this.findPatrolCompanions();
-            if (this.mob.isPatrolling() && var3.isEmpty()) {
-               this.mob.setPatrolling(false);
-            } else if (var1 && this.mob.getPatrolTarget().closerThan(this.mob.position(), 10.0D)) {
+            if (var1 && this.mob.getPatrolTarget().closerThan(this.mob.position(), 10.0D)) {
                this.mob.findPatrolTarget();
             } else {
-               Vec3 var4 = Vec3.atBottomCenterOf(this.mob.getPatrolTarget());
-               Vec3 var5 = this.mob.position();
-               Vec3 var6 = var5.subtract(var4);
-               var4 = var6.yRot(90.0F).scale(0.4D).add(var4);
-               Vec3 var7 = var4.subtract(var5).normalize().scale(10.0D).add(var5);
-               BlockPos var8 = new BlockPos(var7);
-               var8 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var8);
-               if (!var2.moveTo((double)var8.getX(), (double)var8.getY(), (double)var8.getZ(), var1 ? this.leaderSpeedModifier : this.speedModifier)) {
+               Vec3 var3 = new Vec3(this.mob.getPatrolTarget());
+               Vec3 var4 = new Vec3(this.mob.x, this.mob.y, this.mob.z);
+               Vec3 var5 = var4.subtract(var3);
+               var3 = var5.yRot(90.0F).scale(0.4D).add(var3);
+               Vec3 var6 = var3.subtract(var4).normalize().scale(10.0D).add(var4);
+               BlockPos var7 = new BlockPos(var6);
+               var7 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var7);
+               if (!var2.moveTo((double)var7.getX(), (double)var7.getY(), (double)var7.getZ(), var1 ? this.leaderSpeedModifier : this.speedModifier)) {
                   this.moveRandomly();
-                  this.cooldownUntil = this.mob.level.getGameTime() + 200L;
                } else if (var1) {
-                  Iterator var9 = var3.iterator();
+                  List var8 = this.mob.level.getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0D), (var0) -> {
+                     return !var0.isPatrolLeader() && var0.canJoinPatrol();
+                  });
+                  Iterator var9 = var8.iterator();
 
                   while(var9.hasNext()) {
                      PatrollingMonster var10 = (PatrollingMonster)var9.next();
-                     var10.setPatrolTarget(var8);
+                     var10.setPatrolTarget(var7);
                   }
                }
             }
@@ -189,16 +180,10 @@ public abstract class PatrollingMonster extends Monster {
 
       }
 
-      private List<PatrollingMonster> findPatrolCompanions() {
-         return this.mob.level.getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0D), (var1) -> {
-            return var1.canJoinPatrol() && !var1.is(this.mob);
-         });
-      }
-
-      private boolean moveRandomly() {
+      private void moveRandomly() {
          Random var1 = this.mob.getRandom();
-         BlockPos var2 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
-         return this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), this.speedModifier);
+         BlockPos var2 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (new BlockPos(this.mob)).offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
+         this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), this.speedModifier);
       }
    }
 }

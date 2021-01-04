@@ -1,16 +1,14 @@
 package net.minecraft.world.level.block.entity;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class JukeboxBlockEntity extends BlockEntity implements Clearable {
    private ItemStack record;
 
-   public JukeboxBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.JUKEBOX, var1, var2);
+   public JukeboxBlockEntity() {
+      super(BlockEntityType.JUKEBOX);
       this.record = ItemStack.EMPTY;
    }
 

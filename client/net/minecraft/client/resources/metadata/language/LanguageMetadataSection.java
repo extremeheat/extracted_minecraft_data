@@ -1,18 +1,18 @@
 package net.minecraft.client.resources.metadata.language;
 
 import java.util.Collection;
-import net.minecraft.client.resources.language.LanguageInfo;
+import net.minecraft.client.resources.language.Language;
 
 public class LanguageMetadataSection {
    public static final LanguageMetadataSectionSerializer SERIALIZER = new LanguageMetadataSectionSerializer();
-   private final Collection<LanguageInfo> languages;
+   private final Collection<Language> languages;
 
-   public LanguageMetadataSection(Collection<LanguageInfo> var1) {
+   public LanguageMetadataSection(Collection<Language> var1) {
       super();
       this.languages = var1;
    }
 
-   public Collection<LanguageInfo> getLanguages() {
+   public Collection<Language> getLanguages() {
       return this.languages;
    }
 }

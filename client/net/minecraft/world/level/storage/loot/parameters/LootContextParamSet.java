@@ -6,7 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import java.util.Set;
 import net.minecraft.world.level.storage.loot.LootContextUser;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
 
 public class LootContextParamSet {
    private final Set<LootContextParam<?>> required;
@@ -32,7 +32,7 @@ public class LootContextParamSet {
       }).iterator()) + "]";
    }
 
-   public void validateUser(ValidationContext var1, LootContextUser var2) {
+   public void validateUser(LootTableProblemCollector var1, LootContextUser var2) {
       Set var3 = var2.getReferencedContextParams();
       SetView var4 = Sets.difference(var3, this.all);
       if (!var4.isEmpty()) {

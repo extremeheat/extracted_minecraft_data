@@ -1,6 +1,8 @@
 package net.minecraft.world.level.block.entity;
 
+import javax.annotation.Nullable;
 import net.minecraft.world.Container;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -13,6 +15,9 @@ public interface Hopper extends Container {
    default VoxelShape getSuckShape() {
       return SUCK;
    }
+
+   @Nullable
+   Level getLevel();
 
    double getLevelX();
 

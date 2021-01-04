@@ -3,6 +3,7 @@ package net.minecraft.network.protocol.game;
 import java.io.IOException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 
 public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListener> {
@@ -13,10 +14,10 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       super();
    }
 
-   public ServerboundSignUpdatePacket(BlockPos var1, String var2, String var3, String var4, String var5) {
+   public ServerboundSignUpdatePacket(BlockPos var1, Component var2, Component var3, Component var4, Component var5) {
       super();
       this.pos = var1;
-      this.lines = new String[]{var2, var3, var4, var5};
+      this.lines = new String[]{var2.getString(), var3.getString(), var4.getString(), var5.getString()};
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {

@@ -5,11 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
@@ -29,38 +27,38 @@ public class BuriedTreasurePieces {
       protected void addAdditionalSaveData(CompoundTag var1) {
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.x0, this.boundingBox.z0);
-         BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(this.boundingBox.x0, var8, this.boundingBox.z0);
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+         int var5 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.x0, this.boundingBox.z0);
+         BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(this.boundingBox.x0, var5, this.boundingBox.z0);
 
-         while(var9.getY() > var1.getMinBuildHeight()) {
-            BlockState var10 = var1.getBlockState(var9);
-            BlockState var11 = var1.getBlockState(var9.below());
-            if (var11 == Blocks.SANDSTONE.defaultBlockState() || var11 == Blocks.STONE.defaultBlockState() || var11 == Blocks.ANDESITE.defaultBlockState() || var11 == Blocks.GRANITE.defaultBlockState() || var11 == Blocks.DIORITE.defaultBlockState()) {
-               BlockState var12 = !var10.isAir() && !this.isLiquid(var10) ? var10 : Blocks.SAND.defaultBlockState();
-               Direction[] var13 = Direction.values();
-               int var14 = var13.length;
+         while(var6.getY() > 0) {
+            BlockState var7 = var1.getBlockState(var6);
+            BlockState var8 = var1.getBlockState(var6.below());
+            if (var8 == Blocks.SANDSTONE.defaultBlockState() || var8 == Blocks.STONE.defaultBlockState() || var8 == Blocks.ANDESITE.defaultBlockState() || var8 == Blocks.GRANITE.defaultBlockState() || var8 == Blocks.DIORITE.defaultBlockState()) {
+               BlockState var9 = !var7.isAir() && !this.isLiquid(var7) ? var7 : Blocks.SAND.defaultBlockState();
+               Direction[] var10 = Direction.values();
+               int var11 = var10.length;
 
-               for(int var15 = 0; var15 < var14; ++var15) {
-                  Direction var16 = var13[var15];
-                  BlockPos var17 = var9.relative(var16);
-                  BlockState var18 = var1.getBlockState(var17);
-                  if (var18.isAir() || this.isLiquid(var18)) {
-                     BlockPos var19 = var17.below();
-                     BlockState var20 = var1.getBlockState(var19);
-                     if ((var20.isAir() || this.isLiquid(var20)) && var16 != Direction.UP) {
-                        var1.setBlock(var17, var11, 3);
+               for(int var12 = 0; var12 < var11; ++var12) {
+                  Direction var13 = var10[var12];
+                  BlockPos var14 = var6.relative(var13);
+                  BlockState var15 = var1.getBlockState(var14);
+                  if (var15.isAir() || this.isLiquid(var15)) {
+                     BlockPos var16 = var14.below();
+                     BlockState var17 = var1.getBlockState(var16);
+                     if ((var17.isAir() || this.isLiquid(var17)) && var13 != Direction.UP) {
+                        var1.setBlock(var14, var8, 3);
                      } else {
-                        var1.setBlock(var17, var12, 3);
+                        var1.setBlock(var14, var9, 3);
                      }
                   }
                }
 
-               this.boundingBox = new BoundingBox(var9.getX(), var9.getY(), var9.getZ(), var9.getX(), var9.getY(), var9.getZ());
-               return this.createChest(var1, var5, var4, var9, BuiltInLootTables.BURIED_TREASURE, (BlockState)null);
+               this.boundingBox = new BoundingBox(var6.getX(), var6.getY(), var6.getZ(), var6.getX(), var6.getY(), var6.getZ());
+               return this.createChest(var1, var3, var2, var6, BuiltInLootTables.BURIED_TREASURE, (BlockState)null);
             }
 
-            var9.move(0, -1, 0);
+            var6.move(0, -1, 0);
          }
 
          return false;

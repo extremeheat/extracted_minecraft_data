@@ -1,20 +1,15 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Random;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class RandomBlockMatchTest extends RuleTest {
-   public static final Codec<RandomBlockMatchTest> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Registry.BLOCK.fieldOf("block").forGetter((var0x) -> {
-         return var0x.block;
-      }), Codec.FLOAT.fieldOf("probability").forGetter((var0x) -> {
-         return var0x.probability;
-      })).apply(var0, RandomBlockMatchTest::new);
-   });
    private final Block block;
    private final float probability;
 
@@ -24,11 +19,19 @@ public class RandomBlockMatchTest extends RuleTest {
       this.probability = var2;
    }
 
-   public boolean test(BlockState var1, Random var2) {
-      return var1.is(this.block) && var2.nextFloat() < this.probability;
+   public <T> RandomBlockMatchTest(Dynamic<T> var1) {
+      this((Block)Registry.BLOCK.get(new ResourceLocation(var1.get("block").asString(""))), var1.get("probability").asFloat(1.0F));
    }
 
-   protected RuleTestType<?> getType() {
+   public boolean test(BlockState var1, Random var2) {
+      return var1.getBlock() == this.block && var2.nextFloat() < this.probability;
+   }
+
+   protected RuleTestType getType() {
       return RuleTestType.RANDOM_BLOCK_TEST;
+   }
+
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("block"), var1.createString(Registry.BLOCK.getKey(this.block).toString()), var1.createString("probability"), var1.createFloat(this.probability))));
    }
 }

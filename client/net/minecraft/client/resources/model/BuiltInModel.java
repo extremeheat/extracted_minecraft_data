@@ -15,14 +15,12 @@ public class BuiltInModel implements BakedModel {
    private final ItemTransforms itemTransforms;
    private final ItemOverrides overrides;
    private final TextureAtlasSprite particleTexture;
-   private final boolean usesBlockLight;
 
-   public BuiltInModel(ItemTransforms var1, ItemOverrides var2, TextureAtlasSprite var3, boolean var4) {
+   public BuiltInModel(ItemTransforms var1, ItemOverrides var2, TextureAtlasSprite var3) {
       super();
       this.itemTransforms = var1;
       this.overrides = var2;
       this.particleTexture = var3;
-      this.usesBlockLight = var4;
    }
 
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, Random var3) {
@@ -35,10 +33,6 @@ public class BuiltInModel implements BakedModel {
 
    public boolean isGui3d() {
       return true;
-   }
-
-   public boolean usesBlockLight() {
-      return this.usesBlockLight;
    }
 
    public boolean isCustomRenderer() {

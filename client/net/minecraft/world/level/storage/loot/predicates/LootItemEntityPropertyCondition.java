@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
 import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -23,18 +25,14 @@ public class LootItemEntityPropertyCondition implements LootItemCondition {
       this.entityTarget = var2;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ENTITY_PROPERTIES;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(LootContextParams.ORIGIN, this.entityTarget.getParam());
+      return ImmutableSet.of(LootContextParams.BLOCK_POS, this.entityTarget.getParam());
    }
 
    public boolean test(LootContext var1) {
       Entity var2 = (Entity)var1.getParamOrNull(this.entityTarget.getParam());
-      Vec3 var3 = (Vec3)var1.getParamOrNull(LootContextParams.ORIGIN);
-      return this.predicate.matches(var1.getLevel(), var3, var2);
+      BlockPos var3 = (BlockPos)var1.getParamOrNull(LootContextParams.BLOCK_POS);
+      return var3 != null && this.predicate.matches(var1.getLevel(), new Vec3(var3), var2);
    }
 
    public static LootItemCondition.Builder entityPresent(LootContext.EntityTarget var0) {
@@ -44,12 +42,6 @@ public class LootItemEntityPropertyCondition implements LootItemCondition {
    public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate.Builder var1) {
       return () -> {
          return new LootItemEntityPropertyCondition(var1.build(), var0);
-      };
-   }
-
-   public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate var1) {
-      return () -> {
-         return new LootItemEntityPropertyCondition(var1, var0);
       };
    }
 
@@ -63,9 +55,9 @@ public class LootItemEntityPropertyCondition implements LootItemCondition {
       this(var1, var2);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<LootItemEntityPropertyCondition> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<LootItemEntityPropertyCondition> {
+      protected Serializer() {
+         super(new ResourceLocation("entity_properties"), LootItemEntityPropertyCondition.class);
       }
 
       public void serialize(JsonObject var1, LootItemEntityPropertyCondition var2, JsonSerializationContext var3) {
@@ -79,7 +71,7 @@ public class LootItemEntityPropertyCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

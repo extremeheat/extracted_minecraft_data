@@ -13,13 +13,13 @@ import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.animal.Cat;
-import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.phys.AABB;
 
-public class CatSpawner implements CustomSpawner {
+public class CatSpawner {
    private int nextTick;
 
    public CatSpawner() {
@@ -40,16 +40,16 @@ public class CatSpawner implements CustomSpawner {
                Random var5 = var1.random;
                int var6 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
                int var7 = (8 + var5.nextInt(24)) * (var5.nextBoolean() ? -1 : 1);
-               BlockPos var8 = var4.blockPosition().offset(var6, 0, var7);
+               BlockPos var8 = (new BlockPos(var4)).offset(var6, 0, var7);
                if (!var1.hasChunksAt(var8.getX() - 10, var8.getY() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getY() + 10, var8.getZ() + 10)) {
                   return 0;
                } else {
                   if (NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, var1, var8, EntityType.CAT)) {
-                     if (var1.isCloseToVillage(var8, 2)) {
+                     if (var1.closeToVillage(var8, 2)) {
                         return this.spawnInVillage(var1, var8);
                      }
 
-                     if (var1.structureFeatureManager().getStructureAt(var8, true, StructureFeature.SWAMP_HUT).isValid()) {
+                     if (Feature.SWAMP_HUT.isInsideFeature(var1, var8)) {
                         return this.spawnInHut(var1, var8);
                      }
                   }
@@ -75,20 +75,20 @@ public class CatSpawner implements CustomSpawner {
       return 0;
    }
 
-   private int spawnInHut(ServerLevel var1, BlockPos var2) {
+   private int spawnInHut(Level var1, BlockPos var2) {
       boolean var3 = true;
       List var4 = var1.getEntitiesOfClass(Cat.class, (new AABB(var2)).inflate(16.0D, 8.0D, 16.0D));
       return var4.size() < 1 ? this.spawnCat(var2, var1) : 0;
    }
 
-   private int spawnCat(BlockPos var1, ServerLevel var2) {
+   private int spawnCat(BlockPos var1, Level var2) {
       Cat var3 = (Cat)EntityType.CAT.create(var2);
       if (var3 == null) {
          return 0;
       } else {
          var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), MobSpawnType.NATURAL, (SpawnGroupData)null, (CompoundTag)null);
          var3.moveTo(var1, 0.0F, 0.0F);
-         var2.addFreshEntityWithPassengers(var3);
+         var2.addFreshEntity(var3);
          return 1;
       }
    }

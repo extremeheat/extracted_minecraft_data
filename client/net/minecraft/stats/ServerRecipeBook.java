@@ -23,9 +23,11 @@ import org.apache.logging.log4j.Logger;
 
 public class ServerRecipeBook extends RecipeBook {
    private static final Logger LOGGER = LogManager.getLogger();
+   private final RecipeManager manager;
 
-   public ServerRecipeBook() {
+   public ServerRecipeBook(RecipeManager var1) {
       super();
+      this.manager = var1;
    }
 
    public int addRecipes(Collection<Recipe<?>> var1, ServerPlayer var2) {
@@ -69,18 +71,21 @@ public class ServerRecipeBook extends RecipeBook {
    }
 
    private void sendRecipes(ClientboundRecipePacket.State var1, ServerPlayer var2, List<ResourceLocation> var3) {
-      var2.connection.send(new ClientboundRecipePacket(var1, var3, Collections.emptyList(), this.getBookSettings()));
+      var2.connection.send(new ClientboundRecipePacket(var1, var3, Collections.emptyList(), this.guiOpen, this.filteringCraftable, this.furnaceGuiOpen, this.furnaceFilteringCraftable));
    }
 
    public CompoundTag toNbt() {
       CompoundTag var1 = new CompoundTag();
-      this.getBookSettings().write(var1);
+      var1.putBoolean("isGuiOpen", this.guiOpen);
+      var1.putBoolean("isFilteringCraftable", this.filteringCraftable);
+      var1.putBoolean("isFurnaceGuiOpen", this.furnaceGuiOpen);
+      var1.putBoolean("isFurnaceFilteringCraftable", this.furnaceFilteringCraftable);
       ListTag var2 = new ListTag();
       Iterator var3 = this.known.iterator();
 
       while(var3.hasNext()) {
          ResourceLocation var4 = (ResourceLocation)var3.next();
-         var2.add(StringTag.valueOf(var4.toString()));
+         var2.add(new StringTag(var4.toString()));
       }
 
       var1.put("recipes", var2);
@@ -89,41 +94,44 @@ public class ServerRecipeBook extends RecipeBook {
 
       while(var7.hasNext()) {
          ResourceLocation var5 = (ResourceLocation)var7.next();
-         var6.add(StringTag.valueOf(var5.toString()));
+         var6.add(new StringTag(var5.toString()));
       }
 
       var1.put("toBeDisplayed", var6);
       return var1;
    }
 
-   public void fromNbt(CompoundTag var1, RecipeManager var2) {
-      this.setBookSettings(RecipeBookSettings.read(var1));
-      ListTag var3 = var1.getList("recipes", 8);
-      this.loadRecipes(var3, this::add, var2);
-      ListTag var4 = var1.getList("toBeDisplayed", 8);
-      this.loadRecipes(var4, this::addHighlight, var2);
+   public void fromNbt(CompoundTag var1) {
+      this.guiOpen = var1.getBoolean("isGuiOpen");
+      this.filteringCraftable = var1.getBoolean("isFilteringCraftable");
+      this.furnaceGuiOpen = var1.getBoolean("isFurnaceGuiOpen");
+      this.furnaceFilteringCraftable = var1.getBoolean("isFurnaceFilteringCraftable");
+      ListTag var2 = var1.getList("recipes", 8);
+      this.loadRecipes(var2, this::add);
+      ListTag var3 = var1.getList("toBeDisplayed", 8);
+      this.loadRecipes(var3, this::addHighlight);
    }
 
-   private void loadRecipes(ListTag var1, Consumer<Recipe<?>> var2, RecipeManager var3) {
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
-         String var5 = var1.getString(var4);
+   private void loadRecipes(ListTag var1, Consumer<Recipe<?>> var2) {
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         String var4 = var1.getString(var3);
 
          try {
-            ResourceLocation var6 = new ResourceLocation(var5);
-            Optional var7 = var3.byKey(var6);
-            if (!var7.isPresent()) {
-               LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var6);
+            ResourceLocation var5 = new ResourceLocation(var4);
+            Optional var6 = this.manager.byKey(var5);
+            if (!var6.isPresent()) {
+               LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var5);
             } else {
-               var2.accept(var7.get());
+               var2.accept(var6.get());
             }
-         } catch (ResourceLocationException var8) {
-            LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", var5);
+         } catch (ResourceLocationException var7) {
+            LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", var4);
          }
       }
 
    }
 
    public void sendInitialRecipeBook(ServerPlayer var1) {
-      var1.connection.send(new ClientboundRecipePacket(ClientboundRecipePacket.State.INIT, this.known, this.highlight, this.getBookSettings()));
+      var1.connection.send(new ClientboundRecipePacket(ClientboundRecipePacket.State.INIT, this.known, this.highlight, this.guiOpen, this.filteringCraftable, this.furnaceGuiOpen, this.furnaceFilteringCraftable));
    }
 }

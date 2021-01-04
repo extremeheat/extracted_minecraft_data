@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -85,32 +85,33 @@ public class RecipeBookPage {
       this.backButton.visible = this.totalPages > 1 && this.currentPage > 0;
    }
 
-   public void render(PoseStack var1, int var2, int var3, int var4, int var5, float var6) {
+   public void render(int var1, int var2, int var3, int var4, float var5) {
       if (this.totalPages > 1) {
-         String var7 = this.currentPage + 1 + "/" + this.totalPages;
-         int var8 = this.minecraft.font.width(var7);
-         this.minecraft.font.draw(var1, (String)var7, (float)(var2 - var8 / 2 + 73), (float)(var3 + 141), -1);
+         String var6 = this.currentPage + 1 + "/" + this.totalPages;
+         int var7 = this.minecraft.font.width(var6);
+         this.minecraft.font.draw(var6, (float)(var1 - var7 / 2 + 73), (float)(var2 + 141), -1);
       }
 
+      Lighting.turnOff();
       this.hoveredButton = null;
-      Iterator var9 = this.buttons.iterator();
+      Iterator var8 = this.buttons.iterator();
 
-      while(var9.hasNext()) {
-         RecipeButton var10 = (RecipeButton)var9.next();
-         var10.render(var1, var4, var5, var6);
-         if (var10.visible && var10.isHovered()) {
-            this.hoveredButton = var10;
+      while(var8.hasNext()) {
+         RecipeButton var9 = (RecipeButton)var8.next();
+         var9.render(var3, var4, var5);
+         if (var9.visible && var9.isHovered()) {
+            this.hoveredButton = var9;
          }
       }
 
-      this.backButton.render(var1, var4, var5, var6);
-      this.forwardButton.render(var1, var4, var5, var6);
-      this.overlay.render(var1, var4, var5, var6);
+      this.backButton.render(var3, var4, var5);
+      this.forwardButton.render(var3, var4, var5);
+      this.overlay.render(var3, var4, var5);
    }
 
-   public void renderTooltip(PoseStack var1, int var2, int var3) {
+   public void renderTooltip(int var1, int var2) {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
-         this.minecraft.screen.renderComponentTooltip(var1, this.hoveredButton.getTooltipText(this.minecraft.screen), var2, var3);
+         this.minecraft.screen.renderTooltip(this.hoveredButton.getTooltipText(this.minecraft.screen), var1, var2);
       }
 
    }

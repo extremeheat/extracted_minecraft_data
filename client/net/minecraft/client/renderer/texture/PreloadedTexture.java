@@ -1,15 +1,12 @@
 package net.minecraft.client.renderer.texture;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class PreloadedTexture extends SimpleTexture {
-   @Nullable
    private CompletableFuture<SimpleTexture.TextureImage> future;
 
    public PreloadedTexture(ResourceManager var1, ResourceLocation var2, Executor var3) {
@@ -40,15 +37,7 @@ public class PreloadedTexture extends SimpleTexture {
          return SimpleTexture.TextureImage.load(var2, this.location);
       }, Util.backgroundExecutor());
       this.future.thenRunAsync(() -> {
-         var1.register((ResourceLocation)this.location, (AbstractTexture)this);
-      }, executor(var4));
-   }
-
-   private static Executor executor(Executor var0) {
-      return (var1) -> {
-         var0.execute(() -> {
-            RenderSystem.recordRenderCall(var1::run);
-         });
-      };
+         var1.register((ResourceLocation)this.location, (TextureObject)this);
+      }, var4);
    }
 }

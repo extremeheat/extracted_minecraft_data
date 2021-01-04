@@ -1,13 +1,11 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.realmsclient.dto.WorldTemplate;
-import javax.annotation.Nullable;
 import net.minecraft.realms.RealmsScreen;
 
-public abstract class RealmsScreenWithCallback extends RealmsScreen {
+public abstract class RealmsScreenWithCallback<T> extends RealmsScreen {
    public RealmsScreenWithCallback() {
       super();
    }
 
-   protected abstract void callback(@Nullable WorldTemplate var1);
+   abstract void callback(T var1);
 }

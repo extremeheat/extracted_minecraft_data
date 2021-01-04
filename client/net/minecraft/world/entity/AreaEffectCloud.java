@@ -85,9 +85,9 @@ public class AreaEffectCloud extends Entity {
    }
 
    public void refreshDimensions() {
-      double var1 = this.getX();
-      double var3 = this.getY();
-      double var5 = this.getZ();
+      double var1 = this.x;
+      double var3 = this.y;
+      double var5 = this.z;
       super.refreshDimensions();
       this.setPos(var1, var3, var5);
    }
@@ -178,9 +178,9 @@ public class AreaEffectCloud extends Entity {
                      var10 = var9 >> 16 & 255;
                      var11 = var9 >> 8 & 255;
                      var12 = var9 & 255;
-                     this.level.addAlwaysVisibleParticle(var3, this.getX() + (double)var7, this.getY(), this.getZ() + (double)var8, (double)((float)var10 / 255.0F), (double)((float)var11 / 255.0F), (double)((float)var12 / 255.0F));
+                     this.level.addAlwaysVisibleParticle(var3, this.x + (double)var7, this.y, this.z + (double)var8, (double)((float)var10 / 255.0F), (double)((float)var11 / 255.0F), (double)((float)var12 / 255.0F));
                   } else {
-                     this.level.addAlwaysVisibleParticle(var3, this.getX() + (double)var7, this.getY(), this.getZ() + (double)var8, 0.0D, 0.0D, 0.0D);
+                     this.level.addAlwaysVisibleParticle(var3, this.x + (double)var7, this.y, this.z + (double)var8, 0.0D, 0.0D, 0.0D);
                   }
                }
             }
@@ -197,15 +197,15 @@ public class AreaEffectCloud extends Entity {
                   var11 = var10 >> 16 & 255;
                   var12 = var10 >> 8 & 255;
                   int var13 = var10 & 255;
-                  this.level.addAlwaysVisibleParticle(var3, this.getX() + (double)var8, this.getY(), this.getZ() + (double)var28, (double)((float)var11 / 255.0F), (double)((float)var12 / 255.0F), (double)((float)var13 / 255.0F));
+                  this.level.addAlwaysVisibleParticle(var3, this.x + (double)var8, this.y, this.z + (double)var28, (double)((float)var11 / 255.0F), (double)((float)var12 / 255.0F), (double)((float)var13 / 255.0F));
                } else {
-                  this.level.addAlwaysVisibleParticle(var3, this.getX() + (double)var8, this.getY(), this.getZ() + (double)var28, (0.5D - this.random.nextDouble()) * 0.15D, 0.009999999776482582D, (0.5D - this.random.nextDouble()) * 0.15D);
+                  this.level.addAlwaysVisibleParticle(var3, this.x + (double)var8, this.y, this.z + (double)var28, (0.5D - this.random.nextDouble()) * 0.15D, 0.009999999776482582D, (0.5D - this.random.nextDouble()) * 0.15D);
                }
             }
          }
       } else {
          if (this.tickCount >= this.waitTime + this.duration) {
-            this.discard();
+            this.remove();
             return;
          }
 
@@ -221,7 +221,7 @@ public class AreaEffectCloud extends Entity {
          if (this.radiusPerTick != 0.0F) {
             var2 += this.radiusPerTick;
             if (var2 < 0.5F) {
-               this.discard();
+               this.remove();
                return;
             }
 
@@ -268,8 +268,8 @@ public class AreaEffectCloud extends Entity {
                            } while(this.victims.containsKey(var26));
                         } while(!var26.isAffectedByPotions());
 
-                        double var27 = var26.getX() - this.getX();
-                        double var29 = var26.getZ() - this.getZ();
+                        double var27 = var26.x - this.x;
+                        double var29 = var26.z - this.z;
                         var30 = var27 * var27 + var29 * var29;
                      } while(var30 > (double)(var2 * var2));
 
@@ -288,7 +288,7 @@ public class AreaEffectCloud extends Entity {
                      if (this.radiusOnUse != 0.0F) {
                         var2 += this.radiusOnUse;
                         if (var2 < 0.5F) {
-                           this.discard();
+                           this.remove();
                            return;
                         }
 
@@ -298,7 +298,7 @@ public class AreaEffectCloud extends Entity {
                      if (this.durationOnUse != 0) {
                         this.duration += this.durationOnUse;
                         if (this.duration <= 0) {
-                           this.discard();
+                           this.remove();
                            return;
                         }
                      }
@@ -348,10 +348,7 @@ public class AreaEffectCloud extends Entity {
       this.radiusOnUse = var1.getFloat("RadiusOnUse");
       this.radiusPerTick = var1.getFloat("RadiusPerTick");
       this.setRadius(var1.getFloat("Radius"));
-      if (var1.hasUUID("Owner")) {
-         this.ownerUUID = var1.getUUID("Owner");
-      }
-
+      this.ownerUUID = var1.getUUID("OwnerUUID");
       if (var1.contains("Particle", 8)) {
          try {
             this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle"))));
@@ -393,7 +390,7 @@ public class AreaEffectCloud extends Entity {
       var1.putFloat("Radius", this.getRadius());
       var1.putString("Particle", this.getParticle().writeToString());
       if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
+         var1.putUUID("OwnerUUID", this.ownerUUID);
       }
 
       if (this.fixedColor) {

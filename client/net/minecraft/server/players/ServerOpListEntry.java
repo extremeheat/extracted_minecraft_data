@@ -15,7 +15,7 @@ public class ServerOpListEntry extends StoredUserEntry<GameProfile> {
    }
 
    public ServerOpListEntry(JsonObject var1) {
-      super(createGameProfile(var1));
+      super(createGameProfile(var1), var1);
       this.level = var1.has("level") ? var1.get("level").getAsInt() : 0;
       this.bypassesPlayerLimit = var1.has("bypassesPlayerLimit") && var1.get("bypassesPlayerLimit").getAsBoolean();
    }
@@ -32,6 +32,7 @@ public class ServerOpListEntry extends StoredUserEntry<GameProfile> {
       if (this.getUser() != null) {
          var1.addProperty("uuid", ((GameProfile)this.getUser()).getId() == null ? "" : ((GameProfile)this.getUser()).getId().toString());
          var1.addProperty("name", ((GameProfile)this.getUser()).getName());
+         super.serialize(var1);
          var1.addProperty("level", this.level);
          var1.addProperty("bypassesPlayerLimit", this.bypassesPlayerLimit);
       }

@@ -1,8 +1,7 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -12,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +23,7 @@ public class AdvancementTab extends GuiComponent {
    private final Advancement advancement;
    private final DisplayInfo display;
    private final ItemStack icon;
-   private final Component title;
+   private final String title;
    private final AdvancementWidget root;
    private final Map<Advancement, AdvancementWidget> widgets = Maps.newLinkedHashMap();
    private double scrollX;
@@ -46,7 +44,7 @@ public class AdvancementTab extends GuiComponent {
       this.advancement = var5;
       this.display = var6;
       this.icon = var6.getIcon();
-      this.title = var6.getTitle();
+      this.title = var6.getTitle().getColoredString();
       this.root = new AdvancementWidget(this, var1, var5, var6);
       this.addWidget(this.root, var5);
    }
@@ -55,88 +53,74 @@ public class AdvancementTab extends GuiComponent {
       return this.advancement;
    }
 
-   public Component getTitle() {
+   public String getTitle() {
       return this.title;
    }
 
-   public void drawTab(PoseStack var1, int var2, int var3, boolean var4) {
-      this.type.draw(var1, this, var2, var3, var4, this.index);
+   public void drawTab(int var1, int var2, boolean var3) {
+      this.type.draw(this, var1, var2, var3, this.index);
    }
 
    public void drawIcon(int var1, int var2, ItemRenderer var3) {
       this.type.drawIcon(var1, var2, this.index, var3, this.icon);
    }
 
-   public void drawContents(PoseStack var1) {
+   public void drawContents() {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
          this.centered = true;
       }
 
-      RenderSystem.pushMatrix();
-      RenderSystem.enableDepthTest();
-      RenderSystem.translatef(0.0F, 0.0F, 950.0F);
-      RenderSystem.colorMask(false, false, false, false);
-      fill(var1, 4680, 2260, -4680, -2260, -16777216);
-      RenderSystem.colorMask(true, true, true, true);
-      RenderSystem.translatef(0.0F, 0.0F, -950.0F);
-      RenderSystem.depthFunc(518);
-      fill(var1, 234, 113, 0, 0, -16777216);
-      RenderSystem.depthFunc(515);
-      ResourceLocation var2 = this.display.getBackground();
-      if (var2 != null) {
-         this.minecraft.getTextureManager().bind(var2);
+      GlStateManager.depthFunc(518);
+      fill(0, 0, 234, 113, -16777216);
+      GlStateManager.depthFunc(515);
+      ResourceLocation var1 = this.display.getBackground();
+      if (var1 != null) {
+         this.minecraft.getTextureManager().bind(var1);
       } else {
          this.minecraft.getTextureManager().bind(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       }
 
-      int var3 = Mth.floor(this.scrollX);
-      int var4 = Mth.floor(this.scrollY);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      int var2 = Mth.floor(this.scrollX);
+      int var3 = Mth.floor(this.scrollY);
+      int var4 = var2 % 16;
       int var5 = var3 % 16;
-      int var6 = var4 % 16;
 
-      for(int var7 = -1; var7 <= 15; ++var7) {
-         for(int var8 = -1; var8 <= 8; ++var8) {
-            blit(var1, var5 + 16 * var7, var6 + 16 * var8, 0.0F, 0.0F, 16, 16, 16, 16);
+      for(int var6 = -1; var6 <= 15; ++var6) {
+         for(int var7 = -1; var7 <= 8; ++var7) {
+            blit(var4 + 16 * var6, var5 + 16 * var7, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 
-      this.root.drawConnectivity(var1, var3, var4, true);
-      this.root.drawConnectivity(var1, var3, var4, false);
-      this.root.draw(var1, var3, var4);
-      RenderSystem.depthFunc(518);
-      RenderSystem.translatef(0.0F, 0.0F, -950.0F);
-      RenderSystem.colorMask(false, false, false, false);
-      fill(var1, 4680, 2260, -4680, -2260, -16777216);
-      RenderSystem.colorMask(true, true, true, true);
-      RenderSystem.translatef(0.0F, 0.0F, 950.0F);
-      RenderSystem.depthFunc(515);
-      RenderSystem.popMatrix();
+      this.root.drawConnectivity(var2, var3, true);
+      this.root.drawConnectivity(var2, var3, false);
+      this.root.draw(var2, var3);
    }
 
-   public void drawTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.pushMatrix();
-      RenderSystem.translatef(0.0F, 0.0F, 200.0F);
-      fill(var1, 0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
-      boolean var6 = false;
-      int var7 = Mth.floor(this.scrollX);
-      int var8 = Mth.floor(this.scrollY);
-      if (var2 > 0 && var2 < 234 && var3 > 0 && var3 < 113) {
-         Iterator var9 = this.widgets.values().iterator();
+   public void drawTooltips(int var1, int var2, int var3, int var4) {
+      GlStateManager.pushMatrix();
+      GlStateManager.translatef(0.0F, 0.0F, 200.0F);
+      fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
+      boolean var5 = false;
+      int var6 = Mth.floor(this.scrollX);
+      int var7 = Mth.floor(this.scrollY);
+      if (var1 > 0 && var1 < 234 && var2 > 0 && var2 < 113) {
+         Iterator var8 = this.widgets.values().iterator();
 
-         while(var9.hasNext()) {
-            AdvancementWidget var10 = (AdvancementWidget)var9.next();
-            if (var10.isMouseOver(var7, var8, var2, var3)) {
-               var6 = true;
-               var10.drawHover(var1, var7, var8, this.fade, var4, var5);
+         while(var8.hasNext()) {
+            AdvancementWidget var9 = (AdvancementWidget)var8.next();
+            if (var9.isMouseOver(var6, var7, var1, var2)) {
+               var5 = true;
+               var9.drawHover(var6, var7, this.fade, var3, var4);
                break;
             }
          }
       }
 
-      RenderSystem.popMatrix();
-      if (var6) {
+      GlStateManager.popMatrix();
+      if (var5) {
          this.fade = Mth.clamp(this.fade + 0.02F, 0.0F, 0.3F);
       } else {
          this.fade = Mth.clamp(this.fade - 0.04F, 0.0F, 1.0F);

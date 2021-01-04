@@ -13,7 +13,7 @@ public class LookAtPlayerGoal extends Goal {
    protected Entity lookAt;
    protected final float lookDistance;
    private int lookTime;
-   protected final float probability;
+   private final float probability;
    protected final Class<? extends LivingEntity> lookAtType;
    protected final TargetingConditions lookAtContext;
 
@@ -47,11 +47,9 @@ public class LookAtPlayerGoal extends Goal {
          }
 
          if (this.lookAtType == Player.class) {
-            this.lookAt = this.mob.level.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            this.lookAt = this.mob.level.getNearestPlayer(this.lookAtContext, this.mob, this.mob.x, this.mob.y + (double)this.mob.getEyeHeight(), this.mob.z);
          } else {
-            this.lookAt = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0D, (double)this.lookDistance), (var0) -> {
-               return true;
-            }), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            this.lookAt = this.mob.level.getNearestLoadedEntity(this.lookAtType, this.lookAtContext, this.mob, this.mob.x, this.mob.y + (double)this.mob.getEyeHeight(), this.mob.z, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0D, (double)this.lookDistance));
          }
 
          return this.lookAt != null;
@@ -77,7 +75,7 @@ public class LookAtPlayerGoal extends Goal {
    }
 
    public void tick() {
-      this.mob.getLookControl().setLookAt(this.lookAt.getX(), this.lookAt.getEyeY(), this.lookAt.getZ());
+      this.mob.getLookControl().setLookAt(this.lookAt.x, this.lookAt.y + (double)this.lookAt.getEyeHeight(), this.lookAt.z);
       --this.lookTime;
    }
 }

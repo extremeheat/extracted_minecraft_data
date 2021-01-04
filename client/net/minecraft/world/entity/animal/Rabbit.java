@@ -10,22 +10,18 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.JumpControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -40,7 +36,9 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -48,7 +46,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -87,11 +84,11 @@ public class Rabbit extends Animal {
    }
 
    protected float getJumpPower() {
-      if (!this.horizontalCollision && (!this.moveControl.hasWanted() || this.moveControl.getWantedY() <= this.getY() + 0.5D)) {
+      if (!this.horizontalCollision && (!this.moveControl.hasWanted() || this.moveControl.getWantedY() <= this.y + 0.5D)) {
          Path var1 = this.navigation.getPath();
-         if (var1 != null && !var1.isDone()) {
-            Vec3 var2 = var1.getNextEntityPos(this);
-            if (var2.y > this.getY() + 0.5D) {
+         if (var1 != null && var1.getIndex() < var1.getSize()) {
+            Vec3 var2 = var1.currentPos(this);
+            if (var2.y > this.y + 0.5D) {
                return 0.5F;
             }
          }
@@ -167,8 +164,8 @@ public class Rabbit extends Animal {
          if (this.getRabbitType() == 99 && this.jumpDelayTicks == 0) {
             LivingEntity var1 = this.getTarget();
             if (var1 != null && this.distanceToSqr(var1) < 16.0D) {
-               this.facePoint(var1.getX(), var1.getZ());
-               this.moveControl.setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), this.moveControl.getSpeedModifier());
+               this.facePoint(var1.x, var1.z);
+               this.moveControl.setWantedPosition(var1.x, var1.y, var1.z, this.moveControl.getSpeedModifier());
                this.startJumping();
                this.wasOnGround = true;
             }
@@ -179,8 +176,8 @@ public class Rabbit extends Animal {
             if (this.moveControl.hasWanted() && this.jumpDelayTicks == 0) {
                Path var2 = this.navigation.getPath();
                Vec3 var3 = new Vec3(this.moveControl.getWantedX(), this.moveControl.getWantedY(), this.moveControl.getWantedZ());
-               if (var2 != null && !var2.isDone()) {
-                  var3 = var2.getNextEntityPos(this);
+               if (var2 != null && var2.getIndex() < var2.getSize()) {
+                  var3 = var2.currentPos(this);
                }
 
                this.facePoint(var3.x, var3.z);
@@ -194,12 +191,11 @@ public class Rabbit extends Animal {
       this.wasOnGround = this.onGround;
    }
 
-   public boolean canSpawnSprintParticle() {
-      return false;
+   public void updateSprintingState() {
    }
 
    private void facePoint(double var1, double var3) {
-      this.yRot = (float)(Mth.atan2(var3 - this.getZ(), var1 - this.getX()) * 57.2957763671875D) - 90.0F;
+      this.yRot = (float)(Mth.atan2(var3 - this.z, var1 - this.x) * 57.2957763671875D) - 90.0F;
    }
 
    private void enableJumpControl() {
@@ -236,8 +232,10 @@ public class Rabbit extends Animal {
 
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 3.0D).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(3.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.30000001192092896D);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -285,27 +283,27 @@ public class Rabbit extends Animal {
       return this.isInvulnerableTo(var1) ? false : super.hurt(var1, var2);
    }
 
-   private static boolean isTemptingItem(ItemStack var0) {
-      return var0.is(Items.CARROT) || var0.is(Items.GOLDEN_CARROT) || var0.is(Blocks.DANDELION.asItem());
+   private boolean isTemptingItem(Item var1) {
+      return var1 == Items.CARROT || var1 == Items.GOLDEN_CARROT || var1 == Blocks.DANDELION.asItem();
    }
 
-   public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Rabbit var3 = (Rabbit)EntityType.RABBIT.create(var1);
-      int var4 = this.getRandomRabbitType(var1);
+   public Rabbit getBreedOffspring(AgableMob var1) {
+      Rabbit var2 = (Rabbit)EntityType.RABBIT.create(this.level);
+      int var3 = this.getRandomRabbitType(this.level);
       if (this.random.nextInt(20) != 0) {
-         if (var2 instanceof Rabbit && this.random.nextBoolean()) {
-            var4 = ((Rabbit)var2).getRabbitType();
+         if (var1 instanceof Rabbit && this.random.nextBoolean()) {
+            var3 = ((Rabbit)var1).getRabbitType();
          } else {
-            var4 = this.getRabbitType();
+            var3 = this.getRabbitType();
          }
       }
 
-      var3.setRabbitType(var4);
-      return var3;
+      var2.setRabbitType(var3);
+      return var2;
    }
 
    public boolean isFood(ItemStack var1) {
-      return isTemptingItem(var1);
+      return this.isTemptingItem(var1.getItem());
    }
 
    public int getRabbitType() {
@@ -314,13 +312,13 @@ public class Rabbit extends Animal {
 
    public void setRabbitType(int var1) {
       if (var1 == 99) {
-         this.getAttribute(Attributes.ARMOR).setBaseValue(8.0D);
+         this.getAttribute(SharedMonsterAttributes.ARMOR).setBaseValue(8.0D);
          this.goalSelector.addGoal(4, new Rabbit.EvilRabbitAttackGoal(this));
          this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Wolf.class, true));
          if (!this.hasCustomName()) {
-            this.setCustomName(new TranslatableComponent(Util.makeDescriptionId("entity", KILLER_BUNNY)));
+            this.setCustomName(new TranslatableComponent(Util.makeDescriptionId("entity", KILLER_BUNNY), new Object[0]));
          }
       }
 
@@ -328,20 +326,27 @@ public class Rabbit extends Animal {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      Object var8 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       int var6 = this.getRandomRabbitType(var1);
-      if (var4 instanceof Rabbit.RabbitGroupData) {
-         var6 = ((Rabbit.RabbitGroupData)var4).rabbitType;
+      boolean var7 = false;
+      if (var8 instanceof Rabbit.RabbitGroupData) {
+         var6 = ((Rabbit.RabbitGroupData)var8).rabbitType;
+         var7 = true;
       } else {
-         var4 = new Rabbit.RabbitGroupData(var6);
+         var8 = new Rabbit.RabbitGroupData(var6);
       }
 
       this.setRabbitType(var6);
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      if (var7) {
+         this.setAge(-24000);
+      }
+
+      return (SpawnGroupData)var8;
    }
 
    private int getRandomRabbitType(LevelAccessor var1) {
-      Biome var2 = var1.getBiome(this.blockPosition());
+      Biome var2 = var1.getBiome(new BlockPos(this));
       int var3 = this.random.nextInt(100);
       if (var2.getPrecipitation() == Biome.Precipitation.SNOW) {
          return var3 < 80 ? 1 : 3;
@@ -353,8 +358,8 @@ public class Rabbit extends Animal {
    }
 
    public static boolean checkRabbitSpawnRules(EntityType<Rabbit> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
-      BlockState var5 = var1.getBlockState(var3.below());
-      return (var5.is(Blocks.GRASS_BLOCK) || var5.is(Blocks.SNOW) || var5.is(Blocks.SAND)) && var1.getRawBrightness(var3, 0) > 8;
+      Block var5 = var1.getBlockState(var3.below()).getBlock();
+      return (var5 == Blocks.GRASS_BLOCK || var5 == Blocks.SNOW || var5 == Blocks.SAND) && var1.getRawBrightness(var3, 0) > 8;
    }
 
    private boolean wantsMoreFood() {
@@ -363,7 +368,7 @@ public class Rabbit extends Animal {
 
    public void handleEntityEvent(byte var1) {
       if (var1 == 1) {
-         this.spawnSprintParticle();
+         this.doSprintParticleEffect();
          this.jumpDuration = 10;
          this.jumpTicks = 0;
       } else {
@@ -372,13 +377,9 @@ public class Rabbit extends Animal {
 
    }
 
-   public Vec3 getLeashOffset() {
-      return new Vec3(0.0D, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
    // $FF: synthetic method
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    static {
@@ -447,10 +448,10 @@ public class Rabbit extends Animal {
             BlockState var3 = var1.getBlockState(var2);
             Block var4 = var3.getBlock();
             if (this.canRaid && var4 instanceof CarrotBlock) {
-               int var5 = (Integer)var3.getValue(CarrotBlock.AGE);
+               Integer var5 = (Integer)var3.getValue(CarrotBlock.AGE);
                if (var5 == 0) {
                   var1.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
-                  var1.destroyBlock(var2, true, this.rabbit);
+                  var1.destroyBlock(var2, true);
                } else {
                   var1.setBlock(var2, (BlockState)var3.setValue(CarrotBlock.AGE, var5 - 1), 2);
                   var1.levelEvent(2001, var2, Block.getId(var3));
@@ -466,10 +467,12 @@ public class Rabbit extends Animal {
       }
 
       protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         BlockState var3 = var1.getBlockState(var2);
-         if (var3.is(Blocks.FARMLAND) && this.wantsToRaid && !this.canRaid) {
-            var3 = var1.getBlockState(var2.above());
-            if (var3.getBlock() instanceof CarrotBlock && ((CarrotBlock)var3.getBlock()).isMaxAge(var3)) {
+         Block var3 = var1.getBlockState(var2).getBlock();
+         if (var3 == Blocks.FARMLAND && this.wantsToRaid && !this.canRaid) {
+            var2 = var2.above();
+            BlockState var4 = var1.getBlockState(var2);
+            var3 = var4.getBlock();
+            if (var3 instanceof CarrotBlock && ((CarrotBlock)var3).isMaxAge(var4)) {
                this.canRaid = true;
                return true;
             }
@@ -554,11 +557,11 @@ public class Rabbit extends Animal {
       }
    }
 
-   public static class RabbitGroupData extends AgeableMob.AgeableMobGroupData {
+   public static class RabbitGroupData implements SpawnGroupData {
       public final int rabbitType;
 
       public RabbitGroupData(int var1) {
-         super(1.0F);
+         super();
          this.rabbitType = var1;
       }
    }

@@ -43,16 +43,16 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    public int runUpdates(int var1, boolean var2, boolean var3) {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran authomatically on a different thread!"));
+      throw new UnsupportedOperationException("Ran authomatically on a different thread!");
    }
 
    public void onBlockEmissionIncrease(BlockPos var1, int var2) {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran authomatically on a different thread!"));
+      throw new UnsupportedOperationException("Ran authomatically on a different thread!");
    }
 
    public void checkBlock(BlockPos var1) {
       BlockPos var2 = var1.immutable();
-      this.addTask(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ThreadedLevelLightEngine.TaskType.POST_UPDATE, Util.name(() -> {
+      this.addTask(var1.getX() >> 4, var1.getZ() >> 4, ThreadedLevelLightEngine.TaskType.POST_UPDATE, Util.name(() -> {
          super.checkBlock(var2);
       }, () -> {
          return "checkBlock " + var2;
@@ -67,12 +67,12 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
          super.enableLightSources(var1, false);
 
          int var2;
-         for(var2 = this.getMinLightSection(); var2 < this.getMaxLightSection(); ++var2) {
-            super.queueSectionData(LightLayer.BLOCK, SectionPos.of(var1, var2), (DataLayer)null, true);
-            super.queueSectionData(LightLayer.SKY, SectionPos.of(var1, var2), (DataLayer)null, true);
+         for(var2 = -1; var2 < 17; ++var2) {
+            super.queueSectionData(LightLayer.BLOCK, SectionPos.of(var1, var2), (DataLayer)null);
+            super.queueSectionData(LightLayer.SKY, SectionPos.of(var1, var2), (DataLayer)null);
          }
 
-         for(var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); ++var2) {
+         for(var2 = 0; var2 < 16; ++var2) {
             super.updateSectionStatus(SectionPos.of(var1, var2), true);
          }
 
@@ -99,11 +99,11 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       }));
    }
 
-   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3, boolean var4) {
+   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3) {
       this.addTask(var2.x(), var2.z(), () -> {
          return 0;
       }, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
-         super.queueSectionData(var1, var2, var3, var4);
+         super.queueSectionData(var1, var2, var3);
       }, () -> {
          return "queueData " + var2;
       }));
@@ -139,11 +139,10 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
          LevelChunkSection[] var4 = var1.getSections();
 
-         for(int var5 = 0; var5 < var1.getSectionsCount(); ++var5) {
+         for(int var5 = 0; var5 < 16; ++var5) {
             LevelChunkSection var6 = var4[var5];
             if (!LevelChunkSection.isEmpty(var6)) {
-               int var7 = this.levelHeightAccessor.getSectionYFromSectionIndex(var5);
-               super.updateSectionStatus(SectionPos.of(var3, var7), false);
+               super.updateSectionStatus(SectionPos.of(var3, var5), false);
             }
          }
 

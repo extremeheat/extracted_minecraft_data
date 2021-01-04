@@ -1,14 +1,12 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 
 public class NopProcessor extends StructureProcessor {
-   public static final Codec<NopProcessor> CODEC = Codec.unit(() -> {
-      return INSTANCE;
-   });
    public static final NopProcessor INSTANCE = new NopProcessor();
 
    private NopProcessor() {
@@ -16,11 +14,15 @@ public class NopProcessor extends StructureProcessor {
    }
 
    @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      return var5;
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, StructureTemplate.StructureBlockInfo var3, StructureTemplate.StructureBlockInfo var4, StructurePlaceSettings var5) {
+      return var4;
    }
 
-   protected StructureProcessorType<?> getType() {
+   protected StructureProcessorType getType() {
       return StructureProcessorType.NOP;
+   }
+
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.emptyMap());
    }
 }

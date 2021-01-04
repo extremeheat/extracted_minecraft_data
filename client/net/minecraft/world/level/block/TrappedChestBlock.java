@@ -8,21 +8,17 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class TrappedChestBlock extends ChestBlock {
-   public TrappedChestBlock(BlockBehaviour.Properties var1) {
-      super(var1, () -> {
-         return BlockEntityType.TRAPPED_CHEST;
-      });
+   public TrappedChestBlock(Block.Properties var1) {
+      super(var1);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TrappedChestBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new TrappedChestBlockEntity();
    }
 
    protected Stat<ResourceLocation> getOpenChestStat() {

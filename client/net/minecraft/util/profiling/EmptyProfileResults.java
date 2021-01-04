@@ -34,4 +34,8 @@ public class EmptyProfileResults implements ProfileResults {
    public int getEndTimeTicks() {
       return 0;
    }
+
+   public String getProfilerResults() {
+      return "";
+   }
 }

@@ -16,11 +16,11 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.players.UserBanList;
 
 public class PardonCommand {
-   private static final SimpleCommandExceptionType ERROR_NOT_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardon.failed"));
+   private static final SimpleCommandExceptionType ERROR_NOT_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardon.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon").requires((var0x) -> {
-         return var0x.hasPermission(3);
+         return var0x.getServer().getPlayerList().getIpBans().isEnabled() && var0x.hasPermission(3);
       })).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
          return SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getBans().getUserList(), var1);
       }).executes((var0x) -> {

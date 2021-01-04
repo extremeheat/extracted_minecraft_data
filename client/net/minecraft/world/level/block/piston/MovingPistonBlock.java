@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -17,9 +16,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -29,7 +25,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -38,27 +33,22 @@ public class MovingPistonBlock extends BaseEntityBlock {
    public static final DirectionProperty FACING;
    public static final EnumProperty<PistonType> TYPE;
 
-   public MovingPistonBlock(BlockBehaviour.Properties var1) {
+   public MovingPistonBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, PistonType.DEFAULT));
    }
 
    @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
+   public BlockEntity newBlockEntity(BlockGetter var1) {
       return null;
    }
 
-   public static BlockEntity newMovingBlockEntity(BlockPos var0, BlockState var1, BlockState var2, Direction var3, boolean var4, boolean var5) {
-      return new PistonMovingBlockEntity(var0, var1, var2, var3, var4, var5);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
+   public static BlockEntity newMovingBlockEntity(BlockState var0, Direction var1, boolean var2, boolean var3) {
+      return new PistonMovingBlockEntity(var0, var1, var2, var3);
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof PistonMovingBlockEntity) {
             ((PistonMovingBlockEntity)var6).finalTick();
@@ -76,17 +66,29 @@ public class MovingPistonBlock extends BaseEntityBlock {
 
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean canOcclude(BlockState var1) {
+      return false;
+   }
+
+   public boolean isRedstoneConductor(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return false;
+   }
+
+   public boolean isViewBlocking(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return false;
+   }
+
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (!var2.isClientSide && var2.getBlockEntity(var3) == null) {
          var2.removeBlock(var3, false);
-         return InteractionResult.CONSUME;
+         return true;
       } else {
-         return InteractionResult.PASS;
+         return false;
       }
    }
 
    public List<ItemStack> getDrops(BlockState var1, LootContext.Builder var2) {
-      PistonMovingBlockEntity var3 = this.getBlockEntity(var2.getLevel(), new BlockPos((Vec3)var2.getParameter(LootContextParams.ORIGIN)));
+      PistonMovingBlockEntity var3 = this.getBlockEntity(var2.getLevel(), (BlockPos)var2.getParameter(LootContextParams.BLOCK_POS));
       return var3 == null ? Collections.emptyList() : var3.getMovedState().getDrops(var2);
    }
 

@@ -12,8 +12,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -46,14 +44,17 @@ public class Endermite extends Monster {
    }
 
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.13F;
+      return 0.1F;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 8.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.ATTACK_DAMAGE, 2.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(8.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2.0D);
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -95,7 +96,7 @@ public class Endermite extends Monster {
       super.setYBodyRot(var1);
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return 0.1D;
    }
 
@@ -111,7 +112,7 @@ public class Endermite extends Monster {
       super.aiStep();
       if (this.level.isClientSide) {
          for(int var1 = 0; var1 < 2; ++var1) {
-            this.level.addParticle(ParticleTypes.PORTAL, this.getRandomX(0.5D), this.getRandomY(), this.getRandomZ(0.5D), (this.random.nextDouble() - 0.5D) * 2.0D, -this.random.nextDouble(), (this.random.nextDouble() - 0.5D) * 2.0D);
+            this.level.addParticle(ParticleTypes.PORTAL, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), this.y + this.random.nextDouble() * (double)this.getBbHeight(), this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), (this.random.nextDouble() - 0.5D) * 2.0D, -this.random.nextDouble(), (this.random.nextDouble() - 0.5D) * 2.0D);
          }
       } else {
          if (!this.isPersistenceRequired()) {
@@ -119,7 +120,7 @@ public class Endermite extends Monster {
          }
 
          if (this.life >= 2400) {
-            this.discard();
+            this.remove();
          }
       }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import com.mojang.datafixers.Dynamic;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -19,12 +18,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.village.ReputationEventType;
@@ -36,14 +33,12 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import org.apache.logging.log4j.Logger;
 
 public class ZombieVillager extends Zombie implements VillagerDataHolder {
    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID;
@@ -67,12 +62,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      DataResult var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
-      Logger var10001 = LOGGER;
-      var10001.getClass();
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("VillagerData", var1x);
-      });
+      var1.put("VillagerData", (Tag)this.getVillagerData().serialize(NbtOps.INSTANCE));
       if (this.tradeOffers != null) {
          var1.put("Offers", this.tradeOffers);
       }
@@ -92,10 +82,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("VillagerData", 10)) {
-         DataResult var2 = VillagerData.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("VillagerData")));
-         Logger var10001 = LOGGER;
-         var10001.getClass();
-         var2.resultOrPartial(var10001::error).ifPresent(this::setVillagerData);
+         this.setVillagerData(new VillagerData(new Dynamic(NbtOps.INSTANCE, var1.get("VillagerData"))));
       }
 
       if (var1.contains("Offers", 10)) {
@@ -128,24 +115,20 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       super.tick();
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.GOLDEN_APPLE)) {
-         if (this.hasEffect(MobEffects.WEAKNESS)) {
-            if (!var1.getAbilities().instabuild) {
-               var3.shrink(1);
-            }
-
-            if (!this.level.isClientSide) {
-               this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
-            }
-
-            return InteractionResult.SUCCESS;
-         } else {
-            return InteractionResult.CONSUME;
+      if (var3.getItem() == Items.GOLDEN_APPLE && this.hasEffect(MobEffects.WEAKNESS)) {
+         if (!var1.abilities.instabuild) {
+            var3.shrink(1);
          }
+
+         if (!this.level.isClientSide) {
+            this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
+         }
+
+         return true;
       } else {
-         return super.mobInteract(var1, var2);
+         return false;
       }
    }
 
@@ -154,7 +137,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    public boolean removeWhenFarAway(double var1) {
-      return !this.isConverting() && this.villagerXp == 0;
+      return !this.isConverting();
    }
 
    public boolean isConverting() {
@@ -173,7 +156,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    public void handleEntityEvent(byte var1) {
       if (var1 == 16) {
          if (!this.isSilent()) {
-            this.level.playLocalSound(this.getX(), this.getEyeY(), this.getZ(), SoundEvents.ZOMBIE_VILLAGER_CURE, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
+            this.level.playLocalSound(this.x + 0.5D, this.y + 0.5D, this.z + 0.5D, SoundEvents.ZOMBIE_VILLAGER_CURE, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
          }
 
       } else {
@@ -182,25 +165,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    private void finishConversion(ServerLevel var1) {
-      Villager var2 = (Villager)this.convertTo(EntityType.VILLAGER, false);
-      EquipmentSlot[] var3 = EquipmentSlot.values();
-      int var4 = var3.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         EquipmentSlot var6 = var3[var5];
-         ItemStack var7 = this.getItemBySlot(var6);
-         if (!var7.isEmpty()) {
-            if (EnchantmentHelper.hasBindingCurse(var7)) {
-               var2.setSlot(var6.getIndex() + 300, var7);
-            } else {
-               double var8 = (double)this.getEquipmentDropChance(var6);
-               if (var8 > 1.0D) {
-                  this.spawnAtLocation(var7);
-               }
-            }
-         }
-      }
-
+      Villager var2 = (Villager)EntityType.VILLAGER.create(var1);
+      var2.copyPosition(this);
       var2.setVillagerData(this.getVillagerData());
       if (this.gossips != null) {
          var2.setGossips(this.gossips);
@@ -211,20 +177,29 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       }
 
       var2.setVillagerXp(this.villagerXp);
-      var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2.blockPosition()), MobSpawnType.CONVERSION, (SpawnGroupData)null, (CompoundTag)null);
+      var2.finalizeSpawn(var1, var1.getCurrentDifficultyAt(new BlockPos(var2)), MobSpawnType.CONVERSION, (SpawnGroupData)null, (CompoundTag)null);
+      if (this.isBaby()) {
+         var2.setAge(-24000);
+      }
+
+      this.remove();
+      var2.setNoAi(this.isNoAi());
+      if (this.hasCustomName()) {
+         var2.setCustomName(this.getCustomName());
+         var2.setCustomNameVisible(this.isCustomNameVisible());
+      }
+
+      var1.addFreshEntity(var2);
       if (this.conversionStarter != null) {
-         Player var10 = var1.getPlayerByUUID(this.conversionStarter);
-         if (var10 instanceof ServerPlayer) {
-            CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger((ServerPlayer)var10, this, var2);
-            var1.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, var10, var2);
+         Player var3 = var1.getPlayerByUUID(this.conversionStarter);
+         if (var3 instanceof ServerPlayer) {
+            CriteriaTriggers.CURED_ZOMBIE_VILLAGER.trigger((ServerPlayer)var3, this, var2);
+            var1.onReputationEvent(ReputationEventType.ZOMBIE_VILLAGER_CURED, var3, var2);
          }
       }
 
       var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      if (!this.isSilent()) {
-         var1.levelEvent((Player)null, 1027, this.blockPosition(), 0);
-      }
-
+      var1.levelEvent((Player)null, 1027, new BlockPos(this), 0);
    }
 
    private int getConversionProgress() {
@@ -233,11 +208,11 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          int var2 = 0;
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
 
-         for(int var4 = (int)this.getX() - 4; var4 < (int)this.getX() + 4 && var2 < 14; ++var4) {
-            for(int var5 = (int)this.getY() - 4; var5 < (int)this.getY() + 4 && var2 < 14; ++var5) {
-               for(int var6 = (int)this.getZ() - 4; var6 < (int)this.getZ() + 4 && var2 < 14; ++var6) {
-                  BlockState var7 = this.level.getBlockState(var3.set(var4, var5, var6));
-                  if (var7.is(Blocks.IRON_BARS) || var7.getBlock() instanceof BedBlock) {
+         for(int var4 = (int)this.x - 4; var4 < (int)this.x + 4 && var2 < 14; ++var4) {
+            for(int var5 = (int)this.y - 4; var5 < (int)this.y + 4 && var2 < 14; ++var5) {
+               for(int var6 = (int)this.z - 4; var6 < (int)this.z + 4 && var2 < 14; ++var6) {
+                  Block var7 = this.level.getBlockState(var3.set(var4, var5, var6)).getBlock();
+                  if (var7 == Blocks.IRON_BARS || var7 instanceof BedBlock) {
                      if (this.random.nextFloat() < 0.3F) {
                         ++var1;
                      }
@@ -285,8 +260,8 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiomeName(this.blockPosition()))));
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(new BlockPos(this)))));
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 

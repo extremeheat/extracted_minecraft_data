@@ -20,7 +20,7 @@ public class ClientboundPlayerCombatPacket implements Packet<ClientGamePacketLis
    }
 
    public ClientboundPlayerCombatPacket(CombatTracker var1, ClientboundPlayerCombatPacket.Event var2) {
-      this(var1, var2, TextComponent.EMPTY);
+      this(var1, var2, new TextComponent(""));
    }
 
    public ClientboundPlayerCombatPacket(CombatTracker var1, ClientboundPlayerCombatPacket.Event var2, Component var3) {

@@ -2,7 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class WaterAvoidingRandomStrollGoal extends RandomStrollGoal {
@@ -20,10 +20,10 @@ public class WaterAvoidingRandomStrollGoal extends RandomStrollGoal {
    @Nullable
    protected Vec3 getPosition() {
       if (this.mob.isInWaterOrBubble()) {
-         Vec3 var1 = LandRandomPos.getPos(this.mob, 15, 7);
+         Vec3 var1 = RandomPos.getLandPos(this.mob, 15, 7);
          return var1 == null ? super.getPosition() : var1;
       } else {
-         return this.mob.getRandom().nextFloat() >= this.probability ? LandRandomPos.getPos(this.mob, 10, 7) : super.getPosition();
+         return this.mob.getRandom().nextFloat() >= this.probability ? RandomPos.getLandPos(this.mob, 10, 7) : super.getPosition();
       }
    }
 }

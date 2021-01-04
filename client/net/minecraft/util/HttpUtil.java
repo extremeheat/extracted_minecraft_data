@@ -36,59 +36,61 @@ public class HttpUtil {
          InputStream var7 = null;
          DataOutputStream var8 = null;
          if (var4 != null) {
-            var4.progressStart(new TranslatableComponent("resourcepack.downloading"));
-            var4.progressStage(new TranslatableComponent("resourcepack.requesting"));
+            var4.progressStart(new TranslatableComponent("resourcepack.downloading", new Object[0]));
+            var4.progressStage(new TranslatableComponent("resourcepack.requesting", new Object[0]));
          }
 
          try {
-            byte[] var9 = new byte[4096];
-            URL var24 = new URL(var1);
-            var6 = (HttpURLConnection)var24.openConnection(var5);
-            var6.setInstanceFollowRedirects(true);
-            float var11 = 0.0F;
-            float var12 = (float)var2.entrySet().size();
-            Iterator var13 = var2.entrySet().iterator();
+            try {
+               byte[] var9 = new byte[4096];
+               URL var24 = new URL(var1);
+               var6 = (HttpURLConnection)var24.openConnection(var5);
+               var6.setInstanceFollowRedirects(true);
+               float var11 = 0.0F;
+               float var12 = (float)var2.entrySet().size();
+               Iterator var13 = var2.entrySet().iterator();
 
-            while(var13.hasNext()) {
-               Entry var14 = (Entry)var13.next();
-               var6.setRequestProperty((String)var14.getKey(), (String)var14.getValue());
-               if (var4 != null) {
-                  var4.progressStagePercentage((int)(++var11 / var12 * 100.0F));
+               while(var13.hasNext()) {
+                  Entry var14 = (Entry)var13.next();
+                  var6.setRequestProperty((String)var14.getKey(), (String)var14.getValue());
+                  if (var4 != null) {
+                     var4.progressStagePercentage((int)(++var11 / var12 * 100.0F));
+                  }
                }
-            }
 
-            var7 = var6.getInputStream();
-            var12 = (float)var6.getContentLength();
-            int var25 = var6.getContentLength();
-            if (var4 != null) {
-               var4.progressStage(new TranslatableComponent("resourcepack.progress", new Object[]{String.format(Locale.ROOT, "%.2f", var12 / 1000.0F / 1000.0F)}));
-            }
+               var7 = var6.getInputStream();
+               var12 = (float)var6.getContentLength();
+               int var25 = var6.getContentLength();
+               if (var4 != null) {
+                  var4.progressStage(new TranslatableComponent("resourcepack.progress", new Object[]{String.format(Locale.ROOT, "%.2f", var12 / 1000.0F / 1000.0F)}));
+               }
 
-            if (var0.exists()) {
-               long var26 = var0.length();
-               if (var26 == (long)var25) {
+               if (var0.exists()) {
+                  long var26 = var0.length();
+                  if (var26 == (long)var25) {
+                     if (var4 != null) {
+                        var4.stop();
+                     }
+
+                     Object var16 = null;
+                     return var16;
+                  }
+
+                  LOGGER.warn("Deleting {} as it does not match what we currently have ({} vs our {}).", var0, var25, var26);
+                  FileUtils.deleteQuietly(var0);
+               } else if (var0.getParentFile() != null) {
+                  var0.getParentFile().mkdirs();
+               }
+
+               var8 = new DataOutputStream(new FileOutputStream(var0));
+               if (var3 > 0 && var12 > (float)var3) {
                   if (var4 != null) {
                      var4.stop();
                   }
 
-                  Object var16 = null;
-                  return var16;
+                  throw new IOException("Filesize is bigger than maximum allowed (file is " + var11 + ", limit is " + var3 + ")");
                }
 
-               LOGGER.warn("Deleting {} as it does not match what we currently have ({} vs our {}).", var0, var25, var26);
-               FileUtils.deleteQuietly(var0);
-            } else if (var0.getParentFile() != null) {
-               var0.getParentFile().mkdirs();
-            }
-
-            var8 = new DataOutputStream(new FileOutputStream(var0));
-            if (var3 > 0 && var12 > (float)var3) {
-               if (var4 != null) {
-                  var4.stop();
-               }
-
-               throw new IOException("Filesize is bigger than maximum allowed (file is " + var11 + ", limit is " + var3 + ")");
-            } else {
                int var27;
                while((var27 = var7.read(var9)) >= 0) {
                   var11 += (float)var27;
@@ -119,24 +121,24 @@ public class HttpUtil {
 
                if (var4 != null) {
                   var4.stop();
+                  return null;
+               }
+            } catch (Throwable var22) {
+               var22.printStackTrace();
+               if (var6 != null) {
+                  InputStream var10 = var6.getErrorStream();
+
+                  try {
+                     LOGGER.error(IOUtils.toString(var10));
+                  } catch (IOException var21) {
+                     var21.printStackTrace();
+                  }
                }
 
-               return null;
-            }
-         } catch (Throwable var22) {
-            var22.printStackTrace();
-            if (var6 != null) {
-               InputStream var10 = var6.getErrorStream();
-
-               try {
-                  LOGGER.error(IOUtils.toString(var10));
-               } catch (IOException var21) {
-                  var21.printStackTrace();
+               if (var4 != null) {
+                  var4.stop();
+                  return null;
                }
-            }
-
-            if (var4 != null) {
-               var4.stop();
             }
 
             return null;

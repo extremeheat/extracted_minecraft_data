@@ -5,17 +5,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -30,7 +28,7 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
    public static final BooleanProperty WATERLOGGED;
    protected static final VoxelShape SHAPE;
 
-   public ConduitBlock(BlockBehaviour.Properties var1) {
+   public ConduitBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, true));
    }
@@ -39,13 +37,8 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
       var1.add(WATERLOGGED);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ConduitBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.CONDUIT, var1.isClientSide ? ConduitBlockEntity::clientTick : ConduitBlockEntity::serverTick);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new ConduitBlockEntity();
    }
 
    public RenderShape getRenderShape(BlockState var1) {
@@ -82,6 +75,10 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
       return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var2.is(FluidTags.WATER) && var2.getAmount() == 8);
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {

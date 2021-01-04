@@ -9,13 +9,10 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
 
-public class PatrolSpawner implements CustomSpawner {
+public class PatrolSpawner {
    private int nextTick;
 
    public PatrolSpawner() {
@@ -24,8 +21,6 @@ public class PatrolSpawner implements CustomSpawner {
 
    public int tick(ServerLevel var1, boolean var2, boolean var3) {
       if (!var2) {
-         return 0;
-      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_DO_PATROL_SPAWNING)) {
          return 0;
       } else {
          Random var4 = var1.random;
@@ -46,12 +41,13 @@ public class PatrolSpawner implements CustomSpawner {
                      Player var8 = (Player)var1.players().get(var4.nextInt(var7));
                      if (var8.isSpectator()) {
                         return 0;
-                     } else if (var1.isCloseToVillage(var8.blockPosition(), 2)) {
+                     } else if (var1.isVillage(var8.getCommandSenderBlockPosition())) {
                         return 0;
                      } else {
                         int var9 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
                         int var10 = (24 + var4.nextInt(24)) * (var4.nextBoolean() ? -1 : 1);
-                        BlockPos.MutableBlockPos var11 = var8.blockPosition().mutable().move(var9, 0, var10);
+                        BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+                        var11.set(var8.x, var8.y, var8.z).move(var9, 0, var10);
                         if (!var1.hasChunksAt(var11.getX() - 10, var11.getY() - 10, var11.getZ() - 10, var11.getX() + 10, var11.getY() + 10, var11.getZ() + 10)) {
                            return 0;
                         } else {
@@ -91,23 +87,20 @@ public class PatrolSpawner implements CustomSpawner {
       }
    }
 
-   private boolean spawnPatrolMember(ServerLevel var1, BlockPos var2, Random var3, boolean var4) {
-      BlockState var5 = var1.getBlockState(var2);
-      if (!NaturalSpawner.isValidEmptySpawnBlock(var1, var2, var5, var5.getFluidState(), EntityType.PILLAGER)) {
-         return false;
-      } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, var1, MobSpawnType.PATROL, var2, var3)) {
+   private boolean spawnPatrolMember(Level var1, BlockPos var2, Random var3, boolean var4) {
+      if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, var1, MobSpawnType.PATROL, var2, var3)) {
          return false;
       } else {
-         PatrollingMonster var6 = (PatrollingMonster)EntityType.PILLAGER.create(var1);
-         if (var6 != null) {
+         PatrollingMonster var5 = (PatrollingMonster)EntityType.PILLAGER.create(var1);
+         if (var5 != null) {
             if (var4) {
-               var6.setPatrolLeader(true);
-               var6.findPatrolTarget();
+               var5.setPatrolLeader(true);
+               var5.findPatrolTarget();
             }
 
-            var6.setPos((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-            var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2), MobSpawnType.PATROL, (SpawnGroupData)null, (CompoundTag)null);
-            var1.addFreshEntityWithPassengers(var6);
+            var5.setPos((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
+            var5.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2), MobSpawnType.PATROL, (SpawnGroupData)null, (CompoundTag)null);
+            var1.addFreshEntity(var5);
             return true;
          } else {
             return false;

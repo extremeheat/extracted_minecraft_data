@@ -7,8 +7,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Matrix4f;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ChainedJsonException;
 import net.minecraft.server.packs.resources.Resource;
@@ -60,23 +60,23 @@ public class PostChain implements AutoCloseable {
       try {
          var3 = this.resourceManager.getResource(var2);
          JsonObject var4 = GsonHelper.parse((Reader)(new InputStreamReader(var3.getInputStream(), StandardCharsets.UTF_8)));
+         int var6;
          Iterator var7;
          JsonElement var8;
          ChainedJsonException var10;
          JsonArray var20;
-         int var21;
          if (GsonHelper.isArrayNode(var4, "targets")) {
             var20 = var4.getAsJsonArray("targets");
-            var21 = 0;
+            var6 = 0;
 
-            for(var7 = var20.iterator(); var7.hasNext(); ++var21) {
+            for(var7 = var20.iterator(); var7.hasNext(); ++var6) {
                var8 = (JsonElement)var7.next();
 
                try {
                   this.parseTargetNode(var8);
                } catch (Exception var17) {
                   var10 = ChainedJsonException.forException(var17);
-                  var10.prependJsonKey("targets[" + var21 + "]");
+                  var10.prependJsonKey("targets[" + var6 + "]");
                   throw var10;
                }
             }
@@ -84,31 +84,24 @@ public class PostChain implements AutoCloseable {
 
          if (GsonHelper.isArrayNode(var4, "passes")) {
             var20 = var4.getAsJsonArray("passes");
-            var21 = 0;
+            var6 = 0;
 
-            for(var7 = var20.iterator(); var7.hasNext(); ++var21) {
+            for(var7 = var20.iterator(); var7.hasNext(); ++var6) {
                var8 = (JsonElement)var7.next();
 
                try {
                   this.parsePassNode(var1, var8);
                } catch (Exception var16) {
                   var10 = ChainedJsonException.forException(var16);
-                  var10.prependJsonKey("passes[" + var21 + "]");
+                  var10.prependJsonKey("passes[" + var6 + "]");
                   throw var10;
                }
             }
          }
       } catch (Exception var18) {
-         String var5;
-         if (var3 != null) {
-            var5 = " (" + var3.getSourceName() + ")";
-         } else {
-            var5 = "";
-         }
-
-         ChainedJsonException var6 = ChainedJsonException.forException(var18);
-         var6.setFilenameAndFlush(var2.getPath() + var5);
-         throw var6;
+         ChainedJsonException var5 = ChainedJsonException.forException(var18);
+         var5.setFilenameAndFlush(var2.getPath());
+         throw var5;
       } finally {
          IOUtils.closeQuietly(var3);
       }
@@ -154,75 +147,59 @@ public class PostChain implements AutoCloseable {
 
                try {
                   JsonObject var14 = GsonHelper.convertToJsonObject(var13, "auxtarget");
-                  String var38 = GsonHelper.getAsString(var14, "name");
+                  String var36 = GsonHelper.getAsString(var14, "name");
                   String var16 = GsonHelper.getAsString(var14, "id");
-                  boolean var17;
-                  String var18;
-                  if (var16.endsWith(":depth")) {
-                     var17 = true;
-                     var18 = var16.substring(0, var16.lastIndexOf(58));
-                  } else {
-                     var17 = false;
-                     var18 = var16;
-                  }
-
-                  RenderTarget var19 = this.getRenderTarget(var18);
-                  if (var19 == null) {
-                     if (var17) {
-                        throw new ChainedJsonException("Render target '" + var18 + "' can't be used as depth buffer");
-                     }
-
-                     ResourceLocation var20 = new ResourceLocation("textures/effect/" + var18 + ".png");
-                     Resource var21 = null;
+                  RenderTarget var17 = this.getRenderTarget(var16);
+                  if (var17 == null) {
+                     ResourceLocation var18 = new ResourceLocation("textures/effect/" + var16 + ".png");
+                     Resource var19 = null;
 
                      try {
-                        var21 = this.resourceManager.getResource(var20);
-                     } catch (FileNotFoundException var31) {
-                        throw new ChainedJsonException("Render target or texture '" + var18 + "' does not exist");
+                        var19 = this.resourceManager.getResource(var18);
+                     } catch (FileNotFoundException var29) {
+                        throw new ChainedJsonException("Render target or texture '" + var16 + "' does not exist");
                      } finally {
-                        IOUtils.closeQuietly(var21);
+                        IOUtils.closeQuietly(var19);
                      }
 
-                     var1.bind(var20);
-                     AbstractTexture var22 = var1.getTexture(var20);
-                     int var23 = GsonHelper.getAsInt(var14, "width");
-                     int var24 = GsonHelper.getAsInt(var14, "height");
-                     boolean var25 = GsonHelper.getAsBoolean(var14, "bilinear");
-                     if (var25) {
-                        RenderSystem.texParameter(3553, 10241, 9729);
-                        RenderSystem.texParameter(3553, 10240, 9729);
+                     var1.bind(var18);
+                     TextureObject var20 = var1.getTexture(var18);
+                     int var21 = GsonHelper.getAsInt(var14, "width");
+                     int var22 = GsonHelper.getAsInt(var14, "height");
+                     boolean var23 = GsonHelper.getAsBoolean(var14, "bilinear");
+                     if (var23) {
+                        GlStateManager.texParameter(3553, 10241, 9729);
+                        GlStateManager.texParameter(3553, 10240, 9729);
                      } else {
-                        RenderSystem.texParameter(3553, 10241, 9728);
-                        RenderSystem.texParameter(3553, 10240, 9728);
+                        GlStateManager.texParameter(3553, 10241, 9728);
+                        GlStateManager.texParameter(3553, 10240, 9728);
                      }
 
-                     var9.addAuxAsset(var38, var22::getId, var23, var24);
-                  } else if (var17) {
-                     var9.addAuxAsset(var38, var19::getDepthTextureId, var19.width, var19.height);
+                     var9.addAuxAsset(var36, var20.getId(), var21, var22);
                   } else {
-                     var9.addAuxAsset(var38, var19::getColorTextureId, var19.width, var19.height);
+                     var9.addAuxAsset(var36, var17, var17.width, var17.height);
                   }
-               } catch (Exception var33) {
-                  ChainedJsonException var15 = ChainedJsonException.forException(var33);
+               } catch (Exception var31) {
+                  ChainedJsonException var15 = ChainedJsonException.forException(var31);
                   var15.prependJsonKey("auxtargets[" + var11 + "]");
                   throw var15;
                }
             }
          }
 
-         JsonArray var34 = GsonHelper.getAsJsonArray(var3, "uniforms", (JsonArray)null);
-         if (var34 != null) {
-            int var35 = 0;
+         JsonArray var32 = GsonHelper.getAsJsonArray(var3, "uniforms", (JsonArray)null);
+         if (var32 != null) {
+            int var33 = 0;
 
-            for(Iterator var36 = var34.iterator(); var36.hasNext(); ++var35) {
-               JsonElement var37 = (JsonElement)var36.next();
+            for(Iterator var34 = var32.iterator(); var34.hasNext(); ++var33) {
+               JsonElement var35 = (JsonElement)var34.next();
 
                try {
-                  this.parseUniformNode(var37);
-               } catch (Exception var30) {
-                  ChainedJsonException var39 = ChainedJsonException.forException(var30);
-                  var39.prependJsonKey("uniforms[" + var35 + "]");
-                  throw var39;
+                  this.parseUniformNode(var35);
+               } catch (Exception var28) {
+                  ChainedJsonException var37 = ChainedJsonException.forException(var28);
+                  var37.prependJsonKey("uniforms[" + var33 + "]");
+                  throw var37;
                }
             }
          }

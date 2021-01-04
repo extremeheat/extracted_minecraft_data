@@ -1,5 +1,6 @@
 package net.minecraft.advancements;
 
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -11,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -87,17 +87,17 @@ public class DisplayInfo {
       return this.hidden;
    }
 
-   public static DisplayInfo fromJson(JsonObject var0) {
-      MutableComponent var1 = Component.Serializer.fromJson(var0.get("title"));
-      MutableComponent var2 = Component.Serializer.fromJson(var0.get("description"));
-      if (var1 != null && var2 != null) {
-         ItemStack var3 = getIcon(GsonHelper.getAsJsonObject(var0, "icon"));
-         ResourceLocation var4 = var0.has("background") ? new ResourceLocation(GsonHelper.getAsString(var0, "background")) : null;
-         FrameType var5 = var0.has("frame") ? FrameType.byName(GsonHelper.getAsString(var0, "frame")) : FrameType.TASK;
-         boolean var6 = GsonHelper.getAsBoolean(var0, "show_toast", true);
-         boolean var7 = GsonHelper.getAsBoolean(var0, "announce_to_chat", true);
-         boolean var8 = GsonHelper.getAsBoolean(var0, "hidden", false);
-         return new DisplayInfo(var3, var1, var2, var4, var5, var6, var7, var8);
+   public static DisplayInfo fromJson(JsonObject var0, JsonDeserializationContext var1) {
+      Component var2 = (Component)GsonHelper.getAsObject(var0, "title", var1, Component.class);
+      Component var3 = (Component)GsonHelper.getAsObject(var0, "description", var1, Component.class);
+      if (var2 != null && var3 != null) {
+         ItemStack var4 = getIcon(GsonHelper.getAsJsonObject(var0, "icon"));
+         ResourceLocation var5 = var0.has("background") ? new ResourceLocation(GsonHelper.getAsString(var0, "background")) : null;
+         FrameType var6 = var0.has("frame") ? FrameType.byName(GsonHelper.getAsString(var0, "frame")) : FrameType.TASK;
+         boolean var7 = GsonHelper.getAsBoolean(var0, "show_toast", true);
+         boolean var8 = GsonHelper.getAsBoolean(var0, "announce_to_chat", true);
+         boolean var9 = GsonHelper.getAsBoolean(var0, "hidden", false);
+         return new DisplayInfo(var4, var2, var3, var5, var6, var7, var8, var9);
       } else {
          throw new JsonSyntaxException("Both title and description must be set");
       }

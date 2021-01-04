@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.RandomIntGenerator;
@@ -15,10 +16,6 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
    private SetItemCountFunction(LootItemCondition[] var1, RandomIntGenerator var2) {
       super(var1);
       this.value = var2;
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_COUNT;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -38,8 +35,8 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
    }
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetItemCountFunction> {
-      public Serializer() {
-         super();
+      protected Serializer() {
+         super(new ResourceLocation("set_count"), SetItemCountFunction.class);
       }
 
       public void serialize(JsonObject var1, SetItemCountFunction var2, JsonSerializationContext var3) {

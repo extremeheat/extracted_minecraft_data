@@ -1,16 +1,17 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
    private static final BlockStatePredicate IS_SAND;
@@ -18,15 +19,15 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
    private final BlockState sandstone;
    private final BlockState water;
 
-   public DesertWellFeature(Codec<NoneFeatureConfiguration> var1) {
+   public DesertWellFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
       this.sandSlab = Blocks.SANDSTONE_SLAB.defaultBlockState();
       this.sandstone = Blocks.SANDSTONE.defaultBlockState();
       this.water = Blocks.WATER.defaultBlockState();
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
-      for(var4 = var4.above(); var1.isEmptyBlock(var4) && var4.getY() > var1.getMinBuildHeight() + 2; var4 = var4.below()) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
+      for(var4 = var4.above(); var1.isEmptyBlock(var4) && var4.getY() > 2; var4 = var4.below()) {
       }
 
       if (!IS_SAND.test(var1.getBlockState(var4))) {

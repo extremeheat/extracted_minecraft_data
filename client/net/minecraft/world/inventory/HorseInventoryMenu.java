@@ -21,11 +21,11 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       boolean var6 = true;
       this.addSlot(new Slot(var3, 0, 8, 18) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.is(Items.SADDLE) && !this.hasItem() && var4.isSaddleable();
+            return var1.getItem() == Items.SADDLE && !this.hasItem() && var4.canBeSaddled();
          }
 
          public boolean isActive() {
-            return var4.isSaddleable();
+            return var4.canBeSaddled();
          }
       });
       this.addSlot(new Slot(var3, 1, 8, 36) {
@@ -34,7 +34,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
 
          public boolean isActive() {
-            return var4.canWearArmor();
+            return var4.wearsArmor();
          }
 
          public int getMaxStackSize() {
@@ -73,9 +73,8 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
-         int var6 = this.horseContainer.getContainerSize();
-         if (var2 < var6) {
-            if (!this.moveItemStackTo(var5, var6, this.slots.size(), true)) {
+         if (var2 < this.horseContainer.getContainerSize()) {
+            if (!this.moveItemStackTo(var5, this.horseContainer.getContainerSize(), this.slots.size(), true)) {
                return ItemStack.EMPTY;
             }
          } else if (this.getSlot(1).mayPlace(var5) && !this.getSlot(1).hasItem()) {
@@ -86,21 +85,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var6 <= 2 || !this.moveItemStackTo(var5, 2, var6, false)) {
-            int var8 = var6 + 27;
-            int var10 = var8 + 9;
-            if (var2 >= var8 && var2 < var10) {
-               if (!this.moveItemStackTo(var5, var6, var8, false)) {
-                  return ItemStack.EMPTY;
-               }
-            } else if (var2 >= var6 && var2 < var8) {
-               if (!this.moveItemStackTo(var5, var8, var10, false)) {
-                  return ItemStack.EMPTY;
-               }
-            } else if (!this.moveItemStackTo(var5, var8, var8, false)) {
-               return ItemStack.EMPTY;
-            }
-
+         } else if (this.horseContainer.getContainerSize() <= 2 || !this.moveItemStackTo(var5, 2, this.horseContainer.getContainerSize(), false)) {
             return ItemStack.EMPTY;
          }
 

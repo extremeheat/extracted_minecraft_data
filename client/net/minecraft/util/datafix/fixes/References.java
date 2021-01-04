@@ -33,9 +33,6 @@ public class References {
    public static final TypeReference POI_CHUNK = () -> {
       return "poi_chunk";
    };
-   public static final TypeReference ENTITY_CHUNK = () -> {
-      return "entity_chunk";
-   };
    public static final TypeReference BLOCK_ENTITY = () -> {
       return "block_entity";
    };
@@ -77,8 +74,5 @@ public class References {
    };
    public static final TypeReference BIOME = () -> {
       return "biome";
-   };
-   public static final TypeReference WORLD_GEN_SETTINGS = () -> {
-      return "world_gen_settings";
    };
 }

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal;
 
 import java.util.Locale;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,7 +18,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public class TropicalFish extends AbstractSchoolingFish {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT;
@@ -145,7 +144,7 @@ public class TropicalFish extends AbstractSchoolingFish {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       Object var11 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       if (var5 != null && var5.contains("BucketVariantTag", 3)) {
          this.setVariant(var5.getInt("BucketVariantTag"));
@@ -162,7 +161,7 @@ public class TropicalFish extends AbstractSchoolingFish {
             var8 = var10.baseColor;
             var9 = var10.patternColor;
          } else if ((double)this.random.nextFloat() < 0.9D) {
-            int var12 = Util.getRandom(COMMON_VARIANTS, this.random);
+            int var12 = COMMON_VARIANTS[this.random.nextInt(COMMON_VARIANTS.length)];
             var6 = var12 & 255;
             var7 = (var12 & '\uff00') >> 8;
             var8 = (var12 & 16711680) >> 16;

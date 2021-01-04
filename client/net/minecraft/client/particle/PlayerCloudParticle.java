@@ -1,14 +1,15 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 public class PlayerCloudParticle extends TextureSheetParticle {
    private final SpriteSet sprites;
 
-   private PlayerCloudParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
+   private PlayerCloudParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D);
       this.sprites = var14;
       float var15 = 2.5F;
@@ -51,9 +52,9 @@ public class PlayerCloudParticle extends TextureSheetParticle {
          this.zd *= 0.9599999785423279D;
          Player var1 = this.level.getNearestPlayer(this.x, this.y, this.z, 2.0D, false);
          if (var1 != null) {
-            double var2 = var1.getY();
-            if (this.y > var2) {
-               this.y += (var2 - this.y) * 0.2D;
+            AABB var2 = var1.getBoundingBox();
+            if (this.y > var2.minY) {
+               this.y += (var2.minY - this.y) * 0.2D;
                this.yd += (var1.getDeltaMovement().y - this.yd) * 0.2D;
                this.setPos(this.x, this.y, this.z);
             }
@@ -68,7 +69,7 @@ public class PlayerCloudParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   PlayerCloudParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
+   PlayerCloudParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
       this(var1, var2, var4, var6, var8, var10, var12, var14);
    }
 
@@ -80,7 +81,7 @@ public class PlayerCloudParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          PlayerCloudParticle var15 = new PlayerCloudParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
          var15.setColor(200.0F, 50.0F, 120.0F);
          var15.setAlpha(0.4F);
@@ -96,7 +97,7 @@ public class PlayerCloudParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new PlayerCloudParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
       }
    }

@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -17,8 +16,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -63,8 +60,11 @@ public class Evoker extends SpellcasterIllager {
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, false));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5D).add(Attributes.FOLLOW_RANGE, 12.0D).add(Attributes.MAX_HEALTH, 24.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(12.0D);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(24.0D);
    }
 
    protected void defineSynchedData() {
@@ -85,6 +85,10 @@ public class Evoker extends SpellcasterIllager {
 
    protected void customServerAiStep() {
       super.customServerAiStep();
+   }
+
+   public void tick() {
+      super.tick();
    }
 
    public boolean isAlliedTo(Entity var1) {
@@ -224,17 +228,15 @@ public class Evoker extends SpellcasterIllager {
       }
 
       protected void performSpellCasting() {
-         ServerLevel var1 = (ServerLevel)Evoker.this.level;
-
-         for(int var2 = 0; var2 < 3; ++var2) {
-            BlockPos var3 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex var4 = (Vex)EntityType.VEX.create(Evoker.this.level);
-            var4.moveTo(var3, 0.0F, 0.0F);
-            var4.finalizeSpawn(var1, Evoker.this.level.getCurrentDifficultyAt(var3), MobSpawnType.MOB_SUMMONED, (SpawnGroupData)null, (CompoundTag)null);
-            var4.setOwner(Evoker.this);
-            var4.setBoundOrigin(var3);
-            var4.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
-            var1.addFreshEntityWithPassengers(var4);
+         for(int var1 = 0; var1 < 3; ++var1) {
+            BlockPos var2 = (new BlockPos(Evoker.this)).offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
+            Vex var3 = (Vex)EntityType.VEX.create(Evoker.this.level);
+            var3.moveTo(var2, 0.0F, 0.0F);
+            var3.finalizeSpawn(Evoker.this.level, Evoker.this.level.getCurrentDifficultyAt(var2), MobSpawnType.MOB_SUMMONED, (SpawnGroupData)null, (CompoundTag)null);
+            var3.setOwner(Evoker.this);
+            var3.setBoundOrigin(var2);
+            var3.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
+            Evoker.this.level.addFreshEntity(var3);
          }
 
       }
@@ -268,26 +270,26 @@ public class Evoker extends SpellcasterIllager {
 
       protected void performSpellCasting() {
          LivingEntity var1 = Evoker.this.getTarget();
-         double var2 = Math.min(var1.getY(), Evoker.this.getY());
-         double var4 = Math.max(var1.getY(), Evoker.this.getY()) + 1.0D;
-         float var6 = (float)Mth.atan2(var1.getZ() - Evoker.this.getZ(), var1.getX() - Evoker.this.getX());
+         double var2 = Math.min(var1.y, Evoker.this.y);
+         double var4 = Math.max(var1.y, Evoker.this.y) + 1.0D;
+         float var6 = (float)Mth.atan2(var1.z - Evoker.this.z, var1.x - Evoker.this.x);
          int var7;
          if (Evoker.this.distanceToSqr(var1) < 9.0D) {
             float var8;
             for(var7 = 0; var7 < 5; ++var7) {
                var8 = var6 + (float)var7 * 3.1415927F * 0.4F;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 1.5D, Evoker.this.getZ() + (double)Mth.sin(var8) * 1.5D, var2, var4, var8, 0);
+               this.createSpellEntity(Evoker.this.x + (double)Mth.cos(var8) * 1.5D, Evoker.this.z + (double)Mth.sin(var8) * 1.5D, var2, var4, var8, 0);
             }
 
             for(var7 = 0; var7 < 8; ++var7) {
                var8 = var6 + (float)var7 * 3.1415927F * 2.0F / 8.0F + 1.2566371F;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 2.5D, Evoker.this.getZ() + (double)Mth.sin(var8) * 2.5D, var2, var4, var8, 3);
+               this.createSpellEntity(Evoker.this.x + (double)Mth.cos(var8) * 2.5D, Evoker.this.z + (double)Mth.sin(var8) * 2.5D, var2, var4, var8, 3);
             }
          } else {
             for(var7 = 0; var7 < 16; ++var7) {
                double var11 = 1.25D * (double)(var7 + 1);
                int var10 = 1 * var7;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var6) * var11, Evoker.this.getZ() + (double)Mth.sin(var6) * var11, var2, var4, var6, var10);
+               this.createSpellEntity(Evoker.this.x + (double)Mth.cos(var6) * var11, Evoker.this.z + (double)Mth.sin(var6) * var11, var2, var4, var6, var10);
             }
          }
 

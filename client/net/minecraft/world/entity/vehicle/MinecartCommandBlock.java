@@ -9,7 +9,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -35,7 +34,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.getEntityData().define(DATA_ID_COMMAND_NAME, "");
-      this.getEntityData().define(DATA_ID_LAST_OUTPUT, TextComponent.EMPTY);
+      this.getEntityData().define(DATA_ID_LAST_OUTPUT, new TextComponent(""));
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
@@ -70,8 +69,9 @@ public class MinecartCommandBlock extends AbstractMinecart {
 
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      return this.commandBlock.usedBy(var1);
+   public boolean interact(Player var1, InteractionHand var2) {
+      this.commandBlock.usedBy(var1);
+      return true;
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -111,7 +111,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
       }
 
       public Vec3 getPosition() {
-         return MinecartCommandBlock.this.position();
+         return new Vec3(MinecartCommandBlock.this.x, MinecartCommandBlock.this.y, MinecartCommandBlock.this.z);
       }
 
       public MinecartCommandBlock getMinecart() {
@@ -119,7 +119,7 @@ public class MinecartCommandBlock extends AbstractMinecart {
       }
 
       public CommandSourceStack createCommandSourceStack() {
-         return new CommandSourceStack(this, MinecartCommandBlock.this.position(), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().getServer(), MinecartCommandBlock.this);
+         return new CommandSourceStack(this, new Vec3(MinecartCommandBlock.this.x, MinecartCommandBlock.this.y, MinecartCommandBlock.this.z), MinecartCommandBlock.this.getRotationVector(), this.getLevel(), 2, this.getName().getString(), MinecartCommandBlock.this.getDisplayName(), this.getLevel().getServer(), MinecartCommandBlock.this);
       }
    }
 }

@@ -1,21 +1,14 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class GravityProcessor extends StructureProcessor {
-   public static final Codec<GravityProcessor> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> {
-         return var0x.heightmap;
-      }), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> {
-         return var0x.offset;
-      })).apply(var0, GravityProcessor::new);
-   });
    private final Heightmap.Types heightmap;
    private final int offset;
 
@@ -25,27 +18,22 @@ public class GravityProcessor extends StructureProcessor {
       this.offset = var2;
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      Heightmap.Types var7;
-      if (var1 instanceof ServerLevel) {
-         if (this.heightmap == Heightmap.Types.WORLD_SURFACE_WG) {
-            var7 = Heightmap.Types.WORLD_SURFACE;
-         } else if (this.heightmap == Heightmap.Types.OCEAN_FLOOR_WG) {
-            var7 = Heightmap.Types.OCEAN_FLOOR;
-         } else {
-            var7 = this.heightmap;
-         }
-      } else {
-         var7 = this.heightmap;
-      }
-
-      int var8 = var1.getHeight(var7, var5.pos.getX(), var5.pos.getZ()) + this.offset;
-      int var9 = var4.pos.getY();
-      return new StructureTemplate.StructureBlockInfo(new BlockPos(var5.pos.getX(), var8 + var9, var5.pos.getZ()), var5.state, var5.nbt);
+   public GravityProcessor(Dynamic<?> var1) {
+      this(Heightmap.Types.getFromKey(var1.get("heightmap").asString(Heightmap.Types.WORLD_SURFACE_WG.getSerializationKey())), var1.get("offset").asInt(0));
    }
 
-   protected StructureProcessorType<?> getType() {
+   @Nullable
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, StructureTemplate.StructureBlockInfo var3, StructureTemplate.StructureBlockInfo var4, StructurePlaceSettings var5) {
+      int var6 = var1.getHeight(this.heightmap, var4.pos.getX(), var4.pos.getZ()) + this.offset;
+      int var7 = var3.pos.getY();
+      return new StructureTemplate.StructureBlockInfo(new BlockPos(var4.pos.getX(), var6 + var7, var4.pos.getZ()), var4.state, var4.nbt);
+   }
+
+   protected StructureProcessorType getType() {
       return StructureProcessorType.GRAVITY;
+   }
+
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("heightmap"), var1.createString(this.heightmap.getSerializationKey()), var1.createString("offset"), var1.createInt(this.offset))));
    }
 }

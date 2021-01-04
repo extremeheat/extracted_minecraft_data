@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.horse;
 
-import com.google.common.collect.UnmodifiableIterator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,42 +7,37 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerListener;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowParentGoal;
@@ -54,26 +48,24 @@ import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class AbstractHorse extends Animal implements ContainerListener, PlayerRideableJumping, Saddleable {
+public abstract class AbstractHorse extends Animal implements ContainerListener, PlayerRideableJumping {
    private static final Predicate<LivingEntity> PARENT_HORSE_SELECTOR = (var0) -> {
       return var0 instanceof AbstractHorse && ((AbstractHorse)var0).isBred();
    };
    private static final TargetingConditions MOMMY_TARGETING;
-   private static final Ingredient FOOD_ITEMS;
+   protected static final Attribute JUMP_STRENGTH;
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
    private static final EntityDataAccessor<Optional<UUID>> DATA_ID_OWNER_UUID;
    private int eatingCounter;
@@ -161,6 +153,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.isJumping = var1;
    }
 
+   public boolean canBeLeashed(Player var1) {
+      return super.canBeLeashed(var1) && this.getMobType() != MobType.UNDEAD;
+   }
+
    protected void onLeashDistance(float var1) {
       if (var1 > 6.0F && this.isEating()) {
          this.setEating(false);
@@ -184,20 +180,8 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.setFlag(8, var1);
    }
 
-   public boolean isSaddleable() {
-      return this.isAlive() && !this.isBaby() && this.isTamed();
-   }
-
-   public void equipSaddle(@Nullable SoundSource var1) {
-      this.inventory.setItem(0, new ItemStack(Items.SADDLE));
-      if (var1 != null) {
-         this.level.playSound((Player)null, (Entity)this, SoundEvents.HORSE_SADDLE, var1, 0.5F, 1.0F);
-      }
-
-   }
-
-   public boolean isSaddled() {
-      return this.getFlag(4);
+   public void setSaddled(boolean var1) {
+      this.setFlag(4, var1);
    }
 
    public int getTemper() {
@@ -214,6 +198,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return var2;
    }
 
+   public boolean hurt(DamageSource var1, float var2) {
+      Entity var3 = var1.getEntity();
+      return this.isVehicle() && var3 != null && this.hasIndirectPassenger(var3) ? false : super.hurt(var1, var2);
+   }
+
    public boolean isPushable() {
       return !this.isVehicle();
    }
@@ -221,23 +210,18 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    private void eating() {
       this.openMouth();
       if (!this.isSilent()) {
-         SoundEvent var1 = this.getEatingSound();
-         if (var1 != null) {
-            this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
-         }
+         this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.HORSE_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
       }
 
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
+   public void causeFallDamage(float var1, float var2) {
       if (var1 > 1.0F) {
          this.playSound(SoundEvents.HORSE_LAND, 0.4F, 1.0F);
       }
 
-      int var3 = this.calculateFallDamage(var1, var2);
-      if (var3 <= 0) {
-         return false;
-      } else {
+      int var3 = Mth.ceil((var1 * 0.5F - 3.0F) * var2);
+      if (var3 > 0) {
          this.hurt(DamageSource.FALL, (float)var3);
          if (this.isVehicle()) {
             Iterator var4 = this.getIndirectPassengers().iterator();
@@ -248,13 +232,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
             }
          }
 
-         this.playBlockFallSound();
-         return true;
-      }
-   }
+         BlockState var6 = this.level.getBlockState(new BlockPos(this.x, this.y - 0.2D - (double)this.yRotO, this.z));
+         if (!var6.isAir() && !this.isSilent()) {
+            SoundType var7 = var6.getSoundType();
+            this.level.playSound((Player)null, this.x, this.y, this.z, var7.getStepSound(), this.getSoundSource(), var7.getVolume() * 0.5F, var7.getPitch() * 0.75F);
+         }
 
-   protected int calculateFallDamage(float var1, float var2) {
-      return Mth.ceil((var1 * 0.5F - 3.0F) * var2);
+      }
    }
 
    protected int getInventorySize() {
@@ -277,18 +261,18 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
 
       this.inventory.addListener(this);
-      this.updateContainerEquipment();
+      this.updateEquipment();
    }
 
-   protected void updateContainerEquipment() {
+   protected void updateEquipment() {
       if (!this.level.isClientSide) {
-         this.setFlag(4, !this.inventory.getItem(0).isEmpty());
+         this.setSaddled(!this.inventory.getItem(0).isEmpty() && this.canBeSaddled());
       }
    }
 
    public void containerChanged(Container var1) {
       boolean var2 = this.isSaddled();
-      this.updateContainerEquipment();
+      this.updateEquipment();
       if (this.tickCount > 20 && !var2 && this.isSaddled()) {
          this.playSound(SoundEvents.HORSE_SADDLE, 0.5F, 1.0F);
       }
@@ -296,12 +280,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public double getCustomJump() {
-      return this.getAttributeValue(Attributes.JUMP_STRENGTH);
-   }
-
-   @Nullable
-   protected SoundEvent getEatingSound() {
-      return null;
+      return this.getAttribute(JUMP_STRENGTH).getValue();
    }
 
    @Nullable
@@ -327,6 +306,14 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return null;
    }
 
+   public boolean canBeSaddled() {
+      return true;
+   }
+
+   public boolean isSaddled() {
+      return this.getFlag(4);
+   }
+
    @Nullable
    protected SoundEvent getAngrySound() {
       this.stand();
@@ -337,7 +324,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!var2.getMaterial().isLiquid()) {
          BlockState var3 = this.level.getBlockState(var1.above());
          SoundType var4 = var2.getSoundType();
-         if (var3.is(Blocks.SNOW)) {
+         if (var3.getBlock() == Blocks.SNOW) {
             var4 = var3.getSoundType();
          }
 
@@ -361,8 +348,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.playSound(SoundEvents.HORSE_GALLOP, var1.getVolume() * 0.15F, var1.getPitch());
    }
 
-   public static AttributeSupplier.Builder createBaseHorseAttributes() {
-      return Mob.createMobAttributes().add(Attributes.JUMP_STRENGTH).add(Attributes.MAX_HEALTH, 53.0D).add(Attributes.MOVEMENT_SPEED, 0.22499999403953552D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttributes().registerAttribute(JUMP_STRENGTH);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(53.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.22499999403953552D);
    }
 
    public int getMaxSpawnClusterSize() {
@@ -388,52 +378,40 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    }
 
-   public InteractionResult fedFood(Player var1, ItemStack var2) {
-      boolean var3 = this.handleEating(var1, var2);
-      if (!var1.getAbilities().instabuild) {
-         var2.shrink(1);
-      }
-
-      if (this.level.isClientSide) {
-         return InteractionResult.CONSUME;
-      } else {
-         return var3 ? InteractionResult.SUCCESS : InteractionResult.PASS;
-      }
-   }
-
    protected boolean handleEating(Player var1, ItemStack var2) {
       boolean var3 = false;
       float var4 = 0.0F;
       short var5 = 0;
       byte var6 = 0;
-      if (var2.is(Items.WHEAT)) {
+      Item var7 = var2.getItem();
+      if (var7 == Items.WHEAT) {
          var4 = 2.0F;
          var5 = 20;
          var6 = 3;
-      } else if (var2.is(Items.SUGAR)) {
+      } else if (var7 == Items.SUGAR) {
          var4 = 1.0F;
          var5 = 30;
          var6 = 3;
-      } else if (var2.is(Blocks.HAY_BLOCK.asItem())) {
+      } else if (var7 == Blocks.HAY_BLOCK.asItem()) {
          var4 = 20.0F;
          var5 = 180;
-      } else if (var2.is(Items.APPLE)) {
+      } else if (var7 == Items.APPLE) {
          var4 = 3.0F;
          var5 = 60;
          var6 = 3;
-      } else if (var2.is(Items.GOLDEN_CARROT)) {
+      } else if (var7 == Items.GOLDEN_CARROT) {
          var4 = 4.0F;
          var5 = 60;
          var6 = 5;
-         if (!this.level.isClientSide && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+         if (this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
             var3 = true;
             this.setInLove(var1);
          }
-      } else if (var2.is(Items.GOLDEN_APPLE) || var2.is(Items.ENCHANTED_GOLDEN_APPLE)) {
+      } else if (var7 == Items.GOLDEN_APPLE || var7 == Items.ENCHANTED_GOLDEN_APPLE) {
          var4 = 10.0F;
          var5 = 240;
          var6 = 10;
-         if (!this.level.isClientSide && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+         if (this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
             var3 = true;
             this.setInLove(var1);
          }
@@ -445,7 +423,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
 
       if (this.isBaby() && var5 > 0) {
-         this.level.addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), 0.0D, 0.0D, 0.0D);
+         this.level.addParticle(ParticleTypes.HAPPY_VILLAGER, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 0.5D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), 0.0D, 0.0D, 0.0D);
          if (!this.level.isClientSide) {
             this.ageUp(var5);
          }
@@ -483,7 +461,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public boolean isFood(ItemStack var1) {
-      return FOOD_ITEMS.test(var1);
+      return false;
    }
 
    private void moveTail() {
@@ -495,7 +473,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (this.inventory != null) {
          for(int var1 = 0; var1 < this.inventory.getContainerSize(); ++var1) {
             ItemStack var2 = this.inventory.getItem(var1);
-            if (!var2.isEmpty() && !EnchantmentHelper.hasVanishingCurse(var2)) {
+            if (!var2.isEmpty()) {
                this.spawnAtLocation(var2);
             }
          }
@@ -515,7 +493,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          }
 
          if (this.canEatGrass()) {
-            if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && this.level.getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
+            if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && this.level.getBlockState((new BlockPos(this)).below()).getBlock() == Blocks.GRASS_BLOCK) {
                this.setEating(true);
             }
 
@@ -531,7 +509,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    protected void followMommy() {
       if (this.isBred() && this.isBaby() && !this.isEating()) {
-         LivingEntity var1 = this.level.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0D));
+         LivingEntity var1 = this.level.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.x, this.y, this.z, this.getBoundingBox().inflate(16.0D));
          if (var1 != null && this.distanceToSqr(var1) > 4.0D) {
             this.navigation.createPath((Entity)var1, 0);
          }
@@ -639,12 +617,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public void makeMad() {
-      if (!this.isStanding()) {
-         this.stand();
-         SoundEvent var1 = this.getAngrySound();
-         if (var1 != null) {
-            this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-         }
+      this.stand();
+      SoundEvent var1 = this.getAngrySound();
+      if (var1 != null) {
+         this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
       }
 
    }
@@ -682,9 +658,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                var4 = 0.0F;
             }
 
+            double var5;
+            double var7;
             if (this.playerJumpPendingScale > 0.0F && !this.isJumping() && this.onGround) {
-               double var5 = this.getCustomJump() * (double)this.playerJumpPendingScale * (double)this.getBlockJumpFactor();
-               double var7;
+               var5 = this.getCustomJump() * (double)this.playerJumpPendingScale;
                if (this.hasEffect(MobEffects.JUMP)) {
                   var7 = var5 + (double)((float)(this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.1F);
                } else {
@@ -699,6 +676,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                   float var10 = Mth.sin(this.yRot * 0.017453292F);
                   float var11 = Mth.cos(this.yRot * 0.017453292F);
                   this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * var10 * this.playerJumpPendingScale), 0.0D, (double)(0.4F * var11 * this.playerJumpPendingScale)));
+                  this.playJumpSound();
                }
 
                this.playerJumpPendingScale = 0.0F;
@@ -706,7 +684,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
             this.flyingSpeed = this.getSpeed() * 0.1F;
             if (this.isControlledByLocalInstance()) {
-               this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
+               this.setSpeed((float)this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue());
                super.travel(new Vec3((double)var3, var1.y, (double)var4));
             } else if (var2 instanceof Player) {
                this.setDeltaMovement(Vec3.ZERO);
@@ -717,7 +695,16 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                this.setIsJumping(false);
             }
 
-            this.calculateEntityAnimation(this, false);
+            this.animationSpeedOld = this.animationSpeed;
+            var5 = this.x - this.xo;
+            var7 = this.z - this.zo;
+            float var12 = Mth.sqrt(var5 * var5 + var7 * var7) * 4.0F;
+            if (var12 > 1.0F) {
+               var12 = 1.0F;
+            }
+
+            this.animationSpeed += (var12 - this.animationSpeed) * 0.4F;
+            this.animationPosition += this.animationSpeed;
          } else {
             this.flyingSpeed = 0.02F;
             super.travel(var1);
@@ -736,7 +723,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       var1.putInt("Temper", this.getTemper());
       var1.putBoolean("Tame", this.isTamed());
       if (this.getOwnerUUID() != null) {
-         var1.putUUID("Owner", this.getOwnerUUID());
+         var1.putString("OwnerUUID", this.getOwnerUUID().toString());
       }
 
       if (!this.inventory.getItem(0).isEmpty()) {
@@ -751,26 +738,31 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.setBred(var1.getBoolean("Bred"));
       this.setTemper(var1.getInt("Temper"));
       this.setTamed(var1.getBoolean("Tame"));
-      UUID var2;
-      if (var1.hasUUID("Owner")) {
-         var2 = var1.getUUID("Owner");
+      String var2;
+      if (var1.contains("OwnerUUID", 8)) {
+         var2 = var1.getString("OwnerUUID");
       } else {
          String var3 = var1.getString("Owner");
          var2 = OldUsersConverter.convertMobOwnerIfNecessary(this.getServer(), var3);
       }
 
-      if (var2 != null) {
-         this.setOwnerUUID(var2);
+      if (!var2.isEmpty()) {
+         this.setOwnerUUID(UUID.fromString(var2));
+      }
+
+      AttributeInstance var5 = this.getAttributes().getInstance("Speed");
+      if (var5 != null) {
+         this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(var5.getBaseValue() * 0.25D);
       }
 
       if (var1.contains("SaddleItem", 10)) {
          ItemStack var4 = ItemStack.of(var1.getCompound("SaddleItem"));
-         if (var4.is(Items.SADDLE)) {
+         if (var4.getItem() == Items.SADDLE) {
             this.inventory.setItem(0, var4);
          }
       }
 
-      this.updateContainerEquipment();
+      this.updateEquipment();
    }
 
    public boolean canMate(Animal var1) {
@@ -782,17 +774,17 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgableMob getBreedOffspring(AgableMob var1) {
       return null;
    }
 
-   protected void setOffspringAttributes(AgeableMob var1, AbstractHorse var2) {
-      double var3 = this.getAttributeBaseValue(Attributes.MAX_HEALTH) + var1.getAttributeBaseValue(Attributes.MAX_HEALTH) + (double)this.generateRandomMaxHealth();
-      var2.getAttribute(Attributes.MAX_HEALTH).setBaseValue(var3 / 3.0D);
-      double var5 = this.getAttributeBaseValue(Attributes.JUMP_STRENGTH) + var1.getAttributeBaseValue(Attributes.JUMP_STRENGTH) + this.generateRandomJumpStrength();
-      var2.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(var5 / 3.0D);
-      double var7 = this.getAttributeBaseValue(Attributes.MOVEMENT_SPEED) + var1.getAttributeBaseValue(Attributes.MOVEMENT_SPEED) + this.generateRandomSpeed();
-      var2.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(var7 / 3.0D);
+   protected void setOffspringAttributes(AgableMob var1, AbstractHorse var2) {
+      double var3 = this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() + var1.getAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() + (double)this.generateRandomMaxHealth();
+      var2.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(var3 / 3.0D);
+      double var5 = this.getAttribute(JUMP_STRENGTH).getBaseValue() + var1.getAttribute(JUMP_STRENGTH).getBaseValue() + this.generateRandomJumpStrength();
+      var2.getAttribute(JUMP_STRENGTH).setBaseValue(var5 / 3.0D);
+      double var7 = this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() + var1.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() + this.generateRandomSpeed();
+      var2.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(var7 / 3.0D);
    }
 
    public boolean canBeControlledByRider() {
@@ -836,7 +828,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    public void handleStartJump(int var1) {
       this.allowStandSliding = true;
       this.stand();
-      this.playJumpSound();
    }
 
    public void handleStopJump() {
@@ -849,7 +840,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          double var4 = this.random.nextGaussian() * 0.02D;
          double var6 = this.random.nextGaussian() * 0.02D;
          double var8 = this.random.nextGaussian() * 0.02D;
-         this.level.addParticle(var2, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), var4, var6, var8);
+         this.level.addParticle(var2, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 0.5D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), var4, var6, var8);
       }
 
    }
@@ -877,7 +868,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          float var3 = Mth.cos(this.yBodyRot * 0.017453292F);
          float var4 = 0.7F * this.standAnimO;
          float var5 = 0.15F * this.standAnimO;
-         var1.setPos(this.getX() + (double)(var4 * var6), this.getY() + this.getPassengersRidingOffset() + var1.getMyRidingOffset() + (double)var5, this.getZ() - (double)(var4 * var3));
+         var1.setPos(this.x + (double)(var4 * var6), this.y + this.getRideHeight() + var1.getRidingHeight() + (double)var5, this.z - (double)(var4 * var3));
          if (var1 instanceof LivingEntity) {
             ((LivingEntity)var1).yBodyRot = this.yBodyRot;
          }
@@ -897,7 +888,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return (0.44999998807907104D + this.random.nextDouble() * 0.3D + this.random.nextDouble() * 0.3D + this.random.nextDouble() * 0.3D) * 0.25D;
    }
 
-   public boolean onClimbable() {
+   public boolean onLadder() {
       return false;
    }
 
@@ -905,12 +896,8 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return var2.height * 0.95F;
    }
 
-   public boolean canWearArmor() {
+   public boolean wearsArmor() {
       return false;
-   }
-
-   public boolean isWearingArmor() {
-      return !this.getItemBySlot(EquipmentSlot.CHEST).isEmpty();
    }
 
    public boolean isArmor(ItemStack var1) {
@@ -920,11 +907,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    public boolean setSlot(int var1, ItemStack var2) {
       int var3 = var1 - 400;
       if (var3 >= 0 && var3 < 2 && var3 < this.inventory.getContainerSize()) {
-         if (var3 == 0 && !var2.is(Items.SADDLE)) {
+         if (var3 == 0 && var2.getItem() != Items.SADDLE) {
             return false;
-         } else if (var3 != 1 || this.canWearArmor() && this.isArmor(var2)) {
+         } else if (var3 != 1 || this.wearsArmor() && this.isArmor(var2)) {
             this.inventory.setItem(var3, var2);
-            this.updateContainerEquipment();
+            this.updateEquipment();
             return true;
          } else {
             return false;
@@ -942,75 +929,22 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getFirstPassenger();
+      return this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
    }
 
    @Nullable
-   private Vec3 getDismountLocationInDirection(Vec3 var1, LivingEntity var2) {
-      double var3 = this.getX() + var1.x;
-      double var5 = this.getBoundingBox().minY;
-      double var7 = this.getZ() + var1.z;
-      BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
-      UnmodifiableIterator var10 = var2.getDismountPoses().iterator();
-
-      while(var10.hasNext()) {
-         Pose var11 = (Pose)var10.next();
-         var9.set(var3, var5, var7);
-         double var12 = this.getBoundingBox().maxY + 0.75D;
-
-         while(true) {
-            double var14 = this.level.getBlockFloorHeight(var9);
-            if ((double)var9.getY() + var14 > var12) {
-               break;
-            }
-
-            if (DismountHelper.isBlockFloorValid(var14)) {
-               AABB var16 = var2.getLocalBoundsForPose(var11);
-               Vec3 var17 = new Vec3(var3, (double)var9.getY() + var14, var7);
-               if (DismountHelper.canDismountTo(this.level, var2, var16.move(var17))) {
-                  var2.setPose(var11);
-                  return var17;
-               }
-            }
-
-            var9.move(Direction.UP);
-            if ((double)var9.getY() >= var12) {
-               break;
-            }
-         }
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+      if (this.random.nextInt(5) == 0) {
+         this.setAge(-24000);
       }
 
-      return null;
-   }
-
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Vec3 var2 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.yRot + (var1.getMainArm() == HumanoidArm.RIGHT ? 90.0F : -90.0F));
-      Vec3 var3 = this.getDismountLocationInDirection(var2, var1);
-      if (var3 != null) {
-         return var3;
-      } else {
-         Vec3 var4 = getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)var1.getBbWidth(), this.yRot + (var1.getMainArm() == HumanoidArm.LEFT ? 90.0F : -90.0F));
-         Vec3 var5 = this.getDismountLocationInDirection(var4, var1);
-         return var5 != null ? var5 : this.position();
-      }
-   }
-
-   protected void randomizeAttributes() {
-   }
-
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(0.2F);
-      }
-
-      this.randomizeAttributes();
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return var4;
    }
 
    static {
       MOMMY_TARGETING = (new TargetingConditions()).range(16.0D).allowInvulnerable().allowSameTeam().allowUnseeable().selector(PARENT_HORSE_SELECTOR);
-      FOOD_ITEMS = Ingredient.of(Items.WHEAT, Items.SUGAR, Blocks.HAY_BLOCK.asItem(), Items.APPLE, Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE);
+      JUMP_STRENGTH = (new RangedAttribute((Attribute)null, "horse.jumpStrength", 0.7D, 0.0D, 2.0D)).importLegacyName("Jump Strength").setSyncable(true);
       DATA_ID_FLAGS = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
       DATA_ID_OWNER_UUID = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.OPTIONAL_UUID);
    }

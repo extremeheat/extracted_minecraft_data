@@ -7,25 +7,20 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
@@ -37,8 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BellBlock extends BaseEntityBlock {
    public static final DirectionProperty FACING;
-   public static final EnumProperty<BellAttachType> ATTACHMENT;
-   public static final BooleanProperty POWERED;
+   private static final EnumProperty<BellAttachType> ATTACHMENT;
    private static final VoxelShape NORTH_SOUTH_FLOOR_SHAPE;
    private static final VoxelShape EAST_WEST_FLOOR_SHAPE;
    private static final VoxelShape BELL_TOP_SHAPE;
@@ -52,46 +46,38 @@ public class BellBlock extends BaseEntityBlock {
    private static final VoxelShape TO_SOUTH;
    private static final VoxelShape CEILING_SHAPE;
 
-   public BellBlock(BlockBehaviour.Properties var1) {
+   public BellBlock(Block.Properties var1) {
       super(var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(ATTACHMENT, BellAttachType.FLOOR)).setValue(POWERED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(ATTACHMENT, BellAttachType.FLOOR));
    }
 
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
-      boolean var7 = var2.hasNeighborSignal(var3);
-      if (var7 != (Boolean)var1.getValue(POWERED)) {
-         if (var7) {
-            this.attemptToRing(var2, var3, (Direction)null);
-         }
-
-         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 3);
+   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Entity var4) {
+      if (var4 instanceof AbstractArrow) {
+         Entity var5 = ((AbstractArrow)var4).getOwner();
+         Player var6 = var5 instanceof Player ? (Player)var5 : null;
+         this.onHit(var1, var2, var1.getBlockEntity(var3.getBlockPos()), var3, var6, true);
       }
 
    }
 
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      Entity var5 = var4.getOwner();
-      Player var6 = var5 instanceof Player ? (Player)var5 : null;
-      this.onHit(var1, var2, var3, var6, true);
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      return this.onHit(var2, var1, var2.getBlockEntity(var3), var6, var4, true);
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      return this.onHit(var2, var1, var6, var4, true) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
-   }
-
-   public boolean onHit(Level var1, BlockState var2, BlockHitResult var3, @Nullable Player var4, boolean var5) {
-      Direction var6 = var3.getDirection();
-      BlockPos var7 = var3.getBlockPos();
-      boolean var8 = !var5 || this.isProperHit(var2, var6, var3.getLocation().y - (double)var7.getY());
-      if (var8) {
-         boolean var9 = this.attemptToRing(var1, var7, var6);
-         if (var9 && var4 != null) {
-            var4.awardStat(Stats.BELL_RING);
+   public boolean onHit(Level var1, BlockState var2, @Nullable BlockEntity var3, BlockHitResult var4, @Nullable Player var5, boolean var6) {
+      Direction var7 = var4.getDirection();
+      BlockPos var8 = var4.getBlockPos();
+      boolean var9 = !var6 || this.isProperHit(var2, var7, var4.getLocation().y - (double)var8.getY());
+      if (!var1.isClientSide && var3 instanceof BellBlockEntity && var9) {
+         ((BellBlockEntity)var3).onHit(var7);
+         this.ring(var1, var8);
+         if (var5 != null) {
+            var5.awardStat(Stats.BELL_RING);
          }
 
          return true;
       } else {
-         return false;
+         return true;
       }
    }
 
@@ -115,19 +101,8 @@ public class BellBlock extends BaseEntityBlock {
       }
    }
 
-   public boolean attemptToRing(Level var1, BlockPos var2, @Nullable Direction var3) {
-      BlockEntity var4 = var1.getBlockEntity(var2);
-      if (!var1.isClientSide && var4 instanceof BellBlockEntity) {
-         if (var3 == null) {
-            var3 = (Direction)var1.getBlockState(var2).getValue(FACING);
-         }
-
-         ((BellBlockEntity)var4).onHit(var3);
-         var1.playSound((Player)null, (BlockPos)var2, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0F, 1.0F);
-         return true;
-      } else {
-         return false;
-      }
+   private void ring(Level var1, BlockPos var2) {
+      var1.playSound((Player)null, (BlockPos)var2, SoundEvents.BELL_BLOCK, SoundSource.BLOCKS, 2.0F, 1.0F);
    }
 
    private VoxelShape getVoxelShape(BlockState var1) {
@@ -210,8 +185,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Direction var4 = getConnectedDirection(var1).getOpposite();
-      return var4 == Direction.UP ? Block.canSupportCenter(var2, var3.above(), Direction.DOWN) : FaceAttachedHorizontalDirectionalBlock.canAttach(var2, var3, var4);
+      return FaceAttachedHorizontalDirectionalBlock.canAttach(var2, var3, getConnectedDirection(var1).getOpposite());
    }
 
    private static Direction getConnectedDirection(BlockState var0) {
@@ -230,17 +204,12 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, ATTACHMENT, POWERED);
+      var1.add(FACING, ATTACHMENT);
    }
 
    @Nullable
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BellBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.BELL, var1.isClientSide ? BellBlockEntity::clientTick : BellBlockEntity::serverTick);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new BellBlockEntity();
    }
 
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
@@ -250,7 +219,6 @@ public class BellBlock extends BaseEntityBlock {
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       ATTACHMENT = BlockStateProperties.BELL_ATTACHMENT;
-      POWERED = BlockStateProperties.POWERED;
       NORTH_SOUTH_FLOOR_SHAPE = Block.box(0.0D, 0.0D, 4.0D, 16.0D, 16.0D, 12.0D);
       EAST_WEST_FLOOR_SHAPE = Block.box(4.0D, 0.0D, 0.0D, 12.0D, 16.0D, 16.0D);
       BELL_TOP_SHAPE = Block.box(5.0D, 6.0D, 5.0D, 11.0D, 13.0D, 11.0D);

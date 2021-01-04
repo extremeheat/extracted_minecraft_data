@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -15,9 +14,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -28,7 +27,6 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
@@ -37,7 +35,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -68,6 +66,11 @@ public class Phantom extends FlyingMob implements Enemy {
       this.targetSelector.addGoal(1, new Phantom.PhantomAttackPlayerTargetGoal());
    }
 
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+   }
+
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.entityData.define(ID_SIZE, 0);
@@ -79,7 +82,7 @@ public class Phantom extends FlyingMob implements Enemy {
 
    private void updatePhantomSizeInfo() {
       this.refreshDimensions();
-      this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue((double)(6 + this.getPhantomSize()));
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue((double)(6 + this.getPhantomSize()));
    }
 
    public int getPhantomSize() {
@@ -98,25 +101,25 @@ public class Phantom extends FlyingMob implements Enemy {
       super.onSyncedDataUpdated(var1);
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return true;
-   }
-
    public void tick() {
       super.tick();
       if (this.level.isClientSide) {
          float var1 = Mth.cos((float)(this.getId() * 3 + this.tickCount) * 0.13F + 3.1415927F);
          float var2 = Mth.cos((float)(this.getId() * 3 + this.tickCount + 1) * 0.13F + 3.1415927F);
          if (var1 > 0.0F && var2 <= 0.0F) {
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.PHANTOM_FLAP, this.getSoundSource(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.PHANTOM_FLAP, this.getSoundSource(), 0.95F + this.random.nextFloat() * 0.05F, 0.95F + this.random.nextFloat() * 0.05F, false);
          }
 
          int var3 = this.getPhantomSize();
          float var4 = Mth.cos(this.yRot * 0.017453292F) * (1.3F + 0.21F * (float)var3);
          float var5 = Mth.sin(this.yRot * 0.017453292F) * (1.3F + 0.21F * (float)var3);
          float var6 = (0.3F + var1 * 0.45F) * ((float)var3 * 0.2F + 1.0F);
-         this.level.addParticle(ParticleTypes.MYCELIUM, this.getX() + (double)var4, this.getY() + (double)var6, this.getZ() + (double)var5, 0.0D, 0.0D, 0.0D);
-         this.level.addParticle(ParticleTypes.MYCELIUM, this.getX() - (double)var4, this.getY() + (double)var6, this.getZ() - (double)var5, 0.0D, 0.0D, 0.0D);
+         this.level.addParticle(ParticleTypes.MYCELIUM, this.x + (double)var4, this.y + (double)var6, this.z + (double)var5, 0.0D, 0.0D, 0.0D);
+         this.level.addParticle(ParticleTypes.MYCELIUM, this.x - (double)var4, this.y + (double)var6, this.z - (double)var5, 0.0D, 0.0D, 0.0D);
+      }
+
+      if (!this.level.isClientSide && this.level.getDifficulty() == Difficulty.PEACEFUL) {
+         this.remove();
       }
 
    }
@@ -133,8 +136,8 @@ public class Phantom extends FlyingMob implements Enemy {
       super.customServerAiStep();
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      this.anchorPoint = this.blockPosition().above(5);
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      this.anchorPoint = (new BlockPos(this)).above(5);
       this.setPhantomSize(0);
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
@@ -217,7 +220,9 @@ public class Phantom extends FlyingMob implements Enemy {
             this.nextScanTick = 60;
             List var1 = Phantom.this.level.getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0D, 64.0D, 16.0D));
             if (!var1.isEmpty()) {
-               var1.sort(Comparator.comparing(Entity::getY).reversed());
+               var1.sort((var0, var1x) -> {
+                  return var0.y > var1x.y ? -1 : 1;
+               });
                Iterator var2 = var1.iterator();
 
                while(var2.hasNext()) {
@@ -280,7 +285,7 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       private void setAnchorAboveTarget() {
-         Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
+         Phantom.this.anchorPoint = (new BlockPos(Phantom.this.getTarget())).above(20 + Phantom.this.random.nextInt(20));
          if (Phantom.this.anchorPoint.getY() < Phantom.this.level.getSeaLevel()) {
             Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level.getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
          }
@@ -341,13 +346,11 @@ public class Phantom extends FlyingMob implements Enemy {
 
       public void tick() {
          LivingEntity var1 = Phantom.this.getTarget();
-         Phantom.this.moveTargetPoint = new Vec3(var1.getX(), var1.getY(0.5D), var1.getZ());
+         Phantom.this.moveTargetPoint = new Vec3(var1.x, var1.y + (double)var1.getBbHeight() * 0.5D, var1.z);
          if (Phantom.this.getBoundingBox().inflate(0.20000000298023224D).intersects(var1.getBoundingBox())) {
             Phantom.this.doHurtTarget(var1);
             Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-            if (!Phantom.this.isSilent()) {
-               Phantom.this.level.levelEvent(1039, Phantom.this.blockPosition(), 0);
-            }
+            Phantom.this.level.levelEvent(1039, new BlockPos(Phantom.this), 0);
          } else if (Phantom.this.horizontalCollision || Phantom.this.hurtTime > 0) {
             Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
          }
@@ -403,12 +406,12 @@ public class Phantom extends FlyingMob implements Enemy {
             this.selectNext();
          }
 
-         if (Phantom.this.moveTargetPoint.y < Phantom.this.getY() && !Phantom.this.level.isEmptyBlock(Phantom.this.blockPosition().below(1))) {
+         if (Phantom.this.moveTargetPoint.y < Phantom.this.y && !Phantom.this.level.isEmptyBlock((new BlockPos(Phantom.this)).below(1))) {
             this.height = Math.max(1.0F, this.height);
             this.selectNext();
          }
 
-         if (Phantom.this.moveTargetPoint.y > Phantom.this.getY() && !Phantom.this.level.isEmptyBlock(Phantom.this.blockPosition().above(1))) {
+         if (Phantom.this.moveTargetPoint.y > Phantom.this.y && !Phantom.this.level.isEmptyBlock((new BlockPos(Phantom.this)).above(1))) {
             this.height = Math.min(-1.0F, this.height);
             this.selectNext();
          }
@@ -417,11 +420,11 @@ public class Phantom extends FlyingMob implements Enemy {
 
       private void selectNext() {
          if (BlockPos.ZERO.equals(Phantom.this.anchorPoint)) {
-            Phantom.this.anchorPoint = Phantom.this.blockPosition();
+            Phantom.this.anchorPoint = new BlockPos(Phantom.this);
          }
 
          this.angle += this.clockwise * 15.0F * 0.017453292F;
-         Phantom.this.moveTargetPoint = Vec3.atLowerCornerOf(Phantom.this.anchorPoint).add((double)(this.distance * Mth.cos(this.angle)), (double)(-4.0F + this.height), (double)(this.distance * Mth.sin(this.angle)));
+         Phantom.this.moveTargetPoint = (new Vec3(Phantom.this.anchorPoint)).add((double)(this.distance * Mth.cos(this.angle)), (double)(-4.0F + this.height), (double)(this.distance * Mth.sin(this.angle)));
       }
 
       // $FF: synthetic method
@@ -437,7 +440,7 @@ public class Phantom extends FlyingMob implements Enemy {
       }
 
       protected boolean touchingTarget() {
-         return Phantom.this.moveTargetPoint.distanceToSqr(Phantom.this.getX(), Phantom.this.getY(), Phantom.this.getZ()) < 4.0D;
+         return Phantom.this.moveTargetPoint.distanceToSqr(Phantom.this.x, Phantom.this.y, Phantom.this.z) < 4.0D;
       }
    }
 
@@ -475,9 +478,9 @@ public class Phantom extends FlyingMob implements Enemy {
             this.speed = 0.1F;
          }
 
-         float var1 = (float)(Phantom.this.moveTargetPoint.x - Phantom.this.getX());
-         float var2 = (float)(Phantom.this.moveTargetPoint.y - Phantom.this.getY());
-         float var3 = (float)(Phantom.this.moveTargetPoint.z - Phantom.this.getZ());
+         float var1 = (float)(Phantom.this.moveTargetPoint.x - Phantom.this.x);
+         float var2 = (float)(Phantom.this.moveTargetPoint.y - Phantom.this.y);
+         float var3 = (float)(Phantom.this.moveTargetPoint.z - Phantom.this.z);
          double var4 = (double)Mth.sqrt(var1 * var1 + var3 * var3);
          double var6 = 1.0D - (double)Mth.abs(var2 * 0.7F) / var4;
          var1 = (float)((double)var1 * var6);

@@ -1,6 +1,6 @@
 package com.mojang.blaze3d.platform;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,8 +9,6 @@ import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.concurrent.ThreadLocalRandom;
-import net.minecraft.SharedConstants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
@@ -18,23 +16,19 @@ import org.lwjgl.system.MemoryUtil;
 
 public class TextureUtil {
    private static final Logger LOGGER = LogManager.getLogger();
+   public static final int MIN_MIPMAP_LEVEL = 0;
+   private static final int DEFAULT_IMAGE_BUFFER_SIZE = 8192;
+
+   public TextureUtil() {
+      super();
+   }
 
    public static int generateTextureId() {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         int[] var0 = new int[ThreadLocalRandom.current().nextInt(15) + 1];
-         GlStateManager._genTextures(var0);
-         int var1 = GlStateManager._genTexture();
-         GlStateManager._deleteTextures(var0);
-         return var1;
-      } else {
-         return GlStateManager._genTexture();
-      }
+      return GlStateManager.genTexture();
    }
 
    public static void releaseTextureId(int var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
-      GlStateManager._deleteTexture(var0);
+      GlStateManager.deleteTexture(var0);
    }
 
    public static void prepareImage(int var0, int var1, int var2) {
@@ -50,24 +44,22 @@ public class TextureUtil {
    }
 
    public static void prepareImage(NativeImage.InternalGlFormat var0, int var1, int var2, int var3, int var4) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
       bind(var1);
       if (var2 >= 0) {
-         GlStateManager._texParameter(3553, 33085, var2);
-         GlStateManager._texParameter(3553, 33082, 0);
-         GlStateManager._texParameter(3553, 33083, var2);
-         GlStateManager._texParameter(3553, 34049, 0.0F);
+         GlStateManager.texParameter(3553, 33085, var2);
+         GlStateManager.texParameter(3553, 33082, 0);
+         GlStateManager.texParameter(3553, 33083, var2);
+         GlStateManager.texParameter(3553, 34049, 0.0F);
       }
 
       for(int var5 = 0; var5 <= var2; ++var5) {
-         GlStateManager._texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, (IntBuffer)null);
+         GlStateManager.texImage2D(3553, var5, var0.glFormat(), var3 >> var5, var4 >> var5, 0, 6408, 5121, (IntBuffer)null);
       }
 
    }
 
    private static void bind(int var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
-      GlStateManager._bindTexture(var0);
+      GlStateManager.bindTexture(var0);
    }
 
    public static ByteBuffer readResource(InputStream var0) throws IOException {
@@ -97,7 +89,6 @@ public class TextureUtil {
    }
 
    public static String readResourceAsString(InputStream var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
       ByteBuffer var1 = null;
 
       try {
@@ -117,8 +108,47 @@ public class TextureUtil {
       return null;
    }
 
+   public static void writeAsPNG(String var0, int var1, int var2, int var3, int var4) {
+      bind(var1);
+
+      for(int var5 = 0; var5 <= var2; ++var5) {
+         String var6 = var0 + "_" + var5 + ".png";
+         int var7 = var3 >> var5;
+         int var8 = var4 >> var5;
+
+         try {
+            NativeImage var9 = new NativeImage(var7, var8, false);
+            Throwable var10 = null;
+
+            try {
+               var9.downloadTexture(var5, false);
+               var9.writeToFile(var6);
+               LOGGER.debug("Exported png to: {}", (new File(var6)).getAbsolutePath());
+            } catch (Throwable var20) {
+               var10 = var20;
+               throw var20;
+            } finally {
+               if (var9 != null) {
+                  if (var10 != null) {
+                     try {
+                        var9.close();
+                     } catch (Throwable var19) {
+                        var10.addSuppressed(var19);
+                     }
+                  } else {
+                     var9.close();
+                  }
+               }
+
+            }
+         } catch (IOException var22) {
+            LOGGER.debug("Unable to write: ", var22);
+         }
+      }
+
+   }
+
    public static void initTexture(IntBuffer var0, int var1, int var2) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
       GL11.glPixelStorei(3312, 0);
       GL11.glPixelStorei(3313, 0);
       GL11.glPixelStorei(3314, 0);

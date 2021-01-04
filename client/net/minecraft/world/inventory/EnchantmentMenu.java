@@ -5,7 +5,6 @@ import java.util.Random;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -59,7 +58,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       });
       this.addSlot(new Slot(this.enchantSlots, 1, 35, 47) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.is(Items.LAPIS_LAZULI);
+            return var1.getItem() == Items.LAPIS_LAZULI;
          }
       });
 
@@ -97,28 +96,28 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                for(var5 = -1; var5 <= 1; ++var5) {
                   for(int var6 = -1; var6 <= 1; ++var6) {
                      if ((var5 != 0 || var6 != 0) && var2x.isEmptyBlock(var3x.offset(var6, 0, var5)) && var2x.isEmptyBlock(var3x.offset(var6, 1, var5))) {
-                        if (var2x.getBlockState(var3x.offset(var6 * 2, 0, var5 * 2)).is(Blocks.BOOKSHELF)) {
+                        if (var2x.getBlockState(var3x.offset(var6 * 2, 0, var5 * 2)).getBlock() == Blocks.BOOKSHELF) {
                            ++var4;
                         }
 
-                        if (var2x.getBlockState(var3x.offset(var6 * 2, 1, var5 * 2)).is(Blocks.BOOKSHELF)) {
+                        if (var2x.getBlockState(var3x.offset(var6 * 2, 1, var5 * 2)).getBlock() == Blocks.BOOKSHELF) {
                            ++var4;
                         }
 
                         if (var6 != 0 && var5 != 0) {
-                           if (var2x.getBlockState(var3x.offset(var6 * 2, 0, var5)).is(Blocks.BOOKSHELF)) {
+                           if (var2x.getBlockState(var3x.offset(var6 * 2, 0, var5)).getBlock() == Blocks.BOOKSHELF) {
                               ++var4;
                            }
 
-                           if (var2x.getBlockState(var3x.offset(var6 * 2, 1, var5)).is(Blocks.BOOKSHELF)) {
+                           if (var2x.getBlockState(var3x.offset(var6 * 2, 1, var5)).getBlock() == Blocks.BOOKSHELF) {
                               ++var4;
                            }
 
-                           if (var2x.getBlockState(var3x.offset(var6, 0, var5 * 2)).is(Blocks.BOOKSHELF)) {
+                           if (var2x.getBlockState(var3x.offset(var6, 0, var5 * 2)).getBlock() == Blocks.BOOKSHELF) {
                               ++var4;
                            }
 
-                           if (var2x.getBlockState(var3x.offset(var6, 1, var5 * 2)).is(Blocks.BOOKSHELF)) {
+                           if (var2x.getBlockState(var3x.offset(var6, 1, var5 * 2)).getBlock() == Blocks.BOOKSHELF) {
                               ++var4;
                            }
                         }
@@ -165,9 +164,9 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       ItemStack var3 = this.enchantSlots.getItem(0);
       ItemStack var4 = this.enchantSlots.getItem(1);
       int var5 = var2 + 1;
-      if ((var4.isEmpty() || var4.getCount() < var5) && !var1.getAbilities().instabuild) {
+      if ((var4.isEmpty() || var4.getCount() < var5) && !var1.abilities.instabuild) {
          return false;
-      } else if (this.costs[var2] <= 0 || var3.isEmpty() || (var1.experienceLevel < var5 || var1.experienceLevel < this.costs[var2]) && !var1.getAbilities().instabuild) {
+      } else if (this.costs[var2] <= 0 || var3.isEmpty() || (var1.experienceLevel < var5 || var1.experienceLevel < this.costs[var2]) && !var1.abilities.instabuild) {
          return false;
       } else {
          this.access.execute((var6, var7) -> {
@@ -175,19 +174,14 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             List var9 = this.getEnchantmentList(var3, var2, this.costs[var2]);
             if (!var9.isEmpty()) {
                var1.onEnchantmentPerformed(var3, var5);
-               boolean var10 = var3.is(Items.BOOK);
+               boolean var10 = var3.getItem() == Items.BOOK;
                if (var10) {
                   var8 = new ItemStack(Items.ENCHANTED_BOOK);
-                  CompoundTag var11 = var3.getTag();
-                  if (var11 != null) {
-                     var8.setTag(var11.copy());
-                  }
-
                   this.enchantSlots.setItem(0, var8);
                }
 
-               for(int var13 = 0; var13 < var9.size(); ++var13) {
-                  EnchantmentInstance var12 = (EnchantmentInstance)var9.get(var13);
+               for(int var11 = 0; var11 < var9.size(); ++var11) {
+                  EnchantmentInstance var12 = (EnchantmentInstance)var9.get(var11);
                   if (var10) {
                      EnchantedBookItem.addEnchantment(var8, var12);
                   } else {
@@ -195,7 +189,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                   }
                }
 
-               if (!var1.getAbilities().instabuild) {
+               if (!var1.abilities.instabuild) {
                   var4.shrink(var5);
                   if (var4.isEmpty()) {
                      this.enchantSlots.setItem(1, ItemStack.EMPTY);
@@ -221,7 +215,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
    private List<EnchantmentInstance> getEnchantmentList(ItemStack var1, int var2, int var3) {
       this.random.setSeed((long)(this.enchantmentSeed.get() + var2));
       List var4 = EnchantmentHelper.selectEnchantment(this.random, var1, var3, false);
-      if (var1.is(Items.BOOK) && var4.size() > 1) {
+      if (var1.getItem() == Items.BOOK && var4.size() > 1) {
          var4.remove(this.random.nextInt(var4.size()));
       }
 
@@ -240,7 +234,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.enchantSlots);
+         this.clearContainer(var1, var1.level, this.enchantSlots);
       });
    }
 
@@ -262,7 +256,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, 2, 38, true)) {
                return ItemStack.EMPTY;
             }
-         } else if (var5.is(Items.LAPIS_LAZULI)) {
+         } else if (var5.getItem() == Items.LAPIS_LAZULI) {
             if (!this.moveItemStackTo(var5, 1, 2, true)) {
                return ItemStack.EMPTY;
             }
@@ -271,10 +265,13 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                return ItemStack.EMPTY;
             }
 
-            ItemStack var6 = var5.copy();
-            var6.setCount(1);
-            var5.shrink(1);
-            ((Slot)this.slots.get(0)).set(var6);
+            if (var5.hasTag() && var5.getCount() == 1) {
+               ((Slot)this.slots.get(0)).set(var5.copy());
+               var5.setCount(0);
+            } else if (!var5.isEmpty()) {
+               ((Slot)this.slots.get(0)).set(new ItemStack(var5.getItem()));
+               var5.shrink(1);
+            }
          }
 
          if (var5.isEmpty()) {

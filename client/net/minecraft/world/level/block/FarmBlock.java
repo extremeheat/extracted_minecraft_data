@@ -4,19 +4,16 @@ import java.util.Iterator;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.piston.MovingPistonBlock;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -29,7 +26,7 @@ public class FarmBlock extends Block {
    public static final IntegerProperty MOISTURE;
    protected static final VoxelShape SHAPE;
 
-   protected FarmBlock(BlockBehaviour.Properties var1) {
+   protected FarmBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(MOISTURE, 0));
    }
@@ -44,7 +41,7 @@ public class FarmBlock extends Block {
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.above());
-      return !var4.getMaterial().isSolid() || var4.getBlock() instanceof FenceGateBlock || var4.getBlock() instanceof MovingPistonBlock;
+      return !var4.getMaterial().isSolid() || var4.getBlock() instanceof FenceGateBlock;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -59,25 +56,22 @@ public class FarmBlock extends Block {
       return SHAPE;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (!var1.canSurvive(var2, var3)) {
          turnToDirt(var1, var2, var3);
-      }
-
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      int var5 = (Integer)var1.getValue(MOISTURE);
-      if (!isNearWater(var2, var3) && !var2.isRainingAt(var3.above())) {
-         if (var5 > 0) {
-            var2.setBlock(var3, (BlockState)var1.setValue(MOISTURE, var5 - 1), 2);
-         } else if (!isUnderCrops(var2, var3)) {
-            turnToDirt(var1, var2, var3);
+      } else {
+         int var5 = (Integer)var1.getValue(MOISTURE);
+         if (!isNearWater(var2, var3) && !var2.isRainingAt(var3.above())) {
+            if (var5 > 0) {
+               var2.setBlock(var3, (BlockState)var1.setValue(MOISTURE, var5 - 1), 2);
+            } else if (!isUnderCrops(var2, var3)) {
+               turnToDirt(var1, var2, var3);
+            }
+         } else if (var5 < 7) {
+            var2.setBlock(var3, (BlockState)var1.setValue(MOISTURE, 7), 2);
          }
-      } else if (var5 < 7) {
-         var2.setBlock(var3, (BlockState)var1.setValue(MOISTURE, 7), 2);
-      }
 
+      }
    }
 
    public void fallOn(Level var1, BlockPos var2, Entity var3, float var4) {

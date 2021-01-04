@@ -3,20 +3,19 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BaseCommandBlock;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -26,22 +25,20 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
+public class CommandBlock extends BaseEntityBlock {
    private static final Logger LOGGER = LogManager.getLogger();
    public static final DirectionProperty FACING;
    public static final BooleanProperty CONDITIONAL;
-   private final boolean automatic;
 
-   public CommandBlock(BlockBehaviour.Properties var1, boolean var2) {
+   public CommandBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(CONDITIONAL, false));
-      this.automatic = var2;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      CommandBlockEntity var3 = new CommandBlockEntity(var1, var2);
-      var3.setAutomatic(this.automatic);
-      return var3;
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      CommandBlockEntity var2 = new CommandBlockEntity();
+      var2.setAutomatic(this == Blocks.CHAIN_COMMAND_BLOCK);
+      return var2;
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
@@ -55,7 +52,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
             if (!var10 && !var8.isAutomatic() && var8.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
                if (var9) {
                   var8.markConditionMet();
-                  var2.getBlockTicks().scheduleTick(var3, this, 1);
+                  var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2));
                }
 
             }
@@ -63,36 +60,38 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof CommandBlockEntity) {
-         CommandBlockEntity var6 = (CommandBlockEntity)var5;
-         BaseCommandBlock var7 = var6.getCommandBlock();
-         boolean var8 = !StringUtil.isNullOrEmpty(var7.getCommand());
-         CommandBlockEntity.Mode var9 = var6.getMode();
-         boolean var10 = var6.wasConditionMet();
-         if (var9 == CommandBlockEntity.Mode.AUTO) {
-            var6.markConditionMet();
-            if (var10) {
-               this.execute(var1, var2, var3, var7, var8);
-            } else if (var6.isConditional()) {
-               var7.setSuccessCount(0);
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide) {
+         BlockEntity var5 = var2.getBlockEntity(var3);
+         if (var5 instanceof CommandBlockEntity) {
+            CommandBlockEntity var6 = (CommandBlockEntity)var5;
+            BaseCommandBlock var7 = var6.getCommandBlock();
+            boolean var8 = !StringUtil.isNullOrEmpty(var7.getCommand());
+            CommandBlockEntity.Mode var9 = var6.getMode();
+            boolean var10 = var6.wasConditionMet();
+            if (var9 == CommandBlockEntity.Mode.AUTO) {
+               var6.markConditionMet();
+               if (var10) {
+                  this.execute(var1, var2, var3, var7, var8);
+               } else if (var6.isConditional()) {
+                  var7.setSuccessCount(0);
+               }
+
+               if (var6.isPowered() || var6.isAutomatic()) {
+                  var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2));
+               }
+            } else if (var9 == CommandBlockEntity.Mode.REDSTONE) {
+               if (var10) {
+                  this.execute(var1, var2, var3, var7, var8);
+               } else if (var6.isConditional()) {
+                  var7.setSuccessCount(0);
+               }
             }
 
-            if (var6.isPowered() || var6.isAutomatic()) {
-               var2.getBlockTicks().scheduleTick(var3, this, 1);
-            }
-         } else if (var9 == CommandBlockEntity.Mode.REDSTONE) {
-            if (var10) {
-               this.execute(var1, var2, var3, var7, var8);
-            } else if (var6.isConditional()) {
-               var7.setSuccessCount(0);
-            }
+            var2.updateNeighbourForOutputSignal(var3, this);
          }
 
-         var2.updateNeighbourForOutputSignal(var3, this);
       }
-
    }
 
    private void execute(BlockState var1, Level var2, BlockPos var3, BaseCommandBlock var4, boolean var5) {
@@ -105,13 +104,17 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
       executeChain(var2, var3, (Direction)var1.getValue(FACING));
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public int getTickDelay(LevelReader var1) {
+      return 1;
+   }
+
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       BlockEntity var7 = var2.getBlockEntity(var3);
       if (var7 instanceof CommandBlockEntity && var4.canUseGameMasterBlocks()) {
          var4.openCommandBlock((CommandBlockEntity)var7);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       } else {
-         return InteractionResult.PASS;
+         return false;
       }
    }
 
@@ -136,7 +139,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
          if (!var1.isClientSide) {
             if (var5.getTagElement("BlockEntityTag") == null) {
                var8.setTrackOutput(var1.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK));
-               var7.setAutomatic(this.automatic);
+               var7.setAutomatic(this == Blocks.CHAIN_COMMAND_BLOCK);
             }
 
             if (var7.getMode() == CommandBlockEntity.Mode.SEQUENCE) {
@@ -169,7 +172,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    private static void executeChain(Level var0, BlockPos var1, Direction var2) {
-      BlockPos.MutableBlockPos var3 = var1.mutable();
+      BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos(var1);
       GameRules var4 = var0.getGameRules();
 
       int var5;
@@ -178,7 +181,7 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
          var3.move(var2);
          var6 = var0.getBlockState(var3);
          Block var7 = var6.getBlock();
-         if (!var6.is(Blocks.CHAIN_COMMAND_BLOCK)) {
+         if (var7 != Blocks.CHAIN_COMMAND_BLOCK) {
             break;
          }
 

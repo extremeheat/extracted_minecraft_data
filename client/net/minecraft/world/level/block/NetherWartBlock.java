@@ -2,11 +2,10 @@ package net.minecraft.world.level.block;
 
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -18,7 +17,7 @@ public class NetherWartBlock extends BushBlock {
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPE_BY_AGE;
 
-   protected NetherWartBlock(BlockBehaviour.Properties var1) {
+   protected NetherWartBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
@@ -28,20 +27,17 @@ public class NetherWartBlock extends BushBlock {
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.SOUL_SAND);
+      return var1.getBlock() == Blocks.SOUL_SAND;
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 3;
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       int var5 = (Integer)var1.getValue(AGE);
       if (var5 < 3 && var4.nextInt(10) == 0) {
          var1 = (BlockState)var1.setValue(AGE, var5 + 1);
          var2.setBlock(var3, var1, 2);
       }
 
+      super.tick(var1, var2, var3, var4);
    }
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {

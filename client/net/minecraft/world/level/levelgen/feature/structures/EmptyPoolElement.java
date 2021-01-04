@@ -1,22 +1,18 @@
 package net.minecraft.world.level.levelgen.feature.structures;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class EmptyPoolElement extends StructurePoolElement {
-   public static final Codec<EmptyPoolElement> CODEC = Codec.unit(() -> {
-      return INSTANCE;
-   });
    public static final EmptyPoolElement INSTANCE = new EmptyPoolElement();
 
    private EmptyPoolElement() {
@@ -31,12 +27,16 @@ public class EmptyPoolElement extends StructurePoolElement {
       return BoundingBox.getUnknownBox();
    }
 
-   public boolean place(StructureManager var1, WorldGenLevel var2, StructureFeatureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, Random var9, boolean var10) {
+   public boolean place(StructureManager var1, LevelAccessor var2, BlockPos var3, Rotation var4, BoundingBox var5, Random var6) {
       return true;
    }
 
-   public StructurePoolElementType<?> getType() {
+   public StructurePoolElementType getType() {
       return StructurePoolElementType.EMPTY;
+   }
+
+   public <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.emptyMap());
    }
 
    public String toString() {

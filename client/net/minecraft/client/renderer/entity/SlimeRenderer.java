@@ -1,9 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.SlimeModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -13,27 +11,26 @@ import net.minecraft.world.entity.monster.Slime;
 public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
    private static final ResourceLocation SLIME_LOCATION = new ResourceLocation("textures/entity/slime/slime.png");
 
-   public SlimeRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SlimeModel(var1.getLayer(ModelLayers.SLIME)), 0.25F);
-      this.addLayer(new SlimeOuterLayer(this, var1.getModelSet()));
+   public SlimeRenderer(EntityRenderDispatcher var1) {
+      super(var1, new SlimeModel(16), 0.25F);
+      this.addLayer(new SlimeOuterLayer(this));
    }
 
-   public void render(Slime var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
+   public void render(Slime var1, double var2, double var4, double var6, float var8, float var9) {
       this.shadowRadius = 0.25F * (float)var1.getSize();
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render((Mob)var1, var2, var4, var6, var8, var9);
    }
 
-   protected void scale(Slime var1, PoseStack var2, float var3) {
-      float var4 = 0.999F;
-      var2.scale(0.999F, 0.999F, 0.999F);
-      var2.translate(0.0D, 0.0010000000474974513D, 0.0D);
-      float var5 = (float)var1.getSize();
-      float var6 = Mth.lerp(var3, var1.oSquish, var1.squish) / (var5 * 0.5F + 1.0F);
-      float var7 = 1.0F / (var6 + 1.0F);
-      var2.scale(var7 * var5, 1.0F / var7 * var5, var7 * var5);
+   protected void scale(Slime var1, float var2) {
+      float var3 = 0.999F;
+      GlStateManager.scalef(0.999F, 0.999F, 0.999F);
+      float var4 = (float)var1.getSize();
+      float var5 = Mth.lerp(var2, var1.oSquish, var1.squish) / (var4 * 0.5F + 1.0F);
+      float var6 = 1.0F / (var5 + 1.0F);
+      GlStateManager.scalef(var6 * var4, 1.0F / var6 * var4, var6 * var4);
    }
 
-   public ResourceLocation getTextureLocation(Slime var1) {
+   protected ResourceLocation getTextureLocation(Slime var1) {
       return SLIME_LOCATION;
    }
 }

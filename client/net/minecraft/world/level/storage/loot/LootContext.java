@@ -12,40 +12,33 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LootContext {
    private final Random random;
    private final float luck;
    private final ServerLevel level;
-   private final Function<ResourceLocation, LootTable> lootTables;
+   private final LootTables lootTables;
    private final Set<LootTable> visitedTables;
-   private final Function<ResourceLocation, LootItemCondition> conditions;
-   private final Set<LootItemCondition> visitedConditions;
    private final Map<LootContextParam<?>, Object> params;
    private final Map<ResourceLocation, LootContext.DynamicDrop> dynamicDrops;
 
-   private LootContext(Random var1, float var2, ServerLevel var3, Function<ResourceLocation, LootTable> var4, Function<ResourceLocation, LootItemCondition> var5, Map<LootContextParam<?>, Object> var6, Map<ResourceLocation, LootContext.DynamicDrop> var7) {
+   private LootContext(Random var1, float var2, ServerLevel var3, LootTables var4, Map<LootContextParam<?>, Object> var5, Map<ResourceLocation, LootContext.DynamicDrop> var6) {
       super();
       this.visitedTables = Sets.newLinkedHashSet();
-      this.visitedConditions = Sets.newLinkedHashSet();
       this.random = var1;
       this.luck = var2;
       this.level = var3;
       this.lootTables = var4;
-      this.conditions = var5;
-      this.params = ImmutableMap.copyOf(var6);
-      this.dynamicDrops = ImmutableMap.copyOf(var7);
+      this.params = ImmutableMap.copyOf(var5);
+      this.dynamicDrops = ImmutableMap.copyOf(var6);
    }
 
    public boolean hasParam(LootContextParam<?> var1) {
@@ -73,20 +66,8 @@ public class LootContext {
       this.visitedTables.remove(var1);
    }
 
-   public boolean addVisitedCondition(LootItemCondition var1) {
-      return this.visitedConditions.add(var1);
-   }
-
-   public void removeVisitedCondition(LootItemCondition var1) {
-      this.visitedConditions.remove(var1);
-   }
-
-   public LootTable getLootTable(ResourceLocation var1) {
-      return (LootTable)this.lootTables.apply(var1);
-   }
-
-   public LootItemCondition getCondition(ResourceLocation var1) {
-      return (LootItemCondition)this.conditions.apply(var1);
+   public LootTables getLootTables() {
+      return this.lootTables;
    }
 
    public Random getRandom() {
@@ -102,8 +83,8 @@ public class LootContext {
    }
 
    // $FF: synthetic method
-   LootContext(Random var1, float var2, ServerLevel var3, Function var4, Function var5, Map var6, Map var7, Object var8) {
-      this(var1, var2, var3, var4, var5, var6, var7);
+   LootContext(Random var1, float var2, ServerLevel var3, LootTables var4, Map var5, Map var6, Object var7) {
+      this(var1, var2, var3, var4, var5, var6);
    }
 
    public static enum EntityTarget {
@@ -259,8 +240,7 @@ public class LootContext {
                   var4 = new Random();
                }
 
-               MinecraftServer var5 = this.level.getServer();
-               return new LootContext(var4, this.luck, this.level, var5.getLootTables()::get, var5.getPredicateManager()::get, this.params, this.dynamicDrops);
+               return new LootContext(var4, this.luck, this.level, this.level.getServer().getLootTables(), this.params, this.dynamicDrops);
             }
          }
       }

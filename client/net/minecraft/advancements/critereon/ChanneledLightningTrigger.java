@@ -1,18 +1,26 @@
 package net.minecraft.advancements.critereon;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.Set;
+import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.storage.loot.LootContext;
 
-public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledLightningTrigger.TriggerInstance> {
+public class ChanneledLightningTrigger implements CriterionTrigger<ChanneledLightningTrigger.TriggerInstance> {
    private static final ResourceLocation ID = new ResourceLocation("channeled_lightning");
+   private final Map<PlayerAdvancements, ChanneledLightningTrigger.PlayerListeners> players = Maps.newHashMap();
 
    public ChanneledLightningTrigger() {
       super();
@@ -22,57 +30,128 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       return ID;
    }
 
-   public ChanneledLightningTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite[] var4 = EntityPredicate.Composite.fromJsonArray(var1, "victims", var3);
-      return new ChanneledLightningTrigger.TriggerInstance(var2, var4);
+   public void addPlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<ChanneledLightningTrigger.TriggerInstance> var2) {
+      ChanneledLightningTrigger.PlayerListeners var3 = (ChanneledLightningTrigger.PlayerListeners)this.players.get(var1);
+      if (var3 == null) {
+         var3 = new ChanneledLightningTrigger.PlayerListeners(var1);
+         this.players.put(var1, var3);
+      }
+
+      var3.addListener(var2);
+   }
+
+   public void removePlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<ChanneledLightningTrigger.TriggerInstance> var2) {
+      ChanneledLightningTrigger.PlayerListeners var3 = (ChanneledLightningTrigger.PlayerListeners)this.players.get(var1);
+      if (var3 != null) {
+         var3.removeListener(var2);
+         if (var3.isEmpty()) {
+            this.players.remove(var1);
+         }
+      }
+
+   }
+
+   public void removePlayerListeners(PlayerAdvancements var1) {
+      this.players.remove(var1);
+   }
+
+   public ChanneledLightningTrigger.TriggerInstance createInstance(JsonObject var1, JsonDeserializationContext var2) {
+      EntityPredicate[] var3 = EntityPredicate.fromJsonArray(var1.get("victims"));
+      return new ChanneledLightningTrigger.TriggerInstance(var3);
    }
 
    public void trigger(ServerPlayer var1, Collection<? extends Entity> var2) {
-      List var3 = (List)var2.stream().map((var1x) -> {
-         return EntityPredicate.createContext(var1, var1x);
-      }).collect(Collectors.toList());
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var3);
-      });
+      ChanneledLightningTrigger.PlayerListeners var3 = (ChanneledLightningTrigger.PlayerListeners)this.players.get(var1.getAdvancements());
+      if (var3 != null) {
+         var3.trigger(var1, var2);
+      }
+
    }
 
    // $FF: synthetic method
-   public AbstractCriterionTriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      return this.createInstance(var1, var2, var3);
+   public CriterionTriggerInstance createInstance(JsonObject var1, JsonDeserializationContext var2) {
+      return this.createInstance(var1, var2);
+   }
+
+   static class PlayerListeners {
+      private final PlayerAdvancements player;
+      private final Set<CriterionTrigger.Listener<ChanneledLightningTrigger.TriggerInstance>> listeners = Sets.newHashSet();
+
+      public PlayerListeners(PlayerAdvancements var1) {
+         super();
+         this.player = var1;
+      }
+
+      public boolean isEmpty() {
+         return this.listeners.isEmpty();
+      }
+
+      public void addListener(CriterionTrigger.Listener<ChanneledLightningTrigger.TriggerInstance> var1) {
+         this.listeners.add(var1);
+      }
+
+      public void removeListener(CriterionTrigger.Listener<ChanneledLightningTrigger.TriggerInstance> var1) {
+         this.listeners.remove(var1);
+      }
+
+      public void trigger(ServerPlayer var1, Collection<? extends Entity> var2) {
+         ArrayList var3 = null;
+         Iterator var4 = this.listeners.iterator();
+
+         CriterionTrigger.Listener var5;
+         while(var4.hasNext()) {
+            var5 = (CriterionTrigger.Listener)var4.next();
+            if (((ChanneledLightningTrigger.TriggerInstance)var5.getTriggerInstance()).matches(var1, var2)) {
+               if (var3 == null) {
+                  var3 = Lists.newArrayList();
+               }
+
+               var3.add(var5);
+            }
+         }
+
+         if (var3 != null) {
+            var4 = var3.iterator();
+
+            while(var4.hasNext()) {
+               var5 = (CriterionTrigger.Listener)var4.next();
+               var5.run(this.player);
+            }
+         }
+
+      }
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite[] victims;
+      private final EntityPredicate[] victims;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite[] var2) {
-         super(ChanneledLightningTrigger.ID, var1);
-         this.victims = var2;
+      public TriggerInstance(EntityPredicate[] var1) {
+         super(ChanneledLightningTrigger.ID);
+         this.victims = var1;
       }
 
       public static ChanneledLightningTrigger.TriggerInstance channeledLightning(EntityPredicate... var0) {
-         return new ChanneledLightningTrigger.TriggerInstance(EntityPredicate.Composite.ANY, (EntityPredicate.Composite[])Stream.of(var0).map(EntityPredicate.Composite::wrap).toArray((var0x) -> {
-            return new EntityPredicate.Composite[var0x];
-         }));
+         return new ChanneledLightningTrigger.TriggerInstance(var0);
       }
 
-      public boolean matches(Collection<? extends LootContext> var1) {
-         EntityPredicate.Composite[] var2 = this.victims;
-         int var3 = var2.length;
+      public boolean matches(ServerPlayer var1, Collection<? extends Entity> var2) {
+         EntityPredicate[] var3 = this.victims;
+         int var4 = var3.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            EntityPredicate.Composite var5 = var2[var4];
-            boolean var6 = false;
-            Iterator var7 = var1.iterator();
+         for(int var5 = 0; var5 < var4; ++var5) {
+            EntityPredicate var6 = var3[var5];
+            boolean var7 = false;
+            Iterator var8 = var2.iterator();
 
-            while(var7.hasNext()) {
-               LootContext var8 = (LootContext)var7.next();
-               if (var5.matches(var8)) {
-                  var6 = true;
+            while(var8.hasNext()) {
+               Entity var9 = (Entity)var8.next();
+               if (var6.matches(var1, var9)) {
+                  var7 = true;
                   break;
                }
             }
 
-            if (!var6) {
+            if (!var7) {
                return false;
             }
          }
@@ -80,10 +159,10 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
          return true;
       }
 
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("victims", EntityPredicate.Composite.toJson(this.victims, var1));
-         return var2;
+      public JsonElement serializeToJson() {
+         JsonObject var1 = new JsonObject();
+         var1.add("victims", EntityPredicate.serializeArrayToJson(this.victims));
+         return var1;
       }
    }
 }

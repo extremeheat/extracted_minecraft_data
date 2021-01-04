@@ -1,15 +1,14 @@
 package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
-import java.util.UUID;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 
 public class RemotePlayer extends AbstractClientPlayer {
-   public RemotePlayer(ClientLevel var1, GameProfile var2) {
+   public RemotePlayer(MultiPlayerLevel var1, GameProfile var2) {
       super(var1, var2);
       this.maxUpStep = 1.0F;
       this.noPhysics = true;
@@ -31,14 +30,23 @@ public class RemotePlayer extends AbstractClientPlayer {
 
    public void tick() {
       super.tick();
-      this.calculateEntityAnimation(this, false);
+      this.animationSpeedOld = this.animationSpeed;
+      double var1 = this.x - this.xo;
+      double var3 = this.z - this.zo;
+      float var5 = Mth.sqrt(var1 * var1 + var3 * var3) * 4.0F;
+      if (var5 > 1.0F) {
+         var5 = 1.0F;
+      }
+
+      this.animationSpeed += (var5 - this.animationSpeed) * 0.4F;
+      this.animationPosition += this.animationSpeed;
    }
 
    public void aiStep() {
       if (this.lerpSteps > 0) {
-         double var1 = this.getX() + (this.lerpX - this.getX()) / (double)this.lerpSteps;
-         double var3 = this.getY() + (this.lerpY - this.getY()) / (double)this.lerpSteps;
-         double var5 = this.getZ() + (this.lerpZ - this.getZ()) / (double)this.lerpSteps;
+         double var1 = this.x + (this.lerpX - this.x) / (double)this.lerpSteps;
+         double var3 = this.y + (this.lerpY - this.y) / (double)this.lerpSteps;
+         double var5 = this.z + (this.lerpZ - this.z) / (double)this.lerpSteps;
          this.yRot = (float)((double)this.yRot + Mth.wrapDegrees(this.lerpYRot - (double)this.yRot) / (double)this.lerpSteps);
          this.xRot = (float)((double)this.xRot + (this.lerpXRot - (double)this.xRot) / (double)this.lerpSteps);
          --this.lerpSteps;
@@ -54,10 +62,17 @@ public class RemotePlayer extends AbstractClientPlayer {
       this.oBob = this.bob;
       this.updateSwingTime();
       float var7;
-      if (this.onGround && !this.isDeadOrDying()) {
+      if (this.onGround && this.getHealth() > 0.0F) {
          var7 = Math.min(0.1F, Mth.sqrt(getHorizontalDistanceSqr(this.getDeltaMovement())));
       } else {
          var7 = 0.0F;
+      }
+
+      float var2;
+      if (!this.onGround && this.getHealth() > 0.0F) {
+         var2 = (float)Math.atan(-this.getDeltaMovement().y * 0.20000000298023224D) * 15.0F;
+      } else {
+         var2 = 0.0F;
       }
 
       this.bob += (var7 - this.bob) * 0.4F;
@@ -69,11 +84,7 @@ public class RemotePlayer extends AbstractClientPlayer {
    protected void updatePlayerPose() {
    }
 
-   public void sendMessage(Component var1, UUID var2) {
-      Minecraft var3 = Minecraft.getInstance();
-      if (!var3.isBlocked(var2)) {
-         var3.gui.getChat().addMessage(var1);
-      }
-
+   public void sendMessage(Component var1) {
+      Minecraft.getInstance().gui.getChat().addMessage(var1);
    }
 }

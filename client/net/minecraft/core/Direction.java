@@ -1,11 +1,6 @@
 package net.minecraft.core;
 
 import com.google.common.collect.Iterators;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
-import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.Arrays;
@@ -16,9 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
@@ -107,35 +100,6 @@ public enum Direction implements StringRepresentable {
       return new Direction[]{var0, var1, var2, var2.getOpposite(), var1.getOpposite(), var0.getOpposite()};
    }
 
-   public static Direction rotate(Matrix4f var0, Direction var1) {
-      Vec3i var2 = var1.getNormal();
-      Vector4f var3 = new Vector4f((float)var2.getX(), (float)var2.getY(), (float)var2.getZ(), 0.0F);
-      var3.transform(var0);
-      return getNearest(var3.x(), var3.y(), var3.z());
-   }
-
-   public Quaternion getRotation() {
-      Quaternion var1 = Vector3f.XP.rotationDegrees(90.0F);
-      switch(this) {
-      case DOWN:
-         return Vector3f.XP.rotationDegrees(180.0F);
-      case UP:
-         return Quaternion.ONE.copy();
-      case NORTH:
-         var1.mul(Vector3f.ZP.rotationDegrees(180.0F));
-         return var1;
-      case SOUTH:
-         return var1;
-      case WEST:
-         var1.mul(Vector3f.ZP.rotationDegrees(90.0F));
-         return var1;
-      case EAST:
-      default:
-         var1.mul(Vector3f.ZP.rotationDegrees(-90.0F));
-         return var1;
-      }
-   }
-
    public int get3DDataValue() {
       return this.data3d;
    }
@@ -152,18 +116,76 @@ public enum Direction implements StringRepresentable {
       return from3DDataValue(this.oppositeIndex);
    }
 
+   public Direction getClockWise(Direction.Axis var1) {
+      switch(var1) {
+      case X:
+         if (this != WEST && this != EAST) {
+            return this.getClockWiseX();
+         }
+
+         return this;
+      case Y:
+         if (this != UP && this != DOWN) {
+            return this.getClockWise();
+         }
+
+         return this;
+      case Z:
+         if (this != NORTH && this != SOUTH) {
+            return this.getClockWiseZ();
+         }
+
+         return this;
+      default:
+         throw new IllegalStateException("Unable to get CW facing for axis " + var1);
+      }
+   }
+
    public Direction getClockWise() {
       switch(this) {
       case NORTH:
          return EAST;
+      case EAST:
+         return SOUTH;
       case SOUTH:
          return WEST;
       case WEST:
          return NORTH;
-      case EAST:
-         return SOUTH;
       default:
          throw new IllegalStateException("Unable to get Y-rotated facing of " + this);
+      }
+   }
+
+   private Direction getClockWiseX() {
+      switch(this) {
+      case NORTH:
+         return DOWN;
+      case EAST:
+      case WEST:
+      default:
+         throw new IllegalStateException("Unable to get X-rotated facing of " + this);
+      case SOUTH:
+         return UP;
+      case UP:
+         return NORTH;
+      case DOWN:
+         return SOUTH;
+      }
+   }
+
+   private Direction getClockWiseZ() {
+      switch(this) {
+      case EAST:
+         return DOWN;
+      case SOUTH:
+      default:
+         throw new IllegalStateException("Unable to get Z-rotated facing of " + this);
+      case WEST:
+         return UP;
+      case UP:
+         return EAST;
+      case DOWN:
+         return WEST;
       }
    }
 
@@ -171,31 +193,27 @@ public enum Direction implements StringRepresentable {
       switch(this) {
       case NORTH:
          return WEST;
+      case EAST:
+         return NORTH;
       case SOUTH:
          return EAST;
       case WEST:
          return SOUTH;
-      case EAST:
-         return NORTH;
       default:
          throw new IllegalStateException("Unable to get CCW facing of " + this);
       }
    }
 
    public int getStepX() {
-      return this.normal.getX();
+      return this.axis == Direction.Axis.X ? this.axisDirection.getStep() : 0;
    }
 
    public int getStepY() {
-      return this.normal.getY();
+      return this.axis == Direction.Axis.Y ? this.axisDirection.getStep() : 0;
    }
 
    public int getStepZ() {
-      return this.normal.getZ();
-   }
-
-   public Vector3f step() {
-      return new Vector3f((float)this.getStepX(), (float)this.getStepY(), (float)this.getStepZ());
+      return this.axis == Direction.Axis.Z ? this.axisDirection.getStep() : 0;
    }
 
    public String getName() {
@@ -244,8 +262,8 @@ public enum Direction implements StringRepresentable {
       return (float)((this.data2d & 3) * 90);
    }
 
-   public static Direction getRandom(Random var0) {
-      return (Direction)Util.getRandom((Object[])VALUES, var0);
+   public static Direction getRandomFace(Random var0) {
+      return values()[var0.nextInt(values().length)];
    }
 
    public static Direction getNearest(double var0, double var2, double var4) {
@@ -279,7 +297,7 @@ public enum Direction implements StringRepresentable {
    }
 
    public static Direction get(Direction.AxisDirection var0, Direction.Axis var1) {
-      Direction[] var2 = VALUES;
+      Direction[] var2 = values();
       int var3 = var2.length;
 
       for(int var4 = 0; var4 < var3; ++var4) {
@@ -296,13 +314,6 @@ public enum Direction implements StringRepresentable {
       return this.normal;
    }
 
-   public boolean isFacingAngle(float var1) {
-      float var2 = var1 * 0.017453292F;
-      float var3 = -Mth.sin(var2);
-      float var4 = Mth.cos(var2);
-      return (float)this.normal.getX() * var3 + (float)this.normal.getZ() * var4 > 0.0F;
-   }
-
    public static enum Plane implements Iterable<Direction>, Predicate<Direction> {
       HORIZONTAL(new Direction[]{Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}, new Direction.Axis[]{Direction.Axis.X, Direction.Axis.Z}),
       VERTICAL(new Direction[]{Direction.UP, Direction.DOWN}, new Direction.Axis[]{Direction.Axis.Y});
@@ -316,7 +327,7 @@ public enum Direction implements StringRepresentable {
       }
 
       public Direction getRandomDirection(Random var1) {
-         return (Direction)Util.getRandom((Object[])this.faces, var1);
+         return this.faces[var1.nextInt(this.faces.length)];
       }
 
       public boolean test(@Nullable Direction var1) {
@@ -325,10 +336,6 @@ public enum Direction implements StringRepresentable {
 
       public Iterator<Direction> iterator() {
          return Iterators.forArray(this.faces);
-      }
-
-      public Stream<Direction> stream() {
-         return Arrays.stream(this.faces);
       }
 
       // $FF: synthetic method
@@ -355,10 +362,6 @@ public enum Direction implements StringRepresentable {
 
       public String toString() {
          return this.name;
-      }
-
-      public Direction.AxisDirection opposite() {
-         return this == POSITIVE ? NEGATIVE : POSITIVE;
       }
    }
 
@@ -406,9 +409,7 @@ public enum Direction implements StringRepresentable {
          }
       };
 
-      private static final Direction.Axis[] VALUES = values();
-      public static final Codec<Direction.Axis> CODEC = StringRepresentable.fromEnum(Direction.Axis::values, Direction.Axis::byName);
-      private static final Map<String, Direction.Axis> BY_NAME = (Map)Arrays.stream(VALUES).collect(Collectors.toMap(Direction.Axis::getName, (var0) -> {
+      private static final Map<String, Direction.Axis> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap(Direction.Axis::getName, (var0) -> {
          return var0;
       }));
       private final String name;
@@ -438,8 +439,8 @@ public enum Direction implements StringRepresentable {
          return this.name;
       }
 
-      public static Direction.Axis getRandom(Random var0) {
-         return (Direction.Axis)Util.getRandom((Object[])VALUES, var0);
+      public static Direction.Axis getRandomAxis(Random var0) {
+         return values()[var0.nextInt(values().length)];
       }
 
       public boolean test(@Nullable Direction var1) {

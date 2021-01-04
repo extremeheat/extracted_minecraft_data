@@ -7,10 +7,6 @@ public class SequentialEntry extends CompositeEntryBase {
       super(var1, var2);
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.SEQUENCE;
-   }
-
    protected ComposableEntryContainer compose(ComposableEntryContainer[] var1) {
       switch(var1.length) {
       case 0:

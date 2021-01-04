@@ -1,7 +1,6 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.IdMapper;
 import net.minecraft.nbt.CompoundTag;
@@ -39,14 +38,8 @@ public class HashMapPalette<T> implements Palette<T> {
       return var2;
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
-         if (var1.test(this.values.byId(var2))) {
-            return true;
-         }
-      }
-
-      return false;
+   public boolean maybeHas(T var1) {
+      return this.values.getId(var1) != -1;
    }
 
    @Nullable

@@ -1,6 +1,5 @@
 package net.minecraft.server.packs.resources;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,7 +25,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
 
    public static SimpleReloadInstance<Void> of(ResourceManager var0, List<PreparableReloadListener> var1, Executor var2, Executor var3, CompletableFuture<Unit> var4) {
       return new SimpleReloadInstance(var2, var3, var0, var1, (var1x, var2x, var3x, var4x, var5) -> {
-         return var3x.reload(var1x, var2x, InactiveProfiler.INSTANCE, InactiveProfiler.INSTANCE, var2, var5);
+         return var3x.reload(var1x, var2x, InactiveProfiler.INACTIVE, InactiveProfiler.INACTIVE, var2, var5);
       }, var4);
    }
 
@@ -37,7 +36,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
       this.startedTaskCounter.incrementAndGet();
       AtomicInteger var10001 = this.doneTaskCounter;
       var6.thenRun(var10001::incrementAndGet);
-      ArrayList var7 = Lists.newArrayList();
+      ArrayList var7 = new ArrayList();
       final CompletableFuture var8 = var6;
       this.preparingListeners = Sets.newHashSet(var4);
 

@@ -1,15 +1,15 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class CoralMushroomFeature extends CoralFeature {
-   public CoralMushroomFeature(Codec<NoneFeatureConfiguration> var1) {
+   public CoralMushroomFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
@@ -18,7 +18,7 @@ public class CoralMushroomFeature extends CoralFeature {
       int var6 = var2.nextInt(3) + 3;
       int var7 = var2.nextInt(3) + 3;
       int var8 = var2.nextInt(3) + 1;
-      BlockPos.MutableBlockPos var9 = var3.mutable();
+      BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(var3);
 
       for(int var10 = 0; var10 <= var6; ++var10) {
          for(int var11 = 0; var11 <= var5; ++var11) {

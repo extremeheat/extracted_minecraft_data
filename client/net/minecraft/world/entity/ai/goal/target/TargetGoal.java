@@ -1,12 +1,15 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -62,7 +65,7 @@ public abstract class TargetGoal extends Goal {
                   }
                }
 
-               if (var1 instanceof Player && ((Player)var1).getAbilities().invulnerable) {
+               if (var1 instanceof Player && ((Player)var1).abilities.invulnerable) {
                   return false;
                } else {
                   this.mob.setTarget(var1);
@@ -74,7 +77,8 @@ public abstract class TargetGoal extends Goal {
    }
 
    protected double getFollowDistance() {
-      return this.mob.getAttributeValue(Attributes.FOLLOW_RANGE);
+      AttributeInstance var1 = this.mob.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE);
+      return var1 == null ? 16.0D : var1.getValue();
    }
 
    public void start() {
@@ -93,7 +97,7 @@ public abstract class TargetGoal extends Goal {
          return false;
       } else if (!var2.test(this.mob, var1)) {
          return false;
-      } else if (!this.mob.isWithinRestriction(var1.blockPosition())) {
+      } else if (!this.mob.isWithinRestriction(new BlockPos(var1))) {
          return false;
       } else {
          if (this.mustReach) {
@@ -120,12 +124,12 @@ public abstract class TargetGoal extends Goal {
       if (var2 == null) {
          return false;
       } else {
-         Node var3 = var2.getEndNode();
+         Node var3 = var2.last();
          if (var3 == null) {
             return false;
          } else {
-            int var4 = var3.x - var1.getBlockX();
-            int var5 = var3.z - var1.getBlockZ();
+            int var4 = var3.x - Mth.floor(var1.x);
+            int var5 = var3.z - Mth.floor(var1.z);
             return (double)(var4 * var4 + var5 * var5) <= 2.25D;
          }
       }

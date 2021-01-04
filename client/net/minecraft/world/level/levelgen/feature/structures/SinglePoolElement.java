@@ -1,78 +1,62 @@
 package net.minecraft.world.level.levelgen.feature.structures;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.data.worldgen.ProcessorLists;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.util.Deserializer;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.properties.StructureMode;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.NopProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class SinglePoolElement extends StructurePoolElement {
-   private static final Codec<Either<ResourceLocation, StructureTemplate>> TEMPLATE_CODEC;
-   public static final Codec<SinglePoolElement> CODEC;
-   protected final Either<ResourceLocation, StructureTemplate> template;
-   protected final Supplier<StructureProcessorList> processors;
+   protected final ResourceLocation location;
+   protected final ImmutableList<StructureProcessor> processors;
 
-   private static <T> DataResult<T> encodeTemplate(Either<ResourceLocation, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
-      Optional var3 = var0.left();
-      return !var3.isPresent() ? DataResult.error("Can not serialize a runtime pool element") : ResourceLocation.CODEC.encode(var3.get(), var1, var2);
+   @Deprecated
+   public SinglePoolElement(String var1, List<StructureProcessor> var2) {
+      this(var1, var2, StructureTemplatePool.Projection.RIGID);
    }
 
-   protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Supplier<StructureProcessorList>> processorsCodec() {
-      return StructureProcessorType.LIST_CODEC.fieldOf("processors").forGetter((var0) -> {
-         return var0.processors;
-      });
-   }
-
-   protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<ResourceLocation, StructureTemplate>> templateCodec() {
-      return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> {
-         return var0.template;
-      });
-   }
-
-   protected SinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Supplier<StructureProcessorList> var2, StructureTemplatePool.Projection var3) {
+   public SinglePoolElement(String var1, List<StructureProcessor> var2, StructureTemplatePool.Projection var3) {
       super(var3);
-      this.template = var1;
-      this.processors = var2;
+      this.location = new ResourceLocation(var1);
+      this.processors = ImmutableList.copyOf(var2);
    }
 
-   public SinglePoolElement(StructureTemplate var1) {
-      this(Either.right(var1), () -> {
-         return ProcessorLists.EMPTY;
-      }, StructureTemplatePool.Projection.RIGID);
+   @Deprecated
+   public SinglePoolElement(String var1) {
+      this(var1, ImmutableList.of());
    }
 
-   private StructureTemplate getTemplate(StructureManager var1) {
-      return (StructureTemplate)this.template.map(var1::getOrCreate, Function.identity());
+   public SinglePoolElement(Dynamic<?> var1) {
+      super(var1);
+      this.location = new ResourceLocation(var1.get("location").asString(""));
+      this.processors = ImmutableList.copyOf(var1.get("processors").asList((var0) -> {
+         return (StructureProcessor)Deserializer.deserialize(var0, Registry.STRUCTURE_PROCESSOR, "processor_type", NopProcessor.INSTANCE);
+      }));
    }
 
    public List<StructureTemplate.StructureBlockInfo> getDataMarkers(StructureManager var1, BlockPos var2, Rotation var3, boolean var4) {
-      StructureTemplate var5 = this.getTemplate(var1);
+      StructureTemplate var5 = var1.getOrCreate(this.location);
       List var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.STRUCTURE_BLOCK, var4);
       ArrayList var7 = Lists.newArrayList();
       Iterator var8 = var6.iterator();
@@ -91,64 +75,59 @@ public class SinglePoolElement extends StructurePoolElement {
    }
 
    public List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(StructureManager var1, BlockPos var2, Rotation var3, Random var4) {
-      StructureTemplate var5 = this.getTemplate(var1);
-      List var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.JIGSAW, true);
+      StructureTemplate var5 = var1.getOrCreate(this.location);
+      List var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.JIGSAW_BLOCK, true);
       Collections.shuffle(var6, var4);
       return var6;
    }
 
    public BoundingBox getBoundingBox(StructureManager var1, BlockPos var2, Rotation var3) {
-      StructureTemplate var4 = this.getTemplate(var1);
+      StructureTemplate var4 = var1.getOrCreate(this.location);
       return var4.getBoundingBox((new StructurePlaceSettings()).setRotation(var3), var2);
    }
 
-   public boolean place(StructureManager var1, WorldGenLevel var2, StructureFeatureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, Random var9, boolean var10) {
-      StructureTemplate var11 = this.getTemplate(var1);
-      StructurePlaceSettings var12 = this.getSettings(var7, var8, var10);
-      if (!var11.placeInWorld(var2, var5, var6, var12, var9, 18)) {
+   public boolean place(StructureManager var1, LevelAccessor var2, BlockPos var3, Rotation var4, BoundingBox var5, Random var6) {
+      StructureTemplate var7 = var1.getOrCreate(this.location);
+      StructurePlaceSettings var8 = this.getSettings(var4, var5);
+      if (!var7.placeInWorld(var2, var3, var8, 18)) {
          return false;
       } else {
-         List var13 = StructureTemplate.processBlockInfos(var2, var5, var6, var12, this.getDataMarkers(var1, var5, var7, false));
-         Iterator var14 = var13.iterator();
+         List var9 = StructureTemplate.processBlockInfos(var2, var3, var8, this.getDataMarkers(var1, var3, var4, false));
+         Iterator var10 = var9.iterator();
 
-         while(var14.hasNext()) {
-            StructureTemplate.StructureBlockInfo var15 = (StructureTemplate.StructureBlockInfo)var14.next();
-            this.handleDataMarker(var2, var15, var5, var7, var9, var8);
+         while(var10.hasNext()) {
+            StructureTemplate.StructureBlockInfo var11 = (StructureTemplate.StructureBlockInfo)var10.next();
+            this.handleDataMarker(var2, var11, var3, var4, var6, var5);
          }
 
          return true;
       }
    }
 
-   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2, boolean var3) {
-      StructurePlaceSettings var4 = new StructurePlaceSettings();
-      var4.setBoundingBox(var2);
-      var4.setRotation(var1);
-      var4.setKnownShape(true);
-      var4.setIgnoreEntities(false);
-      var4.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
-      var4.setFinalizeEntities(true);
-      if (!var3) {
-         var4.addProcessor(JigsawReplacementProcessor.INSTANCE);
-      }
-
-      ((StructureProcessorList)this.processors.get()).list().forEach(var4::addProcessor);
-      this.getProjection().getProcessors().forEach(var4::addProcessor);
-      return var4;
+   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2) {
+      StructurePlaceSettings var3 = new StructurePlaceSettings();
+      var3.setBoundingBox(var2);
+      var3.setRotation(var1);
+      var3.setKnownShape(true);
+      var3.setIgnoreEntities(false);
+      var3.addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
+      var3.addProcessor(JigsawReplacementProcessor.INSTANCE);
+      this.processors.forEach(var3::addProcessor);
+      this.getProjection().getProcessors().forEach(var3::addProcessor);
+      return var3;
    }
 
-   public StructurePoolElementType<?> getType() {
+   public StructurePoolElementType getType() {
       return StructurePoolElementType.SINGLE;
    }
 
-   public String toString() {
-      return "Single[" + this.template + "]";
+   public <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("location"), var1.createString(this.location.toString()), var1.createString("processors"), var1.createList(this.processors.stream().map((var1x) -> {
+         return var1x.serialize(var1).getValue();
+      })))));
    }
 
-   static {
-      TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left));
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(templateCodec(), processorsCodec(), projectionCodec()).apply(var0, SinglePoolElement::new);
-      });
+   public String toString() {
+      return "Single[" + this.location + "]";
    }
 }

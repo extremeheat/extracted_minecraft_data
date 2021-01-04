@@ -1,14 +1,14 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class HugeExplosionSeedParticle extends NoRenderParticle {
    private int life;
    private final int lifeTime;
 
-   private HugeExplosionSeedParticle(ClientLevel var1, double var2, double var4, double var6) {
+   private HugeExplosionSeedParticle(Level var1, double var2, double var4, double var6) {
       super(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D);
       this.lifeTime = 8;
    }
@@ -29,7 +29,7 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
    }
 
    // $FF: synthetic method
-   HugeExplosionSeedParticle(ClientLevel var1, double var2, double var4, double var6, Object var8) {
+   HugeExplosionSeedParticle(Level var1, double var2, double var4, double var6, Object var8) {
       this(var1, var2, var4, var6);
    }
 
@@ -38,7 +38,7 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new HugeExplosionSeedParticle(var2, var3, var5, var7);
       }
    }

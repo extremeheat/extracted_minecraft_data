@@ -19,9 +19,9 @@ public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacke
    public ClientboundAddExperienceOrbPacket(ExperienceOrb var1) {
       super();
       this.id = var1.getId();
-      this.x = var1.getX();
-      this.y = var1.getY();
-      this.z = var1.getZ();
+      this.x = var1.x;
+      this.y = var1.y;
+      this.z = var1.z;
       this.value = var1.getValue();
    }
 

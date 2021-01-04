@@ -27,11 +27,11 @@ public class FlyingPathNavigation extends PathNavigation {
    }
 
    protected Vec3 getTempMobPos() {
-      return this.mob.position();
+      return new Vec3(this.mob.x, this.mob.y, this.mob.z);
    }
 
    public Path createPath(Entity var1, int var2) {
-      return this.createPath(var1.blockPosition(), var2);
+      return this.createPath(new BlockPos(var1), var2);
    }
 
    public void tick() {
@@ -43,17 +43,17 @@ public class FlyingPathNavigation extends PathNavigation {
       if (!this.isDone()) {
          Vec3 var1;
          if (this.canUpdatePath()) {
-            this.followThePath();
-         } else if (this.path != null && !this.path.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
-            if (this.mob.getBlockX() == Mth.floor(var1.x) && this.mob.getBlockY() == Mth.floor(var1.y) && this.mob.getBlockZ() == Mth.floor(var1.z)) {
-               this.path.advance();
+            this.updatePath();
+         } else if (this.path != null && this.path.getIndex() < this.path.getSize()) {
+            var1 = this.path.getPos(this.mob, this.path.getIndex());
+            if (Mth.floor(this.mob.x) == Mth.floor(var1.x) && Mth.floor(this.mob.y) == Mth.floor(var1.y) && Mth.floor(this.mob.z) == Mth.floor(var1.z)) {
+               this.path.setIndex(this.path.getIndex() + 1);
             }
          }
 
          DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
+            var1 = this.path.currentPos(this.mob);
             this.mob.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, this.speedModifier);
          }
       }

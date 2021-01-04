@@ -2,7 +2,6 @@ package net.minecraft.world.level;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -15,25 +14,21 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class BaseCommandBlock implements CommandSource {
    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss");
-   private static final Component DEFAULT_NAME = new TextComponent("@");
    private long lastExecution = -1L;
    private boolean updateLastExecution = true;
    private int successCount;
    private boolean trackOutput = true;
-   @Nullable
    private Component lastOutput;
    private String command = "";
-   private Component name;
+   private Component name = new TextComponent("@");
 
    public BaseCommandBlock() {
       super();
-      this.name = DEFAULT_NAME;
    }
 
    public int getSuccessCount() {
@@ -45,7 +40,7 @@ public abstract class BaseCommandBlock implements CommandSource {
    }
 
    public Component getLastOutput() {
-      return this.lastOutput == null ? TextComponent.EMPTY : this.lastOutput;
+      return (Component)(this.lastOutput == null ? new TextComponent("") : this.lastOutput);
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -69,7 +64,7 @@ public abstract class BaseCommandBlock implements CommandSource {
       this.command = var1.getString("Command");
       this.successCount = var1.getInt("SuccessCount");
       if (var1.contains("CustomName", 8)) {
-         this.setName(Component.Serializer.fromJson(var1.getString("CustomName")));
+         this.name = Component.Serializer.fromJson(var1.getString("CustomName"));
       }
 
       if (var1.contains("TrackOutput", 1)) {
@@ -116,7 +111,7 @@ public abstract class BaseCommandBlock implements CommandSource {
          } else {
             this.successCount = 0;
             MinecraftServer var2 = this.getLevel().getServer();
-            if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
+            if (var2 != null && var2.isInitialized() && var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
                try {
                   this.lastOutput = null;
                   CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x, var3x) -> {
@@ -154,16 +149,11 @@ public abstract class BaseCommandBlock implements CommandSource {
       return this.name;
    }
 
-   public void setName(@Nullable Component var1) {
-      if (var1 != null) {
-         this.name = var1;
-      } else {
-         this.name = DEFAULT_NAME;
-      }
-
+   public void setName(Component var1) {
+      this.name = var1;
    }
 
-   public void sendMessage(Component var1, UUID var2) {
+   public void sendMessage(Component var1) {
       if (this.trackOutput) {
          this.lastOutput = (new TextComponent("[" + TIME_FORMAT.format(new Date()) + "] ")).append(var1);
          this.onUpdated();
@@ -187,15 +177,15 @@ public abstract class BaseCommandBlock implements CommandSource {
       return this.trackOutput;
    }
 
-   public InteractionResult usedBy(Player var1) {
+   public boolean usedBy(Player var1) {
       if (!var1.canUseGameMasterBlocks()) {
-         return InteractionResult.PASS;
+         return false;
       } else {
          if (var1.getCommandSenderWorld().isClientSide) {
             var1.openMinecartCommandBlock(this);
          }
 
-         return InteractionResult.sidedSuccess(var1.level.isClientSide);
+         return true;
       }
    }
 

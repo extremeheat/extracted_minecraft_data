@@ -2,9 +2,10 @@ package net.minecraft.world.level.block.grower;
 
 import java.util.Random;
 import javax.annotation.Nullable;
-import net.minecraft.data.worldgen.Features;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.AbstractTreeFeature;
+import net.minecraft.world.level.levelgen.feature.MegaPineTreeFeature;
+import net.minecraft.world.level.levelgen.feature.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.SpruceFeature;
 
 public class SpruceTreeGrower extends AbstractMegaTreeGrower {
    public SpruceTreeGrower() {
@@ -12,12 +13,12 @@ public class SpruceTreeGrower extends AbstractMegaTreeGrower {
    }
 
    @Nullable
-   protected ConfiguredFeature<TreeConfiguration, ?> getConfiguredFeature(Random var1, boolean var2) {
-      return Features.SPRUCE;
+   protected AbstractTreeFeature<NoneFeatureConfiguration> getFeature(Random var1) {
+      return new SpruceFeature(NoneFeatureConfiguration::deserialize, true);
    }
 
    @Nullable
-   protected ConfiguredFeature<TreeConfiguration, ?> getConfiguredMegaFeature(Random var1) {
-      return var1.nextBoolean() ? Features.MEGA_SPRUCE : Features.MEGA_PINE;
+   protected AbstractTreeFeature<NoneFeatureConfiguration> getMegaFeature(Random var1) {
+      return new MegaPineTreeFeature(NoneFeatureConfiguration::deserialize, false, var1.nextBoolean());
    }
 }

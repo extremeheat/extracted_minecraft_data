@@ -14,8 +14,7 @@ public class StatsCounter {
    }
 
    public void increment(Player var1, Stat<?> var2, int var3) {
-      int var4 = (int)Math.min((long)this.getValue(var2) + (long)var3, 2147483647L);
-      this.setValue(var1, var2, var4);
+      this.setValue(var1, var2, this.getValue(var2) + var3);
    }
 
    public void setValue(Player var1, Stat<?> var2, int var3) {

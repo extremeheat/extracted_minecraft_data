@@ -20,7 +20,7 @@ public class PacketUtils {
             if (var1.getConnection().isConnected()) {
                var0.handle(var1);
             } else {
-               LOGGER.debug("Ignoring packet due to disconnection: {}", var0);
+               LOGGER.debug("Ignoring packet due to disconnection: " + var0);
             }
 
          });

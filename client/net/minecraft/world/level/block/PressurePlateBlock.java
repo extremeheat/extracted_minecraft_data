@@ -10,7 +10,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -22,7 +21,7 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
    public static final BooleanProperty POWERED;
    private final PressurePlateBlock.Sensitivity sensitivity;
 
-   protected PressurePlateBlock(PressurePlateBlock.Sensitivity var1, BlockBehaviour.Properties var2) {
+   protected PressurePlateBlock(PressurePlateBlock.Sensitivity var1, Block.Properties var2) {
       super(var2);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false));
       this.sensitivity = var1;
@@ -37,19 +36,19 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
    }
 
    protected void playOnSound(LevelAccessor var1, BlockPos var2) {
-      if (this.material != Material.WOOD && this.material != Material.NETHER_WOOD) {
-         var1.playSound((Player)null, var2, SoundEvents.STONE_PRESSURE_PLATE_CLICK_ON, SoundSource.BLOCKS, 0.3F, 0.6F);
-      } else {
+      if (this.material == Material.WOOD) {
          var1.playSound((Player)null, var2, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_ON, SoundSource.BLOCKS, 0.3F, 0.8F);
+      } else {
+         var1.playSound((Player)null, var2, SoundEvents.STONE_PRESSURE_PLATE_CLICK_ON, SoundSource.BLOCKS, 0.3F, 0.6F);
       }
 
    }
 
    protected void playOffSound(LevelAccessor var1, BlockPos var2) {
-      if (this.material != Material.WOOD && this.material != Material.NETHER_WOOD) {
-         var1.playSound((Player)null, var2, SoundEvents.STONE_PRESSURE_PLATE_CLICK_OFF, SoundSource.BLOCKS, 0.3F, 0.5F);
-      } else {
+      if (this.material == Material.WOOD) {
          var1.playSound((Player)null, var2, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundSource.BLOCKS, 0.3F, 0.7F);
+      } else {
+         var1.playSound((Player)null, var2, SoundEvents.STONE_PRESSURE_PLATE_CLICK_OFF, SoundSource.BLOCKS, 0.3F, 0.5F);
       }
 
    }

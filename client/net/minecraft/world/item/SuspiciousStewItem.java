@@ -5,7 +5,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 public class SuspiciousStewItem extends Item {
@@ -24,25 +23,25 @@ public class SuspiciousStewItem extends Item {
    }
 
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      ItemStack var4 = super.finishUsingItem(var1, var2, var3);
-      CompoundTag var5 = var1.getTag();
-      if (var5 != null && var5.contains("Effects", 9)) {
-         ListTag var6 = var5.getList("Effects", 10);
+      super.finishUsingItem(var1, var2, var3);
+      CompoundTag var4 = var1.getTag();
+      if (var4 != null && var4.contains("Effects", 9)) {
+         ListTag var5 = var4.getList("Effects", 10);
 
-         for(int var7 = 0; var7 < var6.size(); ++var7) {
-            int var8 = 160;
-            CompoundTag var9 = var6.getCompound(var7);
-            if (var9.contains("EffectDuration", 3)) {
-               var8 = var9.getInt("EffectDuration");
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
+            int var7 = 160;
+            CompoundTag var8 = var5.getCompound(var6);
+            if (var8.contains("EffectDuration", 3)) {
+               var7 = var8.getInt("EffectDuration");
             }
 
-            MobEffect var10 = MobEffect.byId(var9.getByte("EffectId"));
-            if (var10 != null) {
-               var3.addEffect(new MobEffectInstance(var10, var8));
+            MobEffect var9 = MobEffect.byId(var8.getByte("EffectId"));
+            if (var9 != null) {
+               var3.addEffect(new MobEffectInstance(var9, var7));
             }
          }
       }
 
-      return var3 instanceof Player && ((Player)var3).getAbilities().instabuild ? var4 : new ItemStack(Items.BOWL);
+      return new ItemStack(Items.BOWL);
    }
 }

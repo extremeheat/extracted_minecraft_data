@@ -6,37 +6,16 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class LongArrayTag extends CollectionTag<LongTag> {
-   public static final TagType<LongArrayTag> TYPE = new TagType<LongArrayTag>() {
-      public LongArrayTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(192L);
-         int var4 = var1.readInt();
-         var3.accountBits(64L * (long)var4);
-         long[] var5 = new long[var4];
-
-         for(int var6 = 0; var6 < var4; ++var6) {
-            var5[var6] = var1.readLong();
-         }
-
-         return new LongArrayTag(var5);
-      }
-
-      public String getName() {
-         return "LONG[]";
-      }
-
-      public String getPrettyName() {
-         return "TAG_Long_Array";
-      }
-
-      // $FF: synthetic method
-      public Tag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         return this.load(var1, var2, var3);
-      }
-   };
    private long[] data;
+
+   LongArrayTag() {
+      super();
+   }
 
    public LongArrayTag(long[] var1) {
       super();
@@ -75,16 +54,34 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 
    }
 
+   public void load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+      var3.accountBits(192L);
+      int var4 = var1.readInt();
+      var3.accountBits((long)(64 * var4));
+      this.data = new long[var4];
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         this.data[var5] = var1.readLong();
+      }
+
+   }
+
    public byte getId() {
       return 12;
    }
 
-   public TagType<LongArrayTag> getType() {
-      return TYPE;
-   }
-
    public String toString() {
-      return this.getAsString();
+      StringBuilder var1 = new StringBuilder("[L;");
+
+      for(int var2 = 0; var2 < this.data.length; ++var2) {
+         if (var2 != 0) {
+            var1.append(',');
+         }
+
+         var1.append(this.data[var2]).append('L');
+      }
+
+      return var1.append(']').toString();
    }
 
    public LongArrayTag copy() {
@@ -105,8 +102,20 @@ public class LongArrayTag extends CollectionTag<LongTag> {
       return Arrays.hashCode(this.data);
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitLongArray(this);
+   public Component getPrettyDisplay(String var1, int var2) {
+      Component var3 = (new TextComponent("L")).withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+      Component var4 = (new TextComponent("[")).append(var3).append(";");
+
+      for(int var5 = 0; var5 < this.data.length; ++var5) {
+         Component var6 = (new TextComponent(String.valueOf(this.data[var5]))).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
+         var4.append(" ").append(var6).append(var3);
+         if (var5 != this.data.length - 1) {
+            var4.append(",");
+         }
+      }
+
+      var4.append("]");
+      return var4;
    }
 
    public long[] getAsLongArray() {
@@ -118,13 +127,13 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    }
 
    public LongTag get(int var1) {
-      return LongTag.valueOf(this.data[var1]);
+      return new LongTag(this.data[var1]);
    }
 
    public LongTag set(int var1, LongTag var2) {
       long var3 = this.data[var1];
       this.data[var1] = var2.getAsLong();
-      return LongTag.valueOf(var3);
+      return new LongTag(var3);
    }
 
    public void add(int var1, LongTag var2) {
@@ -152,11 +161,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
    public LongTag remove(int var1) {
       long var2 = this.data[var1];
       this.data = ArrayUtils.remove(this.data, var1);
-      return LongTag.valueOf(var2);
-   }
-
-   public byte getElementType() {
-      return 4;
+      return new LongTag(var2);
    }
 
    public void clear() {

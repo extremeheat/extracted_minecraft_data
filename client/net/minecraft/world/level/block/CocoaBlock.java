@@ -4,19 +4,17 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -27,16 +25,12 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    protected static final VoxelShape[] NORTH_AABB;
    protected static final VoxelShape[] SOUTH_AABB;
 
-   public CocoaBlock(BlockBehaviour.Properties var1) {
+   public CocoaBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(AGE, 0));
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 2;
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (var2.random.nextInt(5) == 0) {
          int var5 = (Integer)var1.getValue(AGE);
          if (var5 < 2) {
@@ -47,7 +41,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.relative((Direction)var1.getValue(FACING)));
+      Block var4 = var2.getBlockState(var3.relative((Direction)var1.getValue(FACING))).getBlock();
       return var4.is(BlockTags.JUNGLE_LOGS);
    }
 
@@ -99,16 +93,16 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       var1.setBlock(var3, (BlockState)var4.setValue(AGE, (Integer)var4.getValue(AGE) + 1), 2);
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, AGE);
-   }
-
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      return false;
    }
 
    static {

@@ -42,24 +42,22 @@ public class Snowball extends ThrowableItemProjectile {
          ParticleOptions var2 = this.getParticle();
 
          for(int var3 = 0; var3 < 8; ++var3) {
-            this.level.addParticle(var2, this.getX(), this.getY(), this.getZ(), 0.0D, 0.0D, 0.0D);
+            this.level.addParticle(var2, this.x, this.y, this.z, 0.0D, 0.0D, 0.0D);
          }
       }
 
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      Entity var2 = var1.getEntity();
-      int var3 = var2 instanceof Blaze ? 3 : 0;
-      var2.hurt(DamageSource.thrown(this, this.getOwner()), (float)var3);
-   }
-
    protected void onHit(HitResult var1) {
-      super.onHit(var1);
+      if (var1.getType() == HitResult.Type.ENTITY) {
+         Entity var2 = ((EntityHitResult)var1).getEntity();
+         int var3 = var2 instanceof Blaze ? 3 : 0;
+         var2.hurt(DamageSource.thrown(this, this.getOwner()), (float)var3);
+      }
+
       if (!this.level.isClientSide) {
          this.level.broadcastEntityEvent(this, (byte)3);
-         this.discard();
+         this.remove();
       }
 
    }

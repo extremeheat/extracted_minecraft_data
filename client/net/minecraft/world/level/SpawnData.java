@@ -20,17 +20,16 @@ public class SpawnData extends WeighedRandom.WeighedRandomItem {
    public SpawnData(int var1, CompoundTag var2) {
       super(var1);
       this.tag = var2;
-      ResourceLocation var3 = ResourceLocation.tryParse(var2.getString("id"));
-      if (var3 != null) {
-         var2.putString("id", var3.toString());
-      } else {
-         var2.putString("id", "minecraft:pig");
-      }
-
    }
 
    public CompoundTag save() {
       CompoundTag var1 = new CompoundTag();
+      if (!this.tag.contains("id", 8)) {
+         this.tag.putString("id", "minecraft:pig");
+      } else if (!this.tag.getString("id").contains(":")) {
+         this.tag.putString("id", (new ResourceLocation(this.tag.getString("id"))).toString());
+      }
+
       var1.put("Entity", this.tag);
       var1.putInt("Weight", this.weight);
       return var1;

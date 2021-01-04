@@ -1,44 +1,31 @@
 package net.minecraft.network.chat;
 
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class KeybindComponent extends BaseComponent {
-   private static Function<String, Supplier<Component>> keyResolver = (var0) -> {
+   public static Function<String, Supplier<String>> keyResolver = (var0) -> {
       return () -> {
-         return new TextComponent(var0);
+         return var0;
       };
    };
    private final String name;
-   private Supplier<Component> nameResolver;
+   private Supplier<String> nameResolver;
 
    public KeybindComponent(String var1) {
       super();
       this.name = var1;
    }
 
-   public static void setKeyResolver(Function<String, Supplier<Component>> var0) {
-      keyResolver = var0;
-   }
-
-   private Component getNestedComponent() {
+   public String getContents() {
       if (this.nameResolver == null) {
          this.nameResolver = (Supplier)keyResolver.apply(this.name);
       }
 
-      return (Component)this.nameResolver.get();
+      return (String)this.nameResolver.get();
    }
 
-   public <T> Optional<T> visitSelf(FormattedText.ContentConsumer<T> var1) {
-      return this.getNestedComponent().visit(var1);
-   }
-
-   public <T> Optional<T> visitSelf(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-      return this.getNestedComponent().visit(var1, var2);
-   }
-
-   public KeybindComponent plainCopy() {
+   public KeybindComponent copy() {
       return new KeybindComponent(this.name);
    }
 
@@ -62,12 +49,7 @@ public class KeybindComponent extends BaseComponent {
    }
 
    // $FF: synthetic method
-   public BaseComponent plainCopy() {
-      return this.plainCopy();
-   }
-
-   // $FF: synthetic method
-   public MutableComponent plainCopy() {
-      return this.plainCopy();
+   public Component copy() {
+      return this.copy();
    }
 }

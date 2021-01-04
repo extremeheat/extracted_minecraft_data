@@ -1,104 +1,72 @@
 package net.minecraft.world.item;
 
-import com.mojang.serialization.DataResult;
-import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.village.poi.PoiType;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.world.level.LevelAccessor;
 
-public class CompassItem extends Item implements Vanishable {
-   private static final Logger LOGGER = LogManager.getLogger();
-
+public class CompassItem extends Item {
    public CompassItem(Item.Properties var1) {
       super(var1);
-   }
+      this.addProperty(new ResourceLocation("angle"), new ItemPropertyFunction() {
+         private double rotation;
+         private double rota;
+         private long lastUpdateTick;
 
-   public static boolean isLodestoneCompass(ItemStack var0) {
-      CompoundTag var1 = var0.getTag();
-      return var1 != null && (var1.contains("LodestoneDimension") || var1.contains("LodestonePos"));
-   }
+         public float call(ItemStack var1, @Nullable Level var2, @Nullable LivingEntity var3) {
+            if (var3 == null && !var1.isFramed()) {
+               return 0.0F;
+            } else {
+               boolean var4 = var3 != null;
+               Object var5 = var4 ? var3 : var1.getFrame();
+               if (var2 == null) {
+                  var2 = ((Entity)var5).level;
+               }
 
-   public boolean isFoil(ItemStack var1) {
-      return isLodestoneCompass(var1) || super.isFoil(var1);
-   }
+               double var6;
+               if (var2.dimension.isNaturalDimension()) {
+                  double var8 = var4 ? (double)((Entity)var5).yRot : this.getFrameRotation((ItemFrame)var5);
+                  var8 = Mth.positiveModulo(var8 / 360.0D, 1.0D);
+                  double var10 = this.getSpawnToAngle(var2, (Entity)var5) / 6.2831854820251465D;
+                  var6 = 0.5D - (var8 - 0.25D - var10);
+               } else {
+                  var6 = Math.random();
+               }
 
-   public static Optional<ResourceKey<Level>> getLodestoneDimension(CompoundTag var0) {
-      return Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var0.get("LodestoneDimension")).result();
-   }
+               if (var4) {
+                  var6 = this.wobble(var2, var6);
+               }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
-      if (!var2.isClientSide) {
-         if (isLodestoneCompass(var1)) {
-            CompoundTag var6 = var1.getOrCreateTag();
-            if (var6.contains("LodestoneTracked") && !var6.getBoolean("LodestoneTracked")) {
-               return;
-            }
-
-            Optional var7 = getLodestoneDimension(var6);
-            if (var7.isPresent() && var7.get() == var2.dimension() && var6.contains("LodestonePos") && !((ServerLevel)var2).getPoiManager().existsAtPosition(PoiType.LODESTONE, NbtUtils.readBlockPos(var6.getCompound("LodestonePos")))) {
-               var6.remove("LodestonePos");
-            }
-         }
-
-      }
-   }
-
-   public InteractionResult useOn(UseOnContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Level var3 = var1.getLevel();
-      if (!var3.getBlockState(var2).is(Blocks.LODESTONE)) {
-         return super.useOn(var1);
-      } else {
-         var3.playSound((Player)null, (BlockPos)var2, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
-         Player var4 = var1.getPlayer();
-         ItemStack var5 = var1.getItemInHand();
-         boolean var6 = !var4.getAbilities().instabuild && var5.getCount() == 1;
-         if (var6) {
-            this.addLodestoneTags(var3.dimension(), var2, var5.getOrCreateTag());
-         } else {
-            ItemStack var7 = new ItemStack(Items.COMPASS, 1);
-            CompoundTag var8 = var5.hasTag() ? var5.getTag().copy() : new CompoundTag();
-            var7.setTag(var8);
-            if (!var4.getAbilities().instabuild) {
-               var5.shrink(1);
-            }
-
-            this.addLodestoneTags(var3.dimension(), var2, var8);
-            if (!var4.getInventory().add(var7)) {
-               var4.drop(var7, false);
+               return Mth.positiveModulo((float)var6, 1.0F);
             }
          }
 
-         return InteractionResult.sidedSuccess(var3.isClientSide);
-      }
-   }
+         private double wobble(Level var1, double var2) {
+            if (var1.getGameTime() != this.lastUpdateTick) {
+               this.lastUpdateTick = var1.getGameTime();
+               double var4 = var2 - this.rotation;
+               var4 = Mth.positiveModulo(var4 + 0.5D, 1.0D) - 0.5D;
+               this.rota += var4 * 0.1D;
+               this.rota *= 0.8D;
+               this.rotation = Mth.positiveModulo(this.rotation + this.rota, 1.0D);
+            }
 
-   private void addLodestoneTags(ResourceKey<Level> var1, BlockPos var2, CompoundTag var3) {
-      var3.put("LodestonePos", NbtUtils.writeBlockPos(var2));
-      DataResult var10000 = Level.RESOURCE_KEY_CODEC.encodeStart(NbtOps.INSTANCE, var1);
-      Logger var10001 = LOGGER;
-      var10001.getClass();
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var3.put("LodestoneDimension", var1x);
+            return this.rotation;
+         }
+
+         private double getFrameRotation(ItemFrame var1) {
+            return (double)Mth.wrapDegrees(180 + var1.getDirection().get2DDataValue() * 90);
+         }
+
+         private double getSpawnToAngle(LevelAccessor var1, Entity var2) {
+            BlockPos var3 = var1.getSharedSpawnPos();
+            return Math.atan2((double)var3.getZ() - var2.z, (double)var3.getX() - var2.x);
+         }
       });
-      var3.putBoolean("LodestoneTracked", true);
-   }
-
-   public String getDescriptionId(ItemStack var1) {
-      return isLodestoneCompass(var1) ? "item.minecraft.lodestone_compass" : super.getDescriptionId(var1);
    }
 }

@@ -14,6 +14,7 @@ import com.google.gson.stream.JsonReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
@@ -142,14 +143,6 @@ public class GsonHelper {
       }
    }
 
-   public static long getAsLong(JsonObject var0, String var1) {
-      if (var0.has(var1)) {
-         return convertToLong(var0.get(var1), var1);
-      } else {
-         throw new JsonSyntaxException("Missing " + var1 + ", expected to find a Long");
-      }
-   }
-
    public static long getAsLong(JsonObject var0, String var1, long var2) {
       return var0.has(var1) ? convertToLong(var0.get(var1), var1) : var2;
    }
@@ -222,7 +215,6 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    public static JsonArray getAsJsonArray(JsonObject var0, String var1, @Nullable JsonArray var2) {
       return var0.has(var1) ? convertToJsonArray(var0.get(var1), var1) : var2;
    }
@@ -285,19 +277,19 @@ public class GsonHelper {
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2, boolean var3) {
+   public static <T> T fromJson(Gson var0, Reader var1, Type var2, boolean var3) {
       try {
          JsonReader var4 = new JsonReader(var1);
          var4.setLenient(var3);
-         return var0.getAdapter(var2).read(var4);
+         return var0.getAdapter(TypeToken.get(var2)).read(var4);
       } catch (IOException var5) {
          throw new JsonParseException(var5);
       }
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, String var1, TypeToken<T> var2, boolean var3) {
-      return fromJson(var0, (Reader)(new StringReader(var1)), (TypeToken)var2, var3);
+   public static <T> T fromJson(Gson var0, String var1, Type var2, boolean var3) {
+      return fromJson(var0, (Reader)(new StringReader(var1)), (Type)var2, var3);
    }
 
    @Nullable
@@ -306,12 +298,12 @@ public class GsonHelper {
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2) {
+   public static <T> T fromJson(Gson var0, Reader var1, Type var2) {
       return fromJson(var0, var1, var2, false);
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, String var1, TypeToken<T> var2) {
+   public static <T> T fromJson(Gson var0, String var1, Type var2) {
       return fromJson(var0, var1, var2, false);
    }
 

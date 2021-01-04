@@ -1,13 +1,12 @@
 package net.minecraft.world.level.block;
 
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.PushReaction;
 
 public class GlazedTerracottaBlock extends HorizontalDirectionalBlock {
-   public GlazedTerracottaBlock(BlockBehaviour.Properties var1) {
+   public GlazedTerracottaBlock(Block.Properties var1) {
       super(var1);
    }
 

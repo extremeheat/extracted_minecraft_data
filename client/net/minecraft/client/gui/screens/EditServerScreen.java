@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.IDN;
 import java.util.function.Predicate;
@@ -8,21 +7,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.StringUtil;
 
 public class EditServerScreen extends Screen {
-   private static final Component NAME_LABEL = new TranslatableComponent("addServer.enterName");
-   private static final Component IP_LABEL = new TranslatableComponent("addServer.enterIp");
    private Button addButton;
    private final BooleanConsumer callback;
    private final ServerData serverData;
    private EditBox ipEdit;
    private EditBox nameEdit;
    private Button serverPackButton;
-   private final Screen lastScreen;
    private final Predicate<String> addressFilter = (var0) -> {
       if (StringUtil.isNullOrEmpty(var0)) {
          return true;
@@ -41,11 +36,10 @@ public class EditServerScreen extends Screen {
       }
    };
 
-   public EditServerScreen(Screen var1, BooleanConsumer var2, ServerData var3) {
-      super(new TranslatableComponent("addServer.title"));
-      this.lastScreen = var1;
-      this.callback = var2;
-      this.serverData = var3;
+   public EditServerScreen(BooleanConsumer var1, ServerData var2) {
+      super(new TranslatableComponent("addServer.title", new Object[0]));
+      this.callback = var1;
+      this.serverData = var2;
    }
 
    public void tick() {
@@ -55,32 +49,28 @@ public class EditServerScreen extends Screen {
 
    protected void init() {
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, new TranslatableComponent("addServer.enterName"));
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, I18n.get("addServer.enterName"));
       this.nameEdit.setFocus(true);
       this.nameEdit.setValue(this.serverData.name);
       this.nameEdit.setResponder(this::onEdited);
       this.children.add(this.nameEdit);
-      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, new TranslatableComponent("addServer.enterIp"));
+      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, I18n.get("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.serverData.ip);
       this.ipEdit.setFilter(this.addressFilter);
       this.ipEdit.setResponder(this::onEdited);
       this.children.add(this.ipEdit);
-      this.serverPackButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 72, 200, 20, createServerButtonText(this.serverData.getResourcePackStatus()), (var1) -> {
+      this.serverPackButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 72, 200, 20, I18n.get("addServer.resourcePack") + ": " + this.serverData.getResourcePackStatus().getName().getColoredString(), (var1) -> {
          this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.values()[(this.serverData.getResourcePackStatus().ordinal() + 1) % ServerData.ServerPackStatus.values().length]);
-         this.serverPackButton.setMessage(createServerButtonText(this.serverData.getResourcePackStatus()));
+         this.serverPackButton.setMessage(I18n.get("addServer.resourcePack") + ": " + this.serverData.getResourcePackStatus().getName().getColoredString());
       }));
-      this.addButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20, new TranslatableComponent("addServer.add"), (var1) -> {
+      this.addButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20, I18n.get("addServer.add"), (var1) -> {
          this.onAdd();
       }));
-      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20, CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20, I18n.get("gui.cancel"), (var1) -> {
          this.callback.accept(false);
       }));
-      this.cleanUp();
-   }
-
-   private static Component createServerButtonText(ServerData.ServerPackStatus var0) {
-      return (new TranslatableComponent("addServer.resourcePack")).append(": ").append(var0.getName());
+      this.onClose();
    }
 
    public void resize(Minecraft var1, int var2, int var3) {
@@ -92,7 +82,7 @@ public class EditServerScreen extends Screen {
    }
 
    private void onEdited(String var1) {
-      this.cleanUp();
+      this.onClose();
    }
 
    public void removed() {
@@ -106,23 +96,16 @@ public class EditServerScreen extends Screen {
    }
 
    public void onClose() {
-      this.cleanUp();
-      this.minecraft.setScreen(this.lastScreen);
+      this.addButton.active = !this.ipEdit.getValue().isEmpty() && this.ipEdit.getValue().split(":").length > 0 && !this.nameEdit.getValue().isEmpty();
    }
 
-   private void cleanUp() {
-      String var1 = this.ipEdit.getValue();
-      boolean var2 = !var1.isEmpty() && var1.split(":").length > 0 && var1.indexOf(32) == -1;
-      this.addButton.active = var2 && !this.nameEdit.getValue().isEmpty();
-   }
-
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 17, 16777215);
-      drawString(var1, this.font, NAME_LABEL, this.width / 2 - 100, 53, 10526880);
-      drawString(var1, this.font, IP_LABEL, this.width / 2 - 100, 94, 10526880);
-      this.nameEdit.render(var1, var2, var3, var4);
-      this.ipEdit.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 17, 16777215);
+      this.drawString(this.font, I18n.get("addServer.enterName"), this.width / 2 - 100, 53, 10526880);
+      this.drawString(this.font, I18n.get("addServer.enterIp"), this.width / 2 - 100, 94, 10526880);
+      this.nameEdit.render(var1, var2, var3);
+      this.ipEdit.render(var1, var2, var3);
+      super.render(var1, var2, var3);
    }
 }

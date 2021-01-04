@@ -25,7 +25,7 @@ public class LookControl {
    }
 
    public void setLookAt(Entity var1, float var2, float var3) {
-      this.setLookAt(var1.getX(), getWantedY(var1), var1.getZ(), var2, var3);
+      this.setLookAt(var1.x, getWantedY(var1), var1.z, var2, var3);
    }
 
    public void setLookAt(double var1, double var3, double var5) {
@@ -81,16 +81,16 @@ public class LookControl {
    }
 
    protected float getXRotD() {
-      double var1 = this.wantedX - this.mob.getX();
-      double var3 = this.wantedY - this.mob.getEyeY();
-      double var5 = this.wantedZ - this.mob.getZ();
+      double var1 = this.wantedX - this.mob.x;
+      double var3 = this.wantedY - (this.mob.y + (double)this.mob.getEyeHeight());
+      double var5 = this.wantedZ - this.mob.z;
       double var7 = (double)Mth.sqrt(var1 * var1 + var5 * var5);
       return (float)(-(Mth.atan2(var3, var7) * 57.2957763671875D));
    }
 
    protected float getYRotD() {
-      double var1 = this.wantedX - this.mob.getX();
-      double var3 = this.wantedZ - this.mob.getZ();
+      double var1 = this.wantedX - this.mob.x;
+      double var3 = this.wantedZ - this.mob.z;
       return (float)(Mth.atan2(var3, var1) * 57.2957763671875D) - 90.0F;
    }
 
@@ -101,6 +101,6 @@ public class LookControl {
    }
 
    private static double getWantedY(Entity var0) {
-      return var0 instanceof LivingEntity ? var0.getEyeY() : (var0.getBoundingBox().minY + var0.getBoundingBox().maxY) / 2.0D;
+      return var0 instanceof LivingEntity ? var0.y + (double)var0.getEyeHeight() : (var0.getBoundingBox().minY + var0.getBoundingBox().maxY) / 2.0D;
    }
 }

@@ -12,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -22,19 +21,15 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -45,7 +40,9 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
+import net.minecraft.world.entity.global.LightningBolt;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -54,12 +51,10 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.TurtleNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
@@ -76,7 +71,6 @@ public class Turtle extends Animal {
 
    public Turtle(EntityType<? extends Turtle> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
       this.moveControl = new Turtle.TurtleMoveControl(this);
       this.maxUpStep = 1.0F;
    }
@@ -165,14 +159,14 @@ public class Turtle extends Animal {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      this.setHomePos(this.blockPosition());
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      this.setHomePos(new BlockPos(this));
       this.setTravelPos(BlockPos.ZERO);
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 
    public static boolean checkTurtleSpawnRules(EntityType<Turtle> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
-      return var3.getY() < var1.getSeaLevel() + 4 && TurtleEggBlock.onSand(var1, var3) && var1.getRawBrightness(var3, 0) > 8;
+      return var3.getY() < var1.getSeaLevel() + 4 && var1.getBlockState(var3.below()).getBlock() == Blocks.SAND && var1.getRawBrightness(var3, 0) > 8;
    }
 
    protected void registerGoals() {
@@ -187,11 +181,13 @@ public class Turtle extends Animal {
       this.goalSelector.addGoal(9, new Turtle.TurtleRandomStrollGoal(this, 1.0D, 100));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 30.0D).add(Attributes.MOVEMENT_SPEED, 0.25D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(30.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
    }
 
-   public boolean isPushedByFluid() {
+   public boolean isPushedByWater() {
       return false;
    }
 
@@ -252,27 +248,27 @@ public class Turtle extends Animal {
    }
 
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.TURTLE.create(var1);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return (AgableMob)EntityType.TURTLE.create(this.level);
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.is(Blocks.SEAGRASS.asItem());
+      return var1.getItem() == Blocks.SEAGRASS.asItem();
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
       if (!this.isGoingHome() && var2.getFluidState(var1).is(FluidTags.WATER)) {
          return 10.0F;
       } else {
-         return TurtleEggBlock.onSand(var2, var1) ? 10.0F : var2.getBrightness(var1) - 0.5F;
+         return var2.getBlockState(var1.below()).getBlock() == Blocks.SAND ? 10.0F : var2.getBrightness(var1) - 0.5F;
       }
    }
 
    public void aiStep() {
       super.aiStep();
       if (this.isAlive() && this.isLayingEgg() && this.layEggCounter >= 1 && this.layEggCounter % 5 == 0) {
-         BlockPos var1 = this.blockPosition();
-         if (TurtleEggBlock.onSand(this.level, var1)) {
+         BlockPos var1 = new BlockPos(this);
+         if (this.level.getBlockState(var1.below()).getBlock() == Blocks.SAND) {
             this.level.levelEvent(2001, var1, Block.getId(Blocks.SAND.defaultBlockState()));
          }
       }
@@ -305,7 +301,7 @@ public class Turtle extends Animal {
       return false;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
+   public void thunderHit(LightningBolt var1) {
       this.hurt(DamageSource.LIGHTNING_BOLT, 3.4028235E38F);
    }
 
@@ -331,15 +327,14 @@ public class Turtle extends Animal {
       }
 
       protected PathFinder createPathFinder(int var1) {
-         this.nodeEvaluator = new TurtleNodeEvaluator();
-         return new PathFinder(this.nodeEvaluator, var1);
+         return new PathFinder(new TurtleNodeEvaluator(), var1);
       }
 
       public boolean isStableDestination(BlockPos var1) {
          if (this.mob instanceof Turtle) {
             Turtle var2 = (Turtle)this.mob;
             if (var2.isTravelling()) {
-               return this.level.getBlockState(var1).is(Blocks.WATER);
+               return this.level.getBlockState(var1).getBlock() == Blocks.WATER;
             }
          }
 
@@ -374,15 +369,15 @@ public class Turtle extends Animal {
       public void tick() {
          this.updateSpeed();
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.turtle.getNavigation().isDone()) {
-            double var1 = this.wantedX - this.turtle.getX();
-            double var3 = this.wantedY - this.turtle.getY();
-            double var5 = this.wantedZ - this.turtle.getZ();
+            double var1 = this.wantedX - this.turtle.x;
+            double var3 = this.wantedY - this.turtle.y;
+            double var5 = this.wantedZ - this.turtle.z;
             double var7 = (double)Mth.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
             var3 /= var7;
             float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875D) - 90.0F;
             this.turtle.yRot = this.rotlerp(this.turtle.yRot, var9, 90.0F);
             this.turtle.yBodyRot = this.turtle.yRot;
-            float var10 = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float var10 = (float)(this.speedModifier * this.turtle.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue());
             this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), var10));
             this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0D, (double)this.turtle.getSpeed() * var3 * 0.1D, 0.0D));
          } else {
@@ -417,7 +412,8 @@ public class Turtle extends Animal {
       }
 
       protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         return var1.getBlockState(var2).is(Blocks.WATER);
+         Block var3 = var1.getBlockState(var2).getBlock();
+         return var3 == Blocks.WATER;
       }
 
       // $FF: synthetic method
@@ -462,7 +458,7 @@ public class Turtle extends Animal {
 
       public void tick() {
          super.tick();
-         BlockPos var1 = this.turtle.blockPosition();
+         BlockPos var1 = new BlockPos(this.turtle);
          if (!this.turtle.isInWater() && this.isReachedTarget()) {
             if (this.turtle.layEggCounter < 1) {
                this.turtle.setLayingEgg(true);
@@ -483,7 +479,12 @@ public class Turtle extends Animal {
       }
 
       protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         return !var1.isEmptyBlock(var2.above()) ? false : TurtleEggBlock.isSand(var1, var2);
+         if (!var1.isEmptyBlock(var2.above())) {
+            return false;
+         } else {
+            Block var3 = var1.getBlockState(var2).getBlock();
+            return var3 == Blocks.SAND;
+         }
       }
    }
 
@@ -507,7 +508,7 @@ public class Turtle extends Animal {
 
          if (var1 != null) {
             var1.awardStat(Stats.ANIMALS_BRED);
-            CriteriaTriggers.BRED_ANIMALS.trigger(var1, this.animal, this.partner, (AgeableMob)null);
+            CriteriaTriggers.BRED_ANIMALS.trigger(var1, this.animal, this.partner, (AgableMob)null);
          }
 
          this.turtle.setHasEgg(true);
@@ -515,7 +516,7 @@ public class Turtle extends Animal {
          this.partner.resetLove();
          Random var2 = this.animal.getRandom();
          if (this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-            this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), var2.nextInt(7) + 1));
+            this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.x, this.animal.y, this.animal.z, var2.nextInt(7) + 1));
          }
 
       }
@@ -622,22 +623,21 @@ public class Turtle extends Animal {
          }
 
          if (this.turtle.getNavigation().isDone()) {
-            Vec3 var3 = Vec3.atBottomCenterOf(var1);
-            Vec3 var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var3, 0.3141592741012573D);
-            if (var4 == null) {
-               var4 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var3, 1.5707963705062866D);
+            Vec3 var3 = RandomPos.getPosTowards(this.turtle, 16, 3, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()), 0.3141592741012573D);
+            if (var3 == null) {
+               var3 = RandomPos.getPosTowards(this.turtle, 8, 7, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()));
             }
 
-            if (var4 != null && !var2 && !this.turtle.level.getBlockState(new BlockPos(var4)).is(Blocks.WATER)) {
-               var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 5, var3, 1.5707963705062866D);
+            if (var3 != null && !var2 && this.turtle.level.getBlockState(new BlockPos(var3)).getBlock() != Blocks.WATER) {
+               var3 = RandomPos.getPosTowards(this.turtle, 16, 5, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()));
             }
 
-            if (var4 == null) {
+            if (var3 == null) {
                this.stuck = true;
                return;
             }
 
-            this.turtle.getNavigation().moveTo(var4.x, var4.y, var4.z, this.speedModifier);
+            this.turtle.getNavigation().moveTo(var3.x, var3.y, var3.z, this.speedModifier);
          }
 
       }
@@ -665,11 +665,11 @@ public class Turtle extends Animal {
          int var4 = var3.nextInt(1025) - 512;
          int var5 = var3.nextInt(9) - 4;
          int var6 = var3.nextInt(1025) - 512;
-         if ((double)var5 + this.turtle.getY() > (double)(this.turtle.level.getSeaLevel() - 1)) {
+         if ((double)var5 + this.turtle.y > (double)(this.turtle.level.getSeaLevel() - 1)) {
             var5 = 0;
          }
 
-         BlockPos var7 = new BlockPos((double)var4 + this.turtle.getX(), (double)var5 + this.turtle.getY(), (double)var6 + this.turtle.getZ());
+         BlockPos var7 = new BlockPos((double)var4 + this.turtle.x, (double)var5 + this.turtle.y, (double)var6 + this.turtle.z);
          this.turtle.setTravelPos(var7);
          this.turtle.setTravelling(true);
          this.stuck = false;
@@ -677,10 +677,10 @@ public class Turtle extends Animal {
 
       public void tick() {
          if (this.turtle.getNavigation().isDone()) {
-            Vec3 var1 = Vec3.atBottomCenterOf(this.turtle.getTravelPos());
-            Vec3 var2 = DefaultRandomPos.getPosTowards(this.turtle, 16, 3, var1, 0.3141592741012573D);
+            BlockPos var1 = this.turtle.getTravelPos();
+            Vec3 var2 = RandomPos.getPosTowards(this.turtle, 16, 3, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()), 0.3141592741012573D);
             if (var2 == null) {
-               var2 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var1, 1.5707963705062866D);
+               var2 = RandomPos.getPosTowards(this.turtle, 8, 7, new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ()));
             }
 
             if (var2 != null) {

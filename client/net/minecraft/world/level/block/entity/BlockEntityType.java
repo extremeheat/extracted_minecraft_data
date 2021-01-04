@@ -1,19 +1,19 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.types.Type;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,8 +51,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<BellBlockEntity> BELL;
    public static final BlockEntityType<JigsawBlockEntity> JIGSAW;
    public static final BlockEntityType<CampfireBlockEntity> CAMPFIRE;
-   public static final BlockEntityType<BeehiveBlockEntity> BEEHIVE;
-   private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
+   private final Supplier<? extends T> factory;
    private final Set<Block> validBlocks;
    private final Type<?> dataType;
 
@@ -62,15 +61,26 @@ public class BlockEntityType<T extends BlockEntity> {
    }
 
    private static <T extends BlockEntity> BlockEntityType<T> register(String var0, BlockEntityType.Builder<T> var1) {
+      Type var2 = null;
+
+      try {
+         var2 = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getWorldVersion())).getChoiceType(References.BLOCK_ENTITY, var0);
+      } catch (IllegalStateException var4) {
+         if (SharedConstants.IS_RUNNING_IN_IDE) {
+            throw var4;
+         }
+
+         LOGGER.warn("No data fixer registered for block entity {}", var0);
+      }
+
       if (var1.validBlocks.isEmpty()) {
          LOGGER.warn("Block entity type {} requires at least one valid block to be defined!", var0);
       }
 
-      Type var2 = Util.fetchChoiceType(References.BLOCK_ENTITY, var0);
       return (BlockEntityType)Registry.register(Registry.BLOCK_ENTITY_TYPE, (String)var0, var1.build(var2));
    }
 
-   public BlockEntityType(BlockEntityType.BlockEntitySupplier<? extends T> var1, Set<Block> var2, Type<?> var3) {
+   public BlockEntityType(Supplier<? extends T> var1, Set<Block> var2, Type<?> var3) {
       super();
       this.factory = var1;
       this.validBlocks = var2;
@@ -78,18 +88,12 @@ public class BlockEntityType<T extends BlockEntity> {
    }
 
    @Nullable
-   public T create(BlockPos var1, BlockState var2) {
-      return this.factory.create(var1, var2);
+   public T create() {
+      return (BlockEntity)this.factory.get();
    }
 
-   public boolean isValid(BlockState var1) {
-      return this.validBlocks.contains(var1.getBlock());
-   }
-
-   @Nullable
-   public T getBlockEntity(BlockGetter var1, BlockPos var2) {
-      BlockEntity var3 = var1.getBlockEntity(var2);
-      return var3 != null && var3.getType() == this ? var3 : null;
+   public boolean isValid(Block var1) {
+      return this.validBlocks.contains(var1);
    }
 
    static {
@@ -100,7 +104,7 @@ public class BlockEntityType<T extends BlockEntity> {
       JUKEBOX = register("jukebox", BlockEntityType.Builder.of(JukeboxBlockEntity::new, Blocks.JUKEBOX));
       DISPENSER = register("dispenser", BlockEntityType.Builder.of(DispenserBlockEntity::new, Blocks.DISPENSER));
       DROPPER = register("dropper", BlockEntityType.Builder.of(DropperBlockEntity::new, Blocks.DROPPER));
-      SIGN = register("sign", BlockEntityType.Builder.of(SignBlockEntity::new, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.CRIMSON_SIGN, Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN));
+      SIGN = register("sign", BlockEntityType.Builder.of(SignBlockEntity::new, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN));
       MOB_SPAWNER = register("mob_spawner", BlockEntityType.Builder.of(SpawnerBlockEntity::new, Blocks.SPAWNER));
       PISTON = register("piston", BlockEntityType.Builder.of(PistonMovingBlockEntity::new, Blocks.MOVING_PISTON));
       BREWING_STAND = register("brewing_stand", BlockEntityType.Builder.of(BrewingStandBlockEntity::new, Blocks.BREWING_STAND));
@@ -123,32 +127,26 @@ public class BlockEntityType<T extends BlockEntity> {
       BLAST_FURNACE = register("blast_furnace", BlockEntityType.Builder.of(BlastFurnaceBlockEntity::new, Blocks.BLAST_FURNACE));
       LECTERN = register("lectern", BlockEntityType.Builder.of(LecternBlockEntity::new, Blocks.LECTERN));
       BELL = register("bell", BlockEntityType.Builder.of(BellBlockEntity::new, Blocks.BELL));
-      JIGSAW = register("jigsaw", BlockEntityType.Builder.of(JigsawBlockEntity::new, Blocks.JIGSAW));
-      CAMPFIRE = register("campfire", BlockEntityType.Builder.of(CampfireBlockEntity::new, Blocks.CAMPFIRE, Blocks.SOUL_CAMPFIRE));
-      BEEHIVE = register("beehive", BlockEntityType.Builder.of(BeehiveBlockEntity::new, Blocks.BEE_NEST, Blocks.BEEHIVE));
+      JIGSAW = register("jigsaw", BlockEntityType.Builder.of(JigsawBlockEntity::new, Blocks.JIGSAW_BLOCK));
+      CAMPFIRE = register("campfire", BlockEntityType.Builder.of(CampfireBlockEntity::new, Blocks.CAMPFIRE));
    }
 
    public static final class Builder<T extends BlockEntity> {
-      private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
+      private final Supplier<? extends T> factory;
       private final Set<Block> validBlocks;
 
-      private Builder(BlockEntityType.BlockEntitySupplier<? extends T> var1, Set<Block> var2) {
+      private Builder(Supplier<? extends T> var1, Set<Block> var2) {
          super();
          this.factory = var1;
          this.validBlocks = var2;
       }
 
-      public static <T extends BlockEntity> BlockEntityType.Builder<T> of(BlockEntityType.BlockEntitySupplier<? extends T> var0, Block... var1) {
+      public static <T extends BlockEntity> BlockEntityType.Builder<T> of(Supplier<? extends T> var0, Block... var1) {
          return new BlockEntityType.Builder(var0, ImmutableSet.copyOf(var1));
       }
 
       public BlockEntityType<T> build(Type<?> var1) {
          return new BlockEntityType(this.factory, this.validBlocks, var1);
       }
-   }
-
-   @FunctionalInterface
-   interface BlockEntitySupplier<T extends BlockEntity> {
-      T create(BlockPos var1, BlockState var2);
    }
 }

@@ -3,10 +3,9 @@ package net.minecraft.world.level.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -15,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 public class FaceAttachedHorizontalDirectionalBlock extends HorizontalDirectionalBlock {
    public static final EnumProperty<AttachFace> FACE;
 
-   protected FaceAttachedHorizontalDirectionalBlock(BlockBehaviour.Properties var1) {
+   protected FaceAttachedHorizontalDirectionalBlock(Block.Properties var1) {
       super(var1);
    }
 

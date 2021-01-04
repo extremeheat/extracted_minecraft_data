@@ -1,14 +1,21 @@
 package net.minecraft.client.model;
 
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 public class ArmorStandArmorModel extends HumanoidModel<ArmorStand> {
-   public ArmorStandArmorModel(ModelPart var1) {
-      super(var1);
+   public ArmorStandArmorModel() {
+      this(0.0F);
    }
 
-   public void setupAnim(ArmorStand var1, float var2, float var3, float var4, float var5, float var6) {
+   public ArmorStandArmorModel(float var1) {
+      this(var1, 64, 32);
+   }
+
+   protected ArmorStandArmorModel(float var1, int var2, int var3) {
+      super(var1, 0.0F, var2, var3);
+   }
+
+   public void setupAnim(ArmorStand var1, float var2, float var3, float var4, float var5, float var6, float var7) {
       this.head.xRot = 0.017453292F * var1.getHeadPose().getX();
       this.head.yRot = 0.017453292F * var1.getHeadPose().getY();
       this.head.zRot = 0.017453292F * var1.getHeadPose().getZ();

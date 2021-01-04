@@ -7,15 +7,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetContainerContents extends LootItemConditionalFunction {
@@ -24,10 +28,6 @@ public class SetContainerContents extends LootItemConditionalFunction {
    private SetContainerContents(LootItemCondition[] var1, List<LootPoolEntryContainer> var2) {
       super(var1);
       this.entries = ImmutableList.copyOf(var2);
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_CONTENTS;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -49,11 +49,11 @@ public class SetContainerContents extends LootItemConditionalFunction {
       }
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      super.validate(var1, var2, var3, var4);
 
-      for(int var2 = 0; var2 < this.entries.size(); ++var2) {
-         ((LootPoolEntryContainer)this.entries.get(var2)).validate(var1.forChild(".entry[" + var2 + "]"));
+      for(int var5 = 0; var5 < this.entries.size(); ++var5) {
+         ((LootPoolEntryContainer)this.entries.get(var5)).validate(var1.forChild(".entry[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -68,8 +68,8 @@ public class SetContainerContents extends LootItemConditionalFunction {
    }
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetContainerContents> {
-      public Serializer() {
-         super();
+      protected Serializer() {
+         super(new ResourceLocation("set_contents"), SetContainerContents.class);
       }
 
       public void serialize(JsonObject var1, SetContainerContents var2, JsonSerializationContext var3) {

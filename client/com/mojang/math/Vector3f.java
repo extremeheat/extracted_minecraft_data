@@ -1,33 +1,29 @@
 package com.mojang.math;
 
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
-import net.minecraft.util.Mth;
+import java.util.Arrays;
 import net.minecraft.world.phys.Vec3;
 
 public final class Vector3f {
-   public static Vector3f XN = new Vector3f(-1.0F, 0.0F, 0.0F);
-   public static Vector3f XP = new Vector3f(1.0F, 0.0F, 0.0F);
-   public static Vector3f YN = new Vector3f(0.0F, -1.0F, 0.0F);
-   public static Vector3f YP = new Vector3f(0.0F, 1.0F, 0.0F);
-   public static Vector3f ZN = new Vector3f(0.0F, 0.0F, -1.0F);
-   public static Vector3f ZP = new Vector3f(0.0F, 0.0F, 1.0F);
-   private float x;
-   private float y;
-   private float z;
+   private final float[] values;
+
+   public Vector3f(Vector3f var1) {
+      super();
+      this.values = Arrays.copyOf(var1.values, 3);
+   }
 
    public Vector3f() {
       super();
+      this.values = new float[3];
    }
 
    public Vector3f(float var1, float var2, float var3) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
+      this.values = new float[]{var1, var2, var3};
    }
 
    public Vector3f(Vec3 var1) {
-      this((float)var1.x, (float)var1.y, (float)var1.z);
+      super();
+      this.values = new float[]{(float)var1.x, (float)var1.y, (float)var1.z};
    }
 
    public boolean equals(Object var1) {
@@ -35,115 +31,108 @@ public final class Vector3f {
          return true;
       } else if (var1 != null && this.getClass() == var1.getClass()) {
          Vector3f var2 = (Vector3f)var1;
-         if (Float.compare(var2.x, this.x) != 0) {
-            return false;
-         } else if (Float.compare(var2.y, this.y) != 0) {
-            return false;
-         } else {
-            return Float.compare(var2.z, this.z) == 0;
-         }
+         return Arrays.equals(this.values, var2.values);
       } else {
          return false;
       }
    }
 
    public int hashCode() {
-      int var1 = Float.floatToIntBits(this.x);
-      var1 = 31 * var1 + Float.floatToIntBits(this.y);
-      var1 = 31 * var1 + Float.floatToIntBits(this.z);
-      return var1;
+      return Arrays.hashCode(this.values);
    }
 
    public float x() {
-      return this.x;
+      return this.values[0];
    }
 
    public float y() {
-      return this.y;
+      return this.values[1];
    }
 
    public float z() {
-      return this.z;
+      return this.values[2];
    }
 
    public void mul(float var1) {
-      this.x *= var1;
-      this.y *= var1;
-      this.z *= var1;
+      for(int var2 = 0; var2 < 3; ++var2) {
+         float[] var10000 = this.values;
+         var10000[var2] *= var1;
+      }
+
    }
 
-   public void mul(float var1, float var2, float var3) {
-      this.x *= var1;
-      this.y *= var2;
-      this.z *= var3;
-   }
-
-   public void clamp(float var1, float var2) {
-      this.x = Mth.clamp(this.x, var1, var2);
-      this.y = Mth.clamp(this.y, var1, var2);
-      this.z = Mth.clamp(this.z, var1, var2);
-   }
-
-   public void set(float var1, float var2, float var3) {
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-   }
-
-   public void add(float var1, float var2, float var3) {
-      this.x += var1;
-      this.y += var2;
-      this.z += var3;
-   }
-
-   public void add(Vector3f var1) {
-      this.x += var1.x;
-      this.y += var1.y;
-      this.z += var1.z;
-   }
-
-   public void sub(Vector3f var1) {
-      this.x -= var1.x;
-      this.y -= var1.y;
-      this.z -= var1.z;
-   }
-
-   public float dot(Vector3f var1) {
-      return this.x * var1.x + this.y * var1.y + this.z * var1.z;
-   }
-
-   public boolean normalize() {
-      float var1 = this.x * this.x + this.y * this.y + this.z * this.z;
-      if ((double)var1 < 1.0E-5D) {
-         return false;
+   private static float clamp(float var0, float var1, float var2) {
+      if (var0 < var1) {
+         return var1;
       } else {
-         float var2 = Mth.fastInvSqrt(var1);
-         this.x *= var2;
-         this.y *= var2;
-         this.z *= var2;
-         return true;
+         return var0 > var2 ? var2 : var0;
       }
    }
 
+   public void clamp(float var1, float var2) {
+      this.values[0] = clamp(this.values[0], var1, var2);
+      this.values[1] = clamp(this.values[1], var1, var2);
+      this.values[2] = clamp(this.values[2], var1, var2);
+   }
+
+   public void set(float var1, float var2, float var3) {
+      this.values[0] = var1;
+      this.values[1] = var2;
+      this.values[2] = var3;
+   }
+
+   public void add(float var1, float var2, float var3) {
+      float[] var10000 = this.values;
+      var10000[0] += var1;
+      var10000 = this.values;
+      var10000[1] += var2;
+      var10000 = this.values;
+      var10000[2] += var3;
+   }
+
+   public void sub(Vector3f var1) {
+      for(int var2 = 0; var2 < 3; ++var2) {
+         float[] var10000 = this.values;
+         var10000[var2] -= var1.values[var2];
+      }
+
+   }
+
+   public float dot(Vector3f var1) {
+      float var2 = 0.0F;
+
+      for(int var3 = 0; var3 < 3; ++var3) {
+         var2 += this.values[var3] * var1.values[var3];
+      }
+
+      return var2;
+   }
+
+   public void normalize() {
+      float var1 = 0.0F;
+
+      int var2;
+      for(var2 = 0; var2 < 3; ++var2) {
+         var1 += this.values[var2] * this.values[var2];
+      }
+
+      for(var2 = 0; var2 < 3; ++var2) {
+         float[] var10000 = this.values;
+         var10000[var2] /= var1;
+      }
+
+   }
+
    public void cross(Vector3f var1) {
-      float var2 = this.x;
-      float var3 = this.y;
-      float var4 = this.z;
+      float var2 = this.values[0];
+      float var3 = this.values[1];
+      float var4 = this.values[2];
       float var5 = var1.x();
       float var6 = var1.y();
       float var7 = var1.z();
-      this.x = var3 * var7 - var4 * var6;
-      this.y = var4 * var5 - var2 * var7;
-      this.z = var2 * var6 - var3 * var5;
-   }
-
-   public void transform(Matrix3f var1) {
-      float var2 = this.x;
-      float var3 = this.y;
-      float var4 = this.z;
-      this.x = var1.m00 * var2 + var1.m01 * var3 + var1.m02 * var4;
-      this.y = var1.m10 * var2 + var1.m11 * var3 + var1.m12 * var4;
-      this.z = var1.m20 * var2 + var1.m21 * var3 + var1.m22 * var4;
+      this.values[0] = var3 * var7 - var4 * var6;
+      this.values[1] = var4 * var5 - var2 * var7;
+      this.values[2] = var2 * var6 - var3 * var5;
    }
 
    public void transform(Quaternion var1) {
@@ -153,34 +142,5 @@ public final class Vector3f {
       var3.conj();
       var2.mul(var3);
       this.set(var2.i(), var2.j(), var2.k());
-   }
-
-   public void lerp(Vector3f var1, float var2) {
-      float var3 = 1.0F - var2;
-      this.x = this.x * var3 + var1.x * var2;
-      this.y = this.y * var3 + var1.y * var2;
-      this.z = this.z * var3 + var1.z * var2;
-   }
-
-   public Quaternion rotation(float var1) {
-      return new Quaternion(this, var1, false);
-   }
-
-   public Quaternion rotationDegrees(float var1) {
-      return new Quaternion(this, var1, true);
-   }
-
-   public Vector3f copy() {
-      return new Vector3f(this.x, this.y, this.z);
-   }
-
-   public void map(Float2FloatFunction var1) {
-      this.x = var1.get(this.x);
-      this.y = var1.get(this.y);
-      this.z = var1.get(this.z);
-   }
-
-   public String toString() {
-      return "[" + this.x + ", " + this.y + ", " + this.z + "]";
    }
 }

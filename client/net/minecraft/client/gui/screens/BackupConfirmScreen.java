@@ -1,59 +1,72 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
+import com.google.common.collect.Lists;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 
 public class BackupConfirmScreen extends Screen {
-   @Nullable
    private final Screen lastScreen;
    protected final BackupConfirmScreen.Listener listener;
    private final Component description;
    private final boolean promptForCacheErase;
-   private MultiLineLabel message;
+   private final List<String> lines = Lists.newArrayList();
+   private final String eraseCacheText;
+   private final String backupButton;
+   private final String continueButton;
+   private final String cancelButton;
    private Checkbox eraseCache;
 
-   public BackupConfirmScreen(@Nullable Screen var1, BackupConfirmScreen.Listener var2, Component var3, Component var4, boolean var5) {
+   public BackupConfirmScreen(Screen var1, BackupConfirmScreen.Listener var2, Component var3, Component var4, boolean var5) {
       super(var3);
-      this.message = MultiLineLabel.EMPTY;
       this.lastScreen = var1;
       this.listener = var2;
       this.description = var4;
       this.promptForCacheErase = var5;
+      this.eraseCacheText = I18n.get("selectWorld.backupEraseCache");
+      this.backupButton = I18n.get("selectWorld.backupJoinConfirmButton");
+      this.continueButton = I18n.get("selectWorld.backupJoinSkipButton");
+      this.cancelButton = I18n.get("gui.cancel");
    }
 
    protected void init() {
       super.init();
-      this.message = MultiLineLabel.create(this.font, this.description, this.width - 50);
-      int var10000 = this.message.getLineCount() + 1;
+      this.lines.clear();
+      this.lines.addAll(this.font.split(this.description.getColoredString(), this.width - 50));
+      int var10000 = this.lines.size() + 1;
       this.font.getClass();
       int var1 = var10000 * 9;
-      this.addButton(new Button(this.width / 2 - 155, 100 + var1, 150, 20, new TranslatableComponent("selectWorld.backupJoinConfirmButton"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 155, 100 + var1, 150, 20, this.backupButton, (var1x) -> {
          this.listener.proceed(true, this.eraseCache.selected());
       }));
-      this.addButton(new Button(this.width / 2 - 155 + 160, 100 + var1, 150, 20, new TranslatableComponent("selectWorld.backupJoinSkipButton"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 155 + 160, 100 + var1, 150, 20, this.continueButton, (var1x) -> {
          this.listener.proceed(false, this.eraseCache.selected());
       }));
-      this.addButton(new Button(this.width / 2 - 155 + 80, 124 + var1, 150, 20, CommonComponents.GUI_CANCEL, (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 155 + 80, 124 + var1, 150, 20, this.cancelButton, (var1x) -> {
          this.minecraft.setScreen(this.lastScreen);
       }));
-      this.eraseCache = new Checkbox(this.width / 2 - 155 + 80, 76 + var1, 150, 20, new TranslatableComponent("selectWorld.backupEraseCache"), false);
+      this.eraseCache = new Checkbox(this.width / 2 - 155 + 80, 76 + var1, 150, 20, this.eraseCacheText, false);
       if (this.promptForCacheErase) {
          this.addButton(this.eraseCache);
       }
 
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 50, 16777215);
-      this.message.renderCentered(var1, this.width / 2, 70);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 50, 16777215);
+      int var4 = 70;
+
+      for(Iterator var5 = this.lines.iterator(); var5.hasNext(); var4 += 9) {
+         String var6 = (String)var5.next();
+         this.drawCenteredString(this.font, var6, this.width / 2, var4, 16777215);
+         this.font.getClass();
+      }
+
+      super.render(var1, var2, var3);
    }
 
    public boolean shouldCloseOnEsc() {

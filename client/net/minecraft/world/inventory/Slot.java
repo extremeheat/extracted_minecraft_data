@@ -1,8 +1,6 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -11,8 +9,8 @@ public class Slot {
    private final int slot;
    public final Container container;
    public int index;
-   public final int x;
-   public final int y;
+   public int x;
+   public int y;
 
    public Slot(Container var1, int var2, int var3, int var4) {
       super();
@@ -74,7 +72,7 @@ public class Slot {
    }
 
    @Nullable
-   public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+   public String getNoItemIcon() {
       return null;
    }
 

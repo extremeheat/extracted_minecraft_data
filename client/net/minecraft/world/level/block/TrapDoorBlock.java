@@ -4,13 +4,13 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -37,7 +37,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    protected static final VoxelShape BOTTOM_AABB;
    protected static final VoxelShape TOP_AABB;
 
-   protected TrapDoorBlock(BlockBehaviour.Properties var1) {
+   protected TrapDoorBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(OPEN, false)).setValue(HALF, Half.BOTTOM)).setValue(POWERED, false)).setValue(WATERLOGGED, false));
    }
@@ -73,9 +73,9 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       }
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (this.material == Material.METAL) {
-         return InteractionResult.PASS;
+         return false;
       } else {
          var1 = (BlockState)var1.cycle(OPEN);
          var2.setBlock(var3, var1, 2);
@@ -84,7 +84,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
          }
 
          this.playSound(var4, var2, var3, (Boolean)var1.getValue(OPEN));
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       }
    }
 
@@ -135,6 +135,10 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       return (BlockState)var2.setValue(WATERLOGGED, var3.getType() == Fluids.WATER);
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
+   }
+
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, OPEN, HALF, POWERED, WATERLOGGED);
    }
@@ -149,6 +153,10 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
+   }
+
+   public boolean isValidSpawn(BlockState var1, BlockGetter var2, BlockPos var3, EntityType<?> var4) {
+      return false;
    }
 
    static {

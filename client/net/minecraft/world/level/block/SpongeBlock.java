@@ -8,19 +8,18 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.material.Material;
 
 public class SpongeBlock extends Block {
-   protected SpongeBlock(BlockBehaviour.Properties var1) {
+   protected SpongeBlock(Block.Properties var1) {
       super(var1);
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
+      if (var4.getBlock() != var1.getBlock()) {
          this.tryAbsorbWater(var2, var3);
       }
    }
@@ -69,7 +68,7 @@ public class SpongeBlock extends Block {
                      var3.add(new Tuple(var12, var7 + 1));
                   }
                } else if (var15 == Material.WATER_PLANT || var15 == Material.REPLACEABLE_WATER_PLANT) {
-                  BlockEntity var16 = var13.hasBlockEntity() ? var1.getBlockEntity(var12) : null;
+                  BlockEntity var16 = var13.getBlock().isEntityBlock() ? var1.getBlockEntity(var12) : null;
                   dropResources(var13, var1, var12, var16);
                   var1.setBlock(var12, Blocks.AIR.defaultBlockState(), 3);
                   ++var4;

@@ -20,7 +20,7 @@ public class Stats {
    public static final ResourceLocation PLAY_ONE_MINUTE;
    public static final ResourceLocation TIME_SINCE_DEATH;
    public static final ResourceLocation TIME_SINCE_REST;
-   public static final ResourceLocation CROUCH_TIME;
+   public static final ResourceLocation SNEAK_TIME;
    public static final ResourceLocation WALK_ONE_CM;
    public static final ResourceLocation CROUCH_ONE_CM;
    public static final ResourceLocation SPRINT_ONE_CM;
@@ -35,7 +35,6 @@ public class Stats {
    public static final ResourceLocation HORSE_ONE_CM;
    public static final ResourceLocation AVIATE_ONE_CM;
    public static final ResourceLocation SWIM_ONE_CM;
-   public static final ResourceLocation STRIDER_ONE_CM;
    public static final ResourceLocation JUMP;
    public static final ResourceLocation DROP;
    public static final ResourceLocation DAMAGE_DEALT;
@@ -86,10 +85,6 @@ public class Stats {
    public static final ResourceLocation BELL_RING;
    public static final ResourceLocation RAID_TRIGGER;
    public static final ResourceLocation RAID_WIN;
-   public static final ResourceLocation INTERACT_WITH_ANVIL;
-   public static final ResourceLocation INTERACT_WITH_GRINDSTONE;
-   public static final ResourceLocation TARGET_HIT;
-   public static final ResourceLocation INTERACT_WITH_SMITHING_TABLE;
 
    private static ResourceLocation makeCustomStat(String var0, StatFormatter var1) {
       ResourceLocation var2 = new ResourceLocation(var0);
@@ -116,7 +111,7 @@ public class Stats {
       PLAY_ONE_MINUTE = makeCustomStat("play_one_minute", StatFormatter.TIME);
       TIME_SINCE_DEATH = makeCustomStat("time_since_death", StatFormatter.TIME);
       TIME_SINCE_REST = makeCustomStat("time_since_rest", StatFormatter.TIME);
-      CROUCH_TIME = makeCustomStat("sneak_time", StatFormatter.TIME);
+      SNEAK_TIME = makeCustomStat("sneak_time", StatFormatter.TIME);
       WALK_ONE_CM = makeCustomStat("walk_one_cm", StatFormatter.DISTANCE);
       CROUCH_ONE_CM = makeCustomStat("crouch_one_cm", StatFormatter.DISTANCE);
       SPRINT_ONE_CM = makeCustomStat("sprint_one_cm", StatFormatter.DISTANCE);
@@ -131,7 +126,6 @@ public class Stats {
       HORSE_ONE_CM = makeCustomStat("horse_one_cm", StatFormatter.DISTANCE);
       AVIATE_ONE_CM = makeCustomStat("aviate_one_cm", StatFormatter.DISTANCE);
       SWIM_ONE_CM = makeCustomStat("swim_one_cm", StatFormatter.DISTANCE);
-      STRIDER_ONE_CM = makeCustomStat("strider_one_cm", StatFormatter.DISTANCE);
       JUMP = makeCustomStat("jump", StatFormatter.DEFAULT);
       DROP = makeCustomStat("drop", StatFormatter.DEFAULT);
       DAMAGE_DEALT = makeCustomStat("damage_dealt", StatFormatter.DIVIDE_BY_TEN);
@@ -182,9 +176,5 @@ public class Stats {
       BELL_RING = makeCustomStat("bell_ring", StatFormatter.DEFAULT);
       RAID_TRIGGER = makeCustomStat("raid_trigger", StatFormatter.DEFAULT);
       RAID_WIN = makeCustomStat("raid_win", StatFormatter.DEFAULT);
-      INTERACT_WITH_ANVIL = makeCustomStat("interact_with_anvil", StatFormatter.DEFAULT);
-      INTERACT_WITH_GRINDSTONE = makeCustomStat("interact_with_grindstone", StatFormatter.DEFAULT);
-      TARGET_HIT = makeCustomStat("target_hit", StatFormatter.DEFAULT);
-      INTERACT_WITH_SMITHING_TABLE = makeCustomStat("interact_with_smithing_table", StatFormatter.DEFAULT);
    }
 }

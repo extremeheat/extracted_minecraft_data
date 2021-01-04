@@ -17,7 +17,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayTagWithOtherKids extends Behavior<PathfinderMob> {
@@ -47,7 +47,7 @@ public class PlayTagWithOtherKids extends Behavior<PathfinderMob> {
 
    private void fleeFromChaser(ServerLevel var1, PathfinderMob var2, LivingEntity var3) {
       for(int var4 = 0; var4 < 10; ++var4) {
-         Vec3 var5 = LandRandomPos.getPos(var2, 20, 8);
+         Vec3 var5 = RandomPos.getLandPos(var2, 20, 8);
          if (var5 != null && var1.isVillage(new BlockPos(var5))) {
             var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var5, 0.6F, 0)));
             return;
@@ -59,8 +59,8 @@ public class PlayTagWithOtherKids extends Behavior<PathfinderMob> {
    private static void chaseKid(PathfinderMob var0, LivingEntity var1) {
       Brain var2 = var0.getBrain();
       var2.setMemory(MemoryModuleType.INTERACTION_TARGET, (Object)var1);
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1, true)));
-      var2.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityTracker(var1, false), 0.6F, 1)));
+      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityPosWrapper(var1)));
+      var2.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityPosWrapper(var1), 0.6F, 1)));
    }
 
    private Optional<LivingEntity> findSomeoneToChase(PathfinderMob var1) {

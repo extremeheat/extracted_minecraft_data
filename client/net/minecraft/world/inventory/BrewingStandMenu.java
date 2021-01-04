@@ -6,6 +6,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
@@ -58,16 +59,16 @@ public class BrewingStandMenu extends AbstractContainerMenu {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if ((var2 < 0 || var2 > 2) && var2 != 3 && var2 != 4) {
-            if (BrewingStandMenu.FuelSlot.mayPlaceItem(var3)) {
-               if (this.moveItemStackTo(var5, 4, 5, false) || this.ingredientSlot.mayPlace(var5) && !this.moveItemStackTo(var5, 3, 4, false)) {
-                  return ItemStack.EMPTY;
-               }
-            } else if (this.ingredientSlot.mayPlace(var5)) {
+            if (this.ingredientSlot.mayPlace(var5)) {
                if (!this.moveItemStackTo(var5, 3, 4, false)) {
                   return ItemStack.EMPTY;
                }
             } else if (BrewingStandMenu.PotionSlot.mayPlaceItem(var3) && var3.getCount() == 1) {
                if (!this.moveItemStackTo(var5, 0, 3, false)) {
+                  return ItemStack.EMPTY;
+               }
+            } else if (BrewingStandMenu.FuelSlot.mayPlaceItem(var3)) {
+               if (!this.moveItemStackTo(var5, 4, 5, false)) {
                   return ItemStack.EMPTY;
                }
             } else if (var2 >= 5 && var2 < 32) {
@@ -123,7 +124,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
 
       public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.BLAZE_POWDER);
+         return var0.getItem() == Items.BLAZE_POWDER;
       }
 
       public int getMaxStackSize() {
@@ -169,7 +170,8 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
 
       public static boolean mayPlaceItem(ItemStack var0) {
-         return var0.is(Items.POTION) || var0.is(Items.SPLASH_POTION) || var0.is(Items.LINGERING_POTION) || var0.is(Items.GLASS_BOTTLE);
+         Item var1 = var0.getItem();
+         return var1 == Items.POTION || var1 == Items.SPLASH_POTION || var1 == Items.LINGERING_POTION || var1 == Items.GLASS_BOTTLE;
       }
    }
 }

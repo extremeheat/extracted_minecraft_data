@@ -10,7 +10,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 
 public class SaveOnCommand {
-   private static final SimpleCommandExceptionType ERROR_ALREADY_ON = new SimpleCommandExceptionType(new TranslatableComponent("commands.save.alreadyOn"));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_ON = new SimpleCommandExceptionType(new TranslatableComponent("commands.save.alreadyOn", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-on").requires((var0x) -> {
@@ -31,7 +31,7 @@ public class SaveOnCommand {
          if (!var2) {
             throw ERROR_ALREADY_ON.create();
          } else {
-            var1.sendSuccess(new TranslatableComponent("commands.save.enabled"), true);
+            var1.sendSuccess(new TranslatableComponent("commands.save.enabled", new Object[0]), true);
             return 1;
          }
       }));

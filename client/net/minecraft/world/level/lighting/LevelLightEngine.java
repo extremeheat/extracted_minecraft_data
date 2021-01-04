@@ -4,13 +4,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 
 public class LevelLightEngine implements LightEventListener {
-   protected final LevelHeightAccessor levelHeightAccessor;
    @Nullable
    private final LayerLightEngine<?, ?> blockEngine;
    @Nullable
@@ -18,7 +16,6 @@ public class LevelLightEngine implements LightEventListener {
 
    public LevelLightEngine(LightChunkGetter var1, boolean var2, boolean var3) {
       super();
-      this.levelHeightAccessor = var1.getLevel();
       this.blockEngine = var2 ? new BlockLightEngine(var1) : null;
       this.skyEngine = var3 ? new SkyLightEngine(var1) : null;
    }
@@ -105,13 +102,13 @@ public class LevelLightEngine implements LightEventListener {
       return "n/a";
    }
 
-   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3, boolean var4) {
+   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3) {
       if (var1 == LightLayer.BLOCK) {
          if (this.blockEngine != null) {
-            this.blockEngine.queueSectionData(var2.asLong(), var3, var4);
+            this.blockEngine.queueSectionData(var2.asLong(), var3);
          }
       } else if (this.skyEngine != null) {
-         this.skyEngine.queueSectionData(var2.asLong(), var3, var4);
+         this.skyEngine.queueSectionData(var2.asLong(), var3);
       }
 
    }
@@ -125,23 +122,5 @@ public class LevelLightEngine implements LightEventListener {
          this.skyEngine.retainData(var1, var2);
       }
 
-   }
-
-   public int getRawBrightness(BlockPos var1, int var2) {
-      int var3 = this.skyEngine == null ? 0 : this.skyEngine.getLightValue(var1) - var2;
-      int var4 = this.blockEngine == null ? 0 : this.blockEngine.getLightValue(var1);
-      return Math.max(var4, var3);
-   }
-
-   public int getLightSectionCount() {
-      return this.levelHeightAccessor.getSectionsCount() + 2;
-   }
-
-   public int getMinLightSection() {
-      return this.levelHeightAccessor.getMinSection() - 1;
-   }
-
-   public int getMaxLightSection() {
-      return this.getMinLightSection() + this.getLightSectionCount();
    }
 }

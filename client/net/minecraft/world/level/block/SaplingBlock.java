@@ -2,11 +2,10 @@ package net.minecraft.world.level.block;
 
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.grower.AbstractTreeGrower;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -19,7 +18,7 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
    protected static final VoxelShape SHAPE;
    private final AbstractTreeGrower treeGrower;
 
-   protected SaplingBlock(AbstractTreeGrower var1, BlockBehaviour.Properties var2) {
+   protected SaplingBlock(AbstractTreeGrower var1, Block.Properties var2) {
       super(var2);
       this.treeGrower = var1;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(STAGE, 0));
@@ -29,18 +28,19 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
       return SHAPE;
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      super.tick(var1, var2, var3, var4);
       if (var2.getMaxLocalRawBrightness(var3.above()) >= 9 && var4.nextInt(7) == 0) {
          this.advanceTree(var2, var3, var1, var4);
       }
 
    }
 
-   public void advanceTree(ServerLevel var1, BlockPos var2, BlockState var3, Random var4) {
+   public void advanceTree(LevelAccessor var1, BlockPos var2, BlockState var3, Random var4) {
       if ((Integer)var3.getValue(STAGE) == 0) {
          var1.setBlock(var2, (BlockState)var3.cycle(STAGE), 4);
       } else {
-         this.treeGrower.growTree(var1, var1.getChunkSource().getGenerator(), var2, var3, var4);
+         this.treeGrower.growTree(var1, var2, var3, var4);
       }
 
    }
@@ -53,7 +53,7 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
       return (double)var1.random.nextFloat() < 0.45D;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       this.advanceTree(var1, var3, var4, var2);
    }
 

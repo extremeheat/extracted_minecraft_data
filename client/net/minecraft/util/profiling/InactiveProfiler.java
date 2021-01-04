@@ -3,7 +3,7 @@ package net.minecraft.util.profiling;
 import java.util.function.Supplier;
 
 public class InactiveProfiler implements ProfileCollector {
-   public static final InactiveProfiler INSTANCE = new InactiveProfiler();
+   public static final InactiveProfiler INACTIVE = new InactiveProfiler();
 
    private InactiveProfiler() {
       super();
@@ -28,12 +28,6 @@ public class InactiveProfiler implements ProfileCollector {
    }
 
    public void popPush(Supplier<String> var1) {
-   }
-
-   public void incrementCounter(String var1) {
-   }
-
-   public void incrementCounter(Supplier<String> var1) {
    }
 
    public ProfileResults getResults() {

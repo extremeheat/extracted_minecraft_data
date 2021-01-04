@@ -1,17 +1,15 @@
 package net.minecraft.client.gui.components.toasts;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.List;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 
 public class RecipeToast implements Toast {
-   private static final Component TITLE_TEXT = new TranslatableComponent("recipe.toast.title");
-   private static final Component DESCRIPTION_TEXT = new TranslatableComponent("recipe.toast.description");
    private final List<Recipe<?>> recipes = Lists.newArrayList();
    private long lastChanged;
    private boolean changed;
@@ -21,34 +19,37 @@ public class RecipeToast implements Toast {
       this.recipes.add(var1);
    }
 
-   public Toast.Visibility render(PoseStack var1, ToastComponent var2, long var3) {
+   public Toast.Visibility render(ToastComponent var1, long var2) {
       if (this.changed) {
-         this.lastChanged = var3;
+         this.lastChanged = var2;
          this.changed = false;
       }
 
       if (this.recipes.isEmpty()) {
          return Toast.Visibility.HIDE;
       } else {
-         var2.getMinecraft().getTextureManager().bind(TEXTURE);
-         RenderSystem.color3f(1.0F, 1.0F, 1.0F);
-         var2.blit(var1, 0, 0, 0, 32, this.width(), this.height());
-         var2.getMinecraft().font.draw(var1, TITLE_TEXT, 30.0F, 7.0F, -11534256);
-         var2.getMinecraft().font.draw(var1, DESCRIPTION_TEXT, 30.0F, 18.0F, -16777216);
-         Recipe var5 = (Recipe)this.recipes.get((int)(var3 / Math.max(1L, 5000L / (long)this.recipes.size()) % (long)this.recipes.size()));
-         ItemStack var6 = var5.getToastSymbol();
-         RenderSystem.pushMatrix();
-         RenderSystem.scalef(0.6F, 0.6F, 1.0F);
-         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var6, 3, 3);
-         RenderSystem.popMatrix();
-         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var5.getResultItem(), 8, 8);
-         return var3 - this.lastChanged >= 5000L ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+         var1.getMinecraft().getTextureManager().bind(TEXTURE);
+         GlStateManager.color3f(1.0F, 1.0F, 1.0F);
+         var1.blit(0, 0, 0, 32, 160, 32);
+         var1.getMinecraft().font.draw(I18n.get("recipe.toast.title"), 30.0F, 7.0F, -11534256);
+         var1.getMinecraft().font.draw(I18n.get("recipe.toast.description"), 30.0F, 18.0F, -16777216);
+         Lighting.turnOnGui();
+         Recipe var4 = (Recipe)this.recipes.get((int)(var2 / (5000L / (long)this.recipes.size()) % (long)this.recipes.size()));
+         ItemStack var5 = var4.getToastSymbol();
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(0.6F, 0.6F, 1.0F);
+         var1.getMinecraft().getItemRenderer().renderAndDecorateItem((LivingEntity)null, var5, 3, 3);
+         GlStateManager.popMatrix();
+         var1.getMinecraft().getItemRenderer().renderAndDecorateItem((LivingEntity)null, var4.getResultItem(), 8, 8);
+         return var2 - this.lastChanged >= 5000L ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       }
    }
 
-   private void addItem(Recipe<?> var1) {
-      this.recipes.add(var1);
-      this.changed = true;
+   public void addItem(Recipe<?> var1) {
+      if (this.recipes.add(var1)) {
+         this.changed = true;
+      }
+
    }
 
    public static void addOrUpdate(ToastComponent var0, Recipe<?> var1) {

@@ -4,8 +4,6 @@ import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.EnchantmentCategory;
@@ -56,7 +54,6 @@ public abstract class CreativeModeTab {
    public static final CreativeModeTab TAB_INVENTORY;
    private final int id;
    private final String langId;
-   private final Component displayName;
    private String recipeFolderName;
    private String backgroundSuffix = "items.png";
    private boolean canScroll = true;
@@ -68,7 +65,6 @@ public abstract class CreativeModeTab {
       super();
       this.id = var1;
       this.langId = var2;
-      this.displayName = new TranslatableComponent("itemGroup." + var2);
       this.iconItemStack = ItemStack.EMPTY;
       TABS[var1] = this;
    }
@@ -77,12 +73,16 @@ public abstract class CreativeModeTab {
       return this.id;
    }
 
+   public String getLangId() {
+      return this.langId;
+   }
+
    public String getRecipeFolderName() {
       return this.recipeFolderName == null ? this.langId : this.recipeFolderName;
    }
 
-   public Component getDisplayName() {
-      return this.displayName;
+   public String getName() {
+      return "itemGroup." + this.getLangId();
    }
 
    public ItemStack getIconItem() {
@@ -179,12 +179,12 @@ public abstract class CreativeModeTab {
          public ItemStack makeIcon() {
             return new ItemStack(Items.IRON_AXE);
          }
-      }).setEnchantmentCategories(new EnchantmentCategory[]{EnchantmentCategory.VANISHABLE, EnchantmentCategory.DIGGER, EnchantmentCategory.FISHING_ROD, EnchantmentCategory.BREAKABLE});
+      }).setEnchantmentCategories(new EnchantmentCategory[]{EnchantmentCategory.ALL, EnchantmentCategory.DIGGER, EnchantmentCategory.FISHING_ROD, EnchantmentCategory.BREAKABLE});
       TAB_COMBAT = (new CreativeModeTab(9, "combat") {
          public ItemStack makeIcon() {
             return new ItemStack(Items.GOLDEN_SWORD);
          }
-      }).setEnchantmentCategories(new EnchantmentCategory[]{EnchantmentCategory.VANISHABLE, EnchantmentCategory.ARMOR, EnchantmentCategory.ARMOR_FEET, EnchantmentCategory.ARMOR_HEAD, EnchantmentCategory.ARMOR_LEGS, EnchantmentCategory.ARMOR_CHEST, EnchantmentCategory.BOW, EnchantmentCategory.WEAPON, EnchantmentCategory.WEARABLE, EnchantmentCategory.BREAKABLE, EnchantmentCategory.TRIDENT, EnchantmentCategory.CROSSBOW});
+      }).setEnchantmentCategories(new EnchantmentCategory[]{EnchantmentCategory.ALL, EnchantmentCategory.ARMOR, EnchantmentCategory.ARMOR_FEET, EnchantmentCategory.ARMOR_HEAD, EnchantmentCategory.ARMOR_LEGS, EnchantmentCategory.ARMOR_CHEST, EnchantmentCategory.BOW, EnchantmentCategory.WEAPON, EnchantmentCategory.WEARABLE, EnchantmentCategory.BREAKABLE, EnchantmentCategory.TRIDENT, EnchantmentCategory.CROSSBOW});
       TAB_BREWING = new CreativeModeTab(10, "brewing") {
          public ItemStack makeIcon() {
             return PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);

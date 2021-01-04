@@ -11,11 +11,11 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 
 public class LookAndFollowTradingPlayerSink extends Behavior<Villager> {
-   private final float speedModifier;
+   private final float speed;
 
    public LookAndFollowTradingPlayerSink(float var1) {
       super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED), 2147483647);
-      this.speedModifier = var1;
+      this.speed = var1;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
@@ -46,14 +46,20 @@ public class LookAndFollowTradingPlayerSink extends Behavior<Villager> {
    }
 
    private void followPlayer(Villager var1) {
-      Brain var2 = var1.getBrain();
-      var2.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityTracker(var1.getTradingPlayer(), false), this.speedModifier, 2)));
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1.getTradingPlayer(), true)));
+      EntityPosWrapper var2 = new EntityPosWrapper(var1.getTradingPlayer());
+      Brain var3 = var1.getBrain();
+      var3.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, this.speed, 2)));
+      var3.setMemory(MemoryModuleType.LOOK_TARGET, (Object)var2);
    }
 
    // $FF: synthetic method
    protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
       return this.canStillUse(var1, (Villager)var2, var3);
+   }
+
+   // $FF: synthetic method
+   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
+      this.stop(var1, (Villager)var2, var3);
    }
 
    // $FF: synthetic method

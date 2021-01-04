@@ -3,7 +3,6 @@ package com.mojang.blaze3d.platform;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -37,7 +36,7 @@ public class GlDebug {
       return "Unknown (0x" + Integer.toHexString(var0).toUpperCase() + ")";
    }
 
-   public static String sourceToString(int var0) {
+   private static String sourceToString(int var0) {
       switch(var0) {
       case 33350:
          return "API";
@@ -56,7 +55,7 @@ public class GlDebug {
       }
    }
 
-   public static String typeToString(int var0) {
+   private static String typeToString(int var0) {
       switch(var0) {
       case 33356:
          return "ERROR";
@@ -77,7 +76,7 @@ public class GlDebug {
       }
    }
 
-   public static String severityToString(int var0) {
+   private static String severityToString(int var0) {
       switch(var0) {
       case 33387:
          return "NOTIFICATION";
@@ -103,7 +102,6 @@ public class GlDebug {
    }
 
    public static void enableDebugCallback(int var0, boolean var1) {
-      RenderSystem.assertThread(RenderSystem::isInInitPhase);
       if (var0 > 0) {
          GLCapabilities var2 = GL.getCapabilities();
          int var3;
@@ -164,6 +162,9 @@ public class GlDebug {
       setup(4, "GL11.GL_TRIANGLES");
       setup(5, "GL11.GL_TRIANGLE_STRIP");
       setup(6, "GL11.GL_TRIANGLE_FAN");
+      setup(7, "GL11.GL_QUADS");
+      setup(8, "GL11.GL_QUAD_STRIP");
+      setup(9, "GL11.GL_POLYGON");
       setup(0, "GL11.GL_ZERO");
       setup(1, "GL11.GL_ONE");
       setup(768, "GL11.GL_SRC_COLOR");

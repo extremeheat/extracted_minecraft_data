@@ -7,32 +7,32 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.phys.Vec3;
 
 public class GoToClosestVillage extends Behavior<Villager> {
-   private final float speedModifier;
+   private final float speed;
    private final int closeEnoughDistance;
 
    public GoToClosestVillage(float var1, int var2) {
       super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
+      this.speed = var1;
       this.closeEnoughDistance = var2;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      return !var1.isVillage(var2.blockPosition());
+      return !var1.isVillage(new BlockPos(var2));
    }
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       PoiManager var5 = var1.getPoiManager();
-      int var6 = var5.sectionsToVillage(SectionPos.of(var2.blockPosition()));
+      int var6 = var5.sectionsToVillage(SectionPos.of(new BlockPos(var2)));
       Vec3 var7 = null;
 
       for(int var8 = 0; var8 < 5; ++var8) {
-         Vec3 var9 = LandRandomPos.getPos(var2, 15, 7, (var1x) -> {
+         Vec3 var9 = RandomPos.getLandPos(var2, 15, 7, (var1x) -> {
             return (double)(-var1.sectionsToVillage(SectionPos.of(var1x)));
          });
          if (var9 != null) {
@@ -49,7 +49,7 @@ public class GoToClosestVillage extends Behavior<Villager> {
       }
 
       if (var7 != null) {
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var7, this.speedModifier, this.closeEnoughDistance)));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var7, this.speed, this.closeEnoughDistance)));
       }
 
    }

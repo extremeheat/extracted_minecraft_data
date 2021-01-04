@@ -1,39 +1,37 @@
 package net.minecraft.world.level.block;
 
-import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.CollisionGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
@@ -42,7 +40,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
    public static final EnumProperty<BedPart> PART;
@@ -58,10 +55,14 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    protected static final VoxelShape EAST_SHAPE;
    private final DyeColor color;
 
-   public BedBlock(DyeColor var1, BlockBehaviour.Properties var2) {
+   public BedBlock(DyeColor var1, Block.Properties var2) {
       super(var2);
       this.color = var1;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PART, BedPart.FOOT)).setValue(OCCUPIED, false));
+   }
+
+   public MaterialColor getMapColor(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return var1.getValue(PART) == BedPart.FOOT ? this.color.getMaterialColor() : MaterialColor.WOOL;
    }
 
    @Nullable
@@ -70,56 +71,41 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       return var2.getBlock() instanceof BedBlock ? (Direction)var2.getValue(FACING) : null;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.CONSUME;
+         return true;
       } else {
          if (var1.getValue(PART) != BedPart.HEAD) {
             var3 = var3.relative((Direction)var1.getValue(FACING));
             var1 = var2.getBlockState(var3);
-            if (!var1.is(this)) {
-               return InteractionResult.CONSUME;
+            if (var1.getBlock() != this) {
+               return true;
             }
          }
 
-         if (!canSetSpawn(var2)) {
+         if (var2.dimension.mayRespawn() && var2.getBiome(var3) != Biomes.NETHER) {
+            if ((Boolean)var1.getValue(OCCUPIED)) {
+               var4.displayClientMessage(new TranslatableComponent("block.minecraft.bed.occupied", new Object[0]), true);
+               return true;
+            } else {
+               var4.startSleepInBed(var3).ifLeft((var1x) -> {
+                  if (var1x != null) {
+                     var4.displayClientMessage(var1x.getMessage(), true);
+                  }
+
+               });
+               return true;
+            }
+         } else {
             var2.removeBlock(var3, false);
             BlockPos var7 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
-            if (var2.getBlockState(var7).is(this)) {
+            if (var2.getBlockState(var7).getBlock() == this) {
                var2.removeBlock(var7, false);
             }
 
-            var2.explode((Entity)null, DamageSource.badRespawnPointExplosion(), (ExplosionDamageCalculator)null, (double)var3.getX() + 0.5D, (double)var3.getY() + 0.5D, (double)var3.getZ() + 0.5D, 5.0F, true, Explosion.BlockInteraction.DESTROY);
-            return InteractionResult.SUCCESS;
-         } else if ((Boolean)var1.getValue(OCCUPIED)) {
-            if (!this.kickVillagerOutOfBed(var2, var3)) {
-               var4.displayClientMessage(new TranslatableComponent("block.minecraft.bed.occupied"), true);
-            }
-
-            return InteractionResult.SUCCESS;
-         } else {
-            var4.startSleepInBed(var3).ifLeft((var1x) -> {
-               if (var1x != null) {
-                  var4.displayClientMessage(var1x.getMessage(), true);
-               }
-
-            });
-            return InteractionResult.SUCCESS;
+            var2.explode((Entity)null, DamageSource.netherBedExplosion(), (double)var3.getX() + 0.5D, (double)var3.getY() + 0.5D, (double)var3.getZ() + 0.5D, 5.0F, true, Explosion.BlockInteraction.DESTROY);
+            return true;
          }
-      }
-   }
-
-   public static boolean canSetSpawn(Level var0) {
-      return var0.dimensionType().bedWorks();
-   }
-
-   private boolean kickVillagerOutOfBed(Level var1, BlockPos var2) {
-      List var3 = var1.getEntitiesOfClass(Villager.class, new AABB(var2), LivingEntity::isSleeping);
-      if (var3.isEmpty()) {
-         return false;
-      } else {
-         ((Villager)var3.get(0)).stopSleeping();
-         return true;
       }
    }
 
@@ -128,26 +114,21 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {
-      if (var2.isSuppressingBounce()) {
+      if (var2.isSneaking()) {
          super.updateEntityAfterFallOn(var1, var2);
       } else {
-         this.bounceUp(var2);
-      }
-
-   }
-
-   private void bounceUp(Entity var1) {
-      Vec3 var2 = var1.getDeltaMovement();
-      if (var2.y < 0.0D) {
-         double var3 = var1 instanceof LivingEntity ? 1.0D : 0.8D;
-         var1.setDeltaMovement(var2.x, -var2.y * 0.6600000262260437D * var3, var2.z);
+         Vec3 var3 = var2.getDeltaMovement();
+         if (var3.y < 0.0D) {
+            double var4 = var2 instanceof LivingEntity ? 1.0D : 0.8D;
+            var2.setDeltaMovement(var3.x, -var3.y * 0.6600000262260437D * var4, var3.z);
+         }
       }
 
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == getNeighbourDirection((BedPart)var1.getValue(PART), (Direction)var1.getValue(FACING))) {
-         return var3.is(this) && var3.getValue(PART) != var1.getValue(PART) ? (BlockState)var1.setValue(OCCUPIED, var3.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();
+         return var3.getBlock() == this && var3.getValue(PART) != var1.getValue(PART) ? (BlockState)var1.setValue(OCCUPIED, var3.getValue(OCCUPIED)) : Blocks.AIR.defaultBlockState();
       } else {
          return super.updateShape(var1, var2, var3, var4, var5, var6);
       }
@@ -157,17 +138,24 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       return var0 == BedPart.FOOT ? var1 : var1.getOpposite();
    }
 
+   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
+      super.playerDestroy(var1, var2, var3, Blocks.AIR.defaultBlockState(), var5, var6);
+   }
+
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.isCreative()) {
-         BedPart var5 = (BedPart)var3.getValue(PART);
-         if (var5 == BedPart.FOOT) {
-            BlockPos var6 = var2.relative(getNeighbourDirection(var5, (Direction)var3.getValue(FACING)));
-            BlockState var7 = var1.getBlockState(var6);
-            if (var7.is(this) && var7.getValue(PART) == BedPart.HEAD) {
-               var1.setBlock(var6, Blocks.AIR.defaultBlockState(), 35);
-               var1.levelEvent(var4, 2001, var6, Block.getId(var7));
-            }
+      BedPart var5 = (BedPart)var3.getValue(PART);
+      BlockPos var6 = var2.relative(getNeighbourDirection(var5, (Direction)var3.getValue(FACING)));
+      BlockState var7 = var1.getBlockState(var6);
+      if (var7.getBlock() == this && var7.getValue(PART) != var5) {
+         var1.setBlock(var6, Blocks.AIR.defaultBlockState(), 35);
+         var1.levelEvent(var4, 2001, var6, Block.getId(var7));
+         if (!var1.isClientSide && !var4.isCreative()) {
+            ItemStack var8 = var4.getMainHandItem();
+            dropResources(var3, var1, var2, (BlockEntity)null, var4, var8);
+            dropResources(var7, var1, var6, (BlockEntity)null, var4, var8);
          }
+
+         var4.awardStat(Stats.BLOCK_MINED.get(this));
       }
 
       super.playerWillDestroy(var1, var2, var3, var4);
@@ -182,8 +170,9 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = getConnectedDirection(var1).getOpposite();
-      switch(var5) {
+      Direction var5 = (Direction)var1.getValue(FACING);
+      Direction var6 = var1.getValue(PART) == BedPart.HEAD ? var5 : var5.getOpposite();
+      switch(var6) {
       case NORTH:
          return NORTH_SHAPE;
       case SOUTH:
@@ -195,80 +184,73 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       }
    }
 
-   public static Direction getConnectedDirection(BlockState var0) {
-      Direction var1 = (Direction)var0.getValue(FACING);
-      return var0.getValue(PART) == BedPart.HEAD ? var1.getOpposite() : var1;
+   public boolean hasCustomBreakingProgress(BlockState var1) {
+      return true;
    }
 
-   public static DoubleBlockCombiner.BlockType getBlockType(BlockState var0) {
-      BedPart var1 = (BedPart)var0.getValue(PART);
-      return var1 == BedPart.HEAD ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
-   }
-
-   private static boolean isBunkBed(BlockGetter var0, BlockPos var1) {
-      return var0.getBlockState(var1.below()).getBlock() instanceof BedBlock;
-   }
-
-   public static Optional<Vec3> findStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2, float var3) {
+   public static Optional<Vec3> findStandUpPosition(EntityType<?> var0, LevelReader var1, BlockPos var2, int var3) {
       Direction var4 = (Direction)var1.getBlockState(var2).getValue(FACING);
-      Direction var5 = var4.getClockWise();
-      Direction var6 = var5.isFacingAngle(var3) ? var5.getOpposite() : var5;
-      if (isBunkBed(var1, var2)) {
-         return findBunkBedStandUpPosition(var0, var1, var2, var4, var6);
-      } else {
-         int[][] var7 = bedStandUpOffsets(var4, var6);
-         Optional var8 = findStandUpPositionAtOffset(var0, var1, var2, var7, true);
-         return var8.isPresent() ? var8 : findStandUpPositionAtOffset(var0, var1, var2, var7, false);
-      }
-   }
+      int var5 = var2.getX();
+      int var6 = var2.getY();
+      int var7 = var2.getZ();
 
-   private static Optional<Vec3> findBunkBedStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2, Direction var3, Direction var4) {
-      int[][] var5 = bedSurroundStandUpOffsets(var3, var4);
-      Optional var6 = findStandUpPositionAtOffset(var0, var1, var2, var5, true);
-      if (var6.isPresent()) {
-         return var6;
-      } else {
-         BlockPos var7 = var2.below();
-         Optional var8 = findStandUpPositionAtOffset(var0, var1, var7, var5, true);
-         if (var8.isPresent()) {
-            return var8;
-         } else {
-            int[][] var9 = bedAboveStandUpOffsets(var3);
-            Optional var10 = findStandUpPositionAtOffset(var0, var1, var2, var9, true);
-            if (var10.isPresent()) {
-               return var10;
-            } else {
-               Optional var11 = findStandUpPositionAtOffset(var0, var1, var2, var5, false);
-               if (var11.isPresent()) {
-                  return var11;
-               } else {
-                  Optional var12 = findStandUpPositionAtOffset(var0, var1, var7, var5, false);
-                  return var12.isPresent() ? var12 : findStandUpPositionAtOffset(var0, var1, var2, var9, false);
+      for(int var8 = 0; var8 <= 1; ++var8) {
+         int var9 = var5 - var4.getStepX() * var8 - 1;
+         int var10 = var7 - var4.getStepZ() * var8 - 1;
+         int var11 = var9 + 2;
+         int var12 = var10 + 2;
+
+         for(int var13 = var9; var13 <= var11; ++var13) {
+            for(int var14 = var10; var14 <= var12; ++var14) {
+               BlockPos var15 = new BlockPos(var13, var6, var14);
+               Optional var16 = getStandingLocationAtOrBelow(var0, var1, var15);
+               if (var16.isPresent()) {
+                  if (var3 <= 0) {
+                     return var16;
+                  }
+
+                  --var3;
                }
             }
-         }
-      }
-   }
-
-   private static Optional<Vec3> findStandUpPositionAtOffset(EntityType<?> var0, CollisionGetter var1, BlockPos var2, int[][] var3, boolean var4) {
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-      int[][] var6 = var3;
-      int var7 = var3.length;
-
-      for(int var8 = 0; var8 < var7; ++var8) {
-         int[] var9 = var6[var8];
-         var5.set(var2.getX() + var9[0], var2.getY(), var2.getZ() + var9[1]);
-         Vec3 var10 = DismountHelper.findSafeDismountLocation(var0, var1, var5, var4);
-         if (var10 != null) {
-            return Optional.of(var10);
          }
       }
 
       return Optional.empty();
    }
 
+   protected static Optional<Vec3> getStandingLocationAtOrBelow(EntityType<?> var0, LevelReader var1, BlockPos var2) {
+      VoxelShape var3 = var1.getBlockState(var2).getCollisionShape(var1, var2);
+      if (var3.max(Direction.Axis.Y) > 0.4375D) {
+         return Optional.empty();
+      } else {
+         BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos(var2);
+
+         while(var4.getY() >= 0 && var2.getY() - var4.getY() <= 2 && var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty()) {
+            var4.move(Direction.DOWN);
+         }
+
+         VoxelShape var5 = var1.getBlockState(var4).getCollisionShape(var1, var4);
+         if (var5.isEmpty()) {
+            return Optional.empty();
+         } else {
+            double var6 = (double)var4.getY() + var5.max(Direction.Axis.Y) + 2.0E-7D;
+            if ((double)var2.getY() - var6 > 2.0D) {
+               return Optional.empty();
+            } else {
+               float var8 = var0.getWidth() / 2.0F;
+               Vec3 var9 = new Vec3((double)var4.getX() + 0.5D, var6, (double)var4.getZ() + 0.5D);
+               return var1.noCollision(new AABB(var9.x - (double)var8, var9.y, var9.z - (double)var8, var9.x + (double)var8, var9.y + (double)var0.getHeight(), var9.z + (double)var8)) ? Optional.of(var9) : Optional.empty();
+            }
+         }
+      }
+   }
+
    public PushReaction getPistonPushReaction(BlockState var1) {
       return PushReaction.DESTROY;
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    public RenderShape getRenderShape(BlockState var1) {
@@ -279,8 +261,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       var1.add(FACING, PART, OCCUPIED);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BedBlockEntity(var1, var2, this.color);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new BedBlockEntity(this.color);
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
@@ -305,18 +287,6 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
       return false;
-   }
-
-   private static int[][] bedStandUpOffsets(Direction var0, Direction var1) {
-      return (int[][])ArrayUtils.addAll(bedSurroundStandUpOffsets(var0, var1), bedAboveStandUpOffsets(var0));
-   }
-
-   private static int[][] bedSurroundStandUpOffsets(Direction var0, Direction var1) {
-      return new int[][]{{var1.getStepX(), var1.getStepZ()}, {var1.getStepX() - var0.getStepX(), var1.getStepZ() - var0.getStepZ()}, {var1.getStepX() - var0.getStepX() * 2, var1.getStepZ() - var0.getStepZ() * 2}, {-var0.getStepX() * 2, -var0.getStepZ() * 2}, {-var1.getStepX() - var0.getStepX() * 2, -var1.getStepZ() - var0.getStepZ() * 2}, {-var1.getStepX() - var0.getStepX(), -var1.getStepZ() - var0.getStepZ()}, {-var1.getStepX(), -var1.getStepZ()}, {-var1.getStepX() + var0.getStepX(), -var1.getStepZ() + var0.getStepZ()}, {var0.getStepX(), var0.getStepZ()}, {var1.getStepX() + var0.getStepX(), var1.getStepZ() + var0.getStepZ()}};
-   }
-
-   private static int[][] bedAboveStandUpOffsets(Direction var0) {
-      return new int[][]{{0, 0}, {-var0.getStepX(), -var0.getStepZ()}};
    }
 
    static {

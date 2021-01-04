@@ -42,10 +42,6 @@ public class AABB {
       return new AABB((double)var0.x0, (double)var0.y0, (double)var0.z0, (double)(var0.x1 + 1), (double)(var0.y1 + 1), (double)(var0.z1 + 1));
    }
 
-   public static AABB unitCubeFromLowerCorner(Vec3 var0) {
-      return new AABB(var0.x, var0.y, var0.z, var0.x + 1.0D, var0.y + 1.0D, var0.z + 1.0D);
-   }
-
    public double min(Direction.Axis var1) {
       return var1.choose(this.minX, this.minY, this.minZ);
    }
@@ -314,7 +310,7 @@ public class AABB {
    }
 
    public String toString() {
-      return "AABB[" + this.minX + ", " + this.minY + ", " + this.minZ + "] -> [" + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
+      return "box[" + this.minX + ", " + this.minY + ", " + this.minZ + "] -> [" + this.maxX + ", " + this.maxY + ", " + this.maxZ + "]";
    }
 
    public boolean hasNaN() {
@@ -323,9 +319,5 @@ public class AABB {
 
    public Vec3 getCenter() {
       return new Vec3(Mth.lerp(0.5D, this.minX, this.maxX), Mth.lerp(0.5D, this.minY, this.maxY), Mth.lerp(0.5D, this.minZ, this.maxZ));
-   }
-
-   public static AABB ofSize(double var0, double var2, double var4) {
-      return new AABB(-var0 / 2.0D, -var2 / 2.0D, -var4 / 2.0D, var0 / 2.0D, var2 / 2.0D, var4 / 2.0D);
    }
 }

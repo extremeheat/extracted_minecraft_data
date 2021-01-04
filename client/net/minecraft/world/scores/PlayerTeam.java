@@ -8,8 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 
 public class PlayerTeam extends Team {
@@ -17,22 +15,17 @@ public class PlayerTeam extends Team {
    private final String name;
    private final Set<String> players = Sets.newHashSet();
    private Component displayName;
-   private Component playerPrefix;
-   private Component playerSuffix;
-   private boolean allowFriendlyFire;
-   private boolean seeFriendlyInvisibles;
+   private Component playerPrefix = new TextComponent("");
+   private Component playerSuffix = new TextComponent("");
+   private boolean allowFriendlyFire = true;
+   private boolean seeFriendlyInvisibles = true;
    private Team.Visibility nameTagVisibility;
    private Team.Visibility deathMessageVisibility;
    private ChatFormatting color;
    private Team.CollisionRule collisionRule;
-   private final Style displayNameStyle;
 
    public PlayerTeam(Scoreboard var1, String var2) {
       super();
-      this.playerPrefix = TextComponent.EMPTY;
-      this.playerSuffix = TextComponent.EMPTY;
-      this.allowFriendlyFire = true;
-      this.seeFriendlyInvisibles = true;
       this.nameTagVisibility = Team.Visibility.ALWAYS;
       this.deathMessageVisibility = Team.Visibility.ALWAYS;
       this.color = ChatFormatting.RESET;
@@ -40,7 +33,6 @@ public class PlayerTeam extends Team {
       this.scoreboard = var1;
       this.name = var2;
       this.displayName = new TextComponent(var2);
-      this.displayNameStyle = Style.EMPTY.withInsertion(var2).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(var2)));
    }
 
    public String getName() {
@@ -51,8 +43,10 @@ public class PlayerTeam extends Team {
       return this.displayName;
    }
 
-   public MutableComponent getFormattedDisplayName() {
-      MutableComponent var1 = ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle(this.displayNameStyle));
+   public Component getFormattedDisplayName() {
+      Component var1 = ComponentUtils.wrapInSquareBrackets(this.displayName.deepCopy().withStyle((var1x) -> {
+         var1x.setInsertion(this.name).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(this.name)));
+      }));
       ChatFormatting var2 = this.getColor();
       if (var2 != ChatFormatting.RESET) {
          var1.withStyle(var2);
@@ -71,7 +65,7 @@ public class PlayerTeam extends Team {
    }
 
    public void setPlayerPrefix(@Nullable Component var1) {
-      this.playerPrefix = var1 == null ? TextComponent.EMPTY : var1;
+      this.playerPrefix = (Component)(var1 == null ? new TextComponent("") : var1.deepCopy());
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -80,7 +74,7 @@ public class PlayerTeam extends Team {
    }
 
    public void setPlayerSuffix(@Nullable Component var1) {
-      this.playerSuffix = var1 == null ? TextComponent.EMPTY : var1;
+      this.playerSuffix = (Component)(var1 == null ? new TextComponent("") : var1.deepCopy());
       this.scoreboard.onTeamChanged(this);
    }
 
@@ -92,8 +86,8 @@ public class PlayerTeam extends Team {
       return this.players;
    }
 
-   public MutableComponent getFormattedName(Component var1) {
-      MutableComponent var2 = (new TextComponent("")).append(this.playerPrefix).append(var1).append(this.playerSuffix);
+   public Component getFormattedName(Component var1) {
+      Component var2 = (new TextComponent("")).append(this.playerPrefix).append(var1).append(this.playerSuffix);
       ChatFormatting var3 = this.getColor();
       if (var3 != ChatFormatting.RESET) {
          var2.withStyle(var3);
@@ -102,8 +96,8 @@ public class PlayerTeam extends Team {
       return var2;
    }
 
-   public static MutableComponent formatNameForTeam(@Nullable Team var0, Component var1) {
-      return var0 == null ? var1.copy() : var0.getFormattedName(var1);
+   public static Component formatNameForTeam(@Nullable Team var0, Component var1) {
+      return var0 == null ? var1.deepCopy() : var0.getFormattedName(var1);
    }
 
    public boolean isAllowFriendlyFire() {

@@ -7,7 +7,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +22,6 @@ import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
@@ -80,26 +78,26 @@ public class MultiPart implements UnbakedModel {
       }).collect(Collectors.toSet());
    }
 
-   public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> var1, Set<Pair<String, String>> var2) {
+   public Collection<ResourceLocation> getTextures(Function<ResourceLocation, UnbakedModel> var1, Set<String> var2) {
       return (Collection)this.getSelectors().stream().flatMap((var2x) -> {
-         return var2x.getVariant().getMaterials(var1, var2).stream();
+         return var2x.getVariant().getTextures(var1, var2).stream();
       }).collect(Collectors.toSet());
    }
 
    @Nullable
-   public BakedModel bake(ModelBakery var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
-      MultiPartBakedModel.Builder var5 = new MultiPartBakedModel.Builder();
-      Iterator var6 = this.getSelectors().iterator();
+   public BakedModel bake(ModelBakery var1, Function<ResourceLocation, TextureAtlasSprite> var2, ModelState var3) {
+      MultiPartBakedModel.Builder var4 = new MultiPartBakedModel.Builder();
+      Iterator var5 = this.getSelectors().iterator();
 
-      while(var6.hasNext()) {
-         Selector var7 = (Selector)var6.next();
-         BakedModel var8 = var7.getVariant().bake(var1, var2, var3, var4);
-         if (var8 != null) {
-            var5.add(var7.getPredicate(this.definition), var8);
+      while(var5.hasNext()) {
+         Selector var6 = (Selector)var5.next();
+         BakedModel var7 = var6.getVariant().bake(var1, var2, var3);
+         if (var7 != null) {
+            var4.add(var6.getPredicate(this.definition), var7);
          }
       }
 
-      return var5.build();
+      return var4.build();
    }
 
    public static class Deserializer implements JsonDeserializer<MultiPart> {

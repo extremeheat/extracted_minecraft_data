@@ -2,26 +2,23 @@ package com.mojang.realmsclient.dto;
 
 import com.google.gson.JsonObject;
 import com.mojang.realmsclient.util.JsonUtils;
-import javax.annotation.Nullable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class WorldTemplate extends ValueObject {
    private static final Logger LOGGER = LogManager.getLogger();
-   public String id = "";
-   public String name = "";
-   public String version = "";
-   public String author = "";
-   public String link = "";
-   @Nullable
+   public String id;
+   public String name;
+   public String version;
+   public String author;
+   public String link;
    public String image;
-   public String trailer = "";
-   public String recommendedPlayers = "";
+   public String trailer;
+   public String recommendedPlayers;
    public WorldTemplate.WorldTemplateType type;
 
    public WorldTemplate() {
       super();
-      this.type = WorldTemplate.WorldTemplateType.WORLD_TEMPLATE;
    }
 
    public static WorldTemplate parse(JsonObject var0) {
@@ -38,7 +35,7 @@ public class WorldTemplate extends ValueObject {
          var1.recommendedPlayers = JsonUtils.getStringOr("recommendedPlayers", var0, "");
          var1.type = WorldTemplate.WorldTemplateType.valueOf(JsonUtils.getStringOr("type", var0, WorldTemplate.WorldTemplateType.WORLD_TEMPLATE.name()));
       } catch (Exception var3) {
-         LOGGER.error("Could not parse WorldTemplate: {}", var3.getMessage());
+         LOGGER.error("Could not parse WorldTemplate: " + var3.getMessage());
       }
 
       return var1;

@@ -1,5 +1,6 @@
 package net.minecraft.commands.arguments;
 
+import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -8,14 +9,24 @@ import java.util.Arrays;
 import java.util.Collection;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.synchronization.ArgumentSerializer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T> {
    static RangeArgument.Ints intRange() {
       return new RangeArgument.Ints();
    }
 
-   static RangeArgument.Floats floatRange() {
-      return new RangeArgument.Floats();
+   public abstract static class Serializer<T extends RangeArgument<?>> implements ArgumentSerializer<T> {
+      public Serializer() {
+         super();
+      }
+
+      public void serializeToNetwork(T var1, FriendlyByteBuf var2) {
+      }
+
+      public void serializeToJson(T var1, JsonObject var2) {
+      }
    }
 
    public static class Floats implements RangeArgument<MinMaxBounds.Floats> {
@@ -36,6 +47,21 @@ public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T
       // $FF: synthetic method
       public Object parse(StringReader var1) throws CommandSyntaxException {
          return this.parse(var1);
+      }
+
+      public static class Serializer extends RangeArgument.Serializer<RangeArgument.Floats> {
+         public Serializer() {
+            super();
+         }
+
+         public RangeArgument.Floats deserializeFromNetwork(FriendlyByteBuf var1) {
+            return new RangeArgument.Floats();
+         }
+
+         // $FF: synthetic method
+         public ArgumentType deserializeFromNetwork(FriendlyByteBuf var1) {
+            return this.deserializeFromNetwork(var1);
+         }
       }
    }
 
@@ -61,6 +87,21 @@ public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T
       // $FF: synthetic method
       public Object parse(StringReader var1) throws CommandSyntaxException {
          return this.parse(var1);
+      }
+
+      public static class Serializer extends RangeArgument.Serializer<RangeArgument.Ints> {
+         public Serializer() {
+            super();
+         }
+
+         public RangeArgument.Ints deserializeFromNetwork(FriendlyByteBuf var1) {
+            return new RangeArgument.Ints();
+         }
+
+         // $FF: synthetic method
+         public ArgumentType deserializeFromNetwork(FriendlyByteBuf var1) {
+            return this.deserializeFromNetwork(var1);
+         }
       }
    }
 }

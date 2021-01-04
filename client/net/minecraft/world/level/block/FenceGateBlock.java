@@ -4,13 +4,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -36,7 +34,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    protected static final VoxelShape Z_OCCLUSION_SHAPE_LOW;
    protected static final VoxelShape X_OCCLUSION_SHAPE_LOW;
 
-   public FenceGateBlock(BlockBehaviour.Properties var1) {
+   public FenceGateBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(OPEN, false)).setValue(POWERED, false)).setValue(IN_WALL, false));
    }
@@ -99,10 +97,10 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    }
 
    private boolean isWall(BlockState var1) {
-      return var1.is(BlockTags.WALLS);
+      return var1.getBlock().is(BlockTags.WALLS);
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if ((Boolean)var1.getValue(OPEN)) {
          var1 = (BlockState)var1.setValue(OPEN, false);
          var2.setBlock(var3, var1, 10);
@@ -117,7 +115,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       }
 
       var2.levelEvent(var4, (Boolean)var1.getValue(OPEN) ? 1008 : 1014, var3, 0);
-      return InteractionResult.sidedSuccess(var2.isClientSide);
+      return true;
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {

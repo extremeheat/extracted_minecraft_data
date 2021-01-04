@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 
 public abstract class Team {
@@ -25,7 +24,7 @@ public abstract class Team {
 
    public abstract String getName();
 
-   public abstract MutableComponent getFormattedName(Component var1);
+   public abstract Component getFormattedName(Component var1);
 
    public abstract boolean canSeeFriendlyInvisibles();
 
@@ -66,7 +65,7 @@ public abstract class Team {
       }
 
       public Component getDisplayName() {
-         return new TranslatableComponent("team.collision." + this.name);
+         return new TranslatableComponent("team.collision." + this.name, new Object[0]);
       }
    }
 
@@ -95,7 +94,7 @@ public abstract class Team {
       }
 
       public Component getDisplayName() {
-         return new TranslatableComponent("team.visibility." + this.name);
+         return new TranslatableComponent("team.visibility." + this.name, new Object[0]);
       }
    }
 }

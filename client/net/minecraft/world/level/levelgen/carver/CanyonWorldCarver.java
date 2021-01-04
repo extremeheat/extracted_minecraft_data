@@ -1,19 +1,17 @@
 package net.minecraft.world.level.levelgen.carver;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.BitSet;
 import java.util.Random;
 import java.util.function.Function;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.ProbabilityFeatureConfiguration;
 
 public class CanyonWorldCarver extends WorldCarver<ProbabilityFeatureConfiguration> {
    private final float[] rs = new float[1024];
 
-   public CanyonWorldCarver(Codec<ProbabilityFeatureConfiguration> var1) {
+   public CanyonWorldCarver(Function<Dynamic<?>, ? extends ProbabilityFeatureConfiguration> var1) {
       super(var1, 256);
    }
 
@@ -21,59 +19,59 @@ public class CanyonWorldCarver extends WorldCarver<ProbabilityFeatureConfigurati
       return var1.nextFloat() <= var4.probability;
    }
 
-   public boolean carve(ChunkAccess var1, Function<BlockPos, Biome> var2, Random var3, int var4, int var5, int var6, int var7, int var8, BitSet var9, ProbabilityFeatureConfiguration var10) {
-      int var11 = (this.getRange() * 2 - 1) * 16;
-      double var12 = (double)(var5 * 16 + var3.nextInt(16));
-      double var14 = (double)(var3.nextInt(var3.nextInt(40) + 8) + 20);
-      double var16 = (double)(var6 * 16 + var3.nextInt(16));
-      float var18 = var3.nextFloat() * 6.2831855F;
-      float var19 = (var3.nextFloat() - 0.5F) * 2.0F / 8.0F;
-      double var20 = 3.0D;
-      float var22 = (var3.nextFloat() * 2.0F + var3.nextFloat()) * 2.0F;
-      int var23 = var11 - var3.nextInt(var11 / 4);
-      boolean var24 = false;
-      this.genCanyon(var1, var2, var3.nextLong(), var4, var7, var8, var12, var14, var16, var22, var18, var19, 0, var23, 3.0D, var9);
+   public boolean carve(ChunkAccess var1, Random var2, int var3, int var4, int var5, int var6, int var7, BitSet var8, ProbabilityFeatureConfiguration var9) {
+      int var10 = (this.getRange() * 2 - 1) * 16;
+      double var11 = (double)(var4 * 16 + var2.nextInt(16));
+      double var13 = (double)(var2.nextInt(var2.nextInt(40) + 8) + 20);
+      double var15 = (double)(var5 * 16 + var2.nextInt(16));
+      float var17 = var2.nextFloat() * 6.2831855F;
+      float var18 = (var2.nextFloat() - 0.5F) * 2.0F / 8.0F;
+      double var19 = 3.0D;
+      float var21 = (var2.nextFloat() * 2.0F + var2.nextFloat()) * 2.0F;
+      int var22 = var10 - var2.nextInt(var10 / 4);
+      boolean var23 = false;
+      this.genCanyon(var1, var2.nextLong(), var3, var6, var7, var11, var13, var15, var21, var17, var18, 0, var22, 3.0D, var8);
       return true;
    }
 
-   private void genCanyon(ChunkAccess var1, Function<BlockPos, Biome> var2, long var3, int var5, int var6, int var7, double var8, double var10, double var12, float var14, float var15, float var16, int var17, int var18, double var19, BitSet var21) {
-      Random var22 = new Random(var3);
-      float var23 = 1.0F;
+   private void genCanyon(ChunkAccess var1, long var2, int var4, int var5, int var6, double var7, double var9, double var11, float var13, float var14, float var15, int var16, int var17, double var18, BitSet var20) {
+      Random var21 = new Random(var2);
+      float var22 = 1.0F;
 
-      for(int var24 = 0; var24 < 256; ++var24) {
-         if (var24 == 0 || var22.nextInt(3) == 0) {
-            var23 = 1.0F + var22.nextFloat() * var22.nextFloat();
+      for(int var23 = 0; var23 < 256; ++var23) {
+         if (var23 == 0 || var21.nextInt(3) == 0) {
+            var22 = 1.0F + var21.nextFloat() * var21.nextFloat();
          }
 
-         this.rs[var24] = var23 * var23;
+         this.rs[var23] = var22 * var22;
       }
 
-      float var33 = 0.0F;
-      float var25 = 0.0F;
+      float var32 = 0.0F;
+      float var24 = 0.0F;
 
-      for(int var26 = var17; var26 < var18; ++var26) {
-         double var27 = 1.5D + (double)(Mth.sin((float)var26 * 3.1415927F / (float)var18) * var14);
-         double var29 = var27 * var19;
-         var27 *= (double)var22.nextFloat() * 0.25D + 0.75D;
-         var29 *= (double)var22.nextFloat() * 0.25D + 0.75D;
-         float var31 = Mth.cos(var16);
-         float var32 = Mth.sin(var16);
-         var8 += (double)(Mth.cos(var15) * var31);
-         var10 += (double)var32;
-         var12 += (double)(Mth.sin(var15) * var31);
-         var16 *= 0.7F;
-         var16 += var25 * 0.05F;
-         var15 += var33 * 0.05F;
-         var25 *= 0.8F;
-         var33 *= 0.5F;
-         var25 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 2.0F;
-         var33 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 4.0F;
-         if (var22.nextInt(4) != 0) {
-            if (!this.canReach(var6, var7, var8, var12, var26, var18, var14)) {
+      for(int var25 = var16; var25 < var17; ++var25) {
+         double var26 = 1.5D + (double)(Mth.sin((float)var25 * 3.1415927F / (float)var17) * var13);
+         double var28 = var26 * var18;
+         var26 *= (double)var21.nextFloat() * 0.25D + 0.75D;
+         var28 *= (double)var21.nextFloat() * 0.25D + 0.75D;
+         float var30 = Mth.cos(var15);
+         float var31 = Mth.sin(var15);
+         var7 += (double)(Mth.cos(var14) * var30);
+         var9 += (double)var31;
+         var11 += (double)(Mth.sin(var14) * var30);
+         var15 *= 0.7F;
+         var15 += var24 * 0.05F;
+         var14 += var32 * 0.05F;
+         var24 *= 0.8F;
+         var32 *= 0.5F;
+         var24 += (var21.nextFloat() - var21.nextFloat()) * var21.nextFloat() * 2.0F;
+         var32 += (var21.nextFloat() - var21.nextFloat()) * var21.nextFloat() * 4.0F;
+         if (var21.nextInt(4) != 0) {
+            if (!this.canReach(var5, var6, var7, var11, var25, var17, var13)) {
                return;
             }
 
-            this.carveSphere(var1, var2, var3, var5, var6, var7, var8, var10, var12, var27, var29, var21);
+            this.carveSphere(var1, var2, var4, var5, var6, var7, var9, var11, var26, var28, var20);
          }
       }
 

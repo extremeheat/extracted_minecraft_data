@@ -1,9 +1,8 @@
 package net.minecraft.world.item;
 
-import javax.annotation.Nullable;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -11,9 +10,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 
-public class ElytraItem extends Item implements Wearable {
+public class ElytraItem extends Item {
    public ElytraItem(Item.Properties var1) {
       super(var1);
+      this.addProperty(new ResourceLocation("broken"), (var0, var1x, var2) -> {
+         return isFlyEnabled(var0) ? 0.0F : 1.0F;
+      });
       DispenserBlock.registerBehavior(this, ArmorItem.DISPENSE_ITEM_BEHAVIOR);
    }
 
@@ -22,7 +24,7 @@ public class ElytraItem extends Item implements Wearable {
    }
 
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return var2.is(Items.PHANTOM_MEMBRANE);
+      return var2.getItem() == Items.PHANTOM_MEMBRANE;
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
@@ -32,14 +34,9 @@ public class ElytraItem extends Item implements Wearable {
       if (var6.isEmpty()) {
          var2.setItemSlot(var5, var4.copy());
          var4.setCount(0);
-         return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       } else {
-         return InteractionResultHolder.fail(var4);
+         return new InteractionResultHolder(InteractionResult.FAIL, var4);
       }
-   }
-
-   @Nullable
-   public SoundEvent getEquipSound() {
-      return SoundEvents.ARMOR_EQUIP_ELYTRA;
    }
 }

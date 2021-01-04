@@ -1,29 +1,21 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.DecoratedFeatureConfiguration;
-import net.minecraft.world.level.levelgen.placement.DecorationContext;
-import org.apache.commons.lang3.mutable.MutableBoolean;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class DecoratedFeature extends Feature<DecoratedFeatureConfiguration> {
-   public DecoratedFeature(Codec<DecoratedFeatureConfiguration> var1) {
+   public DecoratedFeature(Function<Dynamic<?>, ? extends DecoratedFeatureConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, DecoratedFeatureConfiguration var5) {
-      MutableBoolean var6 = new MutableBoolean();
-      var5.decorator.getPositions(new DecorationContext(var1, var2), var3, var4).forEach((var5x) -> {
-         if (((ConfiguredFeature)var5.feature.get()).place(var1, var2, var3, var5x)) {
-            var6.setTrue();
-         }
-
-      });
-      return var6.isTrue();
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, DecoratedFeatureConfiguration var5) {
+      return var5.decorator.place(var1, var2, var3, var4, var5.feature);
    }
 
    public String toString() {

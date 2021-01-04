@@ -15,7 +15,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.players.PlayerList;
 
 public class OpCommand {
-   private static final SimpleCommandExceptionType ERROR_ALREADY_OP = new SimpleCommandExceptionType(new TranslatableComponent("commands.op.failed"));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_OP = new SimpleCommandExceptionType(new TranslatableComponent("commands.op.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires((var0x) -> {

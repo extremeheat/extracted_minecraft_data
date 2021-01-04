@@ -14,13 +14,12 @@ public class WeighedSoundEvents implements Weighted<Sound> {
    private final List<Weighted<Sound>> list = Lists.newArrayList();
    private final Random random = new Random();
    private final ResourceLocation location;
-   @Nullable
    private final Component subtitle;
 
    public WeighedSoundEvents(ResourceLocation var1, @Nullable String var2) {
       super();
       this.location = var1;
-      this.subtitle = var2 == null ? null : new TranslatableComponent(var2);
+      this.subtitle = var2 == null ? null : new TranslatableComponent(var2, new Object[0]);
    }
 
    public int getWeight() {

@@ -48,7 +48,7 @@ public class GiveCommand {
                int var7 = Math.min(var1.getItem().getMaxStackSize(), var6);
                var6 -= var7;
                ItemStack var8 = var1.createItemStack(var7, false);
-               boolean var9 = var5.getInventory().add(var8);
+               boolean var9 = var5.inventory.add(var8);
                ItemEntity var10;
                if (var9 && var8.isEmpty()) {
                   var8.setCount(1);
@@ -57,7 +57,7 @@ public class GiveCommand {
                      var10.makeFakeItem();
                   }
 
-                  var5.level.playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var5.getRandom().nextFloat() - var5.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+                  var5.level.playSound((Player)null, var5.x, var5.y, var5.z, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var5.getRandom().nextFloat() - var5.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                   var5.inventoryMenu.broadcastChanges();
                } else {
                   var10 = var5.drop(var8, false);

@@ -1,10 +1,8 @@
 package net.minecraft.client.resources.model;
 
-import com.mojang.math.Transformation;
-
 public interface ModelState {
-   default Transformation getRotation() {
-      return Transformation.identity();
+   default BlockModelRotation getRotation() {
+      return BlockModelRotation.X0_Y0;
    }
 
    default boolean isUvLocked() {

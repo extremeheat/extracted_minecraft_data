@@ -13,7 +13,7 @@ public class DragonHoverPhase extends AbstractDragonPhaseInstance {
 
    public void doServerTick() {
       if (this.targetLocation == null) {
-         this.targetLocation = this.dragon.position();
+         this.targetLocation = new Vec3(this.dragon.x, this.dragon.y, this.dragon.z);
       }
 
    }

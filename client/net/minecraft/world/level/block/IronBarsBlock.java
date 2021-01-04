@@ -2,23 +2,18 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.item.BlockPlaceContext;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class IronBarsBlock extends CrossCollisionBlock {
-   protected IronBarsBlock(BlockBehaviour.Properties var1) {
+   protected IronBarsBlock(Block.Properties var1) {
       super(1.0F, 1.0F, 16.0F, 16.0F, 16.0F, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
    }
@@ -46,12 +41,8 @@ public class IronBarsBlock extends CrossCollisionBlock {
       return var2.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), this.attachsTo(var3, var3.isFaceSturdy(var4, var6, var2.getOpposite()))) : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return Shapes.empty();
-   }
-
    public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      if (var2.is(this)) {
+      if (var2.getBlock() == this) {
          if (!var3.getAxis().isHorizontal()) {
             return true;
          }
@@ -65,7 +56,12 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    public final boolean attachsTo(BlockState var1, boolean var2) {
-      return !isExceptionForConnection(var1) && var2 || var1.getBlock() instanceof IronBarsBlock || var1.is(BlockTags.WALLS);
+      Block var3 = var1.getBlock();
+      return !isExceptionForConnection(var3) && var2 || var3 instanceof IronBarsBlock;
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT_MIPPED;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

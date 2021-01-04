@@ -8,7 +8,7 @@ import com.google.gson.JsonSyntaxException;
 import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.SerializationTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EntityType;
@@ -39,7 +39,8 @@ public abstract class EntityTypePredicate {
          ResourceLocation var2;
          if (var1.startsWith("#")) {
             var2 = new ResourceLocation(var1.substring(1));
-            return new EntityTypePredicate.TagPredicate(SerializationTags.getInstance().getEntityTypes().getTagOrEmpty(var2));
+            Tag var4 = EntityTypeTags.getAllTags().getTagOrEmpty(var2);
+            return new EntityTypePredicate.TagPredicate(var4);
          } else {
             var2 = new ResourceLocation(var1);
             EntityType var3 = (EntityType)Registry.ENTITY_TYPE.getOptional(var2).orElseThrow(() -> {
@@ -69,11 +70,11 @@ public abstract class EntityTypePredicate {
       }
 
       public boolean matches(EntityType<?> var1) {
-         return var1.is(this.tag);
+         return this.tag.contains(var1);
       }
 
       public JsonElement serializeToJson() {
-         return new JsonPrimitive("#" + SerializationTags.getInstance().getEntityTypes().getIdOrThrow(this.tag));
+         return new JsonPrimitive("#" + this.tag.getId().toString());
       }
    }
 

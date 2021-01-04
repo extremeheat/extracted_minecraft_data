@@ -1,250 +1,172 @@
 package net.minecraft.client.gui.font;
 
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.StringSplitter;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
 
 public class TextFieldHelper {
+   private final Minecraft minecraft;
+   private final Font font;
    private final Supplier<String> getMessageFn;
    private final Consumer<String> setMessageFn;
-   private final Supplier<String> getClipboardFn;
-   private final Consumer<String> setClipboardFn;
-   private final Predicate<String> stringValidator;
+   private final int maxWidth;
    private int cursorPos;
    private int selectionPos;
 
-   public TextFieldHelper(Supplier<String> var1, Consumer<String> var2, Supplier<String> var3, Consumer<String> var4, Predicate<String> var5) {
+   public TextFieldHelper(Minecraft var1, Supplier<String> var2, Consumer<String> var3, int var4) {
       super();
-      this.getMessageFn = var1;
-      this.setMessageFn = var2;
-      this.getClipboardFn = var3;
-      this.setClipboardFn = var4;
-      this.stringValidator = var5;
-      this.setCursorToEnd();
-   }
-
-   public static Supplier<String> createClipboardGetter(Minecraft var0) {
-      return () -> {
-         return getClipboardContents(var0);
-      };
-   }
-
-   public static String getClipboardContents(Minecraft var0) {
-      return ChatFormatting.stripFormatting(var0.keyboardHandler.getClipboard().replaceAll("\\r", ""));
-   }
-
-   public static Consumer<String> createClipboardSetter(Minecraft var0) {
-      return (var1) -> {
-         setClipboardContents(var0, var1);
-      };
-   }
-
-   public static void setClipboardContents(Minecraft var0, String var1) {
-      var0.keyboardHandler.setClipboard(var1);
+      this.minecraft = var1;
+      this.font = var1.font;
+      this.getMessageFn = var2;
+      this.setMessageFn = var3;
+      this.maxWidth = var4;
+      this.setEnd();
    }
 
    public boolean charTyped(char var1) {
       if (SharedConstants.isAllowedChatCharacter(var1)) {
-         this.insertText((String)this.getMessageFn.get(), Character.toString(var1));
+         this.insertText(Character.toString(var1));
       }
 
       return true;
    }
 
+   private void insertText(String var1) {
+      if (this.selectionPos != this.cursorPos) {
+         this.deleteSelection();
+      }
+
+      String var2 = (String)this.getMessageFn.get();
+      this.cursorPos = Mth.clamp(this.cursorPos, 0, var2.length());
+      String var3 = (new StringBuilder(var2)).insert(this.cursorPos, var1).toString();
+      if (this.font.width(var3) <= this.maxWidth) {
+         this.setMessageFn.accept(var3);
+         this.selectionPos = this.cursorPos = Math.min(var3.length(), this.cursorPos + var1.length());
+      }
+
+   }
+
    public boolean keyPressed(int var1) {
+      String var2 = (String)this.getMessageFn.get();
       if (Screen.isSelectAll(var1)) {
-         this.selectAll();
+         this.selectionPos = 0;
+         this.cursorPos = var2.length();
          return true;
       } else if (Screen.isCopy(var1)) {
-         this.copy();
+         this.minecraft.keyboardHandler.setClipboard(this.getSelected());
          return true;
       } else if (Screen.isPaste(var1)) {
-         this.paste();
+         this.insertText(SharedConstants.filterText(ChatFormatting.stripFormatting(this.minecraft.keyboardHandler.getClipboard().replaceAll("\\r", ""))));
+         this.selectionPos = this.cursorPos;
          return true;
       } else if (Screen.isCut(var1)) {
-         this.cut();
+         this.minecraft.keyboardHandler.setClipboard(this.getSelected());
+         this.deleteSelection();
          return true;
       } else if (var1 == 259) {
-         this.removeCharsFromCursor(-1);
+         if (!var2.isEmpty()) {
+            if (this.selectionPos != this.cursorPos) {
+               this.deleteSelection();
+            } else if (this.cursorPos > 0) {
+               var2 = (new StringBuilder(var2)).deleteCharAt(Math.max(0, this.cursorPos - 1)).toString();
+               this.selectionPos = this.cursorPos = Math.max(0, this.cursorPos - 1);
+               this.setMessageFn.accept(var2);
+            }
+         }
+
+         return true;
+      } else if (var1 == 261) {
+         if (!var2.isEmpty()) {
+            if (this.selectionPos != this.cursorPos) {
+               this.deleteSelection();
+            } else if (this.cursorPos < var2.length()) {
+               var2 = (new StringBuilder(var2)).deleteCharAt(Math.max(0, this.cursorPos)).toString();
+               this.setMessageFn.accept(var2);
+            }
+         }
+
          return true;
       } else {
-         if (var1 == 261) {
-            this.removeCharsFromCursor(1);
+         int var3;
+         if (var1 == 263) {
+            var3 = this.font.isBidirectional() ? 1 : -1;
+            if (Screen.hasControlDown()) {
+               this.cursorPos = this.font.getWordPosition(var2, var3, this.cursorPos, true);
+            } else {
+               this.cursorPos = Math.max(0, Math.min(var2.length(), this.cursorPos + var3));
+            }
+
+            if (!Screen.hasShiftDown()) {
+               this.selectionPos = this.cursorPos;
+            }
+
+            return true;
+         } else if (var1 == 262) {
+            var3 = this.font.isBidirectional() ? -1 : 1;
+            if (Screen.hasControlDown()) {
+               this.cursorPos = this.font.getWordPosition(var2, var3, this.cursorPos, true);
+            } else {
+               this.cursorPos = Math.max(0, Math.min(var2.length(), this.cursorPos + var3));
+            }
+
+            if (!Screen.hasShiftDown()) {
+               this.selectionPos = this.cursorPos;
+            }
+
+            return true;
+         } else if (var1 == 268) {
+            this.cursorPos = 0;
+            if (!Screen.hasShiftDown()) {
+               this.selectionPos = this.cursorPos;
+            }
+
+            return true;
+         } else if (var1 == 269) {
+            this.cursorPos = ((String)this.getMessageFn.get()).length();
+            if (!Screen.hasShiftDown()) {
+               this.selectionPos = this.cursorPos;
+            }
+
+            return true;
          } else {
-            if (var1 == 263) {
-               if (Screen.hasControlDown()) {
-                  this.moveByWords(-1, Screen.hasShiftDown());
-               } else {
-                  this.moveByChars(-1, Screen.hasShiftDown());
-               }
-
-               return true;
-            }
-
-            if (var1 == 262) {
-               if (Screen.hasControlDown()) {
-                  this.moveByWords(1, Screen.hasShiftDown());
-               } else {
-                  this.moveByChars(1, Screen.hasShiftDown());
-               }
-
-               return true;
-            }
-
-            if (var1 == 268) {
-               this.setCursorToStart(Screen.hasShiftDown());
-               return true;
-            }
-
-            if (var1 == 269) {
-               this.setCursorToEnd(Screen.hasShiftDown());
-               return true;
-            }
+            return false;
          }
-
-         return false;
       }
    }
 
-   private int clampToMsgLength(int var1) {
-      return Mth.clamp(var1, 0, ((String)this.getMessageFn.get()).length());
-   }
-
-   private void insertText(String var1, String var2) {
-      if (this.selectionPos != this.cursorPos) {
-         var1 = this.deleteSelection(var1);
-      }
-
-      this.cursorPos = Mth.clamp(this.cursorPos, 0, var1.length());
-      String var3 = (new StringBuilder(var1)).insert(this.cursorPos, var2).toString();
-      if (this.stringValidator.test(var3)) {
-         this.setMessageFn.accept(var3);
-         this.selectionPos = this.cursorPos = Math.min(var3.length(), this.cursorPos + var2.length());
-      }
-
-   }
-
-   public void insertText(String var1) {
-      this.insertText((String)this.getMessageFn.get(), var1);
-   }
-
-   private void resetSelectionIfNeeded(boolean var1) {
-      if (!var1) {
-         this.selectionPos = this.cursorPos;
-      }
-
-   }
-
-   public void moveByChars(int var1, boolean var2) {
-      this.cursorPos = Util.offsetByCodepoints((String)this.getMessageFn.get(), this.cursorPos, var1);
-      this.resetSelectionIfNeeded(var2);
-   }
-
-   public void moveByWords(int var1, boolean var2) {
-      this.cursorPos = StringSplitter.getWordPosition((String)this.getMessageFn.get(), var1, this.cursorPos, true);
-      this.resetSelectionIfNeeded(var2);
-   }
-
-   public void removeCharsFromCursor(int var1) {
-      String var2 = (String)this.getMessageFn.get();
-      if (!var2.isEmpty()) {
-         String var3;
-         if (this.selectionPos != this.cursorPos) {
-            var3 = this.deleteSelection(var2);
-         } else {
-            int var4 = Util.offsetByCodepoints(var2, this.cursorPos, var1);
-            int var5 = Math.min(var4, this.cursorPos);
-            int var6 = Math.max(var4, this.cursorPos);
-            var3 = (new StringBuilder(var2)).delete(var5, var6).toString();
-            if (var1 < 0) {
-               this.selectionPos = this.cursorPos = var5;
-            }
-         }
-
-         this.setMessageFn.accept(var3);
-      }
-
-   }
-
-   public void cut() {
+   private String getSelected() {
       String var1 = (String)this.getMessageFn.get();
-      this.setClipboardFn.accept(this.getSelected(var1));
-      this.setMessageFn.accept(this.deleteSelection(var1));
-   }
-
-   public void paste() {
-      this.insertText((String)this.getMessageFn.get(), (String)this.getClipboardFn.get());
-      this.selectionPos = this.cursorPos;
-   }
-
-   public void copy() {
-      this.setClipboardFn.accept(this.getSelected((String)this.getMessageFn.get()));
-   }
-
-   public void selectAll() {
-      this.selectionPos = 0;
-      this.cursorPos = ((String)this.getMessageFn.get()).length();
-   }
-
-   private String getSelected(String var1) {
       int var2 = Math.min(this.cursorPos, this.selectionPos);
       int var3 = Math.max(this.cursorPos, this.selectionPos);
       return var1.substring(var2, var3);
    }
 
-   private String deleteSelection(String var1) {
-      if (this.selectionPos == this.cursorPos) {
-         return var1;
-      } else {
+   private void deleteSelection() {
+      if (this.selectionPos != this.cursorPos) {
+         String var1 = (String)this.getMessageFn.get();
          int var2 = Math.min(this.cursorPos, this.selectionPos);
          int var3 = Math.max(this.cursorPos, this.selectionPos);
          String var4 = var1.substring(0, var2) + var1.substring(var3);
-         this.selectionPos = this.cursorPos = var2;
-         return var4;
+         this.cursorPos = var2;
+         this.selectionPos = this.cursorPos;
+         this.setMessageFn.accept(var4);
       }
    }
 
-   private void setCursorToStart(boolean var1) {
-      this.cursorPos = 0;
-      this.resetSelectionIfNeeded(var1);
-   }
-
-   public void setCursorToEnd() {
-      this.setCursorToEnd(false);
-   }
-
-   private void setCursorToEnd(boolean var1) {
-      this.cursorPos = ((String)this.getMessageFn.get()).length();
-      this.resetSelectionIfNeeded(var1);
+   public void setEnd() {
+      this.selectionPos = this.cursorPos = ((String)this.getMessageFn.get()).length();
    }
 
    public int getCursorPos() {
       return this.cursorPos;
    }
 
-   public void setCursorPos(int var1, boolean var2) {
-      this.cursorPos = this.clampToMsgLength(var1);
-      this.resetSelectionIfNeeded(var2);
-   }
-
    public int getSelectionPos() {
       return this.selectionPos;
-   }
-
-   public void setSelectionRange(int var1, int var2) {
-      int var3 = ((String)this.getMessageFn.get()).length();
-      this.cursorPos = Mth.clamp(var1, 0, var3);
-      this.selectionPos = Mth.clamp(var2, 0, var3);
-   }
-
-   public boolean isSelecting() {
-      return this.cursorPos != this.selectionPos;
    }
 }

@@ -6,7 +6,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
@@ -56,27 +54,27 @@ public class MultiVariant implements UnbakedModel {
       return (Collection)this.getVariants().stream().map(Variant::getModelLocation).collect(Collectors.toSet());
    }
 
-   public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> var1, Set<Pair<String, String>> var2) {
+   public Collection<ResourceLocation> getTextures(Function<ResourceLocation, UnbakedModel> var1, Set<String> var2) {
       return (Collection)this.getVariants().stream().map(Variant::getModelLocation).distinct().flatMap((var2x) -> {
-         return ((UnbakedModel)var1.apply(var2x)).getMaterials(var1, var2).stream();
+         return ((UnbakedModel)var1.apply(var2x)).getTextures(var1, var2).stream();
       }).collect(Collectors.toSet());
    }
 
    @Nullable
-   public BakedModel bake(ModelBakery var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
+   public BakedModel bake(ModelBakery var1, Function<ResourceLocation, TextureAtlasSprite> var2, ModelState var3) {
       if (this.getVariants().isEmpty()) {
          return null;
       } else {
-         WeightedBakedModel.Builder var5 = new WeightedBakedModel.Builder();
-         Iterator var6 = this.getVariants().iterator();
+         WeightedBakedModel.Builder var4 = new WeightedBakedModel.Builder();
+         Iterator var5 = this.getVariants().iterator();
 
-         while(var6.hasNext()) {
-            Variant var7 = (Variant)var6.next();
-            BakedModel var8 = var1.bake(var7.getModelLocation(), var7);
-            var5.add(var8, var7.getWeight());
+         while(var5.hasNext()) {
+            Variant var6 = (Variant)var5.next();
+            BakedModel var7 = var1.bake(var6.getModelLocation(), var6);
+            var4.add(var7, var6.getWeight());
          }
 
-         return var5.build();
+         return var4.build();
       }
    }
 

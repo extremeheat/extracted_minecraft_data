@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
+import javax.annotation.Nullable;
 import javax.sound.sampled.AudioFormat;
 import net.minecraft.client.sounds.AudioStream;
 import net.minecraft.util.Mth;
@@ -144,19 +145,19 @@ public class OggAudioStream implements AudioStream {
                      int var10 = var5.get(0);
                      PointerBuffer var11 = var4.getPointerBuffer(var10);
                      boolean var12;
-                     if (var10 != 1) {
-                        if (var10 == 2) {
-                           this.convertStereo(var11.getFloatBuffer(0, var9), var11.getFloatBuffer(1, var9), var1);
-                           var12 = true;
-                           return var12;
-                        }
-
-                        throw new IllegalStateException("Invalid number of channels: " + var10);
+                     if (var10 == 1) {
+                        this.convertMono(var11.getFloatBuffer(0, var9), var1);
+                        var12 = true;
+                        return var12;
                      }
 
-                     this.convertMono(var11.getFloatBuffer(0, var9), var1);
-                     var12 = true;
-                     return var12;
+                     if (var10 == 2) {
+                        this.convertStereo(var11.getFloatBuffer(0, var9), var11.getFloatBuffer(1, var9), var1);
+                        var12 = true;
+                        return var12;
+                     }
+
+                     throw new IllegalStateException("Invalid number of channels: " + var10);
                   }
                }
             }
@@ -209,6 +210,7 @@ public class OggAudioStream implements AudioStream {
       return this.audioFormat;
    }
 
+   @Nullable
    public ByteBuffer read(int var1) throws IOException {
       OggAudioStream.OutputConcat var2 = new OggAudioStream.OutputConcat(var1 + 8192);
 

@@ -1,41 +1,22 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.chat.NarratorChatListener;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundJigsawGeneratePacket;
 import net.minecraft.network.protocol.game.ServerboundSetJigsawBlockPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class JigsawBlockEditScreen extends Screen {
-   private static final Component JOINT_LABEL = new TranslatableComponent("jigsaw_block.joint_label");
-   private static final Component POOL_LABEL = new TranslatableComponent("jigsaw_block.pool");
-   private static final Component NAME_LABEL = new TranslatableComponent("jigsaw_block.name");
-   private static final Component TARGET_LABEL = new TranslatableComponent("jigsaw_block.target");
-   private static final Component FINAL_STATE_LABEL = new TranslatableComponent("jigsaw_block.final_state");
    private final JigsawBlockEntity jigsawEntity;
-   private EditBox nameEdit;
-   private EditBox targetEdit;
-   private EditBox poolEdit;
+   private EditBox attachementTypeEdit;
+   private EditBox targetPoolEdit;
    private EditBox finalStateEdit;
-   private int levels;
-   private boolean keepJigsaws = true;
-   private Button jointButton;
    private Button doneButton;
-   private JigsawBlockEntity.JointType joint;
 
    public JigsawBlockEditScreen(JigsawBlockEntity var1) {
       super(NarratorChatListener.NO_TITLE);
@@ -43,9 +24,8 @@ public class JigsawBlockEditScreen extends Screen {
    }
 
    public void tick() {
-      this.nameEdit.tick();
-      this.targetEdit.tick();
-      this.poolEdit.tick();
+      this.attachementTypeEdit.tick();
+      this.targetPoolEdit.tick();
       this.finalStateEdit.tick();
    }
 
@@ -59,11 +39,7 @@ public class JigsawBlockEditScreen extends Screen {
    }
 
    private void sendToServer() {
-      this.minecraft.getConnection().send((Packet)(new ServerboundSetJigsawBlockPacket(this.jigsawEntity.getBlockPos(), new ResourceLocation(this.nameEdit.getValue()), new ResourceLocation(this.targetEdit.getValue()), new ResourceLocation(this.poolEdit.getValue()), this.finalStateEdit.getValue(), this.joint)));
-   }
-
-   private void sendGenerate() {
-      this.minecraft.getConnection().send((Packet)(new ServerboundJigsawGeneratePacket(this.jigsawEntity.getBlockPos(), this.levels, this.keepJigsaws)));
+      this.minecraft.getConnection().send((Packet)(new ServerboundSetJigsawBlockPacket(this.jigsawEntity.getBlockPos(), new ResourceLocation(this.attachementTypeEdit.getValue()), new ResourceLocation(this.targetPoolEdit.getValue()), this.finalStateEdit.getValue())));
    }
 
    public void onClose() {
@@ -72,100 +48,46 @@ public class JigsawBlockEditScreen extends Screen {
 
    protected void init() {
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.poolEdit = new EditBox(this.font, this.width / 2 - 152, 20, 300, 20, new TranslatableComponent("jigsaw_block.pool"));
-      this.poolEdit.setMaxLength(128);
-      this.poolEdit.setValue(this.jigsawEntity.getPool().toString());
-      this.poolEdit.setResponder((var1x) -> {
+      this.doneButton = (Button)this.addButton(new Button(this.width / 2 - 4 - 150, 210, 150, 20, I18n.get("gui.done"), (var1) -> {
+         this.onDone();
+      }));
+      this.addButton(new Button(this.width / 2 + 4, 210, 150, 20, I18n.get("gui.cancel"), (var1) -> {
+         this.onCancel();
+      }));
+      this.targetPoolEdit = new EditBox(this.font, this.width / 2 - 152, 40, 300, 20, I18n.get("jigsaw_block.target_pool"));
+      this.targetPoolEdit.setMaxLength(128);
+      this.targetPoolEdit.setValue(this.jigsawEntity.getTargetPool().toString());
+      this.targetPoolEdit.setResponder((var1) -> {
          this.updateValidity();
       });
-      this.children.add(this.poolEdit);
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 152, 55, 300, 20, new TranslatableComponent("jigsaw_block.name"));
-      this.nameEdit.setMaxLength(128);
-      this.nameEdit.setValue(this.jigsawEntity.getName().toString());
-      this.nameEdit.setResponder((var1x) -> {
+      this.children.add(this.targetPoolEdit);
+      this.attachementTypeEdit = new EditBox(this.font, this.width / 2 - 152, 80, 300, 20, I18n.get("jigsaw_block.attachement_type"));
+      this.attachementTypeEdit.setMaxLength(128);
+      this.attachementTypeEdit.setValue(this.jigsawEntity.getAttachementType().toString());
+      this.attachementTypeEdit.setResponder((var1) -> {
          this.updateValidity();
       });
-      this.children.add(this.nameEdit);
-      this.targetEdit = new EditBox(this.font, this.width / 2 - 152, 90, 300, 20, new TranslatableComponent("jigsaw_block.target"));
-      this.targetEdit.setMaxLength(128);
-      this.targetEdit.setValue(this.jigsawEntity.getTarget().toString());
-      this.targetEdit.setResponder((var1x) -> {
-         this.updateValidity();
-      });
-      this.children.add(this.targetEdit);
-      this.finalStateEdit = new EditBox(this.font, this.width / 2 - 152, 125, 300, 20, new TranslatableComponent("jigsaw_block.final_state"));
+      this.children.add(this.attachementTypeEdit);
+      this.finalStateEdit = new EditBox(this.font, this.width / 2 - 152, 120, 300, 20, I18n.get("jigsaw_block.final_state"));
       this.finalStateEdit.setMaxLength(256);
       this.finalStateEdit.setValue(this.jigsawEntity.getFinalState());
       this.children.add(this.finalStateEdit);
-      this.joint = this.jigsawEntity.getJoint();
-      int var1 = this.font.width((FormattedText)JOINT_LABEL) + 10;
-      this.jointButton = (Button)this.addButton(new Button(this.width / 2 - 152 + var1, 150, 300 - var1, 20, this.getJointText(), (var1x) -> {
-         JigsawBlockEntity.JointType[] var2 = JigsawBlockEntity.JointType.values();
-         int var3 = (this.joint.ordinal() + 1) % var2.length;
-         this.joint = var2[var3];
-         var1x.setMessage(this.getJointText());
-      }));
-      boolean var2 = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
-      this.jointButton.active = var2;
-      this.jointButton.visible = var2;
-      this.addButton(new AbstractSliderButton(this.width / 2 - 154, 180, 100, 20, TextComponent.EMPTY, 0.0D) {
-         {
-            this.updateMessage();
-         }
-
-         protected void updateMessage() {
-            this.setMessage(new TranslatableComponent("jigsaw_block.levels", new Object[]{JigsawBlockEditScreen.this.levels}));
-         }
-
-         protected void applyValue() {
-            JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(0.0D, 7.0D, this.value));
-         }
-      });
-      this.addButton(new Button(this.width / 2 - 50, 180, 100, 20, new TranslatableComponent("jigsaw_block.keep_jigsaws"), (var1x) -> {
-         this.keepJigsaws = !this.keepJigsaws;
-         var1x.queueNarration(250);
-      }) {
-         public Component getMessage() {
-            return CommonComponents.optionStatus(super.getMessage(), JigsawBlockEditScreen.this.keepJigsaws);
-         }
-      });
-      this.addButton(new Button(this.width / 2 + 54, 180, 100, 20, new TranslatableComponent("jigsaw_block.generate"), (var1x) -> {
-         this.onDone();
-         this.sendGenerate();
-      }));
-      this.doneButton = (Button)this.addButton(new Button(this.width / 2 - 4 - 150, 210, 150, 20, CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }));
-      this.addButton(new Button(this.width / 2 + 4, 210, 150, 20, CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onCancel();
-      }));
-      this.setInitialFocus(this.poolEdit);
+      this.setInitialFocus(this.targetPoolEdit);
       this.updateValidity();
    }
 
-   private void updateValidity() {
-      this.doneButton.active = ResourceLocation.isValidResourceLocation(this.nameEdit.getValue()) && ResourceLocation.isValidResourceLocation(this.targetEdit.getValue()) && ResourceLocation.isValidResourceLocation(this.poolEdit.getValue());
+   protected void updateValidity() {
+      this.doneButton.active = ResourceLocation.isValidResourceLocation(this.attachementTypeEdit.getValue()) & ResourceLocation.isValidResourceLocation(this.targetPoolEdit.getValue());
    }
 
    public void resize(Minecraft var1, int var2, int var3) {
-      String var4 = this.nameEdit.getValue();
-      String var5 = this.targetEdit.getValue();
-      String var6 = this.poolEdit.getValue();
-      String var7 = this.finalStateEdit.getValue();
-      int var8 = this.levels;
-      JigsawBlockEntity.JointType var9 = this.joint;
+      String var4 = this.attachementTypeEdit.getValue();
+      String var5 = this.targetPoolEdit.getValue();
+      String var6 = this.finalStateEdit.getValue();
       this.init(var1, var2, var3);
-      this.nameEdit.setValue(var4);
-      this.targetEdit.setValue(var5);
-      this.poolEdit.setValue(var6);
-      this.finalStateEdit.setValue(var7);
-      this.levels = var8;
-      this.joint = var9;
-      this.jointButton.setMessage(this.getJointText());
-   }
-
-   private Component getJointText() {
-      return new TranslatableComponent("jigsaw_block.joint." + this.joint.getSerializedName());
+      this.attachementTypeEdit.setValue(var4);
+      this.targetPoolEdit.setValue(var5);
+      this.finalStateEdit.setValue(var6);
    }
 
    public void removed() {
@@ -183,20 +105,14 @@ public class JigsawBlockEditScreen extends Screen {
       }
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawString(var1, this.font, POOL_LABEL, this.width / 2 - 153, 10, 10526880);
-      this.poolEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, NAME_LABEL, this.width / 2 - 153, 45, 10526880);
-      this.nameEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, TARGET_LABEL, this.width / 2 - 153, 80, 10526880);
-      this.targetEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, FINAL_STATE_LABEL, this.width / 2 - 153, 115, 10526880);
-      this.finalStateEdit.render(var1, var2, var3, var4);
-      if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
-         drawString(var1, this.font, JOINT_LABEL, this.width / 2 - 153, 156, 16777215);
-      }
-
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawString(this.font, I18n.get("jigsaw_block.target_pool"), this.width / 2 - 153, 30, 10526880);
+      this.targetPoolEdit.render(var1, var2, var3);
+      this.drawString(this.font, I18n.get("jigsaw_block.attachement_type"), this.width / 2 - 153, 70, 10526880);
+      this.attachementTypeEdit.render(var1, var2, var3);
+      this.drawString(this.font, I18n.get("jigsaw_block.final_state"), this.width / 2 - 153, 110, 10526880);
+      this.finalStateEdit.render(var1, var2, var3);
+      super.render(var1, var2, var3);
    }
 }

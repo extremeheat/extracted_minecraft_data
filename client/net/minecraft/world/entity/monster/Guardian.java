@@ -23,8 +23,6 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -40,17 +38,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
 public class Guardian extends Monster {
    private static final EntityDataAccessor<Boolean> DATA_ID_MOVING;
    private static final EntityDataAccessor<Integer> DATA_ID_ATTACK_TARGET;
-   private float clientSideTailAnimation;
-   private float clientSideTailAnimationO;
-   private float clientSideTailAnimationSpeed;
-   private float clientSideSpikesAnimation;
-   private float clientSideSpikesAnimationO;
+   protected float clientSideTailAnimation;
+   protected float clientSideTailAnimationO;
+   protected float clientSideTailAnimationSpeed;
+   protected float clientSideSpikesAnimation;
+   protected float clientSideSpikesAnimationO;
    private LivingEntity clientSideCachedAttackTarget;
    private int clientSideAttackTime;
    private boolean clientSideTouchedGround;
@@ -59,7 +56,6 @@ public class Guardian extends Monster {
    public Guardian(EntityType<? extends Guardian> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 10;
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
       this.moveControl = new Guardian.GuardianMoveControl(this);
       this.clientSideTailAnimation = this.random.nextFloat();
       this.clientSideTailAnimationO = this.clientSideTailAnimation;
@@ -79,8 +75,12 @@ public class Guardian extends Monster {
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, LivingEntity.class, 10, true, false, new Guardian.GuardianAttackSelector(this)));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.ATTACK_DAMAGE, 6.0D).add(Attributes.MOVEMENT_SPEED, 0.5D).add(Attributes.FOLLOW_RANGE, 16.0D).add(Attributes.MAX_HEALTH, 30.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(16.0D);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(30.0D);
    }
 
    protected PathNavigation createNavigation(Level var1) {
@@ -167,7 +167,7 @@ public class Guardian extends Monster {
       return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_DEATH : SoundEvents.GUARDIAN_DEATH_LAND;
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -188,10 +188,10 @@ public class Guardian extends Monster {
                this.clientSideTailAnimationSpeed = 2.0F;
                var1 = this.getDeltaMovement();
                if (var1.y > 0.0D && this.clientSideTouchedGround && !this.isSilent()) {
-                  this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), this.getFlopSound(), this.getSoundSource(), 1.0F, 1.0F, false);
+                  this.level.playLocalSound(this.x, this.y, this.z, this.getFlopSound(), this.getSoundSource(), 1.0F, 1.0F, false);
                }
 
-               this.clientSideTouchedGround = var1.y < 0.0D && this.level.loadedAndEntityCanStandOn(this.blockPosition().below(), this);
+               this.clientSideTouchedGround = var1.y < 0.0D && this.level.loadedAndEntityCanStandOn((new BlockPos(this)).below(), this);
             } else if (this.isMoving()) {
                if (this.clientSideTailAnimationSpeed < 0.5F) {
                   this.clientSideTailAnimationSpeed = 4.0F;
@@ -216,7 +216,7 @@ public class Guardian extends Monster {
                var1 = this.getViewVector(0.0F);
 
                for(int var2 = 0; var2 < 2; ++var2) {
-                  this.level.addParticle(ParticleTypes.BUBBLE, this.getRandomX(0.5D) - var1.x * 1.5D, this.getRandomY() - var1.y * 1.5D, this.getRandomZ(0.5D) - var1.z * 1.5D, 0.0D, 0.0D, 0.0D);
+                  this.level.addParticle(ParticleTypes.BUBBLE, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth() - var1.x * 1.5D, this.y + this.random.nextDouble() * (double)this.getBbHeight() - var1.y * 1.5D, this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth() - var1.z * 1.5D, 0.0D, 0.0D, 0.0D);
                }
             }
 
@@ -230,9 +230,9 @@ public class Guardian extends Monster {
                   this.getLookControl().setLookAt(var14, 90.0F, 90.0F);
                   this.getLookControl().tick();
                   double var15 = (double)this.getAttackAnimationScale(0.0F);
-                  double var4 = var14.getX() - this.getX();
-                  double var6 = var14.getY(0.5D) - this.getEyeY();
-                  double var8 = var14.getZ() - this.getZ();
+                  double var4 = var14.x - this.x;
+                  double var6 = var14.y + (double)(var14.getBbHeight() * 0.5F) - (this.y + (double)this.getEyeHeight());
+                  double var8 = var14.z - this.z;
                   double var10 = Math.sqrt(var4 * var4 + var6 * var6 + var8 * var8);
                   var4 /= var10;
                   var6 /= var10;
@@ -241,7 +241,7 @@ public class Guardian extends Monster {
 
                   while(var12 < var10) {
                      var12 += 1.8D - var15 + this.random.nextDouble() * (1.7D - var15);
-                     this.level.addParticle(ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0D, 0.0D, 0.0D);
+                     this.level.addParticle(ParticleTypes.BUBBLE, this.x + var4 * var12, this.y + var6 * var12 + (double)this.getEyeHeight(), this.z + var8 * var12, 0.0D, 0.0D, 0.0D);
                   }
                }
             }
@@ -336,7 +336,7 @@ public class Guardian extends Monster {
 
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.guardian.getNavigation().isDone()) {
-            Vec3 var1 = new Vec3(this.wantedX - this.guardian.getX(), this.wantedY - this.guardian.getY(), this.wantedZ - this.guardian.getZ());
+            Vec3 var1 = new Vec3(this.wantedX - this.guardian.x, this.wantedY - this.guardian.y, this.wantedZ - this.guardian.z);
             double var2 = var1.length();
             double var4 = var1.x / var2;
             double var6 = var1.y / var2;
@@ -344,7 +344,7 @@ public class Guardian extends Monster {
             float var10 = (float)(Mth.atan2(var1.z, var1.x) * 57.2957763671875D) - 90.0F;
             this.guardian.yRot = this.rotlerp(this.guardian.yRot, var10, 90.0F);
             this.guardian.yBodyRot = this.guardian.yRot;
-            float var11 = (float)(this.speedModifier * this.guardian.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float var11 = (float)(this.speedModifier * this.guardian.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue());
             float var12 = Mth.lerp(0.125F, this.guardian.getSpeed(), var11);
             this.guardian.setSpeed(var12);
             double var13 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.5D) * 0.05D;
@@ -353,9 +353,9 @@ public class Guardian extends Monster {
             double var19 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.75D) * 0.05D;
             this.guardian.setDeltaMovement(this.guardian.getDeltaMovement().add(var13 * var15, var19 * (var17 + var15) * 0.25D + (double)var12 * var6 * 0.1D, var13 * var17));
             LookControl var21 = this.guardian.getLookControl();
-            double var22 = this.guardian.getX() + var4 * 2.0D;
-            double var24 = this.guardian.getEyeY() + var6 / var2;
-            double var26 = this.guardian.getZ() + var8 * 2.0D;
+            double var22 = this.guardian.x + var4 * 2.0D;
+            double var24 = (double)this.guardian.getEyeHeight() + this.guardian.y + var6 / var2;
+            double var26 = this.guardian.z + var8 * 2.0D;
             double var28 = var21.getWantedX();
             double var30 = var21.getWantedY();
             double var32 = var21.getWantedZ();
@@ -418,9 +418,7 @@ public class Guardian extends Monster {
             ++this.attackTime;
             if (this.attackTime == 0) {
                this.guardian.setActiveAttackTarget(this.guardian.getTarget().getId());
-               if (!this.guardian.isSilent()) {
-                  this.guardian.level.broadcastEntityEvent(this.guardian, (byte)21);
-               }
+               this.guardian.level.broadcastEntityEvent(this.guardian, (byte)21);
             } else if (this.attackTime >= this.guardian.getAttackDuration()) {
                float var2 = 1.0F;
                if (this.guardian.level.getDifficulty() == Difficulty.HARD) {
@@ -432,7 +430,7 @@ public class Guardian extends Monster {
                }
 
                var1.hurt(DamageSource.indirectMagic(this.guardian, this.guardian), var2);
-               var1.hurt(DamageSource.mobAttack(this.guardian), (float)this.guardian.getAttributeValue(Attributes.ATTACK_DAMAGE));
+               var1.hurt(DamageSource.mobAttack(this.guardian), (float)this.guardian.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue());
                this.guardian.setTarget((LivingEntity)null);
             }
 

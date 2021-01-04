@@ -9,19 +9,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.SetTag;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagCollection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +29,7 @@ public abstract class TagsProvider<T> implements DataProvider {
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
    protected final DataGenerator generator;
    protected final Registry<T> registry;
-   private final Map<ResourceLocation, Tag.Builder> builders = Maps.newLinkedHashMap();
+   protected final Map<Tag<T>, Tag.Builder<T>> builders = Maps.newLinkedHashMap();
 
    protected TagsProvider(DataGenerator var1, Registry<T> var2) {
       super();
@@ -43,108 +42,64 @@ public abstract class TagsProvider<T> implements DataProvider {
    public void run(HashCache var1) {
       this.builders.clear();
       this.addTags();
-      SetTag var2 = SetTag.empty();
-      Function var3 = (var2x) -> {
-         return this.builders.containsKey(var2x) ? var2 : null;
-      };
-      Function var4 = (var1x) -> {
-         return this.registry.getOptional(var1x).orElse((Object)null);
-      };
-      this.builders.forEach((var4x, var5) -> {
-         List var6 = (List)var5.getUnresolvedEntries(var3, var4).collect(Collectors.toList());
-         if (!var6.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Couldn't define tag %s as it is missing following references: %s", var4x, var6.stream().map(Objects::toString).collect(Collectors.joining(","))));
-         } else {
-            JsonObject var7 = var5.serializeToJson();
-            Path var8 = this.getPath(var4x);
+      TagCollection var2 = new TagCollection((var0) -> {
+         return Optional.empty();
+      }, "", false, "generated");
+      Map var3 = (Map)this.builders.entrySet().stream().collect(Collectors.toMap((var0) -> {
+         return ((Tag)var0.getKey()).getId();
+      }, Entry::getValue));
+      var2.load(var3);
+      var2.getAllTags().forEach((var2x, var3x) -> {
+         Registry var10001 = this.registry;
+         var10001.getClass();
+         JsonObject var4 = var3x.serializeToJson(var10001::getKey);
+         Path var5 = this.getPath(var2x);
 
-            try {
-               String var9 = GSON.toJson(var7);
-               String var10 = SHA1.hashUnencodedChars(var9).toString();
-               if (!Objects.equals(var1.getHash(var8), var10) || !Files.exists(var8, new LinkOption[0])) {
-                  Files.createDirectories(var8.getParent());
-                  BufferedWriter var11 = Files.newBufferedWriter(var8);
-                  Throwable var12 = null;
+         try {
+            String var6 = GSON.toJson(var4);
+            String var7 = SHA1.hashUnencodedChars(var6).toString();
+            if (!Objects.equals(var1.getHash(var5), var7) || !Files.exists(var5, new LinkOption[0])) {
+               Files.createDirectories(var5.getParent());
+               BufferedWriter var8 = Files.newBufferedWriter(var5);
+               Throwable var9 = null;
 
-                  try {
-                     var11.write(var9);
-                  } catch (Throwable var22) {
-                     var12 = var22;
-                     throw var22;
-                  } finally {
-                     if (var11 != null) {
-                        if (var12 != null) {
-                           try {
-                              var11.close();
-                           } catch (Throwable var21) {
-                              var12.addSuppressed(var21);
-                           }
-                        } else {
-                           var11.close();
+               try {
+                  var8.write(var6);
+               } catch (Throwable var19) {
+                  var9 = var19;
+                  throw var19;
+               } finally {
+                  if (var8 != null) {
+                     if (var9 != null) {
+                        try {
+                           var8.close();
+                        } catch (Throwable var18) {
+                           var9.addSuppressed(var18);
                         }
+                     } else {
+                        var8.close();
                      }
-
                   }
-               }
 
-               var1.putNew(var8, var10);
-            } catch (IOException var24) {
-               LOGGER.error("Couldn't save tags to {}", var8, var24);
+               }
             }
 
+            var1.putNew(var5, var7);
+         } catch (IOException var21) {
+            LOGGER.error("Couldn't save tags to {}", var5, var21);
          }
+
       });
+      this.useTags(var2);
    }
+
+   protected abstract void useTags(TagCollection<T> var1);
 
    protected abstract Path getPath(ResourceLocation var1);
 
-   protected TagsProvider.TagAppender<T> tag(Tag.Named<T> var1) {
-      Tag.Builder var2 = this.getOrCreateRawBuilder(var1);
-      return new TagsProvider.TagAppender(var2, this.registry, "vanilla");
-   }
-
-   protected Tag.Builder getOrCreateRawBuilder(Tag.Named<T> var1) {
-      return (Tag.Builder)this.builders.computeIfAbsent(var1.getName(), (var0) -> {
-         return new Tag.Builder();
+   protected Tag.Builder<T> tag(Tag<T> var1) {
+      return (Tag.Builder)this.builders.computeIfAbsent(var1, (var0) -> {
+         return Tag.Builder.tag();
       });
-   }
-
-   public static class TagAppender<T> {
-      private final Tag.Builder builder;
-      private final Registry<T> registry;
-      private final String source;
-
-      private TagAppender(Tag.Builder var1, Registry<T> var2, String var3) {
-         super();
-         this.builder = var1;
-         this.registry = var2;
-         this.source = var3;
-      }
-
-      public TagsProvider.TagAppender<T> add(T var1) {
-         this.builder.addElement(this.registry.getKey(var1), this.source);
-         return this;
-      }
-
-      public TagsProvider.TagAppender<T> addTag(Tag.Named<T> var1) {
-         this.builder.addTag(var1.getName(), this.source);
-         return this;
-      }
-
-      @SafeVarargs
-      public final TagsProvider.TagAppender<T> add(T... var1) {
-         Stream var10000 = Stream.of(var1);
-         Registry var10001 = this.registry;
-         var10001.getClass();
-         var10000.map(var10001::getKey).forEach((var1x) -> {
-            this.builder.addElement(var1x, this.source);
-         });
-         return this;
-      }
-
-      // $FF: synthetic method
-      TagAppender(Tag.Builder var1, Registry var2, String var3, Object var4) {
-         this(var1, var2, var3);
-      }
    }
 }

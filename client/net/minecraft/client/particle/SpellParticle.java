@@ -1,14 +1,14 @@
 package net.minecraft.client.particle;
 
 import java.util.Random;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class SpellParticle extends TextureSheetParticle {
    private static final Random RANDOM = new Random();
    private final SpriteSet sprites;
 
-   private SpellParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
+   private SpellParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6, 0.5D - RANDOM.nextDouble(), var10, 0.5D - RANDOM.nextDouble());
       this.sprites = var14;
       this.yd *= 0.20000000298023224D;
@@ -54,7 +54,7 @@ public class SpellParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   SpellParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
+   SpellParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
       this(var1, var2, var4, var6, var8, var10, var12, var14);
    }
 
@@ -66,7 +66,7 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
       }
    }
@@ -79,7 +79,7 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
          float var16 = var2.random.nextFloat() * 0.5F + 0.35F;
          var15.setColor(1.0F * var16, 0.0F * var16, 1.0F * var16);
@@ -95,7 +95,7 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
          var15.setAlpha(0.15F);
          var15.setColor((float)var9, (float)var11, (float)var13);
@@ -111,7 +111,7 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
          var15.setColor((float)var9, (float)var11, (float)var13);
          return var15;
@@ -126,7 +126,7 @@ public class SpellParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
       }
    }

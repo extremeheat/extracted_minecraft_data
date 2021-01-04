@@ -1,12 +1,11 @@
 package net.minecraft.commands;
 
 import com.google.common.collect.Lists;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -31,38 +30,46 @@ public class CommandFunction {
       return this.entries;
    }
 
-   public static CommandFunction fromLines(ResourceLocation var0, CommandDispatcher<CommandSourceStack> var1, CommandSourceStack var2, List<String> var3) {
-      ArrayList var4 = Lists.newArrayListWithCapacity(var3.size());
+   public static CommandFunction fromLines(ResourceLocation var0, ServerFunctionManager var1, List<String> var2) {
+      ArrayList var3 = Lists.newArrayListWithCapacity(var2.size());
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
-         int var6 = var5 + 1;
-         String var7 = ((String)var3.get(var5)).trim();
-         StringReader var8 = new StringReader(var7);
-         if (var8.canRead() && var8.peek() != '#') {
-            if (var8.peek() == '/') {
-               var8.skip();
-               if (var8.peek() == '/') {
-                  throw new IllegalArgumentException("Unknown or invalid command '" + var7 + "' on line " + var6 + " (if you intended to make a comment, use '#' not '//')");
+      for(int var4 = 0; var4 < var2.size(); ++var4) {
+         int var5 = var4 + 1;
+         String var6 = ((String)var2.get(var4)).trim();
+         StringReader var7 = new StringReader(var6);
+         if (var7.canRead() && var7.peek() != '#') {
+            if (var7.peek() == '/') {
+               var7.skip();
+               if (var7.peek() == '/') {
+                  throw new IllegalArgumentException("Unknown or invalid command '" + var6 + "' on line " + var5 + " (if you intended to make a comment, use '#' not '//')");
                }
 
-               String var11 = var8.readUnquotedString();
-               throw new IllegalArgumentException("Unknown or invalid command '" + var7 + "' on line " + var6 + " (did you mean '" + var11 + "'? Do not use a preceding forwards slash.)");
+               String var10 = var7.readUnquotedString();
+               throw new IllegalArgumentException("Unknown or invalid command '" + var6 + "' on line " + var5 + " (did you mean '" + var10 + "'? Do not use a preceding forwards slash.)");
             }
 
             try {
-               ParseResults var9 = var1.parse(var8, var2);
-               if (var9.getReader().canRead()) {
-                  throw Commands.getParseException(var9);
+               ParseResults var8 = var1.getServer().getCommands().getDispatcher().parse(var7, var1.getCompilationContext());
+               if (var8.getReader().canRead()) {
+                  if (var8.getExceptions().size() == 1) {
+                     throw (CommandSyntaxException)var8.getExceptions().values().iterator().next();
+                  }
+
+                  if (var8.getContext().getRange().isEmpty()) {
+                     throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var8.getReader());
+                  }
+
+                  throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(var8.getReader());
                }
 
-               var4.add(new CommandFunction.CommandEntry(var9));
-            } catch (CommandSyntaxException var10) {
-               throw new IllegalArgumentException("Whilst parsing command on line " + var6 + ": " + var10.getMessage());
+               var3.add(new CommandFunction.CommandEntry(var8));
+            } catch (CommandSyntaxException var9) {
+               throw new IllegalArgumentException("Whilst parsing command on line " + var5 + ": " + var9.getMessage());
             }
          }
       }
 
-      return new CommandFunction(var0, (CommandFunction.Entry[])var4.toArray(new CommandFunction.Entry[0]));
+      return new CommandFunction(var0, (CommandFunction.Entry[])var3.toArray(new CommandFunction.Entry[0]));
    }
 
    public static class CacheableFunction {
@@ -112,7 +119,7 @@ public class CommandFunction {
          this.function = new CommandFunction.CacheableFunction(var1);
       }
 
-      public void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) {
+      public void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) {
          this.function.get(var1).ifPresent((var4x) -> {
             CommandFunction.Entry[] var5 = var4x.getEntries();
             int var6 = var4 - var3.size();
@@ -138,7 +145,7 @@ public class CommandFunction {
          this.parse = var1;
       }
 
-      public void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException {
+      public void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException {
          var1.getDispatcher().execute(new ParseResults(this.parse.getContext().withSource(var2), this.parse.getReader(), this.parse.getExceptions()));
       }
 
@@ -148,6 +155,6 @@ public class CommandFunction {
    }
 
    public interface Entry {
-      void execute(ServerFunctionManager var1, CommandSourceStack var2, Deque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException;
+      void execute(ServerFunctionManager var1, CommandSourceStack var2, ArrayDeque<ServerFunctionManager.QueuedCommand> var3, int var4) throws CommandSyntaxException;
    }
 }

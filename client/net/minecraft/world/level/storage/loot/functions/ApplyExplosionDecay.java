@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import java.util.Random;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -11,10 +12,6 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class ApplyExplosionDecay extends LootItemConditionalFunction {
    private ApplyExplosionDecay(LootItemCondition[] var1) {
       super(var1);
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.EXPLOSION_DECAY;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -47,8 +44,8 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
    }
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<ApplyExplosionDecay> {
-      public Serializer() {
-         super();
+      protected Serializer() {
+         super(new ResourceLocation("explosion_decay"), ApplyExplosionDecay.class);
       }
 
       public ApplyExplosionDecay deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {

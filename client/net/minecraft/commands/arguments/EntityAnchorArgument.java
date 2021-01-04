@@ -96,7 +96,7 @@ public class EntityAnchorArgument implements ArgumentType<EntityAnchorArgument.A
       }
 
       public Vec3 apply(Entity var1) {
-         return (Vec3)this.transform.apply(var1.position(), var1);
+         return (Vec3)this.transform.apply(new Vec3(var1.x, var1.y, var1.z), var1);
       }
 
       public Vec3 apply(CommandSourceStack var1) {

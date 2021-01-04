@@ -19,8 +19,6 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FleeSunGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -39,9 +37,8 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -77,8 +74,9 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.25D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
    }
 
    protected void playStepSound(BlockPos var1, BlockState var2) {
@@ -130,7 +128,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       this.populateDefaultEquipmentSlots(var2);
       this.populateDefaultEquipmentEnchantments(var2);
@@ -154,7 +152,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          this.goalSelector.removeGoal(this.meleeGoal);
          this.goalSelector.removeGoal(this.bowGoal);
          ItemStack var1 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
-         if (var1.is(Items.BOW)) {
+         if (var1.getItem() == Items.BOW) {
             byte var2 = 20;
             if (this.level.getDifficulty() != Difficulty.HARD) {
                var2 = 40;
@@ -172,9 +170,9 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    public void performRangedAttack(LivingEntity var1, float var2) {
       ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
       AbstractArrow var4 = this.getArrow(var3, var2);
-      double var5 = var1.getX() - this.getX();
-      double var7 = var1.getY(0.3333333333333333D) - var4.getY();
-      double var9 = var1.getZ() - this.getZ();
+      double var5 = var1.x - this.x;
+      double var7 = var1.getBoundingBox().minY + (double)(var1.getBbHeight() / 3.0F) - var4.y;
+      double var9 = var1.z - this.z;
       double var11 = (double)Mth.sqrt(var5 * var5 + var9 * var9);
       var4.shoot(var5, var7 + var11 * 0.20000000298023224D, var9, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -183,10 +181,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    protected AbstractArrow getArrow(ItemStack var1, float var2) {
       return ProjectileUtil.getMobArrow(this, var1, var2);
-   }
-
-   public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
-      return var1 == Items.BOW;
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -206,7 +200,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return 1.74F;
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return -0.6D;
    }
 }

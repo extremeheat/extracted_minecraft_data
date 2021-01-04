@@ -1,7 +1,6 @@
 package net.minecraft.network.chat;
 
 public class TextComponent extends BaseComponent {
-   public static final Component EMPTY = new TextComponent("");
    private final String text;
 
    public TextComponent(String var1) {
@@ -17,7 +16,7 @@ public class TextComponent extends BaseComponent {
       return this.text;
    }
 
-   public TextComponent plainCopy() {
+   public TextComponent copy() {
       return new TextComponent(this.text);
    }
 
@@ -37,12 +36,7 @@ public class TextComponent extends BaseComponent {
    }
 
    // $FF: synthetic method
-   public BaseComponent plainCopy() {
-      return this.plainCopy();
-   }
-
-   // $FF: synthetic method
-   public MutableComponent plainCopy() {
-      return this.plainCopy();
+   public Component copy() {
+      return this.copy();
    }
 }

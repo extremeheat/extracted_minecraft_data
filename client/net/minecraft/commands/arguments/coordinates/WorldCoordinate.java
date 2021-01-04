@@ -6,8 +6,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.network.chat.TranslatableComponent;
 
 public class WorldCoordinate {
-   public static final SimpleCommandExceptionType ERROR_EXPECTED_DOUBLE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos.missing.double"));
-   public static final SimpleCommandExceptionType ERROR_EXPECTED_INT = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos.missing.int"));
+   public static final SimpleCommandExceptionType ERROR_EXPECTED_DOUBLE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos.missing.double", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_EXPECTED_INT = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos.missing.int", new Object[0]));
    private final boolean relative;
    private final double value;
 
@@ -61,7 +61,7 @@ public class WorldCoordinate {
       }
    }
 
-   public static boolean isRelative(StringReader var0) {
+   private static boolean isRelative(StringReader var0) {
       boolean var1;
       if (var0.peek() == '~') {
          var1 = true;

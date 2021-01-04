@@ -2,33 +2,29 @@ package net.minecraft.world.level.block;
 
 import java.util.Iterator;
 import java.util.Random;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.HugeMushroomFeatureConfig;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends BushBlock implements BonemealableBlock {
    protected static final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6.0D, 11.0D);
-   private final Supplier<ConfiguredFeature<?, ?>> featureSupplier;
 
-   public MushroomBlock(BlockBehaviour.Properties var1, Supplier<ConfiguredFeature<?, ?>> var2) {
+   public MushroomBlock(Block.Properties var1) {
       super(var1);
-      this.featureSupplier = var2;
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (var4.nextInt(25) == 0) {
          int var5 = 5;
          boolean var6 = true;
@@ -36,7 +32,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
 
          while(var7.hasNext()) {
             BlockPos var8 = (BlockPos)var7.next();
-            if (var2.getBlockState(var8).is(this)) {
+            if (var2.getBlockState(var8).getBlock() == this) {
                --var5;
                if (var5 <= 0) {
                   return;
@@ -68,16 +64,24 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
-      if (var5.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
-         return true;
-      } else {
+      Block var6 = var5.getBlock();
+      if (var6 != Blocks.MYCELIUM && var6 != Blocks.PODZOL) {
          return var2.getRawBrightness(var3, 0) < 13 && this.mayPlaceOn(var5, var2, var4);
+      } else {
+         return true;
       }
    }
 
-   public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, Random var4) {
+   public boolean growMushroom(LevelAccessor var1, BlockPos var2, BlockState var3, Random var4) {
       var1.removeBlock(var2, false);
-      if (((ConfiguredFeature)this.featureSupplier.get()).place(var1, var1.getChunkSource().getGenerator(), var4, var2)) {
+      Feature var5 = null;
+      if (this == Blocks.BROWN_MUSHROOM) {
+         var5 = Feature.HUGE_BROWN_MUSHROOM;
+      } else if (this == Blocks.RED_MUSHROOM) {
+         var5 = Feature.HUGE_RED_MUSHROOM;
+      }
+
+      if (var5 != null && var5.place(var1, var1.getChunkSource().getGenerator(), var4, var2, new HugeMushroomFeatureConfig(true))) {
          return true;
       } else {
          var1.setBlock(var2, var3, 3);
@@ -93,7 +97,11 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
       return (double)var2.nextFloat() < 0.4D;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       this.growMushroom(var1, var3, var4, var2);
+   }
+
+   public boolean hasPostProcess(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return true;
    }
 }

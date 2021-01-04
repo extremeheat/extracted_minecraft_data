@@ -1,36 +1,41 @@
 package net.minecraft.world.level.storage;
 
-import java.io.File;
-import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.LevelSettings;
-import org.apache.commons.lang3.StringUtils;
+import net.minecraft.world.level.LevelType;
 
 public class LevelSummary implements Comparable<LevelSummary> {
-   private final LevelSettings settings;
-   private final LevelVersion levelVersion;
    private final String levelId;
+   private final String levelName;
+   private final long lastPlayed;
+   private final long sizeOnDisk;
    private final boolean requiresConversion;
-   private final boolean locked;
-   private final File icon;
-   @Nullable
-   private Component info;
+   private final GameType gameMode;
+   private final boolean hardcore;
+   private final boolean hasCheats;
+   private final String worldVersionName;
+   private final int worldVersion;
+   private final boolean snapshot;
+   private final LevelType generatorType;
 
-   public LevelSummary(LevelSettings var1, LevelVersion var2, String var3, boolean var4, boolean var5, File var6) {
+   public LevelSummary(LevelData var1, String var2, String var3, long var4, boolean var6) {
       super();
-      this.settings = var1;
-      this.levelVersion = var2;
-      this.levelId = var3;
-      this.locked = var5;
-      this.icon = var6;
-      this.requiresConversion = var4;
+      this.levelId = var2;
+      this.levelName = var3;
+      this.lastPlayed = var1.getLastPlayed();
+      this.sizeOnDisk = var4;
+      this.gameMode = var1.getGameType();
+      this.requiresConversion = var6;
+      this.hardcore = var1.isHardcore();
+      this.hasCheats = var1.getAllowCommands();
+      this.worldVersionName = var1.getMinecraftVersionName();
+      this.worldVersion = var1.getMinecraftVersion();
+      this.snapshot = var1.isSnapshot();
+      this.generatorType = var1.getGeneratorType();
    }
 
    public String getLevelId() {
@@ -38,11 +43,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public String getLevelName() {
-      return StringUtils.isEmpty(this.settings.levelName()) ? this.levelId : this.settings.levelName();
+      return this.levelName;
    }
 
-   public File getIcon() {
-      return this.icon;
+   public long getSizeOnDisk() {
+      return this.sizeOnDisk;
    }
 
    public boolean isRequiresConversion() {
@@ -50,83 +55,47 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public long getLastPlayed() {
-      return this.levelVersion.lastPlayed();
+      return this.lastPlayed;
    }
 
    public int compareTo(LevelSummary var1) {
-      if (this.levelVersion.lastPlayed() < var1.levelVersion.lastPlayed()) {
+      if (this.lastPlayed < var1.lastPlayed) {
          return 1;
       } else {
-         return this.levelVersion.lastPlayed() > var1.levelVersion.lastPlayed() ? -1 : this.levelId.compareTo(var1.levelId);
+         return this.lastPlayed > var1.lastPlayed ? -1 : this.levelId.compareTo(var1.levelId);
       }
    }
 
    public GameType getGameMode() {
-      return this.settings.gameType();
+      return this.gameMode;
    }
 
    public boolean isHardcore() {
-      return this.settings.hardcore();
+      return this.hardcore;
    }
 
    public boolean hasCheats() {
-      return this.settings.allowCommands();
+      return this.hasCheats;
    }
 
-   public MutableComponent getWorldVersionName() {
-      return (MutableComponent)(StringUtil.isNullOrEmpty(this.levelVersion.minecraftVersionName()) ? new TranslatableComponent("selectWorld.versionUnknown") : new TextComponent(this.levelVersion.minecraftVersionName()));
-   }
-
-   public LevelVersion levelVersion() {
-      return this.levelVersion;
+   public Component getWorldVersionName() {
+      return (Component)(StringUtil.isNullOrEmpty(this.worldVersionName) ? new TranslatableComponent("selectWorld.versionUnknown", new Object[0]) : new TextComponent(this.worldVersionName));
    }
 
    public boolean markVersionInList() {
-      return this.askToOpenWorld() || !SharedConstants.getCurrentVersion().isStable() && !this.levelVersion.snapshot() || this.shouldBackup();
+      return this.askToOpenWorld() || !SharedConstants.getCurrentVersion().isStable() && !this.snapshot || this.shouldBackup() || this.isOldCustomizedWorld();
    }
 
    public boolean askToOpenWorld() {
-      return this.levelVersion.minecraftVersion() > SharedConstants.getCurrentVersion().getWorldVersion();
+      return this.worldVersion > SharedConstants.getCurrentVersion().getWorldVersion();
+   }
+
+   public boolean isOldCustomizedWorld() {
+      return this.generatorType == LevelType.CUSTOMIZED && this.worldVersion < 1466;
    }
 
    public boolean shouldBackup() {
-      return this.levelVersion.minecraftVersion() < SharedConstants.getCurrentVersion().getWorldVersion();
-   }
-
-   public boolean isLocked() {
-      return this.locked;
-   }
-
-   public Component getInfo() {
-      if (this.info == null) {
-         this.info = this.createInfo();
-      }
-
-      return this.info;
-   }
-
-   private Component createInfo() {
-      if (this.isLocked()) {
-         return (new TranslatableComponent("selectWorld.locked")).withStyle(ChatFormatting.RED);
-      } else if (this.isRequiresConversion()) {
-         return new TranslatableComponent("selectWorld.conversion");
-      } else {
-         Object var1 = this.isHardcore() ? (new TextComponent("")).append((new TranslatableComponent("gameMode.hardcore")).withStyle(ChatFormatting.DARK_RED)) : new TranslatableComponent("gameMode." + this.getGameMode().getName());
-         if (this.hasCheats()) {
-            ((MutableComponent)var1).append(", ").append((Component)(new TranslatableComponent("selectWorld.cheats")));
-         }
-
-         MutableComponent var2 = this.getWorldVersionName();
-         MutableComponent var3 = (new TextComponent(", ")).append(new TranslatableComponent("selectWorld.version")).append(" ");
-         if (this.markVersionInList()) {
-            var3.append((Component)var2.withStyle(this.askToOpenWorld() ? ChatFormatting.RED : ChatFormatting.ITALIC));
-         } else {
-            var3.append((Component)var2);
-         }
-
-         ((MutableComponent)var1).append((Component)var3);
-         return (Component)var1;
-      }
+      return this.worldVersion < SharedConstants.getCurrentVersion().getWorldVersion();
    }
 
    // $FF: synthetic method

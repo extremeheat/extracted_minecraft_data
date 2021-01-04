@@ -1,6 +1,5 @@
 package net.minecraft.server.dedicated;
 
-import com.google.common.collect.Streams;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -10,12 +9,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.stream.Collectors;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.Util;
-import net.minecraft.server.Bootstrap;
-import net.minecraft.world.level.GameRules;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,7 +37,7 @@ public class ServerWatchdog implements Runnable {
             ThreadMXBean var7 = ManagementFactory.getThreadMXBean();
             ThreadInfo[] var8 = var7.dumpAllThreads(true, true);
             StringBuilder var9 = new StringBuilder();
-            Error var10 = new Error("Watchdog");
+            Error var10 = new Error();
             ThreadInfo[] var11 = var8;
             int var12 = var8.length;
 
@@ -59,19 +55,9 @@ public class ServerWatchdog implements Runnable {
             this.server.fillReport(var16);
             CrashReportCategory var17 = var16.addCategory("Thread Dump");
             var17.setDetail("Threads", (Object)var9);
-            CrashReportCategory var18 = var16.addCategory("Performance stats");
-            var18.setDetail("Random tick rate", () -> {
-               return ((GameRules.IntegerValue)this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString();
-            });
-            var18.setDetail("Level stats", () -> {
-               return (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
-                  return var0.dimension() + ": " + var0.getWatchdogStats();
-               }).collect(Collectors.joining(",\n"));
-            });
-            Bootstrap.realStdoutPrintln("Crash report:\n" + var16.getFriendlyReport());
-            File var19 = new File(new File(this.server.getServerDirectory(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
-            if (var16.saveToFile(var19)) {
-               LOGGER.error("This crash report has been saved to: {}", var19.getAbsolutePath());
+            File var18 = new File(new File(this.server.getServerDirectory(), "crash-reports"), "crash-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + "-server.txt");
+            if (var16.saveToFile(var18)) {
+               LOGGER.error("This crash report has been saved to: {}", var18.getAbsolutePath());
             } else {
                LOGGER.error("We were unable to save this crash report to disk.");
             }

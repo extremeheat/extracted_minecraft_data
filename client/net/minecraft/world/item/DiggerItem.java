@@ -1,34 +1,28 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class DiggerItem extends TieredItem implements Vanishable {
+public class DiggerItem extends TieredItem {
    private final Set<Block> blocks;
    protected final float speed;
-   private final float attackDamageBaseline;
-   private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+   protected final float attackDamage;
+   protected final float attackSpeed;
 
    protected DiggerItem(float var1, float var2, Tier var3, Set<Block> var4, Item.Properties var5) {
       super(var3, var5);
       this.blocks = var4;
       this.speed = var3.getSpeed();
-      this.attackDamageBaseline = var1 + var3.getAttackDamageBonus();
-      Builder var6 = ImmutableMultimap.builder();
-      var6.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", (double)this.attackDamageBaseline, AttributeModifier.Operation.ADDITION));
-      var6.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", (double)var2, AttributeModifier.Operation.ADDITION));
-      this.defaultModifiers = var6.build();
+      this.attackDamage = var1 + var3.getAttackDamageBonus();
+      this.attackSpeed = var2;
    }
 
    public float getDestroySpeed(ItemStack var1, BlockState var2) {
@@ -52,11 +46,13 @@ public class DiggerItem extends TieredItem implements Vanishable {
       return true;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
-   }
+   public Multimap<String, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+      Multimap var2 = super.getDefaultAttributeModifiers(var1);
+      if (var1 == EquipmentSlot.MAINHAND) {
+         var2.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", (double)this.attackDamage, AttributeModifier.Operation.ADDITION));
+         var2.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", (double)this.attackSpeed, AttributeModifier.Operation.ADDITION));
+      }
 
-   public float getAttackDamage() {
-      return this.attackDamageBaseline;
+      return var2;
    }
 }

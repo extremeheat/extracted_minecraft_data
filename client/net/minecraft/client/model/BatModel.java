@@ -1,16 +1,11 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ambient.Bat;
 
-public class BatModel extends HierarchicalModel<Bat> {
-   private final ModelPart root;
+public class BatModel extends EntityModel<Bat> {
    private final ModelPart head;
    private final ModelPart body;
    private final ModelPart rightWing;
@@ -18,36 +13,47 @@ public class BatModel extends HierarchicalModel<Bat> {
    private final ModelPart rightWingTip;
    private final ModelPart leftWingTip;
 
-   public BatModel(ModelPart var1) {
+   public BatModel() {
       super();
-      this.root = var1;
-      this.head = var1.getChild("head");
-      this.body = var1.getChild("body");
-      this.rightWing = this.body.getChild("right_wing");
-      this.rightWingTip = this.rightWing.getChild("right_wing_tip");
-      this.leftWing = this.body.getChild("left_wing");
-      this.leftWingTip = this.leftWing.getChild("left_wing_tip");
+      this.texWidth = 64;
+      this.texHeight = 64;
+      this.head = new ModelPart(this, 0, 0);
+      this.head.addBox(-3.0F, -3.0F, -3.0F, 6, 6, 6);
+      ModelPart var1 = new ModelPart(this, 24, 0);
+      var1.addBox(-4.0F, -6.0F, -2.0F, 3, 4, 1);
+      this.head.addChild(var1);
+      ModelPart var2 = new ModelPart(this, 24, 0);
+      var2.mirror = true;
+      var2.addBox(1.0F, -6.0F, -2.0F, 3, 4, 1);
+      this.head.addChild(var2);
+      this.body = new ModelPart(this, 0, 16);
+      this.body.addBox(-3.0F, 4.0F, -3.0F, 6, 12, 6);
+      this.body.texOffs(0, 34).addBox(-5.0F, 16.0F, 0.0F, 10, 6, 1);
+      this.rightWing = new ModelPart(this, 42, 0);
+      this.rightWing.addBox(-12.0F, 1.0F, 1.5F, 10, 16, 1);
+      this.rightWingTip = new ModelPart(this, 24, 16);
+      this.rightWingTip.setPos(-12.0F, 1.0F, 1.5F);
+      this.rightWingTip.addBox(-8.0F, 1.0F, 0.0F, 8, 12, 1);
+      this.leftWing = new ModelPart(this, 42, 0);
+      this.leftWing.mirror = true;
+      this.leftWing.addBox(2.0F, 1.0F, 1.5F, 10, 16, 1);
+      this.leftWingTip = new ModelPart(this, 24, 16);
+      this.leftWingTip.mirror = true;
+      this.leftWingTip.setPos(12.0F, 1.0F, 1.5F);
+      this.leftWingTip.addBox(0.0F, 1.0F, 0.0F, 8, 12, 1);
+      this.body.addChild(this.rightWing);
+      this.body.addChild(this.leftWing);
+      this.rightWing.addChild(this.rightWingTip);
+      this.leftWing.addChild(this.leftWingTip);
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.ZERO);
-      var2.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(24, 0).addBox(-4.0F, -6.0F, -2.0F, 3.0F, 4.0F, 1.0F), PartPose.ZERO);
-      var2.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(24, 0).mirror().addBox(1.0F, -6.0F, -2.0F, 3.0F, 4.0F, 1.0F), PartPose.ZERO);
-      PartDefinition var3 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 16).addBox(-3.0F, 4.0F, -3.0F, 6.0F, 12.0F, 6.0F).texOffs(0, 34).addBox(-5.0F, 16.0F, 0.0F, 10.0F, 6.0F, 1.0F), PartPose.ZERO);
-      PartDefinition var4 = var3.addOrReplaceChild("right_wing", CubeListBuilder.create().texOffs(42, 0).addBox(-12.0F, 1.0F, 1.5F, 10.0F, 16.0F, 1.0F), PartPose.ZERO);
-      var4.addOrReplaceChild("right_wing_tip", CubeListBuilder.create().texOffs(24, 16).addBox(-8.0F, 1.0F, 0.0F, 8.0F, 12.0F, 1.0F), PartPose.offset(-12.0F, 1.0F, 1.5F));
-      PartDefinition var5 = var3.addOrReplaceChild("left_wing", CubeListBuilder.create().texOffs(42, 0).mirror().addBox(2.0F, 1.0F, 1.5F, 10.0F, 16.0F, 1.0F), PartPose.ZERO);
-      var5.addOrReplaceChild("left_wing_tip", CubeListBuilder.create().texOffs(24, 16).mirror().addBox(0.0F, 1.0F, 0.0F, 8.0F, 12.0F, 1.0F), PartPose.offset(12.0F, 1.0F, 1.5F));
-      return LayerDefinition.create(var0, 64, 64);
+   public void render(Bat var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.setupAnim(var1, var2, var3, var4, var5, var6, var7);
+      this.head.render(var7);
+      this.body.render(var7);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(Bat var1, float var2, float var3, float var4, float var5, float var6) {
+   public void setupAnim(Bat var1, float var2, float var3, float var4, float var5, float var6, float var7) {
       if (var1.isResting()) {
          this.head.xRot = var6 * 0.017453292F;
          this.head.yRot = 3.1415927F - var5 * 0.017453292F;
@@ -77,5 +83,15 @@ public class BatModel extends HierarchicalModel<Bat> {
          this.leftWingTip.yRot = -this.rightWing.yRot * 0.5F;
       }
 
+   }
+
+   // $FF: synthetic method
+   public void setupAnim(Entity var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.setupAnim((Bat)var1, var2, var3, var4, var5, var6, var7);
+   }
+
+   // $FF: synthetic method
+   public void render(Entity var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.render((Bat)var1, var2, var3, var4, var5, var6, var7);
    }
 }

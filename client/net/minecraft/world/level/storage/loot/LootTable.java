@@ -14,8 +14,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
@@ -97,14 +99,14 @@ public class LootTable {
       return this.paramSet;
    }
 
-   public void validate(ValidationContext var1) {
-      int var2;
-      for(var2 = 0; var2 < this.pools.length; ++var2) {
-         this.pools[var2].validate(var1.forChild(".pools[" + var2 + "]"));
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      int var5;
+      for(var5 = 0; var5 < this.pools.length; ++var5) {
+         this.pools[var5].validate(var1.forChild(".pools[" + var5 + "]"), var2, var3, var4);
       }
 
-      for(var2 = 0; var2 < this.functions.length; ++var2) {
-         this.functions[var2].validate(var1.forChild(".functions[" + var2 + "]"));
+      for(var5 = 0; var5 < this.functions.length; ++var5) {
+         this.functions[var5].validate(var1.forChild(".functions[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -219,7 +221,7 @@ public class LootTable {
             if (var5 != null) {
                var4.addProperty("type", var5.toString());
             } else {
-               LootTable.LOGGER.warn("Failed to find id for param set {}", var1.paramSet);
+               LootTable.LOGGER.warn("Failed to find id for param set " + var1.paramSet);
             }
          }
 

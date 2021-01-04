@@ -25,21 +25,19 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.global.LightningBolt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class ArmorStand extends LivingEntity {
@@ -49,8 +47,6 @@ public class ArmorStand extends LivingEntity {
    private static final Rotations DEFAULT_RIGHT_ARM_POSE = new Rotations(-15.0F, 0.0F, 10.0F);
    private static final Rotations DEFAULT_LEFT_LEG_POSE = new Rotations(-1.0F, 0.0F, -1.0F);
    private static final Rotations DEFAULT_RIGHT_LEG_POSE = new Rotations(1.0F, 0.0F, 1.0F);
-   private static final EntityDimensions MARKER_DIMENSIONS = new EntityDimensions(0.0F, 0.0F, true);
-   private static final EntityDimensions BABY_DIMENSIONS;
    public static final EntityDataAccessor<Byte> DATA_CLIENT_FLAGS;
    public static final EntityDataAccessor<Rotations> DATA_HEAD_POSE;
    public static final EntityDataAccessor<Rotations> DATA_BODY_POSE;
@@ -90,9 +86,9 @@ public class ArmorStand extends LivingEntity {
    }
 
    public void refreshDimensions() {
-      double var1 = this.getX();
-      double var3 = this.getY();
-      double var5 = this.getZ();
+      double var1 = this.x;
+      double var3 = this.y;
+      double var5 = this.z;
       super.refreshDimensions();
       this.setPos(var1, var3, var5);
    }
@@ -315,18 +311,14 @@ public class ArmorStand extends LivingEntity {
 
    public InteractionResult interactAt(Player var1, Vec3 var2, InteractionHand var3) {
       ItemStack var4 = var1.getItemInHand(var3);
-      if (!this.isMarker() && !var4.is(Items.NAME_TAG)) {
-         if (var1.isSpectator()) {
-            return InteractionResult.SUCCESS;
-         } else if (var1.level.isClientSide) {
-            return InteractionResult.CONSUME;
-         } else {
+      if (!this.isMarker() && var4.getItem() != Items.NAME_TAG) {
+         if (!this.level.isClientSide && !var1.isSpectator()) {
             EquipmentSlot var5 = Mob.getEquipmentSlotForItem(var4);
             if (var4.isEmpty()) {
                EquipmentSlot var6 = this.getClickedSlot(var2);
                EquipmentSlot var7 = this.isDisabled(var6) ? var5 : var6;
-               if (this.hasItemInSlot(var7) && this.swapItem(var1, var7, var4, var3)) {
-                  return InteractionResult.SUCCESS;
+               if (this.hasItemInSlot(var7)) {
+                  this.swapItem(var1, var7, var4, var3);
                }
             } else {
                if (this.isDisabled(var5)) {
@@ -337,19 +329,19 @@ public class ArmorStand extends LivingEntity {
                   return InteractionResult.FAIL;
                }
 
-               if (this.swapItem(var1, var5, var4, var3)) {
-                  return InteractionResult.SUCCESS;
-               }
+               this.swapItem(var1, var5, var4, var3);
             }
 
-            return InteractionResult.PASS;
+            return InteractionResult.SUCCESS;
+         } else {
+            return InteractionResult.SUCCESS;
          }
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   private EquipmentSlot getClickedSlot(Vec3 var1) {
+   protected EquipmentSlot getClickedSlot(Vec3 var1) {
       EquipmentSlot var2 = EquipmentSlot.MAINHAND;
       boolean var3 = this.isSmall();
       double var4 = var3 ? var1.y * 2.0D : var1.y;
@@ -369,50 +361,43 @@ public class ArmorStand extends LivingEntity {
       return var2;
    }
 
-   private boolean isDisabled(EquipmentSlot var1) {
+   public boolean isDisabled(EquipmentSlot var1) {
       return (this.disabledSlots & 1 << var1.getFilterFlag()) != 0 || var1.getType() == EquipmentSlot.Type.HAND && !this.isShowArms();
    }
 
-   private boolean swapItem(Player var1, EquipmentSlot var2, ItemStack var3, InteractionHand var4) {
+   private void swapItem(Player var1, EquipmentSlot var2, ItemStack var3, InteractionHand var4) {
       ItemStack var5 = this.getItemBySlot(var2);
-      if (!var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterFlag() + 8) != 0) {
-         return false;
-      } else if (var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterFlag() + 16) != 0) {
-         return false;
-      } else {
-         ItemStack var6;
-         if (var1.getAbilities().instabuild && var5.isEmpty() && !var3.isEmpty()) {
-            var6 = var3.copy();
-            var6.setCount(1);
-            this.setItemSlot(var2, var6);
-            return true;
-         } else if (!var3.isEmpty() && var3.getCount() > 1) {
-            if (!var5.isEmpty()) {
-               return false;
-            } else {
+      if (var5.isEmpty() || (this.disabledSlots & 1 << var2.getFilterFlag() + 8) == 0) {
+         if (!var5.isEmpty() || (this.disabledSlots & 1 << var2.getFilterFlag() + 16) == 0) {
+            ItemStack var6;
+            if (var1.abilities.instabuild && var5.isEmpty() && !var3.isEmpty()) {
                var6 = var3.copy();
                var6.setCount(1);
                this.setItemSlot(var2, var6);
-               var3.shrink(1);
-               return true;
+            } else if (!var3.isEmpty() && var3.getCount() > 1) {
+               if (var5.isEmpty()) {
+                  var6 = var3.copy();
+                  var6.setCount(1);
+                  this.setItemSlot(var2, var6);
+                  var3.shrink(1);
+               }
+            } else {
+               this.setItemSlot(var2, var3);
+               var1.setItemInHand(var4, var5);
             }
-         } else {
-            this.setItemSlot(var2, var3);
-            var1.setItemInHand(var4, var5);
-            return true;
          }
       }
    }
 
    public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level.isClientSide && !this.isRemoved()) {
+      if (!this.level.isClientSide && !this.removed) {
          if (DamageSource.OUT_OF_WORLD.equals(var1)) {
-            this.kill();
+            this.remove();
             return false;
          } else if (!this.isInvulnerableTo(var1) && !this.invisible && !this.isMarker()) {
             if (var1.isExplosion()) {
                this.brokenByAnything(var1);
-               this.kill();
+               this.remove();
                return false;
             } else if (DamageSource.IN_FIRE.equals(var1)) {
                if (this.isOnFire()) {
@@ -431,12 +416,12 @@ public class ArmorStand extends LivingEntity {
                boolean var5 = "player".equals(var1.getMsgId());
                if (!var5 && !var3) {
                   return false;
-               } else if (var1.getEntity() instanceof Player && !((Player)var1.getEntity()).getAbilities().mayBuild) {
+               } else if (var1.getEntity() instanceof Player && !((Player)var1.getEntity()).abilities.mayBuild) {
                   return false;
                } else if (var1.isCreativePlayer()) {
                   this.playBrokenSound();
                   this.showBreakingParticles();
-                  this.kill();
+                  this.remove();
                   return var4;
                } else {
                   long var6 = this.level.getGameTime();
@@ -446,7 +431,7 @@ public class ArmorStand extends LivingEntity {
                   } else {
                      this.brokenByPlayer(var1);
                      this.showBreakingParticles();
-                     this.kill();
+                     this.remove();
                   }
 
                   return true;
@@ -463,7 +448,7 @@ public class ArmorStand extends LivingEntity {
    public void handleEntityEvent(byte var1) {
       if (var1 == 32) {
          if (this.level.isClientSide) {
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_HIT, this.getSoundSource(), 0.3F, 1.0F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.ARMOR_STAND_HIT, this.getSoundSource(), 0.3F, 1.0F, false);
             this.lastHit = this.level.getGameTime();
          }
       } else {
@@ -484,7 +469,7 @@ public class ArmorStand extends LivingEntity {
 
    private void showBreakingParticles() {
       if (this.level instanceof ServerLevel) {
-         ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.getX(), this.getY(0.6666666666666666D), this.getZ(), 10, (double)(this.getBbWidth() / 4.0F), (double)(this.getBbHeight() / 4.0F), (double)(this.getBbWidth() / 4.0F), 0.05D);
+         ((ServerLevel)this.level).sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.OAK_PLANKS.defaultBlockState()), this.x, this.y + (double)this.getBbHeight() / 1.5D, this.z, 10, (double)(this.getBbWidth() / 4.0F), (double)(this.getBbHeight() / 4.0F), (double)(this.getBbWidth() / 4.0F), 0.05D);
       }
 
    }
@@ -494,7 +479,7 @@ public class ArmorStand extends LivingEntity {
       var3 -= var2;
       if (var3 <= 0.5F) {
          this.brokenByAnything(var1);
-         this.kill();
+         this.remove();
       } else {
          this.setHealth(var3);
       }
@@ -502,7 +487,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    private void brokenByPlayer(DamageSource var1) {
-      Block.popResource(this.level, this.blockPosition(), new ItemStack(Items.ARMOR_STAND));
+      Block.popResource(this.level, new BlockPos(this), new ItemStack(Items.ARMOR_STAND));
       this.brokenByAnything(var1);
    }
 
@@ -515,7 +500,7 @@ public class ArmorStand extends LivingEntity {
       for(var2 = 0; var2 < this.handItems.size(); ++var2) {
          var3 = (ItemStack)this.handItems.get(var2);
          if (!var3.isEmpty()) {
-            Block.popResource(this.level, this.blockPosition().above(), var3);
+            Block.popResource(this.level, (new BlockPos(this)).above(), var3);
             this.handItems.set(var2, ItemStack.EMPTY);
          }
       }
@@ -523,7 +508,7 @@ public class ArmorStand extends LivingEntity {
       for(var2 = 0; var2 < this.armorItems.size(); ++var2) {
          var3 = (ItemStack)this.armorItems.get(var2);
          if (!var3.isEmpty()) {
-            Block.popResource(this.level, this.blockPosition().above(), var3);
+            Block.popResource(this.level, (new BlockPos(this)).above(), var3);
             this.armorItems.set(var2, ItemStack.EMPTY);
          }
       }
@@ -531,7 +516,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    private void playBrokenSound() {
-      this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
+      this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
    }
 
    protected float tickHeadTurn(float var1, float var2) {
@@ -544,7 +529,7 @@ public class ArmorStand extends LivingEntity {
       return var2.height * (this.isBaby() ? 0.5F : 0.9F);
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return this.isMarker() ? 0.0D : 0.10000000149011612D;
    }
 
@@ -612,7 +597,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    public void kill() {
-      this.remove(Entity.RemovalReason.KILLED);
+      this.remove();
    }
 
    public boolean ignoreExplosion() {
@@ -723,10 +708,6 @@ public class ArmorStand extends LivingEntity {
       return super.isPickable() && !this.isMarker();
    }
 
-   public boolean skipAttackInteraction(Entity var1) {
-      return var1 instanceof Player && !this.level.mayInteract((Player)var1, this.blockPosition());
-   }
-
    public HumanoidArm getMainArm() {
       return HumanoidArm.RIGHT;
    }
@@ -745,7 +726,7 @@ public class ArmorStand extends LivingEntity {
       return SoundEvents.ARMOR_STAND_BREAK;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
+   public void thunderHit(LightningBolt var1) {
    }
 
    public boolean isAffectedByPotions() {
@@ -766,49 +747,11 @@ public class ArmorStand extends LivingEntity {
    }
 
    public EntityDimensions getDimensions(Pose var1) {
-      return this.getDimensionsMarker(this.isMarker());
-   }
-
-   private EntityDimensions getDimensionsMarker(boolean var1) {
-      if (var1) {
-         return MARKER_DIMENSIONS;
-      } else {
-         return this.isBaby() ? BABY_DIMENSIONS : this.getType().getDimensions();
-      }
-   }
-
-   public Vec3 getLightProbePosition(float var1) {
-      if (this.isMarker()) {
-         AABB var2 = this.getDimensionsMarker(false).makeBoundingBox(this.position());
-         BlockPos var3 = this.blockPosition();
-         int var4 = -2147483648;
-         Iterator var5 = BlockPos.betweenClosed(new BlockPos(var2.minX, var2.minY, var2.minZ), new BlockPos(var2.maxX, var2.maxY, var2.maxZ)).iterator();
-
-         while(var5.hasNext()) {
-            BlockPos var6 = (BlockPos)var5.next();
-            int var7 = Math.max(this.level.getBrightness(LightLayer.BLOCK, var6), this.level.getBrightness(LightLayer.SKY, var6));
-            if (var7 == 15) {
-               return Vec3.atCenterOf(var6);
-            }
-
-            if (var7 > var4) {
-               var4 = var7;
-               var3 = var6.immutable();
-            }
-         }
-
-         return Vec3.atCenterOf(var3);
-      } else {
-         return super.getLightProbePosition(var1);
-      }
-   }
-
-   public ItemStack getPickResult() {
-      return new ItemStack(Items.ARMOR_STAND);
+      float var2 = this.isMarker() ? 0.0F : (this.isBaby() ? 0.5F : 1.0F);
+      return this.getType().getDimensions().scale(var2);
    }
 
    static {
-      BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F);
       DATA_CLIENT_FLAGS = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.BYTE);
       DATA_HEAD_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
       DATA_BODY_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);

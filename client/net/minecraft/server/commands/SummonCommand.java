@@ -21,13 +21,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.global.LightningBolt;
 import net.minecraft.world.phys.Vec3;
 
 public class SummonCommand {
-   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.summon.failed"));
-   private static final SimpleCommandExceptionType ERROR_DUPLICATE_UUID = new SimpleCommandExceptionType(new TranslatableComponent("commands.summon.failed.uuid"));
-   private static final SimpleCommandExceptionType INVALID_POSITION = new SimpleCommandExceptionType(new TranslatableComponent("commands.summon.invalidPosition"));
+   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.summon.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires((var0x) -> {
@@ -42,30 +40,28 @@ public class SummonCommand {
    }
 
    private static int spawnEntity(CommandSourceStack var0, ResourceLocation var1, Vec3 var2, CompoundTag var3, boolean var4) throws CommandSyntaxException {
-      BlockPos var5 = new BlockPos(var2);
-      if (!Level.isInSpawnableBounds(var5)) {
-         throw INVALID_POSITION.create();
+      CompoundTag var5 = var3.copy();
+      var5.putString("id", var1.toString());
+      if (EntityType.getKey(EntityType.LIGHTNING_BOLT).equals(var1)) {
+         LightningBolt var8 = new LightningBolt(var0.getLevel(), var2.x, var2.y, var2.z, false);
+         var0.getLevel().addGlobalEntity(var8);
+         var0.sendSuccess(new TranslatableComponent("commands.summon.success", new Object[]{var8.getDisplayName()}), true);
+         return 1;
       } else {
-         CompoundTag var6 = var3.copy();
-         var6.putString("id", var1.toString());
-         ServerLevel var7 = var0.getLevel();
-         Entity var8 = EntityType.loadEntityRecursive(var6, var7, (var1x) -> {
-            var1x.moveTo(var2.x, var2.y, var2.z, var1x.yRot, var1x.xRot);
-            return var1x;
+         ServerLevel var6 = var0.getLevel();
+         Entity var7 = EntityType.loadEntityRecursive(var5, var6, (var2x) -> {
+            var2x.moveTo(var2.x, var2.y, var2.z, var2x.yRot, var2x.xRot);
+            return !var6.addWithUUID(var2x) ? null : var2x;
          });
-         if (var8 == null) {
+         if (var7 == null) {
             throw ERROR_FAILED.create();
          } else {
-            if (var4 && var8 instanceof Mob) {
-               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.COMMAND, (SpawnGroupData)null, (CompoundTag)null);
+            if (var4 && var7 instanceof Mob) {
+               ((Mob)var7).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(new BlockPos(var7)), MobSpawnType.COMMAND, (SpawnGroupData)null, (CompoundTag)null);
             }
 
-            if (!var7.tryAddFreshEntityWithPassengers(var8)) {
-               throw ERROR_DUPLICATE_UUID.create();
-            } else {
-               var0.sendSuccess(new TranslatableComponent("commands.summon.success", new Object[]{var8.getDisplayName()}), true);
-               return 1;
-            }
+            var0.sendSuccess(new TranslatableComponent("commands.summon.success", new Object[]{var7.getDisplayName()}), true);
+            return 1;
          }
       }
    }

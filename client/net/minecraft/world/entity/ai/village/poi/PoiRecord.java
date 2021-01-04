@@ -1,28 +1,19 @@
 package net.minecraft.world.entity.ai.village.poi;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Serializable;
 
-public class PoiRecord {
+public class PoiRecord implements Serializable {
    private final BlockPos pos;
    private final PoiType poiType;
    private int freeTickets;
    private final Runnable setDirty;
-
-   public static Codec<PoiRecord> codec(Runnable var0) {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(BlockPos.CODEC.fieldOf("pos").forGetter((var0x) -> {
-            return var0x.pos;
-         }), Registry.POINT_OF_INTEREST_TYPE.fieldOf("type").forGetter((var0x) -> {
-            return var0x.poiType;
-         }), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter((var0x) -> {
-            return var0x.freeTickets;
-         }), RecordCodecBuilder.point(var0)).apply(var1, PoiRecord::new);
-      });
-   }
 
    private PoiRecord(BlockPos var1, PoiType var2, int var3, Runnable var4) {
       super();
@@ -34,6 +25,14 @@ public class PoiRecord {
 
    public PoiRecord(BlockPos var1, PoiType var2, Runnable var3) {
       this(var1, var2, var2.getMaxTickets(), var3);
+   }
+
+   public <T> PoiRecord(Dynamic<T> var1, Runnable var2) {
+      this((BlockPos)var1.get("pos").map(BlockPos::deserialize).orElse(new BlockPos(0, 0, 0)), (PoiType)Registry.POINT_OF_INTEREST_TYPE.get(new ResourceLocation(var1.get("type").asString(""))), var1.get("free_tickets").asInt(0), var2);
+   }
+
+   public <T> T serialize(DynamicOps<T> var1) {
+      return var1.createMap(ImmutableMap.of(var1.createString("pos"), this.pos.serialize(var1), var1.createString("type"), var1.createString(Registry.POINT_OF_INTEREST_TYPE.getKey(this.poiType).toString()), var1.createString("free_tickets"), var1.createInt(this.freeTickets)));
    }
 
    protected boolean acquireTicket() {

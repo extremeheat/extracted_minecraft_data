@@ -1,20 +1,21 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class EndIslandFeature extends Feature<NoneFeatureConfiguration> {
-   public EndIslandFeature(Codec<NoneFeatureConfiguration> var1) {
+   public EndIslandFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
       float var6 = (float)(var3.nextInt(3) + 4);
 
       for(int var7 = 0; var6 > 0.5F; --var7) {

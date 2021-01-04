@@ -13,7 +13,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
@@ -27,8 +26,7 @@ import java.util.function.IntFunction;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.DimensionArgument;
+import net.minecraft.commands.arguments.DimensionTypeArgument;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
@@ -62,11 +60,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.PredicateManager;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
 
@@ -74,7 +67,7 @@ public class ExecuteCommand {
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType((var0, var1) -> {
       return new TranslatableComponent("commands.execute.blocks.toobig", new Object[]{var0, var1});
    });
-   private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.execute.conditional.fail"));
+   private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.execute.conditional.fail", new Object[0]));
    private static final DynamicCommandExceptionType ERROR_CONDITIONAL_FAILED_COUNT = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.execute.conditional.fail_count", new Object[]{var0});
    });
@@ -83,10 +76,6 @@ public class ExecuteCommand {
          var0.onCommandComplete(var2, var3, var4);
          var1.onCommandComplete(var2, var3, var4);
       };
-   };
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
-      PredicateManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getPredicateManager();
-      return SharedSuggestionProvider.suggestResource((Iterable)var2.getKeys(), var1);
    };
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
@@ -111,19 +100,19 @@ public class ExecuteCommand {
 
          while(var2.hasNext()) {
             Entity var3 = (Entity)var2.next();
-            var1.add(((CommandSourceStack)var0x.getSource()).withLevel((ServerLevel)var3.level).withPosition(var3.position()).withRotation(var3.getRotationVector()));
+            var1.add(((CommandSourceStack)var0x.getSource()).withLevel((ServerLevel)var3.level).withPosition(var3.getCommandSenderWorldPosition()).withRotation(var3.getRotationVector()));
          }
 
          return var1;
       })))).then(((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(var1, Commands.literal("result"), true))).then(wrapStores(var1, Commands.literal("success"), false)))).then(((LiteralArgumentBuilder)Commands.literal("positioned").then(Commands.argument("pos", Vec3Argument.vec3()).redirect(var1, (var0x) -> {
-         return ((CommandSourceStack)var0x.getSource()).withPosition(Vec3Argument.getVec3(var0x, "pos")).withAnchor(EntityAnchorArgument.Anchor.FEET);
+         return ((CommandSourceStack)var0x.getSource()).withPosition(Vec3Argument.getVec3(var0x, "pos"));
       }))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var1, (var0x) -> {
          ArrayList var1 = Lists.newArrayList();
          Iterator var2 = EntityArgument.getOptionalEntities(var0x, "targets").iterator();
 
          while(var2.hasNext()) {
             Entity var3 = (Entity)var2.next();
-            var1.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
+            var1.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.getCommandSenderWorldPosition()));
          }
 
          return var1;
@@ -156,8 +145,8 @@ public class ExecuteCommand {
          return ((CommandSourceStack)var0x.getSource()).withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes")));
       })))).then(Commands.literal("anchored").then(Commands.argument("anchor", EntityAnchorArgument.anchor()).redirect(var1, (var0x) -> {
          return ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor"));
-      })))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionArgument.dimension()).redirect(var1, (var0x) -> {
-         return ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension"));
+      })))).then(Commands.literal("in").then(Commands.argument("dimension", DimensionTypeArgument.dimension()).redirect(var1, (var0x) -> {
+         return ((CommandSourceStack)var0x.getSource()).withLevel(((CommandSourceStack)var0x.getSource()).getServer().getLevel(DimensionTypeArgument.getDimension(var0x, "dimension")));
       }))));
    }
 
@@ -177,27 +166,27 @@ public class ExecuteCommand {
          var4.wrap(var1, (var3x) -> {
             return var3x.then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("path", NbtPathArgument.nbtPath()).then(Commands.literal("int").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return IntTag.valueOf((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
+                  return new IntTag((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
                }, var2);
             })))).then(Commands.literal("float").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return FloatTag.valueOf((float)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
+                  return new FloatTag((float)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
                }, var2);
             })))).then(Commands.literal("short").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return ShortTag.valueOf((short)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))));
+                  return new ShortTag((short)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))));
                }, var2);
             })))).then(Commands.literal("long").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return LongTag.valueOf((long)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
+                  return new LongTag((long)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale")));
                }, var2);
             })))).then(Commands.literal("double").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return DoubleTag.valueOf((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"));
+                  return new DoubleTag((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"));
                }, var2);
             })))).then(Commands.literal("byte").then(Commands.argument("scale", DoubleArgumentType.doubleArg()).redirect(var0, (var2x) -> {
                return storeData((CommandSourceStack)var2x.getSource(), var4.access(var2x), NbtPathArgument.getPath(var2x, "path"), (var1) -> {
-                  return ByteTag.valueOf((byte)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))));
+                  return new ByteTag((byte)((int)((double)var1 * DoubleArgumentType.getDouble(var2x, "scale"))));
                }, var2);
             }))));
          });
@@ -249,7 +238,7 @@ public class ExecuteCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("block", BlockPredicateArgument.blockPredicate()), var2, (var0x) -> {
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(addConditional(var0, Commands.argument("block", BlockPredicateArgument.blockPredicate()), var2, (var0x) -> {
          return BlockPredicateArgument.getBlockPredicate(var0x, "block").test(new BlockInWorld(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true));
       }))))).then(Commands.literal("score").then(Commands.argument("target", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targetObjective", ObjectiveArgument.objective()).then(Commands.literal("=").then(Commands.argument("source", ScoreHolderArgument.scoreHolder()).suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS).then(addConditional(var0, Commands.argument("sourceObjective", ObjectiveArgument.objective()), var2, (var0x) -> {
          return checkScore(var0x, Integer::equals);
@@ -275,9 +264,7 @@ public class ExecuteCommand {
          return expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty());
       })).executes(createNumericConditionalHandler(var2, (var0x) -> {
          return EntityArgument.getOptionalEntities(var0x, "entities").size();
-      }))))).then(Commands.literal("predicate").then(addConditional(var0, Commands.argument("predicate", ResourceLocationArgument.id()).suggests(SUGGEST_PREDICATE), var2, (var0x) -> {
-         return checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getPredicate(var0x, "predicate"));
-      })));
+      }))));
       Iterator var3 = DataCommands.SOURCE_PROVIDERS.iterator();
 
       while(var3.hasNext()) {
@@ -306,7 +293,7 @@ public class ExecuteCommand {
       } : (var1x) -> {
          int var2 = var1.test(var1x);
          if (var2 == 0) {
-            ((CommandSourceStack)var1x.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass"), false);
+            ((CommandSourceStack)var1x.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass", new Object[0]), false);
             return 1;
          } else {
             throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2);
@@ -340,12 +327,6 @@ public class ExecuteCommand {
       return !var4.hasPlayerScore(var2, var3) ? false : var1.matches(var4.getOrCreatePlayerScore(var2, var3).getScore());
    }
 
-   private static boolean checkCustomPredicate(CommandSourceStack var0, LootItemCondition var1) {
-      ServerLevel var2 = var0.getLevel();
-      LootContext.Builder var3 = (new LootContext.Builder(var2)).withParameter(LootContextParams.ORIGIN, var0.getPosition()).withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity());
-      return var1.test(var3.create(LootContextParamSets.COMMAND));
-   }
-
    private static Collection<CommandSourceStack> expect(CommandContext<CommandSourceStack> var0, boolean var1, boolean var2) {
       return (Collection)(var2 == var1 ? Collections.singleton(var0.getSource()) : Collections.emptyList());
    }
@@ -355,7 +336,7 @@ public class ExecuteCommand {
          return expect(var2x, var2, var3.test(var2x));
       }).executes((var2x) -> {
          if (var2 == var3.test(var2x)) {
-            ((CommandSourceStack)var2x.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass"), false);
+            ((CommandSourceStack)var2x.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass", new Object[0]), false);
             return 1;
          } else {
             throw ERROR_CONDITIONAL_FAILED.create();
@@ -388,7 +369,7 @@ public class ExecuteCommand {
       if (var2.isPresent()) {
          throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2.getAsInt());
       } else {
-         ((CommandSourceStack)var0.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass"), false);
+         ((CommandSourceStack)var0.getSource()).sendSuccess(new TranslatableComponent("commands.execute.conditional.pass", new Object[0]), false);
          return 1;
       }
    }
@@ -413,7 +394,7 @@ public class ExecuteCommand {
                   BlockPos var13 = new BlockPos(var12, var11, var10);
                   BlockPos var14 = var13.offset(var7);
                   BlockState var15 = var0.getBlockState(var13);
-                  if (!var4 || !var15.is(Blocks.AIR)) {
+                  if (!var4 || var15.getBlock() != Blocks.AIR) {
                      if (var15 != var0.getBlockState(var14)) {
                         return OptionalInt.empty();
                      }

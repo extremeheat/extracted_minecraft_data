@@ -18,12 +18,12 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
    }
 
    public boolean canUse() {
-      return this.cat.isTame() && !this.cat.isOrderedToSit() && !this.cat.isLying() && super.canUse();
+      return this.cat.isTame() && !this.cat.isSitting() && !this.cat.isLying() && super.canUse();
    }
 
    public void start() {
       super.start();
-      this.cat.setInSittingPose(false);
+      this.cat.getSitGoal().wantToSit(false);
    }
 
    protected int nextStartTick(PathfinderMob var1) {
@@ -37,7 +37,7 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
 
    public void tick() {
       super.tick();
-      this.cat.setInSittingPose(false);
+      this.cat.getSitGoal().wantToSit(false);
       if (!this.isReachedTarget()) {
          this.cat.setLying(false);
       } else if (!this.cat.isLying()) {
@@ -47,6 +47,6 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
    }
 
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).is(BlockTags.BEDS);
+      return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).getBlock().is(BlockTags.BEDS);
    }
 }

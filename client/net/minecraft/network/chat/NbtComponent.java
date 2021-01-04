@@ -17,7 +17,6 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,6 +52,10 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
 
    protected abstract Stream<CompoundTag> getData(CommandSourceStack var1) throws CommandSyntaxException;
 
+   public String getContents() {
+      return "";
+   }
+
    public String getNbtPath() {
       return this.nbtPathPattern;
    }
@@ -61,7 +64,7 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
       return this.interpreting;
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
+   public Component resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       if (var1 != null && this.compiledNbtPath != null) {
          Stream var4 = this.getData(var1).flatMap((var1x) -> {
             try {
@@ -70,71 +73,19 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
                return Stream.empty();
             }
          }).map(Tag::getAsString);
-         return (MutableComponent)(this.interpreting ? (MutableComponent)var4.flatMap((var3x) -> {
+         return (Component)(this.interpreting ? (Component)var4.flatMap((var3x) -> {
             try {
-               MutableComponent var4 = Component.Serializer.fromJson(var3x);
+               Component var4 = Component.Serializer.fromJson(var3x);
                return Stream.of(ComponentUtils.updateForEntity(var1, var4, var2, var3));
             } catch (Exception var5) {
-               LOGGER.warn("Failed to parse component: {}", var3x, var5);
+               LOGGER.warn("Failed to parse component: " + var3x, var5);
                return Stream.of();
             }
          }).reduce((var0, var1x) -> {
-            return var0.append(", ").append((Component)var1x);
+            return var0.append(", ").append(var1x);
          }).orElse(new TextComponent("")) : new TextComponent(Joiner.on(", ").join(var4.iterator())));
       } else {
          return new TextComponent("");
-      }
-   }
-
-   public static class StorageNbtComponent extends NbtComponent {
-      private final ResourceLocation id;
-
-      public StorageNbtComponent(String var1, boolean var2, ResourceLocation var3) {
-         super(var1, var2);
-         this.id = var3;
-      }
-
-      public StorageNbtComponent(String var1, @Nullable NbtPathArgument.NbtPath var2, boolean var3, ResourceLocation var4) {
-         super(var1, var2, var3);
-         this.id = var4;
-      }
-
-      public ResourceLocation getId() {
-         return this.id;
-      }
-
-      public NbtComponent.StorageNbtComponent plainCopy() {
-         return new NbtComponent.StorageNbtComponent(this.nbtPathPattern, this.compiledNbtPath, this.interpreting, this.id);
-      }
-
-      protected Stream<CompoundTag> getData(CommandSourceStack var1) {
-         CompoundTag var2 = var1.getServer().getCommandStorage().get(this.id);
-         return Stream.of(var2);
-      }
-
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else if (!(var1 instanceof NbtComponent.StorageNbtComponent)) {
-            return false;
-         } else {
-            NbtComponent.StorageNbtComponent var2 = (NbtComponent.StorageNbtComponent)var1;
-            return Objects.equals(this.id, var2.id) && Objects.equals(this.nbtPathPattern, var2.nbtPathPattern) && super.equals(var1);
-         }
-      }
-
-      public String toString() {
-         return "StorageNbtComponent{id='" + this.id + '\'' + "path='" + this.nbtPathPattern + '\'' + ", siblings=" + this.siblings + ", style=" + this.getStyle() + '}';
-      }
-
-      // $FF: synthetic method
-      public BaseComponent plainCopy() {
-         return this.plainCopy();
-      }
-
-      // $FF: synthetic method
-      public MutableComponent plainCopy() {
-         return this.plainCopy();
       }
    }
 
@@ -169,7 +120,7 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
          return this.posPattern;
       }
 
-      public NbtComponent.BlockNbtComponent plainCopy() {
+      public Component copy() {
          return new NbtComponent.BlockNbtComponent(this.nbtPathPattern, this.compiledNbtPath, this.interpreting, this.posPattern, this.compiledPos);
       }
 
@@ -201,16 +152,6 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
 
       public String toString() {
          return "BlockPosArgument{pos='" + this.posPattern + '\'' + "path='" + this.nbtPathPattern + '\'' + ", siblings=" + this.siblings + ", style=" + this.getStyle() + '}';
-      }
-
-      // $FF: synthetic method
-      public BaseComponent plainCopy() {
-         return this.plainCopy();
-      }
-
-      // $FF: synthetic method
-      public MutableComponent plainCopy() {
-         return this.plainCopy();
       }
    }
 
@@ -245,7 +186,7 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
          return this.selectorPattern;
       }
 
-      public NbtComponent.EntityNbtComponent plainCopy() {
+      public Component copy() {
          return new NbtComponent.EntityNbtComponent(this.nbtPathPattern, this.compiledNbtPath, this.interpreting, this.selectorPattern, this.compiledSelector);
       }
 
@@ -271,16 +212,6 @@ public abstract class NbtComponent extends BaseComponent implements ContextAware
 
       public String toString() {
          return "EntityNbtComponent{selector='" + this.selectorPattern + '\'' + "path='" + this.nbtPathPattern + '\'' + ", siblings=" + this.siblings + ", style=" + this.getStyle() + '}';
-      }
-
-      // $FF: synthetic method
-      public BaseComponent plainCopy() {
-         return this.plainCopy();
-      }
-
-      // $FF: synthetic method
-      public MutableComponent plainCopy() {
-         return this.plainCopy();
       }
    }
 }

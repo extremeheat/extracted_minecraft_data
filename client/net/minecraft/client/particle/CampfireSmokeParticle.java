@@ -1,10 +1,10 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class CampfireSmokeParticle extends TextureSheetParticle {
-   private CampfireSmokeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14) {
+   private CampfireSmokeParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14) {
       super(var1, var2, var4, var6);
       this.scale(3.0F);
       this.setSize(0.25F, 0.25F);
@@ -43,7 +43,7 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   CampfireSmokeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, Object var15) {
+   CampfireSmokeParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, Object var15) {
       this(var1, var2, var4, var6, var8, var10, var12, var14);
    }
 
@@ -55,7 +55,7 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true);
          var15.setAlpha(0.95F);
          var15.pickSprite(this.sprites);
@@ -71,7 +71,7 @@ public class CampfireSmokeParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          CampfireSmokeParticle var15 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, false);
          var15.setAlpha(0.9F);
          var15.pickSprite(this.sprites);

@@ -1,101 +1,101 @@
 package net.minecraft.client;
 
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
-import net.minecraft.core.Registry;
 import net.minecraft.stats.RecipeBook;
+import net.minecraft.world.inventory.BlastFurnaceMenu;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.FurnaceMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
 
 public class ClientRecipeBook extends RecipeBook {
-   private static final Logger LOGGER = LogManager.getLogger();
-   private Map<RecipeBookCategories, List<RecipeCollection>> collectionsByTab = ImmutableMap.of();
-   private List<RecipeCollection> allCollections = ImmutableList.of();
+   private final RecipeManager recipes;
+   private final Map<RecipeBookCategories, List<RecipeCollection>> collectionsByTab = Maps.newHashMap();
+   private final List<RecipeCollection> collections = Lists.newArrayList();
 
-   public ClientRecipeBook() {
+   public ClientRecipeBook(RecipeManager var1) {
       super();
+      this.recipes = var1;
    }
 
-   public void setupCollections(Iterable<Recipe<?>> var1) {
-      Map var2 = categorizeAndGroupRecipes(var1);
-      HashMap var3 = Maps.newHashMap();
-      Builder var4 = ImmutableList.builder();
-      var2.forEach((var2x, var3x) -> {
-         Stream var10002 = var3x.stream().map(RecipeCollection::new);
-         var4.getClass();
-         List var10000 = (List)var3.put(var2x, var10002.peek(var4::add).collect(ImmutableList.toImmutableList()));
-      });
-      RecipeBookCategories.AGGREGATE_CATEGORIES.forEach((var1x, var2x) -> {
-         List var10000 = (List)var3.put(var1x, var2x.stream().flatMap((var1) -> {
-            return ((List)var3.getOrDefault(var1, ImmutableList.of())).stream();
-         }).collect(ImmutableList.toImmutableList()));
-      });
-      this.collectionsByTab = ImmutableMap.copyOf(var3);
-      this.allCollections = var4.build();
-   }
+   public void setupCollections() {
+      this.collections.clear();
+      this.collectionsByTab.clear();
+      HashBasedTable var1 = HashBasedTable.create();
+      Iterator var2 = this.recipes.getRecipes().iterator();
 
-   private static Map<RecipeBookCategories, List<List<Recipe<?>>>> categorizeAndGroupRecipes(Iterable<Recipe<?>> var0) {
-      HashMap var1 = Maps.newHashMap();
-      HashBasedTable var2 = HashBasedTable.create();
-      Iterator var3 = var0.iterator();
-
-      while(var3.hasNext()) {
-         Recipe var4 = (Recipe)var3.next();
-         if (!var4.isSpecial() && !var4.isIncomplete()) {
-            RecipeBookCategories var5 = getCategory(var4);
-            String var6 = var4.getGroup();
-            if (var6.isEmpty()) {
-               ((List)var1.computeIfAbsent(var5, (var0x) -> {
-                  return Lists.newArrayList();
-               })).add(ImmutableList.of(var4));
+      while(var2.hasNext()) {
+         Recipe var3 = (Recipe)var2.next();
+         if (!var3.isSpecial()) {
+            RecipeBookCategories var4 = getCategory(var3);
+            String var5 = var3.getGroup();
+            RecipeCollection var6;
+            if (var5.isEmpty()) {
+               var6 = this.createCollection(var4);
             } else {
-               Object var7 = (List)var2.get(var5, var6);
-               if (var7 == null) {
-                  var7 = Lists.newArrayList();
-                  var2.put(var5, var6, var7);
-                  ((List)var1.computeIfAbsent(var5, (var0x) -> {
-                     return Lists.newArrayList();
-                  })).add(var7);
+               var6 = (RecipeCollection)var1.get(var4, var5);
+               if (var6 == null) {
+                  var6 = this.createCollection(var4);
+                  var1.put(var4, var5, var6);
                }
-
-               ((List)var7).add(var4);
             }
+
+            var6.add(var3);
          }
       }
 
-      return var1;
+   }
+
+   private RecipeCollection createCollection(RecipeBookCategories var1) {
+      RecipeCollection var2 = new RecipeCollection();
+      this.collections.add(var2);
+      ((List)this.collectionsByTab.computeIfAbsent(var1, (var0) -> {
+         return Lists.newArrayList();
+      })).add(var2);
+      if (var1 != RecipeBookCategories.FURNACE_BLOCKS && var1 != RecipeBookCategories.FURNACE_FOOD && var1 != RecipeBookCategories.FURNACE_MISC) {
+         if (var1 != RecipeBookCategories.BLAST_FURNACE_BLOCKS && var1 != RecipeBookCategories.BLAST_FURNACE_MISC) {
+            if (var1 == RecipeBookCategories.SMOKER_FOOD) {
+               this.addToCollection(RecipeBookCategories.SMOKER_SEARCH, var2);
+            } else if (var1 == RecipeBookCategories.STONECUTTER) {
+               this.addToCollection(RecipeBookCategories.STONECUTTER, var2);
+            } else if (var1 == RecipeBookCategories.CAMPFIRE) {
+               this.addToCollection(RecipeBookCategories.CAMPFIRE, var2);
+            } else {
+               this.addToCollection(RecipeBookCategories.SEARCH, var2);
+            }
+         } else {
+            this.addToCollection(RecipeBookCategories.BLAST_FURNACE_SEARCH, var2);
+         }
+      } else {
+         this.addToCollection(RecipeBookCategories.FURNACE_SEARCH, var2);
+      }
+
+      return var2;
+   }
+
+   private void addToCollection(RecipeBookCategories var1, RecipeCollection var2) {
+      ((List)this.collectionsByTab.computeIfAbsent(var1, (var0) -> {
+         return Lists.newArrayList();
+      })).add(var2);
    }
 
    private static RecipeBookCategories getCategory(Recipe<?> var0) {
       RecipeType var1 = var0.getType();
-      if (var1 == RecipeType.CRAFTING) {
-         ItemStack var2 = var0.getResultItem();
-         CreativeModeTab var3 = var2.getItem().getItemCategory();
-         if (var3 == CreativeModeTab.TAB_BUILDING_BLOCKS) {
-            return RecipeBookCategories.CRAFTING_BUILDING_BLOCKS;
-         } else if (var3 != CreativeModeTab.TAB_TOOLS && var3 != CreativeModeTab.TAB_COMBAT) {
-            return var3 == CreativeModeTab.TAB_REDSTONE ? RecipeBookCategories.CRAFTING_REDSTONE : RecipeBookCategories.CRAFTING_MISC;
-         } else {
-            return RecipeBookCategories.CRAFTING_EQUIPMENT;
-         }
-      } else if (var1 == RecipeType.SMELTING) {
+      if (var1 == RecipeType.SMELTING) {
          if (var0.getResultItem().getItem().isEdible()) {
             return RecipeBookCategories.FURNACE_FOOD;
          } else {
@@ -109,18 +109,35 @@ public class ClientRecipeBook extends RecipeBook {
          return RecipeBookCategories.STONECUTTER;
       } else if (var1 == RecipeType.CAMPFIRE_COOKING) {
          return RecipeBookCategories.CAMPFIRE;
-      } else if (var1 == RecipeType.SMITHING) {
-         return RecipeBookCategories.SMITHING;
       } else {
-         LOGGER.warn("Unknown recipe category: {}/{}", new Supplier[]{() -> {
-            return Registry.RECIPE_TYPE.getKey(var0.getType());
-         }, var0::getId});
-         return RecipeBookCategories.UNKNOWN;
+         ItemStack var2 = var0.getResultItem();
+         CreativeModeTab var3 = var2.getItem().getItemCategory();
+         if (var3 == CreativeModeTab.TAB_BUILDING_BLOCKS) {
+            return RecipeBookCategories.BUILDING_BLOCKS;
+         } else if (var3 != CreativeModeTab.TAB_TOOLS && var3 != CreativeModeTab.TAB_COMBAT) {
+            return var3 == CreativeModeTab.TAB_REDSTONE ? RecipeBookCategories.REDSTONE : RecipeBookCategories.MISC;
+         } else {
+            return RecipeBookCategories.EQUIPMENT;
+         }
+      }
+   }
+
+   public static List<RecipeBookCategories> getCategories(RecipeBookMenu<?> var0) {
+      if (!(var0 instanceof CraftingMenu) && !(var0 instanceof InventoryMenu)) {
+         if (var0 instanceof FurnaceMenu) {
+            return Lists.newArrayList(new RecipeBookCategories[]{RecipeBookCategories.FURNACE_SEARCH, RecipeBookCategories.FURNACE_FOOD, RecipeBookCategories.FURNACE_BLOCKS, RecipeBookCategories.FURNACE_MISC});
+         } else if (var0 instanceof BlastFurnaceMenu) {
+            return Lists.newArrayList(new RecipeBookCategories[]{RecipeBookCategories.BLAST_FURNACE_SEARCH, RecipeBookCategories.BLAST_FURNACE_BLOCKS, RecipeBookCategories.BLAST_FURNACE_MISC});
+         } else {
+            return var0 instanceof SmokerMenu ? Lists.newArrayList(new RecipeBookCategories[]{RecipeBookCategories.SMOKER_SEARCH, RecipeBookCategories.SMOKER_FOOD}) : Lists.newArrayList();
+         }
+      } else {
+         return Lists.newArrayList(new RecipeBookCategories[]{RecipeBookCategories.SEARCH, RecipeBookCategories.EQUIPMENT, RecipeBookCategories.BUILDING_BLOCKS, RecipeBookCategories.MISC, RecipeBookCategories.REDSTONE});
       }
    }
 
    public List<RecipeCollection> getCollections() {
-      return this.allCollections;
+      return this.collections;
    }
 
    public List<RecipeCollection> getCollection(RecipeBookCategories var1) {

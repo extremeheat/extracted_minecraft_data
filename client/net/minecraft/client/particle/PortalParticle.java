@@ -1,14 +1,14 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class PortalParticle extends TextureSheetParticle {
    private final double xStart;
    private final double yStart;
    private final double zStart;
 
-   protected PortalParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   private PortalParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       super(var1, var2, var4, var6);
       this.xd = var8;
       this.yd = var10;
@@ -76,6 +76,11 @@ public class PortalParticle extends TextureSheetParticle {
       }
    }
 
+   // $FF: synthetic method
+   PortalParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, Object var14) {
+      this(var1, var2, var4, var6, var8, var10, var12);
+   }
+
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
@@ -84,7 +89,7 @@ public class PortalParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          PortalParticle var15 = new PortalParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;

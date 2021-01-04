@@ -1,9 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import javax.annotation.Nullable;
 import net.minecraft.client.model.TurtleModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Turtle;
@@ -11,19 +9,20 @@ import net.minecraft.world.entity.animal.Turtle;
 public class TurtleRenderer extends MobRenderer<Turtle, TurtleModel<Turtle>> {
    private static final ResourceLocation TURTLE_LOCATION = new ResourceLocation("textures/entity/turtle/big_sea_turtle.png");
 
-   public TurtleRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new TurtleModel(var1.getLayer(ModelLayers.TURTLE)), 0.7F);
+   public TurtleRenderer(EntityRenderDispatcher var1) {
+      super(var1, new TurtleModel(0.0F), 0.7F);
    }
 
-   public void render(Turtle var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
+   public void render(Turtle var1, double var2, double var4, double var6, float var8, float var9) {
       if (var1.isBaby()) {
          this.shadowRadius *= 0.5F;
       }
 
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render((Mob)var1, var2, var4, var6, var8, var9);
    }
 
-   public ResourceLocation getTextureLocation(Turtle var1) {
+   @Nullable
+   protected ResourceLocation getTextureLocation(Turtle var1) {
       return TURTLE_LOCATION;
    }
 }

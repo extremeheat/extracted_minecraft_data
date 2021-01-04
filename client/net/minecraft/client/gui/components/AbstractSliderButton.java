@@ -1,19 +1,23 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.sounds.SoundManager;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractSliderButton extends AbstractWidget {
+   protected final Options options;
    protected double value;
 
-   public AbstractSliderButton(int var1, int var2, int var3, int var4, Component var5, double var6) {
-      super(var1, var2, var3, var4, var5);
+   protected AbstractSliderButton(int var1, int var2, int var3, int var4, double var5) {
+      this(Minecraft.getInstance().options, var1, var2, var3, var4, var5);
+   }
+
+   protected AbstractSliderButton(Options var1, int var2, int var3, int var4, int var5, double var6) {
+      super(var2, var3, var4, var5, "");
+      this.options = var1;
       this.value = var6;
    }
 
@@ -21,16 +25,16 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       return 0;
    }
 
-   protected MutableComponent createNarrationMessage() {
-      return new TranslatableComponent("gui.narrate.slider", new Object[]{this.getMessage()});
+   protected String getNarrationMessage() {
+      return I18n.get("gui.narrate.slider", this.getMessage());
    }
 
-   protected void renderBg(PoseStack var1, Minecraft var2, int var3, int var4) {
-      var2.getTextureManager().bind(WIDGETS_LOCATION);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      int var5 = (this.isHovered() ? 2 : 1) * 20;
-      this.blit(var1, this.x + (int)(this.value * (double)(this.width - 8)), this.y, 0, 46 + var5, 4, 20);
-      this.blit(var1, this.x + (int)(this.value * (double)(this.width - 8)) + 4, this.y, 196, 46 + var5, 4, 20);
+   protected void renderBg(Minecraft var1, int var2, int var3) {
+      var1.getTextureManager().bind(WIDGETS_LOCATION);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      int var4 = (this.isHovered() ? 2 : 1) * 20;
+      this.blit(this.x + (int)(this.value * (double)(this.width - 8)), this.y, 0, 46 + var4, 4, 20);
+      this.blit(this.x + (int)(this.value * (double)(this.width - 8)) + 4, this.y, 196, 46 + var4, 4, 20);
    }
 
    public void onClick(double var1, double var3) {

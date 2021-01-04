@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.resources.ResourceLocation;
+import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
@@ -13,13 +12,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
-   public static final ResourceLocation BLOCK_ATLAS = new ResourceLocation("textures/atlas/blocks.png");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = new ResourceLocation("item/empty_armor_slot_helmet");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = new ResourceLocation("item/empty_armor_slot_chestplate");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = new ResourceLocation("item/empty_armor_slot_leggings");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = new ResourceLocation("item/empty_armor_slot_boots");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = new ResourceLocation("item/empty_armor_slot_shield");
-   private static final ResourceLocation[] TEXTURE_EMPTY_SLOTS;
+   private static final String[] TEXTURE_EMPTY_SLOTS = new String[]{"item/empty_armor_slot_boots", "item/empty_armor_slot_leggings", "item/empty_armor_slot_chestplate", "item/empty_armor_slot_helmet"};
    private static final EquipmentSlot[] SLOT_IDS;
    private final CraftingContainer craftSlots = new CraftingContainer(this, 2, 2);
    private final ResultContainer resultSlots = new ResultContainer();
@@ -56,8 +49,9 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
                return !var2.isEmpty() && !var1.isCreative() && EnchantmentHelper.hasBindingCurse(var2) ? false : super.mayPickup(var1);
             }
 
-            public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-               return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.TEXTURE_EMPTY_SLOTS[var6.getIndex()]);
+            @Nullable
+            public String getNoItemIcon() {
+               return InventoryMenu.TEXTURE_EMPTY_SLOTS[var6.getIndex()];
             }
          });
       }
@@ -73,8 +67,9 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       }
 
       this.addSlot(new Slot(var1, 40, 77, 62) {
-         public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-            return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
+         @Nullable
+         public String getNoItemIcon() {
+            return "item/empty_armor_slot_shield";
          }
       });
    }
@@ -100,7 +95,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       super.removed(var1);
       this.resultSlots.clearContent();
       if (!var1.level.isClientSide) {
-         this.clearContainer(var1, this.craftSlots);
+         this.clearContainer(var1, var1.level, this.craftSlots);
       }
    }
 
@@ -189,16 +184,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       return 5;
    }
 
-   public CraftingContainer getCraftSlots() {
-      return this.craftSlots;
-   }
-
-   public RecipeBookType getRecipeBookType() {
-      return RecipeBookType.CRAFTING;
-   }
-
    static {
-      TEXTURE_EMPTY_SLOTS = new ResourceLocation[]{EMPTY_ARMOR_SLOT_BOOTS, EMPTY_ARMOR_SLOT_LEGGINGS, EMPTY_ARMOR_SLOT_CHESTPLATE, EMPTY_ARMOR_SLOT_HELMET};
       SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
    }
 }

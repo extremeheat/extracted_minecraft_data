@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.dimension.Dimension;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +32,7 @@ public class Raids extends SavedData {
    private int tick;
 
    public Raids(ServerLevel var1) {
-      super(getFileId(var1.dimensionType()));
+      super(getFileId(var1.dimension));
       this.level = var1;
       this.nextAvailableID = 1;
       this.setDirty();
@@ -68,7 +69,7 @@ public class Raids extends SavedData {
 
    public static boolean canJoinRaid(Raider var0, Raid var1) {
       if (var0 != null && var1 != null && var1.getLevel() != null) {
-         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level.dimensionType() == var1.getLevel().dimensionType();
+         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level.getDimension().getType() == var1.getLevel().getDimension().getType();
       } else {
          return false;
       }
@@ -81,14 +82,14 @@ public class Raids extends SavedData {
       } else if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
          return null;
       } else {
-         DimensionType var2 = var1.level.dimensionType();
-         if (!var2.hasRaids()) {
+         DimensionType var2 = var1.level.getDimension().getType();
+         if (var2 == DimensionType.NETHER) {
             return null;
          } else {
-            BlockPos var3 = var1.blockPosition();
+            BlockPos var3 = new BlockPos(var1);
             List var5 = (List)this.level.getPoiManager().getInRange(PoiType.ALL, var3, 64, PoiManager.Occupancy.IS_OCCUPIED).collect(Collectors.toList());
             int var6 = 0;
-            Vec3 var7 = Vec3.ZERO;
+            Vec3 var7 = new Vec3(0.0D, 0.0D, 0.0D);
 
             for(Iterator var8 = var5.iterator(); var8.hasNext(); ++var6) {
                PoiRecord var9 = (PoiRecord)var8.next();
@@ -169,8 +170,8 @@ public class Raids extends SavedData {
       return var1;
    }
 
-   public static String getFileId(DimensionType var0) {
-      return "raids" + var0.getFileSuffix();
+   public static String getFileId(Dimension var0) {
+      return "raids" + var0.getType().getFileSuffix();
    }
 
    private int getUniqueId() {

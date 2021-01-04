@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -17,10 +18,6 @@ public class MatchTool implements LootItemCondition {
    public MatchTool(ItemPredicate var1) {
       super();
       this.predicate = var1;
-   }
-
-   public LootItemConditionType getType() {
-      return LootItemConditions.MATCH_TOOL;
    }
 
    public Set<LootContextParam<?>> getReferencedContextParams() {
@@ -43,9 +40,9 @@ public class MatchTool implements LootItemCondition {
       return this.test((LootContext)var1);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<MatchTool> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<MatchTool> {
+      protected Serializer() {
+         super(new ResourceLocation("match_tool"), MatchTool.class);
       }
 
       public void serialize(JsonObject var1, MatchTool var2, JsonSerializationContext var3) {
@@ -58,7 +55,7 @@ public class MatchTool implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

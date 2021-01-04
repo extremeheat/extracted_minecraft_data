@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -18,7 +17,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,13 +30,12 @@ public class FireworkRocketItem extends Item {
       if (!var2.isClientSide) {
          ItemStack var3 = var1.getItemInHand();
          Vec3 var4 = var1.getClickLocation();
-         Direction var5 = var1.getClickedFace();
-         FireworkRocketEntity var6 = new FireworkRocketEntity(var2, var1.getPlayer(), var4.x + (double)var5.getStepX() * 0.15D, var4.y + (double)var5.getStepY() * 0.15D, var4.z + (double)var5.getStepZ() * 0.15D, var3);
-         var2.addFreshEntity(var6);
+         FireworkRocketEntity var5 = new FireworkRocketEntity(var2, var4.x, var4.y, var4.z, var3);
+         var2.addFreshEntity(var5);
          var3.shrink(1);
       }
 
-      return InteractionResult.sidedSuccess(var2.isClientSide);
+      return InteractionResult.SUCCESS;
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
@@ -46,14 +43,14 @@ public class FireworkRocketItem extends Item {
          ItemStack var4 = var2.getItemInHand(var3);
          if (!var1.isClientSide) {
             var1.addFreshEntity(new FireworkRocketEntity(var1, var4, var2));
-            if (!var2.getAbilities().instabuild) {
+            if (!var2.abilities.instabuild) {
                var4.shrink(1);
             }
          }
 
-         return InteractionResultHolder.sidedSuccess(var2.getItemInHand(var3), var1.isClientSide());
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var2.getItemInHand(var3));
       } else {
-         return InteractionResultHolder.pass(var2.getItemInHand(var3));
+         return new InteractionResultHolder(InteractionResult.PASS, var2.getItemInHand(var3));
       }
    }
 
@@ -61,7 +58,7 @@ public class FireworkRocketItem extends Item {
       CompoundTag var5 = var1.getTagElement("Fireworks");
       if (var5 != null) {
          if (var5.contains("Flight", 99)) {
-            var3.add((new TranslatableComponent("item.minecraft.firework_rocket.flight")).append(" ").append(String.valueOf(var5.getByte("Flight"))).withStyle(ChatFormatting.GRAY));
+            var3.add((new TranslatableComponent("item.minecraft.firework_rocket.flight", new Object[0])).append(" ").append(String.valueOf(var5.getByte("Flight"))).withStyle(ChatFormatting.GRAY));
          }
 
          ListTag var6 = var5.getList("Explosions", 10);
@@ -81,12 +78,6 @@ public class FireworkRocketItem extends Item {
          }
 
       }
-   }
-
-   public ItemStack getDefaultInstance() {
-      ItemStack var1 = new ItemStack(this);
-      var1.getOrCreateTag().putByte("Flight", (byte)1);
-      return var1;
    }
 
    public static enum Shape {

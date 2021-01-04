@@ -1,12 +1,12 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class HugeExplosionParticle extends TextureSheetParticle {
    private final SpriteSet sprites;
 
-   private HugeExplosionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, SpriteSet var10) {
+   private HugeExplosionParticle(Level var1, double var2, double var4, double var6, double var8, SpriteSet var10) {
       super(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D);
       this.lifetime = 6 + this.random.nextInt(4);
       float var11 = this.random.nextFloat() * 0.6F + 0.4F;
@@ -38,7 +38,7 @@ public class HugeExplosionParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   HugeExplosionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, SpriteSet var10, Object var11) {
+   HugeExplosionParticle(Level var1, double var2, double var4, double var6, double var8, SpriteSet var10, Object var11) {
       this(var1, var2, var4, var6, var8, var10);
    }
 
@@ -50,7 +50,7 @@ public class HugeExplosionParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new HugeExplosionParticle(var2, var3, var5, var7, var9, this.sprites);
       }
    }

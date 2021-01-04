@@ -11,7 +11,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.stats.Stats;
@@ -20,7 +19,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
@@ -71,7 +69,7 @@ public class WrittenBookItem extends Item {
             var3.add((new TranslatableComponent("book.byAuthor", new Object[]{var6})).withStyle(ChatFormatting.GRAY));
          }
 
-         var3.add((new TranslatableComponent("book.generation." + var5.getInt("generation"))).withStyle(ChatFormatting.GRAY));
+         var3.add((new TranslatableComponent("book.generation." + var5.getInt("generation"), new Object[0])).withStyle(ChatFormatting.GRAY));
       }
 
    }
@@ -80,8 +78,8 @@ public class WrittenBookItem extends Item {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      if (var4.is(Blocks.LECTERN)) {
-         return LecternBlock.tryPlaceBook(var2, var3, var4, var1.getItemInHand()) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
+      if (var4.getBlock() == Blocks.LECTERN) {
+         return LecternBlock.tryPlaceBook(var2, var3, var4, var1.getItemInHand()) ? InteractionResult.SUCCESS : InteractionResult.PASS;
       } else {
          return InteractionResult.PASS;
       }
@@ -91,7 +89,7 @@ public class WrittenBookItem extends Item {
       ItemStack var4 = var2.getItemInHand(var3);
       var2.openItemGui(var4, var3);
       var2.awardStat(Stats.ITEM_USED.get(this));
-      return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+      return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
    }
 
    public static boolean resolveBookComponents(ItemStack var0, @Nullable CommandSourceStack var1, @Nullable Player var2) {
@@ -108,13 +106,13 @@ public class WrittenBookItem extends Item {
 
                Object var7;
                try {
-                  MutableComponent var10 = Component.Serializer.fromJsonLenient(var6);
+                  Component var10 = Component.Serializer.fromJsonLenient(var6);
                   var7 = ComponentUtils.updateForEntity(var1, var10, var2, 0);
                } catch (Exception var9) {
                   var7 = new TextComponent(var6);
                }
 
-               var4.set(var5, (Tag)StringTag.valueOf(Component.Serializer.toJson((Component)var7)));
+               var4.set(var5, (Tag)(new StringTag(Component.Serializer.toJson((Component)var7))));
             }
 
             var3.put("pages", var4);

@@ -3,16 +3,15 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemSpawnEggFix extends DataFix {
    private static final String[] ID_TO_ENTITY = (String[])DataFixUtils.make(new String[256], (var0) -> {
@@ -92,17 +91,16 @@ public class ItemSpawnEggFix extends DataFix {
    public TypeRewriteRule makeRule() {
       Schema var1 = this.getInputSchema();
       Type var2 = var1.getType(References.ITEM_STACK);
-      OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), DSL.namespacedString()));
       OpticFinder var4 = DSL.fieldFinder("id", DSL.string());
       OpticFinder var5 = var2.findField("tag");
       OpticFinder var6 = var5.type().findField("EntityTag");
       OpticFinder var7 = DSL.typeFinder(var1.getTypeRaw(References.ENTITY));
-      Type var8 = this.getOutputSchema().getTypeRaw(References.ENTITY);
       return this.fixTypeEverywhereTyped("ItemSpawnEggFix", var2, (var6x) -> {
          Optional var7x = var6x.getOptional(var3);
          if (var7x.isPresent() && Objects.equals(((Pair)var7x.get()).getSecond(), "minecraft:spawn_egg")) {
-            Dynamic var8x = (Dynamic)var6x.get(DSL.remainderFinder());
-            short var9 = var8x.get("Damage").asShort((short)0);
+            Dynamic var8 = (Dynamic)var6x.get(DSL.remainderFinder());
+            short var9 = var8.get("Damage").asShort((short)0);
             Optional var10 = var6x.getOptionalTyped(var5);
             Optional var11 = var10.flatMap((var1) -> {
                return var1.getOptionalTyped(var6);
@@ -119,17 +117,16 @@ public class ItemSpawnEggFix extends DataFix {
                Typed var16 = var6x.getOrCreateTyped(var5);
                Typed var17 = var16.getOrCreateTyped(var6);
                Typed var18 = var17.getOrCreateTyped(var7);
-               Typed var20 = (Typed)((Pair)var18.write().flatMap((var3x) -> {
-                  return var8.readTyped(var3x.set("id", var8x.createString(var15)));
-               }).result().orElseThrow(() -> {
+               Dynamic var19 = var18.write().set("id", var8.createString(var15));
+               Typed var20 = (Typed)((Optional)this.getOutputSchema().getTypeRaw(References.ENTITY).readTyped(var19).getSecond()).orElseThrow(() -> {
                   return new IllegalStateException("Could not parse new entity");
-               })).getFirst();
+               });
                var14 = var6x.set(var5, var16.set(var6, var17.set(var7, var20)));
             }
 
             if (var9 != 0) {
-               var8x = var8x.set("Damage", var8x.createShort((short)0));
-               var14 = var14.set(DSL.remainderFinder(), var8x);
+               var8 = var8.set("Damage", var8.createShort((short)0));
+               var14 = var14.set(DSL.remainderFinder(), var8);
             }
 
             return var14;

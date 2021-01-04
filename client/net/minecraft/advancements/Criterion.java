@@ -1,6 +1,7 @@
 package net.minecraft.advancements;
 
 import com.google.common.collect.Maps;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -9,8 +10,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.advancements.critereon.SerializationContext;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -31,7 +30,7 @@ public class Criterion {
    public void serializeToNetwork(FriendlyByteBuf var1) {
    }
 
-   public static Criterion criterionFromJson(JsonObject var0, DeserializationContext var1) {
+   public static Criterion criterionFromJson(JsonObject var0, JsonDeserializationContext var1) {
       ResourceLocation var2 = new ResourceLocation(GsonHelper.getAsString(var0, "trigger"));
       CriterionTrigger var3 = CriteriaTriggers.getCriterion(var2);
       if (var3 == null) {
@@ -46,7 +45,7 @@ public class Criterion {
       return new Criterion();
    }
 
-   public static Map<String, Criterion> criteriaFromJson(JsonObject var0, DeserializationContext var1) {
+   public static Map<String, Criterion> criteriaFromJson(JsonObject var0, JsonDeserializationContext var1) {
       HashMap var2 = Maps.newHashMap();
       Iterator var3 = var0.entrySet().iterator();
 
@@ -89,11 +88,7 @@ public class Criterion {
    public JsonElement serializeToJson() {
       JsonObject var1 = new JsonObject();
       var1.addProperty("trigger", this.trigger.getCriterion().toString());
-      JsonObject var2 = this.trigger.serializeToJson(SerializationContext.INSTANCE);
-      if (var2.size() != 0) {
-         var1.add("conditions", var2);
-      }
-
+      var1.add("conditions", this.trigger.serializeToJson());
       return var1;
    }
 }

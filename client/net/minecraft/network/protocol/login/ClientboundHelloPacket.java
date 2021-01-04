@@ -5,18 +5,17 @@ import java.security.PublicKey;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 
 public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener> {
    private String serverId;
-   private byte[] publicKey;
+   private PublicKey publicKey;
    private byte[] nonce;
 
    public ClientboundHelloPacket() {
       super();
    }
 
-   public ClientboundHelloPacket(String var1, byte[] var2, byte[] var3) {
+   public ClientboundHelloPacket(String var1, PublicKey var2, byte[] var3) {
       super();
       this.serverId = var1;
       this.publicKey = var2;
@@ -25,13 +24,13 @@ public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener>
 
    public void read(FriendlyByteBuf var1) throws IOException {
       this.serverId = var1.readUtf(20);
-      this.publicKey = var1.readByteArray();
+      this.publicKey = Crypt.byteToPublicKey(var1.readByteArray());
       this.nonce = var1.readByteArray();
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
       var1.writeUtf(this.serverId);
-      var1.writeByteArray(this.publicKey);
+      var1.writeByteArray(this.publicKey.getEncoded());
       var1.writeByteArray(this.nonce);
    }
 
@@ -43,8 +42,8 @@ public class ClientboundHelloPacket implements Packet<ClientLoginPacketListener>
       return this.serverId;
    }
 
-   public PublicKey getPublicKey() throws CryptException {
-      return Crypt.byteToPublicKey(this.publicKey);
+   public PublicKey getPublicKey() {
+      return this.publicKey;
    }
 
    public byte[] getNonce() {

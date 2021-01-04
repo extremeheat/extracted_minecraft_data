@@ -16,22 +16,18 @@ public class EntityBoundSoundInstance extends AbstractTickableSoundInstance {
       this.volume = var3;
       this.pitch = var4;
       this.entity = var5;
-      this.x = (double)((float)this.entity.getX());
-      this.y = (double)((float)this.entity.getY());
-      this.z = (double)((float)this.entity.getZ());
-   }
-
-   public boolean canPlaySound() {
-      return !this.entity.isSilent();
+      this.x = (float)this.entity.x;
+      this.y = (float)this.entity.y;
+      this.z = (float)this.entity.z;
    }
 
    public void tick() {
-      if (this.entity.isRemoved()) {
-         this.stop();
+      if (this.entity.removed) {
+         this.stopped = true;
       } else {
-         this.x = (double)((float)this.entity.getX());
-         this.y = (double)((float)this.entity.getY());
-         this.z = (double)((float)this.entity.getZ());
+         this.x = (float)this.entity.x;
+         this.y = (float)this.entity.y;
+         this.z = (float)this.entity.z;
       }
    }
 }

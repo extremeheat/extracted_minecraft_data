@@ -1,6 +1,5 @@
 package net.minecraft.util.thread;
 
-import com.mojang.datafixers.util.Either;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -17,16 +16,6 @@ public interface ProcessorHandle<Msg> extends AutoCloseable {
       CompletableFuture var2 = new CompletableFuture();
       var2.getClass();
       Object var3 = var1.apply(of("ask future procesor handle", var2::complete));
-      this.tell(var3);
-      return var2;
-   }
-
-   default <Source> CompletableFuture<Source> askEither(Function<? super ProcessorHandle<Either<Source, Exception>>, ? extends Msg> var1) {
-      CompletableFuture var2 = new CompletableFuture();
-      Object var3 = var1.apply(of("ask future procesor handle", (var1x) -> {
-         var1x.ifLeft(var2::complete);
-         var1x.ifRight(var2::completeExceptionally);
-      }));
       this.tell(var3);
       return var2;
    }

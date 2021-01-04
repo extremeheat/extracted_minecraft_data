@@ -1,13 +1,12 @@
 package net.minecraft.world.entity.ai.village.poi;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -15,46 +14,41 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.Serializable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
 
-public class PoiSection {
+public class PoiSection implements Serializable {
    private static final Logger LOGGER = LogManager.getLogger();
-   private final Short2ObjectMap<PoiRecord> records;
-   private final Map<PoiType, Set<PoiRecord>> byType;
+   private final Short2ObjectMap<PoiRecord> records = new Short2ObjectOpenHashMap();
+   private final Map<PoiType, Set<PoiRecord>> byType = Maps.newHashMap();
    private final Runnable setDirty;
    private boolean isValid;
 
-   public static Codec<PoiSection> codec(Runnable var0) {
-      Codec var10000 = RecordCodecBuilder.create((var1) -> {
-         return var1.group(RecordCodecBuilder.point(var0), Codec.BOOL.optionalFieldOf("Valid", false).forGetter((var0x) -> {
-            return var0x.isValid;
-         }), PoiRecord.codec(var0).listOf().fieldOf("Records").forGetter((var0x) -> {
-            return ImmutableList.copyOf(var0x.records.values());
-         })).apply(var1, PoiSection::new);
-      });
-      Logger var10002 = LOGGER;
-      var10002.getClass();
-      return var10000.orElseGet(Util.prefix("Failed to read POI section: ", var10002::error), () -> {
-         return new PoiSection(var0, false, ImmutableList.of());
-      });
-   }
-
    public PoiSection(Runnable var1) {
-      this(var1, true, ImmutableList.of());
+      super();
+      this.setDirty = var1;
+      this.isValid = true;
    }
 
-   private PoiSection(Runnable var1, boolean var2, List<PoiRecord> var3) {
+   public <T> PoiSection(Runnable var1, Dynamic<T> var2) {
       super();
-      this.records = new Short2ObjectOpenHashMap();
-      this.byType = Maps.newHashMap();
       this.setDirty = var1;
-      this.isValid = var2;
-      var3.forEach(this::add);
+
+      try {
+         this.isValid = var2.get("Valid").asBoolean(false);
+         var2.get("Records").asStream().forEach((var2x) -> {
+            this.add(new PoiRecord(var2x, var1));
+         });
+      } catch (Exception var4) {
+         LOGGER.error("Failed to load POI chunk", var4);
+         this.clear();
+         this.isValid = false;
+      }
+
    }
 
    public Stream<PoiRecord> getRecords(Predicate<PoiType> var1, PoiManager.Occupancy var2) {
@@ -86,7 +80,7 @@ public class PoiSection {
          if (var3.equals(var5.getPoiType())) {
             return false;
          } else {
-            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("POI data mismatch: already registered at " + var2));
+            throw new IllegalStateException("POI data mismatch: already registered at " + var2);
          }
       } else {
          this.records.put(var4, var1);
@@ -100,7 +94,7 @@ public class PoiSection {
    public void remove(BlockPos var1) {
       PoiRecord var2 = (PoiRecord)this.records.remove(SectionPos.sectionRelativePos(var1));
       if (var2 == null) {
-         LOGGER.error("POI data mismatch: never registered at {}", var1);
+         LOGGER.error("POI data mismatch: never registered at " + var1);
       } else {
          ((Set)this.byType.get(var2.getPoiType())).remove(var2);
          LOGGER.debug("Removed POI of type {} @ {}", new Supplier[]{var2::getPoiType, var2::getPos});
@@ -111,7 +105,7 @@ public class PoiSection {
    public boolean release(BlockPos var1) {
       PoiRecord var2 = (PoiRecord)this.records.get(SectionPos.sectionRelativePos(var1));
       if (var2 == null) {
-         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("POI never registered at " + var1));
+         throw new IllegalStateException("POI never registered at " + var1);
       } else {
          boolean var3 = var2.releaseTicket();
          this.setDirty.run();
@@ -129,6 +123,13 @@ public class PoiSection {
       short var2 = SectionPos.sectionRelativePos(var1);
       PoiRecord var3 = (PoiRecord)this.records.get(var2);
       return var3 != null ? Optional.of(var3.getPoiType()) : Optional.empty();
+   }
+
+   public <T> T serialize(DynamicOps<T> var1) {
+      Object var2 = var1.createList(this.records.values().stream().map((var1x) -> {
+         return var1x.serialize(var1);
+      }));
+      return var1.createMap(ImmutableMap.of(var1.createString("Records"), var2, var1.createString("Valid"), var1.createBoolean(this.isValid)));
    }
 
    public void refresh(Consumer<BiConsumer<BlockPos, PoiType>> var1) {
@@ -151,9 +152,5 @@ public class PoiSection {
    private void clear() {
       this.records.clear();
       this.byType.clear();
-   }
-
-   boolean isValid() {
-      return this.isValid;
    }
 }

@@ -7,14 +7,12 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -25,8 +23,8 @@ public class WallTorchBlock extends TorchBlock {
    public static final DirectionProperty FACING;
    private static final Map<Direction, VoxelShape> AABBS;
 
-   protected WallTorchBlock(BlockBehaviour.Properties var1, ParticleOptions var2) {
-      super(var1, var2);
+   protected WallTorchBlock(Block.Properties var1) {
+      super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
@@ -85,7 +83,7 @@ public class WallTorchBlock extends TorchBlock {
       double var14 = 0.27D;
       Direction var16 = var5.getOpposite();
       var2.addParticle(ParticleTypes.SMOKE, var6 + 0.27D * (double)var16.getStepX(), var8 + 0.22D, var10 + 0.27D * (double)var16.getStepZ(), 0.0D, 0.0D, 0.0D);
-      var2.addParticle(this.flameParticle, var6 + 0.27D * (double)var16.getStepX(), var8 + 0.22D, var10 + 0.27D * (double)var16.getStepZ(), 0.0D, 0.0D, 0.0D);
+      var2.addParticle(ParticleTypes.FLAME, var6 + 0.27D * (double)var16.getStepX(), var8 + 0.22D, var10 + 0.27D * (double)var16.getStepZ(), 0.0D, 0.0D, 0.0D);
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {

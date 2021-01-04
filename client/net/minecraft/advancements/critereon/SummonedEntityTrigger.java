@@ -1,13 +1,25 @@
 package net.minecraft.advancements.critereon;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.storage.loot.LootContext;
 
-public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntityTrigger.TriggerInstance> {
+public class SummonedEntityTrigger implements CriterionTrigger<SummonedEntityTrigger.TriggerInstance> {
    private static final ResourceLocation ID = new ResourceLocation("summoned_entity");
+   private final Map<PlayerAdvancements, SummonedEntityTrigger.PlayerListeners> players = Maps.newHashMap();
 
    public SummonedEntityTrigger() {
       super();
@@ -17,43 +29,118 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntity
       return ID;
    }
 
-   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "entity", var3);
-      return new SummonedEntityTrigger.TriggerInstance(var2, var4);
+   public void addPlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<SummonedEntityTrigger.TriggerInstance> var2) {
+      SummonedEntityTrigger.PlayerListeners var3 = (SummonedEntityTrigger.PlayerListeners)this.players.get(var1);
+      if (var3 == null) {
+         var3 = new SummonedEntityTrigger.PlayerListeners(var1);
+         this.players.put(var1, var3);
+      }
+
+      var3.addListener(var2);
+   }
+
+   public void removePlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<SummonedEntityTrigger.TriggerInstance> var2) {
+      SummonedEntityTrigger.PlayerListeners var3 = (SummonedEntityTrigger.PlayerListeners)this.players.get(var1);
+      if (var3 != null) {
+         var3.removeListener(var2);
+         if (var3.isEmpty()) {
+            this.players.remove(var1);
+         }
+      }
+
+   }
+
+   public void removePlayerListeners(PlayerAdvancements var1) {
+      this.players.remove(var1);
+   }
+
+   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, JsonDeserializationContext var2) {
+      EntityPredicate var3 = EntityPredicate.fromJson(var1.get("entity"));
+      return new SummonedEntityTrigger.TriggerInstance(var3);
    }
 
    public void trigger(ServerPlayer var1, Entity var2) {
-      LootContext var3 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var3);
-      });
+      SummonedEntityTrigger.PlayerListeners var3 = (SummonedEntityTrigger.PlayerListeners)this.players.get(var1.getAdvancements());
+      if (var3 != null) {
+         var3.trigger(var1, var2);
+      }
+
    }
 
    // $FF: synthetic method
-   public AbstractCriterionTriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      return this.createInstance(var1, var2, var3);
+   public CriterionTriggerInstance createInstance(JsonObject var1, JsonDeserializationContext var2) {
+      return this.createInstance(var1, var2);
+   }
+
+   static class PlayerListeners {
+      private final PlayerAdvancements player;
+      private final Set<CriterionTrigger.Listener<SummonedEntityTrigger.TriggerInstance>> listeners = Sets.newHashSet();
+
+      public PlayerListeners(PlayerAdvancements var1) {
+         super();
+         this.player = var1;
+      }
+
+      public boolean isEmpty() {
+         return this.listeners.isEmpty();
+      }
+
+      public void addListener(CriterionTrigger.Listener<SummonedEntityTrigger.TriggerInstance> var1) {
+         this.listeners.add(var1);
+      }
+
+      public void removeListener(CriterionTrigger.Listener<SummonedEntityTrigger.TriggerInstance> var1) {
+         this.listeners.remove(var1);
+      }
+
+      public void trigger(ServerPlayer var1, Entity var2) {
+         ArrayList var3 = null;
+         Iterator var4 = this.listeners.iterator();
+
+         CriterionTrigger.Listener var5;
+         while(var4.hasNext()) {
+            var5 = (CriterionTrigger.Listener)var4.next();
+            if (((SummonedEntityTrigger.TriggerInstance)var5.getTriggerInstance()).matches(var1, var2)) {
+               if (var3 == null) {
+                  var3 = Lists.newArrayList();
+               }
+
+               var3.add(var5);
+            }
+         }
+
+         if (var3 != null) {
+            var4 = var3.iterator();
+
+            while(var4.hasNext()) {
+               var5 = (CriterionTrigger.Listener)var4.next();
+               var5.run(this.player);
+            }
+         }
+
+      }
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite entity;
+      private final EntityPredicate entity;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2) {
-         super(SummonedEntityTrigger.ID, var1);
-         this.entity = var2;
+      public TriggerInstance(EntityPredicate var1) {
+         super(SummonedEntityTrigger.ID);
+         this.entity = var1;
       }
 
       public static SummonedEntityTrigger.TriggerInstance summonedEntity(EntityPredicate.Builder var0) {
-         return new SummonedEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0.build()));
+         return new SummonedEntityTrigger.TriggerInstance(var0.build());
       }
 
-      public boolean matches(LootContext var1) {
-         return this.entity.matches(var1);
+      public boolean matches(ServerPlayer var1, Entity var2) {
+         return this.entity.matches(var1, var2);
       }
 
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("entity", this.entity.toJson(var1));
-         return var2;
+      public JsonElement serializeToJson() {
+         JsonObject var1 = new JsonObject();
+         var1.add("entity", this.entity.serializeToJson());
+         return var1;
       }
    }
 }

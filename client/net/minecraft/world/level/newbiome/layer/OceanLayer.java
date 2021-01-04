@@ -14,13 +14,13 @@ public enum OceanLayer implements AreaTransformer0 {
       ImprovedNoise var4 = var1.getBiomeNoise();
       double var5 = var4.noise((double)var2 / 8.0D, (double)var3 / 8.0D, 0.0D, 0.0D, 0.0D);
       if (var5 > 0.4D) {
-         return 44;
+         return Layers.WARM_OCEAN;
       } else if (var5 > 0.2D) {
-         return 45;
+         return Layers.LUKEWARM_OCEAN;
       } else if (var5 < -0.4D) {
-         return 10;
+         return Layers.FROZEN_OCEAN;
       } else {
-         return var5 < -0.2D ? 46 : 0;
+         return var5 < -0.2D ? Layers.COLD_OCEAN : Layers.OCEAN;
       }
    }
 }

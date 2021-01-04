@@ -1,7 +1,6 @@
 package net.minecraft.world;
 
 import java.util.List;
-import java.util.function.Predicate;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -51,35 +50,5 @@ public class ContainerHelper {
          }
       }
 
-   }
-
-   public static int clearOrCountMatchingItems(Container var0, Predicate<ItemStack> var1, int var2, boolean var3) {
-      int var4 = 0;
-
-      for(int var5 = 0; var5 < var0.getContainerSize(); ++var5) {
-         ItemStack var6 = var0.getItem(var5);
-         int var7 = clearOrCountMatchingItems(var6, var1, var2 - var4, var3);
-         if (var7 > 0 && !var3 && var6.isEmpty()) {
-            var0.setItem(var5, ItemStack.EMPTY);
-         }
-
-         var4 += var7;
-      }
-
-      return var4;
-   }
-
-   public static int clearOrCountMatchingItems(ItemStack var0, Predicate<ItemStack> var1, int var2, boolean var3) {
-      if (!var0.isEmpty() && var1.test(var0)) {
-         if (var3) {
-            return var0.getCount();
-         } else {
-            int var4 = var2 < 0 ? var0.getCount() : Math.min(var2, var0.getCount());
-            var0.shrink(var4);
-            return var4;
-         }
-      } else {
-         return 0;
-      }
    }
 }

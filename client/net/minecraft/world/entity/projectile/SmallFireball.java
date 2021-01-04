@@ -8,7 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -26,43 +26,29 @@ public class SmallFireball extends Fireball {
       super(EntityType.SMALL_FIREBALL, var2, var4, var6, var8, var10, var12, var1);
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      if (!this.level.isClientSide) {
-         Entity var2 = var1.getEntity();
-         if (!var2.fireImmune()) {
-            Entity var3 = this.getOwner();
-            int var4 = var2.getRemainingFireTicks();
-            var2.setSecondsOnFire(5);
-            boolean var5 = var2.hurt(DamageSource.fireball(this, var3), 5.0F);
-            if (!var5) {
-               var2.setRemainingFireTicks(var4);
-            } else if (var3 instanceof LivingEntity) {
-               this.doEnchantDamageEffects((LivingEntity)var3, var2);
-            }
-         }
-
-      }
-   }
-
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
-      if (!this.level.isClientSide) {
-         Entity var2 = this.getOwner();
-         if (var2 == null || !(var2 instanceof Mob) || this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            BlockPos var4 = var1.getBlockPos().relative(var1.getDirection());
-            if (this.level.isEmptyBlock(var4)) {
-               this.level.setBlockAndUpdate(var4, BaseFireBlock.getState(this.level, var4));
-            }
-         }
-
-      }
-   }
-
    protected void onHit(HitResult var1) {
-      super.onHit(var1);
       if (!this.level.isClientSide) {
-         this.discard();
+         if (var1.getType() == HitResult.Type.ENTITY) {
+            Entity var5 = ((EntityHitResult)var1).getEntity();
+            if (!var5.fireImmune()) {
+               int var6 = var5.getRemainingFireTicks();
+               var5.setSecondsOnFire(5);
+               boolean var4 = var5.hurt(DamageSource.fireball(this, this.owner), 5.0F);
+               if (var4) {
+                  this.doEnchantDamageEffects(this.owner, var5);
+               } else {
+                  var5.setRemainingFireTicks(var6);
+               }
+            }
+         } else if (this.owner == null || !(this.owner instanceof Mob) || this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            BlockHitResult var2 = (BlockHitResult)var1;
+            BlockPos var3 = var2.getBlockPos().relative(var2.getDirection());
+            if (this.level.isEmptyBlock(var3)) {
+               this.level.setBlockAndUpdate(var3, Blocks.FIRE.defaultBlockState());
+            }
+         }
+
+         this.remove();
       }
 
    }

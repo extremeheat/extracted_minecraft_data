@@ -1,59 +1,56 @@
 package net.minecraft.realms;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.CommonComponents;
+import java.util.Iterator;
+import java.util.List;
 import net.minecraft.network.chat.Component;
 
 public class DisconnectedRealmsScreen extends RealmsScreen {
-   private final Component title;
+   private final String title;
    private final Component reason;
-   private MultiLineLabel message;
-   private final Screen parent;
+   private List<String> lines;
+   private final RealmsScreen parent;
    private int textHeight;
 
-   public DisconnectedRealmsScreen(Screen var1, Component var2, Component var3) {
+   public DisconnectedRealmsScreen(RealmsScreen var1, String var2, Component var3) {
       super();
-      this.message = MultiLineLabel.EMPTY;
       this.parent = var1;
-      this.title = var2;
+      this.title = getLocalizedString(var2);
       this.reason = var3;
    }
 
    public void init() {
-      Minecraft var1 = Minecraft.getInstance();
-      var1.setConnectedToRealms(false);
-      var1.getClientPackSource().clearServerPack();
-      NarrationHelper.now(this.title.getString() + ": " + this.reason.getString());
-      this.message = MultiLineLabel.create(this.font, this.reason, this.width - 50);
-      int var10001 = this.message.getLineCount();
-      this.font.getClass();
-      this.textHeight = var10001 * 9;
-      int var10003 = this.width / 2 - 100;
-      int var10004 = this.height / 2 + this.textHeight / 2;
-      this.font.getClass();
-      this.addButton(new Button(var10003, var10004 + 9, 200, 20, CommonComponents.GUI_BACK, (var2) -> {
-         var1.setScreen(this.parent);
-      }));
+      Realms.setConnectedToRealms(false);
+      Realms.clearResourcePack();
+      Realms.narrateNow(this.title + ": " + this.reason.getString());
+      this.lines = this.fontSplit(this.reason.getColoredString(), this.width() - 50);
+      this.textHeight = this.lines.size() * this.fontLineHeight();
+      this.buttonsAdd(new RealmsButton(0, this.width() / 2 - 100, this.height() / 2 + this.textHeight / 2 + this.fontLineHeight(), getLocalizedString("gui.back")) {
+         public void onPress() {
+            Realms.setScreen(DisconnectedRealmsScreen.this.parent);
+         }
+      });
    }
 
-   public void onClose() {
-      Minecraft.getInstance().setScreen(this.parent);
+   public boolean keyPressed(int var1, int var2, int var3) {
+      if (var1 == 256) {
+         Realms.setScreen(this.parent);
+         return true;
+      } else {
+         return super.keyPressed(var1, var2, var3);
+      }
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      Font var10001 = this.font;
-      Component var10002 = this.title;
-      int var10003 = this.width / 2;
-      int var10004 = this.height / 2 - this.textHeight / 2;
-      this.font.getClass();
-      drawCenteredString(var1, var10001, var10002, var10003, var10004 - 9 * 2, 11184810);
-      this.message.renderCentered(var1, this.width / 2, this.height / 2 - this.textHeight / 2);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.title, this.width() / 2, this.height() / 2 - this.textHeight / 2 - this.fontLineHeight() * 2, 11184810);
+      int var4 = this.height() / 2 - this.textHeight / 2;
+      if (this.lines != null) {
+         for(Iterator var5 = this.lines.iterator(); var5.hasNext(); var4 += this.fontLineHeight()) {
+            String var6 = (String)var5.next();
+            this.drawCenteredString(var6, this.width() / 2, var4, 16777215);
+         }
+      }
+
+      super.render(var1, var2, var3);
    }
 }

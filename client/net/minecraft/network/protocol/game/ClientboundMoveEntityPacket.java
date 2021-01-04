@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol.game;
 
 import java.io.IOException;
-import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.util.Mth;
@@ -18,21 +17,9 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
    protected byte xRot;
    protected boolean onGround;
    protected boolean hasRot;
-   protected boolean hasPos;
 
    public static long entityToPacket(double var0) {
       return Mth.lfloor(var0 * 4096.0D);
-   }
-
-   public static double packetToEntity(long var0) {
-      return (double)var0 / 4096.0D;
-   }
-
-   public Vec3 updateEntityPosition(Vec3 var1) {
-      double var2 = this.xa == 0 ? var1.x : packetToEntity(entityToPacket(var1.x) + (long)this.xa);
-      double var4 = this.ya == 0 ? var1.y : packetToEntity(entityToPacket(var1.y) + (long)this.ya);
-      double var6 = this.za == 0 ? var1.z : packetToEntity(entityToPacket(var1.z) + (long)this.za);
-      return new Vec3(var2, var4, var6);
    }
 
    public static Vec3 packetToEntity(long var0, long var2, long var4) {
@@ -64,9 +51,20 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
       return "Entity_" + super.toString();
    }
 
-   @Nullable
    public Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
+   }
+
+   public short getXa() {
+      return this.xa;
+   }
+
+   public short getYa() {
+      return this.ya;
+   }
+
+   public short getZa() {
+      return this.za;
    }
 
    public byte getyRot() {
@@ -79,10 +77,6 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
 
    public boolean hasRotation() {
       return this.hasRot;
-   }
-
-   public boolean hasPosition() {
-      return this.hasPos;
    }
 
    public boolean isOnGround() {
@@ -121,7 +115,6 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
    public static class Pos extends ClientboundMoveEntityPacket {
       public Pos() {
          super();
-         this.hasPos = true;
       }
 
       public Pos(int var1, short var2, short var3, short var4, boolean var5) {
@@ -130,7 +123,6 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
          this.ya = var3;
          this.za = var4;
          this.onGround = var5;
-         this.hasPos = true;
       }
 
       public void read(FriendlyByteBuf var1) throws IOException {
@@ -154,7 +146,6 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
       public PosRot() {
          super();
          this.hasRot = true;
-         this.hasPos = true;
       }
 
       public PosRot(int var1, short var2, short var3, short var4, byte var5, byte var6, boolean var7) {
@@ -166,7 +157,6 @@ public class ClientboundMoveEntityPacket implements Packet<ClientGamePacketListe
          this.xRot = var6;
          this.onGround = var7;
          this.hasRot = true;
-         this.hasPos = true;
       }
 
       public void read(FriendlyByteBuf var1) throws IOException {

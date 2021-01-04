@@ -28,11 +28,11 @@ public class EatBlockGoal extends Goal {
       if (this.mob.getRandom().nextInt(this.mob.isBaby() ? 50 : 1000) != 0) {
          return false;
       } else {
-         BlockPos var1 = this.mob.blockPosition();
+         BlockPos var1 = new BlockPos(this.mob);
          if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
             return true;
          } else {
-            return this.level.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK);
+            return this.level.getBlockState(var1.below()).getBlock() == Blocks.GRASS_BLOCK;
          }
       }
    }
@@ -58,7 +58,7 @@ public class EatBlockGoal extends Goal {
    public void tick() {
       this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       if (this.eatAnimationTick == 4) {
-         BlockPos var1 = this.mob.blockPosition();
+         BlockPos var1 = new BlockPos(this.mob);
          if (IS_TALL_GRASS.test(this.level.getBlockState(var1))) {
             if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                this.level.destroyBlock(var1, false);
@@ -67,7 +67,7 @@ public class EatBlockGoal extends Goal {
             this.mob.ate();
          } else {
             BlockPos var2 = var1.below();
-            if (this.level.getBlockState(var2).is(Blocks.GRASS_BLOCK)) {
+            if (this.level.getBlockState(var2).getBlock() == Blocks.GRASS_BLOCK) {
                if (this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                   this.level.levelEvent(2001, var2, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
                   this.level.setBlock(var2, Blocks.DIRT.defaultBlockState(), 2);

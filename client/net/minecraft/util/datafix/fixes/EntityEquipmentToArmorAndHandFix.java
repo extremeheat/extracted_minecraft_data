@@ -3,13 +3,13 @@ package net.minecraft.util.datafix.fixes;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,9 +37,9 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
          Optional var8 = var4x.getOptional(var5);
          if (var8.isPresent()) {
             List var9 = (List)var8.get();
-            Object var10 = ((Pair)var1.read(var7.emptyMap()).result().orElseThrow(() -> {
+            Object var10 = ((Optional)var1.read(var7.emptyMap()).getSecond()).orElseThrow(() -> {
                return new IllegalStateException("Could not parse newly created empty itemstack.");
-            })).getFirst();
+            });
             if (!var9.isEmpty()) {
                var5x = Either.left(Lists.newArrayList(new Object[]{var9.get(0), var10}));
             }
@@ -55,25 +55,20 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
             }
          }
 
-         Optional var14 = var7.get("DropChances").asStreamOpt().result();
+         Optional var14 = var7.get("DropChances").asStreamOpt();
          if (var14.isPresent()) {
             Iterator var15 = Stream.concat((Stream)var14.get(), Stream.generate(() -> {
                return var7.createInt(0);
             })).iterator();
             float var16 = ((Dynamic)var15.next()).asFloat(0.0F);
             Dynamic var13;
-            Stream var10001;
-            if (!var7.get("HandDropChances").result().isPresent()) {
-               var10001 = Stream.of(var16, 0.0F);
-               var7.getClass();
-               var13 = var7.createList(var10001.map(var7::createFloat));
+            if (!var7.get("HandDropChances").get().isPresent()) {
+               var13 = var7.emptyMap().merge(var7.createFloat(var16)).merge(var7.createFloat(0.0F));
                var7 = var7.set("HandDropChances", var13);
             }
 
-            if (!var7.get("ArmorDropChances").result().isPresent()) {
-               var10001 = Stream.of(((Dynamic)var15.next()).asFloat(0.0F), ((Dynamic)var15.next()).asFloat(0.0F), ((Dynamic)var15.next()).asFloat(0.0F), ((Dynamic)var15.next()).asFloat(0.0F));
-               var7.getClass();
-               var13 = var7.createList(var10001.map(var7::createFloat));
+            if (!var7.get("ArmorDropChances").get().isPresent()) {
+               var13 = var7.emptyMap().merge(var7.createFloat(((Dynamic)var15.next()).asFloat(0.0F))).merge(var7.createFloat(((Dynamic)var15.next()).asFloat(0.0F))).merge(var7.createFloat(((Dynamic)var15.next()).asFloat(0.0F))).merge(var7.createFloat(((Dynamic)var15.next()).asFloat(0.0F)));
                var7 = var7.set("ArmorDropChances", var13);
             }
 

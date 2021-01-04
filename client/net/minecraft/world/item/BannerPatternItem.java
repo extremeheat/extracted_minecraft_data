@@ -4,7 +4,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPattern;
@@ -25,7 +24,7 @@ public class BannerPatternItem extends Item {
       var3.add(this.getDisplayName().withStyle(ChatFormatting.GRAY));
    }
 
-   public MutableComponent getDisplayName() {
-      return new TranslatableComponent(this.getDescriptionId() + ".desc");
+   public Component getDisplayName() {
+      return new TranslatableComponent(this.getDescriptionId() + ".desc", new Object[0]);
    }
 }

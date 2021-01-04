@@ -8,10 +8,9 @@ import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -21,9 +20,13 @@ public class RedstoneTorchBlock extends TorchBlock {
    public static final BooleanProperty LIT;
    private static final Map<BlockGetter, List<RedstoneTorchBlock.Toggle>> RECENT_TOGGLES;
 
-   protected RedstoneTorchBlock(BlockBehaviour.Properties var1) {
-      super(var1, DustParticleOptions.REDSTONE);
+   protected RedstoneTorchBlock(Block.Properties var1) {
+      super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LIT, true));
+   }
+
+   public int getTickDelay(LevelReader var1) {
+      return 2;
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
@@ -58,31 +61,34 @@ public class RedstoneTorchBlock extends TorchBlock {
       return var1.hasSignal(var2.below(), Direction.DOWN);
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      boolean var5 = this.hasNeighborSignal(var2, var3, var1);
-      List var6 = (List)RECENT_TOGGLES.get(var2);
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      handleTick(var1, var2, var3, var4, this.hasNeighborSignal(var2, var3, var1));
+   }
 
-      while(var6 != null && !var6.isEmpty() && var2.getGameTime() - ((RedstoneTorchBlock.Toggle)var6.get(0)).when > 60L) {
-         var6.remove(0);
+   public static void handleTick(BlockState var0, Level var1, BlockPos var2, Random var3, boolean var4) {
+      List var5 = (List)RECENT_TOGGLES.get(var1);
+
+      while(var5 != null && !var5.isEmpty() && var1.getGameTime() - ((RedstoneTorchBlock.Toggle)var5.get(0)).when > 60L) {
+         var5.remove(0);
       }
 
-      if ((Boolean)var1.getValue(LIT)) {
-         if (var5) {
-            var2.setBlock(var3, (BlockState)var1.setValue(LIT, false), 3);
-            if (isToggledTooFrequently(var2, var3, true)) {
-               var2.levelEvent(1502, var3, 0);
-               var2.getBlockTicks().scheduleTick(var3, var2.getBlockState(var3).getBlock(), 160);
+      if ((Boolean)var0.getValue(LIT)) {
+         if (var4) {
+            var1.setBlock(var2, (BlockState)var0.setValue(LIT, false), 3);
+            if (isToggledTooFrequently(var1, var2, true)) {
+               var1.levelEvent(1502, var2, 0);
+               var1.getBlockTicks().scheduleTick(var2, var1.getBlockState(var2).getBlock(), 160);
             }
          }
-      } else if (!var5 && !isToggledTooFrequently(var2, var3, false)) {
-         var2.setBlock(var3, (BlockState)var1.setValue(LIT, true), 3);
+      } else if (!var4 && !isToggledTooFrequently(var1, var2, false)) {
+         var1.setBlock(var2, (BlockState)var0.setValue(LIT, true), 3);
       }
 
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if ((Boolean)var1.getValue(LIT) == this.hasNeighborSignal(var2, var3, var1) && !var2.getBlockTicks().willTickThisTick(var3, this)) {
-         var2.getBlockTicks().scheduleTick(var3, this, 2);
+         var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2));
       }
 
    }
@@ -100,8 +106,12 @@ public class RedstoneTorchBlock extends TorchBlock {
          double var5 = (double)var3.getX() + 0.5D + (var4.nextDouble() - 0.5D) * 0.2D;
          double var7 = (double)var3.getY() + 0.7D + (var4.nextDouble() - 0.5D) * 0.2D;
          double var9 = (double)var3.getZ() + 0.5D + (var4.nextDouble() - 0.5D) * 0.2D;
-         var2.addParticle(this.flameParticle, var5, var7, var9, 0.0D, 0.0D, 0.0D);
+         var2.addParticle(DustParticleOptions.REDSTONE, var5, var7, var9, 0.0D, 0.0D, 0.0D);
       }
+   }
+
+   public int getLightEmission(BlockState var1) {
+      return (Boolean)var1.getValue(LIT) ? super.getLightEmission(var1) : 0;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

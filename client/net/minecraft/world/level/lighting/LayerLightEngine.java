@@ -1,6 +1,7 @@
 package net.minecraft.world.level.lighting;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,7 +15,6 @@ import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S extends LayerLightSectionStorage<M>> extends DynamicGraphMinFixedPoint implements LayerLightEventListener {
    private static final Direction[] DIRECTIONS = Direction.values();
@@ -69,10 +69,10 @@ public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S exten
       Arrays.fill(this.lastChunk, (Object)null);
    }
 
-   protected BlockState getStateAndOpacity(long var1, @Nullable MutableInt var3) {
+   protected BlockState getStateAndOpacity(long var1, @Nullable AtomicInteger var3) {
       if (var1 == 9223372036854775807L) {
          if (var3 != null) {
-            var3.setValue(0);
+            var3.set(0);
          }
 
          return Blocks.AIR.defaultBlockState();
@@ -82,7 +82,7 @@ public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S exten
          BlockGetter var6 = this.getChunk(var4, var5);
          if (var6 == null) {
             if (var3 != null) {
-               var3.setValue(16);
+               var3.set(16);
             }
 
             return Blocks.BEDROCK.defaultBlockState();
@@ -91,7 +91,7 @@ public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S exten
             BlockState var7 = var6.getBlockState(this.pos);
             boolean var8 = var7.canOcclude() && var7.useShapeForLightOcclusion();
             if (var3 != null) {
-               var3.setValue(var7.getLightBlock(this.chunkSource.getLevel(), this.pos));
+               var3.set(var7.getLightBlock(this.chunkSource.getLevel(), this.pos));
             }
 
             return var8 ? var7 : Blocks.AIR.defaultBlockState();
@@ -169,8 +169,8 @@ public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S exten
       return var1;
    }
 
-   protected void queueSectionData(long var1, @Nullable DataLayer var3, boolean var4) {
-      this.storage.queueSectionData(var1, var3, var4);
+   protected void queueSectionData(long var1, @Nullable DataLayer var3) {
+      this.storage.queueSectionData(var1, var3);
    }
 
    @Nullable
@@ -208,6 +208,7 @@ public abstract class LayerLightEngine<M extends DataLayerStorageMap<M>, S exten
 
    public void enableLightSources(ChunkPos var1, boolean var2) {
       long var3 = SectionPos.getZeroNode(SectionPos.asLong(var1.x, 0, var1.z));
+      this.storage.runAllUpdates();
       this.storage.enableLightSources(var3, var2);
    }
 

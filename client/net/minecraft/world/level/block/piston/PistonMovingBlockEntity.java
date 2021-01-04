@@ -6,16 +6,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.TickableBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.PistonType;
@@ -25,29 +24,35 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class PistonMovingBlockEntity extends BlockEntity {
+public class PistonMovingBlockEntity extends BlockEntity implements TickableBlockEntity {
    private BlockState movedState;
    private Direction direction;
    private boolean extending;
    private boolean isSourcePiston;
-   private static final ThreadLocal<Direction> NOCLIP = ThreadLocal.withInitial(() -> {
-      return null;
-   });
+   private static final ThreadLocal<Direction> NOCLIP = new ThreadLocal<Direction>() {
+      protected Direction initialValue() {
+         return null;
+      }
+
+      // $FF: synthetic method
+      protected Object initialValue() {
+         return this.initialValue();
+      }
+   };
    private float progress;
    private float progressO;
    private long lastTicked;
-   private int deathTicks;
 
-   public PistonMovingBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.PISTON, var1, var2);
+   public PistonMovingBlockEntity() {
+      super(BlockEntityType.PISTON);
    }
 
-   public PistonMovingBlockEntity(BlockPos var1, BlockState var2, BlockState var3, Direction var4, boolean var5, boolean var6) {
-      this(var1, var2);
-      this.movedState = var3;
-      this.direction = var4;
-      this.extending = var5;
-      this.isSourcePiston = var6;
+   public PistonMovingBlockEntity(BlockState var1, Direction var2, boolean var3, boolean var4) {
+      this();
+      this.movedState = var1;
+      this.direction = var2;
+      this.extending = var3;
+      this.isSourcePiston = var4;
    }
 
    public CompoundTag getUpdateTag() {
@@ -91,159 +96,161 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    private BlockState getCollisionRelatedBlockState() {
-      return !this.isExtending() && this.isSourcePiston() && this.movedState.getBlock() instanceof PistonBaseBlock ? (BlockState)((BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.SHORT, this.progress > 0.25F)).setValue(PistonHeadBlock.TYPE, this.movedState.is(Blocks.STICKY_PISTON) ? PistonType.STICKY : PistonType.DEFAULT)).setValue(PistonHeadBlock.FACING, this.movedState.getValue(PistonBaseBlock.FACING)) : this.movedState;
+      return !this.isExtending() && this.isSourcePiston() && this.movedState.getBlock() instanceof PistonBaseBlock ? (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.TYPE, this.movedState.getBlock() == Blocks.STICKY_PISTON ? PistonType.STICKY : PistonType.DEFAULT)).setValue(PistonHeadBlock.FACING, this.movedState.getValue(PistonBaseBlock.FACING)) : this.movedState;
    }
 
-   private static void moveCollidedEntities(Level var0, BlockPos var1, float var2, PistonMovingBlockEntity var3) {
-      Direction var4 = var3.getMovementDirection();
-      double var5 = (double)(var2 - var3.progress);
-      VoxelShape var7 = var3.getCollisionRelatedBlockState().getCollisionShape(var0, var1);
-      if (!var7.isEmpty()) {
-         AABB var8 = moveByPositionAndProgress(var1, var7.bounds(), var3);
-         List var9 = var0.getEntities((Entity)null, PistonMath.getMovementArea(var8, var4, var5).minmax(var8));
-         if (!var9.isEmpty()) {
-            List var10 = var7.toAabbs();
-            boolean var11 = var3.movedState.is(Blocks.SLIME_BLOCK);
-            Iterator var12 = var9.iterator();
+   private void moveCollidedEntities(float var1) {
+      Direction var2 = this.getMovementDirection();
+      double var3 = (double)(var1 - this.progress);
+      VoxelShape var5 = this.getCollisionRelatedBlockState().getCollisionShape(this.level, this.getBlockPos());
+      if (!var5.isEmpty()) {
+         List var6 = var5.toAabbs();
+         AABB var7 = this.moveByPositionAndProgress(this.getMinMaxPiecesAABB(var6));
+         List var8 = this.level.getEntities((Entity)null, this.getMovementArea(var7, var2, var3).minmax(var7));
+         if (!var8.isEmpty()) {
+            boolean var9 = this.movedState.getBlock() == Blocks.SLIME_BLOCK;
 
-            while(true) {
-               Entity var13;
-               while(true) {
-                  do {
-                     if (!var12.hasNext()) {
-                        return;
-                     }
-
-                     var13 = (Entity)var12.next();
-                  } while(var13.getPistonPushReaction() == PushReaction.IGNORE);
-
-                  if (!var11) {
-                     break;
-                  }
-
-                  if (!(var13 instanceof ServerPlayer)) {
-                     Vec3 var14 = var13.getDeltaMovement();
-                     double var15 = var14.x;
-                     double var17 = var14.y;
-                     double var19 = var14.z;
-                     switch(var4.getAxis()) {
+            for(int var10 = 0; var10 < var8.size(); ++var10) {
+               Entity var11 = (Entity)var8.get(var10);
+               if (var11.getPistonPushReaction() != PushReaction.IGNORE) {
+                  if (var9) {
+                     Vec3 var12 = var11.getDeltaMovement();
+                     double var13 = var12.x;
+                     double var15 = var12.y;
+                     double var17 = var12.z;
+                     switch(var2.getAxis()) {
                      case X:
-                        var15 = (double)var4.getStepX();
+                        var13 = (double)var2.getStepX();
                         break;
                      case Y:
-                        var17 = (double)var4.getStepY();
+                        var15 = (double)var2.getStepY();
                         break;
                      case Z:
-                        var19 = (double)var4.getStepZ();
+                        var17 = (double)var2.getStepZ();
                      }
 
-                     var13.setDeltaMovement(var15, var17, var19);
-                     break;
+                     var11.setDeltaMovement(var13, var15, var17);
                   }
-               }
 
-               double var21 = 0.0D;
-               Iterator var16 = var10.iterator();
+                  double var19 = 0.0D;
 
-               while(var16.hasNext()) {
-                  AABB var22 = (AABB)var16.next();
-                  AABB var18 = PistonMath.getMovementArea(moveByPositionAndProgress(var1, var22, var3), var4, var5);
-                  AABB var23 = var13.getBoundingBox();
-                  if (var18.intersects(var23)) {
-                     var21 = Math.max(var21, getMovement(var18, var4, var23));
-                     if (var21 >= var5) {
-                        break;
+                  for(int var14 = 0; var14 < var6.size(); ++var14) {
+                     AABB var20 = this.getMovementArea(this.moveByPositionAndProgress((AABB)var6.get(var14)), var2, var3);
+                     AABB var16 = var11.getBoundingBox();
+                     if (var20.intersects(var16)) {
+                        var19 = Math.max(var19, this.getMovement(var20, var2, var16));
+                        if (var19 >= var3) {
+                           break;
+                        }
+                     }
+                  }
+
+                  if (var19 > 0.0D) {
+                     var19 = Math.min(var19, var3) + 0.01D;
+                     NOCLIP.set(var2);
+                     var11.move(MoverType.PISTON, new Vec3(var19 * (double)var2.getStepX(), var19 * (double)var2.getStepY(), var19 * (double)var2.getStepZ()));
+                     NOCLIP.set((Object)null);
+                     if (!this.extending && this.isSourcePiston) {
+                        this.fixEntityWithinPistonBase(var11, var2, var3);
                      }
                   }
                }
-
-               if (var21 > 0.0D) {
-                  var21 = Math.min(var21, var5) + 0.01D;
-                  moveEntityByPiston(var4, var13, var21, var4);
-                  if (!var3.extending && var3.isSourcePiston) {
-                     fixEntityWithinPistonBase(var1, var13, var4, var5);
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   private static void moveEntityByPiston(Direction var0, Entity var1, double var2, Direction var4) {
-      NOCLIP.set(var0);
-      var1.move(MoverType.PISTON, new Vec3(var2 * (double)var4.getStepX(), var2 * (double)var4.getStepY(), var2 * (double)var4.getStepZ()));
-      NOCLIP.set((Object)null);
-   }
-
-   private static void moveStuckEntities(Level var0, BlockPos var1, float var2, PistonMovingBlockEntity var3) {
-      if (var3.isStickyForEntities()) {
-         Direction var4 = var3.getMovementDirection();
-         if (var4.getAxis().isHorizontal()) {
-            double var5 = var3.movedState.getCollisionShape(var0, var1).max(Direction.Axis.Y);
-            AABB var7 = moveByPositionAndProgress(var1, new AABB(0.0D, var5, 0.0D, 1.0D, 1.5000000999999998D, 1.0D), var3);
-            double var8 = (double)(var2 - var3.progress);
-            List var10 = var0.getEntities((Entity)null, var7, (var1x) -> {
-               return matchesStickyCritera(var7, var1x);
-            });
-            Iterator var11 = var10.iterator();
-
-            while(var11.hasNext()) {
-               Entity var12 = (Entity)var11.next();
-               moveEntityByPiston(var4, var12, var8, var4);
             }
 
          }
       }
-   }
-
-   private static boolean matchesStickyCritera(AABB var0, Entity var1) {
-      return var1.getPistonPushReaction() == PushReaction.NORMAL && var1.isOnGround() && var1.getX() >= var0.minX && var1.getX() <= var0.maxX && var1.getZ() >= var0.minZ && var1.getZ() <= var0.maxZ;
-   }
-
-   private boolean isStickyForEntities() {
-      return this.movedState.is(Blocks.HONEY_BLOCK);
    }
 
    public Direction getMovementDirection() {
       return this.extending ? this.direction : this.direction.getOpposite();
    }
 
-   private static double getMovement(AABB var0, Direction var1, AABB var2) {
-      switch(var1) {
-      case EAST:
-         return var0.maxX - var2.minX;
-      case WEST:
-         return var2.maxX - var0.minX;
-      case UP:
+   private AABB getMinMaxPiecesAABB(List<AABB> var1) {
+      double var2 = 0.0D;
+      double var4 = 0.0D;
+      double var6 = 0.0D;
+      double var8 = 1.0D;
+      double var10 = 1.0D;
+      double var12 = 1.0D;
+
+      AABB var15;
+      for(Iterator var14 = var1.iterator(); var14.hasNext(); var12 = Math.max(var15.maxZ, var12)) {
+         var15 = (AABB)var14.next();
+         var2 = Math.min(var15.minX, var2);
+         var4 = Math.min(var15.minY, var4);
+         var6 = Math.min(var15.minZ, var6);
+         var8 = Math.max(var15.maxX, var8);
+         var10 = Math.max(var15.maxY, var10);
+      }
+
+      return new AABB(var2, var4, var6, var8, var10, var12);
+   }
+
+   private double getMovement(AABB var1, Direction var2, AABB var3) {
+      switch(var2.getAxis()) {
+      case X:
+         return getDeltaX(var1, var2, var3);
+      case Y:
       default:
-         return var0.maxY - var2.minY;
-      case DOWN:
-         return var2.maxY - var0.minY;
-      case SOUTH:
-         return var0.maxZ - var2.minZ;
-      case NORTH:
-         return var2.maxZ - var0.minZ;
+         return getDeltaY(var1, var2, var3);
+      case Z:
+         return getDeltaZ(var1, var2, var3);
       }
    }
 
-   private static AABB moveByPositionAndProgress(BlockPos var0, AABB var1, PistonMovingBlockEntity var2) {
-      double var3 = (double)var2.getExtendedProgress(var2.progress);
-      return var1.move((double)var0.getX() + var3 * (double)var2.direction.getStepX(), (double)var0.getY() + var3 * (double)var2.direction.getStepY(), (double)var0.getZ() + var3 * (double)var2.direction.getStepZ());
+   private AABB moveByPositionAndProgress(AABB var1) {
+      double var2 = (double)this.getExtendedProgress(this.progress);
+      return var1.move((double)this.worldPosition.getX() + var2 * (double)this.direction.getStepX(), (double)this.worldPosition.getY() + var2 * (double)this.direction.getStepY(), (double)this.worldPosition.getZ() + var2 * (double)this.direction.getStepZ());
    }
 
-   private static void fixEntityWithinPistonBase(BlockPos var0, Entity var1, Direction var2, double var3) {
+   private AABB getMovementArea(AABB var1, Direction var2, double var3) {
+      double var5 = var3 * (double)var2.getAxisDirection().getStep();
+      double var7 = Math.min(var5, 0.0D);
+      double var9 = Math.max(var5, 0.0D);
+      switch(var2) {
+      case WEST:
+         return new AABB(var1.minX + var7, var1.minY, var1.minZ, var1.minX + var9, var1.maxY, var1.maxZ);
+      case EAST:
+         return new AABB(var1.maxX + var7, var1.minY, var1.minZ, var1.maxX + var9, var1.maxY, var1.maxZ);
+      case DOWN:
+         return new AABB(var1.minX, var1.minY + var7, var1.minZ, var1.maxX, var1.minY + var9, var1.maxZ);
+      case UP:
+      default:
+         return new AABB(var1.minX, var1.maxY + var7, var1.minZ, var1.maxX, var1.maxY + var9, var1.maxZ);
+      case NORTH:
+         return new AABB(var1.minX, var1.minY, var1.minZ + var7, var1.maxX, var1.maxY, var1.minZ + var9);
+      case SOUTH:
+         return new AABB(var1.minX, var1.minY, var1.maxZ + var7, var1.maxX, var1.maxY, var1.maxZ + var9);
+      }
+   }
+
+   private void fixEntityWithinPistonBase(Entity var1, Direction var2, double var3) {
       AABB var5 = var1.getBoundingBox();
-      AABB var6 = Shapes.block().bounds().move(var0);
+      AABB var6 = Shapes.block().bounds().move(this.worldPosition);
       if (var5.intersects(var6)) {
          Direction var7 = var2.getOpposite();
-         double var8 = getMovement(var6, var7, var5) + 0.01D;
-         double var10 = getMovement(var6, var7, var5.intersect(var6)) + 0.01D;
+         double var8 = this.getMovement(var6, var7, var5) + 0.01D;
+         double var10 = this.getMovement(var6, var7, var5.intersect(var6)) + 0.01D;
          if (Math.abs(var8 - var10) < 0.01D) {
             var8 = Math.min(var8, var3) + 0.01D;
-            moveEntityByPiston(var2, var1, var8, var7);
+            NOCLIP.set(var2);
+            var1.move(MoverType.PISTON, new Vec3(var8 * (double)var7.getStepX(), var8 * (double)var7.getStepY(), var8 * (double)var7.getStepZ()));
+            NOCLIP.set((Object)null);
          }
       }
 
+   }
+
+   private static double getDeltaX(AABB var0, Direction var1, AABB var2) {
+      return var1.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var0.maxX - var2.minX : var2.maxX - var0.minX;
+   }
+
+   private static double getDeltaY(AABB var0, Direction var1, AABB var2) {
+      return var1.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var0.maxY - var2.minY : var2.maxY - var0.minY;
+   }
+
+   private static double getDeltaZ(AABB var0, Direction var1, AABB var2) {
+      return var1.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var0.maxZ - var2.minZ : var2.maxZ - var0.minZ;
    }
 
    public BlockState getMovedState() {
@@ -251,12 +258,12 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    public void finalTick() {
-      if (this.level != null && (this.progressO < 1.0F || this.level.isClientSide)) {
+      if (this.progressO < 1.0F && this.level != null) {
          this.progress = 1.0F;
          this.progressO = this.progress;
          this.level.removeBlockEntity(this.worldPosition);
          this.setRemoved();
-         if (this.level.getBlockState(this.worldPosition).is(Blocks.MOVING_PISTON)) {
+         if (this.level.getBlockState(this.worldPosition).getBlock() == Blocks.MOVING_PISTON) {
             BlockState var1;
             if (this.isSourcePiston) {
                var1 = Blocks.AIR.defaultBlockState();
@@ -271,38 +278,33 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    }
 
-   public static void tick(Level var0, BlockPos var1, BlockState var2, PistonMovingBlockEntity var3) {
-      var3.lastTicked = var0.getGameTime();
-      var3.progressO = var3.progress;
-      if (var3.progressO >= 1.0F) {
-         if (var0.isClientSide && var3.deathTicks < 5) {
-            ++var3.deathTicks;
-         } else {
-            var0.removeBlockEntity(var1);
-            var3.setRemoved();
-            if (var3.movedState != null && var0.getBlockState(var1).is(Blocks.MOVING_PISTON)) {
-               BlockState var5 = Block.updateFromNeighbourShapes(var3.movedState, var0, var1);
-               if (var5.isAir()) {
-                  var0.setBlock(var1, var3.movedState, 84);
-                  Block.updateOrDestroy(var3.movedState, var5, var0, var1, 3);
-               } else {
-                  if (var5.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var5.getValue(BlockStateProperties.WATERLOGGED)) {
-                     var5 = (BlockState)var5.setValue(BlockStateProperties.WATERLOGGED, false);
-                  }
-
-                  var0.setBlock(var1, var5, 67);
-                  var0.neighborChanged(var1, var5.getBlock(), var1);
+   public void tick() {
+      this.lastTicked = this.level.getGameTime();
+      this.progressO = this.progress;
+      if (this.progressO >= 1.0F) {
+         this.level.removeBlockEntity(this.worldPosition);
+         this.setRemoved();
+         if (this.movedState != null && this.level.getBlockState(this.worldPosition).getBlock() == Blocks.MOVING_PISTON) {
+            BlockState var2 = Block.updateFromNeighbourShapes(this.movedState, this.level, this.worldPosition);
+            if (var2.isAir()) {
+               this.level.setBlock(this.worldPosition, this.movedState, 84);
+               Block.updateOrDestroy(this.movedState, var2, this.level, this.worldPosition, 3);
+            } else {
+               if (var2.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var2.getValue(BlockStateProperties.WATERLOGGED)) {
+                  var2 = (BlockState)var2.setValue(BlockStateProperties.WATERLOGGED, false);
                }
-            }
 
+               this.level.setBlock(this.worldPosition, var2, 67);
+               this.level.neighborChanged(this.worldPosition, var2.getBlock(), this.worldPosition);
+            }
          }
+
       } else {
-         float var4 = var3.progress + 0.5F;
-         moveCollidedEntities(var0, var1, var4, var3);
-         moveStuckEntities(var0, var1, var4, var3);
-         var3.progress = var4;
-         if (var3.progress >= 1.0F) {
-            var3.progress = 1.0F;
+         float var1 = this.progress + 0.5F;
+         this.moveCollidedEntities(var1);
+         this.progress = var1;
+         if (this.progress >= 1.0F) {
+            this.progress = 1.0F;
          }
 
       }
@@ -342,7 +344,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
       } else {
          BlockState var5;
          if (this.isSourcePiston()) {
-            var5 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, this.direction)).setValue(PistonHeadBlock.SHORT, this.extending != 1.0F - this.progress < 0.25F);
+            var5 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, this.direction)).setValue(PistonHeadBlock.SHORT, this.extending != 1.0F - this.progress < 4.0F);
          } else {
             var5 = this.movedState;
          }
@@ -357,9 +359,5 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    public long getLastTicked() {
       return this.lastTicked;
-   }
-
-   public double getViewDistance() {
-      return 68.0D;
    }
 }

@@ -3,12 +3,10 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -17,7 +15,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 public class ObserverBlock extends DirectionalBlock {
    public static final BooleanProperty POWERED;
 
-   public ObserverBlock(BlockBehaviour.Properties var1) {
+   public ObserverBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.SOUTH)).setValue(POWERED, false));
    }
@@ -34,7 +32,7 @@ public class ObserverBlock extends DirectionalBlock {
       return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if ((Boolean)var1.getValue(POWERED)) {
          var2.setBlock(var3, (BlockState)var1.setValue(POWERED, false), 2);
       } else {
@@ -80,7 +78,7 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          if (!var2.isClientSide() && (Boolean)var1.getValue(POWERED) && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
             BlockState var6 = (BlockState)var1.setValue(POWERED, false);
             var2.setBlock(var3, var6, 18);
@@ -91,7 +89,7 @@ public class ObserverBlock extends DirectionalBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          if (!var2.isClientSide && (Boolean)var1.getValue(POWERED) && var2.getBlockTicks().hasScheduledTick(var3, this)) {
             this.updateNeighborsInFront(var2, var3, (BlockState)var1.setValue(POWERED, false));
          }

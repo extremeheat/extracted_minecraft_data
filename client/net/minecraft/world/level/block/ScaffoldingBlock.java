@@ -4,14 +4,14 @@ import java.util.Iterator;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -32,7 +32,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    public static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty BOTTOM;
 
-   protected ScaffoldingBlock(BlockBehaviour.Properties var1) {
+   protected ScaffoldingBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(WATERLOGGED, false)).setValue(BOTTOM, false));
    }
@@ -53,8 +53,12 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
       return Shapes.block();
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
+   }
+
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().is(this.asItem());
+      return var2.getItemInHand().getItem() == this.asItem();
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -83,7 +87,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
       return var1;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       int var5 = getDistance(var2, var3);
       BlockState var6 = (BlockState)((BlockState)var1.setValue(DISTANCE, var5)).setValue(BOTTOM, this.isBottom(var2, var3, var5));
       if ((Integer)var6.getValue(DISTANCE) == 7) {
@@ -103,7 +107,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var4.isAbove(Shapes.block(), var3, true) && !var4.isDescending()) {
+      if (var4.isAbove(Shapes.block(), var3, true) && !var4.isSneaking()) {
          return STABLE_SHAPE;
       } else {
          return (Integer)var1.getValue(DISTANCE) != 0 && (Boolean)var1.getValue(BOTTOM) && var4.isAbove(BELOW_BLOCK, var3, true) ? UNSTABLE_SHAPE_BOTTOM : Shapes.empty();
@@ -115,14 +119,14 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private boolean isBottom(BlockGetter var1, BlockPos var2, int var3) {
-      return var3 > 0 && !var1.getBlockState(var2.below()).is(this);
+      return var3 > 0 && var1.getBlockState(var2.below()).getBlock() != this;
    }
 
    public static int getDistance(BlockGetter var0, BlockPos var1) {
-      BlockPos.MutableBlockPos var2 = var1.mutable().move(Direction.DOWN);
+      BlockPos.MutableBlockPos var2 = (new BlockPos.MutableBlockPos(var1)).move(Direction.DOWN);
       BlockState var3 = var0.getBlockState(var2);
       int var4 = 7;
-      if (var3.is(Blocks.SCAFFOLDING)) {
+      if (var3.getBlock() == Blocks.SCAFFOLDING) {
          var4 = (Integer)var3.getValue(DISTANCE);
       } else if (var3.isFaceSturdy(var0, var2, Direction.UP)) {
          return 0;
@@ -132,8 +136,8 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
 
       while(var5.hasNext()) {
          Direction var6 = (Direction)var5.next();
-         BlockState var7 = var0.getBlockState(var2.setWithOffset(var1, var6));
-         if (var7.is(Blocks.SCAFFOLDING)) {
+         BlockState var7 = var0.getBlockState(var2.set((Vec3i)var1).move(var6));
+         if (var7.getBlock() == Blocks.SCAFFOLDING) {
             var4 = Math.min(var4, (Integer)var7.getValue(DISTANCE) + 1);
             if (var4 == 1) {
                break;

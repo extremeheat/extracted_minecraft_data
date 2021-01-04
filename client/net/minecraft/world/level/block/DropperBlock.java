@@ -5,20 +5,19 @@ import net.minecraft.core.BlockSourceImpl;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class DropperBlock extends DispenserBlock {
    private static final DispenseItemBehavior DISPENSE_BEHAVIOUR = new DefaultDispenseItemBehavior();
 
-   public DropperBlock(BlockBehaviour.Properties var1) {
+   public DropperBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -26,11 +25,11 @@ public class DropperBlock extends DispenserBlock {
       return DISPENSE_BEHAVIOUR;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DropperBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new DropperBlockEntity();
    }
 
-   protected void dispenseFrom(ServerLevel var1, BlockPos var2) {
+   protected void dispenseFrom(Level var1, BlockPos var2) {
       BlockSourceImpl var3 = new BlockSourceImpl(var1, var2);
       DispenserBlockEntity var4 = (DispenserBlockEntity)var3.getEntity();
       int var5 = var4.getRandomSlot();

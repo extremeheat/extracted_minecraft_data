@@ -4,23 +4,23 @@ import java.util.Iterator;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
    public static final BlockPos END_PODIUM_LOCATION;
    private final boolean active;
 
    public EndPodiumFeature(boolean var1) {
-      super(NoneFeatureConfiguration.CODEC);
+      super(NoneFeatureConfiguration::deserialize);
       this.active = var1;
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
       Iterator var6 = BlockPos.betweenClosed(new BlockPos(var4.getX() - 4, var4.getY() - 1, var4.getZ() - 4), new BlockPos(var4.getX() + 4, var4.getY() + 32, var4.getZ() + 4)).iterator();
 
       while(true) {

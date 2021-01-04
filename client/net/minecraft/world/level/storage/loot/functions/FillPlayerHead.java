@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -25,16 +26,12 @@ public class FillPlayerHead extends LootItemConditionalFunction {
       this.entityTarget = var2;
    }
 
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.FILL_PLAYER_HEAD;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return ImmutableSet.of(this.entityTarget.getParam());
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      if (var1.is(Items.PLAYER_HEAD)) {
+      if (var1.getItem() == Items.PLAYER_HEAD) {
          Entity var3 = (Entity)var2.getParamOrNull(this.entityTarget.getParam());
          if (var3 instanceof Player) {
             GameProfile var4 = ((Player)var3).getGameProfile();
@@ -47,7 +44,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<FillPlayerHead> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("fill_player_head"), FillPlayerHead.class);
       }
 
       public void serialize(JsonObject var1, FillPlayerHead var2, JsonSerializationContext var3) {

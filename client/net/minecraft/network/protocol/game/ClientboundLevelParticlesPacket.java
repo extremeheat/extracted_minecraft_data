@@ -9,9 +9,9 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 
 public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketListener> {
-   private double x;
-   private double y;
-   private double z;
+   private float x;
+   private float y;
+   private float z;
    private float xDist;
    private float yDist;
    private float zDist;
@@ -24,18 +24,18 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       super();
    }
 
-   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, double var3, double var5, double var7, float var9, float var10, float var11, float var12, int var13) {
+   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10) {
       super();
       this.particle = var1;
       this.overrideLimiter = var2;
       this.x = var3;
-      this.y = var5;
-      this.z = var7;
-      this.xDist = var9;
-      this.yDist = var10;
-      this.zDist = var11;
-      this.maxSpeed = var12;
-      this.count = var13;
+      this.y = var4;
+      this.z = var5;
+      this.xDist = var6;
+      this.yDist = var7;
+      this.zDist = var8;
+      this.maxSpeed = var9;
+      this.count = var10;
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
@@ -45,9 +45,9 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       }
 
       this.overrideLimiter = var1.readBoolean();
-      this.x = var1.readDouble();
-      this.y = var1.readDouble();
-      this.z = var1.readDouble();
+      this.x = var1.readFloat();
+      this.y = var1.readFloat();
+      this.z = var1.readFloat();
       this.xDist = var1.readFloat();
       this.yDist = var1.readFloat();
       this.zDist = var1.readFloat();
@@ -63,9 +63,9 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
    public void write(FriendlyByteBuf var1) throws IOException {
       var1.writeInt(Registry.PARTICLE_TYPE.getId(this.particle.getType()));
       var1.writeBoolean(this.overrideLimiter);
-      var1.writeDouble(this.x);
-      var1.writeDouble(this.y);
-      var1.writeDouble(this.z);
+      var1.writeFloat(this.x);
+      var1.writeFloat(this.y);
+      var1.writeFloat(this.z);
       var1.writeFloat(this.xDist);
       var1.writeFloat(this.yDist);
       var1.writeFloat(this.zDist);
@@ -79,15 +79,15 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
    }
 
    public double getX() {
-      return this.x;
+      return (double)this.x;
    }
 
    public double getY() {
-      return this.y;
+      return (double)this.y;
    }
 
    public double getZ() {
-      return this.z;
+      return (double)this.z;
    }
 
    public float getXDist() {

@@ -22,7 +22,7 @@ public class RealmsNews extends ValueObject {
          JsonObject var3 = var2.parse(var0).getAsJsonObject();
          var1.newsLink = JsonUtils.getStringOr("newsLink", var3, (String)null);
       } catch (Exception var4) {
-         LOGGER.error("Could not parse RealmsNews: {}", var4.getMessage());
+         LOGGER.error("Could not parse RealmsNews: " + var4.getMessage());
       }
 
       return var1;

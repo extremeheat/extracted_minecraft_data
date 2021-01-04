@@ -1,45 +1,49 @@
 package com.mojang.blaze3d.shaders;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GLX;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ProgramManager {
    private static final Logger LOGGER = LogManager.getLogger();
+   private static ProgramManager instance;
 
-   public static void glUseProgram(int var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
-      GlStateManager._glUseProgram(var0);
+   public static void createInstance() {
+      instance = new ProgramManager();
    }
 
-   public static void releaseProgram(Effect var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
-      var0.getFragmentProgram().close();
-      var0.getVertexProgram().close();
-      GlStateManager.glDeleteProgram(var0.getId());
+   public static ProgramManager getInstance() {
+      return instance;
    }
 
-   public static int createProgram() throws IOException {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
-      int var0 = GlStateManager.glCreateProgram();
-      if (var0 <= 0) {
-         throw new IOException("Could not create shader program (returned program ID " + var0 + ")");
+   private ProgramManager() {
+      super();
+   }
+
+   public void releaseProgram(Effect var1) {
+      var1.getFragmentProgram().close();
+      var1.getVertexProgram().close();
+      GLX.glDeleteProgram(var1.getId());
+   }
+
+   public int createProgram() throws IOException {
+      int var1 = GLX.glCreateProgram();
+      if (var1 <= 0) {
+         throw new IOException("Could not create shader program (returned program ID " + var1 + ")");
       } else {
-         return var0;
+         return var1;
       }
    }
 
-   public static void linkProgram(Effect var0) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThread);
-      var0.getFragmentProgram().attachToEffect(var0);
-      var0.getVertexProgram().attachToEffect(var0);
-      GlStateManager.glLinkProgram(var0.getId());
-      int var1 = GlStateManager.glGetProgrami(var0.getId(), 35714);
-      if (var1 == 0) {
-         LOGGER.warn("Error encountered when linking program containing VS {} and FS {}. Log output:", var0.getVertexProgram().getName(), var0.getFragmentProgram().getName());
-         LOGGER.warn(GlStateManager.glGetProgramInfoLog(var0.getId(), 32768));
+   public void linkProgram(Effect var1) throws IOException {
+      var1.getFragmentProgram().attachToEffect(var1);
+      var1.getVertexProgram().attachToEffect(var1);
+      GLX.glLinkProgram(var1.getId());
+      int var2 = GLX.glGetProgrami(var1.getId(), GLX.GL_LINK_STATUS);
+      if (var2 == 0) {
+         LOGGER.warn("Error encountered when linking program containing VS {} and FS {}. Log output:", var1.getVertexProgram().getName(), var1.getFragmentProgram().getName());
+         LOGGER.warn(GLX.glGetProgramInfoLog(var1.getId(), 32768));
       }
 
    }

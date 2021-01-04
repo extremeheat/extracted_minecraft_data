@@ -15,11 +15,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,7 +35,7 @@ public class BlockItem extends Item {
 
    public InteractionResult useOn(UseOnContext var1) {
       InteractionResult var2 = this.place(new BlockPlaceContext(var1));
-      return !var2.consumesAction() && this.isEdible() ? this.use(var1.getLevel(), var1.getPlayer(), var1.getHand()).getResult() : var2;
+      return var2 != InteractionResult.SUCCESS && this.isEdible() ? this.use(var1.level, var1.player, var1.hand).getResult() : var2;
    }
 
    public InteractionResult place(BlockPlaceContext var1) {
@@ -60,22 +57,20 @@ public class BlockItem extends Item {
                Player var6 = var2.getPlayer();
                ItemStack var7 = var2.getItemInHand();
                BlockState var8 = var5.getBlockState(var4);
-               if (var8.is(var3.getBlock())) {
+               Block var9 = var8.getBlock();
+               if (var9 == var3.getBlock()) {
                   var8 = this.updateBlockStateFromTag(var4, var5, var7, var8);
                   this.updateCustomBlockEntityTag(var4, var5, var6, var7, var8);
-                  var8.getBlock().setPlacedBy(var5, var4, var8, var6, var7);
+                  var9.setPlacedBy(var5, var4, var8, var6, var7);
                   if (var6 instanceof ServerPlayer) {
                      CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var6, var4, var7);
                   }
                }
 
-               SoundType var9 = var8.getSoundType();
-               var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
-               if (var6 == null || !var6.getAbilities().instabuild) {
-                  var7.shrink(1);
-               }
-
-               return InteractionResult.sidedSuccess(var5.isClientSide);
+               SoundType var10 = var8.getSoundType();
+               var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var10.getVolume() + 1.0F) / 2.0F, var10.getPitch() * 0.8F);
+               var7.shrink(1);
+               return InteractionResult.SUCCESS;
             }
          }
       }
@@ -198,9 +193,5 @@ public class BlockItem extends Item {
 
    public void registerBlocks(Map<Block, Item> var1, Item var2) {
       var1.put(this.getBlock(), var2);
-   }
-
-   public boolean canFitInsideContainerItems() {
-      return !(this.block instanceof ShulkerBoxBlock);
    }
 }

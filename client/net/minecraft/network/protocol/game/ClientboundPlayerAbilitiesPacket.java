@@ -19,39 +19,39 @@ public class ClientboundPlayerAbilitiesPacket implements Packet<ClientGamePacket
 
    public ClientboundPlayerAbilitiesPacket(Abilities var1) {
       super();
-      this.invulnerable = var1.invulnerable;
-      this.isFlying = var1.flying;
-      this.canFly = var1.mayfly;
-      this.instabuild = var1.instabuild;
-      this.flyingSpeed = var1.getFlyingSpeed();
-      this.walkingSpeed = var1.getWalkingSpeed();
+      this.setInvulnerable(var1.invulnerable);
+      this.setFlying(var1.flying);
+      this.setCanFly(var1.mayfly);
+      this.setInstabuild(var1.instabuild);
+      this.setFlyingSpeed(var1.getFlyingSpeed());
+      this.setWalkingSpeed(var1.getWalkingSpeed());
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
       byte var2 = var1.readByte();
-      this.invulnerable = (var2 & 1) != 0;
-      this.isFlying = (var2 & 2) != 0;
-      this.canFly = (var2 & 4) != 0;
-      this.instabuild = (var2 & 8) != 0;
-      this.flyingSpeed = var1.readFloat();
-      this.walkingSpeed = var1.readFloat();
+      this.setInvulnerable((var2 & 1) > 0);
+      this.setFlying((var2 & 2) > 0);
+      this.setCanFly((var2 & 4) > 0);
+      this.setInstabuild((var2 & 8) > 0);
+      this.setFlyingSpeed(var1.readFloat());
+      this.setWalkingSpeed(var1.readFloat());
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
       byte var2 = 0;
-      if (this.invulnerable) {
+      if (this.isInvulnerable()) {
          var2 = (byte)(var2 | 1);
       }
 
-      if (this.isFlying) {
+      if (this.isFlying()) {
          var2 = (byte)(var2 | 2);
       }
 
-      if (this.canFly) {
+      if (this.canFly()) {
          var2 = (byte)(var2 | 4);
       }
 
-      if (this.instabuild) {
+      if (this.canInstabuild()) {
          var2 = (byte)(var2 | 8);
       }
 
@@ -68,23 +68,47 @@ public class ClientboundPlayerAbilitiesPacket implements Packet<ClientGamePacket
       return this.invulnerable;
    }
 
+   public void setInvulnerable(boolean var1) {
+      this.invulnerable = var1;
+   }
+
    public boolean isFlying() {
       return this.isFlying;
+   }
+
+   public void setFlying(boolean var1) {
+      this.isFlying = var1;
    }
 
    public boolean canFly() {
       return this.canFly;
    }
 
+   public void setCanFly(boolean var1) {
+      this.canFly = var1;
+   }
+
    public boolean canInstabuild() {
       return this.instabuild;
+   }
+
+   public void setInstabuild(boolean var1) {
+      this.instabuild = var1;
    }
 
    public float getFlyingSpeed() {
       return this.flyingSpeed;
    }
 
+   public void setFlyingSpeed(float var1) {
+      this.flyingSpeed = var1;
+   }
+
    public float getWalkingSpeed() {
       return this.walkingSpeed;
+   }
+
+   public void setWalkingSpeed(float var1) {
+      this.walkingSpeed = var1;
    }
 }

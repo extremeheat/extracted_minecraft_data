@@ -1,15 +1,11 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -29,29 +25,24 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ErrorScreen;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureObject;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
-import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.level.storage.LevelStorage;
 import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -65,11 +56,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
    private static final DateFormat DATE_FORMAT = new SimpleDateFormat();
    private static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
    private static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/world_selection.png");
-   private static final Component FROM_NEWER_TOOLTIP_1;
-   private static final Component FROM_NEWER_TOOLTIP_2;
-   private static final Component SNAPSHOT_TOOLTIP_1;
-   private static final Component SNAPSHOT_TOOLTIP_2;
-   private static final Component WORLD_LOCKED_TOOLTIP;
    private final SelectWorldScreen screen;
    @Nullable
    private List<LevelSummary> cachedList;
@@ -92,31 +78,27 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
             this.cachedList = var3.getLevelList();
          } catch (LevelStorageException var7) {
             LOGGER.error("Couldn't load level list", var7);
-            this.minecraft.setScreen(new ErrorScreen(new TranslatableComponent("selectWorld.unable_to_load"), new TextComponent(var7.getMessage())));
+            this.minecraft.setScreen(new ErrorScreen(new TranslatableComponent("selectWorld.unable_to_load", new Object[0]), var7.getMessage()));
             return;
          }
 
          Collections.sort(this.cachedList);
       }
 
-      if (this.cachedList.isEmpty()) {
-         this.minecraft.setScreen(CreateWorldScreen.create((Screen)null));
-      } else {
-         String var4 = ((String)var1.get()).toLowerCase(Locale.ROOT);
-         Iterator var5 = this.cachedList.iterator();
+      String var4 = ((String)var1.get()).toLowerCase(Locale.ROOT);
+      Iterator var5 = this.cachedList.iterator();
 
-         while(true) {
-            LevelSummary var6;
-            do {
-               if (!var5.hasNext()) {
-                  return;
-               }
+      while(true) {
+         LevelSummary var6;
+         do {
+            if (!var5.hasNext()) {
+               return;
+            }
 
-               var6 = (LevelSummary)var5.next();
-            } while(!var6.getLevelName().toLowerCase(Locale.ROOT).contains(var4) && !var6.getLevelId().toLowerCase(Locale.ROOT).contains(var4));
+            var6 = (LevelSummary)var5.next();
+         } while(!var6.getLevelName().toLowerCase(Locale.ROOT).contains(var4) && !var6.getLevelId().toLowerCase(Locale.ROOT).contains(var4));
 
-            this.addEntry(new WorldSelectionList.WorldListEntry(this, var6));
-         }
+         this.addEntry(new WorldSelectionList.WorldListEntry(this, var6, this.minecraft.getLevelSource()));
       }
    }
 
@@ -136,16 +118,14 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
       super.setSelected(var1);
       if (var1 != null) {
          LevelSummary var2 = var1.summary;
-         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.select", new Object[]{new TranslatableComponent("narrator.select.world", new Object[]{var2.getLevelName(), new Date(var2.getLastPlayed()), var2.isHardcore() ? new TranslatableComponent("gameMode.hardcore") : new TranslatableComponent("gameMode." + var2.getGameMode().getName()), var2.hasCheats() ? new TranslatableComponent("selectWorld.cheats") : TextComponent.EMPTY, var2.getWorldVersionName()})})).getString());
+         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.select", new Object[]{new TranslatableComponent("narrator.select.world", new Object[]{var2.getLevelName(), new Date(var2.getLastPlayed()), var2.isHardcore() ? I18n.get("gameMode.hardcore") : I18n.get("gameMode." + var2.getGameMode().getName()), var2.hasCheats() ? I18n.get("selectWorld.cheats") : "", var2.getWorldVersionName()})})).getString());
       }
 
-      this.screen.updateButtonStatus(var1 != null && !var1.summary.isLocked());
    }
 
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-      this.moveSelection(var1, (var0) -> {
-         return !var0.summary.isLocked();
-      });
+   protected void moveSelection(int var1) {
+      super.moveSelection(var1);
+      this.screen.updateButtonStatus(true);
    }
 
    public Optional<WorldSelectionList.WorldListEntry> getSelectedOpt() {
@@ -156,12 +136,9 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
       return this.screen;
    }
 
-   static {
-      FROM_NEWER_TOOLTIP_1 = (new TranslatableComponent("selectWorld.tooltip.fromNewerVersion1")).withStyle(ChatFormatting.RED);
-      FROM_NEWER_TOOLTIP_2 = (new TranslatableComponent("selectWorld.tooltip.fromNewerVersion2")).withStyle(ChatFormatting.RED);
-      SNAPSHOT_TOOLTIP_1 = (new TranslatableComponent("selectWorld.tooltip.snapshot1")).withStyle(ChatFormatting.GOLD);
-      SNAPSHOT_TOOLTIP_2 = (new TranslatableComponent("selectWorld.tooltip.snapshot2")).withStyle(ChatFormatting.GOLD);
-      WORLD_LOCKED_TOOLTIP = (new TranslatableComponent("selectWorld.locked")).withStyle(ChatFormatting.RED);
+   // $FF: synthetic method
+   public void setSelected(@Nullable AbstractSelectionList.Entry var1) {
+      this.setSelected((WorldSelectionList.WorldListEntry)var1);
    }
 
    public final class WorldListEntry extends ObjectSelectionList.Entry<WorldSelectionList.WorldListEntry> implements AutoCloseable {
@@ -174,14 +151,13 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
       private final DynamicTexture icon;
       private long lastClickTime;
 
-      public WorldListEntry(WorldSelectionList var2, LevelSummary var3) {
+      public WorldListEntry(WorldSelectionList var2, LevelSummary var3, LevelStorageSource var4) {
          super();
          this.screen = var2.getScreen();
          this.summary = var3;
          this.minecraft = Minecraft.getInstance();
-         String var4 = var3.getLevelId();
-         this.iconLocation = new ResourceLocation("minecraft", "worlds/" + Util.sanitizeName(var4, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var4) + "/icon");
-         this.iconFile = var3.getIcon();
+         this.iconLocation = new ResourceLocation("worlds/" + Hashing.sha1().hashUnencodedChars(var3.getLevelId()) + "/icon");
+         this.iconFile = var4.getFile(var3.getLevelId(), "icon.png");
          if (!this.iconFile.isFile()) {
             this.iconFile = null;
          }
@@ -189,122 +165,104 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
          this.icon = this.loadServerIcon();
       }
 
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         String var11 = this.summary.getLevelName();
-         String var12 = this.summary.getLevelId() + " (" + WorldSelectionList.DATE_FORMAT.format(new Date(this.summary.getLastPlayed())) + ")";
-         if (StringUtils.isEmpty(var11)) {
-            var11 = I18n.get("selectWorld.world") + " " + (var2 + 1);
+      public void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9) {
+         String var10 = this.summary.getLevelName();
+         String var11 = this.summary.getLevelId() + " (" + WorldSelectionList.DATE_FORMAT.format(new Date(this.summary.getLastPlayed())) + ")";
+         if (StringUtils.isEmpty(var10)) {
+            var10 = I18n.get("selectWorld.world") + " " + (var1 + 1);
          }
 
-         Component var13 = this.summary.getInfo();
-         this.minecraft.font.draw(var1, var11, (float)(var4 + 32 + 3), (float)(var3 + 1), 16777215);
-         Font var10000 = this.minecraft.font;
-         float var10003 = (float)(var4 + 32 + 3);
-         this.minecraft.font.getClass();
-         var10000.draw(var1, var12, var10003, (float)(var3 + 9 + 3), 8421504);
-         var10000 = this.minecraft.font;
-         var10003 = (float)(var4 + 32 + 3);
-         this.minecraft.font.getClass();
-         int var10004 = var3 + 9;
-         this.minecraft.font.getClass();
-         var10000.draw(var1, var13, var10003, (float)(var10004 + 9 + 3), 8421504);
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         this.minecraft.getTextureManager().bind(this.icon != null ? this.iconLocation : WorldSelectionList.ICON_MISSING);
-         RenderSystem.enableBlend();
-         GuiComponent.blit(var1, var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
-         RenderSystem.disableBlend();
-         if (this.minecraft.options.touchscreen || var9) {
-            this.minecraft.getTextureManager().bind(WorldSelectionList.ICON_OVERLAY_LOCATION);
-            GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
-            RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            int var14 = var7 - var4;
-            boolean var15 = var14 < 32;
-            int var16 = var15 ? 32 : 0;
-            if (this.summary.isLocked()) {
-               GuiComponent.blit(var1, var4, var3, 96.0F, (float)var16, 32, 32, 256, 256);
-               if (var15) {
-                  this.screen.setToolTip(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175));
-               }
-            } else if (this.summary.markVersionInList()) {
-               GuiComponent.blit(var1, var4, var3, 32.0F, (float)var16, 32, 32, 256, 256);
+         String var12 = "";
+         if (this.summary.isRequiresConversion()) {
+            var12 = I18n.get("selectWorld.conversion") + " " + var12;
+         } else {
+            var12 = I18n.get("gameMode." + this.summary.getGameMode().getName());
+            if (this.summary.isHardcore()) {
+               var12 = ChatFormatting.DARK_RED + I18n.get("gameMode.hardcore") + ChatFormatting.RESET;
+            }
+
+            if (this.summary.hasCheats()) {
+               var12 = var12 + ", " + I18n.get("selectWorld.cheats");
+            }
+
+            String var13 = this.summary.getWorldVersionName().getColoredString();
+            if (this.summary.markVersionInList()) {
                if (this.summary.askToOpenWorld()) {
-                  GuiComponent.blit(var1, var4, var3, 96.0F, (float)var16, 32, 32, 256, 256);
-                  if (var15) {
-                     this.screen.setToolTip(ImmutableList.of(WorldSelectionList.FROM_NEWER_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.FROM_NEWER_TOOLTIP_2.getVisualOrderText()));
+                  var12 = var12 + ", " + I18n.get("selectWorld.version") + " " + ChatFormatting.RED + var13 + ChatFormatting.RESET;
+               } else {
+                  var12 = var12 + ", " + I18n.get("selectWorld.version") + " " + ChatFormatting.ITALIC + var13 + ChatFormatting.RESET;
+               }
+            } else {
+               var12 = var12 + ", " + I18n.get("selectWorld.version") + " " + var13;
+            }
+         }
+
+         this.minecraft.font.draw(var10, (float)(var3 + 32 + 3), (float)(var2 + 1), 16777215);
+         Font var10000 = this.minecraft.font;
+         float var10002 = (float)(var3 + 32 + 3);
+         this.minecraft.font.getClass();
+         var10000.draw(var11, var10002, (float)(var2 + 9 + 3), 8421504);
+         var10000 = this.minecraft.font;
+         var10002 = (float)(var3 + 32 + 3);
+         this.minecraft.font.getClass();
+         int var10003 = var2 + 9;
+         this.minecraft.font.getClass();
+         var10000.draw(var12, var10002, (float)(var10003 + 9 + 3), 8421504);
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         this.minecraft.getTextureManager().bind(this.icon != null ? this.iconLocation : WorldSelectionList.ICON_MISSING);
+         GlStateManager.enableBlend();
+         GuiComponent.blit(var3, var2, 0.0F, 0.0F, 32, 32, 32, 32);
+         GlStateManager.disableBlend();
+         if (this.minecraft.options.touchscreen || var8) {
+            this.minecraft.getTextureManager().bind(WorldSelectionList.ICON_OVERLAY_LOCATION);
+            GuiComponent.fill(var3, var2, var3 + 32, var2 + 32, -1601138544);
+            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            int var16 = var6 - var3;
+            int var14 = var16 < 32 ? 32 : 0;
+            if (this.summary.markVersionInList()) {
+               GuiComponent.blit(var3, var2, 32.0F, (float)var14, 32, 32, 256, 256);
+               if (this.summary.isOldCustomizedWorld()) {
+                  GuiComponent.blit(var3, var2, 96.0F, (float)var14, 32, 32, 256, 256);
+                  if (var16 < 32) {
+                     Component var15 = (new TranslatableComponent("selectWorld.tooltip.unsupported", new Object[]{this.summary.getWorldVersionName()})).withStyle(ChatFormatting.RED);
+                     this.screen.setToolTip(this.minecraft.font.insertLineBreaks(var15.getColoredString(), 175));
+                  }
+               } else if (this.summary.askToOpenWorld()) {
+                  GuiComponent.blit(var3, var2, 96.0F, (float)var14, 32, 32, 256, 256);
+                  if (var16 < 32) {
+                     this.screen.setToolTip(ChatFormatting.RED + I18n.get("selectWorld.tooltip.fromNewerVersion1") + "\n" + ChatFormatting.RED + I18n.get("selectWorld.tooltip.fromNewerVersion2"));
                   }
                } else if (!SharedConstants.getCurrentVersion().isStable()) {
-                  GuiComponent.blit(var1, var4, var3, 64.0F, (float)var16, 32, 32, 256, 256);
-                  if (var15) {
-                     this.screen.setToolTip(ImmutableList.of(WorldSelectionList.SNAPSHOT_TOOLTIP_1.getVisualOrderText(), WorldSelectionList.SNAPSHOT_TOOLTIP_2.getVisualOrderText()));
+                  GuiComponent.blit(var3, var2, 64.0F, (float)var14, 32, 32, 256, 256);
+                  if (var16 < 32) {
+                     this.screen.setToolTip(ChatFormatting.GOLD + I18n.get("selectWorld.tooltip.snapshot1") + "\n" + ChatFormatting.GOLD + I18n.get("selectWorld.tooltip.snapshot2"));
                   }
                }
             } else {
-               GuiComponent.blit(var1, var4, var3, 0.0F, (float)var16, 32, 32, 256, 256);
+               GuiComponent.blit(var3, var2, 0.0F, (float)var14, 32, 32, 256, 256);
             }
          }
 
       }
 
       public boolean mouseClicked(double var1, double var3, int var5) {
-         if (this.summary.isLocked()) {
+         WorldSelectionList.this.setSelected(this);
+         this.screen.updateButtonStatus(WorldSelectionList.this.getSelectedOpt().isPresent());
+         if (var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0D) {
+            this.joinWorld();
+            return true;
+         } else if (Util.getMillis() - this.lastClickTime < 250L) {
+            this.joinWorld();
             return true;
          } else {
-            WorldSelectionList.this.setSelected(this);
-            this.screen.updateButtonStatus(WorldSelectionList.this.getSelectedOpt().isPresent());
-            if (var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0D) {
-               this.joinWorld();
-               return true;
-            } else if (Util.getMillis() - this.lastClickTime < 250L) {
-               this.joinWorld();
-               return true;
-            } else {
-               this.lastClickTime = Util.getMillis();
-               return false;
-            }
+            this.lastClickTime = Util.getMillis();
+            return false;
          }
       }
 
       public void joinWorld() {
-         if (!this.summary.isLocked()) {
-            if (this.summary.shouldBackup()) {
-               TranslatableComponent var1 = new TranslatableComponent("selectWorld.backupQuestion");
-               TranslatableComponent var2 = new TranslatableComponent("selectWorld.backupWarning", new Object[]{this.summary.getWorldVersionName(), SharedConstants.getCurrentVersion().getName()});
-               this.minecraft.setScreen(new BackupConfirmScreen(this.screen, (var1x, var2x) -> {
-                  if (var1x) {
-                     String var3 = this.summary.getLevelId();
-
-                     try {
-                        LevelStorageSource.LevelStorageAccess var4 = this.minecraft.getLevelSource().createAccess(var3);
-                        Throwable var5 = null;
-
-                        try {
-                           EditWorldScreen.makeBackupAndShowToast(var4);
-                        } catch (Throwable var15) {
-                           var5 = var15;
-                           throw var15;
-                        } finally {
-                           if (var4 != null) {
-                              if (var5 != null) {
-                                 try {
-                                    var4.close();
-                                 } catch (Throwable var14) {
-                                    var5.addSuppressed(var14);
-                                 }
-                              } else {
-                                 var4.close();
-                              }
-                           }
-
-                        }
-                     } catch (IOException var17) {
-                        SystemToast.onWorldAccessFailure(this.minecraft, var3);
-                        WorldSelectionList.LOGGER.error("Failed to backup level {}", var3, var17);
-                     }
-                  }
-
-                  this.loadWorld();
-               }, var1, var2, false));
-            } else if (this.summary.askToOpenWorld()) {
+         if (!this.summary.shouldBackup() && !this.summary.isOldCustomizedWorld()) {
+            if (this.summary.askToOpenWorld()) {
                this.minecraft.setScreen(new ConfirmScreen((var1x) -> {
                   if (var1x) {
                      try {
@@ -313,18 +271,34 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
                         WorldSelectionList.LOGGER.error("Failure to open 'future world'", var3);
                         this.minecraft.setScreen(new AlertScreen(() -> {
                            this.minecraft.setScreen(this.screen);
-                        }, new TranslatableComponent("selectWorld.futureworld.error.title"), new TranslatableComponent("selectWorld.futureworld.error.text")));
+                        }, new TranslatableComponent("selectWorld.futureworld.error.title", new Object[0]), new TranslatableComponent("selectWorld.futureworld.error.text", new Object[0])));
                      }
                   } else {
                      this.minecraft.setScreen(this.screen);
                   }
 
-               }, new TranslatableComponent("selectWorld.versionQuestion"), new TranslatableComponent("selectWorld.versionWarning", new Object[]{this.summary.getWorldVersionName()}), new TranslatableComponent("selectWorld.versionJoinButton"), CommonComponents.GUI_CANCEL));
+               }, new TranslatableComponent("selectWorld.versionQuestion", new Object[0]), new TranslatableComponent("selectWorld.versionWarning", new Object[]{this.summary.getWorldVersionName().getColoredString()}), I18n.get("selectWorld.versionJoinButton"), I18n.get("gui.cancel")));
             } else {
                this.loadWorld();
             }
+         } else {
+            TranslatableComponent var1 = new TranslatableComponent("selectWorld.backupQuestion", new Object[0]);
+            TranslatableComponent var2 = new TranslatableComponent("selectWorld.backupWarning", new Object[]{this.summary.getWorldVersionName().getColoredString(), SharedConstants.getCurrentVersion().getName()});
+            if (this.summary.isOldCustomizedWorld()) {
+               var1 = new TranslatableComponent("selectWorld.backupQuestion.customized", new Object[0]);
+               var2 = new TranslatableComponent("selectWorld.backupWarning.customized", new Object[0]);
+            }
 
+            this.minecraft.setScreen(new BackupConfirmScreen(this.screen, (var1x, var2x) -> {
+               if (var1x) {
+                  String var3 = this.summary.getLevelId();
+                  EditWorldScreen.makeBackupAndShowToast(this.minecraft.getLevelSource(), var3);
+               }
+
+               this.loadWorld();
+            }, var1, var2, false));
          }
+
       }
 
       public void deleteWorld() {
@@ -332,138 +306,49 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
             if (var1) {
                this.minecraft.setScreen(new ProgressScreen());
                LevelStorageSource var2 = this.minecraft.getLevelSource();
-               String var3 = this.summary.getLevelId();
-
-               try {
-                  LevelStorageSource.LevelStorageAccess var4 = var2.createAccess(var3);
-                  Throwable var5 = null;
-
-                  try {
-                     var4.deleteLevel();
-                  } catch (Throwable var15) {
-                     var5 = var15;
-                     throw var15;
-                  } finally {
-                     if (var4 != null) {
-                        if (var5 != null) {
-                           try {
-                              var4.close();
-                           } catch (Throwable var14) {
-                              var5.addSuppressed(var14);
-                           }
-                        } else {
-                           var4.close();
-                        }
-                     }
-
-                  }
-               } catch (IOException var17) {
-                  SystemToast.onWorldDeleteFailure(this.minecraft, var3);
-                  WorldSelectionList.LOGGER.error("Failed to delete world {}", var3, var17);
-               }
-
+               var2.deleteLevel(this.summary.getLevelId());
                WorldSelectionList.this.refreshList(() -> {
                   return this.screen.searchBox.getValue();
                }, true);
             }
 
             this.minecraft.setScreen(this.screen);
-         }, new TranslatableComponent("selectWorld.deleteQuestion"), new TranslatableComponent("selectWorld.deleteWarning", new Object[]{this.summary.getLevelName()}), new TranslatableComponent("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL));
+         }, new TranslatableComponent("selectWorld.deleteQuestion", new Object[0]), new TranslatableComponent("selectWorld.deleteWarning", new Object[]{this.summary.getLevelName()}), I18n.get("selectWorld.deleteButton"), I18n.get("gui.cancel")));
       }
 
       public void editWorld() {
-         String var1 = this.summary.getLevelId();
+         this.minecraft.setScreen(new EditWorldScreen((var1) -> {
+            if (var1) {
+               WorldSelectionList.this.refreshList(() -> {
+                  return this.screen.searchBox.getValue();
+               }, true);
+            }
 
-         try {
-            LevelStorageSource.LevelStorageAccess var2 = this.minecraft.getLevelSource().createAccess(var1);
-            this.minecraft.setScreen(new EditWorldScreen((var3x) -> {
-               try {
-                  var2.close();
-               } catch (IOException var5) {
-                  WorldSelectionList.LOGGER.error("Failed to unlock level {}", var1, var5);
-               }
-
-               if (var3x) {
-                  WorldSelectionList.this.refreshList(() -> {
-                     return this.screen.searchBox.getValue();
-                  }, true);
-               }
-
-               this.minecraft.setScreen(this.screen);
-            }, var2));
-         } catch (IOException var3) {
-            SystemToast.onWorldAccessFailure(this.minecraft, var1);
-            WorldSelectionList.LOGGER.error("Failed to access level {}", var1, var3);
-            WorldSelectionList.this.refreshList(() -> {
-               return this.screen.searchBox.getValue();
-            }, true);
-         }
-
+            this.minecraft.setScreen(this.screen);
+         }, this.summary.getLevelId()));
       }
 
       public void recreateWorld() {
-         this.queueLoadScreen();
-         RegistryAccess.RegistryHolder var1 = RegistryAccess.builtin();
-
          try {
-            LevelStorageSource.LevelStorageAccess var2 = this.minecraft.getLevelSource().createAccess(this.summary.getLevelId());
-            Throwable var3 = null;
-
-            try {
-               Minecraft.ServerStem var4 = this.minecraft.makeServerStem(var1, Minecraft::loadDataPacks, Minecraft::loadWorldData, false, var2);
-               Throwable var5 = null;
-
-               try {
-                  LevelSettings var6 = var4.worldData().getLevelSettings();
-                  DataPackConfig var7 = var6.getDataPackConfig();
-                  WorldGenSettings var8 = var4.worldData().worldGenSettings();
-                  Path var9 = CreateWorldScreen.createTempDataPackDirFromExistingWorld(var2.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
-                  if (var8.isOldCustomizedWorld()) {
-                     this.minecraft.setScreen(new ConfirmScreen((var6x) -> {
-                        this.minecraft.setScreen((Screen)(var6x ? new CreateWorldScreen(this.screen, var6, var8, var9, var7, var1) : this.screen));
-                     }, new TranslatableComponent("selectWorld.recreate.customized.title"), new TranslatableComponent("selectWorld.recreate.customized.text"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
-                  } else {
-                     this.minecraft.setScreen(new CreateWorldScreen(this.screen, var6, var8, var9, var7, var1));
-                  }
-               } catch (Throwable var33) {
-                  var5 = var33;
-                  throw var33;
-               } finally {
-                  if (var4 != null) {
-                     if (var5 != null) {
-                        try {
-                           var4.close();
-                        } catch (Throwable var32) {
-                           var5.addSuppressed(var32);
-                        }
-                     } else {
-                        var4.close();
-                     }
-                  }
-
+            this.minecraft.setScreen(new ProgressScreen());
+            CreateWorldScreen var1 = new CreateWorldScreen(this.screen);
+            LevelStorage var2 = this.minecraft.getLevelSource().selectLevel(this.summary.getLevelId(), (MinecraftServer)null);
+            LevelData var3 = var2.prepareLevel();
+            if (var3 != null) {
+               var1.copyFromWorld(var3);
+               if (this.summary.isOldCustomizedWorld()) {
+                  this.minecraft.setScreen(new ConfirmScreen((var2x) -> {
+                     this.minecraft.setScreen((Screen)(var2x ? var1 : this.screen));
+                  }, new TranslatableComponent("selectWorld.recreate.customized.title", new Object[0]), new TranslatableComponent("selectWorld.recreate.customized.text", new Object[0]), I18n.get("gui.proceed"), I18n.get("gui.cancel")));
+               } else {
+                  this.minecraft.setScreen(var1);
                }
-            } catch (Throwable var35) {
-               var3 = var35;
-               throw var35;
-            } finally {
-               if (var2 != null) {
-                  if (var3 != null) {
-                     try {
-                        var2.close();
-                     } catch (Throwable var31) {
-                        var3.addSuppressed(var31);
-                     }
-                  } else {
-                     var2.close();
-                  }
-               }
-
             }
-         } catch (Exception var37) {
-            WorldSelectionList.LOGGER.error("Unable to recreate world", var37);
+         } catch (Exception var4) {
+            WorldSelectionList.LOGGER.error("Unable to recreate world", var4);
             this.minecraft.setScreen(new AlertScreen(() -> {
                this.minecraft.setScreen(this.screen);
-            }, new TranslatableComponent("selectWorld.recreate.error.title"), new TranslatableComponent("selectWorld.recreate.error.text")));
+            }, new TranslatableComponent("selectWorld.recreate.error.title", new Object[0]), new TranslatableComponent("selectWorld.recreate.error.text", new Object[0])));
          }
 
       }
@@ -471,14 +356,9 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
       private void loadWorld() {
          this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
          if (this.minecraft.getLevelSource().levelExists(this.summary.getLevelId())) {
-            this.queueLoadScreen();
-            this.minecraft.loadLevel(this.summary.getLevelId());
+            this.minecraft.selectLevel(this.summary.getLevelId(), this.summary.getLevelName(), (LevelSettings)null);
          }
 
-      }
-
-      private void queueLoadScreen() {
-         this.minecraft.forceSetScreen(new GenericDirtMessageScreen(new TranslatableComponent("selectWorld.data_read")));
       }
 
       @Nullable
@@ -495,7 +375,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.W
                   Validate.validState(var4.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
                   Validate.validState(var4.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
                   DynamicTexture var5 = new DynamicTexture(var4);
-                  this.minecraft.getTextureManager().register((ResourceLocation)this.iconLocation, (AbstractTexture)var5);
+                  this.minecraft.getTextureManager().register((ResourceLocation)this.iconLocation, (TextureObject)var5);
                   var6 = var5;
                } catch (Throwable var16) {
                   var3 = var16;

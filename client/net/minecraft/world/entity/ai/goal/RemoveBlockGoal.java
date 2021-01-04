@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -70,7 +69,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
    public void tick() {
       super.tick();
       Level var1 = this.removerMob.level;
-      BlockPos var2 = this.removerMob.blockPosition();
+      BlockPos var2 = new BlockPos(this.removerMob);
       BlockPos var3 = this.getPosWithBlock(var2, var1);
       Random var4 = this.removerMob.getRandom();
       if (this.isReachedTarget() && var3 != null) {
@@ -114,7 +113,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
    @Nullable
    private BlockPos getPosWithBlock(BlockPos var1, BlockGetter var2) {
-      if (var2.getBlockState(var1).is(this.blockToRemove)) {
+      if (var2.getBlockState(var1).getBlock() == this.blockToRemove) {
          return var1;
       } else {
          BlockPos[] var3 = new BlockPos[]{var1.below(), var1.west(), var1.east(), var1.north(), var1.south(), var1.below().below()};
@@ -123,7 +122,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
          for(int var6 = 0; var6 < var5; ++var6) {
             BlockPos var7 = var4[var6];
-            if (var2.getBlockState(var7).is(this.blockToRemove)) {
+            if (var2.getBlockState(var7).getBlock() == this.blockToRemove) {
                return var7;
             }
          }
@@ -133,11 +132,11 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
    }
 
    protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      ChunkAccess var3 = var1.getChunk(SectionPos.blockToSectionCoord(var2.getX()), SectionPos.blockToSectionCoord(var2.getZ()), ChunkStatus.FULL, false);
+      ChunkAccess var3 = var1.getChunk(var2.getX() >> 4, var2.getZ() >> 4, ChunkStatus.FULL, false);
       if (var3 == null) {
          return false;
       } else {
-         return var3.getBlockState(var2).is(this.blockToRemove) && var3.getBlockState(var2.above()).isAir() && var3.getBlockState(var2.above(2)).isAir();
+         return var3.getBlockState(var2).getBlock() == this.blockToRemove && var3.getBlockState(var2.above()).isAir() && var3.getBlockState(var2.above(2)).isAir();
       }
    }
 }

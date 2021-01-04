@@ -10,7 +10,6 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemIdFix extends DataFix {
    private static final Int2ObjectMap<String> ITEM_NAMES = (Int2ObjectMap)DataFixUtils.make(new Int2ObjectOpenHashMap(), (var0) -> {
@@ -341,8 +340,8 @@ public class ItemIdFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = DSL.or(DSL.intType(), DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      Type var2 = DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString());
+      Type var1 = DSL.or(DSL.intType(), DSL.named(References.ITEM_NAME.typeName(), DSL.namespacedString()));
+      Type var2 = DSL.named(References.ITEM_NAME.typeName(), DSL.namespacedString());
       OpticFinder var3 = DSL.fieldFinder("id", var1);
       return this.fixTypeEverywhereTyped("ItemIdFix", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (var2x) -> {
          return var2x.update(var3, var2, (var0) -> {

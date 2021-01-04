@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -13,7 +14,6 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,9 +28,9 @@ public class BoatItem extends Item {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.ANY);
+      HitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.ANY);
       if (var5.getType() == HitResult.Type.MISS) {
-         return InteractionResultHolder.pass(var4);
+         return new InteractionResultHolder(InteractionResult.PASS, var4);
       } else {
          Vec3 var6 = var2.getViewVector(1.0F);
          double var7 = 5.0D;
@@ -43,7 +43,7 @@ public class BoatItem extends Item {
                Entity var12 = (Entity)var11.next();
                AABB var13 = var12.getBoundingBox().inflate((double)var12.getPickRadius());
                if (var13.contains(var10)) {
-                  return InteractionResultHolder.pass(var4);
+                  return new InteractionResultHolder(InteractionResult.PASS, var4);
                }
             }
          }
@@ -53,20 +53,21 @@ public class BoatItem extends Item {
             var14.setType(this.type);
             var14.yRot = var2.yRot;
             if (!var1.noCollision(var14, var14.getBoundingBox().inflate(-0.1D))) {
-               return InteractionResultHolder.fail(var4);
+               return new InteractionResultHolder(InteractionResult.FAIL, var4);
             } else {
                if (!var1.isClientSide) {
                   var1.addFreshEntity(var14);
-                  if (!var2.getAbilities().instabuild) {
-                     var4.shrink(1);
-                  }
+               }
+
+               if (!var2.abilities.instabuild) {
+                  var4.shrink(1);
                }
 
                var2.awardStat(Stats.ITEM_USED.get(this));
-               return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+               return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
             }
          } else {
-            return InteractionResultHolder.pass(var4);
+            return new InteractionResultHolder(InteractionResult.PASS, var4);
          }
       }
    }

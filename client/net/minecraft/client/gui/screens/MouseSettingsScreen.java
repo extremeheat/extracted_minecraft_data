@@ -1,22 +1,22 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import net.minecraft.client.Option;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 
-public class MouseSettingsScreen extends OptionsSubScreen {
+public class MouseSettingsScreen extends Screen {
+   private final Screen lastScreen;
    private OptionsList list;
    private static final Option[] OPTIONS;
 
-   public MouseSettingsScreen(Screen var1, Options var2) {
-      super(var1, var2, new TranslatableComponent("options.mouse_settings.title"));
+   public MouseSettingsScreen(Screen var1) {
+      super(new TranslatableComponent("options.mouse_settings.title", new Object[0]));
+      this.lastScreen = var1;
    }
 
    protected void init() {
@@ -30,17 +30,21 @@ public class MouseSettingsScreen extends OptionsSubScreen {
       }
 
       this.children.add(this.list);
-      this.addButton(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, (var1) -> {
-         this.options.save();
+      this.addButton(new Button(this.width / 2 - 100, this.height - 27, 200, 20, I18n.get("gui.done"), (var1) -> {
+         this.minecraft.options.save();
          this.minecraft.setScreen(this.lastScreen);
       }));
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.list.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 5, 16777215);
-      super.render(var1, var2, var3, var4);
+   public void removed() {
+      this.minecraft.options.save();
+   }
+
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.list.render(var1, var2, var3);
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 5, 16777215);
+      super.render(var1, var2, var3);
    }
 
    static {

@@ -3,19 +3,19 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public class BushBlock extends Block {
-   protected BushBlock(BlockBehaviour.Properties var1) {
+   protected BushBlock(Block.Properties var1) {
       super(var1);
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.GRASS_BLOCK) || var1.is(Blocks.DIRT) || var1.is(Blocks.COARSE_DIRT) || var1.is(Blocks.PODZOL) || var1.is(Blocks.FARMLAND);
+      Block var4 = var1.getBlock();
+      return var4 == Blocks.GRASS_BLOCK || var4 == Blocks.DIRT || var4 == Blocks.COARSE_DIRT || var4 == Blocks.PODZOL || var4 == Blocks.FARMLAND;
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
@@ -27,11 +27,11 @@ public class BushBlock extends Block {
       return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
    }
 
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getFluidState().isEmpty();
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      return var4 == PathComputationType.AIR && !this.hasCollision ? true : super.isPathfindable(var1, var2, var3, var4);
+   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return true;
    }
 }

@@ -3,12 +3,12 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -26,9 +26,9 @@ public class ItemLoreFix extends DataFix {
             return var0.update(DSL.remainderFinder(), (var0x) -> {
                return var0x.update("display", (var0) -> {
                   return var0.update("Lore", (var0x) -> {
-                     DataResult var10000 = var0x.asStreamOpt().map(ItemLoreFix::fixLoreList);
+                     Optional var10000 = var0x.asStreamOpt().map(ItemLoreFix::fixLoreList);
                      var0x.getClass();
-                     return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createList).result(), var0x);
+                     return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createList), var0x);
                   });
                });
             });
@@ -38,9 +38,9 @@ public class ItemLoreFix extends DataFix {
 
    private static <T> Stream<Dynamic<T>> fixLoreList(Stream<Dynamic<T>> var0) {
       return var0.map((var0x) -> {
-         DataResult var10000 = var0x.asString().map(ItemLoreFix::fixLoreEntry);
+         Optional var10000 = var0x.asString().map(ItemLoreFix::fixLoreEntry);
          var0x.getClass();
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createString).result(), var0x);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createString), var0x);
       });
    }
 

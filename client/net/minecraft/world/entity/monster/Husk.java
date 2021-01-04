@@ -14,14 +14,14 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public class Husk extends Zombie {
    public Husk(EntityType<? extends Husk> var1, Level var2) {
       super(var1, var2);
    }
 
-   public static boolean checkHuskSpawnRules(EntityType<Husk> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
+   public static boolean checkHuskSpawnRules(EntityType<Husk> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
       return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (var2 == MobSpawnType.SPAWNER || var1.canSeeSky(var3));
    }
 
@@ -48,7 +48,7 @@ public class Husk extends Zombie {
    public boolean doHurtTarget(Entity var1) {
       boolean var2 = super.doHurtTarget(var1);
       if (var2 && this.getMainHandItem().isEmpty() && var1 instanceof LivingEntity) {
-         float var3 = this.level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         float var3 = this.level.getCurrentDifficultyAt(new BlockPos(this)).getEffectiveDifficulty();
          ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)var3));
       }
 
@@ -60,11 +60,8 @@ public class Husk extends Zombie {
    }
 
    protected void doUnderWaterConversion() {
-      this.convertToZombieType(EntityType.ZOMBIE);
-      if (!this.isSilent()) {
-         this.level.levelEvent((Player)null, 1041, this.blockPosition(), 0);
-      }
-
+      this.convertTo(EntityType.ZOMBIE);
+      this.level.levelEvent((Player)null, 1041, new BlockPos(this), 0);
    }
 
    protected ItemStack getSkull() {

@@ -1,13 +1,15 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Random;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockMatchTest extends RuleTest {
-   public static final Codec<BlockMatchTest> CODEC;
    private final Block block;
 
    public BlockMatchTest(Block var1) {
@@ -15,17 +17,19 @@ public class BlockMatchTest extends RuleTest {
       this.block = var1;
    }
 
-   public boolean test(BlockState var1, Random var2) {
-      return var1.is(this.block);
+   public <T> BlockMatchTest(Dynamic<T> var1) {
+      this((Block)Registry.BLOCK.get(new ResourceLocation(var1.get("block").asString(""))));
    }
 
-   protected RuleTestType<?> getType() {
+   public boolean test(BlockState var1, Random var2) {
+      return var1.getBlock() == this.block;
+   }
+
+   protected RuleTestType getType() {
       return RuleTestType.BLOCK_TEST;
    }
 
-   static {
-      CODEC = Registry.BLOCK.fieldOf("block").xmap(BlockMatchTest::new, (var0) -> {
-         return var0.block;
-      }).codec();
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("block"), var1.createString(Registry.BLOCK.getKey(this.block).toString()))));
    }
 }

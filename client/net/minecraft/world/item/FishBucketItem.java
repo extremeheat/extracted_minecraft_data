@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -29,8 +28,8 @@ public class FishBucketItem extends BucketItem {
    }
 
    public void checkExtraContent(Level var1, ItemStack var2, BlockPos var3) {
-      if (var1 instanceof ServerLevel) {
-         this.spawn((ServerLevel)var1, var2, var3);
+      if (!var1.isClientSide) {
+         this.spawn(var1, var2, var3);
       }
 
    }
@@ -39,7 +38,7 @@ public class FishBucketItem extends BucketItem {
       var2.playSound(var1, var3, SoundEvents.BUCKET_EMPTY_FISH, SoundSource.NEUTRAL, 1.0F, 1.0F);
    }
 
-   private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
+   private void spawn(Level var1, ItemStack var2, BlockPos var3) {
       Entity var4 = this.type.spawn(var1, var2, (Player)null, var3, MobSpawnType.BUCKET, true, false);
       if (var4 != null) {
          ((AbstractFish)var4).setFromBucket(true);
@@ -58,15 +57,15 @@ public class FishBucketItem extends BucketItem {
 
             for(int var10 = 0; var10 < TropicalFish.COMMON_VARIANTS.length; ++var10) {
                if (var6 == TropicalFish.COMMON_VARIANTS[var10]) {
-                  var3.add((new TranslatableComponent(TropicalFish.getPredefinedName(var10))).withStyle(var7));
+                  var3.add((new TranslatableComponent(TropicalFish.getPredefinedName(var10), new Object[0])).withStyle(var7));
                   return;
                }
             }
 
-            var3.add((new TranslatableComponent(TropicalFish.getFishTypeName(var6))).withStyle(var7));
-            TranslatableComponent var11 = new TranslatableComponent(var8);
+            var3.add((new TranslatableComponent(TropicalFish.getFishTypeName(var6), new Object[0])).withStyle(var7));
+            TranslatableComponent var11 = new TranslatableComponent(var8, new Object[0]);
             if (!var8.equals(var9)) {
-               var11.append(", ").append((Component)(new TranslatableComponent(var9)));
+               var11.append(", ").append((Component)(new TranslatableComponent(var9, new Object[0])));
             }
 
             var11.withStyle(var7);

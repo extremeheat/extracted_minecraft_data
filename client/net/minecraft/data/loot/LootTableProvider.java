@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
@@ -23,8 +22,8 @@ import net.minecraft.data.HashCache;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
 import net.minecraft.world.level.storage.loot.LootTables;
-import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.apache.logging.log4j.LogManager;
@@ -38,7 +37,7 @@ public class LootTableProvider implements DataProvider {
 
    public LootTableProvider(DataGenerator var1) {
       super();
-      this.subProviders = ImmutableList.of(Pair.of(FishingLoot::new, LootContextParamSets.FISHING), Pair.of(ChestLoot::new, LootContextParamSets.CHEST), Pair.of(EntityLoot::new, LootContextParamSets.ENTITY), Pair.of(BlockLoot::new, LootContextParamSets.BLOCK), Pair.of(PiglinBarterLoot::new, LootContextParamSets.PIGLIN_BARTER), Pair.of(GiftLoot::new, LootContextParamSets.GIFT));
+      this.subProviders = ImmutableList.of(Pair.of(FishingLoot::new, LootContextParamSets.FISHING), Pair.of(ChestLoot::new, LootContextParamSets.CHEST), Pair.of(EntityLoot::new, LootContextParamSets.ENTITY), Pair.of(BlockLoot::new, LootContextParamSets.BLOCK), Pair.of(GiftLoot::new, LootContextParamSets.GIFT));
       this.generator = var1;
    }
 
@@ -52,12 +51,7 @@ public class LootTableProvider implements DataProvider {
             }
          });
       });
-      LootContextParamSet var10002 = LootContextParamSets.ALL_PARAMS;
-      Function var10003 = (var0) -> {
-         return null;
-      };
-      var3.getClass();
-      ValidationContext var4 = new ValidationContext(var10002, var10003, var3::get);
+      LootTableProblemCollector var4 = new LootTableProblemCollector();
       SetView var5 = Sets.difference(BuiltInLootTables.all(), var3.keySet());
       Iterator var6 = var5.iterator();
 
@@ -66,13 +60,13 @@ public class LootTableProvider implements DataProvider {
          var4.reportProblem("Missing built-in table: " + var7);
       }
 
-      var3.forEach((var1x, var2x) -> {
-         LootTables.validate(var4, var1x, var2x);
+      var3.forEach((var2x, var3x) -> {
+         LootTables.validate(var4, var2x, var3x, var3::get);
       });
       Multimap var8 = var4.getProblems();
       if (!var8.isEmpty()) {
          var8.forEach((var0, var1x) -> {
-            LOGGER.warn("Found validation problem in {}: {}", var0, var1x);
+            LOGGER.warn("Found validation problem in " + var0 + ": " + var1x);
          });
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {

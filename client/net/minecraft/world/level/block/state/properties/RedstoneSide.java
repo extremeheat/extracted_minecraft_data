@@ -20,8 +20,4 @@ public enum RedstoneSide implements StringRepresentable {
    public String getSerializedName() {
       return this.name;
    }
-
-   public boolean isConnected() {
-      return this != NONE;
-   }
 }

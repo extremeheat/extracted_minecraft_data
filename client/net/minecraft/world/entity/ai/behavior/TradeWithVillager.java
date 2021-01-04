@@ -14,7 +14,6 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public class TradeWithVillager extends Behavior<Villager> {
    private Set<Item> trades = ImmutableSet.of();
@@ -33,21 +32,17 @@ public class TradeWithVillager extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
+      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5);
       this.trades = figureOutWhatIAmWillingToTrade(var2, var5);
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
       if (var2.distanceToSqr(var5) <= 5.0D) {
-         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
-         var2.gossip(var1, var5, var3);
+         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5);
+         var2.gossip(var5, var3);
          if (var2.hasExcessFood() && (var2.getVillagerData().getProfession() == VillagerProfession.FARMER || var5.wantsMoreFood())) {
             throwHalfStack(var2, Villager.FOOD_POINTS.keySet(), var5);
-         }
-
-         if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getMaxStackSize() / 2) {
-            throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
          }
 
          if (!this.trades.isEmpty() && var2.getInventory().hasAnyOf(this.trades)) {
@@ -105,7 +100,7 @@ public class TradeWithVillager extends Behavior<Villager> {
       }
 
       if (!var4.isEmpty()) {
-         BehaviorUtils.throwItem(var0, var4, var2.position());
+         BehaviorUtils.throwItem(var0, var4, var2);
       }
 
    }

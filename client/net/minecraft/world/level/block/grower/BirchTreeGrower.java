@@ -2,9 +2,9 @@ package net.minecraft.world.level.block.grower;
 
 import java.util.Random;
 import javax.annotation.Nullable;
-import net.minecraft.data.worldgen.Features;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.AbstractTreeFeature;
+import net.minecraft.world.level.levelgen.feature.BirchFeature;
+import net.minecraft.world.level.levelgen.feature.NoneFeatureConfiguration;
 
 public class BirchTreeGrower extends AbstractTreeGrower {
    public BirchTreeGrower() {
@@ -12,7 +12,7 @@ public class BirchTreeGrower extends AbstractTreeGrower {
    }
 
    @Nullable
-   protected ConfiguredFeature<TreeConfiguration, ?> getConfiguredFeature(Random var1, boolean var2) {
-      return var2 ? Features.BIRCH_BEES_005 : Features.BIRCH;
+   protected AbstractTreeFeature<NoneFeatureConfiguration> getFeature(Random var1) {
+      return new BirchFeature(NoneFeatureConfiguration::deserialize, true, false);
    }
 }

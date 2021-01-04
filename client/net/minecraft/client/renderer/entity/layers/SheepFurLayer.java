@@ -1,11 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.SheepFurModel;
 import net.minecraft.client.model.SheepModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Sheep;
@@ -13,38 +10,37 @@ import net.minecraft.world.item.DyeColor;
 
 public class SheepFurLayer extends RenderLayer<Sheep, SheepModel<Sheep>> {
    private static final ResourceLocation SHEEP_FUR_LOCATION = new ResourceLocation("textures/entity/sheep/sheep_fur.png");
-   private final SheepFurModel<Sheep> model;
+   private final SheepFurModel<Sheep> model = new SheepFurModel();
 
-   public SheepFurLayer(RenderLayerParent<Sheep, SheepModel<Sheep>> var1, EntityModelSet var2) {
+   public SheepFurLayer(RenderLayerParent<Sheep, SheepModel<Sheep>> var1) {
       super(var1);
-      this.model = new SheepFurModel(var2.getLayer(ModelLayers.SHEEP_FUR));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Sheep var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (!var4.isSheared() && !var4.isInvisible()) {
-         float var11;
-         float var12;
-         float var13;
-         if (var4.hasCustomName() && "jeb_".equals(var4.getName().getContents())) {
-            boolean var22 = true;
-            int var15 = var4.tickCount / 25 + var4.getId();
-            int var16 = DyeColor.values().length;
-            int var17 = var15 % var16;
-            int var18 = (var15 + 1) % var16;
-            float var19 = ((float)(var4.tickCount % 25) + var7) / 25.0F;
-            float[] var20 = Sheep.getColorArray(DyeColor.byId(var17));
-            float[] var21 = Sheep.getColorArray(DyeColor.byId(var18));
-            var11 = var20[0] * (1.0F - var19) + var21[0] * var19;
-            var12 = var20[1] * (1.0F - var19) + var21[1] * var19;
-            var13 = var20[2] * (1.0F - var19) + var21[2] * var19;
+   public void render(Sheep var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      if (!var1.isSheared() && !var1.isInvisible()) {
+         this.bindTexture(SHEEP_FUR_LOCATION);
+         if (var1.hasCustomName() && "jeb_".equals(var1.getName().getContents())) {
+            boolean var17 = true;
+            int var10 = var1.tickCount / 25 + var1.getId();
+            int var11 = DyeColor.values().length;
+            int var12 = var10 % var11;
+            int var13 = (var10 + 1) % var11;
+            float var14 = ((float)(var1.tickCount % 25) + var4) / 25.0F;
+            float[] var15 = Sheep.getColorArray(DyeColor.byId(var12));
+            float[] var16 = Sheep.getColorArray(DyeColor.byId(var13));
+            GlStateManager.color3f(var15[0] * (1.0F - var14) + var16[0] * var14, var15[1] * (1.0F - var14) + var16[1] * var14, var15[2] * (1.0F - var14) + var16[2] * var14);
          } else {
-            float[] var14 = Sheep.getColorArray(var4.getColor());
-            var11 = var14[0];
-            var12 = var14[1];
-            var13 = var14[2];
+            float[] var9 = Sheep.getColorArray(var1.getColor());
+            GlStateManager.color3f(var9[0], var9[1], var9[2]);
          }
 
-         coloredCutoutModelCopyLayerRender(this.getParentModel(), this.model, SHEEP_FUR_LOCATION, var1, var2, var3, var4, var5, var6, var8, var9, var10, var7, var11, var12, var13);
+         ((SheepModel)this.getParentModel()).copyPropertiesTo(this.model);
+         this.model.prepareMobModel(var1, var2, var3, var4);
+         this.model.render(var1, var2, var3, var5, var6, var7, var8);
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return true;
    }
 }

@@ -3,11 +3,9 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -17,7 +15,7 @@ public class CoralPlantBlock extends BaseCoralPlantTypeBlock {
    private final Block deadBlock;
    protected static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 15.0D, 14.0D);
 
-   protected CoralPlantBlock(Block var1, BlockBehaviour.Properties var2) {
+   protected CoralPlantBlock(Block var1, Block.Properties var2) {
       super(var2);
       this.deadBlock = var1;
    }
@@ -26,7 +24,7 @@ public class CoralPlantBlock extends BaseCoralPlantTypeBlock {
       this.tryScheduleDieTick(var1, var2, var3);
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (!scanForWater(var1, var2, var3)) {
          var2.setBlock(var3, (BlockState)this.deadBlock.defaultBlockState().setValue(WATERLOGGED, false), 2);
       }

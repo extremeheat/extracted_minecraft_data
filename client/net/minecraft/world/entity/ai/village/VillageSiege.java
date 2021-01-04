@@ -12,15 +12,11 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-public class VillageSiege implements CustomSpawner {
-   private static final Logger LOGGER = LogManager.getLogger();
+public class VillageSiege {
    private boolean hasSetupSiege;
    private VillageSiege.State siegeState;
    private int zombiesToSpawn;
@@ -80,7 +76,7 @@ public class VillageSiege implements CustomSpawner {
       while(var2.hasNext()) {
          Player var3 = (Player)var2.next();
          if (!var3.isSpectator()) {
-            BlockPos var4 = var3.blockPosition();
+            BlockPos var4 = var3.getCommandSenderBlockPosition();
             if (var1.isVillage(var4) && var1.getBiome(var4).getBiomeCategory() != Biome.BiomeCategory.MUSHROOM) {
                for(int var5 = 0; var5 < 10; ++var5) {
                   float var6 = var1.random.nextFloat() * 6.2831855F;
@@ -108,14 +104,14 @@ public class VillageSiege implements CustomSpawner {
          Zombie var3;
          try {
             var3 = new Zombie(var1);
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, (SpawnGroupData)null, (CompoundTag)null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(new BlockPos(var3)), MobSpawnType.EVENT, (SpawnGroupData)null, (CompoundTag)null);
          } catch (Exception var5) {
-            LOGGER.warn("Failed to create zombie for village siege at {}", var2, var5);
+            var5.printStackTrace();
             return;
          }
 
          var3.moveTo(var2.x, var2.y, var2.z, var1.random.nextFloat() * 360.0F, 0.0F);
-         var1.addFreshEntityWithPassengers(var3);
+         var1.addFreshEntity(var3);
       }
    }
 
@@ -127,7 +123,7 @@ public class VillageSiege implements CustomSpawner {
          int var6 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var5);
          BlockPos var7 = new BlockPos(var4, var6, var5);
          if (var1.isVillage(var7) && Monster.checkMonsterSpawnRules(EntityType.ZOMBIE, var1, MobSpawnType.EVENT, var7, var1.random)) {
-            return Vec3.atBottomCenterOf(var7);
+            return new Vec3((double)var7.getX() + 0.5D, (double)var7.getY(), (double)var7.getZ() + 0.5D);
          }
       }
 

@@ -2,12 +2,10 @@ package net.minecraft.world.level.storage;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixer;
-import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -83,72 +81,51 @@ public class DimensionDataStorage {
 
    public CompoundTag readTagFromDisk(String var1, int var2) throws IOException {
       File var3 = this.getDataFile(var1);
-      FileInputStream var4 = new FileInputStream(var3);
+      PushbackInputStream var4 = new PushbackInputStream(new FileInputStream(var3), 2);
       Throwable var5 = null;
 
-      Object var10;
+      CompoundTag var36;
       try {
-         PushbackInputStream var6 = new PushbackInputStream(var4, 2);
-         Throwable var7 = null;
+         CompoundTag var6;
+         if (this.isGzip(var4)) {
+            var6 = NbtIo.readCompressed(var4);
+         } else {
+            DataInputStream var7 = new DataInputStream(var4);
+            Throwable var8 = null;
 
-         try {
-            CompoundTag var8;
-            if (this.isGzip(var6)) {
-               var8 = NbtIo.readCompressed((InputStream)var6);
-            } else {
-               DataInputStream var9 = new DataInputStream(var6);
-               var10 = null;
-
-               try {
-                  var8 = NbtIo.read((DataInput)var9);
-               } catch (Throwable var54) {
-                  var10 = var54;
-                  throw var54;
-               } finally {
-                  if (var9 != null) {
-                     if (var10 != null) {
-                        try {
-                           var9.close();
-                        } catch (Throwable var53) {
-                           ((Throwable)var10).addSuppressed(var53);
-                        }
-                     } else {
-                        var9.close();
-                     }
-                  }
-
-               }
-            }
-
-            int var60 = var8.contains("DataVersion", 99) ? var8.getInt("DataVersion") : 1343;
-            var10 = NbtUtils.update(this.fixerUpper, DataFixTypes.SAVED_DATA, var8, var60, var2);
-         } catch (Throwable var56) {
-            var7 = var56;
-            throw var56;
-         } finally {
-            if (var6 != null) {
+            try {
+               var6 = NbtIo.read(var7);
+            } catch (Throwable var31) {
+               var8 = var31;
+               throw var31;
+            } finally {
                if (var7 != null) {
-                  try {
-                     var6.close();
-                  } catch (Throwable var52) {
-                     var7.addSuppressed(var52);
+                  if (var8 != null) {
+                     try {
+                        var7.close();
+                     } catch (Throwable var30) {
+                        var8.addSuppressed(var30);
+                     }
+                  } else {
+                     var7.close();
                   }
-               } else {
-                  var6.close();
                }
-            }
 
+            }
          }
-      } catch (Throwable var58) {
-         var5 = var58;
-         throw var58;
+
+         int var35 = var6.contains("DataVersion", 99) ? var6.getInt("DataVersion") : 1343;
+         var36 = NbtUtils.update(this.fixerUpper, DataFixTypes.SAVED_DATA, var6, var35, var2);
+      } catch (Throwable var33) {
+         var5 = var33;
+         throw var33;
       } finally {
          if (var4 != null) {
             if (var5 != null) {
                try {
                   var4.close();
-               } catch (Throwable var51) {
-                  var5.addSuppressed(var51);
+               } catch (Throwable var29) {
+                  var5.addSuppressed(var29);
                }
             } else {
                var4.close();
@@ -157,7 +134,7 @@ public class DimensionDataStorage {
 
       }
 
-      return (CompoundTag)var10;
+      return var36;
    }
 
    private boolean isGzip(PushbackInputStream var1) throws IOException {

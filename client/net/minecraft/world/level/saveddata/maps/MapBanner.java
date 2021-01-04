@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
@@ -28,7 +27,7 @@ public class MapBanner {
    public static MapBanner load(CompoundTag var0) {
       BlockPos var1 = NbtUtils.readBlockPos(var0.getCompound("Pos"));
       DyeColor var2 = DyeColor.byName(var0.getString("Color"), DyeColor.WHITE);
-      MutableComponent var3 = var0.contains("Name") ? Component.Serializer.fromJson(var0.getString("Name")) : null;
+      Component var3 = var0.contains("Name") ? Component.Serializer.fromJson(var0.getString("Name")) : null;
       return new MapBanner(var1, var2, var3);
    }
 
@@ -37,7 +36,9 @@ public class MapBanner {
       BlockEntity var2 = var0.getBlockEntity(var1);
       if (var2 instanceof BannerBlockEntity) {
          BannerBlockEntity var3 = (BannerBlockEntity)var2;
-         DyeColor var4 = var3.getBaseColor();
+         DyeColor var4 = var3.getBaseColor(() -> {
+            return var0.getBlockState(var1);
+         });
          Component var5 = var3.hasCustomName() ? var3.getCustomName() : null;
          return new MapBanner(var1, var4, var5);
       } else {

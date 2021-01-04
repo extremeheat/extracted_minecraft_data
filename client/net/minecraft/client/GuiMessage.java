@@ -1,18 +1,20 @@
 package net.minecraft.client;
 
-public class GuiMessage<T> {
+import net.minecraft.network.chat.Component;
+
+public class GuiMessage {
    private final int addedTime;
-   private final T message;
+   private final Component message;
    private final int id;
 
-   public GuiMessage(int var1, T var2, int var3) {
+   public GuiMessage(int var1, Component var2, int var3) {
       super();
       this.message = var2;
       this.addedTime = var1;
       this.id = var3;
    }
 
-   public T getMessage() {
+   public Component getMessage() {
       return this.message;
    }
 

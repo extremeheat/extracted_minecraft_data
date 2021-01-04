@@ -2,14 +2,13 @@ package net.minecraft.world.level.pathfinder;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.PathNavigationRegion;
+import net.minecraft.world.level.LevelReader;
 
 public abstract class NodeEvaluator {
-   protected PathNavigationRegion level;
+   protected LevelReader level;
    protected Mob mob;
    protected final Int2ObjectMap<Node> nodes = new Int2ObjectOpenHashMap();
    protected int entityWidth;
@@ -23,7 +22,7 @@ public abstract class NodeEvaluator {
       super();
    }
 
-   public void prepare(PathNavigationRegion var1, Mob var2) {
+   public void prepare(LevelReader var1, Mob var2) {
       this.level = var1;
       this.mob = var2;
       this.nodes.clear();
@@ -35,10 +34,6 @@ public abstract class NodeEvaluator {
    public void done() {
       this.level = null;
       this.mob = null;
-   }
-
-   protected Node getNode(BlockPos var1) {
-      return this.getNode(var1.getX(), var1.getY(), var1.getZ());
    }
 
    protected Node getNode(int var1, int var2, int var3) {

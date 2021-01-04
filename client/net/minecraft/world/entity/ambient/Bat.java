@@ -16,12 +16,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -74,8 +72,9 @@ public class Bat extends AmbientCreature {
    protected void pushEntities() {
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 6.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(6.0D);
    }
 
    public boolean isResting() {
@@ -96,7 +95,7 @@ public class Bat extends AmbientCreature {
       super.tick();
       if (this.isResting()) {
          this.setDeltaMovement(Vec3.ZERO);
-         this.setPosRaw(this.getX(), (double)Mth.floor(this.getY()) + 1.0D - (double)this.getBbHeight(), this.getZ());
+         this.y = (double)Mth.floor(this.y) + 1.0D - (double)this.getBbHeight();
       } else {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, 0.6D, 1.0D));
       }
@@ -105,10 +104,9 @@ public class Bat extends AmbientCreature {
 
    protected void customServerAiStep() {
       super.customServerAiStep();
-      BlockPos var1 = this.blockPosition();
+      BlockPos var1 = new BlockPos(this);
       BlockPos var2 = var1.above();
       if (this.isResting()) {
-         boolean var3 = this.isSilent();
          if (this.level.getBlockState(var2).isRedstoneConductor(this.level, var1)) {
             if (this.random.nextInt(200) == 0) {
                this.yHeadRot = (float)this.random.nextInt(360);
@@ -116,30 +114,26 @@ public class Bat extends AmbientCreature {
 
             if (this.level.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
-               if (!var3) {
-                  this.level.levelEvent((Player)null, 1025, var1, 0);
-               }
+               this.level.levelEvent((Player)null, 1025, var1, 0);
             }
          } else {
             this.setResting(false);
-            if (!var3) {
-               this.level.levelEvent((Player)null, 1025, var1, 0);
-            }
+            this.level.levelEvent((Player)null, 1025, var1, 0);
          }
       } else {
-         if (this.targetPosition != null && (!this.level.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= this.level.getMinBuildHeight())) {
+         if (this.targetPosition != null && (!this.level.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() < 1)) {
             this.targetPosition = null;
          }
 
          if (this.targetPosition == null || this.random.nextInt(30) == 0 || this.targetPosition.closerThan(this.position(), 2.0D)) {
-            this.targetPosition = new BlockPos(this.getX() + (double)this.random.nextInt(7) - (double)this.random.nextInt(7), this.getY() + (double)this.random.nextInt(6) - 2.0D, this.getZ() + (double)this.random.nextInt(7) - (double)this.random.nextInt(7));
+            this.targetPosition = new BlockPos(this.x + (double)this.random.nextInt(7) - (double)this.random.nextInt(7), this.y + (double)this.random.nextInt(6) - 2.0D, this.z + (double)this.random.nextInt(7) - (double)this.random.nextInt(7));
          }
 
-         double var13 = (double)this.targetPosition.getX() + 0.5D - this.getX();
-         double var5 = (double)this.targetPosition.getY() + 0.1D - this.getY();
-         double var7 = (double)this.targetPosition.getZ() + 0.5D - this.getZ();
+         double var3 = (double)this.targetPosition.getX() + 0.5D - this.x;
+         double var5 = (double)this.targetPosition.getY() + 0.1D - this.y;
+         double var7 = (double)this.targetPosition.getZ() + 0.5D - this.z;
          Vec3 var9 = this.getDeltaMovement();
-         Vec3 var10 = var9.add((Math.signum(var13) * 0.5D - var9.x) * 0.10000000149011612D, (Math.signum(var5) * 0.699999988079071D - var9.y) * 0.10000000149011612D, (Math.signum(var7) * 0.5D - var9.z) * 0.10000000149011612D);
+         Vec3 var10 = var9.add((Math.signum(var3) * 0.5D - var9.x) * 0.10000000149011612D, (Math.signum(var5) * 0.699999988079071D - var9.y) * 0.10000000149011612D, (Math.signum(var7) * 0.5D - var9.z) * 0.10000000149011612D);
          this.setDeltaMovement(var10);
          float var11 = (float)(Mth.atan2(var10.z, var10.x) * 57.2957763671875D) - 90.0F;
          float var12 = Mth.wrapDegrees(var11 - this.yRot);
@@ -152,12 +146,11 @@ public class Bat extends AmbientCreature {
 
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {

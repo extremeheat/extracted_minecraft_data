@@ -1,7 +1,5 @@
 package net.minecraft.core.particles;
 
-import com.mojang.serialization.Codec;
-import java.util.function.Function;
 import net.minecraft.core.Registry;
 
 public class ParticleTypes {
@@ -32,8 +30,6 @@ public class ParticleTypes {
    public static final SimpleParticleType FIREWORK;
    public static final SimpleParticleType FISHING;
    public static final SimpleParticleType FLAME;
-   public static final SimpleParticleType SOUL_FIRE_FLAME;
-   public static final SimpleParticleType SOUL;
    public static final SimpleParticleType FLASH;
    public static final SimpleParticleType HAPPY_VILLAGER;
    public static final SimpleParticleType COMPOSTER;
@@ -65,35 +61,17 @@ public class ParticleTypes {
    public static final SimpleParticleType DOLPHIN;
    public static final SimpleParticleType CAMPFIRE_COSY_SMOKE;
    public static final SimpleParticleType CAMPFIRE_SIGNAL_SMOKE;
-   public static final SimpleParticleType DRIPPING_HONEY;
-   public static final SimpleParticleType FALLING_HONEY;
-   public static final SimpleParticleType LANDING_HONEY;
-   public static final SimpleParticleType FALLING_NECTAR;
-   public static final SimpleParticleType ASH;
-   public static final SimpleParticleType CRIMSON_SPORE;
-   public static final SimpleParticleType WARPED_SPORE;
-   public static final SimpleParticleType DRIPPING_OBSIDIAN_TEAR;
-   public static final SimpleParticleType FALLING_OBSIDIAN_TEAR;
-   public static final SimpleParticleType LANDING_OBSIDIAN_TEAR;
-   public static final SimpleParticleType REVERSE_PORTAL;
-   public static final SimpleParticleType WHITE_ASH;
-   public static final SimpleParticleType SMALL_FLAME;
-   public static final Codec<ParticleOptions> CODEC;
 
    private static SimpleParticleType register(String var0, boolean var1) {
       return (SimpleParticleType)Registry.register(Registry.PARTICLE_TYPE, (String)var0, new SimpleParticleType(var1));
    }
 
-   private static <T extends ParticleOptions> ParticleType<T> register(String var0, ParticleOptions.Deserializer<T> var1, final Function<ParticleType<T>, Codec<T>> var2) {
-      return (ParticleType)Registry.register(Registry.PARTICLE_TYPE, (String)var0, new ParticleType<T>(false, var1) {
-         public Codec<T> codec() {
-            return (Codec)var2.apply(this);
-         }
-      });
+   private static <T extends ParticleOptions> ParticleType<T> register(String var0, ParticleOptions.Deserializer<T> var1) {
+      return (ParticleType)Registry.register(Registry.PARTICLE_TYPE, (String)var0, new ParticleType(false, var1));
    }
 
    static {
-      BLOCK = register("block", BlockParticleOption.DESERIALIZER, BlockParticleOption::codec);
+      BLOCK = register("block", BlockParticleOption.DESERIALIZER);
       BUBBLE = register("bubble", false);
       CLOUD = register("cloud", false);
       CRIT = register("crit", false);
@@ -104,9 +82,7 @@ public class ParticleTypes {
       LANDING_LAVA = register("landing_lava", false);
       DRIPPING_WATER = register("dripping_water", false);
       FALLING_WATER = register("falling_water", false);
-      DUST = register("dust", DustParticleOptions.DESERIALIZER, (var0) -> {
-         return DustParticleOptions.CODEC;
-      });
+      DUST = register("dust", DustParticleOptions.DESERIALIZER);
       EFFECT = register("effect", false);
       ELDER_GUARDIAN = register("elder_guardian", true);
       ENCHANTED_HIT = register("enchanted_hit", false);
@@ -115,18 +91,16 @@ public class ParticleTypes {
       ENTITY_EFFECT = register("entity_effect", false);
       EXPLOSION_EMITTER = register("explosion_emitter", true);
       EXPLOSION = register("explosion", true);
-      FALLING_DUST = register("falling_dust", BlockParticleOption.DESERIALIZER, BlockParticleOption::codec);
+      FALLING_DUST = register("falling_dust", BlockParticleOption.DESERIALIZER);
       FIREWORK = register("firework", false);
       FISHING = register("fishing", false);
       FLAME = register("flame", false);
-      SOUL_FIRE_FLAME = register("soul_fire_flame", false);
-      SOUL = register("soul", false);
       FLASH = register("flash", false);
       HAPPY_VILLAGER = register("happy_villager", false);
       COMPOSTER = register("composter", false);
       HEART = register("heart", false);
       INSTANT_EFFECT = register("instant_effect", false);
-      ITEM = register("item", ItemParticleOption.DESERIALIZER, ItemParticleOption::codec);
+      ITEM = register("item", ItemParticleOption.DESERIALIZER);
       ITEM_SLIME = register("item_slime", false);
       ITEM_SNOWBALL = register("item_snowball", false);
       LARGE_SMOKE = register("large_smoke", false);
@@ -152,19 +126,5 @@ public class ParticleTypes {
       DOLPHIN = register("dolphin", false);
       CAMPFIRE_COSY_SMOKE = register("campfire_cosy_smoke", true);
       CAMPFIRE_SIGNAL_SMOKE = register("campfire_signal_smoke", true);
-      DRIPPING_HONEY = register("dripping_honey", false);
-      FALLING_HONEY = register("falling_honey", false);
-      LANDING_HONEY = register("landing_honey", false);
-      FALLING_NECTAR = register("falling_nectar", false);
-      ASH = register("ash", false);
-      CRIMSON_SPORE = register("crimson_spore", false);
-      WARPED_SPORE = register("warped_spore", false);
-      DRIPPING_OBSIDIAN_TEAR = register("dripping_obsidian_tear", false);
-      FALLING_OBSIDIAN_TEAR = register("falling_obsidian_tear", false);
-      LANDING_OBSIDIAN_TEAR = register("landing_obsidian_tear", false);
-      REVERSE_PORTAL = register("reverse_portal", false);
-      WHITE_ASH = register("white_ash", false);
-      SMALL_FLAME = register("small_flame", false);
-      CODEC = Registry.PARTICLE_TYPE.dispatch("type", ParticleOptions::getType, ParticleType::codec);
    }
 }

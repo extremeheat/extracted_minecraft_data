@@ -11,7 +11,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.FollowFlockLeaderGoal;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public abstract class AbstractSchoolingFish extends AbstractFish {
    private AbstractSchoolingFish leader;
@@ -91,7 +91,7 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
 
    }
 
-   public void addFollowers(Stream<? extends AbstractSchoolingFish> var1) {
+   public void addFollowers(Stream<AbstractSchoolingFish> var1) {
       var1.limit((long)(this.getMaxSchoolSize() - this.schoolSize)).filter((var1x) -> {
          return var1x != this;
       }).forEach((var1x) -> {
@@ -100,7 +100,7 @@ public abstract class AbstractSchoolingFish extends AbstractFish {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
       if (var4 == null) {
          var4 = new AbstractSchoolingFish.SchoolSpawnGroupData(this);

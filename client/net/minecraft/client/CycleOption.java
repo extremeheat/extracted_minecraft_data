@@ -4,13 +4,12 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.OptionButton;
-import net.minecraft.network.chat.Component;
 
 public class CycleOption extends Option {
    private final BiConsumer<Options, Integer> setter;
-   private final BiFunction<Options, CycleOption, Component> toString;
+   private final BiFunction<Options, CycleOption, String> toString;
 
-   public CycleOption(String var1, BiConsumer<Options, Integer> var2, BiFunction<Options, CycleOption, Component> var3) {
+   public CycleOption(String var1, BiConsumer<Options, Integer> var2, BiFunction<Options, CycleOption, String> var3) {
       super(var1);
       this.setter = var2;
       this.toString = var3;
@@ -28,7 +27,7 @@ public class CycleOption extends Option {
       });
    }
 
-   public Component getMessage(Options var1) {
-      return (Component)this.toString.apply(var1, this);
+   public String getMessage(Options var1) {
+      return (String)this.toString.apply(var1, this);
    }
 }

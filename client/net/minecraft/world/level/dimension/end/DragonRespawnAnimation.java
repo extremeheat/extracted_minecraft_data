@@ -10,8 +10,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.SpikeConfiguration;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
 
 public enum DragonRespawnAnimation {
    START {
@@ -67,7 +67,7 @@ public enum DragonRespawnAnimation {
 
                   var1.explode((Entity)null, (double)((float)var11.getCenterX() + 0.5F), (double)var11.getHeight(), (double)((float)var11.getCenterZ() + 0.5F), 5.0F, Explosion.BlockInteraction.DESTROY);
                   SpikeConfiguration var17 = new SpikeConfiguration(true, ImmutableList.of(var11), new BlockPos(0, 128, 0));
-                  Feature.END_SPIKE.configured(var17).place(var1, var1.getChunkSource().getGenerator(), new Random(), new BlockPos(var11.getCenterX(), 45, var11.getCenterZ()));
+                  Feature.END_SPIKE.place(var1, var1.getChunkSource().getGenerator(), new Random(), new BlockPos(var11.getCenterX(), 45, var11.getCenterZ()), var17);
                }
             } else if (var7) {
                var2.setRespawnStage(SUMMONING_DRAGON);
@@ -88,8 +88,8 @@ public enum DragonRespawnAnimation {
             while(var6.hasNext()) {
                var7 = (EndCrystal)var6.next();
                var7.setBeamTarget((BlockPos)null);
-               var1.explode(var7, var7.getX(), var7.getY(), var7.getZ(), 6.0F, Explosion.BlockInteraction.NONE);
-               var7.discard();
+               var1.explode(var7, var7.x, var7.y, var7.z, 6.0F, Explosion.BlockInteraction.NONE);
+               var7.remove();
             }
          } else if (var4 >= 80) {
             var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);

@@ -9,21 +9,16 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -31,14 +26,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class CommandSourceStack implements SharedSuggestionProvider {
-   public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(new TranslatableComponent("permissions.requires.player"));
-   public static final SimpleCommandExceptionType ERROR_NOT_ENTITY = new SimpleCommandExceptionType(new TranslatableComponent("permissions.requires.entity"));
+   public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(new TranslatableComponent("permissions.requires.player", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_NOT_ENTITY = new SimpleCommandExceptionType(new TranslatableComponent("permissions.requires.entity", new Object[0]));
    private final CommandSource source;
    private final Vec3 worldPosition;
    private final ServerLevel level;
@@ -112,20 +105,14 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    public CommandSourceStack withLevel(ServerLevel var1) {
-      if (var1 == this.level) {
-         return this;
-      } else {
-         double var2 = DimensionType.getTeleportationScale(this.level.dimensionType(), var1.dimensionType());
-         Vec3 var4 = new Vec3(this.worldPosition.x * var2, this.worldPosition.y, this.worldPosition.z * var2);
-         return new CommandSourceStack(this.source, var4, this.rotation, var1, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor);
-      }
+      return var1 == this.level ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, var1, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor);
    }
 
-   public CommandSourceStack facing(Entity var1, EntityAnchorArgument.Anchor var2) {
+   public CommandSourceStack facing(Entity var1, EntityAnchorArgument.Anchor var2) throws CommandSyntaxException {
       return this.facing(var2.apply(var1));
    }
 
-   public CommandSourceStack facing(Vec3 var1) {
+   public CommandSourceStack facing(Vec3 var1) throws CommandSyntaxException {
       Vec3 var2 = this.anchor.apply(this);
       double var3 = var1.x - var2.x;
       double var5 = var1.y - var2.y;
@@ -191,7 +178,7 @@ public class CommandSourceStack implements SharedSuggestionProvider {
 
    public void sendSuccess(Component var1, boolean var2) {
       if (this.source.acceptsSuccess() && !this.silent) {
-         this.source.sendMessage(var1, Util.NIL_UUID);
+         this.source.sendMessage(var1);
       }
 
       if (var2 && this.source.shouldInformAdmins() && !this.silent) {
@@ -201,27 +188,27 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    private void broadcastToAdmins(Component var1) {
-      MutableComponent var2 = (new TranslatableComponent("chat.type.admin", new Object[]{this.getDisplayName(), var1})).withStyle(new ChatFormatting[]{ChatFormatting.GRAY, ChatFormatting.ITALIC});
+      Component var2 = (new TranslatableComponent("chat.type.admin", new Object[]{this.getDisplayName(), var1})).withStyle(new ChatFormatting[]{ChatFormatting.GRAY, ChatFormatting.ITALIC});
       if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
          Iterator var3 = this.server.getPlayerList().getPlayers().iterator();
 
          while(var3.hasNext()) {
             ServerPlayer var4 = (ServerPlayer)var3.next();
             if (var4 != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
-               var4.sendMessage(var2, Util.NIL_UUID);
+               var4.sendMessage(var2);
             }
          }
       }
 
       if (this.source != this.server && this.server.getGameRules().getBoolean(GameRules.RULE_LOGADMINCOMMANDS)) {
-         this.server.sendMessage(var2, Util.NIL_UUID);
+         this.server.sendMessage(var2);
       }
 
    }
 
    public void sendFailure(Component var1) {
       if (this.source.acceptsFailure() && !this.silent) {
-         this.source.sendMessage((new TextComponent("")).append(var1).withStyle(ChatFormatting.RED), Util.NIL_UUID);
+         this.source.sendMessage((new TextComponent("")).append(var1).withStyle(ChatFormatting.RED));
       }
 
    }
@@ -251,13 +238,5 @@ public class CommandSourceStack implements SharedSuggestionProvider {
 
    public CompletableFuture<Suggestions> customSuggestion(CommandContext<SharedSuggestionProvider> var1, SuggestionsBuilder var2) {
       return null;
-   }
-
-   public Set<ResourceKey<Level>> levels() {
-      return this.server.levelKeys();
-   }
-
-   public RegistryAccess registryAccess() {
-      return this.server.registryAccess();
    }
 }

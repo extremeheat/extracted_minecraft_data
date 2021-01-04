@@ -1,23 +1,22 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -26,15 +25,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class TridentItem extends Item implements Vanishable {
-   private final Multimap<Attribute, AttributeModifier> defaultModifiers;
-
+public class TridentItem extends Item {
    public TridentItem(Item.Properties var1) {
       super(var1);
-      Builder var2 = ImmutableMultimap.builder();
-      var2.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", 8.0D, AttributeModifier.Operation.ADDITION));
-      var2.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", -2.9000000953674316D, AttributeModifier.Operation.ADDITION));
-      this.defaultModifiers = var2.build();
+      this.addProperty(new ResourceLocation("throwing"), (var0, var1x, var2) -> {
+         return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 ? 1.0F : 0.0F;
+      });
    }
 
    public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
@@ -47,6 +43,10 @@ public class TridentItem extends Item implements Vanishable {
 
    public int getUseDuration(ItemStack var1) {
       return 72000;
+   }
+
+   public boolean isFoil(ItemStack var1) {
+      return false;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
@@ -63,14 +63,14 @@ public class TridentItem extends Item implements Vanishable {
                   if (var7 == 0) {
                      ThrownTrident var8 = new ThrownTrident(var2, var5, var1);
                      var8.shootFromRotation(var5, var5.xRot, var5.yRot, 0.0F, 2.5F + (float)var7 * 0.5F, 1.0F);
-                     if (var5.getAbilities().instabuild) {
+                     if (var5.abilities.instabuild) {
                         var8.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
                      }
 
                      var2.addFreshEntity(var8);
                      var2.playSound((Player)null, (Entity)var8, SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0F, 1.0F);
-                     if (!var5.getAbilities().instabuild) {
-                        var5.getInventory().removeItem(var1);
+                     if (!var5.abilities.instabuild) {
+                        var5.inventory.removeItem(var1);
                      }
                   }
                }
@@ -89,7 +89,7 @@ public class TridentItem extends Item implements Vanishable {
                   var12 *= var14 / var13;
                   var5.push((double)var10, (double)var11, (double)var12);
                   var5.startAutoSpinAttack(20);
-                  if (var5.isOnGround()) {
+                  if (var5.onGround) {
                      float var15 = 1.1999999F;
                      var5.move(MoverType.SELF, new Vec3(0.0D, 1.1999999284744263D, 0.0D));
                   }
@@ -113,13 +113,13 @@ public class TridentItem extends Item implements Vanishable {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      if (var4.getDamageValue() >= var4.getMaxDamage() - 1) {
-         return InteractionResultHolder.fail(var4);
+      if (var4.getDamageValue() >= var4.getMaxDamage()) {
+         return new InteractionResultHolder(InteractionResult.FAIL, var4);
       } else if (EnchantmentHelper.getRiptide(var4) > 0 && !var2.isInWaterOrRain()) {
-         return InteractionResultHolder.fail(var4);
+         return new InteractionResultHolder(InteractionResult.FAIL, var4);
       } else {
          var2.startUsingItem(var3);
-         return InteractionResultHolder.consume(var4);
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       }
    }
 
@@ -140,8 +140,14 @@ public class TridentItem extends Item implements Vanishable {
       return true;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
+   public Multimap<String, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+      Multimap var2 = super.getDefaultAttributeModifiers(var1);
+      if (var1 == EquipmentSlot.MAINHAND) {
+         var2.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Tool modifier", 8.0D, AttributeModifier.Operation.ADDITION));
+         var2.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Tool modifier", -2.9000000953674316D, AttributeModifier.Operation.ADDITION));
+      }
+
+      return var2;
    }
 
    public int getEnchantmentValue() {

@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -28,10 +29,6 @@ public class EntityHasScoreCondition implements LootItemCondition {
       super();
       this.scores = ImmutableMap.copyOf(var1);
       this.entityTarget = var2;
-   }
-
-   public LootItemConditionType getType() {
-      return LootItemConditions.ENTITY_SCORES;
    }
 
    public Set<LootContextParam<?>> getReferencedContextParams() {
@@ -79,9 +76,9 @@ public class EntityHasScoreCondition implements LootItemCondition {
       this(var1, var2);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<EntityHasScoreCondition> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<EntityHasScoreCondition> {
+      protected Serializer() {
+         super(new ResourceLocation("entity_scores"), EntityHasScoreCondition.class);
       }
 
       public void serialize(JsonObject var1, EntityHasScoreCondition var2, JsonSerializationContext var3) {
@@ -111,7 +108,7 @@ public class EntityHasScoreCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

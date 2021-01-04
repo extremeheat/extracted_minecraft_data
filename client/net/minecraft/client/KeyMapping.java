@@ -5,12 +5,11 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 
 public class KeyMapping implements Comparable<KeyMapping> {
    private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
@@ -43,7 +42,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static void set(InputConstants.Key var0, boolean var1) {
       KeyMapping var2 = (KeyMapping)MAP.get(var0);
       if (var2 != null) {
-         var2.setDown(var1);
+         var2.isDown = var1;
       }
 
    }
@@ -54,7 +53,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
       while(var0.hasNext()) {
          KeyMapping var1 = (KeyMapping)var0.next();
          if (var1.key.getType() == InputConstants.Type.KEYSYM && var1.key.getValue() != InputConstants.UNKNOWN.getValue()) {
-            var1.setDown(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), var1.key.getValue()));
+            var1.isDown = InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), var1.key.getValue());
          }
       }
 
@@ -115,7 +114,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
    private void release() {
       this.clickCount = 0;
-      this.setDown(false);
+      this.isDown = false;
    }
 
    public String getName() {
@@ -134,10 +133,10 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.category.equals(var1.category) ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : ((Integer)CATEGORY_SORT_ORDER.get(this.category)).compareTo((Integer)CATEGORY_SORT_ORDER.get(var1.category));
    }
 
-   public static Supplier<Component> createNameSupplier(String var0) {
+   public static Supplier<String> createNameSupplier(String var0) {
       KeyMapping var1 = (KeyMapping)ALL.get(var0);
       return var1 == null ? () -> {
-         return new TranslatableComponent(var0);
+         return var0;
       } : var1::getTranslatedKeyMessage;
    }
 
@@ -161,8 +160,23 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == var1;
    }
 
-   public Component getTranslatedKeyMessage() {
-      return this.key.getDisplayName();
+   public String getTranslatedKeyMessage() {
+      String var1 = this.key.getName();
+      int var2 = this.key.getValue();
+      String var3 = null;
+      switch(this.key.getType()) {
+      case KEYSYM:
+         var3 = InputConstants.translateKeyCode(var2);
+         break;
+      case SCANCODE:
+         var3 = InputConstants.translateScanCode(var2);
+         break;
+      case MOUSE:
+         String var4 = I18n.get(var1);
+         var3 = Objects.equals(var4, var1) ? I18n.get(InputConstants.Type.MOUSE.getDefaultPrefix(), var2 + 1) : var4;
+      }
+
+      return var3 == null ? I18n.get(var1) : var3;
    }
 
    public boolean isDefault() {
@@ -171,10 +185,6 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
    public String saveString() {
       return this.key.getName();
-   }
-
-   public void setDown(boolean var1) {
-      this.isDown = var1;
    }
 
    // $FF: synthetic method

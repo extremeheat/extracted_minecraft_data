@@ -25,7 +25,6 @@ public class LoomMenu extends AbstractContainerMenu {
    private final Slot dyeSlot;
    private final Slot patternSlot;
    private final Slot resultSlot;
-   private long lastSoundTime;
    private final Container inputContainer;
    private final Container outputContainer;
 
@@ -79,13 +78,8 @@ public class LoomMenu extends AbstractContainerMenu {
                LoomMenu.this.selectedBannerPatternIndex.set(0);
             }
 
-            var3.execute((var1x, var2x) -> {
-               long var3x = var1x.getGameTime();
-               if (LoomMenu.this.lastSoundTime != var3x) {
-                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  LoomMenu.this.lastSoundTime = var3x;
-               }
-
+            var3.execute((var0, var1x) -> {
+               var0.playSound((Player)null, (BlockPos)var1x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
             });
             return super.onTake(var1, var2);
          }
@@ -128,7 +122,7 @@ public class LoomMenu extends AbstractContainerMenu {
       ItemStack var3 = this.dyeSlot.getItem();
       ItemStack var4 = this.patternSlot.getItem();
       ItemStack var5 = this.resultSlot.getItem();
-      if (var5.isEmpty() || !var2.isEmpty() && !var3.isEmpty() && this.selectedBannerPatternIndex.get() > 0 && (this.selectedBannerPatternIndex.get() < BannerPattern.COUNT - BannerPattern.PATTERN_ITEM_COUNT || !var4.isEmpty())) {
+      if (var5.isEmpty() || !var2.isEmpty() && !var3.isEmpty() && this.selectedBannerPatternIndex.get() > 0 && (this.selectedBannerPatternIndex.get() < BannerPattern.COUNT - 5 || !var4.isEmpty())) {
          if (!var4.isEmpty() && var4.getItem() instanceof BannerPatternItem) {
             CompoundTag var6 = var2.getOrCreateTagElement("BlockEntityTag");
             boolean var7 = var6.contains("Patterns", 9) && !var2.isEmpty() && var6.getList("Patterns", 10).size() >= 6;
@@ -206,7 +200,7 @@ public class LoomMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.inputContainer);
+         this.clearContainer(var1, var1.level, this.inputContainer);
       });
    }
 

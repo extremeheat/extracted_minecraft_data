@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -21,21 +22,17 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.CatLieOnBedGoal;
@@ -46,11 +43,12 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.OcelotAttackGoal;
-import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
+import net.minecraft.world.entity.ai.goal.SitGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NonTameRandomTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -59,10 +57,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -91,17 +89,18 @@ public class Cat extends TamableAnimal {
    }
 
    public ResourceLocation getResourceLocation() {
-      return (ResourceLocation)TEXTURE_BY_TYPE.getOrDefault(this.getCatType(), TEXTURE_BY_TYPE.get(0));
+      return (ResourceLocation)TEXTURE_BY_TYPE.get(this.getCatType());
    }
 
    protected void registerGoals() {
+      this.sitGoal = new SitGoal(this);
       this.temptGoal = new Cat.CatTemptGoal(this, 0.6D, TEMPT_INGREDIENT, true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
-      this.goalSelector.addGoal(2, new Cat.CatRelaxOnOwnerGoal(this));
+      this.goalSelector.addGoal(1, new Cat.CatRelaxOnOwnerGoal(this));
+      this.goalSelector.addGoal(2, this.sitGoal);
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(5, new CatLieOnBedGoal(this, 1.1D, 8));
-      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0D, 10.0F, 5.0F, false));
+      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0D, 10.0F, 5.0F));
       this.goalSelector.addGoal(7, new CatSitOnBlockGoal(this, 0.8D));
       this.goalSelector.addGoal(8, new LeapAtTargetGoal(this, 0.3F));
       this.goalSelector.addGoal(9, new OcelotAttackGoal(this));
@@ -175,17 +174,17 @@ public class Cat extends TamableAnimal {
       if (this.getMoveControl().hasWanted()) {
          double var1 = this.getMoveControl().getSpeedModifier();
          if (var1 == 0.6D) {
-            this.setPose(Pose.CROUCHING);
+            this.setSneaking(true);
             this.setSprinting(false);
          } else if (var1 == 1.33D) {
-            this.setPose(Pose.STANDING);
+            this.setSneaking(false);
             this.setSprinting(true);
          } else {
-            this.setPose(Pose.STANDING);
+            this.setSneaking(false);
             this.setSprinting(false);
          }
       } else {
-         this.setPose(Pose.STANDING);
+         this.setSneaking(false);
          this.setSprinting(false);
       }
 
@@ -220,12 +219,13 @@ public class Cat extends TamableAnimal {
       return SoundEvents.CAT_DEATH;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0D).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896D).add(Attributes.ATTACK_DAMAGE, 3.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.30000001192092896D);
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    protected void usePlayerItem(Player var1, ItemStack var2) {
@@ -236,12 +236,8 @@ public class Cat extends TamableAnimal {
       super.usePlayerItem(var1, var2);
    }
 
-   private float getAttackDamage() {
-      return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-   }
-
    public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(DamageSource.mobAttack(this), this.getAttackDamage());
+      return var1.hurt(DamageSource.mobAttack(this), 3.0F);
    }
 
    public void tick() {
@@ -297,27 +293,27 @@ public class Cat extends TamableAnimal {
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
-   public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Cat var3 = (Cat)EntityType.CAT.create(var1);
-      if (var2 instanceof Cat) {
+   public Cat getBreedOffspring(AgableMob var1) {
+      Cat var2 = (Cat)EntityType.CAT.create(this.level);
+      if (var1 instanceof Cat) {
          if (this.random.nextBoolean()) {
-            var3.setCatType(this.getCatType());
+            var2.setCatType(this.getCatType());
          } else {
-            var3.setCatType(((Cat)var2).getCatType());
+            var2.setCatType(((Cat)var1).getCatType());
          }
 
          if (this.isTame()) {
-            var3.setOwnerUUID(this.getOwnerUUID());
-            var3.setTame(true);
+            var2.setOwnerUUID(this.getOwnerUUID());
+            var2.setTame(true);
             if (this.random.nextBoolean()) {
-               var3.setCollarColor(this.getCollarColor());
+               var2.setCollarColor(this.getCollarColor());
             } else {
-               var3.setCollarColor(((Cat)var2).getCollarColor());
+               var2.setCollarColor(((Cat)var1).getCollarColor());
             }
          }
       }
 
-      return var3;
+      return var2;
    }
 
    public boolean canMate(Animal var1) {
@@ -332,7 +328,7 @@ public class Cat extends TamableAnimal {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       if (var1.getMoonBrightness() > 0.9F) {
          this.setCatType(this.random.nextInt(11));
@@ -340,8 +336,7 @@ public class Cat extends TamableAnimal {
          this.setCatType(this.random.nextInt(10));
       }
 
-      ServerLevel var6 = var1.getLevel();
-      if (var6 instanceof ServerLevel && ((ServerLevel)var6).structureFeatureManager().getStructureAt(this.blockPosition(), true, StructureFeature.SWAMP_HUT).isValid()) {
+      if (Feature.SWAMP_HUT.isInsideFeature(var1, new BlockPos(this))) {
          this.setCatType(10);
          this.setPersistenceRequired();
       }
@@ -349,66 +344,56 @@ public class Cat extends TamableAnimal {
       return var4;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       Item var4 = var3.getItem();
-      if (this.level.isClientSide) {
-         if (this.isTame() && this.isOwnedBy(var1)) {
-            return InteractionResult.SUCCESS;
-         } else {
-            return !this.isFood(var3) || this.getHealth() >= this.getMaxHealth() && this.isTame() ? InteractionResult.PASS : InteractionResult.SUCCESS;
-         }
-      } else {
-         InteractionResult var6;
-         if (this.isTame()) {
-            if (this.isOwnedBy(var1)) {
-               if (!(var4 instanceof DyeItem)) {
-                  if (var4.isEdible() && this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-                     this.usePlayerItem(var1, var3);
-                     this.heal((float)var4.getFoodProperties().getNutrition());
-                     return InteractionResult.CONSUME;
-                  }
-
-                  var6 = super.mobInteract(var1, var2);
-                  if (!var6.consumesAction() || this.isBaby()) {
-                     this.setOrderedToSit(!this.isOrderedToSit());
-                  }
-
-                  return var6;
-               }
-
+      if (this.isTame()) {
+         if (this.isOwnedBy(var1)) {
+            if (var4 instanceof DyeItem) {
                DyeColor var5 = ((DyeItem)var4).getDyeColor();
                if (var5 != this.getCollarColor()) {
                   this.setCollarColor(var5);
-                  if (!var1.getAbilities().instabuild) {
+                  if (!var1.abilities.instabuild) {
                      var3.shrink(1);
                   }
 
                   this.setPersistenceRequired();
-                  return InteractionResult.CONSUME;
+                  return true;
                }
+            } else if (this.isFood(var3)) {
+               if (this.getHealth() < this.getMaxHealth() && var4.isEdible()) {
+                  this.usePlayerItem(var1, var3);
+                  this.heal((float)var4.getFoodProperties().getNutrition());
+                  return true;
+               }
+            } else if (!this.level.isClientSide) {
+               this.sitGoal.wantToSit(!this.isSitting());
             }
-         } else if (this.isFood(var3)) {
-            this.usePlayerItem(var1, var3);
+         }
+      } else if (this.isFood(var3)) {
+         this.usePlayerItem(var1, var3);
+         if (!this.level.isClientSide) {
             if (this.random.nextInt(3) == 0) {
                this.tame(var1);
-               this.setOrderedToSit(true);
+               this.spawnTamingParticles(true);
+               this.sitGoal.wantToSit(true);
                this.level.broadcastEntityEvent(this, (byte)7);
             } else {
+               this.spawnTamingParticles(false);
                this.level.broadcastEntityEvent(this, (byte)6);
             }
-
-            this.setPersistenceRequired();
-            return InteractionResult.CONSUME;
          }
 
-         var6 = super.mobInteract(var1, var2);
-         if (var6.consumesAction()) {
-            this.setPersistenceRequired();
-         }
-
-         return var6;
+         this.setPersistenceRequired();
+         return true;
       }
+
+      boolean var6 = super.mobInteract(var1, var2);
+      if (var6) {
+         this.setPersistenceRequired();
+      }
+
+      return var6;
    }
 
    public boolean isFood(ItemStack var1) {
@@ -436,8 +421,8 @@ public class Cat extends TamableAnimal {
    }
 
    // $FF: synthetic method
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    static {
@@ -475,7 +460,7 @@ public class Cat extends TamableAnimal {
       public boolean canUse() {
          if (!this.cat.isTame()) {
             return false;
-         } else if (this.cat.isOrderedToSit()) {
+         } else if (this.cat.isSitting()) {
             return false;
          } else {
             LivingEntity var1 = this.cat.getOwner();
@@ -489,14 +474,11 @@ public class Cat extends TamableAnimal {
                   return false;
                }
 
-               BlockPos var2 = this.ownerPlayer.blockPosition();
+               BlockPos var2 = new BlockPos(this.ownerPlayer);
                BlockState var3 = this.cat.level.getBlockState(var2);
-               if (var3.is(BlockTags.BEDS)) {
-                  this.goalPos = (BlockPos)var3.getOptionalValue(BedBlock.FACING).map((var1x) -> {
-                     return var2.relative(var1x.getOpposite());
-                  }).orElseGet(() -> {
-                     return new BlockPos(var2);
-                  });
+               if (var3.getBlock().is(BlockTags.BEDS)) {
+                  Direction var4 = (Direction)var3.getValue(BedBlock.FACING);
+                  this.goalPos = new BlockPos(var2.getX() - var4.getStepX(), var2.getY(), var2.getZ() - var4.getStepZ());
                   return !this.spaceIsOccupied();
                }
             }
@@ -524,12 +506,12 @@ public class Cat extends TamableAnimal {
       }
 
       public boolean canContinueToUse() {
-         return this.cat.isTame() && !this.cat.isOrderedToSit() && this.ownerPlayer != null && this.ownerPlayer.isSleeping() && this.goalPos != null && !this.spaceIsOccupied();
+         return this.cat.isTame() && !this.cat.isSitting() && this.ownerPlayer != null && this.ownerPlayer.isSleeping() && this.goalPos != null && !this.spaceIsOccupied();
       }
 
       public void start() {
          if (this.goalPos != null) {
-            this.cat.setInSittingPose(false);
+            this.cat.getSitGoal().wantToSit(false);
             this.cat.getNavigation().moveTo((double)this.goalPos.getX(), (double)this.goalPos.getY(), (double)this.goalPos.getZ(), 1.100000023841858D);
          }
 
@@ -550,24 +532,24 @@ public class Cat extends TamableAnimal {
       private void giveMorningGift() {
          Random var1 = this.cat.getRandom();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
-         var2.set(this.cat.blockPosition());
+         var2.set((Entity)this.cat);
          this.cat.randomTeleport((double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false);
-         var2.set(this.cat.blockPosition());
+         var2.set((Entity)this.cat);
          LootTable var3 = this.cat.level.getServer().getLootTables().get(BuiltInLootTables.CAT_MORNING_GIFT);
-         LootContext.Builder var4 = (new LootContext.Builder((ServerLevel)this.cat.level)).withParameter(LootContextParams.ORIGIN, this.cat.position()).withParameter(LootContextParams.THIS_ENTITY, this.cat).withRandom(var1);
+         LootContext.Builder var4 = (new LootContext.Builder((ServerLevel)this.cat.level)).withParameter(LootContextParams.BLOCK_POS, var2).withParameter(LootContextParams.THIS_ENTITY, this.cat).withRandom(var1);
          List var5 = var3.getRandomItems(var4.create(LootContextParamSets.GIFT));
          Iterator var6 = var5.iterator();
 
          while(var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
-            this.cat.level.addFreshEntity(new ItemEntity(this.cat.level, (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F), (double)var2.getY(), (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F), var7));
+            this.cat.level.addFreshEntity(new ItemEntity(this.cat.level, (double)((float)var2.getX() - Mth.sin(this.cat.yBodyRot * 0.017453292F)), (double)var2.getY(), (double)((float)var2.getZ() + Mth.cos(this.cat.yBodyRot * 0.017453292F)), var7));
          }
 
       }
 
       public void tick() {
          if (this.ownerPlayer != null && this.goalPos != null) {
-            this.cat.setInSittingPose(false);
+            this.cat.getSitGoal().wantToSit(false);
             this.cat.getNavigation().moveTo((double)this.goalPos.getX(), (double)this.goalPos.getY(), (double)this.goalPos.getZ(), 1.100000023841858D);
             if (this.cat.distanceToSqr(this.ownerPlayer) < 2.5D) {
                ++this.onBedTicks;

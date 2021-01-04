@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 
@@ -13,7 +13,7 @@ public class InBedChatScreen extends ChatScreen {
 
    protected void init() {
       super.init();
-      this.addButton(new Button(this.width / 2 - 100, this.height - 40, 200, 20, new TranslatableComponent("multiplayer.stopSleeping"), (var1) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height - 40, 200, 20, I18n.get("multiplayer.stopSleeping"), (var1) -> {
          this.sendWakeUp();
       }));
    }
@@ -28,7 +28,7 @@ public class InBedChatScreen extends ChatScreen {
       } else if (var1 == 257 || var1 == 335) {
          String var4 = this.input.getValue().trim();
          if (!var4.isEmpty()) {
-            this.sendMessage(var4);
+            this.minecraft.player.chat(var4);
          }
 
          this.input.setValue("");

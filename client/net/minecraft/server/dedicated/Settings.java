@@ -13,7 +13,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
-import net.minecraft.core.RegistryAccess;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +52,7 @@ public abstract class Settings<T extends Settings<T>> {
 
          }
       } catch (IOException var15) {
-         LOGGER.error("Failed to load properties from file: {}", var0);
+         LOGGER.error("Failed to load properties from file: " + var0);
       }
 
       return var1;
@@ -84,7 +83,7 @@ public abstract class Settings<T extends Settings<T>> {
 
          }
       } catch (IOException var15) {
-         LOGGER.error("Failed to store properties to file: {}", var1);
+         LOGGER.error("Failed to store properties to file: " + var1);
       }
 
    }
@@ -198,7 +197,7 @@ public abstract class Settings<T extends Settings<T>> {
       return var1;
    }
 
-   protected abstract T reload(RegistryAccess var1, Properties var2);
+   protected abstract T reload(Properties var1);
 
    public class MutableValue<V> implements Supplier<V> {
       private final String key;
@@ -216,10 +215,10 @@ public abstract class Settings<T extends Settings<T>> {
          return this.value;
       }
 
-      public T update(RegistryAccess var1, V var2) {
-         Properties var3 = Settings.this.cloneProperties();
-         var3.put(this.key, this.serializer.apply(var2));
-         return Settings.this.reload(var1, var3);
+      public T update(V var1) {
+         Properties var2 = Settings.this.cloneProperties();
+         var2.put(this.key, this.serializer.apply(var1));
+         return Settings.this.reload(var2);
       }
 
       // $FF: synthetic method

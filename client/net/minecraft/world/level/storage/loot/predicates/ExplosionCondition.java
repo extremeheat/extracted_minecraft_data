@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Random;
 import java.util.Set;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -15,10 +16,6 @@ public class ExplosionCondition implements LootItemCondition {
 
    private ExplosionCondition() {
       super();
-   }
-
-   public LootItemConditionType getType() {
-      return LootItemConditions.SURVIVES_EXPLOSION;
    }
 
    public Set<LootContextParam<?>> getReferencedContextParams() {
@@ -47,9 +44,9 @@ public class ExplosionCondition implements LootItemCondition {
       return this.test((LootContext)var1);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<ExplosionCondition> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<ExplosionCondition> {
+      protected Serializer() {
+         super(new ResourceLocation("survives_explosion"), ExplosionCondition.class);
       }
 
       public void serialize(JsonObject var1, ExplosionCondition var2, JsonSerializationContext var3) {
@@ -60,7 +57,7 @@ public class ExplosionCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

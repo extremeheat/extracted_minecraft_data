@@ -2,11 +2,14 @@ package net.minecraft.server.dedicated;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
+import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.datafixers.DataFixer;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -15,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
+import java.util.Random;
 import java.util.function.BooleanSupplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -25,28 +28,24 @@ import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ConsoleInput;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
-import net.minecraft.server.ServerResources;
 import net.minecraft.server.gui.MinecraftServerGui;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
-import net.minecraft.server.network.TextFilter;
-import net.minecraft.server.network.TextFilterClient;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.rcon.RconConsoleSource;
 import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
+import net.minecraft.util.Crypt;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
-import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.Snooper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
@@ -54,9 +53,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelType;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.WorldData;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -68,16 +67,30 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private final RconConsoleSource rconConsoleSource;
    private RconThread rconThread;
    private final DedicatedServerSettings settings;
+   private GameType gameType;
    @Nullable
    private MinecraftServerGui gui;
-   @Nullable
-   private final TextFilterClient textFilterClient;
 
-   public DedicatedServer(Thread var1, RegistryAccess.RegistryHolder var2, LevelStorageSource.LevelStorageAccess var3, PackRepository var4, ServerResources var5, WorldData var6, DedicatedServerSettings var7, DataFixer var8, MinecraftSessionService var9, GameProfileRepository var10, GameProfileCache var11, ChunkProgressListenerFactory var12) {
-      super(var1, var2, var3, var6, var4, Proxy.NO_PROXY, var8, var5, var9, var10, var11, var12);
-      this.settings = var7;
+   public DedicatedServer(File var1, DedicatedServerSettings var2, DataFixer var3, YggdrasilAuthenticationService var4, MinecraftSessionService var5, GameProfileRepository var6, GameProfileCache var7, ChunkProgressListenerFactory var8, String var9) {
+      super(var1, Proxy.NO_PROXY, var3, new Commands(true), var4, var5, var6, var7, var8, var9);
+      this.settings = var2;
       this.rconConsoleSource = new RconConsoleSource(this);
-      this.textFilterClient = null;
+      Thread var10001 = new Thread("Server Infinisleeper") {
+         {
+            this.setDaemon(true);
+            this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(DedicatedServer.LOGGER));
+            this.start();
+         }
+
+         public void run() {
+            while(true) {
+               try {
+                  Thread.sleep(2147483647L);
+               } catch (InterruptedException var2) {
+               }
+            }
+         }
+      };
    }
 
    public boolean initServer() throws IOException {
@@ -99,7 +112,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       var1.setDaemon(true);
       var1.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       var1.start();
-      LOGGER.info("Starting minecraft server version {}", SharedConstants.getCurrentVersion().getName());
+      LOGGER.info("Starting minecraft server version " + SharedConstants.getCurrentVersion().getName());
       if (Runtime.getRuntime().maxMemory() / 1024L / 1024L < 512L) {
          LOGGER.warn("To start the server with more ram, launch it as \"java -Xmx1024M -Xms1024M -jar minecraft_server.jar\"");
       }
@@ -114,6 +127,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.setLocalIp(var2.serverIp);
       }
 
+      this.setAnimals(var2.spawnAnimals);
+      this.setNpcsEnabled(var2.spawnNpcs);
       this.setPvpAllowed(var2.pvp);
       this.setFlightAllowed(var2.allowFlight);
       this.setResourcePack(var2.resourcePack, this.getPackHash());
@@ -121,8 +136,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.setForceGameType(var2.forceGameMode);
       super.setPlayerIdleTimeout((Integer)var2.playerIdleTimeout.get());
       this.setEnforceWhitelist(var2.enforceWhitelist);
-      this.worldData.setGameType(var2.gamemode);
-      LOGGER.info("Default game type: {}", var2.gamemode);
+      this.gameType = var2.gamemode;
+      LOGGER.info("Default game type: {}", this.gameType);
       InetAddress var3 = null;
       if (!this.getLocalIp().isEmpty()) {
          var3 = InetAddress.getByName(this.getLocalIp());
@@ -132,14 +147,15 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.setPort(var2.serverPort);
       }
 
-      this.initializeKeyPair();
+      LOGGER.info("Generating keypair");
+      this.setKeyPair(Crypt.generateKeyPair());
       LOGGER.info("Starting Minecraft server on {}:{}", this.getLocalIp().isEmpty() ? "*" : this.getLocalIp(), this.getPort());
 
       try {
          this.getConnection().startTcpServerListener(var3, this.getPort());
-      } catch (IOException var10) {
+      } catch (IOException var17) {
          LOGGER.warn("**** FAILED TO BIND TO PORT!");
-         LOGGER.warn("The exception was: {}", var10.toString());
+         LOGGER.warn("The exception was: {}", var17.toString());
          LOGGER.warn("Perhaps a server is already running on that port?");
          return false;
       }
@@ -158,58 +174,66 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
          return false;
       } else {
-         this.setPlayerList(new DedicatedPlayerList(this, this.registryHolder, this.playerDataStorage));
+         this.setPlayerList(new DedicatedPlayerList(this));
          long var4 = Util.getNanos();
+         String var6 = var2.levelSeed;
+         String var7 = var2.generatorSettings;
+         long var8 = (new Random()).nextLong();
+         if (!var6.isEmpty()) {
+            try {
+               long var10 = Long.parseLong(var6);
+               if (var10 != 0L) {
+                  var8 = var10;
+               }
+            } catch (NumberFormatException var16) {
+               var8 = (long)var6.hashCode();
+            }
+         }
+
+         LevelType var18 = var2.levelType;
          this.setMaxBuildHeight(var2.maxBuildHeight);
          SkullBlockEntity.setProfileCache(this.getProfileCache());
          SkullBlockEntity.setSessionService(this.getSessionService());
          GameProfileCache.setUsesAuthentication(this.usesAuthentication());
          LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
-         this.loadLevel();
-         long var6 = Util.getNanos() - var4;
-         String var8 = String.format(Locale.ROOT, "%.3fs", (double)var6 / 1.0E9D);
-         LOGGER.info("Done ({})! For help, type \"help\"", var8);
+         JsonObject var11 = new JsonObject();
+         if (var18 == LevelType.FLAT) {
+            var11.addProperty("flat_world_options", var7);
+         } else if (!var7.isEmpty()) {
+            var11 = GsonHelper.parse(var7);
+         }
+
+         this.loadLevel(this.getLevelIdName(), this.getLevelIdName(), var8, var18, var11);
+         long var12 = Util.getNanos() - var4;
+         String var14 = String.format(Locale.ROOT, "%.3fs", (double)var12 / 1.0E9D);
+         LOGGER.info("Done ({})! For help, type \"help\"", var14);
          if (var2.announcePlayerAchievements != null) {
             ((GameRules.BooleanValue)this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(var2.announcePlayerAchievements, this);
          }
 
          if (var2.enableQuery) {
             LOGGER.info("Starting GS4 status listener");
-            this.queryThreadGs4 = QueryThreadGs4.create(this);
+            this.queryThreadGs4 = new QueryThreadGs4(this);
+            this.queryThreadGs4.start();
          }
 
          if (var2.enableRcon) {
             LOGGER.info("Starting remote control listener");
-            this.rconThread = RconThread.create(this);
+            this.rconThread = new RconThread(this);
+            this.rconThread.start();
          }
 
          if (this.getMaxTickLength() > 0L) {
-            Thread var9 = new Thread(new ServerWatchdog(this));
-            var9.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
-            var9.setName("Server Watchdog");
-            var9.setDaemon(true);
-            var9.start();
+            Thread var15 = new Thread(new ServerWatchdog(this));
+            var15.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(LOGGER));
+            var15.setName("Server Watchdog");
+            var15.setDaemon(true);
+            var15.start();
          }
 
          Items.AIR.fillItemCategory(CreativeModeTab.TAB_SEARCH, NonNullList.create());
-         if (var2.enableJmxMonitoring) {
-            MinecraftServerStatistics.registerJmxMonitoring(this);
-         }
-
          return true;
       }
-   }
-
-   public boolean isSpawningAnimals() {
-      return this.getProperties().spawnAnimals && super.isSpawningAnimals();
-   }
-
-   public boolean isSpawningMonsters() {
-      return this.settings.getProperties().spawnMonsters && super.isSpawningMonsters();
-   }
-
-   public boolean areNpcsEnabled() {
-      return this.settings.getProperties().spawnNpcs && super.areNpcsEnabled();
    }
 
    public String getPackHash() {
@@ -238,12 +262,25 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return var2;
    }
 
+   public void setDefaultGameMode(GameType var1) {
+      super.setDefaultGameMode(var1);
+      this.gameType = var1;
+   }
+
    public DedicatedServerProperties getProperties() {
       return this.settings.getProperties();
    }
 
-   public void forceDifficulty() {
-      this.setDifficulty(this.getProperties().difficulty, true);
+   public boolean canGenerateStructures() {
+      return this.getProperties().generateStructures;
+   }
+
+   public GameType getDefaultGameType() {
+      return this.gameType;
+   }
+
+   public Difficulty getDefaultDifficulty() {
+      return this.getProperties().difficulty;
    }
 
    public boolean isHardcore() {
@@ -253,7 +290,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    public CrashReport fillReport(CrashReport var1) {
       var1 = super.fillReport(var1);
       var1.getSystemDetails().setDetail("Is Modded", () -> {
-         return (String)this.getModdedStatus().orElse("Unknown (can't tell)");
+         String var1 = this.getServerModName();
+         return !"vanilla".equals(var1) ? "Definitely; Server brand changed to '" + var1 + "'" : "Unknown (can't tell)";
       });
       var1.getSystemDetails().setDetail("Type", () -> {
          return "Dedicated Server (map_server.txt)";
@@ -261,16 +299,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return var1;
    }
 
-   public Optional<String> getModdedStatus() {
-      String var1 = this.getServerModName();
-      return !"vanilla".equals(var1) ? Optional.of("Definitely; Server brand changed to '" + var1 + "'") : Optional.empty();
-   }
-
    public void onServerExit() {
-      if (this.textFilterClient != null) {
-         this.textFilterClient.close();
-      }
-
       if (this.gui != null) {
          this.gui.close();
       }
@@ -294,6 +323,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getProperties().allowNether;
    }
 
+   public boolean getSpawnMonsters() {
+      return this.getProperties().spawnMonsters;
+   }
+
    public void populateSnooper(Snooper var1) {
       var1.setDynamicData("whitelist_enabled", this.getPlayerList().isUsingWhitelist());
       var1.setDynamicData("whitelist_count", this.getPlayerList().getWhiteListNames().length);
@@ -314,10 +347,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public boolean isDedicatedServer() {
       return true;
-   }
-
-   public int getRateLimitPacketsPerSecond() {
-      return this.getProperties().rateLimitPacketsPerSecond;
    }
 
    public boolean isEpollEnabled() {
@@ -367,8 +396,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return this.getProperties().spawnProtection;
    }
 
-   public boolean isUnderSpawnProtection(ServerLevel var1, BlockPos var2, Player var3) {
-      if (var1.dimension() != Level.OVERWORLD) {
+   public boolean isUnderSpawnProtection(Level var1, BlockPos var2, Player var3) {
+      if (var1.dimension.getType() != DimensionType.OVERWORLD) {
          return false;
       } else if (this.getPlayerList().getOps().isEmpty()) {
          return false;
@@ -385,10 +414,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       }
    }
 
-   public boolean repliesToStatus() {
-      return this.getProperties().enableStatus;
-   }
-
    public int getOperatorUserPermissionLevel() {
       return this.getProperties().opPermissionLevel;
    }
@@ -399,8 +424,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public void setPlayerIdleTimeout(int var1) {
       super.setPlayerIdleTimeout(var1);
-      this.settings.update((var2) -> {
-         return (DedicatedServerProperties)var2.playerIdleTimeout.update(this.registryAccess(), var1);
+      this.settings.update((var1x) -> {
+         return (DedicatedServerProperties)var1x.playerIdleTimeout.update(var1);
       });
    }
 
@@ -504,39 +529,18 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public void storeUsingWhiteList(boolean var1) {
-      this.settings.update((var2) -> {
-         return (DedicatedServerProperties)var2.whiteList.update(this.registryAccess(), var1);
+      this.settings.update((var1x) -> {
+         return (DedicatedServerProperties)var1x.whiteList.update(var1);
       });
    }
 
    public void stopServer() {
       super.stopServer();
-      Util.shutdownExecutors();
+      Util.shutdownBackgroundExecutor();
    }
 
    public boolean isSingleplayerOwner(GameProfile var1) {
       return false;
-   }
-
-   public int getScaledTrackingDistance(int var1) {
-      return this.getProperties().entityBroadcastRangePercentage * var1 / 100;
-   }
-
-   public String getLevelIdName() {
-      return this.storageSource.getLevelId();
-   }
-
-   public boolean forceSynchronousWrites() {
-      return this.settings.getProperties().syncChunkWrites;
-   }
-
-   @Nullable
-   public TextFilter createTextFilterForPlayer(ServerPlayer var1) {
-      return this.textFilterClient != null ? this.textFilterClient.createContext(var1.getGameProfile()) : null;
-   }
-
-   public boolean isResourcePackRequired() {
-      return this.settings.getProperties().requireResourcePack;
    }
 
    // $FF: synthetic method

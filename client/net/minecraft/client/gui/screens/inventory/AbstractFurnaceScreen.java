@@ -1,13 +1,11 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
@@ -38,7 +36,6 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.widthTooNarrow, this.width, this.imageWidth);
          ((ImageButton)var1).setPosition(this.leftPos + 20, this.height / 2 - 49);
       }));
-      this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
    public void tick() {
@@ -46,35 +43,41 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       this.recipeBookComponent.tick();
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBg(var1, var4, var2, var3);
-         this.recipeBookComponent.render(var1, var2, var3, var4);
+         this.renderBg(var3, var1, var2);
+         this.recipeBookComponent.render(var1, var2, var3);
       } else {
-         this.recipeBookComponent.render(var1, var2, var3, var4);
-         super.render(var1, var2, var3, var4);
-         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true, var4);
+         this.recipeBookComponent.render(var1, var2, var3);
+         super.render(var1, var2, var3);
+         this.recipeBookComponent.renderGhostRecipe(this.leftPos, this.topPos, true, var3);
       }
 
-      this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, this.leftPos, this.topPos, var2, var3);
+      this.renderTooltip(var1, var2);
+      this.recipeBookComponent.renderTooltip(this.leftPos, this.topPos, var1, var2);
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   protected void renderLabels(int var1, int var2) {
+      String var3 = this.title.getColoredString();
+      this.font.draw(var3, (float)(this.imageWidth / 2 - this.font.width(var3) / 2), 6.0F, 4210752);
+      this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 96 + 2), 4210752);
+   }
+
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(this.texture);
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      int var7;
+      int var4 = this.leftPos;
+      int var5 = this.topPos;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
+      int var6;
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
-         var7 = ((AbstractFurnaceMenu)this.menu).getLitProgress();
-         this.blit(var1, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
+         var6 = ((AbstractFurnaceMenu)this.menu).getLitProgress();
+         this.blit(var4 + 56, var5 + 36 + 12 - var6, 176, 12 - var6, 14, var6 + 1);
       }
 
-      var7 = ((AbstractFurnaceMenu)this.menu).getBurnProgress();
-      this.blit(var1, var5 + 79, var6 + 34, 176, 14, var7 + 1, 16);
+      var6 = ((AbstractFurnaceMenu)this.menu).getBurnProgress();
+      this.blit(var4 + 79, var5 + 34, 176, 14, var6 + 1, 16);
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

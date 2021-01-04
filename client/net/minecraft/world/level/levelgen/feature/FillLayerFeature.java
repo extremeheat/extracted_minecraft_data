@@ -1,18 +1,19 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.LayerConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
 public class FillLayerFeature extends Feature<LayerConfiguration> {
-   public FillLayerFeature(Codec<LayerConfiguration> var1) {
+   public FillLayerFeature(Function<Dynamic<?>, ? extends LayerConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, LayerConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, LayerConfiguration var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
       for(int var7 = 0; var7 < 16; ++var7) {

@@ -4,11 +4,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
@@ -18,7 +17,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class DragonEggBlock extends FallingBlock {
    protected static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 16.0D, 15.0D);
 
-   public DragonEggBlock(BlockBehaviour.Properties var1) {
+   public DragonEggBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -26,9 +25,9 @@ public class DragonEggBlock extends FallingBlock {
       return SHAPE;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       this.teleport(var1, var2, var3);
-      return InteractionResult.sidedSuccess(var2.isClientSide);
+      return true;
    }
 
    public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
@@ -61,7 +60,7 @@ public class DragonEggBlock extends FallingBlock {
 
    }
 
-   protected int getDelayAfterPlace() {
+   public int getTickDelay(LevelReader var1) {
       return 5;
    }
 

@@ -5,14 +5,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.Mob;
@@ -32,9 +30,9 @@ import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.Pillager;
 import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.Vindicator;
-import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -57,7 +55,7 @@ public class WanderingTrader extends AbstractVillager {
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(0, new UseItemGoal(this, PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> {
-         return this.level.isNight() && !var1.isInvisible();
+         return !this.level.isDay() && !var1.isInvisible();
       }));
       this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> {
          return this.level.isDay() && var1.isInvisible();
@@ -69,18 +67,17 @@ public class WanderingTrader extends AbstractVillager {
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Vex.class, 8.0F, 0.5D, 0.5D));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Pillager.class, 15.0F, 0.5D, 0.5D));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Illusioner.class, 12.0F, 0.5D, 0.5D));
-      this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Zoglin.class, 10.0F, 0.5D, 0.5D));
       this.goalSelector.addGoal(1, new PanicGoal(this, 0.5D));
       this.goalSelector.addGoal(1, new LookAtTradingPlayerGoal(this));
       this.goalSelector.addGoal(2, new WanderingTrader.WanderToPositionGoal(this, 2.0D, 0.35D));
-      this.goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 0.35D));
+      this.goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 1.0D));
       this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.35D));
       this.goalSelector.addGoal(9, new InteractGoal(this, Player.class, 3.0F, 1.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public AgableMob getBreedOffspring(AgableMob var1) {
       return null;
    }
 
@@ -88,22 +85,26 @@ public class WanderingTrader extends AbstractVillager {
       return false;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (!var3.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isBaby()) {
+      boolean var4 = var3.getItem() == Items.NAME_TAG;
+      if (var4) {
+         var3.interactEnemy(var1, this, var2);
+         return true;
+      } else if (var3.getItem() != Items.VILLAGER_SPAWN_EGG && this.isAlive() && !this.isTrading() && !this.isBaby()) {
          if (var2 == InteractionHand.MAIN_HAND) {
             var1.awardStat(Stats.TALKED_TO_VILLAGER);
          }
 
          if (this.getOffers().isEmpty()) {
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return super.mobInteract(var1, var2);
          } else {
             if (!this.level.isClientSide) {
                this.setTradingPlayer(var1);
                this.openTradingScreen(var1, this.getDisplayName(), 1);
             }
 
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return true;
          }
       } else {
          return super.mobInteract(var1, var2);
@@ -155,7 +156,7 @@ public class WanderingTrader extends AbstractVillager {
    protected void rewardTradeXp(MerchantOffer var1) {
       if (var1.shouldRewardExp()) {
          int var2 = 3 + this.random.nextInt(4);
-         this.level.addFreshEntity(new ExperienceOrb(this.level, this.getX(), this.getY() + 0.5D, this.getZ(), var2));
+         this.level.addFreshEntity(new ExperienceOrb(this.level, this.x, this.y + 0.5D, this.z, var2));
       }
 
    }
@@ -173,7 +174,8 @@ public class WanderingTrader extends AbstractVillager {
    }
 
    protected SoundEvent getDrinkingSound(ItemStack var1) {
-      return var1.is(Items.MILK_BUCKET) ? SoundEvents.WANDERING_TRADER_DRINK_MILK : SoundEvents.WANDERING_TRADER_DRINK_POTION;
+      Item var2 = var1.getItem();
+      return var2 == Items.MILK_BUCKET ? SoundEvents.WANDERING_TRADER_DRINK_MILK : SoundEvents.WANDERING_TRADER_DRINK_POTION;
    }
 
    protected SoundEvent getTradeUpdatedSound(boolean var1) {
@@ -202,7 +204,7 @@ public class WanderingTrader extends AbstractVillager {
 
    private void maybeDespawn() {
       if (this.despawnDelay > 0 && !this.isTrading() && --this.despawnDelay == 0) {
-         this.discard();
+         this.remove();
       }
 
    }
@@ -243,8 +245,8 @@ public class WanderingTrader extends AbstractVillager {
          BlockPos var1 = this.trader.getWanderTarget();
          if (var1 != null && WanderingTrader.this.navigation.isDone()) {
             if (this.isTooFarAway(var1, 10.0D)) {
-               Vec3 var2 = (new Vec3((double)var1.getX() - this.trader.getX(), (double)var1.getY() - this.trader.getY(), (double)var1.getZ() - this.trader.getZ())).normalize();
-               Vec3 var3 = var2.scale(10.0D).add(this.trader.getX(), this.trader.getY(), this.trader.getZ());
+               Vec3 var2 = (new Vec3((double)var1.getX() - this.trader.x, (double)var1.getY() - this.trader.y, (double)var1.getZ() - this.trader.z)).normalize();
+               Vec3 var3 = var2.scale(10.0D).add(this.trader.x, this.trader.y, this.trader.z);
                WanderingTrader.this.navigation.moveTo(var3.x, var3.y, var3.z, this.speedModifier);
             } else {
                WanderingTrader.this.navigation.moveTo((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), this.speedModifier);

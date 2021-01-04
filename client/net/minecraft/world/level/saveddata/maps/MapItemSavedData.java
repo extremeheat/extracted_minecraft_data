@@ -2,8 +2,6 @@ package net.minecraft.world.level.saveddata.maps;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,30 +9,23 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.saveddata.SavedData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MapItemSavedData extends SavedData {
-   private static final Logger LOGGER = LogManager.getLogger();
    public int x;
    public int z;
-   public ResourceKey<Level> dimension;
+   public DimensionType dimension;
    public boolean trackingPosition;
    public boolean unlimitedTracking;
    public byte scale;
@@ -50,7 +41,7 @@ public class MapItemSavedData extends SavedData {
       super(var1);
    }
 
-   public void setProperties(int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
+   public void setProperties(int var1, int var2, int var3, boolean var4, boolean var5, DimensionType var6) {
       this.scale = (byte)var3;
       this.setOrigin((double)var1, (double)var2, this.scale);
       this.dimension = var6;
@@ -68,48 +59,44 @@ public class MapItemSavedData extends SavedData {
    }
 
    public void load(CompoundTag var1) {
-      DataResult var10001 = DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var1.get("dimension")));
-      Logger var10002 = LOGGER;
-      var10002.getClass();
-      this.dimension = (ResourceKey)var10001.resultOrPartial(var10002::error).orElseThrow(() -> {
-         return new IllegalArgumentException("Invalid map dimension: " + var1.get("dimension"));
-      });
-      this.x = var1.getInt("xCenter");
-      this.z = var1.getInt("zCenter");
-      this.scale = (byte)Mth.clamp(var1.getByte("scale"), 0, 4);
-      this.trackingPosition = !var1.contains("trackingPosition", 1) || var1.getBoolean("trackingPosition");
-      this.unlimitedTracking = var1.getBoolean("unlimitedTracking");
-      this.locked = var1.getBoolean("locked");
-      this.colors = var1.getByteArray("colors");
-      if (this.colors.length != 16384) {
-         this.colors = new byte[16384];
+      int var2 = var1.getInt("dimension");
+      DimensionType var3 = DimensionType.getById(var2);
+      if (var3 == null) {
+         throw new IllegalArgumentException("Invalid map dimension: " + var2);
+      } else {
+         this.dimension = var3;
+         this.x = var1.getInt("xCenter");
+         this.z = var1.getInt("zCenter");
+         this.scale = (byte)Mth.clamp(var1.getByte("scale"), 0, 4);
+         this.trackingPosition = !var1.contains("trackingPosition", 1) || var1.getBoolean("trackingPosition");
+         this.unlimitedTracking = var1.getBoolean("unlimitedTracking");
+         this.locked = var1.getBoolean("locked");
+         this.colors = var1.getByteArray("colors");
+         if (this.colors.length != 16384) {
+            this.colors = new byte[16384];
+         }
+
+         ListTag var4 = var1.getList("banners", 10);
+
+         for(int var5 = 0; var5 < var4.size(); ++var5) {
+            MapBanner var6 = MapBanner.load(var4.getCompound(var5));
+            this.bannerMarkers.put(var6.getId(), var6);
+            this.addDecoration(var6.getDecoration(), (LevelAccessor)null, var6.getId(), (double)var6.getPos().getX(), (double)var6.getPos().getZ(), 180.0D, var6.getName());
+         }
+
+         ListTag var8 = var1.getList("frames", 10);
+
+         for(int var9 = 0; var9 < var8.size(); ++var9) {
+            MapFrame var7 = MapFrame.load(var8.getCompound(var9));
+            this.frameMarkers.put(var7.getId(), var7);
+            this.addDecoration(MapDecoration.Type.FRAME, (LevelAccessor)null, "frame-" + var7.getEntityId(), (double)var7.getPos().getX(), (double)var7.getPos().getZ(), (double)var7.getRotation(), (Component)null);
+         }
+
       }
-
-      ListTag var2 = var1.getList("banners", 10);
-
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         MapBanner var4 = MapBanner.load(var2.getCompound(var3));
-         this.bannerMarkers.put(var4.getId(), var4);
-         this.addDecoration(var4.getDecoration(), (LevelAccessor)null, var4.getId(), (double)var4.getPos().getX(), (double)var4.getPos().getZ(), 180.0D, var4.getName());
-      }
-
-      ListTag var6 = var1.getList("frames", 10);
-
-      for(int var7 = 0; var7 < var6.size(); ++var7) {
-         MapFrame var5 = MapFrame.load(var6.getCompound(var7));
-         this.frameMarkers.put(var5.getId(), var5);
-         this.addDecoration(MapDecoration.Type.FRAME, (LevelAccessor)null, "frame-" + var5.getEntityId(), (double)var5.getPos().getX(), (double)var5.getPos().getZ(), (double)var5.getRotation(), (Component)null);
-      }
-
    }
 
    public CompoundTag save(CompoundTag var1) {
-      DataResult var10000 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, this.dimension.location());
-      Logger var10001 = LOGGER;
-      var10001.getClass();
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("dimension", var1x);
-      });
+      var1.putInt("dimension", this.dimension.getId());
       var1.putInt("xCenter", this.x);
       var1.putInt("zCenter", this.z);
       var1.putByte("scale", this.scale);
@@ -155,16 +142,16 @@ public class MapItemSavedData extends SavedData {
          this.carriedBy.add(var3);
       }
 
-      if (!var1.getInventory().contains(var2)) {
+      if (!var1.inventory.contains(var2)) {
          this.decorations.remove(var1.getName().getString());
       }
 
       for(int var7 = 0; var7 < this.carriedBy.size(); ++var7) {
          MapItemSavedData.HoldingPlayer var4 = (MapItemSavedData.HoldingPlayer)this.carriedBy.get(var7);
          String var5 = var4.player.getName().getString();
-         if (!var4.player.isRemoved() && (var4.player.getInventory().contains(var2) || var2.isFramed())) {
-            if (!var2.isFramed() && var4.player.level.dimension() == this.dimension && this.trackingPosition) {
-               this.addDecoration(MapDecoration.Type.PLAYER, var4.player.level, var5, var4.player.getX(), var4.player.getZ(), (double)var4.player.yRot, (Component)null);
+         if (!var4.player.removed && (var4.player.inventory.contains(var2) || var2.isFramed())) {
+            if (!var2.isFramed() && var4.player.dimension == this.dimension && this.trackingPosition) {
+               this.addDecoration(MapDecoration.Type.PLAYER, var4.player.level, var5, var4.player.x, var4.player.z, (double)var4.player.yRot, (Component)null);
             }
          } else {
             this.carriedByPlayers.remove(var4.player);
@@ -234,7 +221,7 @@ public class MapItemSavedData extends SavedData {
       if (var12 >= -63.0F && var13 >= -63.0F && var12 <= 63.0F && var13 <= 63.0F) {
          var8 += var8 < 0.0D ? -8.0D : 8.0D;
          var16 = (byte)((int)(var8 * 16.0D / 360.0D));
-         if (this.dimension == Level.NETHER && var2 != null) {
+         if (this.dimension == DimensionType.NETHER && var2 != null) {
             int var19 = (int)(var2.getLevelData().getDayTime() / 10L);
             var16 = (byte)(var19 * var19 * 34187121 + var19 * 121 >> 15 & 15);
          }
@@ -306,34 +293,34 @@ public class MapItemSavedData extends SavedData {
    }
 
    public void toggleBanner(LevelAccessor var1, BlockPos var2) {
-      double var3 = (double)var2.getX() + 0.5D;
-      double var5 = (double)var2.getZ() + 0.5D;
-      int var7 = 1 << this.scale;
-      double var8 = (var3 - (double)this.x) / (double)var7;
-      double var10 = (var5 - (double)this.z) / (double)var7;
-      boolean var12 = true;
-      boolean var13 = false;
-      if (var8 >= -63.0D && var10 >= -63.0D && var8 <= 63.0D && var10 <= 63.0D) {
-         MapBanner var14 = MapBanner.fromWorld(var1, var2);
-         if (var14 == null) {
+      float var3 = (float)var2.getX() + 0.5F;
+      float var4 = (float)var2.getZ() + 0.5F;
+      int var5 = 1 << this.scale;
+      float var6 = (var3 - (float)this.x) / (float)var5;
+      float var7 = (var4 - (float)this.z) / (float)var5;
+      boolean var8 = true;
+      boolean var9 = false;
+      if (var6 >= -63.0F && var7 >= -63.0F && var6 <= 63.0F && var7 <= 63.0F) {
+         MapBanner var10 = MapBanner.fromWorld(var1, var2);
+         if (var10 == null) {
             return;
          }
 
-         boolean var15 = true;
-         if (this.bannerMarkers.containsKey(var14.getId()) && ((MapBanner)this.bannerMarkers.get(var14.getId())).equals(var14)) {
-            this.bannerMarkers.remove(var14.getId());
-            this.decorations.remove(var14.getId());
-            var15 = false;
-            var13 = true;
+         boolean var11 = true;
+         if (this.bannerMarkers.containsKey(var10.getId()) && ((MapBanner)this.bannerMarkers.get(var10.getId())).equals(var10)) {
+            this.bannerMarkers.remove(var10.getId());
+            this.decorations.remove(var10.getId());
+            var11 = false;
+            var9 = true;
          }
 
-         if (var15) {
-            this.bannerMarkers.put(var14.getId(), var14);
-            this.addDecoration(var14.getDecoration(), var1, var14.getId(), var3, var5, 180.0D, var14.getName());
-            var13 = true;
+         if (var11) {
+            this.bannerMarkers.put(var10.getId(), var10);
+            this.addDecoration(var10.getDecoration(), var1, var10.getId(), (double)var3, (double)var4, 180.0D, var10.getName());
+            var9 = true;
          }
 
-         if (var13) {
+         if (var9) {
             this.setDirty();
          }
       }

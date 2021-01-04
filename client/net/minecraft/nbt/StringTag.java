@@ -4,64 +4,42 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 public class StringTag implements Tag {
-   public static final TagType<StringTag> TYPE = new TagType<StringTag>() {
-      public StringTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(288L);
-         String var4 = var1.readUTF();
-         var3.accountBits((long)(16 * var4.length()));
-         return StringTag.valueOf(var4);
-      }
+   private String data;
 
-      public String getName() {
-         return "STRING";
-      }
+   public StringTag() {
+      this("");
+   }
 
-      public String getPrettyName() {
-         return "TAG_String";
-      }
-
-      public boolean isValue() {
-         return true;
-      }
-
-      // $FF: synthetic method
-      public Tag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         return this.load(var1, var2, var3);
-      }
-   };
-   private static final StringTag EMPTY = new StringTag("");
-   private final String data;
-
-   private StringTag(String var1) {
+   public StringTag(String var1) {
       super();
       Objects.requireNonNull(var1, "Null string not allowed");
       this.data = var1;
-   }
-
-   public static StringTag valueOf(String var0) {
-      return var0.isEmpty() ? EMPTY : new StringTag(var0);
    }
 
    public void write(DataOutput var1) throws IOException {
       var1.writeUTF(this.data);
    }
 
+   public void load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+      var3.accountBits(288L);
+      this.data = var1.readUTF();
+      var3.accountBits((long)(16 * this.data.length()));
+   }
+
    public byte getId() {
       return 8;
    }
 
-   public TagType<StringTag> getType() {
-      return TYPE;
-   }
-
    public String toString() {
-      return Tag.super.getAsString();
+      return quoteAndEscape(this.data);
    }
 
    public StringTag copy() {
-      return this;
+      return new StringTag(this.data);
    }
 
    public boolean equals(Object var1) {
@@ -80,8 +58,11 @@ public class StringTag implements Tag {
       return this.data;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitString(this);
+   public Component getPrettyDisplay(String var1, int var2) {
+      String var3 = quoteAndEscape(this.data);
+      String var4 = var3.substring(0, 1);
+      Component var5 = (new TextComponent(var3.substring(1, var3.length() - 1))).withStyle(SYNTAX_HIGHLIGHTING_STRING);
+      return (new TextComponent(var4)).append(var5).append(var4);
    }
 
    public static String quoteAndEscape(String var0) {

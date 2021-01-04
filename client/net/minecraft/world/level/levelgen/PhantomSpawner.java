@@ -15,13 +15,11 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.CustomSpawner;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
-public class PhantomSpawner implements CustomSpawner {
+public class PhantomSpawner {
    private int nextTick;
 
    public PhantomSpawner() {
@@ -31,8 +29,6 @@ public class PhantomSpawner implements CustomSpawner {
    public int tick(ServerLevel var1, boolean var2, boolean var3) {
       if (!var2) {
          return 0;
-      } else if (!var1.getGameRules().getBoolean(GameRules.RULE_DOINSOMNIA)) {
-         return 0;
       } else {
          Random var4 = var1.random;
          --this.nextTick;
@@ -40,7 +36,7 @@ public class PhantomSpawner implements CustomSpawner {
             return 0;
          } else {
             this.nextTick += (60 + var4.nextInt(60)) * 20;
-            if (var1.getSkyDarken() < 5 && var1.dimensionType().hasSkyLight()) {
+            if (var1.getSkyDarken() < 5 && var1.dimension.isHasSkyLight()) {
                return 0;
             } else {
                int var5 = 0;
@@ -66,8 +62,8 @@ public class PhantomSpawner implements CustomSpawner {
                                  var7 = (Player)var6.next();
                               } while(var7.isSpectator());
 
-                              var8 = var7.blockPosition();
-                           } while(var1.dimensionType().hasSkyLight() && (var8.getY() < var1.getSeaLevel() || !var1.canSeeSky(var8)));
+                              var8 = new BlockPos(var7);
+                           } while(var1.dimension.isHasSkyLight() && (var8.getY() < var1.getSeaLevel() || !var1.canSeeSky(var8)));
 
                            var9 = var1.getCurrentDifficultyAt(var8);
                         } while(!var9.isHarderThan(var4.nextFloat() * 3.0F));
@@ -80,7 +76,7 @@ public class PhantomSpawner implements CustomSpawner {
                      var13 = var8.above(20 + var4.nextInt(15)).east(-10 + var4.nextInt(21)).south(-10 + var4.nextInt(21));
                      var14 = var1.getBlockState(var13);
                      var15 = var1.getFluidState(var13);
-                  } while(!NaturalSpawner.isValidEmptySpawnBlock(var1, var13, var14, var15, EntityType.PHANTOM));
+                  } while(!NaturalSpawner.isValidEmptySpawnBlock(var1, var13, var14, var15));
 
                   SpawnGroupData var16 = null;
                   int var17 = 1 + var4.nextInt(var9.getDifficulty().getId() + 1);
@@ -89,7 +85,7 @@ public class PhantomSpawner implements CustomSpawner {
                      Phantom var19 = (Phantom)EntityType.PHANTOM.create(var1);
                      var19.moveTo(var13, 0.0F, 0.0F);
                      var16 = var19.finalizeSpawn(var1, var9, MobSpawnType.NATURAL, var16, (CompoundTag)null);
-                     var1.addFreshEntityWithPassengers(var19);
+                     var1.addFreshEntity(var19);
                   }
 
                   var5 += var17;

@@ -37,16 +37,16 @@ public class CommandBlockEntity extends BlockEntity {
       }
 
       public Vec3 getPosition() {
-         return Vec3.atCenterOf(CommandBlockEntity.this.worldPosition);
+         return new Vec3((double)CommandBlockEntity.this.worldPosition.getX() + 0.5D, (double)CommandBlockEntity.this.worldPosition.getY() + 0.5D, (double)CommandBlockEntity.this.worldPosition.getZ() + 0.5D);
       }
 
       public CommandSourceStack createCommandSourceStack() {
-         return new CommandSourceStack(this, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), Vec2.ZERO, this.getLevel(), 2, this.getName().getString(), this.getName(), this.getLevel().getServer(), (Entity)null);
+         return new CommandSourceStack(this, new Vec3((double)CommandBlockEntity.this.worldPosition.getX() + 0.5D, (double)CommandBlockEntity.this.worldPosition.getY() + 0.5D, (double)CommandBlockEntity.this.worldPosition.getZ() + 0.5D), Vec2.ZERO, this.getLevel(), 2, this.getName().getString(), this.getName(), this.getLevel().getServer(), (Entity)null);
       }
    };
 
-   public CommandBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.COMMAND_BLOCK, var1, var2);
+   public CommandBlockEntity() {
+      super(BlockEntityType.COMMAND_BLOCK);
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -101,24 +101,11 @@ public class CommandBlockEntity extends BlockEntity {
       boolean var2 = this.auto;
       this.auto = var1;
       if (!var2 && var1 && !this.powered && this.level != null && this.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
-         this.scheduleTick();
-      }
-
-   }
-
-   public void onModeSwitch() {
-      CommandBlockEntity.Mode var1 = this.getMode();
-      if (var1 == CommandBlockEntity.Mode.AUTO && (this.powered || this.auto) && this.level != null) {
-         this.scheduleTick();
-      }
-
-   }
-
-   private void scheduleTick() {
-      Block var1 = this.getBlockState().getBlock();
-      if (var1 instanceof CommandBlock) {
-         this.markConditionMet();
-         this.level.getBlockTicks().scheduleTick(this.worldPosition, var1, 1);
+         Block var3 = this.getBlockState().getBlock();
+         if (var3 instanceof CommandBlock) {
+            this.markConditionMet();
+            this.level.getBlockTicks().scheduleTick(this.worldPosition, var3, var3.getTickDelay(this.level));
+         }
       }
 
    }
@@ -151,19 +138,24 @@ public class CommandBlockEntity extends BlockEntity {
    }
 
    public CommandBlockEntity.Mode getMode() {
-      BlockState var1 = this.getBlockState();
-      if (var1.is(Blocks.COMMAND_BLOCK)) {
+      Block var1 = this.getBlockState().getBlock();
+      if (var1 == Blocks.COMMAND_BLOCK) {
          return CommandBlockEntity.Mode.REDSTONE;
-      } else if (var1.is(Blocks.REPEATING_COMMAND_BLOCK)) {
+      } else if (var1 == Blocks.REPEATING_COMMAND_BLOCK) {
          return CommandBlockEntity.Mode.AUTO;
       } else {
-         return var1.is(Blocks.CHAIN_COMMAND_BLOCK) ? CommandBlockEntity.Mode.SEQUENCE : CommandBlockEntity.Mode.REDSTONE;
+         return var1 == Blocks.CHAIN_COMMAND_BLOCK ? CommandBlockEntity.Mode.SEQUENCE : CommandBlockEntity.Mode.REDSTONE;
       }
    }
 
    public boolean isConditional() {
       BlockState var1 = this.level.getBlockState(this.getBlockPos());
       return var1.getBlock() instanceof CommandBlock ? (Boolean)var1.getValue(CommandBlock.CONDITIONAL) : false;
+   }
+
+   public void clearRemoved() {
+      this.clearCache();
+      super.clearRemoved();
    }
 
    public static enum Mode {

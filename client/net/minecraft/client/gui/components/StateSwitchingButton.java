@@ -1,9 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class StateSwitchingButton extends AbstractWidget {
@@ -15,7 +13,7 @@ public class StateSwitchingButton extends AbstractWidget {
    protected int yDiffTex;
 
    public StateSwitchingButton(int var1, int var2, int var3, int var4, boolean var5) {
-      super(var1, var2, var3, var4, TextComponent.EMPTY);
+      super(var1, var2, var3, var4, "");
       this.isStateTriggered = var5;
    }
 
@@ -40,21 +38,21 @@ public class StateSwitchingButton extends AbstractWidget {
       this.y = var2;
    }
 
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      var5.getTextureManager().bind(this.resourceLocation);
-      RenderSystem.disableDepthTest();
-      int var6 = this.xTexStart;
-      int var7 = this.yTexStart;
+   public void renderButton(int var1, int var2, float var3) {
+      Minecraft var4 = Minecraft.getInstance();
+      var4.getTextureManager().bind(this.resourceLocation);
+      GlStateManager.disableDepthTest();
+      int var5 = this.xTexStart;
+      int var6 = this.yTexStart;
       if (this.isStateTriggered) {
-         var6 += this.xDiffTex;
+         var5 += this.xDiffTex;
       }
 
       if (this.isHovered()) {
-         var7 += this.yDiffTex;
+         var6 += this.yDiffTex;
       }
 
-      this.blit(var1, this.x, this.y, var6, var7, this.width, this.height);
-      RenderSystem.enableDepthTest();
+      this.blit(this.x, this.y, var5, var6, this.width, this.height);
+      GlStateManager.enableDepthTest();
    }
 }

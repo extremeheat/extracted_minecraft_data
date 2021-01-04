@@ -1,19 +1,15 @@
 package net.minecraft.core;
 
 import com.google.common.base.MoreObjects;
-import com.mojang.serialization.Codec;
-import java.util.stream.IntStream;
 import javax.annotation.concurrent.Immutable;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
 
 @Immutable
 public class Vec3i implements Comparable<Vec3i> {
-   public static final Codec<Vec3i> CODEC;
-   public static final Vec3i ZERO;
-   private int x;
-   private int y;
-   private int z;
+   public static final Vec3i ZERO = new Vec3i(0, 0, 0);
+   private final int x;
+   private final int y;
+   private final int z;
 
    public Vec3i(int var1, int var2, int var3) {
       super();
@@ -67,44 +63,12 @@ public class Vec3i implements Comparable<Vec3i> {
       return this.z;
    }
 
-   protected void setX(int var1) {
-      this.x = var1;
-   }
-
-   protected void setY(int var1) {
-      this.y = var1;
-   }
-
-   protected void setZ(int var1) {
-      this.z = var1;
-   }
-
-   public Vec3i above() {
-      return this.above(1);
-   }
-
-   public Vec3i above(int var1) {
-      return this.relative(Direction.UP, var1);
-   }
-
-   public Vec3i below() {
-      return this.below(1);
-   }
-
-   public Vec3i below(int var1) {
-      return this.relative(Direction.DOWN, var1);
-   }
-
-   public Vec3i relative(Direction var1, int var2) {
-      return var2 == 0 ? this : new Vec3i(this.getX() + var1.getStepX() * var2, this.getY() + var1.getStepY() * var2, this.getZ() + var1.getStepZ() * var2);
-   }
-
    public Vec3i cross(Vec3i var1) {
       return new Vec3i(this.getY() * var1.getZ() - this.getZ() * var1.getY(), this.getZ() * var1.getX() - this.getX() * var1.getZ(), this.getX() * var1.getY() - this.getY() * var1.getX());
    }
 
    public boolean closerThan(Vec3i var1, double var2) {
-      return this.distSqr((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), false) < var2 * var2;
+      return this.distSqr((double)var1.x, (double)var1.y, (double)var1.z, false) < var2 * var2;
    }
 
    public boolean closerThan(Position var1, double var2) {
@@ -128,37 +92,18 @@ public class Vec3i implements Comparable<Vec3i> {
    }
 
    public int distManhattan(Vec3i var1) {
-      float var2 = (float)Math.abs(var1.getX() - this.getX());
-      float var3 = (float)Math.abs(var1.getY() - this.getY());
-      float var4 = (float)Math.abs(var1.getZ() - this.getZ());
+      float var2 = (float)Math.abs(var1.getX() - this.x);
+      float var3 = (float)Math.abs(var1.getY() - this.y);
+      float var4 = (float)Math.abs(var1.getZ() - this.z);
       return (int)(var2 + var3 + var4);
-   }
-
-   public int get(Direction.Axis var1) {
-      return var1.choose(this.x, this.y, this.z);
    }
 
    public String toString() {
       return MoreObjects.toStringHelper(this).add("x", this.getX()).add("y", this.getY()).add("z", this.getZ()).toString();
    }
 
-   public String toShortString() {
-      return "" + this.getX() + ", " + this.getY() + ", " + this.getZ();
-   }
-
    // $FF: synthetic method
    public int compareTo(Object var1) {
       return this.compareTo((Vec3i)var1);
-   }
-
-   static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize(var0, 3).map((var0x) -> {
-            return new Vec3i(var0x[0], var0x[1], var0x[2]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()});
-      });
-      ZERO = new Vec3i(0, 0, 0);
    }
 }

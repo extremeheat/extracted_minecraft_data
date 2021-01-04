@@ -221,129 +221,123 @@ public class RailState {
       }
    }
 
-   public RailState place(boolean var1, boolean var2, RailShape var3) {
-      BlockPos var4 = this.pos.north();
-      BlockPos var5 = this.pos.south();
-      BlockPos var6 = this.pos.west();
-      BlockPos var7 = this.pos.east();
+   public RailState place(boolean var1, boolean var2) {
+      BlockPos var3 = this.pos.north();
+      BlockPos var4 = this.pos.south();
+      BlockPos var5 = this.pos.west();
+      BlockPos var6 = this.pos.east();
+      boolean var7 = this.hasNeighborRail(var3);
       boolean var8 = this.hasNeighborRail(var4);
       boolean var9 = this.hasNeighborRail(var5);
       boolean var10 = this.hasNeighborRail(var6);
-      boolean var11 = this.hasNeighborRail(var7);
-      RailShape var12 = null;
-      boolean var13 = var8 || var9;
-      boolean var14 = var10 || var11;
-      if (var13 && !var14) {
-         var12 = RailShape.NORTH_SOUTH;
+      RailShape var11 = null;
+      if ((var7 || var8) && !var9 && !var10) {
+         var11 = RailShape.NORTH_SOUTH;
       }
 
-      if (var14 && !var13) {
-         var12 = RailShape.EAST_WEST;
+      if ((var9 || var10) && !var7 && !var8) {
+         var11 = RailShape.EAST_WEST;
       }
 
-      boolean var15 = var9 && var11;
-      boolean var16 = var9 && var10;
-      boolean var17 = var8 && var11;
-      boolean var18 = var8 && var10;
       if (!this.isStraight) {
-         if (var15 && !var8 && !var10) {
-            var12 = RailShape.SOUTH_EAST;
+         if (var8 && var10 && !var7 && !var9) {
+            var11 = RailShape.SOUTH_EAST;
          }
 
-         if (var16 && !var8 && !var11) {
-            var12 = RailShape.SOUTH_WEST;
+         if (var8 && var9 && !var7 && !var10) {
+            var11 = RailShape.SOUTH_WEST;
          }
 
-         if (var18 && !var9 && !var11) {
-            var12 = RailShape.NORTH_WEST;
+         if (var7 && var9 && !var8 && !var10) {
+            var11 = RailShape.NORTH_WEST;
          }
 
-         if (var17 && !var9 && !var10) {
-            var12 = RailShape.NORTH_EAST;
+         if (var7 && var10 && !var8 && !var9) {
+            var11 = RailShape.NORTH_EAST;
          }
       }
 
-      if (var12 == null) {
-         if (var13 && var14) {
-            var12 = var3;
-         } else if (var13) {
-            var12 = RailShape.NORTH_SOUTH;
-         } else if (var14) {
-            var12 = RailShape.EAST_WEST;
+      if (var11 == null) {
+         if (var7 || var8) {
+            var11 = RailShape.NORTH_SOUTH;
+         }
+
+         if (var9 || var10) {
+            var11 = RailShape.EAST_WEST;
          }
 
          if (!this.isStraight) {
             if (var1) {
-               if (var15) {
-                  var12 = RailShape.SOUTH_EAST;
+               if (var8 && var10) {
+                  var11 = RailShape.SOUTH_EAST;
                }
 
-               if (var16) {
-                  var12 = RailShape.SOUTH_WEST;
+               if (var9 && var8) {
+                  var11 = RailShape.SOUTH_WEST;
                }
 
-               if (var17) {
-                  var12 = RailShape.NORTH_EAST;
+               if (var10 && var7) {
+                  var11 = RailShape.NORTH_EAST;
                }
 
-               if (var18) {
-                  var12 = RailShape.NORTH_WEST;
+               if (var7 && var9) {
+                  var11 = RailShape.NORTH_WEST;
                }
             } else {
-               if (var18) {
-                  var12 = RailShape.NORTH_WEST;
+               if (var7 && var9) {
+                  var11 = RailShape.NORTH_WEST;
                }
 
-               if (var17) {
-                  var12 = RailShape.NORTH_EAST;
+               if (var10 && var7) {
+                  var11 = RailShape.NORTH_EAST;
                }
 
-               if (var16) {
-                  var12 = RailShape.SOUTH_WEST;
+               if (var9 && var8) {
+                  var11 = RailShape.SOUTH_WEST;
                }
 
-               if (var15) {
-                  var12 = RailShape.SOUTH_EAST;
+               if (var8 && var10) {
+                  var11 = RailShape.SOUTH_EAST;
                }
             }
          }
       }
 
-      if (var12 == RailShape.NORTH_SOUTH) {
+      if (var11 == RailShape.NORTH_SOUTH) {
+         if (BaseRailBlock.isRail(this.level, var3.above())) {
+            var11 = RailShape.ASCENDING_NORTH;
+         }
+
          if (BaseRailBlock.isRail(this.level, var4.above())) {
-            var12 = RailShape.ASCENDING_NORTH;
+            var11 = RailShape.ASCENDING_SOUTH;
+         }
+      }
+
+      if (var11 == RailShape.EAST_WEST) {
+         if (BaseRailBlock.isRail(this.level, var6.above())) {
+            var11 = RailShape.ASCENDING_EAST;
          }
 
          if (BaseRailBlock.isRail(this.level, var5.above())) {
-            var12 = RailShape.ASCENDING_SOUTH;
+            var11 = RailShape.ASCENDING_WEST;
          }
       }
 
-      if (var12 == RailShape.EAST_WEST) {
-         if (BaseRailBlock.isRail(this.level, var7.above())) {
-            var12 = RailShape.ASCENDING_EAST;
-         }
-
-         if (BaseRailBlock.isRail(this.level, var6.above())) {
-            var12 = RailShape.ASCENDING_WEST;
-         }
+      if (var11 == null) {
+         var11 = RailShape.NORTH_SOUTH;
       }
 
-      if (var12 == null) {
-         var12 = var3;
-      }
-
-      this.updateConnections(var12);
-      this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), var12);
+      this.updateConnections(var11);
+      this.state = (BlockState)this.state.setValue(this.block.getShapeProperty(), var11);
       if (var2 || this.level.getBlockState(this.pos) != this.state) {
          this.level.setBlock(this.pos, this.state, 3);
 
-         for(int var19 = 0; var19 < this.connections.size(); ++var19) {
-            RailState var20 = this.getRail((BlockPos)this.connections.get(var19));
-            if (var20 != null) {
-               var20.removeSoftConnections();
-               if (var20.canConnectTo(this)) {
-                  var20.connectTo(this);
+         for(int var12 = 0; var12 < this.connections.size(); ++var12) {
+            RailState var13 = this.getRail((BlockPos)this.connections.get(var12));
+            if (var13 != null) {
+               var13.removeSoftConnections();
+               if (var13.canConnectTo(this)) {
+                  var13.connectTo(this);
                }
             }
          }

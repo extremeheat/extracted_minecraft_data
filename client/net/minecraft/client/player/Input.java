@@ -10,13 +10,13 @@ public class Input {
    public boolean left;
    public boolean right;
    public boolean jumping;
-   public boolean shiftKeyDown;
+   public boolean sneakKeyDown;
 
    public Input() {
       super();
    }
 
-   public void tick(boolean var1) {
+   public void tick(boolean var1, boolean var2) {
    }
 
    public Vec2 getMoveVector() {

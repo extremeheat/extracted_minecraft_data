@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,21 +13,26 @@ public class GrindstoneScreen extends AbstractContainerScreen<GrindstoneMenu> {
       super(var1, var2, var3);
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.renderBg(var1, var4, var2, var3);
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   protected void renderLabels(int var1, int var2) {
+      this.font.draw(this.title.getColoredString(), 8.0F, 6.0F, 4210752);
+      this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 96 + 2), 4210752);
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.renderBg(var3, var1, var2);
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
+   }
+
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(GRINDSTONE_LOCATION);
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      int var4 = (this.width - this.imageWidth) / 2;
+      int var5 = (this.height - this.imageHeight) / 2;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
       if ((((GrindstoneMenu)this.menu).getSlot(0).hasItem() || ((GrindstoneMenu)this.menu).getSlot(1).hasItem()) && !((GrindstoneMenu)this.menu).getSlot(2).hasItem()) {
-         this.blit(var1, var5 + 92, var6 + 31, this.imageWidth, 0, 28, 21);
+         this.blit(var4 + 92, var5 + 31, this.imageWidth, 0, 28, 21);
       }
 
    }

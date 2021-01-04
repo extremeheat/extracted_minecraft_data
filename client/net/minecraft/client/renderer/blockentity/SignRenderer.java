@@ -1,137 +1,164 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
 import java.util.List;
-import java.util.Map;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.components.ComponentRenderUtils;
+import net.minecraft.client.model.SignModel;
 import net.minecraft.core.Direction;
-import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StandingSignBlock;
 import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.WoodType;
 
-public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
-   private final Map<WoodType, SignRenderer.SignModel> signModels;
-   private final Font font;
+public class SignRenderer extends BlockEntityRenderer<SignBlockEntity> {
+   private static final ResourceLocation OAK_TEXTURE = new ResourceLocation("textures/entity/signs/oak.png");
+   private static final ResourceLocation SPRUCE_TEXTURE = new ResourceLocation("textures/entity/signs/spruce.png");
+   private static final ResourceLocation BIRCH_TEXTURE = new ResourceLocation("textures/entity/signs/birch.png");
+   private static final ResourceLocation ACACIA_TEXTURE = new ResourceLocation("textures/entity/signs/acacia.png");
+   private static final ResourceLocation JUNGLE_TEXTURE = new ResourceLocation("textures/entity/signs/jungle.png");
+   private static final ResourceLocation DARK_OAK_TEXTURE = new ResourceLocation("textures/entity/signs/dark_oak.png");
+   private final SignModel signModel = new SignModel();
 
-   public SignRenderer(BlockEntityRendererProvider.Context var1) {
+   public SignRenderer() {
       super();
-      this.signModels = (Map)WoodType.values().collect(ImmutableMap.toImmutableMap((var0) -> {
-         return var0;
-      }, (var1x) -> {
-         return new SignRenderer.SignModel(var1.getLayer(ModelLayers.createSignModelName(var1x)));
-      }));
-      this.font = var1.getFont();
    }
 
-   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      BlockState var7 = var1.getBlockState();
-      var3.pushPose();
-      float var8 = 0.6666667F;
-      WoodType var9 = getWoodType(var7.getBlock());
-      SignRenderer.SignModel var10 = (SignRenderer.SignModel)this.signModels.get(var9);
-      float var11;
-      if (var7.getBlock() instanceof StandingSignBlock) {
-         var3.translate(0.5D, 0.5D, 0.5D);
-         var11 = -((float)((Integer)var7.getValue(StandingSignBlock.ROTATION) * 360) / 16.0F);
-         var3.mulPose(Vector3f.YP.rotationDegrees(var11));
-         var10.stick.visible = true;
+   public void render(SignBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      BlockState var10 = var1.getBlockState();
+      GlStateManager.pushMatrix();
+      float var11 = 0.6666667F;
+      if (var10.getBlock() instanceof StandingSignBlock) {
+         GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+         GlStateManager.rotatef(-((float)((Integer)var10.getValue(StandingSignBlock.ROTATION) * 360) / 16.0F), 0.0F, 1.0F, 0.0F);
+         this.signModel.getStick().visible = true;
       } else {
-         var3.translate(0.5D, 0.5D, 0.5D);
-         var11 = -((Direction)var7.getValue(WallSignBlock.FACING)).toYRot();
-         var3.mulPose(Vector3f.YP.rotationDegrees(var11));
-         var3.translate(0.0D, -0.3125D, -0.4375D);
-         var10.stick.visible = false;
+         GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+         GlStateManager.rotatef(-((Direction)var10.getValue(WallSignBlock.FACING)).toYRot(), 0.0F, 1.0F, 0.0F);
+         GlStateManager.translatef(0.0F, -0.3125F, -0.4375F);
+         this.signModel.getStick().visible = false;
       }
 
-      var3.pushPose();
-      var3.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      Material var25 = Sheets.signTexture(var9);
-      var10.getClass();
-      VertexConsumer var12 = var25.buffer(var4, var10::renderType);
-      var10.root.render(var3, var12, var5, var6);
-      var3.popPose();
-      float var13 = 0.010416667F;
-      var3.translate(0.0D, 0.3333333432674408D, 0.046666666865348816D);
-      var3.scale(0.010416667F, -0.010416667F, 0.010416667F);
-      int var14 = var1.getColor().getTextColor();
-      double var15 = 0.4D;
-      int var17 = (int)((double)NativeImage.getR(var14) * 0.4D);
-      int var18 = (int)((double)NativeImage.getG(var14) * 0.4D);
-      int var19 = (int)((double)NativeImage.getB(var14) * 0.4D);
-      int var20 = NativeImage.combine(0, var19, var18, var17);
-      boolean var21 = true;
+      if (var9 >= 0) {
+         this.bindTexture(BREAKING_LOCATIONS[var9]);
+         GlStateManager.matrixMode(5890);
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(4.0F, 2.0F, 1.0F);
+         GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
+         GlStateManager.matrixMode(5888);
+      } else {
+         this.bindTexture(this.getTexture(var10.getBlock()));
+      }
 
-      for(int var22 = 0; var22 < 4; ++var22) {
-         FormattedCharSequence var23 = var1.getRenderMessage(var22, (var1x) -> {
-            List var2 = this.font.split(var1x, 90);
-            return var2.isEmpty() ? FormattedCharSequence.EMPTY : (FormattedCharSequence)var2.get(0);
-         });
-         if (var23 != null) {
-            float var24 = (float)(-this.font.width(var23) / 2);
-            this.font.drawInBatch((FormattedCharSequence)var23, var24, (float)(var22 * 10 - 20), var20, false, var3.last().pose(), var4, false, 0, var5);
+      GlStateManager.enableRescaleNormal();
+      GlStateManager.pushMatrix();
+      GlStateManager.scalef(0.6666667F, -0.6666667F, -0.6666667F);
+      this.signModel.render();
+      GlStateManager.popMatrix();
+      Font var12 = this.getFont();
+      float var13 = 0.010416667F;
+      GlStateManager.translatef(0.0F, 0.33333334F, 0.046666667F);
+      GlStateManager.scalef(0.010416667F, -0.010416667F, 0.010416667F);
+      GlStateManager.normal3f(0.0F, 0.0F, -0.010416667F);
+      GlStateManager.depthMask(false);
+      int var14 = var1.getColor().getTextColor();
+      if (var9 < 0) {
+         for(int var15 = 0; var15 < 4; ++var15) {
+            String var16 = var1.getRenderMessage(var15, (var1x) -> {
+               List var2 = ComponentRenderUtils.wrapComponents(var1x, 90, var12, false, true);
+               return var2.isEmpty() ? "" : ((Component)var2.get(0)).getColoredString();
+            });
+            if (var16 != null) {
+               var12.draw(var16, (float)(-var12.width(var16) / 2), (float)(var15 * 10 - var1.messages.length * 5), var14);
+               if (var15 == var1.getSelectedLine() && var1.getCursorPos() >= 0) {
+                  int var17 = var12.width(var16.substring(0, Math.max(Math.min(var1.getCursorPos(), var16.length()), 0)));
+                  int var18 = var12.isBidirectional() ? -1 : 1;
+                  int var19 = (var17 - var12.width(var16) / 2) * var18;
+                  int var20 = var15 * 10 - var1.messages.length * 5;
+                  int var10001;
+                  if (var1.isShowCursor()) {
+                     if (var1.getCursorPos() < var16.length()) {
+                        var10001 = var20 - 1;
+                        int var10002 = var19 + 1;
+                        var12.getClass();
+                        GuiComponent.fill(var19, var10001, var10002, var20 + 9, -16777216 | var14);
+                     } else {
+                        var12.draw("_", (float)var19, (float)var20, var14);
+                     }
+                  }
+
+                  if (var1.getSelectionPos() != var1.getCursorPos()) {
+                     int var21 = Math.min(var1.getCursorPos(), var1.getSelectionPos());
+                     int var22 = Math.max(var1.getCursorPos(), var1.getSelectionPos());
+                     int var23 = (var12.width(var16.substring(0, var21)) - var12.width(var16) / 2) * var18;
+                     int var24 = (var12.width(var16.substring(0, var22)) - var12.width(var16) / 2) * var18;
+                     var10001 = Math.min(var23, var24);
+                     int var10003 = Math.max(var23, var24);
+                     var12.getClass();
+                     this.renderHighlight(var10001, var20, var10003, var20 + 9);
+                  }
+               }
+            }
          }
       }
 
-      var3.popPose();
+      GlStateManager.depthMask(true);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.popMatrix();
+      if (var9 >= 0) {
+         GlStateManager.matrixMode(5890);
+         GlStateManager.popMatrix();
+         GlStateManager.matrixMode(5888);
+      }
+
    }
 
-   public static WoodType getWoodType(Block var0) {
-      WoodType var1;
-      if (var0 instanceof SignBlock) {
-         var1 = ((SignBlock)var0).type();
+   private ResourceLocation getTexture(Block var1) {
+      if (var1 != Blocks.OAK_SIGN && var1 != Blocks.OAK_WALL_SIGN) {
+         if (var1 != Blocks.SPRUCE_SIGN && var1 != Blocks.SPRUCE_WALL_SIGN) {
+            if (var1 != Blocks.BIRCH_SIGN && var1 != Blocks.BIRCH_WALL_SIGN) {
+               if (var1 != Blocks.ACACIA_SIGN && var1 != Blocks.ACACIA_WALL_SIGN) {
+                  if (var1 != Blocks.JUNGLE_SIGN && var1 != Blocks.JUNGLE_WALL_SIGN) {
+                     return var1 != Blocks.DARK_OAK_SIGN && var1 != Blocks.DARK_OAK_WALL_SIGN ? OAK_TEXTURE : DARK_OAK_TEXTURE;
+                  } else {
+                     return JUNGLE_TEXTURE;
+                  }
+               } else {
+                  return ACACIA_TEXTURE;
+               }
+            } else {
+               return BIRCH_TEXTURE;
+            }
+         } else {
+            return SPRUCE_TEXTURE;
+         }
       } else {
-         var1 = WoodType.OAK;
+         return OAK_TEXTURE;
       }
-
-      return var1;
    }
 
-   public static SignRenderer.SignModel createSignModel(EntityModelSet var0, WoodType var1) {
-      return new SignRenderer.SignModel(var0.getLayer(ModelLayers.createSignModelName(var1)));
-   }
-
-   public static LayerDefinition createSignLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("sign", CubeListBuilder.create().texOffs(0, 0).addBox(-12.0F, -14.0F, -1.0F, 24.0F, 12.0F, 2.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("stick", CubeListBuilder.create().texOffs(0, 14).addBox(-1.0F, -2.0F, -1.0F, 2.0F, 14.0F, 2.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 32);
-   }
-
-   public static final class SignModel extends Model {
-      public final ModelPart root;
-      public final ModelPart stick;
-
-      public SignModel(ModelPart var1) {
-         super(RenderType::entityCutoutNoCull);
-         this.root = var1;
-         this.stick = var1.getChild("stick");
-      }
-
-      public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-         this.root.render(var1, var2, var3, var4, var5, var6, var7, var8);
-      }
+   private void renderHighlight(int var1, int var2, int var3, int var4) {
+      Tesselator var5 = Tesselator.getInstance();
+      BufferBuilder var6 = var5.getBuilder();
+      GlStateManager.color4f(0.0F, 0.0F, 255.0F, 255.0F);
+      GlStateManager.disableTexture();
+      GlStateManager.enableColorLogicOp();
+      GlStateManager.logicOp(GlStateManager.LogicOp.OR_REVERSE);
+      var6.begin(7, DefaultVertexFormat.POSITION);
+      var6.vertex((double)var1, (double)var4, 0.0D).endVertex();
+      var6.vertex((double)var3, (double)var4, 0.0D).endVertex();
+      var6.vertex((double)var3, (double)var2, 0.0D).endVertex();
+      var6.vertex((double)var1, (double)var2, 0.0D).endVertex();
+      var5.end();
+      GlStateManager.disableColorLogicOp();
+      GlStateManager.enableTexture();
    }
 }

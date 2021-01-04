@@ -7,85 +7,58 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.Decoder;
-import com.mojang.serialization.Encoder;
-import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.core.MapFiller;
 import net.minecraft.world.level.block.state.properties.Property;
 
-public class StateDefinition<O, S extends StateHolder<O, S>> {
+public class StateDefinition<O, S extends StateHolder<S>> {
    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-z0-9_]+$");
    private final O owner;
    private final ImmutableSortedMap<String, Property<?>> propertiesByName;
    private final ImmutableList<S> states;
 
-   protected StateDefinition(Function<O, S> var1, O var2, StateDefinition.Factory<O, S> var3, Map<String, Property<?>> var4) {
+   protected <A extends AbstractStateHolder<O, S>> StateDefinition(O var1, StateDefinition.Factory<O, S, A> var2, Map<String, Property<?>> var3) {
       super();
-      this.owner = var2;
-      this.propertiesByName = ImmutableSortedMap.copyOf(var4);
-      Supplier var5 = () -> {
-         return (StateHolder)var1.apply(var2);
-      };
-      MapCodec var6 = MapCodec.of(Encoder.empty(), Decoder.unit(var5));
+      this.owner = var1;
+      this.propertiesByName = ImmutableSortedMap.copyOf(var3);
+      LinkedHashMap var4 = Maps.newLinkedHashMap();
+      ArrayList var5 = Lists.newArrayList();
+      Stream var6 = Stream.of(Collections.emptyList());
 
-      Entry var8;
-      for(UnmodifiableIterator var7 = this.propertiesByName.entrySet().iterator(); var7.hasNext(); var6 = appendPropertyCodec(var6, var5, (String)var8.getKey(), (Property)var8.getValue())) {
-         var8 = (Entry)var7.next();
-      }
-
-      LinkedHashMap var15 = Maps.newLinkedHashMap();
-      ArrayList var9 = Lists.newArrayList();
-      Stream var10 = Stream.of(Collections.emptyList());
-
-      Property var12;
-      for(UnmodifiableIterator var11 = this.propertiesByName.values().iterator(); var11.hasNext(); var10 = var10.flatMap((var1x) -> {
-         return var12.getPossibleValues().stream().map((var2) -> {
-            ArrayList var3 = Lists.newArrayList(var1x);
-            var3.add(Pair.of(var12, var2));
-            return var3;
+      Property var8;
+      for(UnmodifiableIterator var7 = this.propertiesByName.values().iterator(); var7.hasNext(); var6 = var6.flatMap((var1x) -> {
+         return var8.getPossibleValues().stream().map((var1) -> {
+            ArrayList var2 = Lists.newArrayList(var1x);
+            var2.add(var1);
+            return var2;
          });
       })) {
-         var12 = (Property)var11.next();
+         var8 = (Property)var7.next();
       }
 
-      var10.forEach((var5x) -> {
-         ImmutableMap var6x = (ImmutableMap)var5x.stream().collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
-         StateHolder var7 = (StateHolder)var3.create(var2, var6x, var6);
-         var15.put(var6x, var7);
-         var9.add(var7);
+      var6.forEach((var5x) -> {
+         Map var6 = MapFiller.linkedHashMapFrom(this.propertiesByName.values(), var5x);
+         AbstractStateHolder var7 = var2.create(var1, ImmutableMap.copyOf(var6));
+         var4.put(var6, var7);
+         var5.add(var7);
       });
-      Iterator var13 = var9.iterator();
+      Iterator var9 = var5.iterator();
 
-      while(var13.hasNext()) {
-         StateHolder var14 = (StateHolder)var13.next();
-         var14.populateNeighbours(var15);
+      while(var9.hasNext()) {
+         AbstractStateHolder var10 = (AbstractStateHolder)var9.next();
+         var10.populateNeighbours(var4);
       }
 
-      this.states = ImmutableList.copyOf(var9);
-   }
-
-   private static <S extends StateHolder<?, S>, T extends Comparable<T>> MapCodec<S> appendPropertyCodec(MapCodec<S> var0, Supplier<S> var1, String var2, Property<T> var3) {
-      return Codec.mapPair(var0, var3.valueCodec().fieldOf(var2).setPartial(() -> {
-         return var3.value((StateHolder)var1.get());
-      })).xmap((var1x) -> {
-         return (StateHolder)((StateHolder)var1x.getFirst()).setValue(var3, ((Property.Value)var1x.getSecond()).value());
-      }, (var1x) -> {
-         return Pair.of(var1x, var3.value(var1x));
-      });
+      this.states = ImmutableList.copyOf(var5);
    }
 
    public ImmutableList<S> getPossibleStates() {
@@ -113,7 +86,7 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
       return (Property)this.propertiesByName.get(var1);
    }
 
-   public static class Builder<O, S extends StateHolder<O, S>> {
+   public static class Builder<O, S extends StateHolder<S>> {
       private final O owner;
       private final Map<String, Property<?>> properties = Maps.newHashMap();
 
@@ -165,12 +138,12 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
          }
       }
 
-      public StateDefinition<O, S> create(Function<O, S> var1, StateDefinition.Factory<O, S> var2) {
-         return new StateDefinition(var1, this.owner, var2, this.properties);
+      public <A extends AbstractStateHolder<O, S>> StateDefinition<O, S> create(StateDefinition.Factory<O, S, A> var1) {
+         return new StateDefinition(this.owner, var1, this.properties);
       }
    }
 
-   public interface Factory<O, S> {
-      S create(O var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3);
+   public interface Factory<O, S extends StateHolder<S>, A extends AbstractStateHolder<O, S>> {
+      A create(O var1, ImmutableMap<Property<?>, Comparable<?>> var2);
    }
 }

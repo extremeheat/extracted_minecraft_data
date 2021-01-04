@@ -31,6 +31,10 @@ public class Target extends Node {
       this.reached = true;
    }
 
+   public boolean isReached() {
+      return this.reached;
+   }
+
    public static Target createFromStream(FriendlyByteBuf var0) {
       Target var1 = new Target(var0.readInt(), var0.readInt(), var0.readInt());
       var1.walkedDistance = var0.readFloat();

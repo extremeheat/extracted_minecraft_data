@@ -5,11 +5,9 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -17,7 +15,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TickPriority;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -29,7 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    public static final EnumProperty<ComparatorMode> MODE;
 
-   public ComparatorBlock(BlockBehaviour.Properties var1) {
+   public ComparatorBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(MODE, ComparatorMode.COMPARE));
    }
@@ -44,30 +41,17 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    }
 
    private int calculateOutputSignal(Level var1, BlockPos var2, BlockState var3) {
-      int var4 = this.getInputSignal(var1, var2, var3);
-      if (var4 == 0) {
-         return 0;
-      } else {
-         int var5 = this.getAlternateSignal(var1, var2, var3);
-         if (var5 > var4) {
-            return 0;
-         } else {
-            return var3.getValue(MODE) == ComparatorMode.SUBTRACT ? var4 - var5 : var4;
-         }
-      }
+      return var3.getValue(MODE) == ComparatorMode.SUBTRACT ? Math.max(this.getInputSignal(var1, var2, var3) - this.getAlternateSignal(var1, var2, var3), 0) : this.getInputSignal(var1, var2, var3);
    }
 
    protected boolean shouldTurnOn(Level var1, BlockPos var2, BlockState var3) {
       int var4 = this.getInputSignal(var1, var2, var3);
-      if (var4 == 0) {
+      if (var4 >= 15) {
+         return true;
+      } else if (var4 == 0) {
          return false;
       } else {
-         int var5 = this.getAlternateSignal(var1, var2, var3);
-         if (var4 > var5) {
-            return true;
-         } else {
-            return var4 == var5 && var3.getValue(MODE) == ComparatorMode.COMPARE;
-         }
+         return var4 >= this.getAlternateSignal(var1, var2, var3);
       }
    }
 
@@ -81,10 +65,13 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       } else if (var4 < 15 && var7.isRedstoneConductor(var1, var6)) {
          var6 = var6.relative(var5);
          var7 = var1.getBlockState(var6);
-         ItemFrame var8 = this.getItemFrame(var1, var5, var6);
-         int var9 = Math.max(var8 == null ? -2147483648 : var8.getAnalogOutput(), var7.hasAnalogOutputSignal() ? var7.getAnalogOutputSignal(var1, var6) : -2147483648);
-         if (var9 != -2147483648) {
-            var4 = var9;
+         if (var7.hasAnalogOutputSignal()) {
+            var4 = var7.getAnalogOutputSignal(var1, var6);
+         } else if (var7.isAir()) {
+            ItemFrame var8 = this.getItemFrame(var1, var5, var6);
+            if (var8 != null) {
+               var4 = var8.getAnalogOutput();
+            }
          }
       }
 
@@ -99,16 +86,16 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       return var4.size() == 1 ? (ItemFrame)var4.get(0) : null;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var4.getAbilities().mayBuild) {
-         return InteractionResult.PASS;
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      if (!var4.abilities.mayBuild) {
+         return false;
       } else {
          var1 = (BlockState)var1.cycle(MODE);
          float var7 = var1.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
          var2.playSound(var4, var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var7);
          var2.setBlock(var3, var1, 2);
          this.refreshOutputState(var2, var3, var1);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       }
    }
 
@@ -149,7 +136,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
 
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       this.refreshOutputState(var2, var3, var1);
    }
 
@@ -159,8 +146,8 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       return var6 != null && var6.triggerEvent(var4, var5);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ComparatorBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new ComparatorBlockEntity();
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

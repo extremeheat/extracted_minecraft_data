@@ -26,12 +26,4 @@ public enum EmptyBlockGetter implements BlockGetter {
    public FluidState getFluidState(BlockPos var1) {
       return Fluids.EMPTY.defaultFluidState();
    }
-
-   public int getSectionsCount() {
-      return 0;
-   }
-
-   public int getMinSection() {
-      return 0;
-   }
 }

@@ -8,6 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -25,7 +26,7 @@ public class KnowledgeBookItem extends Item {
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       CompoundTag var5 = var4.getTag();
-      if (!var2.getAbilities().instabuild) {
+      if (!var2.abilities.instabuild) {
          var2.setItemInHand(var3, ItemStack.EMPTY);
       }
 
@@ -40,7 +41,7 @@ public class KnowledgeBookItem extends Item {
                Optional var11 = var8.byKey(new ResourceLocation(var10));
                if (!var11.isPresent()) {
                   LOGGER.error("Invalid recipe: {}", var10);
-                  return InteractionResultHolder.fail(var4);
+                  return new InteractionResultHolder(InteractionResult.FAIL, var4);
                }
 
                var7.add(var11.get());
@@ -50,10 +51,10 @@ public class KnowledgeBookItem extends Item {
             var2.awardStat(Stats.ITEM_USED.get(this));
          }
 
-         return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       } else {
          LOGGER.error("Tag not valid: {}", var5);
-         return InteractionResultHolder.fail(var4);
+         return new InteractionResultHolder(InteractionResult.FAIL, var4);
       }
    }
 }

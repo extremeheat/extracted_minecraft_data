@@ -20,8 +20,6 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -35,7 +33,7 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 
 public class Vex extends Monster {
@@ -81,8 +79,10 @@ public class Vex extends Monster {
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 14.0D).add(Attributes.ATTACK_DAMAGE, 4.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(14.0D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.0D);
    }
 
    protected void defineSynchedData() {
@@ -175,12 +175,16 @@ public class Vex extends Monster {
       return SoundEvents.VEX_HURT;
    }
 
+   public int getLightColor() {
+      return 15728880;
+   }
+
    public float getBrightness() {
       return 1.0F;
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       this.populateDefaultEquipmentSlots(var2);
       this.populateDefaultEquipmentEnchantments(var2);
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
@@ -229,7 +233,7 @@ public class Vex extends Monster {
       public void tick() {
          BlockPos var1 = Vex.this.getBoundOrigin();
          if (var1 == null) {
-            var1 = Vex.this.blockPosition();
+            var1 = new BlockPos(Vex.this);
          }
 
          for(int var2 = 0; var2 < 3; ++var2) {
@@ -299,7 +303,7 @@ public class Vex extends Monster {
 
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
-            Vec3 var1 = new Vec3(this.wantedX - Vex.this.getX(), this.wantedY - Vex.this.getY(), this.wantedZ - Vex.this.getZ());
+            Vec3 var1 = new Vec3(this.wantedX - Vex.this.x, this.wantedY - Vex.this.y, this.wantedZ - Vex.this.z);
             double var2 = var1.length();
             if (var2 < Vex.this.getBoundingBox().getSize()) {
                this.operation = MoveControl.Operation.WAIT;
@@ -311,8 +315,8 @@ public class Vex extends Monster {
                   Vex.this.yRot = -((float)Mth.atan2(var4.x, var4.z)) * 57.295776F;
                   Vex.this.yBodyRot = Vex.this.yRot;
                } else {
-                  double var8 = Vex.this.getTarget().getX() - Vex.this.getX();
-                  double var6 = Vex.this.getTarget().getZ() - Vex.this.getZ();
+                  double var8 = Vex.this.getTarget().x - Vex.this.x;
+                  double var6 = Vex.this.getTarget().z - Vex.this.z;
                   Vex.this.yRot = -((float)Mth.atan2(var8, var6)) * 57.295776F;
                   Vex.this.yBodyRot = Vex.this.yRot;
                }

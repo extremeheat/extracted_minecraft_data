@@ -17,14 +17,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.Pack;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.util.Unit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
 
 public class SimpleReloadableResourceManager implements ReloadableResourceManager {
    private static final Logger LOGGER = LogManager.getLogger();
@@ -32,24 +30,23 @@ public class SimpleReloadableResourceManager implements ReloadableResourceManage
    private final List<PreparableReloadListener> listeners = Lists.newArrayList();
    private final List<PreparableReloadListener> recentlyRegistered = Lists.newArrayList();
    private final Set<String> namespaces = Sets.newLinkedHashSet();
-   private final List<PackResources> packs = Lists.newArrayList();
    private final PackType type;
+   private final Thread mainThread;
 
-   public SimpleReloadableResourceManager(PackType var1) {
+   public SimpleReloadableResourceManager(PackType var1, Thread var2) {
       super();
       this.type = var1;
+      this.mainThread = var2;
    }
 
-   public void add(PackResources var1) {
-      this.packs.add(var1);
-
+   public void add(Pack var1) {
       FallbackResourceManager var4;
       for(Iterator var2 = var1.getNamespaces(this.type).iterator(); var2.hasNext(); var4.add(var1)) {
          String var3 = (String)var2.next();
          this.namespaces.add(var3);
          var4 = (FallbackResourceManager)this.namespacedPacks.get(var3);
          if (var4 == null) {
-            var4 = new FallbackResourceManager(this.type, var3);
+            var4 = new FallbackResourceManager(this.type);
             this.namespacedPacks.put(var3, var4);
          }
       }
@@ -100,12 +97,11 @@ public class SimpleReloadableResourceManager implements ReloadableResourceManage
    private void clear() {
       this.namespacedPacks.clear();
       this.namespaces.clear();
-      this.packs.forEach(PackResources::close);
-      this.packs.clear();
    }
 
-   public void close() {
-      this.clear();
+   public CompletableFuture<Unit> reload(Executor var1, Executor var2, List<Pack> var3, CompletableFuture<Unit> var4) {
+      ReloadInstance var5 = this.createFullReload(var1, var2, var4, var3);
+      return var5.done();
    }
 
    public void registerReloadListener(PreparableReloadListener var1) {
@@ -116,82 +112,29 @@ public class SimpleReloadableResourceManager implements ReloadableResourceManage
    protected ReloadInstance createReload(Executor var1, Executor var2, List<PreparableReloadListener> var3, CompletableFuture<Unit> var4) {
       Object var5;
       if (LOGGER.isDebugEnabled()) {
-         var5 = new ProfiledReloadInstance(this, Lists.newArrayList(var3), var1, var2, var4);
+         var5 = new ProfiledReloadInstance(this, new ArrayList(var3), var1, var2, var4);
       } else {
-         var5 = SimpleReloadInstance.of(this, Lists.newArrayList(var3), var1, var2, var4);
+         var5 = SimpleReloadInstance.of(this, new ArrayList(var3), var1, var2, var4);
       }
 
       this.recentlyRegistered.clear();
       return (ReloadInstance)var5;
    }
 
-   public ReloadInstance createFullReload(Executor var1, Executor var2, CompletableFuture<Unit> var3, List<PackResources> var4) {
+   public ReloadInstance createQueuedReload(Executor var1, Executor var2, CompletableFuture<Unit> var3) {
+      return this.createReload(var1, var2, this.recentlyRegistered, var3);
+   }
+
+   public ReloadInstance createFullReload(Executor var1, Executor var2, CompletableFuture<Unit> var3, List<Pack> var4) {
       this.clear();
-      LOGGER.info("Reloading ResourceManager: {}", new Supplier[]{() -> {
-         return (String)var4.stream().map(PackResources::getName).collect(Collectors.joining(", "));
-      }});
+      LOGGER.info("Reloading ResourceManager: {}", var4.stream().map(Pack::getName).collect(Collectors.joining(", ")));
       Iterator var5 = var4.iterator();
 
       while(var5.hasNext()) {
-         PackResources var6 = (PackResources)var5.next();
-
-         try {
-            this.add(var6);
-         } catch (Exception var8) {
-            LOGGER.error("Failed to add resource pack {}", var6.getName(), var8);
-            return new SimpleReloadableResourceManager.FailingReloadInstance(new SimpleReloadableResourceManager.ResourcePackLoadingFailure(var6, var8));
-         }
+         Pack var6 = (Pack)var5.next();
+         this.add(var6);
       }
 
       return this.createReload(var1, var2, this.listeners, var3);
-   }
-
-   public Stream<PackResources> listPacks() {
-      return this.packs.stream();
-   }
-
-   static class FailingReloadInstance implements ReloadInstance {
-      private final SimpleReloadableResourceManager.ResourcePackLoadingFailure exception;
-      private final CompletableFuture<Unit> failedFuture;
-
-      public FailingReloadInstance(SimpleReloadableResourceManager.ResourcePackLoadingFailure var1) {
-         super();
-         this.exception = var1;
-         this.failedFuture = new CompletableFuture();
-         this.failedFuture.completeExceptionally(var1);
-      }
-
-      public CompletableFuture<Unit> done() {
-         return this.failedFuture;
-      }
-
-      public float getActualProgress() {
-         return 0.0F;
-      }
-
-      public boolean isApplying() {
-         return false;
-      }
-
-      public boolean isDone() {
-         return true;
-      }
-
-      public void checkExceptions() {
-         throw this.exception;
-      }
-   }
-
-   public static class ResourcePackLoadingFailure extends RuntimeException {
-      private final PackResources pack;
-
-      public ResourcePackLoadingFailure(PackResources var1, Throwable var2) {
-         super(var1.getName(), var2);
-         this.pack = var1;
-      }
-
-      public PackResources getPack() {
-         return this.pack;
-      }
    }
 }

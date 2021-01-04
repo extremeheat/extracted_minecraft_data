@@ -10,16 +10,14 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseFireBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.TheEndDimension;
 
 public class EndCrystal extends Entity {
    private static final EntityDataAccessor<Optional<BlockPos>> DATA_BEAM_TARGET;
@@ -37,7 +35,7 @@ public class EndCrystal extends Entity {
       this.setPos(var2, var4, var6);
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -47,11 +45,14 @@ public class EndCrystal extends Entity {
    }
 
    public void tick() {
+      this.xo = this.x;
+      this.yo = this.y;
+      this.zo = this.z;
       ++this.time;
-      if (this.level instanceof ServerLevel) {
-         BlockPos var1 = this.blockPosition();
-         if (((ServerLevel)this.level).dragonFight() != null && this.level.getBlockState(var1).isAir()) {
-            this.level.setBlockAndUpdate(var1, BaseFireBlock.getState(this.level, var1));
+      if (!this.level.isClientSide) {
+         BlockPos var1 = new BlockPos(this);
+         if (this.level.dimension instanceof TheEndDimension && this.level.getBlockState(var1).isAir()) {
+            this.level.setBlockAndUpdate(var1, Blocks.FIRE.defaultBlockState());
          }
       }
 
@@ -86,10 +87,10 @@ public class EndCrystal extends Entity {
       } else if (var1.getEntity() instanceof EnderDragon) {
          return false;
       } else {
-         if (!this.isRemoved() && !this.level.isClientSide) {
-            this.remove(Entity.RemovalReason.KILLED);
+         if (!this.removed && !this.level.isClientSide) {
+            this.remove();
             if (!var1.isExplosion()) {
-               this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), 6.0F, Explosion.BlockInteraction.DESTROY);
+               this.level.explode((Entity)null, this.x, this.y, this.z, 6.0F, Explosion.BlockInteraction.DESTROY);
             }
 
             this.onDestroyedBy(var1);
@@ -105,10 +106,11 @@ public class EndCrystal extends Entity {
    }
 
    private void onDestroyedBy(DamageSource var1) {
-      if (this.level instanceof ServerLevel) {
-         EndDragonFight var2 = ((ServerLevel)this.level).dragonFight();
-         if (var2 != null) {
-            var2.onCrystalDestroyed(this, var1);
+      if (this.level.dimension instanceof TheEndDimension) {
+         TheEndDimension var2 = (TheEndDimension)this.level.dimension;
+         EndDragonFight var3 = var2.getDragonFight();
+         if (var3 != null) {
+            var3.onCrystalDestroyed(this, var1);
          }
       }
 
@@ -133,10 +135,6 @@ public class EndCrystal extends Entity {
 
    public boolean shouldRenderAtSqrDistance(double var1) {
       return super.shouldRenderAtSqrDistance(var1) || this.getBeamTarget() != null;
-   }
-
-   public ItemStack getPickResult() {
-      return new ItemStack(Items.END_CRYSTAL);
    }
 
    public Packet<?> getAddEntityPacket() {

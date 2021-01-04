@@ -4,25 +4,19 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -48,7 +42,7 @@ public class LecternBlock extends BaseEntityBlock {
    public static final VoxelShape SHAPE_EAST;
    public static final VoxelShape SHAPE_SOUTH;
 
-   protected LecternBlock(BlockBehaviour.Properties var1) {
+   protected LecternBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(HAS_BOOK, false));
    }
@@ -66,19 +60,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      ItemStack var3 = var1.getItemInHand();
-      CompoundTag var4 = var3.getTag();
-      Player var5 = var1.getPlayer();
-      boolean var6 = false;
-      if (!var2.isClientSide && var5 != null && var4 != null && var5.canUseGameMasterBlocks() && var4.contains("BlockEntityTag")) {
-         CompoundTag var7 = var4.getCompound("BlockEntityTag");
-         if (var7.contains("Book")) {
-            var6 = true;
-         }
-      }
-
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(HAS_BOOK, var6);
+      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
    public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -112,8 +94,9 @@ public class LecternBlock extends BaseEntityBlock {
       var1.add(FACING, POWERED, HAS_BOOK);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new LecternBlockEntity(var1, var2);
+   @Nullable
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new LecternBlockEntity();
    }
 
    public static boolean tryPlaceBook(Level var0, BlockPos var1, BlockState var2, ItemStack var3) {
@@ -159,12 +142,14 @@ public class LecternBlock extends BaseEntityBlock {
       var0.updateNeighborsAt(var1.below(), var2.getBlock());
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      changePowered(var2, var3, var1, false);
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide) {
+         changePowered(var2, var3, var1, false);
+      }
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          if ((Boolean)var1.getValue(HAS_BOOK)) {
             this.popBook(var1, var2, var3);
          }
@@ -220,16 +205,15 @@ public class LecternBlock extends BaseEntityBlock {
       return 0;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if ((Boolean)var1.getValue(HAS_BOOK)) {
          if (!var2.isClientSide) {
             this.openScreen(var2, var3, var4);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       } else {
-         ItemStack var7 = var4.getItemInHand(var5);
-         return !var7.isEmpty() && !var7.is((Tag)ItemTags.LECTERN_BOOKS) ? InteractionResult.CONSUME : InteractionResult.PASS;
+         return false;
       }
    }
 
@@ -262,7 +246,7 @@ public class LecternBlock extends BaseEntityBlock {
       SHAPE_COLLISION = Shapes.or(SHAPE_COMMON, SHAPE_TOP_PLATE);
       SHAPE_WEST = Shapes.or(Block.box(1.0D, 10.0D, 0.0D, 5.333333D, 14.0D, 16.0D), Block.box(5.333333D, 12.0D, 0.0D, 9.666667D, 16.0D, 16.0D), Block.box(9.666667D, 14.0D, 0.0D, 14.0D, 18.0D, 16.0D), SHAPE_COMMON);
       SHAPE_NORTH = Shapes.or(Block.box(0.0D, 10.0D, 1.0D, 16.0D, 14.0D, 5.333333D), Block.box(0.0D, 12.0D, 5.333333D, 16.0D, 16.0D, 9.666667D), Block.box(0.0D, 14.0D, 9.666667D, 16.0D, 18.0D, 14.0D), SHAPE_COMMON);
-      SHAPE_EAST = Shapes.or(Block.box(10.666667D, 10.0D, 0.0D, 15.0D, 14.0D, 16.0D), Block.box(6.333333D, 12.0D, 0.0D, 10.666667D, 16.0D, 16.0D), Block.box(2.0D, 14.0D, 0.0D, 6.333333D, 18.0D, 16.0D), SHAPE_COMMON);
-      SHAPE_SOUTH = Shapes.or(Block.box(0.0D, 10.0D, 10.666667D, 16.0D, 14.0D, 15.0D), Block.box(0.0D, 12.0D, 6.333333D, 16.0D, 16.0D, 10.666667D), Block.box(0.0D, 14.0D, 2.0D, 16.0D, 18.0D, 6.333333D), SHAPE_COMMON);
+      SHAPE_EAST = Shapes.or(Block.box(15.0D, 10.0D, 0.0D, 10.666667D, 14.0D, 16.0D), Block.box(10.666667D, 12.0D, 0.0D, 6.333333D, 16.0D, 16.0D), Block.box(6.333333D, 14.0D, 0.0D, 2.0D, 18.0D, 16.0D), SHAPE_COMMON);
+      SHAPE_SOUTH = Shapes.or(Block.box(0.0D, 10.0D, 15.0D, 16.0D, 14.0D, 10.666667D), Block.box(0.0D, 12.0D, 10.666667D, 16.0D, 16.0D, 6.333333D), Block.box(0.0D, 14.0D, 6.333333D, 16.0D, 18.0D, 2.0D), SHAPE_COMMON);
    }
 }

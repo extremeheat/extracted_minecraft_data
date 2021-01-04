@@ -1,32 +1,36 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 
-public class TheEndGatewayRenderer extends TheEndPortalRenderer<TheEndGatewayBlockEntity> {
+public class TheEndGatewayRenderer extends TheEndPortalRenderer {
    private static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/end_gateway_beam.png");
 
-   public TheEndGatewayRenderer(BlockEntityRendererProvider.Context var1) {
-      super(var1);
+   public TheEndGatewayRenderer() {
+      super();
    }
 
-   public void render(TheEndGatewayBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      if (var1.isSpawning() || var1.isCoolingDown()) {
-         float var7 = var1.isSpawning() ? var1.getSpawnPercent(var2) : var1.getCooldownPercent(var2);
-         double var8 = var1.isSpawning() ? (double)var1.getLevel().getMaxBuildHeight() : 50.0D;
-         var7 = Mth.sin(var7 * 3.1415927F);
-         int var10 = Mth.floor((double)var7 * var8);
-         float[] var11 = var1.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColors() : DyeColor.PURPLE.getTextureDiffuseColors();
-         long var12 = var1.getLevel().getGameTime();
-         BeaconRenderer.renderBeaconBeam(var3, var4, BEAM_LOCATION, var2, var7, var12, -var10, var10 * 2, var11, 0.15F, 0.175F);
+   public void render(TheEndPortalBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      GlStateManager.disableFog();
+      TheEndGatewayBlockEntity var10 = (TheEndGatewayBlockEntity)var1;
+      if (var10.isSpawning() || var10.isCoolingDown()) {
+         GlStateManager.alphaFunc(516, 0.1F);
+         this.bindTexture(BEAM_LOCATION);
+         float var11 = var10.isSpawning() ? var10.getSpawnPercent(var8) : var10.getCooldownPercent(var8);
+         double var12 = var10.isSpawning() ? 256.0D - var4 : 50.0D;
+         var11 = Mth.sin(var11 * 3.1415927F);
+         int var14 = Mth.floor((double)var11 * var12);
+         float[] var15 = var10.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColors() : DyeColor.PURPLE.getTextureDiffuseColors();
+         BeaconRenderer.renderBeaconBeam(var2, var4, var6, (double)var8, (double)var11, var10.getLevel().getGameTime(), 0, var14, var15, 0.15D, 0.175D);
+         BeaconRenderer.renderBeaconBeam(var2, var4, var6, (double)var8, (double)var11, var10.getLevel().getGameTime(), 0, -var14, var15, 0.15D, 0.175D);
       }
 
-      super.render((TheEndPortalBlockEntity)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var4, var6, var8, var9);
+      GlStateManager.enableFog();
    }
 
    protected int getPasses(double var1) {

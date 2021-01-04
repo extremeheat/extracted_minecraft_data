@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Ravager;
@@ -13,7 +12,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -25,7 +23,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPE_BY_AGE;
 
-   protected CropBlock(BlockBehaviour.Properties var1) {
+   protected CropBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(this.getAgeProperty(), 0));
    }
@@ -35,7 +33,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+      return var1.getBlock() == Blocks.FARMLAND;
    }
 
    public IntegerProperty getAgeProperty() {
@@ -58,11 +56,8 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       return (Integer)var1.getValue(this.getAgeProperty()) >= this.getMaxAge();
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return !this.isMaxAge(var1);
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      super.tick(var1, var2, var3, var4);
       if (var2.getRawBrightness(var3, 0) >= 9) {
          int var5 = this.getAge(var1);
          if (var5 < this.getMaxAge()) {
@@ -97,7 +92,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
          for(int var6 = -1; var6 <= 1; ++var6) {
             float var7 = 0.0F;
             BlockState var8 = var1.getBlockState(var4.offset(var5, 0, var6));
-            if (var8.is(Blocks.FARMLAND)) {
+            if (var8.getBlock() == Blocks.FARMLAND) {
                var7 = 1.0F;
                if ((Integer)var8.getValue(FarmBlock.MOISTURE) > 0) {
                   var7 = 3.0F;
@@ -116,12 +111,12 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       BlockPos var13 = var2.south();
       BlockPos var15 = var2.west();
       BlockPos var14 = var2.east();
-      boolean var9 = var1.getBlockState(var15).is(var0) || var1.getBlockState(var14).is(var0);
-      boolean var10 = var1.getBlockState(var12).is(var0) || var1.getBlockState(var13).is(var0);
+      boolean var9 = var0 == var1.getBlockState(var15).getBlock() || var0 == var1.getBlockState(var14).getBlock();
+      boolean var10 = var0 == var1.getBlockState(var12).getBlock() || var0 == var1.getBlockState(var13).getBlock();
       if (var9 && var10) {
          var3 /= 2.0F;
       } else {
-         boolean var11 = var1.getBlockState(var15.north()).is(var0) || var1.getBlockState(var14.north()).is(var0) || var1.getBlockState(var14.south()).is(var0) || var1.getBlockState(var15.south()).is(var0);
+         boolean var11 = var0 == var1.getBlockState(var15.north()).getBlock() || var0 == var1.getBlockState(var14.north()).getBlock() || var0 == var1.getBlockState(var14.south()).getBlock() || var0 == var1.getBlockState(var15.south()).getBlock();
          if (var11) {
             var3 /= 2.0F;
          }
@@ -136,7 +131,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
 
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4 instanceof Ravager && var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-         var2.destroyBlock(var3, true, var4);
+         var2.destroyBlock(var3, true);
       }
 
       super.entityInside(var1, var2, var3, var4);
@@ -158,7 +153,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       this.growCrops(var1, var3, var4);
    }
 

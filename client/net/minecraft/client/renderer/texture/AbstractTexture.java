@@ -2,23 +2,19 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
-import java.io.IOException;
-import java.util.concurrent.Executor;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 
-public abstract class AbstractTexture implements AutoCloseable {
+public abstract class AbstractTexture implements TextureObject {
    protected int id = -1;
    protected boolean blur;
    protected boolean mipmap;
+   protected boolean oldBlur;
+   protected boolean oldMipmap;
 
    public AbstractTexture() {
       super();
    }
 
    public void setFilter(boolean var1, boolean var2) {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
       this.blur = var1;
       this.mipmap = var2;
       int var3;
@@ -31,12 +27,21 @@ public abstract class AbstractTexture implements AutoCloseable {
          var4 = 9728;
       }
 
-      GlStateManager._texParameter(3553, 10241, var3);
-      GlStateManager._texParameter(3553, 10240, var4);
+      GlStateManager.texParameter(3553, 10241, var3);
+      GlStateManager.texParameter(3553, 10240, var4);
+   }
+
+   public void pushFilter(boolean var1, boolean var2) {
+      this.oldBlur = this.blur;
+      this.oldMipmap = this.mipmap;
+      this.setFilter(var1, var2);
+   }
+
+   public void popFilter() {
+      this.setFilter(this.oldBlur, this.oldMipmap);
    }
 
    public int getId() {
-      RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
       if (this.id == -1) {
          this.id = TextureUtil.generateTextureId();
       }
@@ -45,38 +50,10 @@ public abstract class AbstractTexture implements AutoCloseable {
    }
 
    public void releaseId() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            if (this.id != -1) {
-               TextureUtil.releaseTextureId(this.id);
-               this.id = -1;
-            }
-
-         });
-      } else if (this.id != -1) {
+      if (this.id != -1) {
          TextureUtil.releaseTextureId(this.id);
          this.id = -1;
       }
 
-   }
-
-   public abstract void load(ResourceManager var1) throws IOException;
-
-   public void bind() {
-      if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> {
-            GlStateManager._bindTexture(this.getId());
-         });
-      } else {
-         GlStateManager._bindTexture(this.getId());
-      }
-
-   }
-
-   public void reset(TextureManager var1, ResourceManager var2, ResourceLocation var3, Executor var4) {
-      var1.register(var3, this);
-   }
-
-   public void close() {
    }
 }

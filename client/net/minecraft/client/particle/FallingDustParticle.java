@@ -2,10 +2,10 @@ package net.minecraft.client.particle;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,7 +14,7 @@ public class FallingDustParticle extends TextureSheetParticle {
    private final float rotSpeed;
    private final SpriteSet sprites;
 
-   private FallingDustParticle(ClientLevel var1, double var2, double var4, double var6, float var8, float var9, float var10, SpriteSet var11) {
+   private FallingDustParticle(Level var1, double var2, double var4, double var6, float var8, float var9, float var10, SpriteSet var11) {
       super(var1, var2, var4, var6);
       this.sprites = var11;
       this.rCol = var8;
@@ -58,7 +58,7 @@ public class FallingDustParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   FallingDustParticle(ClientLevel var1, double var2, double var4, double var6, float var8, float var9, float var10, SpriteSet var11, Object var12) {
+   FallingDustParticle(Level var1, double var2, double var4, double var6, float var8, float var9, float var10, SpriteSet var11, Object var12) {
       this(var1, var2, var4, var6, var8, var9, var10, var11);
    }
 
@@ -71,21 +71,20 @@ public class FallingDustParticle extends TextureSheetParticle {
       }
 
       @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(BlockParticleOption var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          BlockState var15 = var1.getState();
          if (!var15.isAir() && var15.getRenderShape() == RenderShape.INVISIBLE) {
             return null;
          } else {
-            BlockPos var16 = new BlockPos(var3, var5, var7);
-            int var17 = Minecraft.getInstance().getBlockColors().getColor(var15, var2, var16);
+            int var16 = Minecraft.getInstance().getBlockColors().getColor(var15, var2, new BlockPos(var3, var5, var7));
             if (var15.getBlock() instanceof FallingBlock) {
-               var17 = ((FallingBlock)var15.getBlock()).getDustColor(var15, var2, var16);
+               var16 = ((FallingBlock)var15.getBlock()).getDustColor(var15);
             }
 
-            float var18 = (float)(var17 >> 16 & 255) / 255.0F;
-            float var19 = (float)(var17 >> 8 & 255) / 255.0F;
-            float var20 = (float)(var17 & 255) / 255.0F;
-            return new FallingDustParticle(var2, var3, var5, var7, var18, var19, var20, this.sprite);
+            float var17 = (float)(var16 >> 16 & 255) / 255.0F;
+            float var18 = (float)(var16 >> 8 & 255) / 255.0F;
+            float var19 = (float)(var16 & 255) / 255.0F;
+            return new FallingDustParticle(var2, var3, var5, var7, var17, var18, var19, this.sprite);
          }
       }
    }

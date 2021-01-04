@@ -13,7 +13,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -21,7 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 public class EntityDataAccessor implements DataAccessor {
-   private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.entity.invalid"));
+   private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.entity.invalid", new Object[0]));
    public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
       return new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
@@ -59,7 +58,7 @@ public class EntityDataAccessor implements DataAccessor {
    }
 
    public Component getPrintSuccess(Tag var1) {
-      return new TranslatableComponent("commands.data.entity.query", new Object[]{this.entity.getDisplayName(), NbtUtils.toPrettyComponent(var1)});
+      return new TranslatableComponent("commands.data.entity.query", new Object[]{this.entity.getDisplayName(), var1.getPrettyDisplay()});
    }
 
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {

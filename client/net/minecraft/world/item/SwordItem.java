@@ -1,32 +1,27 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 
-public class SwordItem extends TieredItem implements Vanishable {
+public class SwordItem extends TieredItem {
    private final float attackDamage;
-   private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+   private final float attackSpeed;
 
    public SwordItem(Tier var1, int var2, float var3, Item.Properties var4) {
       super(var1, var4);
+      this.attackSpeed = var3;
       this.attackDamage = (float)var2 + var1.getAttackDamageBonus();
-      Builder var5 = ImmutableMultimap.builder();
-      var5.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)this.attackDamage, AttributeModifier.Operation.ADDITION));
-      var5.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)var3, AttributeModifier.Operation.ADDITION));
-      this.defaultModifiers = var5.build();
    }
 
    public float getDamage() {
@@ -38,11 +33,12 @@ public class SwordItem extends TieredItem implements Vanishable {
    }
 
    public float getDestroySpeed(ItemStack var1, BlockState var2) {
-      if (var2.is(Blocks.COBWEB)) {
+      Block var3 = var2.getBlock();
+      if (var3 == Blocks.COBWEB) {
          return 15.0F;
       } else {
-         Material var3 = var2.getMaterial();
-         return var3 != Material.PLANT && var3 != Material.REPLACEABLE_PLANT && var3 != Material.CORAL && !var2.is(BlockTags.LEAVES) && var3 != Material.VEGETABLE ? 1.0F : 1.5F;
+         Material var4 = var2.getMaterial();
+         return var4 != Material.PLANT && var4 != Material.REPLACEABLE_PLANT && var4 != Material.CORAL && !var2.is(BlockTags.LEAVES) && var4 != Material.VEGETABLE ? 1.0F : 1.5F;
       }
    }
 
@@ -63,11 +59,17 @@ public class SwordItem extends TieredItem implements Vanishable {
       return true;
    }
 
-   public boolean isCorrectToolForDrops(BlockState var1) {
-      return var1.is(Blocks.COBWEB);
+   public boolean canDestroySpecial(BlockState var1) {
+      return var1.getBlock() == Blocks.COBWEB;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.MAINHAND ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
+   public Multimap<String, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+      Multimap var2 = super.getDefaultAttributeModifiers(var1);
+      if (var1 == EquipmentSlot.MAINHAND) {
+         var2.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", (double)this.attackDamage, AttributeModifier.Operation.ADDITION));
+         var2.put(SharedMonsterAttributes.ATTACK_SPEED.getName(), new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", (double)this.attackSpeed, AttributeModifier.Operation.ADDITION));
+      }
+
+      return var2;
    }
 }

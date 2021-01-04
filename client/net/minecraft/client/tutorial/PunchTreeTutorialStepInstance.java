@@ -1,20 +1,19 @@
 package net.minecraft.client.tutorial;
 
 import net.minecraft.client.gui.components.toasts.TutorialToast;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
-   private static final Component TITLE = new TranslatableComponent("tutorial.punch_tree.title");
+   private static final Component TITLE = new TranslatableComponent("tutorial.punch_tree.title", new Object[0]);
    private static final Component DESCRIPTION = new TranslatableComponent("tutorial.punch_tree.description", new Object[]{Tutorial.key("attack")});
    private final Tutorial tutorial;
    private TutorialToast toast;
@@ -34,7 +33,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
          if (this.timeWaiting == 1) {
             LocalPlayer var1 = this.tutorial.getMinecraft().player;
             if (var1 != null) {
-               if (var1.getInventory().contains((Tag)ItemTags.LOGS)) {
+               if (var1.inventory.contains(ItemTags.LOGS)) {
                   this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                   return;
                }
@@ -62,7 +61,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
 
    }
 
-   public void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
+   public void onDestroyBlock(MultiPlayerLevel var1, BlockPos var2, BlockState var3, float var4) {
       boolean var5 = var3.is(BlockTags.LOGS);
       if (var5 && var4 > 0.0F) {
          if (this.toast != null) {
@@ -81,7 +80,7 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    public void onGetItem(ItemStack var1) {
-      if (var1.is((Tag)ItemTags.LOGS)) {
+      if (ItemTags.LOGS.contains(var1.getItem())) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
       }
    }

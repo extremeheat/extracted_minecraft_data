@@ -4,11 +4,11 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -22,7 +22,7 @@ public class BaseCoralPlantTypeBlock extends Block implements SimpleWaterloggedB
    public static final BooleanProperty WATERLOGGED;
    private static final VoxelShape AABB;
 
-   protected BaseCoralPlantTypeBlock(BlockBehaviour.Properties var1) {
+   protected BaseCoralPlantTypeBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(WATERLOGGED, true));
    }
@@ -60,6 +60,10 @@ public class BaseCoralPlantTypeBlock extends Block implements SimpleWaterloggedB
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABB;
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {

@@ -1,23 +1,19 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.renderer.culling.Culler;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.decoration.HangingEntity;
 
 public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> extends LivingEntityRenderer<T, M> {
-   public MobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
+   public MobRenderer(EntityRenderDispatcher var1, M var2, float var3) {
       super(var1, var2, var3);
    }
 
@@ -25,7 +21,7 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       return super.shouldShowName((LivingEntity)var1) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
    }
 
-   public boolean shouldRender(T var1, Frustum var2, double var3, double var5, double var7) {
+   public boolean shouldRender(T var1, Culler var2, double var3, double var5, double var7) {
       if (super.shouldRender(var1, var2, var3, var5, var7)) {
          return true;
       } else {
@@ -34,66 +30,100 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       }
    }
 
-   public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      super.render((LivingEntity)var1, var2, var3, var4, var5, var6);
-      Entity var7 = var1.getLeashHolder();
-      if (var7 != null) {
-         this.renderLeash(var1, var3, var4, var5, var7);
+   public void render(T var1, double var2, double var4, double var6, float var8, float var9) {
+      super.render((LivingEntity)var1, var2, var4, var6, var8, var9);
+      if (!this.solidRender) {
+         this.renderLeash(var1, var2, var4, var6, var8, var9);
+      }
+
+   }
+
+   protected void renderLeash(T var1, double var2, double var4, double var6, float var8, float var9) {
+      Entity var10 = var1.getLeashHolder();
+      if (var10 != null) {
+         var4 -= (1.6D - (double)var1.getBbHeight()) * 0.5D;
+         Tesselator var11 = Tesselator.getInstance();
+         BufferBuilder var12 = var11.getBuilder();
+         double var13 = (double)(Mth.lerp(var9 * 0.5F, var10.yRot, var10.yRotO) * 0.017453292F);
+         double var15 = (double)(Mth.lerp(var9 * 0.5F, var10.xRot, var10.xRotO) * 0.017453292F);
+         double var17 = Math.cos(var13);
+         double var19 = Math.sin(var13);
+         double var21 = Math.sin(var15);
+         if (var10 instanceof HangingEntity) {
+            var17 = 0.0D;
+            var19 = 0.0D;
+            var21 = -1.0D;
+         }
+
+         double var23 = Math.cos(var15);
+         double var25 = Mth.lerp((double)var9, var10.xo, var10.x) - var17 * 0.7D - var19 * 0.5D * var23;
+         double var27 = Mth.lerp((double)var9, var10.yo + (double)var10.getEyeHeight() * 0.7D, var10.y + (double)var10.getEyeHeight() * 0.7D) - var21 * 0.5D - 0.25D;
+         double var29 = Mth.lerp((double)var9, var10.zo, var10.z) - var19 * 0.7D + var17 * 0.5D * var23;
+         double var31 = (double)(Mth.lerp(var9, var1.yBodyRot, var1.yBodyRotO) * 0.017453292F) + 1.5707963267948966D;
+         var17 = Math.cos(var31) * (double)var1.getBbWidth() * 0.4D;
+         var19 = Math.sin(var31) * (double)var1.getBbWidth() * 0.4D;
+         double var33 = Mth.lerp((double)var9, var1.xo, var1.x) + var17;
+         double var35 = Mth.lerp((double)var9, var1.yo, var1.y);
+         double var37 = Mth.lerp((double)var9, var1.zo, var1.z) + var19;
+         var2 += var17;
+         var6 += var19;
+         double var39 = (double)((float)(var25 - var33));
+         double var41 = (double)((float)(var27 - var35));
+         double var43 = (double)((float)(var29 - var37));
+         GlStateManager.disableTexture();
+         GlStateManager.disableLighting();
+         GlStateManager.disableCull();
+         boolean var45 = true;
+         double var46 = 0.025D;
+         var12.begin(5, DefaultVertexFormat.POSITION_COLOR);
+
+         int var48;
+         float var49;
+         float var50;
+         float var51;
+         float var52;
+         for(var48 = 0; var48 <= 24; ++var48) {
+            var49 = 0.5F;
+            var50 = 0.4F;
+            var51 = 0.3F;
+            if (var48 % 2 == 0) {
+               var49 *= 0.7F;
+               var50 *= 0.7F;
+               var51 *= 0.7F;
+            }
+
+            var52 = (float)var48 / 24.0F;
+            var12.vertex(var2 + var39 * (double)var52 + 0.0D, var4 + var41 * (double)(var52 * var52 + var52) * 0.5D + (double)((24.0F - (float)var48) / 18.0F + 0.125F), var6 + var43 * (double)var52).color(var49, var50, var51, 1.0F).endVertex();
+            var12.vertex(var2 + var39 * (double)var52 + 0.025D, var4 + var41 * (double)(var52 * var52 + var52) * 0.5D + (double)((24.0F - (float)var48) / 18.0F + 0.125F) + 0.025D, var6 + var43 * (double)var52).color(var49, var50, var51, 1.0F).endVertex();
+         }
+
+         var11.end();
+         var12.begin(5, DefaultVertexFormat.POSITION_COLOR);
+
+         for(var48 = 0; var48 <= 24; ++var48) {
+            var49 = 0.5F;
+            var50 = 0.4F;
+            var51 = 0.3F;
+            if (var48 % 2 == 0) {
+               var49 *= 0.7F;
+               var50 *= 0.7F;
+               var51 *= 0.7F;
+            }
+
+            var52 = (float)var48 / 24.0F;
+            var12.vertex(var2 + var39 * (double)var52 + 0.0D, var4 + var41 * (double)(var52 * var52 + var52) * 0.5D + (double)((24.0F - (float)var48) / 18.0F + 0.125F) + 0.025D, var6 + var43 * (double)var52).color(var49, var50, var51, 1.0F).endVertex();
+            var12.vertex(var2 + var39 * (double)var52 + 0.025D, var4 + var41 * (double)(var52 * var52 + var52) * 0.5D + (double)((24.0F - (float)var48) / 18.0F + 0.125F), var6 + var43 * (double)var52 + 0.025D).color(var49, var50, var51, 1.0F).endVertex();
+         }
+
+         var11.end();
+         GlStateManager.enableLighting();
+         GlStateManager.enableTexture();
+         GlStateManager.enableCull();
       }
    }
 
-   private <E extends Entity> void renderLeash(T var1, float var2, PoseStack var3, MultiBufferSource var4, E var5) {
-      var3.pushPose();
-      Vec3 var6 = var5.getRopeHoldPosition(var2);
-      double var7 = (double)(Mth.lerp(var2, var1.yBodyRot, var1.yBodyRotO) * 0.017453292F) + 1.5707963267948966D;
-      Vec3 var9 = var1.getLeashOffset();
-      double var10 = Math.cos(var7) * var9.z + Math.sin(var7) * var9.x;
-      double var12 = Math.sin(var7) * var9.z - Math.cos(var7) * var9.x;
-      double var14 = Mth.lerp((double)var2, var1.xo, var1.getX()) + var10;
-      double var16 = Mth.lerp((double)var2, var1.yo, var1.getY()) + var9.y;
-      double var18 = Mth.lerp((double)var2, var1.zo, var1.getZ()) + var12;
-      var3.translate(var10, var9.y, var12);
-      float var20 = (float)(var6.x - var14);
-      float var21 = (float)(var6.y - var16);
-      float var22 = (float)(var6.z - var18);
-      float var23 = 0.025F;
-      VertexConsumer var24 = var4.getBuffer(RenderType.leash());
-      Matrix4f var25 = var3.last().pose();
-      float var26 = Mth.fastInvSqrt(var20 * var20 + var22 * var22) * 0.025F / 2.0F;
-      float var27 = var22 * var26;
-      float var28 = var20 * var26;
-      BlockPos var29 = new BlockPos(var1.getEyePosition(var2));
-      BlockPos var30 = new BlockPos(var5.getEyePosition(var2));
-      int var31 = this.getBlockLightLevel(var1, var29);
-      int var32 = this.entityRenderDispatcher.getRenderer(var5).getBlockLightLevel(var5, var30);
-      int var33 = var1.level.getBrightness(LightLayer.SKY, var29);
-      int var34 = var1.level.getBrightness(LightLayer.SKY, var30);
-
-      int var35;
-      for(var35 = 0; var35 <= 24; ++var35) {
-         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.025F, var27, var28, var35, false);
-      }
-
-      for(var35 = 24; var35 >= 0; --var35) {
-         addVertexPair(var24, var25, var20, var21, var22, var31, var32, var33, var34, 0.025F, 0.0F, var27, var28, var35, true);
-      }
-
-      var3.popPose();
-   }
-
-   private static void addVertexPair(VertexConsumer var0, Matrix4f var1, float var2, float var3, float var4, int var5, int var6, int var7, int var8, float var9, float var10, float var11, float var12, int var13, boolean var14) {
-      float var15 = (float)var13 / 24.0F;
-      int var16 = (int)Mth.lerp(var15, (float)var5, (float)var6);
-      int var17 = (int)Mth.lerp(var15, (float)var7, (float)var8);
-      int var18 = LightTexture.pack(var16, var17);
-      float var19 = var13 % 2 == (var14 ? 1 : 0) ? 0.7F : 1.0F;
-      float var20 = 0.5F * var19;
-      float var21 = 0.4F * var19;
-      float var22 = 0.3F * var19;
-      float var23 = var2 * var15;
-      float var24 = var3 > 0.0F ? var3 * var15 * var15 : var3 - var3 * (1.0F - var15) * (1.0F - var15);
-      float var25 = var4 * var15;
-      var0.vertex(var1, var23 - var11, var24 + var10, var25 + var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
-      var0.vertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
+   // $FF: synthetic method
+   protected boolean shouldShowName(LivingEntity var1) {
+      return this.shouldShowName((Mob)var1);
    }
 }

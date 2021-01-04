@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -9,39 +8,30 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Shearable;
+import net.minecraft.world.entity.global.LightningBolt;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class MushroomCow extends Cow implements Shearable {
+public class MushroomCow extends Cow {
    private static final EntityDataAccessor<String> DATA_TYPE;
    private MobEffect effect;
    private int effectDuration;
@@ -52,18 +42,18 @@ public class MushroomCow extends Cow implements Shearable {
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return var2.getBlockState(var1.below()).is(Blocks.MYCELIUM) ? 10.0F : var2.getBrightness(var1) - 0.5F;
+      return var2.getBlockState(var1.below()).getBlock() == Blocks.MYCELIUM ? 10.0F : var2.getBrightness(var1) - 0.5F;
    }
 
    public static boolean checkMushroomSpawnRules(EntityType<MushroomCow> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
-      return var1.getBlockState(var3.below()).is(Blocks.MYCELIUM) && var1.getRawBrightness(var3, 0) > 8;
+      return var1.getBlockState(var3.below()).getBlock() == Blocks.MYCELIUM && var1.getRawBrightness(var3, 0) > 8;
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      UUID var3 = var2.getUUID();
-      if (!var3.equals(this.lastLightningBoltUUID)) {
+   public void thunderHit(LightningBolt var1) {
+      UUID var2 = var1.getUUID();
+      if (!var2.equals(this.lastLightningBoltUUID)) {
          this.setMushroomType(this.getMushroomType() == MushroomCow.MushroomType.RED ? MushroomCow.MushroomType.BROWN : MushroomCow.MushroomType.RED);
-         this.lastLightningBoltUUID = var3;
+         this.lastLightningBoltUUID = var2;
          this.playSound(SoundEvents.MOOSHROOM_CONVERT, 2.0F, 1.0F);
       }
 
@@ -74,9 +64,10 @@ public class MushroomCow extends Cow implements Shearable {
       this.entityData.define(DATA_TYPE, MushroomCow.MushroomType.RED.type);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.BOWL) && !this.isBaby()) {
+      if (var3.getItem() == Items.BOWL && this.getAge() >= 0 && !var1.abilities.instabuild) {
+         var3.shrink(1);
          boolean var10 = false;
          ItemStack var9;
          if (this.effect != null) {
@@ -89,87 +80,73 @@ public class MushroomCow extends Cow implements Shearable {
             var9 = new ItemStack(Items.MUSHROOM_STEW);
          }
 
-         ItemStack var11 = ItemUtils.createFilledResult(var3, var1, var9, false);
-         var1.setItemInHand(var2, var11);
-         SoundEvent var7;
+         if (var3.isEmpty()) {
+            var1.setItemInHand(var2, var9);
+         } else if (!var1.inventory.add(var9)) {
+            var1.drop(var9, false);
+         }
+
+         SoundEvent var6;
          if (var10) {
-            var7 = SoundEvents.MOOSHROOM_MILK_SUSPICIOUSLY;
+            var6 = SoundEvents.MOOSHROOM_MILK_SUSPICIOUSLY;
          } else {
-            var7 = SoundEvents.MOOSHROOM_MILK;
+            var6 = SoundEvents.MOOSHROOM_MILK;
          }
 
-         this.playSound(var7, 1.0F, 1.0F);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS);
-         if (!this.level.isClientSide) {
-            var3.hurtAndBreak(1, var1, (var1x) -> {
-               var1x.broadcastBreakEvent(var2);
-            });
-         }
-
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (this.getMushroomType() == MushroomCow.MushroomType.BROWN && var3.is((Tag)ItemTags.SMALL_FLOWERS)) {
-         if (this.effect != null) {
-            for(int var4 = 0; var4 < 2; ++var4) {
-               this.level.addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0D, this.getY(0.5D), this.getZ() + this.random.nextDouble() / 2.0D, 0.0D, this.random.nextDouble() / 5.0D, 0.0D);
-            }
-         } else {
-            Optional var8 = this.getEffectFromItemStack(var3);
-            if (!var8.isPresent()) {
-               return InteractionResult.PASS;
-            }
-
-            Pair var5 = (Pair)var8.get();
-            if (!var1.getAbilities().instabuild) {
-               var3.shrink(1);
-            }
-
-            for(int var6 = 0; var6 < 4; ++var6) {
-               this.level.addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0D, this.getY(0.5D), this.getZ() + this.random.nextDouble() / 2.0D, 0.0D, this.random.nextDouble() / 5.0D, 0.0D);
-            }
-
-            this.effect = (MobEffect)var5.getLeft();
-            this.effectDuration = (Integer)var5.getRight();
-            this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
-         }
-
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         this.playSound(var6, 1.0F, 1.0F);
+         return true;
       } else {
-         return super.mobInteract(var1, var2);
+         int var5;
+         if (var3.getItem() == Items.SHEARS && this.getAge() >= 0) {
+            this.level.addParticle(ParticleTypes.EXPLOSION, this.x, this.y + (double)(this.getBbHeight() / 2.0F), this.z, 0.0D, 0.0D, 0.0D);
+            if (!this.level.isClientSide) {
+               this.remove();
+               Cow var8 = (Cow)EntityType.COW.create(this.level);
+               var8.moveTo(this.x, this.y, this.z, this.yRot, this.xRot);
+               var8.setHealth(this.getHealth());
+               var8.yBodyRot = this.yBodyRot;
+               if (this.hasCustomName()) {
+                  var8.setCustomName(this.getCustomName());
+               }
+
+               this.level.addFreshEntity(var8);
+
+               for(var5 = 0; var5 < 5; ++var5) {
+                  this.level.addFreshEntity(new ItemEntity(this.level, this.x, this.y + (double)this.getBbHeight(), this.z, new ItemStack(this.getMushroomType().blockState.getBlock())));
+               }
+
+               var3.hurtAndBreak(1, var1, (var1x) -> {
+                  var1x.broadcastBreakEvent(var2);
+               });
+               this.playSound(SoundEvents.MOOSHROOM_SHEAR, 1.0F, 1.0F);
+            }
+
+            return true;
+         } else {
+            if (this.getMushroomType() == MushroomCow.MushroomType.BROWN && var3.getItem().is(ItemTags.SMALL_FLOWERS)) {
+               if (this.effect != null) {
+                  for(int var4 = 0; var4 < 2; ++var4) {
+                     this.level.addParticle(ParticleTypes.SMOKE, this.x + (double)(this.random.nextFloat() / 2.0F), this.y + (double)(this.getBbHeight() / 2.0F), this.z + (double)(this.random.nextFloat() / 2.0F), 0.0D, (double)(this.random.nextFloat() / 5.0F), 0.0D);
+                  }
+               } else {
+                  Pair var7 = this.getEffectFromItemStack(var3);
+                  if (!var1.abilities.instabuild) {
+                     var3.shrink(1);
+                  }
+
+                  for(var5 = 0; var5 < 4; ++var5) {
+                     this.level.addParticle(ParticleTypes.EFFECT, this.x + (double)(this.random.nextFloat() / 2.0F), this.y + (double)(this.getBbHeight() / 2.0F), this.z + (double)(this.random.nextFloat() / 2.0F), 0.0D, (double)(this.random.nextFloat() / 5.0F), 0.0D);
+                  }
+
+                  this.effect = (MobEffect)var7.getLeft();
+                  this.effectDuration = (Integer)var7.getRight();
+                  this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
+               }
+            }
+
+            return super.mobInteract(var1, var2);
+         }
       }
-   }
-
-   public void shear(SoundSource var1) {
-      this.level.playSound((Player)null, (Entity)this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
-      if (!this.level.isClientSide()) {
-         ((ServerLevel)this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5D), this.getZ(), 1, 0.0D, 0.0D, 0.0D, 0.0D);
-         this.discard();
-         Cow var2 = (Cow)EntityType.COW.create(this.level);
-         var2.moveTo(this.getX(), this.getY(), this.getZ(), this.yRot, this.xRot);
-         var2.setHealth(this.getHealth());
-         var2.yBodyRot = this.yBodyRot;
-         if (this.hasCustomName()) {
-            var2.setCustomName(this.getCustomName());
-            var2.setCustomNameVisible(this.isCustomNameVisible());
-         }
-
-         if (this.isPersistenceRequired()) {
-            var2.setPersistenceRequired();
-         }
-
-         var2.setInvulnerable(this.isInvulnerable());
-         this.level.addFreshEntity(var2);
-
-         for(int var3 = 0; var3 < 5; ++var3) {
-            this.level.addFreshEntity(new ItemEntity(this.level, this.getX(), this.getY(1.0D), this.getZ(), new ItemStack(this.getMushroomType().blockState.getBlock())));
-         }
-      }
-
-   }
-
-   public boolean readyForShearing() {
-      return this.isAlive() && !this.isBaby();
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -195,17 +172,9 @@ public class MushroomCow extends Cow implements Shearable {
 
    }
 
-   private Optional<Pair<MobEffect, Integer>> getEffectFromItemStack(ItemStack var1) {
-      Item var2 = var1.getItem();
-      if (var2 instanceof BlockItem) {
-         Block var3 = ((BlockItem)var2).getBlock();
-         if (var3 instanceof FlowerBlock) {
-            FlowerBlock var4 = (FlowerBlock)var3;
-            return Optional.of(Pair.of(var4.getSuspiciousStewEffect(), var4.getEffectDuration()));
-         }
-      }
-
-      return Optional.empty();
+   private Pair<MobEffect, Integer> getEffectFromItemStack(ItemStack var1) {
+      FlowerBlock var2 = (FlowerBlock)((BlockItem)var1.getItem()).getBlock();
+      return Pair.of(var2.getSuspiciousStewEffect(), var2.getEffectDuration());
    }
 
    private void setMushroomType(MushroomCow.MushroomType var1) {
@@ -216,10 +185,10 @@ public class MushroomCow extends Cow implements Shearable {
       return MushroomCow.MushroomType.byType((String)this.entityData.get(DATA_TYPE));
    }
 
-   public MushroomCow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      MushroomCow var3 = (MushroomCow)EntityType.MOOSHROOM.create(var1);
-      var3.setMushroomType(this.getOffspringType((MushroomCow)var2));
-      return var3;
+   public MushroomCow getBreedOffspring(AgableMob var1) {
+      MushroomCow var2 = (MushroomCow)EntityType.MOOSHROOM.create(this.level);
+      var2.setMushroomType(this.getOffspringType((MushroomCow)var1));
+      return var2;
    }
 
    private MushroomCow.MushroomType getOffspringType(MushroomCow var1) {
@@ -236,13 +205,13 @@ public class MushroomCow extends Cow implements Shearable {
    }
 
    // $FF: synthetic method
-   public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public Cow getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    // $FF: synthetic method
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    static {

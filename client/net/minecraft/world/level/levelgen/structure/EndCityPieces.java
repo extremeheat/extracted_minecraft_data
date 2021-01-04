@@ -15,7 +15,7 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
@@ -273,7 +273,7 @@ public class EndCityPieces {
          var1.putBoolean("OW", this.overwrite);
       }
 
-      protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, Random var4, BoundingBox var5) {
+      protected void handleDataMarker(String var1, BlockPos var2, LevelAccessor var3, Random var4, BoundingBox var5) {
          if (var1.startsWith("Chest")) {
             BlockPos var6 = var2.below();
             if (var5.isInside(var6)) {

@@ -21,12 +21,12 @@ public class ClientboundTeleportEntityPacket implements Packet<ClientGamePacketL
    public ClientboundTeleportEntityPacket(Entity var1) {
       super();
       this.id = var1.getId();
-      this.x = var1.getX();
-      this.y = var1.getY();
-      this.z = var1.getZ();
+      this.x = var1.x;
+      this.y = var1.y;
+      this.z = var1.z;
       this.yRot = (byte)((int)(var1.yRot * 256.0F / 360.0F));
       this.xRot = (byte)((int)(var1.xRot * 256.0F / 360.0F));
-      this.onGround = var1.isOnGround();
+      this.onGround = var1.onGround;
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {

@@ -1,97 +1,127 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
 import java.util.List;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 
-public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
-   public static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/beacon_beam.png");
+public class BeaconRenderer extends BlockEntityRenderer<BeaconBlockEntity> {
+   private static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/beacon_beam.png");
 
-   public BeaconRenderer(BlockEntityRendererProvider.Context var1) {
+   public BeaconRenderer() {
       super();
    }
 
-   public void render(BeaconBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      long var7 = var1.getLevel().getGameTime();
-      List var9 = var1.getBeamSections();
-      int var10 = 0;
+   public void render(BeaconBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      this.renderBeaconBeam(var2, var4, var6, (double)var8, var1.getBeamSections(), var1.getLevel().getGameTime());
+   }
 
-      for(int var11 = 0; var11 < var9.size(); ++var11) {
-         BeaconBlockEntity.BeaconBeamSection var12 = (BeaconBlockEntity.BeaconBeamSection)var9.get(var11);
-         renderBeaconBeam(var3, var4, var2, var7, var10, var11 == var9.size() - 1 ? 1024 : var12.getHeight(), var12.getColor());
-         var10 += var12.getHeight();
+   private void renderBeaconBeam(double var1, double var3, double var5, double var7, List<BeaconBlockEntity.BeaconBeamSection> var9, long var10) {
+      GlStateManager.alphaFunc(516, 0.1F);
+      this.bindTexture(BEAM_LOCATION);
+      GlStateManager.disableFog();
+      int var12 = 0;
+
+      for(int var13 = 0; var13 < var9.size(); ++var13) {
+         BeaconBlockEntity.BeaconBeamSection var14 = (BeaconBlockEntity.BeaconBeamSection)var9.get(var13);
+         renderBeaconBeam(var1, var3, var5, var7, var10, var12, var13 == var9.size() - 1 ? 1024 : var14.getHeight(), var14.getColor());
+         var12 += var14.getHeight();
       }
 
+      GlStateManager.enableFog();
    }
 
-   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, long var3, int var5, int var6, float[] var7) {
-      renderBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var3, var5, var6, var7, 0.2F, 0.25F);
+   private static void renderBeaconBeam(double var0, double var2, double var4, double var6, long var8, int var10, int var11, float[] var12) {
+      renderBeaconBeam(var0, var2, var4, var6, 1.0D, var8, var10, var11, var12, 0.2D, 0.25D);
    }
 
-   public static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, float[] var9, float var10, float var11) {
-      int var12 = var7 + var8;
-      var0.pushPose();
-      var0.translate(0.5D, 0.0D, 0.5D);
-      float var13 = (float)Math.floorMod(var5, 40L) + var3;
-      float var14 = var8 < 0 ? var13 : -var13;
-      float var15 = Mth.frac(var14 * 0.2F - (float)Mth.floor(var14 * 0.1F));
-      float var16 = var9[0];
-      float var17 = var9[1];
-      float var18 = var9[2];
-      var0.pushPose();
-      var0.mulPose(Vector3f.YP.rotationDegrees(var13 * 2.25F - 45.0F));
-      float var19 = 0.0F;
-      float var22 = 0.0F;
-      float var23 = -var10;
-      float var24 = 0.0F;
-      float var25 = 0.0F;
-      float var26 = -var10;
-      float var27 = 0.0F;
-      float var28 = 1.0F;
-      float var29 = -1.0F + var15;
-      float var30 = (float)var8 * var4 * (0.5F / var10) + var29;
-      renderPart(var0, var1.getBuffer(RenderType.beaconBeam(var2, false)), var16, var17, var18, 1.0F, var7, var12, 0.0F, var10, var10, 0.0F, var23, 0.0F, 0.0F, var26, 0.0F, 1.0F, var30, var29);
-      var0.popPose();
-      var19 = -var11;
-      float var20 = -var11;
-      var22 = -var11;
-      var23 = -var11;
-      var27 = 0.0F;
-      var28 = 1.0F;
-      var29 = -1.0F + var15;
-      var30 = (float)var8 * var4 + var29;
-      renderPart(var0, var1.getBuffer(RenderType.beaconBeam(var2, true)), var16, var17, var18, 0.125F, var7, var12, var19, var20, var11, var22, var23, var11, var11, var11, 0.0F, 1.0F, var30, var29);
-      var0.popPose();
-   }
-
-   private static void renderPart(PoseStack var0, VertexConsumer var1, float var2, float var3, float var4, float var5, int var6, int var7, float var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16, float var17, float var18, float var19) {
-      PoseStack.Pose var20 = var0.last();
-      Matrix4f var21 = var20.pose();
-      Matrix3f var22 = var20.normal();
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var14, var15, var12, var13, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var10, var11, var14, var15, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var12, var13, var8, var9, var16, var17, var18, var19);
-   }
-
-   private static void renderQuad(Matrix4f var0, Matrix3f var1, VertexConsumer var2, float var3, float var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11, float var12, float var13, float var14, float var15, float var16) {
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var9, var10, var14, var15);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var7, var9, var10, var14, var16);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var7, var11, var12, var13, var16);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var11, var12, var13, var15);
-   }
-
-   private static void addVertex(Matrix4f var0, Matrix3f var1, VertexConsumer var2, float var3, float var4, float var5, float var6, int var7, float var8, float var9, float var10, float var11) {
-      var2.vertex(var0, var8, (float)var7, var9).color(var3, var4, var5, var6).uv(var10, var11).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(var1, 0.0F, 1.0F, 0.0F).endVertex();
+   public static void renderBeaconBeam(double var0, double var2, double var4, double var6, double var8, long var10, int var12, int var13, float[] var14, double var15, double var17) {
+      int var19 = var12 + var13;
+      GlStateManager.texParameter(3553, 10242, 10497);
+      GlStateManager.texParameter(3553, 10243, 10497);
+      GlStateManager.disableLighting();
+      GlStateManager.disableCull();
+      GlStateManager.disableBlend();
+      GlStateManager.depthMask(true);
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+      GlStateManager.pushMatrix();
+      GlStateManager.translated(var0 + 0.5D, var2, var4 + 0.5D);
+      Tesselator var20 = Tesselator.getInstance();
+      BufferBuilder var21 = var20.getBuilder();
+      double var22 = (double)Math.floorMod(var10, 40L) + var6;
+      double var24 = var13 < 0 ? var22 : -var22;
+      double var26 = Mth.frac(var24 * 0.2D - (double)Mth.floor(var24 * 0.1D));
+      float var28 = var14[0];
+      float var29 = var14[1];
+      float var30 = var14[2];
+      GlStateManager.pushMatrix();
+      GlStateManager.rotated(var22 * 2.25D - 45.0D, 0.0D, 1.0D, 0.0D);
+      double var31 = 0.0D;
+      double var37 = 0.0D;
+      double var39 = -var15;
+      double var41 = 0.0D;
+      double var43 = 0.0D;
+      double var45 = -var15;
+      double var47 = 0.0D;
+      double var49 = 1.0D;
+      double var51 = -1.0D + var26;
+      double var53 = (double)var13 * var8 * (0.5D / var15) + var51;
+      var21.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var21.vertex(0.0D, (double)var19, var15).uv(1.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var12, var15).uv(1.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var15, (double)var12, 0.0D).uv(0.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var15, (double)var19, 0.0D).uv(0.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var19, var45).uv(1.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var12, var45).uv(1.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var39, (double)var12, 0.0D).uv(0.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var39, (double)var19, 0.0D).uv(0.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var15, (double)var19, 0.0D).uv(1.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var15, (double)var12, 0.0D).uv(1.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var12, var45).uv(0.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var19, var45).uv(0.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var39, (double)var19, 0.0D).uv(1.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(var39, (double)var12, 0.0D).uv(1.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var12, var15).uv(0.0D, var51).color(var28, var29, var30, 1.0F).endVertex();
+      var21.vertex(0.0D, (double)var19, var15).uv(0.0D, var53).color(var28, var29, var30, 1.0F).endVertex();
+      var20.end();
+      GlStateManager.popMatrix();
+      GlStateManager.enableBlend();
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+      GlStateManager.depthMask(false);
+      var31 = -var17;
+      double var33 = -var17;
+      var37 = -var17;
+      var39 = -var17;
+      var47 = 0.0D;
+      var49 = 1.0D;
+      var51 = -1.0D + var26;
+      var53 = (double)var13 * var8 + var51;
+      var21.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var21.vertex(var31, (double)var19, var33).uv(1.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var31, (double)var12, var33).uv(1.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var12, var37).uv(0.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var19, var37).uv(0.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var19, var17).uv(1.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var12, var17).uv(1.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var39, (double)var12, var17).uv(0.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var39, (double)var19, var17).uv(0.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var19, var37).uv(1.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var12, var37).uv(1.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var12, var17).uv(0.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var17, (double)var19, var17).uv(0.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var39, (double)var19, var17).uv(1.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var39, (double)var12, var17).uv(1.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var31, (double)var12, var33).uv(0.0D, var51).color(var28, var29, var30, 0.125F).endVertex();
+      var21.vertex(var31, (double)var19, var33).uv(0.0D, var53).color(var28, var29, var30, 0.125F).endVertex();
+      var20.end();
+      GlStateManager.popMatrix();
+      GlStateManager.enableLighting();
+      GlStateManager.enableTexture();
+      GlStateManager.depthMask(true);
    }
 
    public boolean shouldRenderOffScreen(BeaconBlockEntity var1) {

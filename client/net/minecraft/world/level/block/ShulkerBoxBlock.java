@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -17,31 +16,26 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ShulkerSharedHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -53,51 +47,54 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    @Nullable
    private final DyeColor color;
 
-   public ShulkerBoxBlock(@Nullable DyeColor var1, BlockBehaviour.Properties var2) {
+   public ShulkerBoxBlock(@Nullable DyeColor var1, Block.Properties var2) {
       super(var2);
       this.color = var1;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.UP));
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ShulkerBoxBlockEntity(this.color, var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new ShulkerBoxBlockEntity(this.color);
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.SHULKER_BOX, ShulkerBoxBlockEntity::tick);
+   public boolean isViewBlocking(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return true;
+   }
+
+   public boolean hasCustomBreakingProgress(BlockState var1) {
+      return true;
    }
 
    public RenderShape getRenderShape(BlockState var1) {
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else if (var4.isSpectator()) {
-         return InteractionResult.CONSUME;
+         return true;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof ShulkerBoxBlockEntity) {
-            ShulkerBoxBlockEntity var8 = (ShulkerBoxBlockEntity)var7;
+            Direction var8 = (Direction)var1.getValue(FACING);
+            ShulkerBoxBlockEntity var10 = (ShulkerBoxBlockEntity)var7;
             boolean var9;
-            if (var8.getAnimationStatus() == ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
-               Direction var10 = (Direction)var1.getValue(FACING);
-               var9 = var2.noCollision(ShulkerSharedHelper.openBoundingBox(var3, var10));
+            if (var10.getAnimationStatus() == ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
+               AABB var11 = Shapes.block().bounds().expandTowards((double)(0.5F * (float)var8.getStepX()), (double)(0.5F * (float)var8.getStepY()), (double)(0.5F * (float)var8.getStepZ())).contract((double)var8.getStepX(), (double)var8.getStepY(), (double)var8.getStepZ());
+               var9 = var2.noCollision(var11.move(var3.relative(var8)));
             } else {
                var9 = true;
             }
 
             if (var9) {
-               var4.openMenu(var8);
+               var4.openMenu(var10);
                var4.awardStat(Stats.OPEN_SHULKER_BOX);
-               PiglinAi.angerNearbyPiglins(var4, true);
             }
 
-            return InteractionResult.CONSUME;
+            return true;
          } else {
-            return InteractionResult.PASS;
+            return false;
          }
       }
    }
@@ -125,7 +122,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
                var7.setHoverName(var6.getCustomName());
             }
 
-            ItemEntity var9 = new ItemEntity(var1, (double)var2.getX() + 0.5D, (double)var2.getY() + 0.5D, (double)var2.getZ() + 0.5D, var7);
+            ItemEntity var9 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var7);
             var9.setDefaultPickUpDelay();
             var1.addFreshEntity(var9);
          } else {
@@ -162,7 +159,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof ShulkerBoxBlockEntity) {
             var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
@@ -193,7 +190,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
                   ++var8;
                   if (var7 <= 4) {
                      ++var7;
-                     MutableComponent var11 = var10.getHoverName().copy();
+                     Component var11 = var10.getHoverName().deepCopy();
                      var11.append(" x").append(String.valueOf(var10.getCount()));
                      var3.add(var11);
                   }
@@ -215,6 +212,10 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
+   }
+
+   public boolean canOcclude(BlockState var1) {
+      return false;
    }
 
    public boolean hasAnalogOutputSignal(BlockState var1) {

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.ScreenManager;
 import com.mojang.blaze3d.platform.Window;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 
 public final class VirtualScreen implements AutoCloseable {
@@ -17,7 +16,7 @@ public final class VirtualScreen implements AutoCloseable {
       this.screenManager = new ScreenManager(Monitor::new);
    }
 
-   public Window newWindow(DisplayData var1, @Nullable String var2, String var3) {
+   public Window newWindow(DisplayData var1, String var2, String var3) {
       return new Window(this.minecraft, this.screenManager, var1, var2, var3);
    }
 

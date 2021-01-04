@@ -5,18 +5,17 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -34,7 +33,7 @@ public class TripWireHookBlock extends Block {
    protected static final VoxelShape WEST_AABB;
    protected static final VoxelShape EAST_AABB;
 
-   public TripWireHookBlock(BlockBehaviour.Properties var1) {
+   public TripWireHookBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(ATTACHED, false));
    }
@@ -57,7 +56,7 @@ public class TripWireHookBlock extends Block {
       Direction var4 = (Direction)var1.getValue(FACING);
       BlockPos var5 = var3.relative(var4.getOpposite());
       BlockState var6 = var2.getBlockState(var5);
-      return var4.getAxis().isHorizontal() && var6.isFaceSturdy(var2, var5, var4);
+      return var4.getAxis().isHorizontal() && var6.isFaceSturdy(var2, var5, var4) && !var6.isSignalSource();
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
@@ -104,14 +103,14 @@ public class TripWireHookBlock extends Block {
       for(int var15 = 1; var15 < 42; ++var15) {
          var16 = var2.relative(var8, var15);
          BlockState var17 = var1.getBlockState(var16);
-         if (var17.is(Blocks.TRIPWIRE_HOOK)) {
+         if (var17.getBlock() == Blocks.TRIPWIRE_HOOK) {
             if (var17.getValue(FACING) == var8.getOpposite()) {
                var13 = var15;
             }
             break;
          }
 
-         if (!var17.is(Blocks.TRIPWIRE) && var15 != var6) {
+         if (var17.getBlock() != Blocks.TRIPWIRE && var15 != var6) {
             var14[var15] = null;
             var11 = false;
          } else {
@@ -124,7 +123,7 @@ public class TripWireHookBlock extends Block {
             var12 |= var18 && var19;
             var14[var15] = var17;
             if (var15 == var6) {
-               var1.getBlockTicks().scheduleTick(var2, this, 10);
+               var1.getBlockTicks().scheduleTick(var2, this, this.getTickDelay(var1));
                var11 &= var18;
             }
          }
@@ -163,7 +162,7 @@ public class TripWireHookBlock extends Block {
 
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       this.calculateState(var2, var3, var1, false, true, -1, (BlockState)null);
    }
 
@@ -186,7 +185,7 @@ public class TripWireHookBlock extends Block {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          boolean var6 = (Boolean)var1.getValue(ATTACHED);
          boolean var7 = (Boolean)var1.getValue(POWERED);
          if (var6 || var7) {
@@ -216,6 +215,10 @@ public class TripWireHookBlock extends Block {
 
    public boolean isSignalSource(BlockState var1) {
       return true;
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT_MIPPED;
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {

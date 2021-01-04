@@ -1,5 +1,6 @@
 package net.minecraft.client.resources.sounds;
 
+import javax.annotation.Nullable;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
@@ -8,13 +9,15 @@ import net.minecraft.sounds.SoundSource;
 
 public abstract class AbstractSoundInstance implements SoundInstance {
    protected Sound sound;
+   @Nullable
+   private WeighedSoundEvents soundEvent;
    protected final SoundSource source;
    protected final ResourceLocation location;
    protected float volume;
    protected float pitch;
-   protected double x;
-   protected double y;
-   protected double z;
+   protected float x;
+   protected float y;
+   protected float z;
    protected boolean looping;
    protected int delay;
    protected SoundInstance.Attenuation attenuation;
@@ -39,14 +42,14 @@ public abstract class AbstractSoundInstance implements SoundInstance {
    }
 
    public WeighedSoundEvents resolve(SoundManager var1) {
-      WeighedSoundEvents var2 = var1.getSoundEvent(this.location);
-      if (var2 == null) {
+      this.soundEvent = var1.getSoundEvent(this.location);
+      if (this.soundEvent == null) {
          this.sound = SoundManager.EMPTY_SOUND;
       } else {
-         this.sound = var2.getSound();
+         this.sound = this.soundEvent.getSound();
       }
 
-      return var2;
+      return this.soundEvent;
    }
 
    public Sound getSound() {
@@ -73,15 +76,15 @@ public abstract class AbstractSoundInstance implements SoundInstance {
       return this.pitch * this.sound.getPitch();
    }
 
-   public double getX() {
+   public float getX() {
       return this.x;
    }
 
-   public double getY() {
+   public float getY() {
       return this.y;
    }
 
-   public double getZ() {
+   public float getZ() {
       return this.z;
    }
 
@@ -91,9 +94,5 @@ public abstract class AbstractSoundInstance implements SoundInstance {
 
    public boolean isRelative() {
       return this.relative;
-   }
-
-   public String toString() {
-      return "SoundInstance[" + this.location + "]";
    }
 }

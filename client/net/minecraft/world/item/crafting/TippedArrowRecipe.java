@@ -2,6 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -21,11 +22,12 @@ public class TippedArrowRecipe extends CustomRecipe {
                   return false;
                }
 
+               Item var6 = var5.getItem();
                if (var3 == 1 && var4 == 1) {
-                  if (!var5.is(Items.LINGERING_POTION)) {
+                  if (var6 != Items.LINGERING_POTION) {
                      return false;
                   }
-               } else if (!var5.is(Items.ARROW)) {
+               } else if (var6 != Items.ARROW) {
                   return false;
                }
             }
@@ -39,7 +41,7 @@ public class TippedArrowRecipe extends CustomRecipe {
 
    public ItemStack assemble(CraftingContainer var1) {
       ItemStack var2 = var1.getItem(1 + var1.getWidth());
-      if (!var2.is(Items.LINGERING_POTION)) {
+      if (var2.getItem() != Items.LINGERING_POTION) {
          return ItemStack.EMPTY;
       } else {
          ItemStack var3 = new ItemStack(Items.TIPPED_ARROW, 8);

@@ -28,14 +28,14 @@ public class VillagerPanicTrigger extends Behavior<Villager> {
             var5.eraseMemory(MemoryModuleType.INTERACTION_TARGET);
          }
 
-         var5.setActiveActivityIfPossible(Activity.PANIC);
+         var5.setActivity(Activity.PANIC);
       }
 
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (var3 % 100L == 0L) {
-         var2.spawnGolemIfNeeded(var1, var3, 3);
+         var2.spawnGolemIfNeeded(var3, 3);
       }
 
    }

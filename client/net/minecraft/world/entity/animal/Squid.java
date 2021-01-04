@@ -13,13 +13,11 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -53,8 +51,9 @@ public class Squid extends WaterAnimal {
       this.goalSelector.addGoal(1, new Squid.SquidFleeGoal());
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
    }
 
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
@@ -77,7 +76,7 @@ public class Squid extends WaterAnimal {
       return 0.4F;
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -162,7 +161,7 @@ public class Squid extends WaterAnimal {
 
    private void spawnInk() {
       this.playSound(SoundEvents.SQUID_SQUIRT, this.getSoundVolume(), this.getVoicePitch());
-      Vec3 var1 = this.rotateVector(new Vec3(0.0D, -1.0D, 0.0D)).add(this.getX(), this.getY(), this.getZ());
+      Vec3 var1 = this.rotateVector(new Vec3(0.0D, -1.0D, 0.0D)).add(this.x, this.y, this.z);
 
       for(int var2 = 0; var2 < 30; ++var2) {
          Vec3 var3 = this.rotateVector(new Vec3((double)this.random.nextFloat() * 0.6D - 0.3D, -1.0D, (double)this.random.nextFloat() * 0.6D - 0.3D));
@@ -223,9 +222,9 @@ public class Squid extends WaterAnimal {
          ++this.fleeTicks;
          LivingEntity var1 = Squid.this.getLastHurtByMob();
          if (var1 != null) {
-            Vec3 var2 = new Vec3(Squid.this.getX() - var1.getX(), Squid.this.getY() - var1.getY(), Squid.this.getZ() - var1.getZ());
-            BlockState var3 = Squid.this.level.getBlockState(new BlockPos(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
-            FluidState var4 = Squid.this.level.getFluidState(new BlockPos(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
+            Vec3 var2 = new Vec3(Squid.this.x - var1.x, Squid.this.y - var1.y, Squid.this.z - var1.z);
+            BlockState var3 = Squid.this.level.getBlockState(new BlockPos(Squid.this.x + var2.x, Squid.this.y + var2.y, Squid.this.z + var2.z));
+            FluidState var4 = Squid.this.level.getFluidState(new BlockPos(Squid.this.x + var2.x, Squid.this.y + var2.y, Squid.this.z + var2.z));
             if (var4.is(FluidTags.WATER) || var3.isAir()) {
                double var5 = var2.length();
                if (var5 > 0.0D) {
@@ -248,7 +247,7 @@ public class Squid extends WaterAnimal {
             }
 
             if (this.fleeTicks % 10 == 5) {
-               Squid.this.level.addParticle(ParticleTypes.BUBBLE, Squid.this.getX(), Squid.this.getY(), Squid.this.getZ(), 0.0D, 0.0D, 0.0D);
+               Squid.this.level.addParticle(ParticleTypes.BUBBLE, Squid.this.x, Squid.this.y, Squid.this.z, 0.0D, 0.0D, 0.0D);
             }
 
          }
@@ -276,7 +275,7 @@ public class Squid extends WaterAnimal {
          int var1 = this.squid.getNoActionTime();
          if (var1 > 100) {
             this.squid.setMovementVector(0.0F, 0.0F, 0.0F);
-         } else if (this.squid.getRandom().nextInt(50) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
+         } else if (this.squid.getRandom().nextInt(50) == 0 || !this.squid.wasInWater || !this.squid.hasMovementVector()) {
             float var2 = this.squid.getRandom().nextFloat() * 6.2831855F;
             float var3 = Mth.cos(var2) * 0.2F;
             float var4 = -0.1F + this.squid.getRandom().nextFloat() * 0.2F;

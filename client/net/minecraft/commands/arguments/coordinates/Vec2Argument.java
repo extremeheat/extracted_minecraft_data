@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Vec2Argument implements ArgumentType<Coordinates> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "0.1 -0.5", "~1 ~-2");
-   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos2d.incomplete"));
+   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(new TranslatableComponent("argument.pos2d.incomplete", new Object[0]));
    private final boolean centerCorrect;
 
    public Vec2Argument(boolean var1) {
@@ -32,7 +32,7 @@ public class Vec2Argument implements ArgumentType<Coordinates> {
       return new Vec2Argument(true);
    }
 
-   public static Vec2 getVec2(CommandContext<CommandSourceStack> var0, String var1) {
+   public static Vec2 getVec2(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       Vec3 var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getPosition((CommandSourceStack)var0.getSource());
       return new Vec2((float)var2.x, (float)var2.z);
    }

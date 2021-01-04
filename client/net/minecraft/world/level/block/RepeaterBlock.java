@@ -5,13 +5,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -23,17 +21,17 @@ public class RepeaterBlock extends DiodeBlock {
    public static final BooleanProperty LOCKED;
    public static final IntegerProperty DELAY;
 
-   protected RepeaterBlock(BlockBehaviour.Properties var1) {
+   protected RepeaterBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(DELAY, 1)).setValue(LOCKED, false)).setValue(POWERED, false));
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var4.getAbilities().mayBuild) {
-         return InteractionResult.PASS;
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      if (!var4.abilities.mayBuild) {
+         return false;
       } else {
          var2.setBlock(var3, (BlockState)var1.cycle(DELAY), 3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       }
    }
 
@@ -61,9 +59,9 @@ public class RepeaterBlock extends DiodeBlock {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if ((Boolean)var1.getValue(POWERED)) {
          Direction var5 = (Direction)var1.getValue(FACING);
-         double var6 = (double)var3.getX() + 0.5D + (var4.nextDouble() - 0.5D) * 0.2D;
-         double var8 = (double)var3.getY() + 0.4D + (var4.nextDouble() - 0.5D) * 0.2D;
-         double var10 = (double)var3.getZ() + 0.5D + (var4.nextDouble() - 0.5D) * 0.2D;
+         double var6 = (double)((float)var3.getX() + 0.5F) + (double)(var4.nextFloat() - 0.5F) * 0.2D;
+         double var8 = (double)((float)var3.getY() + 0.4F) + (double)(var4.nextFloat() - 0.5F) * 0.2D;
+         double var10 = (double)((float)var3.getZ() + 0.5F) + (double)(var4.nextFloat() - 0.5F) * 0.2D;
          float var12 = -5.0F;
          if (var4.nextBoolean()) {
             var12 = (float)((Integer)var1.getValue(DELAY) * 2 - 1);

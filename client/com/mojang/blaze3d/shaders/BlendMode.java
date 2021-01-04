@@ -1,6 +1,6 @@
 package com.mojang.blaze3d.shaders;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Locale;
 
 public class BlendMode {
@@ -41,18 +41,18 @@ public class BlendMode {
          if (lastApplied == null || this.opaque != lastApplied.isOpaque()) {
             lastApplied = this;
             if (this.opaque) {
-               RenderSystem.disableBlend();
+               GlStateManager.disableBlend();
                return;
             }
 
-            RenderSystem.enableBlend();
+            GlStateManager.enableBlend();
          }
 
-         RenderSystem.blendEquation(this.blendFunc);
+         GlStateManager.blendEquation(this.blendFunc);
          if (this.separateBlend) {
-            RenderSystem.blendFuncSeparate(this.srcColorFactor, this.dstColorFactor, this.srcAlphaFactor, this.dstAlphaFactor);
+            GlStateManager.blendFuncSeparate(this.srcColorFactor, this.dstColorFactor, this.srcAlphaFactor, this.dstAlphaFactor);
          } else {
-            RenderSystem.blendFunc(this.srcColorFactor, this.dstColorFactor);
+            GlStateManager.blendFunc(this.srcColorFactor, this.dstColorFactor);
          }
 
       }

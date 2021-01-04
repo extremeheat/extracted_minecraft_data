@@ -1,17 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.SkullModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.WitherSkull;
@@ -19,37 +9,51 @@ import net.minecraft.world.entity.projectile.WitherSkull;
 public class WitherSkullRenderer extends EntityRenderer<WitherSkull> {
    private static final ResourceLocation WITHER_INVULNERABLE_LOCATION = new ResourceLocation("textures/entity/wither/wither_invulnerable.png");
    private static final ResourceLocation WITHER_LOCATION = new ResourceLocation("textures/entity/wither/wither.png");
-   private final SkullModel model;
+   private final SkullModel model = new SkullModel();
 
-   public WitherSkullRenderer(EntityRendererProvider.Context var1) {
+   public WitherSkullRenderer(EntityRenderDispatcher var1) {
       super(var1);
-      this.model = new SkullModel(var1.getLayer(ModelLayers.WITHER_SKULL));
    }
 
-   public static LayerDefinition createSkullLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 35).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 64);
+   private float rotlerp(float var1, float var2, float var3) {
+      float var4;
+      for(var4 = var2 - var1; var4 < -180.0F; var4 += 360.0F) {
+      }
+
+      while(var4 >= 180.0F) {
+         var4 -= 360.0F;
+      }
+
+      return var1 + var3 * var4;
    }
 
-   protected int getBlockLightLevel(WitherSkull var1, BlockPos var2) {
-      return 15;
+   public void render(WitherSkull var1, double var2, double var4, double var6, float var8, float var9) {
+      GlStateManager.pushMatrix();
+      GlStateManager.disableCull();
+      float var10 = this.rotlerp(var1.yRotO, var1.yRot, var9);
+      float var11 = Mth.lerp(var9, var1.xRotO, var1.xRot);
+      GlStateManager.translatef((float)var2, (float)var4, (float)var6);
+      float var12 = 0.0625F;
+      GlStateManager.enableRescaleNormal();
+      GlStateManager.scalef(-1.0F, -1.0F, 1.0F);
+      GlStateManager.enableAlphaTest();
+      this.bindTexture(var1);
+      if (this.solidRender) {
+         GlStateManager.enableColorMaterial();
+         GlStateManager.setupSolidRenderingTextureCombine(this.getTeamColor(var1));
+      }
+
+      this.model.render(0.0F, 0.0F, 0.0F, var10, var11, 0.0625F);
+      if (this.solidRender) {
+         GlStateManager.tearDownSolidRenderingTextureCombine();
+         GlStateManager.disableColorMaterial();
+      }
+
+      GlStateManager.popMatrix();
+      super.render(var1, var2, var4, var6, var8, var9);
    }
 
-   public void render(WitherSkull var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      var4.scale(-1.0F, -1.0F, 1.0F);
-      float var7 = Mth.rotlerp(var1.yRotO, var1.yRot, var3);
-      float var8 = Mth.lerp(var3, var1.xRotO, var1.xRot);
-      VertexConsumer var9 = var5.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
-      this.model.setupAnim(0.0F, var7, var8);
-      this.model.renderToBuffer(var4, var9, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-      var4.popPose();
-      super.render(var1, var2, var3, var4, var5, var6);
-   }
-
-   public ResourceLocation getTextureLocation(WitherSkull var1) {
+   protected ResourceLocation getTextureLocation(WitherSkull var1) {
       return var1.isDangerous() ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
    }
 }

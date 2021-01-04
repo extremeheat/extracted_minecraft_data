@@ -8,34 +8,33 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
 public class BlockEntitySignTextStrictJsonFix extends NamedEntityFix {
    public static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(Component.class, new JsonDeserializer<Component>() {
-      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+      public Component deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
          if (var1.isJsonPrimitive()) {
             return new TextComponent(var1.getAsString());
          } else if (var1.isJsonArray()) {
             JsonArray var4 = var1.getAsJsonArray();
-            MutableComponent var5 = null;
+            Component var5 = null;
             Iterator var6 = var4.iterator();
 
             while(var6.hasNext()) {
                JsonElement var7 = (JsonElement)var6.next();
-               MutableComponent var8 = this.deserialize(var7, var7.getClass(), var3);
+               Component var8 = this.deserialize(var7, var7.getClass(), var3);
                if (var5 == null) {
                   var5 = var8;
                } else {
-                  var5.append((Component)var8);
+                  var5.append(var8);
                }
             }
 
@@ -63,7 +62,7 @@ public class BlockEntitySignTextStrictJsonFix extends NamedEntityFix {
             try {
                var4 = (Component)GsonHelper.fromJson(GSON, var3, Component.class, true);
                if (var4 == null) {
-                  var4 = TextComponent.EMPTY;
+                  var4 = new TextComponent("");
                }
             } catch (JsonParseException var8) {
             }
@@ -89,7 +88,7 @@ public class BlockEntitySignTextStrictJsonFix extends NamedEntityFix {
             var4 = new TextComponent(var3);
          }
       } else {
-         var4 = TextComponent.EMPTY;
+         var4 = new TextComponent("");
       }
 
       return var1.set(var2, var1.createString(Component.Serializer.toJson((Component)var4)));

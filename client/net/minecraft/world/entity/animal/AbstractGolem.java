@@ -12,8 +12,7 @@ public abstract class AbstractGolem extends PathfinderMob {
       super(var1, var2);
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    @Nullable

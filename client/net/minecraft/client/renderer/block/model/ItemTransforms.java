@@ -5,10 +5,22 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
 import java.lang.reflect.Type;
 
 public class ItemTransforms {
    public static final ItemTransforms NO_TRANSFORMS = new ItemTransforms();
+   public static float transX;
+   public static float transY;
+   public static float transZ;
+   public static float rotX;
+   public static float rotY;
+   public static float rotZ;
+   public static float scaleX;
+   public static float scaleY;
+   public static float scaleZ;
    public final ItemTransform thirdPersonLeftHand;
    public final ItemTransform thirdPersonRightHand;
    public final ItemTransform firstPersonLeftHand;
@@ -44,6 +56,27 @@ public class ItemTransforms {
       this.gui = var6;
       this.ground = var7;
       this.fixed = var8;
+   }
+
+   public void apply(ItemTransforms.TransformType var1) {
+      apply(this.getTransform(var1), false);
+   }
+
+   public static void apply(ItemTransform var0, boolean var1) {
+      if (var0 != ItemTransform.NO_TRANSFORM) {
+         int var2 = var1 ? -1 : 1;
+         GlStateManager.translatef((float)var2 * (transX + var0.translation.x()), transY + var0.translation.y(), transZ + var0.translation.z());
+         float var3 = rotX + var0.rotation.x();
+         float var4 = rotY + var0.rotation.y();
+         float var5 = rotZ + var0.rotation.z();
+         if (var1) {
+            var4 = -var4;
+            var5 = -var5;
+         }
+
+         GlStateManager.multMatrix(new Matrix4f(new Quaternion(var3, var4, var5, true)));
+         GlStateManager.scalef(scaleX + var0.scale.x(), scaleY + var0.scale.y(), scaleZ + var0.scale.z());
+      }
    }
 
    public ItemTransform getTransform(ItemTransforms.TransformType var1) {
@@ -121,10 +154,6 @@ public class ItemTransforms {
       FIXED;
 
       private TransformType() {
-      }
-
-      public boolean firstPerson() {
-         return this == FIRST_PERSON_LEFT_HAND || this == FIRST_PERSON_RIGHT_HAND;
       }
    }
 }

@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -28,7 +27,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class GiveGiftToHero extends Behavior<Villager> {
-   private static final Map<VillagerProfession, ResourceLocation> GIFTS = (Map)Util.make(Maps.newHashMap(), (var0) -> {
+   private static final Map<VillagerProfession, ResourceLocation> gifts = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(VillagerProfession.ARMORER, BuiltInLootTables.ARMORER_GIFT);
       var0.put(VillagerProfession.BUTCHER, BuiltInLootTables.BUTCHER_GIFT);
       var0.put(VillagerProfession.CARTOGRAPHER, BuiltInLootTables.CARTOGRAPHER_GIFT);
@@ -83,7 +82,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
             this.giftGivenDuringThisRun = true;
          }
       } else {
-         BehaviorUtils.setWalkAndLookTargetMemories(var2, (Entity)var5, 0.5F, 5);
+         BehaviorUtils.walkToEntity(var2, var5, 5);
       }
 
    }
@@ -101,7 +100,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
 
       while(var4.hasNext()) {
          ItemStack var5 = (ItemStack)var4.next();
-         BehaviorUtils.throwItem(var1, var5, var2.position());
+         BehaviorUtils.throwItem(var1, var5, var2);
       }
 
    }
@@ -111,9 +110,9 @@ public class GiveGiftToHero extends Behavior<Villager> {
          return ImmutableList.of(new ItemStack(Items.POPPY));
       } else {
          VillagerProfession var2 = var1.getVillagerData().getProfession();
-         if (GIFTS.containsKey(var2)) {
-            LootTable var3 = var1.level.getServer().getLootTables().get((ResourceLocation)GIFTS.get(var2));
-            LootContext.Builder var4 = (new LootContext.Builder((ServerLevel)var1.level)).withParameter(LootContextParams.ORIGIN, var1.position()).withParameter(LootContextParams.THIS_ENTITY, var1).withRandom(var1.getRandom());
+         if (gifts.containsKey(var2)) {
+            LootTable var3 = var1.level.getServer().getLootTables().get((ResourceLocation)gifts.get(var2));
+            LootContext.Builder var4 = (new LootContext.Builder((ServerLevel)var1.level)).withParameter(LootContextParams.BLOCK_POS, new BlockPos(var1)).withParameter(LootContextParams.THIS_ENTITY, var1).withRandom(var1.getRandom());
             return var3.getRandomItems(var4.create(LootContextParamSets.GIFT));
          } else {
             return ImmutableList.of(new ItemStack(Items.WHEAT_SEEDS));
@@ -134,13 +133,18 @@ public class GiveGiftToHero extends Behavior<Villager> {
    }
 
    private boolean isWithinThrowingDistance(Villager var1, Player var2) {
-      BlockPos var3 = var2.blockPosition();
-      BlockPos var4 = var1.blockPosition();
+      BlockPos var3 = new BlockPos(var2);
+      BlockPos var4 = new BlockPos(var1);
       return var4.closerThan(var3, 5.0D);
    }
 
    private static int calculateTimeUntilNextGift(ServerLevel var0) {
       return 600 + var0.random.nextInt(6001);
+   }
+
+   // $FF: synthetic method
+   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
+      return this.canStillUse(var1, (Villager)var2, var3);
    }
 
    // $FF: synthetic method

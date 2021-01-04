@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -21,8 +22,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -43,7 +41,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public class Vindicator extends AbstractIllager {
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> {
@@ -73,16 +71,23 @@ public class Vindicator extends AbstractIllager {
    }
 
    protected void customServerAiStep() {
-      if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
-         boolean var1 = ((ServerLevel)this.level).isRaided(this.blockPosition());
-         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
+      if (!this.isNoAi()) {
+         if (((ServerLevel)this.level).isRaided(new BlockPos(this))) {
+            ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
+         } else {
+            ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(false);
+         }
       }
 
       super.customServerAiStep();
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355D).add(Attributes.FOLLOW_RANGE, 12.0D).add(Attributes.MAX_HEALTH, 24.0D).add(Attributes.ATTACK_DAMAGE, 5.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3499999940395355D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(12.0D);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(24.0D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(5.0D);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -114,7 +119,7 @@ public class Vindicator extends AbstractIllager {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       SpawnGroupData var6 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       this.populateDefaultEquipmentSlots(var2);

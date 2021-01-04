@@ -9,6 +9,7 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,7 +26,7 @@ public abstract class Fluid {
       super();
       StateDefinition.Builder var1 = new StateDefinition.Builder(this);
       this.createFluidStateDefinition(var1);
-      this.stateDefinition = var1.create(Fluid::defaultFluidState, FluidState::new);
+      this.stateDefinition = var1.create(FluidStateImpl::new);
       this.registerDefaultState((FluidState)this.stateDefinition.any());
    }
 
@@ -43,6 +44,8 @@ public abstract class Fluid {
    public final FluidState defaultFluidState() {
       return this.defaultFluidState;
    }
+
+   protected abstract BlockLayer getRenderLayer();
 
    public abstract Item getBucket();
 

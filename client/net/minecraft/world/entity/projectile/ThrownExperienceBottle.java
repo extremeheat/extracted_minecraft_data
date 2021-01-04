@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,12 +33,17 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
    }
 
    protected void onHit(HitResult var1) {
-      super.onHit(var1);
-      if (this.level instanceof ServerLevel) {
-         this.level.levelEvent(2002, this.blockPosition(), PotionUtils.getColor(Potions.WATER));
+      if (!this.level.isClientSide) {
+         this.level.levelEvent(2002, new BlockPos(this), PotionUtils.getColor(Potions.WATER));
          int var2 = 3 + this.level.random.nextInt(5) + this.level.random.nextInt(5);
-         ExperienceOrb.award((ServerLevel)this.level, this.position(), var2);
-         this.discard();
+
+         while(var2 > 0) {
+            int var3 = ExperienceOrb.getExperienceValue(var2);
+            var2 -= var3;
+            this.level.addFreshEntity(new ExperienceOrb(this.level, this.x, this.y, this.z, var3));
+         }
+
+         this.remove();
       }
 
    }

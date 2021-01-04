@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
@@ -25,7 +24,7 @@ public class FireworkStarItem extends Item {
 
    public static void appendHoverText(CompoundTag var0, List<Component> var1) {
       FireworkRocketItem.Shape var2 = FireworkRocketItem.Shape.byId(var0.getByte("Type"));
-      var1.add((new TranslatableComponent("item.minecraft.firework_star.shape." + var2.getName())).withStyle(ChatFormatting.GRAY));
+      var1.add((new TranslatableComponent("item.minecraft.firework_star.shape." + var2.getName(), new Object[0])).withStyle(ChatFormatting.GRAY));
       int[] var3 = var0.getIntArray("Colors");
       if (var3.length > 0) {
          var1.add(appendColors((new TextComponent("")).withStyle(ChatFormatting.GRAY), var3));
@@ -33,20 +32,20 @@ public class FireworkStarItem extends Item {
 
       int[] var4 = var0.getIntArray("FadeColors");
       if (var4.length > 0) {
-         var1.add(appendColors((new TranslatableComponent("item.minecraft.firework_star.fade_to")).append(" ").withStyle(ChatFormatting.GRAY), var4));
+         var1.add(appendColors((new TranslatableComponent("item.minecraft.firework_star.fade_to", new Object[0])).append(" ").withStyle(ChatFormatting.GRAY), var4));
       }
 
       if (var0.getBoolean("Trail")) {
-         var1.add((new TranslatableComponent("item.minecraft.firework_star.trail")).withStyle(ChatFormatting.GRAY));
+         var1.add((new TranslatableComponent("item.minecraft.firework_star.trail", new Object[0])).withStyle(ChatFormatting.GRAY));
       }
 
       if (var0.getBoolean("Flicker")) {
-         var1.add((new TranslatableComponent("item.minecraft.firework_star.flicker")).withStyle(ChatFormatting.GRAY));
+         var1.add((new TranslatableComponent("item.minecraft.firework_star.flicker", new Object[0])).withStyle(ChatFormatting.GRAY));
       }
 
    }
 
-   private static Component appendColors(MutableComponent var0, int[] var1) {
+   private static Component appendColors(Component var0, int[] var1) {
       for(int var2 = 0; var2 < var1.length; ++var2) {
          if (var2 > 0) {
             var0.append(", ");
@@ -60,6 +59,6 @@ public class FireworkStarItem extends Item {
 
    private static Component getColorName(int var0) {
       DyeColor var1 = DyeColor.byFireworkColor(var0);
-      return var1 == null ? new TranslatableComponent("item.minecraft.firework_star.custom_color") : new TranslatableComponent("item.minecraft.firework_star." + var1.getName());
+      return var1 == null ? new TranslatableComponent("item.minecraft.firework_star.custom_color", new Object[0]) : new TranslatableComponent("item.minecraft.firework_star." + var1.getName(), new Object[0]);
    }
 }

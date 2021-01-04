@@ -1,15 +1,10 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.ShulkerModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.ShulkerRenderer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.DyeColor;
 
@@ -18,19 +13,53 @@ public class ShulkerHeadLayer extends RenderLayer<Shulker, ShulkerModel<Shulker>
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Shulker var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      var1.pushPose();
-      var1.translate(0.0D, 1.0D, 0.0D);
-      var1.scale(-1.0F, -1.0F, 1.0F);
-      Quaternion var11 = var4.getAttachFace().getOpposite().getRotation();
-      var11.conj();
-      var1.mulPose(var11);
-      var1.scale(-1.0F, -1.0F, 1.0F);
-      var1.translate(0.0D, -1.0D, 0.0D);
-      DyeColor var12 = var4.getColor();
-      ResourceLocation var13 = var12 == null ? ShulkerRenderer.DEFAULT_TEXTURE_LOCATION : ShulkerRenderer.TEXTURE_LOCATION[var12.getId()];
-      VertexConsumer var14 = var2.getBuffer(RenderType.entitySolid(var13));
-      ((ShulkerModel)this.getParentModel()).getHead().render(var1, var14, var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F));
-      var1.popPose();
+   public void render(Shulker var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      GlStateManager.pushMatrix();
+      switch(var1.getAttachFace()) {
+      case DOWN:
+      default:
+         break;
+      case EAST:
+         GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(1.0F, -1.0F, 0.0F);
+         GlStateManager.rotatef(180.0F, 0.0F, 1.0F, 0.0F);
+         break;
+      case WEST:
+         GlStateManager.rotatef(-90.0F, 0.0F, 0.0F, 1.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(-1.0F, -1.0F, 0.0F);
+         GlStateManager.rotatef(180.0F, 0.0F, 1.0F, 0.0F);
+         break;
+      case NORTH:
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(0.0F, -1.0F, -1.0F);
+         break;
+      case SOUTH:
+         GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(0.0F, -1.0F, 1.0F);
+         break;
+      case UP:
+         GlStateManager.rotatef(180.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(0.0F, -2.0F, 0.0F);
+      }
+
+      ModelPart var9 = ((ShulkerModel)this.getParentModel()).getHead();
+      var9.yRot = var6 * 0.017453292F;
+      var9.xRot = var7 * 0.017453292F;
+      DyeColor var10 = var1.getColor();
+      if (var10 == null) {
+         this.bindTexture(ShulkerRenderer.DEFAULT_TEXTURE_LOCATION);
+      } else {
+         this.bindTexture(ShulkerRenderer.TEXTURE_LOCATION[var10.getId()]);
+      }
+
+      var9.render(var8);
+      GlStateManager.popMatrix();
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

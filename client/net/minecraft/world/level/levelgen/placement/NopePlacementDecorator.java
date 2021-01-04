@@ -1,13 +1,14 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneDecoratorConfiguration;
+import net.minecraft.world.level.levelgen.feature.NoneDecoratorConfiguration;
 
 public class NopePlacementDecorator extends SimpleFeatureDecorator<NoneDecoratorConfiguration> {
-   public NopePlacementDecorator(Codec<NoneDecoratorConfiguration> var1) {
+   public NopePlacementDecorator(Function<Dynamic<?>, ? extends NoneDecoratorConfiguration> var1) {
       super(var1);
    }
 

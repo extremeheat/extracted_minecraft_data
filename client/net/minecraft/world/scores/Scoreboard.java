@@ -103,7 +103,7 @@ public class Scoreboard {
          }
       }
 
-      var2.sort(Score.SCORE_COMPARATOR);
+      Collections.sort(var2, Score.SCORE_COMPARATOR);
       return var2;
    }
 

@@ -10,7 +10,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 
 public class SaveAllCommand {
-   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.save.failed"));
+   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.save.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-all").requires((var0x) -> {
@@ -23,14 +23,14 @@ public class SaveAllCommand {
    }
 
    private static int saveAll(CommandSourceStack var0, boolean var1) throws CommandSyntaxException {
-      var0.sendSuccess(new TranslatableComponent("commands.save.saving"), false);
+      var0.sendSuccess(new TranslatableComponent("commands.save.saving", new Object[0]), false);
       MinecraftServer var2 = var0.getServer();
       var2.getPlayerList().saveAll();
       boolean var3 = var2.saveAllChunks(true, var1, true);
       if (!var3) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(new TranslatableComponent("commands.save.success"), true);
+         var0.sendSuccess(new TranslatableComponent("commands.save.success", new Object[0]), true);
          return 1;
       }
    }

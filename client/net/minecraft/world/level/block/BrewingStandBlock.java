@@ -1,25 +1,21 @@
 package net.minecraft.world.level.block;
 
 import java.util.Random;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -34,7 +30,7 @@ public class BrewingStandBlock extends BaseEntityBlock {
    public static final BooleanProperty[] HAS_BOTTLE;
    protected static final VoxelShape SHAPE;
 
-   public BrewingStandBlock(BlockBehaviour.Properties var1) {
+   public BrewingStandBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HAS_BOTTLE[0], false)).setValue(HAS_BOTTLE[1], false)).setValue(HAS_BOTTLE[2], false));
    }
@@ -43,22 +39,17 @@ public class BrewingStandBlock extends BaseEntityBlock {
       return RenderShape.MODEL;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BrewingStandBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.BREWING_STAND, BrewingStandBlockEntity::serverTick);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new BrewingStandBlockEntity();
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof BrewingStandBlockEntity) {
@@ -66,7 +57,7 @@ public class BrewingStandBlock extends BaseEntityBlock {
             var4.awardStat(Stats.INTERACT_WITH_BREWINGSTAND);
          }
 
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 
@@ -81,14 +72,14 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
-      double var5 = (double)var3.getX() + 0.4D + (double)var4.nextFloat() * 0.2D;
-      double var7 = (double)var3.getY() + 0.7D + (double)var4.nextFloat() * 0.3D;
-      double var9 = (double)var3.getZ() + 0.4D + (double)var4.nextFloat() * 0.2D;
+      double var5 = (double)((float)var3.getX() + 0.4F + var4.nextFloat() * 0.2F);
+      double var7 = (double)((float)var3.getY() + 0.7F + var4.nextFloat() * 0.3F);
+      double var9 = (double)((float)var3.getZ() + 0.4F + var4.nextFloat() * 0.2F);
       var2.addParticle(ParticleTypes.SMOKE, var5, var7, var9, 0.0D, 0.0D, 0.0D);
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof BrewingStandBlockEntity) {
             Containers.dropContents(var2, (BlockPos)var3, (Container)((BrewingStandBlockEntity)var6));
@@ -104,6 +95,10 @@ public class BrewingStandBlock extends BaseEntityBlock {
 
    public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

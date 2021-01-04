@@ -1,27 +1,27 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.PathNavigationRegion;
+import net.minecraft.world.level.LevelReader;
 
 public class PathFinder {
+   private final BinaryHeap openSet = new BinaryHeap();
+   private final Set<Node> closedSet = Sets.newHashSet();
    private final Node[] neighbors = new Node[32];
    private final int maxVisitedNodes;
-   private final NodeEvaluator nodeEvaluator;
-   private final BinaryHeap openSet = new BinaryHeap();
+   private NodeEvaluator nodeEvaluator;
 
    public PathFinder(NodeEvaluator var1, int var2) {
       super();
@@ -30,86 +30,84 @@ public class PathFinder {
    }
 
    @Nullable
-   public Path findPath(PathNavigationRegion var1, Mob var2, Set<BlockPos> var3, float var4, int var5, float var6) {
+   public Path findPath(LevelReader var1, Mob var2, Set<BlockPos> var3, float var4, int var5) {
       this.openSet.clear();
       this.nodeEvaluator.prepare(var1, var2);
-      Node var7 = this.nodeEvaluator.getStart();
-      Map var8 = (Map)var3.stream().collect(Collectors.toMap((var1x) -> {
+      Node var6 = this.nodeEvaluator.getStart();
+      Map var7 = (Map)var3.stream().collect(Collectors.toMap((var1x) -> {
          return this.nodeEvaluator.getGoal((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ());
       }, Function.identity()));
-      Path var9 = this.findPath(var7, var8, var4, var5, var6);
+      Path var8 = this.findPath(var6, var7, var4, var5);
       this.nodeEvaluator.done();
-      return var9;
+      return var8;
    }
 
    @Nullable
-   private Path findPath(Node var1, Map<Target, BlockPos> var2, float var3, int var4, float var5) {
-      Set var6 = var2.keySet();
+   private Path findPath(Node var1, Map<Target, BlockPos> var2, float var3, int var4) {
+      Set var5 = var2.keySet();
       var1.g = 0.0F;
-      var1.h = this.getBestH(var1, var6);
+      var1.h = this.getBestH(var1, var5);
       var1.f = var1.h;
       this.openSet.clear();
+      this.closedSet.clear();
       this.openSet.insert(var1);
-      ImmutableSet var7 = ImmutableSet.of();
-      int var8 = 0;
-      HashSet var9 = Sets.newHashSetWithExpectedSize(var6.size());
-      int var10 = (int)((float)this.maxVisitedNodes * var5);
+      int var6 = 0;
 
       while(!this.openSet.isEmpty()) {
-         ++var8;
-         if (var8 >= var10) {
+         ++var6;
+         if (var6 >= this.maxVisitedNodes) {
             break;
          }
 
-         Node var11 = this.openSet.pop();
-         var11.closed = true;
-         Iterator var12 = var6.iterator();
-
-         while(var12.hasNext()) {
-            Target var13 = (Target)var12.next();
-            if (var11.distanceManhattan((Node)var13) <= (float)var4) {
-               var13.setReached();
-               var9.add(var13);
-            }
-         }
-
-         if (!var9.isEmpty()) {
+         Node var7 = this.openSet.pop();
+         var7.closed = true;
+         var5.stream().filter((var2x) -> {
+            return var7.distanceManhattan((Node)var2x) <= (float)var4;
+         }).forEach(Target::setReached);
+         if (var5.stream().anyMatch(Target::isReached)) {
             break;
          }
 
-         if (var11.distanceTo(var1) < var3) {
-            int var18 = this.nodeEvaluator.getNeighbors(this.neighbors, var11);
+         if (var7.distanceTo(var1) < var3) {
+            int var8 = this.nodeEvaluator.getNeighbors(this.neighbors, var7);
 
-            for(int var20 = 0; var20 < var18; ++var20) {
-               Node var14 = this.neighbors[var20];
-               float var15 = var11.distanceTo(var14);
-               var14.walkedDistance = var11.walkedDistance + var15;
-               float var16 = var11.g + var15 + var14.costMalus;
-               if (var14.walkedDistance < var3 && (!var14.inOpenSet() || var16 < var14.g)) {
-                  var14.cameFrom = var11;
-                  var14.g = var16;
-                  var14.h = this.getBestH(var14, var6) * 1.5F;
-                  if (var14.inOpenSet()) {
-                     this.openSet.changeCost(var14, var14.g + var14.h);
+            for(int var9 = 0; var9 < var8; ++var9) {
+               Node var10 = this.neighbors[var9];
+               float var11 = var7.distanceTo(var10);
+               var10.walkedDistance = var7.walkedDistance + var11;
+               float var12 = var7.g + var11 + var10.costMalus;
+               if (var10.walkedDistance < var3 && (!var10.inOpenSet() || var12 < var10.g)) {
+                  var10.cameFrom = var7;
+                  var10.g = var12;
+                  var10.h = this.getBestH(var10, var5) * 1.5F;
+                  if (var10.inOpenSet()) {
+                     this.openSet.changeCost(var10, var10.g + var10.h);
                   } else {
-                     var14.f = var14.g + var14.h;
-                     this.openSet.insert(var14);
+                     var10.f = var10.g + var10.h;
+                     this.openSet.insert(var10);
                   }
                }
             }
          }
       }
 
-      Optional var17 = !var9.isEmpty() ? var9.stream().map((var2x) -> {
-         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true);
-      }).min(Comparator.comparingInt(Path::getNodeCount)) : var6.stream().map((var2x) -> {
-         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false);
-      }).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
-      if (!var17.isPresent()) {
+      Stream var13;
+      if (var5.stream().anyMatch(Target::isReached)) {
+         var13 = var5.stream().filter(Target::isReached).map((var2x) -> {
+            return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true);
+         }).sorted(Comparator.comparingInt(Path::getSize));
+      } else {
+         var13 = var5.stream().map((var2x) -> {
+            return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false);
+         }).sorted(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getSize));
+      }
+
+      Optional var14 = var13.findFirst();
+      if (!var14.isPresent()) {
          return null;
       } else {
-         Path var19 = (Path)var17.get();
-         return var19;
+         Path var15 = (Path)var14.get();
+         return var15;
       }
    }
 

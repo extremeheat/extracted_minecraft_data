@@ -18,6 +18,4 @@ public interface ArmorMaterial {
    String getName();
 
    float getToughness();
-
-   float getKnockbackResistance();
 }

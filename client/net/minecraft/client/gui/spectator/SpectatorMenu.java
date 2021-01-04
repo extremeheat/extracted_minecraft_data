@@ -2,7 +2,6 @@ package net.minecraft.client.gui.spectator;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -18,18 +17,15 @@ public class SpectatorMenu {
    private static final SpectatorMenuItem SCROLL_LEFT = new SpectatorMenu.ScrollMenuItem(-1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new SpectatorMenu.ScrollMenuItem(1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_DISABLED = new SpectatorMenu.ScrollMenuItem(1, false);
-   private static final Component CLOSE_MENU_TEXT = new TranslatableComponent("spectatorMenu.close");
-   private static final Component PREVIOUS_PAGE_TEXT = new TranslatableComponent("spectatorMenu.previous_page");
-   private static final Component NEXT_PAGE_TEXT = new TranslatableComponent("spectatorMenu.next_page");
    public static final SpectatorMenuItem EMPTY_SLOT = new SpectatorMenuItem() {
       public void selectItem(SpectatorMenu var1) {
       }
 
       public Component getName() {
-         return TextComponent.EMPTY;
+         return new TextComponent("");
       }
 
-      public void renderIcon(PoseStack var1, float var2, int var3) {
+      public void renderIcon(float var1, int var2) {
       }
 
       public boolean isEnabled() {
@@ -37,6 +33,7 @@ public class SpectatorMenu {
       }
    };
    private final SpectatorMenuListener listener;
+   private final List<SpectatorPage> previousCategories = Lists.newArrayList();
    private SpectatorMenuCategory category = new RootSpectatorMenuCategory();
    private int selectedSlot = -1;
    private int page;
@@ -98,6 +95,7 @@ public class SpectatorMenu {
    }
 
    public void selectCategory(SpectatorMenuCategory var1) {
+      this.previousCategories.add(this.getCurrentPage());
       this.category = var1;
       this.selectedSlot = -1;
       this.page = 0;
@@ -122,15 +120,15 @@ public class SpectatorMenu {
       }
 
       public Component getName() {
-         return this.direction < 0 ? SpectatorMenu.PREVIOUS_PAGE_TEXT : SpectatorMenu.NEXT_PAGE_TEXT;
+         return this.direction < 0 ? new TranslatableComponent("spectatorMenu.previous_page", new Object[0]) : new TranslatableComponent("spectatorMenu.next_page", new Object[0]);
       }
 
-      public void renderIcon(PoseStack var1, float var2, int var3) {
+      public void renderIcon(float var1, int var2) {
          Minecraft.getInstance().getTextureManager().bind(SpectatorGui.SPECTATOR_LOCATION);
          if (this.direction < 0) {
-            GuiComponent.blit(var1, 0, 0, 144.0F, 0.0F, 16, 16, 256, 256);
+            GuiComponent.blit(0, 0, 144.0F, 0.0F, 16, 16, 256, 256);
          } else {
-            GuiComponent.blit(var1, 0, 0, 160.0F, 0.0F, 16, 16, 256, 256);
+            GuiComponent.blit(0, 0, 160.0F, 0.0F, 16, 16, 256, 256);
          }
 
       }
@@ -150,12 +148,12 @@ public class SpectatorMenu {
       }
 
       public Component getName() {
-         return SpectatorMenu.CLOSE_MENU_TEXT;
+         return new TranslatableComponent("spectatorMenu.close", new Object[0]);
       }
 
-      public void renderIcon(PoseStack var1, float var2, int var3) {
+      public void renderIcon(float var1, int var2) {
          Minecraft.getInstance().getTextureManager().bind(SpectatorGui.SPECTATOR_LOCATION);
-         GuiComponent.blit(var1, 0, 0, 128.0F, 0.0F, 16, 16, 256, 256);
+         GuiComponent.blit(0, 0, 128.0F, 0.0F, 16, 16, 256, 256);
       }
 
       public boolean isEnabled() {

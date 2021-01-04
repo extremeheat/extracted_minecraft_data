@@ -2,7 +2,6 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BlockItem;
@@ -27,14 +26,14 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
          ItemStack var8 = var1.getItem(var7);
          if (!var8.isEmpty()) {
-            if (var8.is(Blocks.BROWN_MUSHROOM.asItem()) && !var5) {
+            if (var8.getItem() == Blocks.BROWN_MUSHROOM.asItem() && !var5) {
                var5 = true;
-            } else if (var8.is(Blocks.RED_MUSHROOM.asItem()) && !var4) {
+            } else if (var8.getItem() == Blocks.RED_MUSHROOM.asItem() && !var4) {
                var4 = true;
-            } else if (var8.is((Tag)ItemTags.SMALL_FLOWERS) && !var3) {
+            } else if (var8.getItem().is(ItemTags.SMALL_FLOWERS) && !var3) {
                var3 = true;
             } else {
-               if (!var8.is(Items.BOWL) || var6) {
+               if (var8.getItem() != Items.BOWL || var6) {
                   return false;
                }
 
@@ -51,7 +50,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
 
       for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty() && var4.is((Tag)ItemTags.SMALL_FLOWERS)) {
+         if (!var4.isEmpty() && var4.getItem().is(ItemTags.SMALL_FLOWERS)) {
             var2 = var4;
             break;
          }

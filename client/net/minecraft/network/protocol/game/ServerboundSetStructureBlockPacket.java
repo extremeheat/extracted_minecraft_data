@@ -53,19 +53,17 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.updateType = (StructureBlockEntity.UpdateType)var1.readEnum(StructureBlockEntity.UpdateType.class);
       this.mode = (StructureMode)var1.readEnum(StructureMode.class);
       this.name = var1.readUtf(32767);
-      boolean var2 = true;
-      this.offset = new BlockPos(Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48), Mth.clamp(var1.readByte(), -48, 48));
-      boolean var3 = true;
-      this.size = new BlockPos(Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48), Mth.clamp(var1.readByte(), 0, 48));
+      this.offset = new BlockPos(Mth.clamp(var1.readByte(), -32, 32), Mth.clamp(var1.readByte(), -32, 32), Mth.clamp(var1.readByte(), -32, 32));
+      this.size = new BlockPos(Mth.clamp(var1.readByte(), 0, 32), Mth.clamp(var1.readByte(), 0, 32), Mth.clamp(var1.readByte(), 0, 32));
       this.mirror = (Mirror)var1.readEnum(Mirror.class);
       this.rotation = (Rotation)var1.readEnum(Rotation.class);
       this.data = var1.readUtf(12);
       this.integrity = Mth.clamp(var1.readFloat(), 0.0F, 1.0F);
       this.seed = var1.readVarLong();
-      byte var4 = var1.readByte();
-      this.ignoreEntities = (var4 & 1) != 0;
-      this.showAir = (var4 & 2) != 0;
-      this.showBoundingBox = (var4 & 4) != 0;
+      byte var2 = var1.readByte();
+      this.ignoreEntities = (var2 & 1) != 0;
+      this.showAir = (var2 & 2) != 0;
+      this.showBoundingBox = (var2 & 4) != 0;
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {

@@ -2,16 +2,15 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackMapIdFix extends DataFix {
    public ItemStackMapIdFix(Schema var1, boolean var2) {
@@ -20,7 +19,7 @@ public class ItemStackMapIdFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), DSL.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
       return this.fixTypeEverywhereTyped("ItemInstanceMapIdFix", var1, (var2x) -> {
          Optional var3x = var2x.getOptional(var2);

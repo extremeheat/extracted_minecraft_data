@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
-import javax.annotation.Nullable;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +32,7 @@ public class NbtToSnbt implements DataProvider {
          Files.walk(var4).filter((var0) -> {
             return var0.toString().endsWith(".nbt");
          }).forEach((var3x) -> {
-            convertStructure(var3x, this.getName(var4, var3x), var2);
+            this.convertStructure(var3x, this.getName(var4, var3x), var2);
          });
       }
 
@@ -47,42 +47,39 @@ public class NbtToSnbt implements DataProvider {
       return var3.substring(0, var3.length() - ".nbt".length());
    }
 
-   @Nullable
-   public static Path convertStructure(Path var0, String var1, Path var2) {
+   private void convertStructure(Path var1, String var2, Path var3) {
       try {
-         writeSnbt(var2.resolve(var1 + ".snbt"), NbtUtils.structureToSnbt(NbtIo.readCompressed(Files.newInputStream(var0))));
-         LOGGER.info("Converted {} from NBT to SNBT", var1);
-         return var2.resolve(var1 + ".snbt");
-      } catch (IOException var4) {
-         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", var1, var0, var4);
-         return null;
-      }
-   }
+         CompoundTag var4 = NbtIo.readCompressed(Files.newInputStream(var1));
+         Component var5 = var4.getPrettyDisplay("    ", 0);
+         String var6 = var5.getString() + "\n";
+         Path var7 = var3.resolve(var2 + ".snbt");
+         Files.createDirectories(var7.getParent());
+         BufferedWriter var8 = Files.newBufferedWriter(var7);
+         Throwable var9 = null;
 
-   public static void writeSnbt(Path var0, String var1) throws IOException {
-      Files.createDirectories(var0.getParent());
-      BufferedWriter var2 = Files.newBufferedWriter(var0);
-      Throwable var3 = null;
-
-      try {
-         var2.write(var1);
-         var2.write(10);
-      } catch (Throwable var12) {
-         var3 = var12;
-         throw var12;
-      } finally {
-         if (var2 != null) {
-            if (var3 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var11) {
-                  var3.addSuppressed(var11);
+         try {
+            var8.write(var6);
+         } catch (Throwable var19) {
+            var9 = var19;
+            throw var19;
+         } finally {
+            if (var8 != null) {
+               if (var9 != null) {
+                  try {
+                     var8.close();
+                  } catch (Throwable var18) {
+                     var9.addSuppressed(var18);
+                  }
+               } else {
+                  var8.close();
                }
-            } else {
-               var2.close();
             }
+
          }
 
+         LOGGER.info("Converted {} from NBT to SNBT", var2);
+      } catch (IOException var21) {
+         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", var2, var1, var21);
       }
 
    }

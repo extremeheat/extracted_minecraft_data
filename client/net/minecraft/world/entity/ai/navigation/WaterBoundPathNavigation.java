@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.navigation;
 
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -32,7 +31,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
    }
 
    protected Vec3 getTempMobPos() {
-      return new Vec3(this.mob.getX(), this.mob.getY(0.5D), this.mob.getZ());
+      return new Vec3(this.mob.x, this.mob.y + (double)this.mob.getBbHeight() * 0.5D, this.mob.z);
    }
 
    public void tick() {
@@ -44,23 +43,23 @@ public class WaterBoundPathNavigation extends PathNavigation {
       if (!this.isDone()) {
          Vec3 var1;
          if (this.canUpdatePath()) {
-            this.followThePath();
-         } else if (this.path != null && !this.path.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
-            if (this.mob.getBlockX() == Mth.floor(var1.x) && this.mob.getBlockY() == Mth.floor(var1.y) && this.mob.getBlockZ() == Mth.floor(var1.z)) {
-               this.path.advance();
+            this.updatePath();
+         } else if (this.path != null && this.path.getIndex() < this.path.getSize()) {
+            var1 = this.path.getPos(this.mob, this.path.getIndex());
+            if (Mth.floor(this.mob.x) == Mth.floor(var1.x) && Mth.floor(this.mob.y) == Mth.floor(var1.y) && Mth.floor(this.mob.z) == Mth.floor(var1.z)) {
+               this.path.setIndex(this.path.getIndex() + 1);
             }
          }
 
          DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
+            var1 = this.path.currentPos(this.mob);
             this.mob.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, this.speedModifier);
          }
       }
    }
 
-   protected void followThePath() {
+   protected void updatePath() {
       if (this.path != null) {
          Vec3 var1 = this.getTempMobPos();
          float var2 = this.mob.getBbWidth();
@@ -71,15 +70,15 @@ public class WaterBoundPathNavigation extends PathNavigation {
          }
 
          boolean var5 = true;
-         Vec3 var6 = Vec3.atBottomCenterOf(this.path.getNextNodePos());
-         if (Math.abs(this.mob.getX() - var6.x) < (double)var3 && Math.abs(this.mob.getZ() - var6.z) < (double)var3 && Math.abs(this.mob.getY() - var6.y) < (double)(var3 * 2.0F)) {
-            this.path.advance();
+         Vec3 var6 = this.path.currentPos();
+         if (Math.abs(this.mob.x - (var6.x + 0.5D)) < (double)var3 && Math.abs(this.mob.z - (var6.z + 0.5D)) < (double)var3 && Math.abs(this.mob.y - var6.y) < (double)(var3 * 2.0F)) {
+            this.path.next();
          }
 
-         for(int var7 = Math.min(this.path.getNextNodeIndex() + 6, this.path.getNodeCount() - 1); var7 > this.path.getNextNodeIndex(); --var7) {
-            var6 = this.path.getEntityPosAtNode(this.mob, var7);
+         for(int var7 = Math.min(this.path.getIndex() + 6, this.path.getSize() - 1); var7 > this.path.getIndex(); --var7) {
+            var6 = this.path.getPos(this.mob, var7);
             if (var6.distanceToSqr(var1) <= 36.0D && this.canMoveDirectly(var1, var6, 0, 0, 0)) {
-               this.path.setNextNodeIndex(var7);
+               this.path.setIndex(var7);
                break;
             }
          }
@@ -99,17 +98,17 @@ public class WaterBoundPathNavigation extends PathNavigation {
       }
 
       if (this.path != null && !this.path.isDone()) {
-         BlockPos var2 = this.path.getNextNodePos();
+         Vec3 var2 = this.path.currentPos();
          if (var2.equals(this.timeoutCachedNode)) {
             this.timeoutTimer += Util.getMillis() - this.lastTimeoutCheck;
          } else {
             this.timeoutCachedNode = var2;
-            double var3 = var1.distanceTo(Vec3.atCenterOf(this.timeoutCachedNode));
+            double var3 = var1.distanceTo(this.timeoutCachedNode);
             this.timeoutLimit = this.mob.getSpeed() > 0.0F ? var3 / (double)this.mob.getSpeed() * 100.0D : 0.0D;
          }
 
          if (this.timeoutLimit > 0.0D && (double)this.timeoutTimer > this.timeoutLimit * 2.0D) {
-            this.timeoutCachedNode = Vec3i.ZERO;
+            this.timeoutCachedNode = Vec3.ZERO;
             this.timeoutTimer = 0L;
             this.timeoutLimit = 0.0D;
             this.stop();

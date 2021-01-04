@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import java.util.Arrays;
@@ -15,13 +16,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.critereon.DeserializationContext;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -56,11 +53,11 @@ public class Advancement {
       } else {
          Component var7 = var3.getTitle();
          ChatFormatting var8 = var3.getFrame().getChatColor();
-         MutableComponent var9 = ComponentUtils.mergeStyles(var7.copy(), Style.EMPTY.withColor(var8)).append("\n").append(var3.getDescription());
-         MutableComponent var10 = var7.copy().withStyle((var1x) -> {
-            return var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var9));
+         Component var9 = var7.deepCopy().withStyle(var8).append("\n").append(var3.getDescription());
+         Component var10 = var7.deepCopy().withStyle((var1x) -> {
+            var1x.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var9));
          });
-         this.chatComponent = ComponentUtils.wrapInSquareBrackets(var10).withStyle(var8);
+         this.chatComponent = (new TextComponent("[")).append(var10).append("]").withStyle(var8);
       }
 
    }
@@ -330,10 +327,10 @@ public class Advancement {
          return "Task Advancement{parentId=" + this.parentId + ", display=" + this.display + ", rewards=" + this.rewards + ", criteria=" + this.criteria + ", requirements=" + Arrays.deepToString(this.requirements) + '}';
       }
 
-      public static Advancement.Builder fromJson(JsonObject var0, DeserializationContext var1) {
+      public static Advancement.Builder fromJson(JsonObject var0, JsonDeserializationContext var1) {
          ResourceLocation var2 = var0.has("parent") ? new ResourceLocation(GsonHelper.getAsString(var0, "parent")) : null;
-         DisplayInfo var3 = var0.has("display") ? DisplayInfo.fromJson(GsonHelper.getAsJsonObject(var0, "display")) : null;
-         AdvancementRewards var4 = var0.has("rewards") ? AdvancementRewards.deserialize(GsonHelper.getAsJsonObject(var0, "rewards")) : AdvancementRewards.EMPTY;
+         DisplayInfo var3 = var0.has("display") ? DisplayInfo.fromJson(GsonHelper.getAsJsonObject(var0, "display"), var1) : null;
+         AdvancementRewards var4 = (AdvancementRewards)GsonHelper.getAsObject(var0, "rewards", AdvancementRewards.EMPTY, var1, AdvancementRewards.class);
          Map var5 = Criterion.criteriaFromJson(GsonHelper.getAsJsonObject(var0, "criteria"), var1);
          if (var5.isEmpty()) {
             throw new JsonSyntaxException("Advancement criteria cannot be empty");

@@ -1,14 +1,12 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -29,9 +27,8 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    private boolean buttonClicked;
 
    public InventoryScreen(Player var1) {
-      super(var1.inventoryMenu, var1.getInventory(), new TranslatableComponent("container.crafting"));
+      super(var1.inventoryMenu, var1.inventory, new TranslatableComponent("container.crafting", new Object[0]));
       this.passEvents = true;
-      this.titleLabelX = 97;
    }
 
    public void tick() {
@@ -63,76 +60,75 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       }
    }
 
-   protected void renderLabels(PoseStack var1, int var2, int var3) {
-      this.font.draw(var1, this.title, (float)this.titleLabelX, (float)this.titleLabelY, 4210752);
+   protected void renderLabels(int var1, int var2) {
+      this.font.draw(this.title.getColoredString(), 97.0F, 8.0F, 4210752);
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
       this.doRenderEffects = !this.recipeBookComponent.isVisible();
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBg(var1, var4, var2, var3);
-         this.recipeBookComponent.render(var1, var2, var3, var4);
+         this.renderBg(var3, var1, var2);
+         this.recipeBookComponent.render(var1, var2, var3);
       } else {
-         this.recipeBookComponent.render(var1, var2, var3, var4);
-         super.render(var1, var2, var3, var4);
-         this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, false, var4);
+         this.recipeBookComponent.render(var1, var2, var3);
+         super.render(var1, var2, var3);
+         this.recipeBookComponent.renderGhostRecipe(this.leftPos, this.topPos, false, var3);
       }
 
-      this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, this.leftPos, this.topPos, var2, var3);
-      this.xMouse = (float)var2;
-      this.yMouse = (float)var3;
+      this.renderTooltip(var1, var2);
+      this.recipeBookComponent.renderTooltip(this.leftPos, this.topPos, var1, var2);
+      this.xMouse = (float)var1;
+      this.yMouse = (float)var2;
+      this.magicalSpecialHackyFocus(this.recipeBookComponent);
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(INVENTORY_LOCATION);
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      renderEntityInInventory(var5 + 51, var6 + 75, 30, (float)(var5 + 51) - this.xMouse, (float)(var6 + 75 - 50) - this.yMouse, this.minecraft.player);
+      int var4 = this.leftPos;
+      int var5 = this.topPos;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
+      renderPlayerModel(var4 + 51, var5 + 75, 30, (float)(var4 + 51) - this.xMouse, (float)(var5 + 75 - 50) - this.yMouse, this.minecraft.player);
    }
 
-   public static void renderEntityInInventory(int var0, int var1, int var2, float var3, float var4, LivingEntity var5) {
-      float var6 = (float)Math.atan((double)(var3 / 40.0F));
-      float var7 = (float)Math.atan((double)(var4 / 40.0F));
-      RenderSystem.pushMatrix();
-      RenderSystem.translatef((float)var0, (float)var1, 1050.0F);
-      RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-      PoseStack var8 = new PoseStack();
-      var8.translate(0.0D, 0.0D, 1000.0D);
-      var8.scale((float)var2, (float)var2, (float)var2);
-      Quaternion var9 = Vector3f.ZP.rotationDegrees(180.0F);
-      Quaternion var10 = Vector3f.XP.rotationDegrees(var7 * 20.0F);
-      var9.mul(var10);
-      var8.mulPose(var9);
-      float var11 = var5.yBodyRot;
-      float var12 = var5.yRot;
-      float var13 = var5.xRot;
-      float var14 = var5.yHeadRotO;
-      float var15 = var5.yHeadRot;
-      var5.yBodyRot = 180.0F + var6 * 20.0F;
-      var5.yRot = 180.0F + var6 * 40.0F;
-      var5.xRot = -var7 * 20.0F;
+   public static void renderPlayerModel(int var0, int var1, int var2, float var3, float var4, LivingEntity var5) {
+      GlStateManager.enableColorMaterial();
+      GlStateManager.pushMatrix();
+      GlStateManager.translatef((float)var0, (float)var1, 50.0F);
+      GlStateManager.scalef((float)(-var2), (float)var2, (float)var2);
+      GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+      float var6 = var5.yBodyRot;
+      float var7 = var5.yRot;
+      float var8 = var5.xRot;
+      float var9 = var5.yHeadRotO;
+      float var10 = var5.yHeadRot;
+      GlStateManager.rotatef(135.0F, 0.0F, 1.0F, 0.0F);
+      Lighting.turnOn();
+      GlStateManager.rotatef(-135.0F, 0.0F, 1.0F, 0.0F);
+      GlStateManager.rotatef(-((float)Math.atan((double)(var4 / 40.0F))) * 20.0F, 1.0F, 0.0F, 0.0F);
+      var5.yBodyRot = (float)Math.atan((double)(var3 / 40.0F)) * 20.0F;
+      var5.yRot = (float)Math.atan((double)(var3 / 40.0F)) * 40.0F;
+      var5.xRot = -((float)Math.atan((double)(var4 / 40.0F))) * 20.0F;
       var5.yHeadRot = var5.yRot;
       var5.yHeadRotO = var5.yRot;
-      EntityRenderDispatcher var16 = Minecraft.getInstance().getEntityRenderDispatcher();
-      var10.conj();
-      var16.overrideCameraOrientation(var10);
-      var16.setRenderShadow(false);
-      MultiBufferSource.BufferSource var17 = Minecraft.getInstance().renderBuffers().bufferSource();
-      RenderSystem.runAsFancy(() -> {
-         var16.render(var5, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, var8, var17, 15728880);
-      });
-      var17.endBatch();
-      var16.setRenderShadow(true);
-      var5.yBodyRot = var11;
-      var5.yRot = var12;
-      var5.xRot = var13;
-      var5.yHeadRotO = var14;
-      var5.yHeadRot = var15;
-      RenderSystem.popMatrix();
+      GlStateManager.translatef(0.0F, 0.0F, 0.0F);
+      EntityRenderDispatcher var11 = Minecraft.getInstance().getEntityRenderDispatcher();
+      var11.setPlayerRotY(180.0F);
+      var11.setRenderShadow(false);
+      var11.render(var5, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, false);
+      var11.setRenderShadow(true);
+      var5.yBodyRot = var6;
+      var5.yRot = var7;
+      var5.xRot = var8;
+      var5.yHeadRotO = var9;
+      var5.yHeadRot = var10;
+      GlStateManager.popMatrix();
+      Lighting.turnOff();
+      GlStateManager.disableRescaleNormal();
+      GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+      GlStateManager.disableTexture();
+      GlStateManager.activeTexture(GLX.GL_TEXTURE0);
    }
 
    protected boolean isHovering(int var1, int var2, int var3, int var4, double var5, double var7) {
@@ -141,7 +137,6 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
 
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.recipeBookComponent.mouseClicked(var1, var3, var5)) {
-         this.setFocused(this.recipeBookComponent);
          return true;
       } else {
          return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? false : super.mouseClicked(var1, var3, var5);

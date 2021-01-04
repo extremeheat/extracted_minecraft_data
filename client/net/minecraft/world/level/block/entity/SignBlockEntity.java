@@ -5,37 +5,34 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class SignBlockEntity extends BlockEntity {
-   private final Component[] messages;
-   private boolean isEditable;
+   public final Component[] messages = new Component[]{new TextComponent(""), new TextComponent(""), new TextComponent(""), new TextComponent("")};
+   private boolean showCursor;
+   private int selectedLine = -1;
+   private int cursorPos = -1;
+   private int selectionPos = -1;
+   private boolean isEditable = true;
    private Player playerWhoMayEdit;
-   private final FormattedCharSequence[] renderMessages;
+   private final String[] renderMessages = new String[4];
    private DyeColor color;
 
-   public SignBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.SIGN, var1, var2);
-      this.messages = new Component[]{TextComponent.EMPTY, TextComponent.EMPTY, TextComponent.EMPTY, TextComponent.EMPTY};
-      this.isEditable = true;
-      this.renderMessages = new FormattedCharSequence[4];
+   public SignBlockEntity() {
+      super(BlockEntityType.SIGN);
       this.color = DyeColor.BLACK;
    }
 
@@ -58,7 +55,7 @@ public class SignBlockEntity extends BlockEntity {
 
       for(int var2 = 0; var2 < 4; ++var2) {
          String var3 = var1.getString("Text" + (var2 + 1));
-         MutableComponent var4 = Component.Serializer.fromJson(var3.isEmpty() ? "\"\"" : var3);
+         Component var4 = Component.Serializer.fromJson(var3.isEmpty() ? "\"\"" : var3);
          if (this.level instanceof ServerLevel) {
             try {
                this.messages[var2] = ComponentUtils.updateForEntity(this.createCommandSourceStack((ServerPlayer)null), var4, (Entity)null, 0);
@@ -84,9 +81,9 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    @Nullable
-   public FormattedCharSequence getRenderMessage(int var1, Function<Component, FormattedCharSequence> var2) {
+   public String getRenderMessage(int var1, Function<Component, String> var2) {
       if (this.renderMessages[var1] == null && this.messages[var1] != null) {
-         this.renderMessages[var1] = (FormattedCharSequence)var2.apply(this.messages[var1]);
+         this.renderMessages[var1] = (String)var2.apply(this.messages[var1]);
       }
 
       return this.renderMessages[var1];
@@ -146,7 +143,7 @@ public class SignBlockEntity extends BlockEntity {
    public CommandSourceStack createCommandSourceStack(@Nullable ServerPlayer var1) {
       String var2 = var1 == null ? "Sign" : var1.getName().getString();
       Object var3 = var1 == null ? new TextComponent("Sign") : var1.getDisplayName();
-      return new CommandSourceStack(CommandSource.NULL, Vec3.atCenterOf(this.worldPosition), Vec2.ZERO, (ServerLevel)this.level, 2, var2, (Component)var3, this.level.getServer(), var1);
+      return new CommandSourceStack(CommandSource.NULL, new Vec3((double)this.worldPosition.getX() + 0.5D, (double)this.worldPosition.getY() + 0.5D, (double)this.worldPosition.getZ() + 0.5D), Vec2.ZERO, (ServerLevel)this.level, 2, var2, (Component)var3, this.level.getServer(), var1);
    }
 
    public DyeColor getColor() {
@@ -162,5 +159,35 @@ public class SignBlockEntity extends BlockEntity {
       } else {
          return false;
       }
+   }
+
+   public void setCursorInfo(int var1, int var2, int var3, boolean var4) {
+      this.selectedLine = var1;
+      this.cursorPos = var2;
+      this.selectionPos = var3;
+      this.showCursor = var4;
+   }
+
+   public void resetCursorInfo() {
+      this.selectedLine = -1;
+      this.cursorPos = -1;
+      this.selectionPos = -1;
+      this.showCursor = false;
+   }
+
+   public boolean isShowCursor() {
+      return this.showCursor;
+   }
+
+   public int getSelectedLine() {
+      return this.selectedLine;
+   }
+
+   public int getCursorPos() {
+      return this.cursorPos;
+   }
+
+   public int getSelectionPos() {
+      return this.selectionPos;
    }
 }

@@ -8,24 +8,23 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.MaterialColor;
@@ -38,7 +37,7 @@ public class MapItem extends ComplexItem {
 
    public static ItemStack create(Level var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
       ItemStack var6 = new ItemStack(Items.FILLED_MAP);
-      createAndStoreSavedData(var6, var0, var1, var2, var3, var4, var5, var0.dimension());
+      createAndStoreSavedData(var6, var0, var1, var2, var3, var4, var5, var0.dimension.getType());
       return var6;
    }
 
@@ -50,8 +49,8 @@ public class MapItem extends ComplexItem {
    @Nullable
    public static MapItemSavedData getOrCreateSavedData(ItemStack var0, Level var1) {
       MapItemSavedData var2 = getSavedData(var0, var1);
-      if (var2 == null && var1 instanceof ServerLevel) {
-         var2 = createAndStoreSavedData(var0, var1, var1.getLevelData().getXSpawn(), var1.getLevelData().getZSpawn(), 3, false, false, var1.dimension());
+      if (var2 == null && !var1.isClientSide) {
+         var2 = createAndStoreSavedData(var0, var1, var1.getLevelData().getXSpawn(), var1.getLevelData().getZSpawn(), 3, false, false, var1.dimension.getType());
       }
 
       return var2;
@@ -62,7 +61,7 @@ public class MapItem extends ComplexItem {
       return var1 != null && var1.contains("map", 99) ? var1.getInt("map") : 0;
    }
 
-   private static MapItemSavedData createAndStoreSavedData(ItemStack var0, Level var1, int var2, int var3, int var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
+   private static MapItemSavedData createAndStoreSavedData(ItemStack var0, Level var1, int var2, int var3, int var4, boolean var5, boolean var6, DimensionType var7) {
       int var8 = var1.getFreeMapId();
       MapItemSavedData var9 = new MapItemSavedData(makeKey(var8));
       var9.setProperties(var2, var3, var4, var5, var6, var7);
@@ -76,14 +75,14 @@ public class MapItem extends ComplexItem {
    }
 
    public void update(Level var1, Entity var2, MapItemSavedData var3) {
-      if (var1.dimension() == var3.dimension && var2 instanceof Player) {
+      if (var1.dimension.getType() == var3.dimension && var2 instanceof Player) {
          int var4 = 1 << var3.scale;
          int var5 = var3.x;
          int var6 = var3.z;
-         int var7 = Mth.floor(var2.getX() - (double)var5) / var4 + 64;
-         int var8 = Mth.floor(var2.getZ() - (double)var6) / var4 + 64;
+         int var7 = Mth.floor(var2.x - (double)var5) / var4 + 64;
+         int var8 = Mth.floor(var2.z - (double)var6) / var4 + 64;
          int var9 = 128 / var4;
-         if (var1.dimensionType().hasCeiling()) {
+         if (var1.dimension.isHasCeiling()) {
             var9 /= 2;
          }
 
@@ -111,7 +110,7 @@ public class MapItem extends ComplexItem {
                         int var25 = var20 & 15;
                         int var26 = 0;
                         double var27 = 0.0D;
-                        if (var1.dimensionType().hasCeiling()) {
+                        if (var1.dimension.isHasCeiling()) {
                            int var29 = var19 + var20 * 231871;
                            var29 = var29 * var29 * 31287121 + var29 * 11;
                            if ((var29 >> 20 & 1) == 0) {
@@ -129,25 +128,25 @@ public class MapItem extends ComplexItem {
                               for(int var32 = 0; var32 < var4; ++var32) {
                                  int var33 = var22.getHeight(Heightmap.Types.WORLD_SURFACE, var31 + var24, var32 + var25) + 1;
                                  BlockState var34;
-                                 if (var33 <= var1.getMinBuildHeight() + 1) {
+                                 if (var33 <= 1) {
                                     var34 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
                                        --var33;
                                        var37.set(var23.getMinBlockX() + var31 + var24, var33, var23.getMinBlockZ() + var32 + var25);
                                        var34 = var22.getBlockState(var37);
-                                    } while(var34.getMapColor(var1, var37) == MaterialColor.NONE && var33 > var1.getMinBuildHeight());
+                                    } while(var34.getMapColor(var1, var37) == MaterialColor.NONE && var33 > 0);
 
-                                    if (var33 > var1.getMinBuildHeight() && !var34.getFluidState().isEmpty()) {
+                                    if (var33 > 0 && !var34.getFluidState().isEmpty()) {
                                        int var35 = var33 - 1;
-                                       var30.set(var37);
+                                       var30.set((Vec3i)var37);
 
                                        BlockState var36;
                                        do {
                                           var30.setY(var35--);
                                           var36 = var22.getBlockState(var30);
                                           ++var26;
-                                       } while(var35 > var1.getMinBuildHeight() && !var36.getFluidState().isEmpty());
+                                       } while(var35 > 0 && !var36.getFluidState().isEmpty());
 
                                        var34 = this.getCorrectStateForFluidBlock(var1, var34, var37);
                                     }
@@ -212,25 +211,17 @@ public class MapItem extends ComplexItem {
       return var0[var2 * var1 + var3 * var1 * 128 * var1].getDepth() >= 0.0F;
    }
 
-   public static void renderBiomePreviewMap(ServerLevel var0, ItemStack var1) {
+   public static void renderBiomePreviewMap(Level var0, ItemStack var1) {
       MapItemSavedData var2 = getOrCreateSavedData(var1, var0);
       if (var2 != null) {
-         if (var0.dimension() == var2.dimension) {
+         if (var0.dimension.getType() == var2.dimension) {
             int var3 = 1 << var2.scale;
             int var4 = var2.x;
             int var5 = var2.z;
-            Biome[] var6 = new Biome[128 * var3 * 128 * var3];
+            Biome[] var6 = var0.getChunkSource().getGenerator().getBiomeSource().getBiomeBlock((var4 / var3 - 64) * var3, (var5 / var3 - 64) * var3, 128 * var3, 128 * var3, false);
 
-            int var7;
-            int var8;
-            for(var7 = 0; var7 < 128 * var3; ++var7) {
-               for(var8 = 0; var8 < 128 * var3; ++var8) {
-                  var6[var7 * 128 * var3 + var8] = var0.getBiome(new BlockPos((var4 / var3 - 64) * var3 + var8, 0, (var5 / var3 - 64) * var3 + var7));
-               }
-            }
-
-            for(var7 = 0; var7 < 128; ++var7) {
-               for(var8 = 0; var8 < 128; ++var8) {
+            for(int var7 = 0; var7 < 128; ++var7) {
+               for(int var8 = 0; var8 < 128; ++var8) {
                   if (var7 > 0 && var8 > 0 && var7 < 127 && var8 < 127) {
                      Biome var9 = var6[var7 * var3 + var8 * var3 * 128 * var3];
                      int var10 = 8;
@@ -334,9 +325,6 @@ public class MapItem extends ComplexItem {
       if (var4 != null && var4.contains("map_scale_direction", 99)) {
          scaleMap(var1, var2, var4.getInt("map_scale_direction"));
          var4.remove("map_scale_direction");
-      } else if (var4 != null && var4.contains("map_to_lock", 1) && var4.getBoolean("map_to_lock")) {
-         lockMap(var2, var1);
-         var4.remove("map_to_lock");
       }
 
    }
@@ -349,13 +337,17 @@ public class MapItem extends ComplexItem {
 
    }
 
-   public static void lockMap(Level var0, ItemStack var1) {
+   @Nullable
+   public static ItemStack lockMap(Level var0, ItemStack var1) {
       MapItemSavedData var2 = getOrCreateSavedData(var1, var0);
       if (var2 != null) {
-         MapItemSavedData var3 = createAndStoreSavedData(var1, var0, 0, 0, var2.scale, var2.trackingPosition, var2.unlimitedTracking, var2.dimension);
-         var3.lockData(var2);
+         ItemStack var3 = var1.copy();
+         MapItemSavedData var4 = createAndStoreSavedData(var3, var0, 0, 0, var2.scale, var2.trackingPosition, var2.unlimitedTracking, var2.dimension);
+         var4.lockData(var2);
+         return var3;
+      } else {
+         return null;
       }
-
    }
 
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
@@ -370,7 +362,7 @@ public class MapItem extends ComplexItem {
             var3.add((new TranslatableComponent("filled_map.scale", new Object[]{1 << var5.scale})).withStyle(ChatFormatting.GRAY));
             var3.add((new TranslatableComponent("filled_map.level", new Object[]{var5.scale, 4})).withStyle(ChatFormatting.GRAY));
          } else {
-            var3.add((new TranslatableComponent("filled_map.unknown")).withStyle(ChatFormatting.GRAY));
+            var3.add((new TranslatableComponent("filled_map.unknown", new Object[0])).withStyle(ChatFormatting.GRAY));
          }
       }
 
@@ -389,12 +381,12 @@ public class MapItem extends ComplexItem {
    public InteractionResult useOn(UseOnContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       if (var2.is(BlockTags.BANNERS)) {
-         if (!var1.getLevel().isClientSide) {
+         if (!var1.level.isClientSide) {
             MapItemSavedData var3 = getOrCreateSavedData(var1.getItemInHand(), var1.getLevel());
             var3.toggleBanner(var1.getLevel(), var1.getClickedPos());
          }
 
-         return InteractionResult.sidedSuccess(var1.getLevel().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useOn(var1);
       }

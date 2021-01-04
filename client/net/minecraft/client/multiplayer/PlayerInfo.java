@@ -20,15 +20,18 @@ public class PlayerInfo {
    private GameType gameMode;
    private int latency;
    private boolean pendingTextures;
-   @Nullable
    private String skinModel;
-   @Nullable
    private Component tabListDisplayName;
    private int lastHealth;
    private int displayHealth;
    private long lastHealthTime;
    private long healthBlinkTime;
    private long renderVisibilityId;
+
+   public PlayerInfo(GameProfile var1) {
+      super();
+      this.profile = var1;
+   }
 
    public PlayerInfo(ClientboundPlayerInfoPacket.PlayerUpdate var1) {
       super();
@@ -42,7 +45,6 @@ public class PlayerInfo {
       return this.profile;
    }
 
-   @Nullable
    public GameType getGameMode() {
       return this.gameMode;
    }
@@ -94,12 +96,19 @@ public class PlayerInfo {
          if (!this.pendingTextures) {
             this.pendingTextures = true;
             Minecraft.getInstance().getSkinManager().registerSkins(this.profile, (var1, var2, var3) -> {
-               this.textureLocations.put(var1, var2);
-               if (var1 == Type.SKIN) {
+               switch(var1) {
+               case SKIN:
+                  this.textureLocations.put(Type.SKIN, var2);
                   this.skinModel = var3.getMetadata("model");
                   if (this.skinModel == null) {
                      this.skinModel = "default";
                   }
+                  break;
+               case CAPE:
+                  this.textureLocations.put(Type.CAPE, var2);
+                  break;
+               case ELYTRA:
+                  this.textureLocations.put(Type.ELYTRA, var2);
                }
 
             }, true);

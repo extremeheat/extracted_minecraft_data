@@ -18,7 +18,7 @@ public class Stitcher {
    }).thenComparing((var0) -> {
       return -var0.width;
    }).thenComparing((var0) -> {
-      return var0.spriteInfo.name();
+      return var0.sprite.getName();
    });
    private final int mipLevel;
    private final Set<Stitcher.Holder> texturesToBeStitched = Sets.newHashSetWithExpectedSize(256);
@@ -43,7 +43,7 @@ public class Stitcher {
       return this.storageY;
    }
 
-   public void registerSprite(TextureAtlasSprite.Info var1) {
+   public void registerSprite(TextureAtlasSprite var1) {
       Stitcher.Holder var2 = new Stitcher.Holder(var1, this.mipLevel);
       this.texturesToBeStitched.add(var2);
    }
@@ -64,23 +64,26 @@ public class Stitcher {
          var3 = (Stitcher.Holder)var2.next();
       } while(this.addToStorage(var3));
 
-      throw new StitcherException(var3.spriteInfo, (Collection)var1.stream().map((var0) -> {
-         return var0.spriteInfo;
+      throw new StitcherException(var3.sprite, (Collection)var1.stream().map((var0) -> {
+         return var0.sprite;
       }).collect(ImmutableList.toImmutableList()));
    }
 
-   public void gatherSprites(Stitcher.SpriteLoader var1) {
+   public List<TextureAtlasSprite> gatherSprites() {
+      ArrayList var1 = Lists.newArrayList();
       Iterator var2 = this.storage.iterator();
 
       while(var2.hasNext()) {
          Stitcher.Region var3 = (Stitcher.Region)var2.next();
          var3.walk((var2x) -> {
             Stitcher.Holder var3 = var2x.getHolder();
-            TextureAtlasSprite.Info var4 = var3.spriteInfo;
-            var1.load(var4, this.storageX, this.storageY, var2x.getX(), var2x.getY());
+            TextureAtlasSprite var4 = var3.sprite;
+            var4.init(this.storageX, this.storageY, var2x.getX(), var2x.getY());
+            var1.add(var4);
          });
       }
 
+      return var1;
    }
 
    private static int smallestFittingMinTexel(int var0, int var1) {
@@ -240,23 +243,19 @@ public class Stitcher {
    }
 
    static class Holder {
-      public final TextureAtlasSprite.Info spriteInfo;
+      public final TextureAtlasSprite sprite;
       public final int width;
       public final int height;
 
-      public Holder(TextureAtlasSprite.Info var1, int var2) {
+      public Holder(TextureAtlasSprite var1, int var2) {
          super();
-         this.spriteInfo = var1;
-         this.width = Stitcher.smallestFittingMinTexel(var1.width(), var2);
-         this.height = Stitcher.smallestFittingMinTexel(var1.height(), var2);
+         this.sprite = var1;
+         this.width = Stitcher.smallestFittingMinTexel(var1.getWidth(), var2);
+         this.height = Stitcher.smallestFittingMinTexel(var1.getHeight(), var2);
       }
 
       public String toString() {
          return "Holder{width=" + this.width + ", height=" + this.height + '}';
       }
-   }
-
-   public interface SpriteLoader {
-      void load(TextureAtlasSprite.Info var1, int var2, int var3, int var4, int var5);
    }
 }

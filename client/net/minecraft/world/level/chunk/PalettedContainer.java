@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -185,31 +184,24 @@ public class PalettedContainer<T> implements PaletteResize<T> {
    public void write(CompoundTag var1, String var2, String var3) {
       this.acquire();
       HashMapPalette var4 = new HashMapPalette(this.registry, this.bits, this.dummyPaletteResize, this.reader, this.writer);
-      Object var5 = this.defaultValue;
-      int var6 = var4.idFor(this.defaultValue);
-      int[] var7 = new int[4096];
+      var4.idFor(this.defaultValue);
+      int[] var5 = new int[4096];
 
-      for(int var8 = 0; var8 < 4096; ++var8) {
-         Object var9 = this.get(var8);
-         if (var9 != var5) {
-            var5 = var9;
-            var6 = var4.idFor(var9);
-         }
-
-         var7[var8] = var6;
+      for(int var6 = 0; var6 < 4096; ++var6) {
+         var5[var6] = var4.idFor(this.get(var6));
       }
 
-      ListTag var12 = new ListTag();
-      var4.write(var12);
-      var1.put(var2, var12);
-      int var13 = Math.max(4, Mth.ceillog2(var12.size()));
-      BitStorage var10 = new BitStorage(var13, 4096);
+      ListTag var10 = new ListTag();
+      var4.write(var10);
+      var1.put(var2, var10);
+      int var7 = Math.max(4, Mth.ceillog2(var10.size()));
+      BitStorage var8 = new BitStorage(var7, 4096);
 
-      for(int var11 = 0; var11 < var7.length; ++var11) {
-         var10.set(var11, var7[var11]);
+      for(int var9 = 0; var9 < var5.length; ++var9) {
+         var8.set(var9, var5[var9]);
       }
 
-      var1.putLongArray(var3, var10.getRaw());
+      var1.putLongArray(var3, var8.getRaw());
       this.release();
    }
 
@@ -217,7 +209,7 @@ public class PalettedContainer<T> implements PaletteResize<T> {
       return 1 + this.palette.getSerializedSize() + FriendlyByteBuf.getVarIntSize(this.storage.getSize()) + this.storage.getRaw().length * 8;
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
+   public boolean maybeHas(T var1) {
       return this.palette.maybeHas(var1);
    }
 

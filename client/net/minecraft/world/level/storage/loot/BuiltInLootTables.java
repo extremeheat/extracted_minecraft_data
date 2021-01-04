@@ -45,11 +45,6 @@ public class BuiltInLootTables {
    public static final ResourceLocation SHIPWRECK_SUPPLY;
    public static final ResourceLocation SHIPWRECK_TREASURE;
    public static final ResourceLocation PILLAGER_OUTPOST;
-   public static final ResourceLocation BASTION_TREASURE;
-   public static final ResourceLocation BASTION_OTHER;
-   public static final ResourceLocation BASTION_BRIDGE;
-   public static final ResourceLocation BASTION_HOGLIN_STABLE;
-   public static final ResourceLocation RUINED_PORTAL;
    public static final ResourceLocation SHEEP_WHITE;
    public static final ResourceLocation SHEEP_ORANGE;
    public static final ResourceLocation SHEEP_MAGENTA;
@@ -84,7 +79,6 @@ public class BuiltInLootTables {
    public static final ResourceLocation SHEPHERD_GIFT;
    public static final ResourceLocation TOOLSMITH_GIFT;
    public static final ResourceLocation WEAPONSMITH_GIFT;
-   public static final ResourceLocation PIGLIN_BARTERING;
 
    private static ResourceLocation register(String var0) {
       return register(new ResourceLocation(var0));
@@ -141,11 +135,6 @@ public class BuiltInLootTables {
       SHIPWRECK_SUPPLY = register("chests/shipwreck_supply");
       SHIPWRECK_TREASURE = register("chests/shipwreck_treasure");
       PILLAGER_OUTPOST = register("chests/pillager_outpost");
-      BASTION_TREASURE = register("chests/bastion_treasure");
-      BASTION_OTHER = register("chests/bastion_other");
-      BASTION_BRIDGE = register("chests/bastion_bridge");
-      BASTION_HOGLIN_STABLE = register("chests/bastion_hoglin_stable");
-      RUINED_PORTAL = register("chests/ruined_portal");
       SHEEP_WHITE = register("entities/sheep/white");
       SHEEP_ORANGE = register("entities/sheep/orange");
       SHEEP_MAGENTA = register("entities/sheep/magenta");
@@ -180,6 +169,5 @@ public class BuiltInLootTables {
       SHEPHERD_GIFT = register("gameplay/hero_of_the_village/shepherd_gift");
       TOOLSMITH_GIFT = register("gameplay/hero_of_the_village/toolsmith_gift");
       WEAPONSMITH_GIFT = register("gameplay/hero_of_the_village/weaponsmith_gift");
-      PIGLIN_BARTERING = register("gameplay/piglin_bartering");
    }
 }

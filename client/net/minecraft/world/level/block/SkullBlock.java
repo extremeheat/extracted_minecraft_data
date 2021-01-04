@@ -2,9 +2,8 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -17,7 +16,7 @@ public class SkullBlock extends AbstractSkullBlock {
    public static final IntegerProperty ROTATION;
    protected static final VoxelShape SHAPE;
 
-   protected SkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
+   protected SkullBlock(SkullBlock.Type var1, Block.Properties var2) {
       super(var1, var2);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 0));
    }

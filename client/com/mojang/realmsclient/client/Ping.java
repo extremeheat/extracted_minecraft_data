@@ -1,13 +1,12 @@
 package com.mojang.realmsclient.client;
 
-import com.google.common.collect.Lists;
 import com.mojang.realmsclient.dto.RegionPingResult;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import net.minecraft.Util;
 
 public class Ping {
    public static List<RegionPingResult> ping(Ping.Region... var0) {
@@ -20,7 +19,7 @@ public class Ping {
          ping(var4.endpoint);
       }
 
-      ArrayList var6 = Lists.newArrayList();
+      ArrayList var6 = new ArrayList();
       Ping.Region[] var7 = var0;
       var3 = var0.length;
 
@@ -29,7 +28,16 @@ public class Ping {
          var6.add(new RegionPingResult(var5.name, ping(var5.endpoint)));
       }
 
-      var6.sort(Comparator.comparingInt(RegionPingResult::ping));
+      Collections.sort(var6, new Comparator<RegionPingResult>() {
+         public int compare(RegionPingResult var1, RegionPingResult var2) {
+            return var1.ping() - var2.ping();
+         }
+
+         // $FF: synthetic method
+         public int compare(Object var1, Object var2) {
+            return this.compare((RegionPingResult)var1, (RegionPingResult)var2);
+         }
+      });
       return var6;
    }
 
@@ -66,7 +74,7 @@ public class Ping {
    }
 
    private static long now() {
-      return Util.getMillis();
+      return System.currentTimeMillis();
    }
 
    public static List<RegionPingResult> pingAllRegions() {

@@ -16,8 +16,8 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.GsonHelper;
 
 public abstract class MinMaxBounds<T extends Number> {
-   public static final SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(new TranslatableComponent("argument.range.empty"));
-   public static final SimpleCommandExceptionType ERROR_SWAPPED = new SimpleCommandExceptionType(new TranslatableComponent("argument.range.swapped"));
+   public static final SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(new TranslatableComponent("argument.range.empty", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_SWAPPED = new SimpleCommandExceptionType(new TranslatableComponent("argument.range.swapped", new Object[0]));
    protected final T min;
    protected final T max;
 

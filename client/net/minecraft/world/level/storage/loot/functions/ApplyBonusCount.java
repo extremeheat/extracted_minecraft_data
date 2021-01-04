@@ -31,10 +31,6 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       this.formula = var3;
    }
 
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.APPLY_BONUS;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return ImmutableSet.of(LootContextParams.TOOL);
    }
@@ -87,7 +83,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<ApplyBonusCount> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("apply_bonus"), ApplyBonusCount.class);
       }
 
       public void serialize(JsonObject var1, ApplyBonusCount var2, JsonSerializationContext var3) {

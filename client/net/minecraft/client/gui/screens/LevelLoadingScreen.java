@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
 import net.minecraft.util.Mth;
@@ -41,50 +41,50 @@ public class LevelLoadingScreen extends Screen {
    }
 
    public void removed() {
-      NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.loading.done")).getString());
+      NarratorChatListener.INSTANCE.sayNow(I18n.get("narrator.loading.done"));
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      String var5 = Mth.clamp(this.progressListener.getProgress(), 0, 100) + "%";
-      long var6 = Util.getMillis();
-      if (var6 - this.lastNarration > 2000L) {
-         this.lastNarration = var6;
-         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.loading", new Object[]{var5})).getString());
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      String var4 = Mth.clamp(this.progressListener.getProgress(), 0, 100) + "%";
+      long var5 = Util.getMillis();
+      if (var5 - this.lastNarration > 2000L) {
+         this.lastNarration = var5;
+         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.loading", new Object[]{var4})).getString());
       }
 
-      int var8 = this.width / 2;
-      int var9 = this.height / 2;
-      boolean var10 = true;
-      renderChunks(var1, this.progressListener, var8, var9 + 30, 2, 0);
+      int var7 = this.width / 2;
+      int var8 = this.height / 2;
+      boolean var9 = true;
+      renderChunks(this.progressListener, var7, var8 + 30, 2, 0);
       Font var10001 = this.font;
       this.font.getClass();
-      drawCenteredString(var1, var10001, var5, var8, var9 - 9 / 2 - 30, 16777215);
+      this.drawCenteredString(var10001, var4, var7, var8 - 9 / 2 - 30, 16777215);
    }
 
-   public static void renderChunks(PoseStack var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {
-      int var6 = var4 + var5;
-      int var7 = var1.getFullDiameter();
-      int var8 = var7 * var6 - var5;
-      int var9 = var1.getDiameter();
-      int var10 = var9 * var6 - var5;
-      int var11 = var2 - var10 / 2;
-      int var12 = var3 - var10 / 2;
-      int var13 = var8 / 2 + 1;
-      int var14 = -16772609;
-      if (var5 != 0) {
-         fill(var0, var2 - var13, var3 - var13, var2 - var13 + 1, var3 + var13, -16772609);
-         fill(var0, var2 + var13 - 1, var3 - var13, var2 + var13, var3 + var13, -16772609);
-         fill(var0, var2 - var13, var3 - var13, var2 + var13, var3 - var13 + 1, -16772609);
-         fill(var0, var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
+   public static void renderChunks(StoringChunkProgressListener var0, int var1, int var2, int var3, int var4) {
+      int var5 = var3 + var4;
+      int var6 = var0.getFullDiameter();
+      int var7 = var6 * var5 - var4;
+      int var8 = var0.getDiameter();
+      int var9 = var8 * var5 - var4;
+      int var10 = var1 - var9 / 2;
+      int var11 = var2 - var9 / 2;
+      int var12 = var7 / 2 + 1;
+      int var13 = -16772609;
+      if (var4 != 0) {
+         fill(var1 - var12, var2 - var12, var1 - var12 + 1, var2 + var12, -16772609);
+         fill(var1 + var12 - 1, var2 - var12, var1 + var12, var2 + var12, -16772609);
+         fill(var1 - var12, var2 - var12, var1 + var12, var2 - var12 + 1, -16772609);
+         fill(var1 - var12, var2 + var12 - 1, var1 + var12, var2 + var12, -16772609);
       }
 
-      for(int var15 = 0; var15 < var9; ++var15) {
-         for(int var16 = 0; var16 < var9; ++var16) {
-            ChunkStatus var17 = var1.getStatus(var15, var16);
-            int var18 = var11 + var15 * var6;
-            int var19 = var12 + var16 * var6;
-            fill(var0, var18, var19, var18 + var4, var19 + var4, COLORS.getInt(var17) | -16777216);
+      for(int var14 = 0; var14 < var8; ++var14) {
+         for(int var15 = 0; var15 < var8; ++var15) {
+            ChunkStatus var16 = var0.getStatus(var14, var15);
+            int var17 = var10 + var14 * var5;
+            int var18 = var11 + var15 * var5;
+            fill(var17, var18, var17 + var3, var18 + var3, COLORS.getInt(var16) | -16777216);
          }
       }
 

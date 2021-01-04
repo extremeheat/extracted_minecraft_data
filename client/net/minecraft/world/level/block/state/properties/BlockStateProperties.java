@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.state.properties;
 
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
-import net.minecraft.core.FrontAndTop;
 
 public class BlockStateProperties {
    public static final BooleanProperty ATTACHED = BooleanProperty.create("attached");
@@ -34,7 +33,6 @@ public class BlockStateProperties {
    public static final BooleanProperty TRIGGERED = BooleanProperty.create("triggered");
    public static final BooleanProperty UNSTABLE = BooleanProperty.create("unstable");
    public static final BooleanProperty WATERLOGGED = BooleanProperty.create("waterlogged");
-   public static final BooleanProperty VINE_END = BooleanProperty.create("vine_end");
    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS;
    public static final EnumProperty<Direction.Axis> AXIS;
    public static final BooleanProperty UP;
@@ -46,13 +44,8 @@ public class BlockStateProperties {
    public static final DirectionProperty FACING;
    public static final DirectionProperty FACING_HOPPER;
    public static final DirectionProperty HORIZONTAL_FACING;
-   public static final EnumProperty<FrontAndTop> ORIENTATION;
    public static final EnumProperty<AttachFace> ATTACH_FACE;
    public static final EnumProperty<BellAttachType> BELL_ATTACHMENT;
-   public static final EnumProperty<WallSide> EAST_WALL;
-   public static final EnumProperty<WallSide> NORTH_WALL;
-   public static final EnumProperty<WallSide> SOUTH_WALL;
-   public static final EnumProperty<WallSide> WEST_WALL;
    public static final EnumProperty<RedstoneSide> EAST_REDSTONE;
    public static final EnumProperty<RedstoneSide> NORTH_REDSTONE;
    public static final EnumProperty<RedstoneSide> SOUTH_REDSTONE;
@@ -69,7 +62,6 @@ public class BlockStateProperties {
    public static final IntegerProperty AGE_15;
    public static final IntegerProperty AGE_25;
    public static final IntegerProperty BITES;
-   public static final IntegerProperty CANDLES;
    public static final IntegerProperty DELAY;
    public static final IntegerProperty DISTANCE;
    public static final IntegerProperty EGGS;
@@ -78,7 +70,6 @@ public class BlockStateProperties {
    public static final IntegerProperty LEVEL_CAULDRON;
    public static final IntegerProperty LEVEL_COMPOSTER;
    public static final IntegerProperty LEVEL_FLOWING;
-   public static final IntegerProperty LEVEL_HONEY;
    public static final IntegerProperty LEVEL;
    public static final IntegerProperty MOISTURE;
    public static final IntegerProperty NOTE;
@@ -86,7 +77,6 @@ public class BlockStateProperties {
    public static final IntegerProperty POWER;
    public static final IntegerProperty STAGE;
    public static final IntegerProperty STABILITY_DISTANCE;
-   public static final IntegerProperty RESPAWN_ANCHOR_CHARGES;
    public static final IntegerProperty ROTATION_16;
    public static final EnumProperty<BedPart> BED_PART;
    public static final EnumProperty<ChestType> CHEST_TYPE;
@@ -113,13 +103,8 @@ public class BlockStateProperties {
          return var0 != Direction.UP;
       });
       HORIZONTAL_FACING = DirectionProperty.create("facing", (Predicate)Direction.Plane.HORIZONTAL);
-      ORIENTATION = EnumProperty.create("orientation", FrontAndTop.class);
       ATTACH_FACE = EnumProperty.create("face", AttachFace.class);
       BELL_ATTACHMENT = EnumProperty.create("attachment", BellAttachType.class);
-      EAST_WALL = EnumProperty.create("east", WallSide.class);
-      NORTH_WALL = EnumProperty.create("north", WallSide.class);
-      SOUTH_WALL = EnumProperty.create("south", WallSide.class);
-      WEST_WALL = EnumProperty.create("west", WallSide.class);
       EAST_REDSTONE = EnumProperty.create("east", RedstoneSide.class);
       NORTH_REDSTONE = EnumProperty.create("north", RedstoneSide.class);
       SOUTH_REDSTONE = EnumProperty.create("south", RedstoneSide.class);
@@ -138,16 +123,14 @@ public class BlockStateProperties {
       AGE_15 = IntegerProperty.create("age", 0, 15);
       AGE_25 = IntegerProperty.create("age", 0, 25);
       BITES = IntegerProperty.create("bites", 0, 6);
-      CANDLES = IntegerProperty.create("candles", 1, 4);
       DELAY = IntegerProperty.create("delay", 1, 4);
       DISTANCE = IntegerProperty.create("distance", 1, 7);
       EGGS = IntegerProperty.create("eggs", 1, 4);
       HATCH = IntegerProperty.create("hatch", 0, 2);
       LAYERS = IntegerProperty.create("layers", 1, 8);
-      LEVEL_CAULDRON = IntegerProperty.create("level", 1, 3);
+      LEVEL_CAULDRON = IntegerProperty.create("level", 0, 3);
       LEVEL_COMPOSTER = IntegerProperty.create("level", 0, 8);
       LEVEL_FLOWING = IntegerProperty.create("level", 1, 8);
-      LEVEL_HONEY = IntegerProperty.create("honey_level", 0, 5);
       LEVEL = IntegerProperty.create("level", 0, 15);
       MOISTURE = IntegerProperty.create("moisture", 0, 7);
       NOTE = IntegerProperty.create("note", 0, 24);
@@ -155,7 +138,6 @@ public class BlockStateProperties {
       POWER = IntegerProperty.create("power", 0, 15);
       STAGE = IntegerProperty.create("stage", 0, 1);
       STABILITY_DISTANCE = IntegerProperty.create("distance", 0, 7);
-      RESPAWN_ANCHOR_CHARGES = IntegerProperty.create("charges", 0, 4);
       ROTATION_16 = IntegerProperty.create("rotation", 0, 15);
       BED_PART = EnumProperty.create("part", BedPart.class);
       CHEST_TYPE = EnumProperty.create("type", ChestType.class);

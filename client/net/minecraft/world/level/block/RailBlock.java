@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -13,9 +12,9 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 public class RailBlock extends BaseRailBlock {
    public static final EnumProperty<RailShape> SHAPE;
 
-   protected RailBlock(BlockBehaviour.Properties var1) {
+   protected RailBlock(Block.Properties var1) {
       super(false, var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(WATERLOGGED, false));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH));
    }
 
    protected void updateState(BlockState var1, Level var2, BlockPos var3, Block var4) {
@@ -146,7 +145,7 @@ public class RailBlock extends BaseRailBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE, WATERLOGGED);
+      var1.add(SHAPE);
    }
 
    static {

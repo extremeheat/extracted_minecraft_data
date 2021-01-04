@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -14,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 public class RealmsServerPlayerList extends ValueObject {
    private static final Logger LOGGER = LogManager.getLogger();
-   private static final JsonParser JSON_PARSER = new JsonParser();
+   private static final JsonParser jsonParser = new JsonParser();
    public long serverId;
    public List<String> players;
 
@@ -29,24 +28,24 @@ public class RealmsServerPlayerList extends ValueObject {
          var1.serverId = JsonUtils.getLongOr("serverId", var0, -1L);
          String var2 = JsonUtils.getStringOr("playerList", var0, (String)null);
          if (var2 != null) {
-            JsonElement var3 = JSON_PARSER.parse(var2);
+            JsonElement var3 = jsonParser.parse(var2);
             if (var3.isJsonArray()) {
                var1.players = parsePlayers(var3.getAsJsonArray());
             } else {
-               var1.players = Lists.newArrayList();
+               var1.players = new ArrayList();
             }
          } else {
-            var1.players = Lists.newArrayList();
+            var1.players = new ArrayList();
          }
       } catch (Exception var4) {
-         LOGGER.error("Could not parse RealmsServerPlayerList: {}", var4.getMessage());
+         LOGGER.error("Could not parse RealmsServerPlayerList: " + var4.getMessage());
       }
 
       return var1;
    }
 
    private static List<String> parsePlayers(JsonArray var0) {
-      ArrayList var1 = Lists.newArrayList();
+      ArrayList var1 = new ArrayList();
       Iterator var2 = var0.iterator();
 
       while(var2.hasNext()) {

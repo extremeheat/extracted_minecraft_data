@@ -1,9 +1,8 @@
 package com.mojang.realmsclient.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Iterator;
 import java.util.List;
-import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.realms.RealmListEntry;
 import net.minecraft.realms.RealmsObjectSelectionList;
 
 public abstract class RowButton {
@@ -20,18 +19,18 @@ public abstract class RowButton {
       this.yOffset = var4;
    }
 
-   public void drawForRowAt(PoseStack var1, int var2, int var3, int var4, int var5) {
-      int var6 = var2 + this.xOffset;
-      int var7 = var3 + this.yOffset;
-      boolean var8 = false;
-      if (var4 >= var6 && var4 <= var6 + this.width && var5 >= var7 && var5 <= var7 + this.height) {
-         var8 = true;
+   public void drawForRowAt(int var1, int var2, int var3, int var4) {
+      int var5 = var1 + this.xOffset;
+      int var6 = var2 + this.yOffset;
+      boolean var7 = false;
+      if (var3 >= var5 && var3 <= var5 + this.width && var4 >= var6 && var4 <= var6 + this.height) {
+         var7 = true;
       }
 
-      this.draw(var1, var6, var7, var8);
+      this.draw(var5, var6, var7);
    }
 
-   protected abstract void draw(PoseStack var1, int var2, int var3, boolean var4);
+   protected abstract void draw(int var1, int var2, boolean var3);
 
    public int getRight() {
       return this.xOffset + this.width;
@@ -43,19 +42,19 @@ public abstract class RowButton {
 
    public abstract void onClick(int var1);
 
-   public static void drawButtonsInRow(PoseStack var0, List<RowButton> var1, RealmsObjectSelectionList<?> var2, int var3, int var4, int var5, int var6) {
-      Iterator var7 = var1.iterator();
+   public static void drawButtonsInRow(List<RowButton> var0, RealmsObjectSelectionList var1, int var2, int var3, int var4, int var5) {
+      Iterator var6 = var0.iterator();
 
-      while(var7.hasNext()) {
-         RowButton var8 = (RowButton)var7.next();
-         if (var2.getRowWidth() > var8.getRight()) {
-            var8.drawForRowAt(var0, var3, var4, var5, var6);
+      while(var6.hasNext()) {
+         RowButton var7 = (RowButton)var6.next();
+         if (var1.getRowWidth() > var7.getRight()) {
+            var7.drawForRowAt(var2, var3, var4, var5);
          }
       }
 
    }
 
-   public static void rowButtonMouseClicked(RealmsObjectSelectionList<?> var0, ObjectSelectionList.Entry<?> var1, List<RowButton> var2, int var3, double var4, double var6) {
+   public static void rowButtonMouseClicked(RealmsObjectSelectionList var0, RealmListEntry var1, List<RowButton> var2, int var3, double var4, double var6) {
       if (var3 == 0) {
          int var8 = var0.children().indexOf(var1);
          if (var8 > -1) {

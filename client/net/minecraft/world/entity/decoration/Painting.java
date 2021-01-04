@@ -15,7 +15,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -71,15 +70,12 @@ public class Painting extends HangingEntity {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       var1.putString("Motive", Registry.MOTIVE.getKey(this.motive).toString());
-      var1.putByte("Facing", (byte)this.direction.get2DDataValue());
       super.addAdditionalSaveData(var1);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       this.motive = (Motive)Registry.MOTIVE.get(ResourceLocation.tryParse(var1.getString("Motive")));
-      this.direction = Direction.from2DDataValue(var1.getByte("Facing"));
       super.readAdditionalSaveData(var1);
-      this.setDirection(this.direction);
    }
 
    public int getWidth() {
@@ -95,7 +91,7 @@ public class Painting extends HangingEntity {
          this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
          if (var1 instanceof Player) {
             Player var2 = (Player)var1;
-            if (var2.getAbilities().instabuild) {
+            if (var2.abilities.instabuild) {
                return;
             }
          }
@@ -113,15 +109,11 @@ public class Painting extends HangingEntity {
    }
 
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
-      BlockPos var11 = this.pos.offset(var1 - this.getX(), var3 - this.getY(), var5 - this.getZ());
+      BlockPos var11 = this.pos.offset(var1 - this.x, var3 - this.y, var5 - this.z);
       this.setPos((double)var11.getX(), (double)var11.getY(), (double)var11.getZ());
    }
 
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddPaintingPacket(this);
-   }
-
-   public ItemStack getPickResult() {
-      return new ItemStack(Items.PAINTING);
    }
 }

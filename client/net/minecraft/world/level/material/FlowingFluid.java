@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -48,56 +49,79 @@ public abstract class FlowingFluid extends Fluid {
    public Vec3 getFlow(BlockGetter var1, BlockPos var2, FluidState var3) {
       double var4 = 0.0D;
       double var6 = 0.0D;
-      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
-      Iterator var9 = Direction.Plane.HORIZONTAL.iterator();
+      BlockPos.PooledMutableBlockPos var8 = BlockPos.PooledMutableBlockPos.acquire();
+      Throwable var9 = null;
 
-      while(var9.hasNext()) {
-         Direction var10 = (Direction)var9.next();
-         var8.setWithOffset(var2, var10);
-         FluidState var11 = var1.getFluidState(var8);
-         if (this.affectsFlow(var11)) {
-            float var12 = var11.getOwnHeight();
-            float var13 = 0.0F;
-            if (var12 == 0.0F) {
-               if (!var1.getBlockState(var8).getMaterial().blocksMotion()) {
-                  BlockPos var14 = var8.below();
-                  FluidState var15 = var1.getFluidState(var14);
-                  if (this.affectsFlow(var15)) {
-                     var12 = var15.getOwnHeight();
-                     if (var12 > 0.0F) {
-                        var13 = var3.getOwnHeight() - (var12 - 0.8888889F);
+      try {
+         Iterator var10 = Direction.Plane.HORIZONTAL.iterator();
+
+         while(var10.hasNext()) {
+            Direction var11 = (Direction)var10.next();
+            var8.set((Vec3i)var2).move(var11);
+            FluidState var12 = var1.getFluidState(var8);
+            if (this.affectsFlow(var12)) {
+               float var13 = var12.getOwnHeight();
+               float var14 = 0.0F;
+               if (var13 == 0.0F) {
+                  if (!var1.getBlockState(var8).getMaterial().blocksMotion()) {
+                     BlockPos var15 = var8.below();
+                     FluidState var16 = var1.getFluidState(var15);
+                     if (this.affectsFlow(var16)) {
+                        var13 = var16.getOwnHeight();
+                        if (var13 > 0.0F) {
+                           var14 = var3.getOwnHeight() - (var13 - 0.8888889F);
+                        }
                      }
                   }
+               } else if (var13 > 0.0F) {
+                  var14 = var3.getOwnHeight() - var13;
                }
-            } else if (var12 > 0.0F) {
-               var13 = var3.getOwnHeight() - var12;
-            }
 
-            if (var13 != 0.0F) {
-               var4 += (double)((float)var10.getStepX() * var13);
-               var6 += (double)((float)var10.getStepZ() * var13);
+               if (var14 != 0.0F) {
+                  var4 += (double)((float)var11.getStepX() * var14);
+                  var6 += (double)((float)var11.getStepZ() * var14);
+               }
             }
          }
-      }
 
-      Vec3 var16 = new Vec3(var4, 0.0D, var6);
-      if ((Boolean)var3.getValue(FALLING)) {
-         Iterator var17 = Direction.Plane.HORIZONTAL.iterator();
+         Vec3 var26 = new Vec3(var4, 0.0D, var6);
+         if ((Boolean)var3.getValue(FALLING)) {
+            label164: {
+               Iterator var27 = Direction.Plane.HORIZONTAL.iterator();
 
-         Direction var18;
-         do {
-            if (!var17.hasNext()) {
-               return var16.normalize();
+               Direction var29;
+               do {
+                  if (!var27.hasNext()) {
+                     break label164;
+                  }
+
+                  var29 = (Direction)var27.next();
+                  var8.set((Vec3i)var2).move(var29);
+               } while(!this.isSolidFace(var1, var8, var29) && !this.isSolidFace(var1, var8.above(), var29));
+
+               var26 = var26.normalize().add(0.0D, -6.0D, 0.0D);
             }
+         }
 
-            var18 = (Direction)var17.next();
-            var8.setWithOffset(var2, var18);
-         } while(!this.isSolidFace(var1, var8, var18) && !this.isSolidFace(var1, var8.above(), var18));
+         Vec3 var28 = var26.normalize();
+         return var28;
+      } catch (Throwable var24) {
+         var9 = var24;
+         throw var24;
+      } finally {
+         if (var8 != null) {
+            if (var9 != null) {
+               try {
+                  var8.close();
+               } catch (Throwable var23) {
+                  var9.addSuppressed(var23);
+               }
+            } else {
+               var8.close();
+            }
+         }
 
-         var16 = var16.normalize().add(0.0D, -6.0D, 0.0D);
       }
-
-      return var16.normalize();
    }
 
    private boolean affectsFlow(FluidState var1) {
@@ -385,7 +409,7 @@ public abstract class FlowingFluid extends Fluid {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer) {
          return ((LiquidBlockContainer)var5).canPlaceLiquid(var1, var2, var3, var4);
-      } else if (!(var5 instanceof DoorBlock) && !var3.is(BlockTags.SIGNS) && !var3.is(Blocks.LADDER) && !var3.is(Blocks.SUGAR_CANE) && !var3.is(Blocks.BUBBLE_COLUMN)) {
+      } else if (!(var5 instanceof DoorBlock) && !var5.is(BlockTags.SIGNS) && var5 != Blocks.LADDER && var5 != Blocks.SUGAR_CANE && var5 != Blocks.BUBBLE_COLUMN) {
          Material var6 = var3.getMaterial();
          if (var6 != Material.PORTAL && var6 != Material.STRUCTURAL_AIR && var6 != Material.WATER_PLANT && var6 != Material.REPLACEABLE_WATER_PLANT) {
             return !var6.blocksMotion();

@@ -16,14 +16,10 @@ public class ClientboundBlockUpdatePacket implements Packet<ClientGamePacketList
       super();
    }
 
-   public ClientboundBlockUpdatePacket(BlockPos var1, BlockState var2) {
-      super();
-      this.pos = var1;
-      this.blockState = var2;
-   }
-
    public ClientboundBlockUpdatePacket(BlockGetter var1, BlockPos var2) {
-      this(var2, var1.getBlockState(var2));
+      super();
+      this.pos = var2;
+      this.blockState = var1.getBlockState(var2);
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {

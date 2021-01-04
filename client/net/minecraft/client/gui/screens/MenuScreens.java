@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.client.gui.screens.inventory.BeaconScreen;
 import net.minecraft.client.gui.screens.inventory.BlastFurnaceScreen;
 import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
-import net.minecraft.client.gui.screens.inventory.CartographyTableScreen;
+import net.minecraft.client.gui.screens.inventory.CartographyScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.DispenserScreen;
@@ -22,7 +22,6 @@ import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
 import net.minecraft.client.gui.screens.inventory.ShulkerBoxScreen;
-import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.client.gui.screens.inventory.SmokerScreen;
 import net.minecraft.client.gui.screens.inventory.StonecutterScreen;
 import net.minecraft.core.Registry;
@@ -98,15 +97,14 @@ public class MenuScreens {
       register(MenuType.LOOM, LoomScreen::new);
       register(MenuType.MERCHANT, MerchantScreen::new);
       register(MenuType.SHULKER_BOX, ShulkerBoxScreen::new);
-      register(MenuType.SMITHING, SmithingScreen::new);
       register(MenuType.SMOKER, SmokerScreen::new);
-      register(MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
+      register(MenuType.CARTOGRAPHY, CartographyScreen::new);
       register(MenuType.STONECUTTER, StonecutterScreen::new);
    }
 
    interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
       default void fromPacket(Component var1, MenuType<T> var2, Minecraft var3, int var4) {
-         Screen var5 = this.create(var2.create(var4, var3.player.getInventory()), var3.player.getInventory(), var1);
+         Screen var5 = this.create(var2.create(var4, var3.player.inventory), var3.player.inventory, var1);
          var3.player.containerMenu = ((MenuAccess)var5).getMenu();
          var3.setScreen(var5);
       }

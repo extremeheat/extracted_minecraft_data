@@ -3,7 +3,6 @@ package net.minecraft.client.gui.spectator.categories;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -23,8 +22,6 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    private static final Ordering<PlayerInfo> PROFILE_ORDER = Ordering.from((var0, var1) -> {
       return ComparisonChain.start().compare(var0.getProfile().getId(), var1.getProfile().getId()).result();
    });
-   private static final Component TELEPORT_TEXT = new TranslatableComponent("spectatorMenu.teleport");
-   private static final Component TELEPORT_PROMPT = new TranslatableComponent("spectatorMenu.teleport.prompt");
    private final List<SpectatorMenuItem> items;
 
    public TeleportToPlayerMenuCategory() {
@@ -50,7 +47,7 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    }
 
    public Component getPrompt() {
-      return TELEPORT_PROMPT;
+      return new TranslatableComponent("spectatorMenu.teleport.prompt", new Object[0]);
    }
 
    public void selectItem(SpectatorMenu var1) {
@@ -58,12 +55,12 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    }
 
    public Component getName() {
-      return TELEPORT_TEXT;
+      return new TranslatableComponent("spectatorMenu.teleport", new Object[0]);
    }
 
-   public void renderIcon(PoseStack var1, float var2, int var3) {
+   public void renderIcon(float var1, int var2) {
       Minecraft.getInstance().getTextureManager().bind(SpectatorGui.SPECTATOR_LOCATION);
-      GuiComponent.blit(var1, 0, 0, 0.0F, 0.0F, 16, 16, 256, 256);
+      GuiComponent.blit(0, 0, 0.0F, 0.0F, 16, 16, 256, 256);
    }
 
    public boolean isEnabled() {

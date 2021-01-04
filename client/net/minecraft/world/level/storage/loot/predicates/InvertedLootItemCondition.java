@@ -4,10 +4,14 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
+import java.util.function.Function;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 
 public class InvertedLootItemCondition implements LootItemCondition {
    private final LootItemCondition term;
@@ -15,10 +19,6 @@ public class InvertedLootItemCondition implements LootItemCondition {
    private InvertedLootItemCondition(LootItemCondition var1) {
       super();
       this.term = var1;
-   }
-
-   public LootItemConditionType getType() {
-      return LootItemConditions.INVERTED;
    }
 
    public final boolean test(LootContext var1) {
@@ -29,9 +29,9 @@ public class InvertedLootItemCondition implements LootItemCondition {
       return this.term.getReferencedContextParams();
    }
 
-   public void validate(ValidationContext var1) {
-      LootItemCondition.super.validate(var1);
-      this.term.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      LootItemCondition.super.validate(var1, var2, var3, var4);
+      this.term.validate(var1, var2, var3, var4);
    }
 
    public static LootItemCondition.Builder invert(LootItemCondition.Builder var0) {
@@ -51,9 +51,9 @@ public class InvertedLootItemCondition implements LootItemCondition {
       this(var1);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<InvertedLootItemCondition> {
+   public static class Serializer extends LootItemCondition.Serializer<InvertedLootItemCondition> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("inverted"), InvertedLootItemCondition.class);
       }
 
       public void serialize(JsonObject var1, InvertedLootItemCondition var2, JsonSerializationContext var3) {
@@ -66,7 +66,7 @@ public class InvertedLootItemCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

@@ -1,47 +1,43 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.EvokerFangsModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.projectile.EvokerFangs;
 
 public class EvokerFangsRenderer extends EntityRenderer<EvokerFangs> {
    private static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation("textures/entity/illager/evoker_fangs.png");
-   private final EvokerFangsModel<EvokerFangs> model;
+   private final EvokerFangsModel<EvokerFangs> model = new EvokerFangsModel();
 
-   public EvokerFangsRenderer(EntityRendererProvider.Context var1) {
+   public EvokerFangsRenderer(EntityRenderDispatcher var1) {
       super(var1);
-      this.model = new EvokerFangsModel(var1.getLayer(ModelLayers.EVOKER_FANGS));
    }
 
-   public void render(EvokerFangs var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      float var7 = var1.getAnimationProgress(var3);
-      if (var7 != 0.0F) {
-         float var8 = 2.0F;
-         if (var7 > 0.9F) {
-            var8 = (float)((double)var8 * ((1.0D - (double)var7) / 0.10000000149011612D));
+   public void render(EvokerFangs var1, double var2, double var4, double var6, float var8, float var9) {
+      float var10 = var1.getAnimationProgress(var9);
+      if (var10 != 0.0F) {
+         float var11 = 2.0F;
+         if (var10 > 0.9F) {
+            var11 = (float)((double)var11 * ((1.0D - (double)var10) / 0.10000000149011612D));
          }
 
-         var4.pushPose();
-         var4.mulPose(Vector3f.YP.rotationDegrees(90.0F - var1.yRot));
-         var4.scale(-var8, -var8, var8);
-         float var9 = 0.03125F;
-         var4.translate(0.0D, -0.6259999871253967D, 0.0D);
-         var4.scale(0.5F, 0.5F, 0.5F);
-         this.model.setupAnim(var1, var7, 0.0F, 0.0F, var1.yRot, var1.xRot);
-         VertexConsumer var10 = var5.getBuffer(this.model.renderType(TEXTURE_LOCATION));
-         this.model.renderToBuffer(var4, var10, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-         var4.popPose();
-         super.render(var1, var2, var3, var4, var5, var6);
+         GlStateManager.pushMatrix();
+         GlStateManager.disableCull();
+         GlStateManager.enableAlphaTest();
+         this.bindTexture(var1);
+         GlStateManager.translatef((float)var2, (float)var4, (float)var6);
+         GlStateManager.rotatef(90.0F - var1.yRot, 0.0F, 1.0F, 0.0F);
+         GlStateManager.scalef(-var11, -var11, var11);
+         float var12 = 0.03125F;
+         GlStateManager.translatef(0.0F, -0.626F, 0.0F);
+         this.model.render(var1, var10, 0.0F, 0.0F, var1.yRot, var1.xRot, 0.03125F);
+         GlStateManager.popMatrix();
+         GlStateManager.enableCull();
+         super.render(var1, var2, var4, var6, var8, var9);
       }
    }
 
-   public ResourceLocation getTextureLocation(EvokerFangs var1) {
+   protected ResourceLocation getTextureLocation(EvokerFangs var1) {
       return TEXTURE_LOCATION;
    }
 }

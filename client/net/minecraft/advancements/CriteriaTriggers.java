@@ -3,7 +3,6 @@ package net.minecraft.advancements;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.critereon.BeeNestDestroyedTrigger;
 import net.minecraft.advancements.critereon.BredAnimalsTrigger;
 import net.minecraft.advancements.critereon.BrewedPotionTrigger;
 import net.minecraft.advancements.critereon.ChangeDimensionTrigger;
@@ -20,23 +19,17 @@ import net.minecraft.advancements.critereon.FishingRodHookedTrigger;
 import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemDurabilityTrigger;
-import net.minecraft.advancements.critereon.ItemPickedUpByEntityTrigger;
-import net.minecraft.advancements.critereon.ItemUsedOnBlockTrigger;
 import net.minecraft.advancements.critereon.KilledByCrossbowTrigger;
 import net.minecraft.advancements.critereon.KilledTrigger;
 import net.minecraft.advancements.critereon.LevitationTrigger;
 import net.minecraft.advancements.critereon.LocationTrigger;
-import net.minecraft.advancements.critereon.LootTableTrigger;
 import net.minecraft.advancements.critereon.NetherTravelTrigger;
 import net.minecraft.advancements.critereon.PlacedBlockTrigger;
 import net.minecraft.advancements.critereon.PlayerHurtEntityTrigger;
-import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.advancements.critereon.ShotCrossbowTrigger;
-import net.minecraft.advancements.critereon.SlideDownBlockTrigger;
 import net.minecraft.advancements.critereon.SummonedEntityTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
-import net.minecraft.advancements.critereon.TargetBlockTrigger;
 import net.minecraft.advancements.critereon.TickTrigger;
 import net.minecraft.advancements.critereon.TradeTrigger;
 import net.minecraft.advancements.critereon.UsedEnderEyeTrigger;
@@ -80,13 +73,6 @@ public class CriteriaTriggers {
    public static final KilledByCrossbowTrigger KILLED_BY_CROSSBOW = (KilledByCrossbowTrigger)register(new KilledByCrossbowTrigger());
    public static final LocationTrigger RAID_WIN = (LocationTrigger)register(new LocationTrigger(new ResourceLocation("hero_of_the_village")));
    public static final LocationTrigger BAD_OMEN = (LocationTrigger)register(new LocationTrigger(new ResourceLocation("voluntary_exile")));
-   public static final SlideDownBlockTrigger HONEY_BLOCK_SLIDE = (SlideDownBlockTrigger)register(new SlideDownBlockTrigger());
-   public static final BeeNestDestroyedTrigger BEE_NEST_DESTROYED = (BeeNestDestroyedTrigger)register(new BeeNestDestroyedTrigger());
-   public static final TargetBlockTrigger TARGET_BLOCK_HIT = (TargetBlockTrigger)register(new TargetBlockTrigger());
-   public static final ItemUsedOnBlockTrigger ITEM_USED_ON_BLOCK = (ItemUsedOnBlockTrigger)register(new ItemUsedOnBlockTrigger());
-   public static final LootTableTrigger GENERATE_LOOT = (LootTableTrigger)register(new LootTableTrigger());
-   public static final ItemPickedUpByEntityTrigger ITEM_PICKED_UP_BY_ENTITY = (ItemPickedUpByEntityTrigger)register(new ItemPickedUpByEntityTrigger());
-   public static final PlayerInteractTrigger PLAYER_INTERACTED_WITH_ENTITY = (PlayerInteractTrigger)register(new PlayerInteractTrigger());
 
    private static <T extends CriterionTrigger<?>> T register(T var0) {
       if (CRITERIA.containsKey(var0.getId())) {

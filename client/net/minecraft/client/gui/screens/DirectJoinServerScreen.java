@@ -1,28 +1,23 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 
 public class DirectJoinServerScreen extends Screen {
-   private static final Component ENTER_IP_LABEL = new TranslatableComponent("addServer.enterIp");
    private Button selectButton;
    private final ServerData serverData;
    private EditBox ipEdit;
    private final BooleanConsumer callback;
-   private final Screen lastScreen;
 
-   public DirectJoinServerScreen(Screen var1, BooleanConsumer var2, ServerData var3) {
-      super(new TranslatableComponent("selectServer.direct"));
-      this.lastScreen = var1;
-      this.serverData = var3;
-      this.callback = var2;
+   public DirectJoinServerScreen(BooleanConsumer var1, ServerData var2) {
+      super(new TranslatableComponent("selectServer.direct", new Object[0]));
+      this.serverData = var2;
+      this.callback = var1;
    }
 
    public void tick() {
@@ -40,13 +35,13 @@ public class DirectJoinServerScreen extends Screen {
 
    protected void init() {
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.selectButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20, new TranslatableComponent("selectServer.select"), (var1) -> {
+      this.selectButton = (Button)this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20, I18n.get("selectServer.select"), (var1) -> {
          this.onSelect();
       }));
-      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, I18n.get("gui.cancel"), (var1) -> {
          this.callback.accept(false);
       }));
-      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, new TranslatableComponent("addServer.enterIp"));
+      this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, I18n.get("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setFocus(true);
       this.ipEdit.setValue(this.minecraft.options.lastMpIp);
@@ -69,10 +64,6 @@ public class DirectJoinServerScreen extends Screen {
       this.callback.accept(true);
    }
 
-   public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
-   }
-
    public void removed() {
       this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
       this.minecraft.options.lastMpIp = this.ipEdit.getValue();
@@ -80,15 +71,14 @@ public class DirectJoinServerScreen extends Screen {
    }
 
    private void updateSelectButtonStatus() {
-      String var1 = this.ipEdit.getValue();
-      this.selectButton.active = !var1.isEmpty() && var1.split(":").length > 0 && var1.indexOf(32) == -1;
+      this.selectButton.active = !this.ipEdit.getValue().isEmpty() && this.ipEdit.getValue().split(":").length > 0;
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
-      drawString(var1, this.font, ENTER_IP_LABEL, this.width / 2 - 100, 100, 10526880);
-      this.ipEdit.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 20, 16777215);
+      this.drawString(this.font, I18n.get("addServer.enterIp"), this.width / 2 - 100, 100, 10526880);
+      this.ipEdit.render(var1, var2, var3);
+      super.render(var1, var2, var3);
    }
 }

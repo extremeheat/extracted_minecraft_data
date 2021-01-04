@@ -1,27 +1,28 @@
 package net.minecraft.world.level.levelgen.feature.structures;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.core.Registry;
+import net.minecraft.util.Deserializer;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final Codec<ListPoolElement> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((var0x) -> {
-         return var0x.elements;
-      }), projectionCodec()).apply(var0, ListPoolElement::new);
-   });
    private final List<StructurePoolElement> elements;
+
+   @Deprecated
+   public ListPoolElement(List<StructurePoolElement> var1) {
+      this(var1, StructureTemplatePool.Projection.RIGID);
+   }
 
    public ListPoolElement(List<StructurePoolElement> var1, StructureTemplatePool.Projection var2) {
       super(var2);
@@ -30,6 +31,18 @@ public class ListPoolElement extends StructurePoolElement {
       } else {
          this.elements = var1;
          this.setProjectionOnEachElement(var2);
+      }
+   }
+
+   public ListPoolElement(Dynamic<?> var1) {
+      super(var1);
+      List var2 = var1.get("elements").asList((var0) -> {
+         return (StructurePoolElement)Deserializer.deserialize(var0, Registry.STRUCTURE_POOL_ELEMENT, "element_type", EmptyPoolElement.INSTANCE);
+      });
+      if (var2.isEmpty()) {
+         throw new IllegalArgumentException("Elements are empty");
+      } else {
+         this.elements = var2;
       }
    }
 
@@ -50,22 +63,22 @@ public class ListPoolElement extends StructurePoolElement {
       return var4;
    }
 
-   public boolean place(StructureManager var1, WorldGenLevel var2, StructureFeatureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, Random var9, boolean var10) {
-      Iterator var11 = this.elements.iterator();
+   public boolean place(StructureManager var1, LevelAccessor var2, BlockPos var3, Rotation var4, BoundingBox var5, Random var6) {
+      Iterator var7 = this.elements.iterator();
 
-      StructurePoolElement var12;
+      StructurePoolElement var8;
       do {
-         if (!var11.hasNext()) {
+         if (!var7.hasNext()) {
             return true;
          }
 
-         var12 = (StructurePoolElement)var11.next();
-      } while(var12.place(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10));
+         var8 = (StructurePoolElement)var7.next();
+      } while(var8.place(var1, var2, var3, var4, var5, var6));
 
       return false;
    }
 
-   public StructurePoolElementType<?> getType() {
+   public StructurePoolElementType getType() {
       return StructurePoolElementType.LIST;
    }
 
@@ -73,6 +86,13 @@ public class ListPoolElement extends StructurePoolElement {
       super.setProjection(var1);
       this.setProjectionOnEachElement(var1);
       return this;
+   }
+
+   public <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      Object var2 = var1.createList(this.elements.stream().map((var1x) -> {
+         return var1x.serialize(var1).getValue();
+      }));
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("elements"), var2)));
    }
 
    public String toString() {

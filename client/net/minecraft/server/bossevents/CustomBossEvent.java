@@ -74,7 +74,7 @@ public class CustomBossEvent extends ServerBossEvent {
 
    public final Component getDisplayName() {
       return ComponentUtils.wrapInSquareBrackets(this.getName()).withStyle((var1) -> {
-         return var1.withColor(this.getColor().getFormatting()).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(this.getTextId().toString()))).withInsertion(this.getTextId().toString());
+         var1.setColor(this.getColor().getFormatting()).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(this.getTextId().toString()))).setInsertion(this.getTextId().toString());
       });
    }
 
@@ -164,7 +164,7 @@ public class CustomBossEvent extends ServerBossEvent {
 
       while(var3.hasNext()) {
          UUID var4 = (UUID)var3.next();
-         var2.add(NbtUtils.createUUID(var4));
+         var2.add(NbtUtils.createUUIDTag(var4));
       }
 
       var1.put("Players", var2);
@@ -181,10 +181,10 @@ public class CustomBossEvent extends ServerBossEvent {
       var2.setDarkenScreen(var0.getBoolean("DarkenScreen"));
       var2.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
       var2.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
-      ListTag var3 = var0.getList("Players", 11);
+      ListTag var3 = var0.getList("Players", 10);
 
       for(int var4 = 0; var4 < var3.size(); ++var4) {
-         var2.addOfflinePlayer(NbtUtils.loadUUID(var3.get(var4)));
+         var2.addOfflinePlayer(NbtUtils.loadUUIDTag(var3.getCompound(var4)));
       }
 
       return var2;

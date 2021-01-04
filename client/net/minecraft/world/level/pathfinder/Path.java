@@ -17,7 +17,7 @@ public class Path {
    private Node[] openSet = new Node[0];
    private Node[] closedSet = new Node[0];
    private Set<Target> targetNodes;
-   private int nextNodeIndex;
+   private int index;
    private final BlockPos target;
    private final float distToTarget;
    private final boolean reached;
@@ -30,51 +30,51 @@ public class Path {
       this.reached = var3;
    }
 
-   public void advance() {
-      ++this.nextNodeIndex;
-   }
-
-   public boolean notStarted() {
-      return this.nextNodeIndex <= 0;
+   public void next() {
+      ++this.index;
    }
 
    public boolean isDone() {
-      return this.nextNodeIndex >= this.nodes.size();
+      return this.index >= this.nodes.size();
    }
 
    @Nullable
-   public Node getEndNode() {
+   public Node last() {
       return !this.nodes.isEmpty() ? (Node)this.nodes.get(this.nodes.size() - 1) : null;
    }
 
-   public Node getNode(int var1) {
+   public Node get(int var1) {
       return (Node)this.nodes.get(var1);
    }
 
-   public void truncateNodes(int var1) {
+   public List<Node> getNodes() {
+      return this.nodes;
+   }
+
+   public void truncate(int var1) {
       if (this.nodes.size() > var1) {
          this.nodes.subList(var1, this.nodes.size()).clear();
       }
 
    }
 
-   public void replaceNode(int var1, Node var2) {
+   public void set(int var1, Node var2) {
       this.nodes.set(var1, var2);
    }
 
-   public int getNodeCount() {
+   public int getSize() {
       return this.nodes.size();
    }
 
-   public int getNextNodeIndex() {
-      return this.nextNodeIndex;
+   public int getIndex() {
+      return this.index;
    }
 
-   public void setNextNodeIndex(int var1) {
-      this.nextNodeIndex = var1;
+   public void setIndex(int var1) {
+      this.index = var1;
    }
 
-   public Vec3 getEntityPosAtNode(Entity var1, int var2) {
+   public Vec3 getPos(Entity var1, int var2) {
       Node var3 = (Node)this.nodes.get(var2);
       double var4 = (double)var3.x + (double)((int)(var1.getBbWidth() + 1.0F)) * 0.5D;
       double var6 = (double)var3.y;
@@ -82,25 +82,13 @@ public class Path {
       return new Vec3(var4, var6, var8);
    }
 
-   public BlockPos getNodePos(int var1) {
-      return ((Node)this.nodes.get(var1)).asBlockPos();
+   public Vec3 currentPos(Entity var1) {
+      return this.getPos(var1, this.index);
    }
 
-   public Vec3 getNextEntityPos(Entity var1) {
-      return this.getEntityPosAtNode(var1, this.nextNodeIndex);
-   }
-
-   public BlockPos getNextNodePos() {
-      return ((Node)this.nodes.get(this.nextNodeIndex)).asBlockPos();
-   }
-
-   public Node getNextNode() {
-      return (Node)this.nodes.get(this.nextNodeIndex);
-   }
-
-   @Nullable
-   public Node getPreviousNode() {
-      return this.nextNodeIndex > 0 ? (Node)this.nodes.get(this.nextNodeIndex - 1) : null;
+   public Vec3 currentPos() {
+      Node var1 = (Node)this.nodes.get(this.index);
+      return new Vec3((double)var1.x, (double)var1.y, (double)var1.z);
    }
 
    public boolean sameAs(@Nullable Path var1) {
@@ -167,7 +155,7 @@ public class Path {
       var11.openSet = var13;
       var11.closedSet = var14;
       var11.targetNodes = var4;
-      var11.nextNodeIndex = var2;
+      var11.index = var2;
       return var11;
    }
 

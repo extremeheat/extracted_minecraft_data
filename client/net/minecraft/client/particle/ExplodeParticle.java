@@ -1,12 +1,12 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class ExplodeParticle extends TextureSheetParticle {
    private final SpriteSet sprites;
 
-   protected ExplodeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
+   protected ExplodeParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6);
       this.sprites = var14;
       this.xd = var8 + (Math.random() * 2.0D - 1.0D) * 0.05000000074505806D;
@@ -54,7 +54,7 @@ public class ExplodeParticle extends TextureSheetParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new ExplodeParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
       }
    }

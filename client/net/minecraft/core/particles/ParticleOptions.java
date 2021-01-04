@@ -11,7 +11,6 @@ public interface ParticleOptions {
 
    String writeToString();
 
-   @Deprecated
    public interface Deserializer<T extends ParticleOptions> {
       T fromCommand(ParticleType<T> var1, StringReader var2) throws CommandSyntaxException;
 

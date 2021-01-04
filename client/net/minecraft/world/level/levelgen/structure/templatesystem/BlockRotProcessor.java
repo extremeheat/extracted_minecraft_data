@@ -1,13 +1,14 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.Codec;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 
 public class BlockRotProcessor extends StructureProcessor {
-   public static final Codec<BlockRotProcessor> CODEC;
    private final float integrity;
 
    public BlockRotProcessor(float var1) {
@@ -15,19 +16,21 @@ public class BlockRotProcessor extends StructureProcessor {
       this.integrity = var1;
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      Random var7 = var6.getRandom(var5.pos);
-      return this.integrity < 1.0F && var7.nextFloat() > this.integrity ? null : var5;
+   public BlockRotProcessor(Dynamic<?> var1) {
+      this(var1.get("integrity").asFloat(1.0F));
    }
 
-   protected StructureProcessorType<?> getType() {
+   @Nullable
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, StructureTemplate.StructureBlockInfo var3, StructureTemplate.StructureBlockInfo var4, StructurePlaceSettings var5) {
+      Random var6 = var5.getRandom(var4.pos);
+      return this.integrity < 1.0F && var6.nextFloat() > this.integrity ? null : var4;
+   }
+
+   protected StructureProcessorType getType() {
       return StructureProcessorType.BLOCK_ROT;
    }
 
-   static {
-      CODEC = Codec.FLOAT.fieldOf("integrity").orElse(1.0F).xmap(BlockRotProcessor::new, (var0) -> {
-         return var0.integrity;
-      }).codec();
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("integrity"), var1.createFloat(this.integrity))));
    }
 }

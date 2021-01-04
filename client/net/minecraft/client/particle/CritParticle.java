@@ -1,11 +1,11 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 
 public class CritParticle extends TextureSheetParticle {
-   private CritParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   private CritParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
       super(var1, var2, var4, var6, 0.0D, 0.0D, 0.0D);
       this.xd *= 0.10000000149011612D;
       this.yd *= 0.10000000149011612D;
@@ -54,7 +54,7 @@ public class CritParticle extends TextureSheetParticle {
    }
 
    // $FF: synthetic method
-   CritParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, Object var14) {
+   CritParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, Object var14) {
       this(var1, var2, var4, var6, var8, var10, var12);
    }
 
@@ -66,7 +66,7 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0D, var13);
          var15.setLifetime(20);
          var15.pickSprite(this.sprite);
@@ -82,7 +82,7 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.rCol *= 0.3F;
          var15.gCol *= 0.8F;
@@ -99,7 +99,7 @@ public class CritParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;

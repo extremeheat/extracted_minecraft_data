@@ -6,7 +6,6 @@ import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.Llama;
-import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class LlamaFollowCaravanGoal extends Goal {
@@ -109,13 +108,11 @@ public class LlamaFollowCaravanGoal extends Goal {
 
    public void tick() {
       if (this.llama.inCaravan()) {
-         if (!(this.llama.getLeashHolder() instanceof LeashFenceKnotEntity)) {
-            Llama var1 = this.llama.getCaravanHead();
-            double var2 = (double)this.llama.distanceTo(var1);
-            float var4 = 2.0F;
-            Vec3 var5 = (new Vec3(var1.getX() - this.llama.getX(), var1.getY() - this.llama.getY(), var1.getZ() - this.llama.getZ())).normalize().scale(Math.max(var2 - 2.0D, 0.0D));
-            this.llama.getNavigation().moveTo(this.llama.getX() + var5.x, this.llama.getY() + var5.y, this.llama.getZ() + var5.z, this.speedModifier);
-         }
+         Llama var1 = this.llama.getCaravanHead();
+         double var2 = (double)this.llama.distanceTo(var1);
+         float var4 = 2.0F;
+         Vec3 var5 = (new Vec3(var1.x - this.llama.x, var1.y - this.llama.y, var1.z - this.llama.z)).normalize().scale(Math.max(var2 - 2.0D, 0.0D));
+         this.llama.getNavigation().moveTo(this.llama.x + var5.x, this.llama.y + var5.y, this.llama.z + var5.z, this.speedModifier);
       }
    }
 

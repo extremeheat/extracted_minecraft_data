@@ -13,8 +13,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -47,19 +45,22 @@ public class Silverfish extends Monster {
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return 0.1D;
    }
 
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.13F;
+      return 0.1F;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 8.0D).add(Attributes.MOVEMENT_SPEED, 0.25D).add(Attributes.ATTACK_DAMAGE, 1.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(8.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D);
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -135,8 +136,8 @@ public class Silverfish extends Monster {
          } else {
             Random var1 = this.mob.getRandom();
             if (this.mob.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(10) == 0) {
-               this.selectedDirection = Direction.getRandom(var1);
-               BlockPos var2 = (new BlockPos(this.mob.getX(), this.mob.getY() + 0.5D, this.mob.getZ())).relative(this.selectedDirection);
+               this.selectedDirection = Direction.getRandomFace(var1);
+               BlockPos var2 = (new BlockPos(this.mob.x, this.mob.y + 0.5D, this.mob.z)).relative(this.selectedDirection);
                BlockState var3 = this.mob.level.getBlockState(var2);
                if (InfestedBlock.isCompatibleHostBlock(var3)) {
                   this.doMerge = true;
@@ -158,12 +159,12 @@ public class Silverfish extends Monster {
             super.start();
          } else {
             Level var1 = this.mob.level;
-            BlockPos var2 = (new BlockPos(this.mob.getX(), this.mob.getY() + 0.5D, this.mob.getZ())).relative(this.selectedDirection);
+            BlockPos var2 = (new BlockPos(this.mob.x, this.mob.y + 0.5D, this.mob.z)).relative(this.selectedDirection);
             BlockState var3 = var1.getBlockState(var2);
             if (InfestedBlock.isCompatibleHostBlock(var3)) {
                var1.setBlock(var2, InfestedBlock.stateByHostBlock(var3.getBlock()), 3);
                this.mob.spawnAnim();
-               this.mob.discard();
+               this.mob.remove();
             }
 
          }
@@ -195,7 +196,7 @@ public class Silverfish extends Monster {
          if (this.lookForFriends <= 0) {
             Level var1 = this.silverfish.level;
             Random var2 = this.silverfish.getRandom();
-            BlockPos var3 = this.silverfish.blockPosition();
+            BlockPos var3 = new BlockPos(this.silverfish);
 
             for(int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
                for(int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
@@ -205,7 +206,7 @@ public class Silverfish extends Monster {
                      Block var9 = var8.getBlock();
                      if (var9 instanceof InfestedBlock) {
                         if (var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-                           var1.destroyBlock(var7, true, this.silverfish);
+                           var1.destroyBlock(var7, true);
                         } else {
                            var1.setBlock(var7, ((InfestedBlock)var9).getHostBlock().defaultBlockState(), 3);
                         }

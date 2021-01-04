@@ -3,12 +3,12 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.CompoundList.CompoundListType;
-import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,9 +48,9 @@ public class NewVillageFix extends DataFix {
                   });
                }).update(DSL.remainderFinder(), (var0) -> {
                   return var0.update("References", (var0x) -> {
-                     Optional var1 = var0x.get("New_Village").result();
+                     Optional var1 = var0x.get("New_Village").get();
                      return ((Dynamic)DataFixUtils.orElse(var1.map((var1x) -> {
-                        return var0x.remove("New_Village").set("Village", var1x);
+                        return var0x.remove("New_Village").merge(var0x.createString("Village"), var1x);
                      }), var0x)).remove("Village");
                   });
                });

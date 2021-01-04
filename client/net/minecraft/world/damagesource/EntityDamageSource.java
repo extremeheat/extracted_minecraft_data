@@ -45,10 +45,6 @@ public class EntityDamageSource extends DamageSource {
 
    @Nullable
    public Vec3 getSourcePosition() {
-      return this.entity != null ? this.entity.position() : null;
-   }
-
-   public String toString() {
-      return "EntityDamageSource (" + this.entity + ")";
+      return new Vec3(this.entity.x, this.entity.y, this.entity.z);
    }
 }

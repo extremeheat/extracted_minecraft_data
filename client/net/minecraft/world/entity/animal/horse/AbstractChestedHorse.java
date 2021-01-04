@@ -5,15 +5,15 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
@@ -25,17 +25,16 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       this.canGallop = false;
    }
 
-   protected void randomizeAttributes() {
-      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)this.generateRandomMaxHealth());
-   }
-
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.entityData.define(DATA_ID_CHEST, false);
    }
 
-   public static AttributeSupplier.Builder createBaseChestedHorseAttributes() {
-      return createBaseHorseAttributes().add(Attributes.MOVEMENT_SPEED, 0.17499999701976776D).add(Attributes.JUMP_STRENGTH, 0.5D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue((double)this.generateRandomMaxHealth());
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.17499999701976776D);
+      this.getAttribute(JUMP_STRENGTH).setBaseValue(0.5D);
    }
 
    public boolean hasChest() {
@@ -50,8 +49,13 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return this.hasChest() ? 17 : super.getInventorySize();
    }
 
-   public double getPassengersRidingOffset() {
-      return super.getPassengersRidingOffset() - 0.25D;
+   public double getRideHeight() {
+      return super.getRideHeight() - 0.25D;
+   }
+
+   protected SoundEvent getAngrySound() {
+      super.getAngrySound();
+      return SoundEvents.DONKEY_ANGRY;
    }
 
    protected void dropEquipment() {
@@ -103,7 +107,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
          }
       }
 
-      this.updateContainerEquipment();
+      this.updateEquipment();
    }
 
    public boolean setSlot(int var1, ItemStack var2) {
@@ -114,7 +118,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
             return true;
          }
 
-         if (!this.hasChest() && var2.is(Blocks.CHEST.asItem())) {
+         if (!this.hasChest() && var2.getItem() == Blocks.CHEST.asItem()) {
             this.setChest(true);
             this.createInventory();
             return true;
@@ -124,51 +128,62 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return super.setSlot(var1, var2);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (!this.isBaby()) {
-         if (this.isTamed() && var1.isSecondaryUseActive()) {
-            this.openInventory(var1);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-
-         if (this.isVehicle()) {
-            return super.mobInteract(var1, var2);
-         }
-      }
-
-      if (!var3.isEmpty()) {
-         if (this.isFood(var3)) {
-            return this.fedFood(var1, var3);
-         }
-
-         if (!this.isTamed()) {
-            this.makeMad();
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-
-         if (!this.hasChest() && var3.is(Blocks.CHEST.asItem())) {
-            this.setChest(true);
-            this.playChestEquipsSound();
-            if (!var1.getAbilities().instabuild) {
-               var3.shrink(1);
-            }
-
-            this.createInventory();
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-
-         if (!this.isBaby() && !this.isSaddled() && var3.is(Items.SADDLE)) {
-            this.openInventory(var1);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-      }
-
-      if (this.isBaby()) {
+      if (var3.getItem() instanceof SpawnEggItem) {
          return super.mobInteract(var1, var2);
       } else {
-         this.doPlayerRide(var1);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         if (!this.isBaby()) {
+            if (this.isTamed() && var1.isSneaking()) {
+               this.openInventory(var1);
+               return true;
+            }
+
+            if (this.isVehicle()) {
+               return super.mobInteract(var1, var2);
+            }
+         }
+
+         if (!var3.isEmpty()) {
+            boolean var4 = this.handleEating(var1, var3);
+            if (!var4) {
+               if (!this.isTamed() || var3.getItem() == Items.NAME_TAG) {
+                  if (var3.interactEnemy(var1, this, var2)) {
+                     return true;
+                  } else {
+                     this.makeMad();
+                     return true;
+                  }
+               }
+
+               if (!this.hasChest() && var3.getItem() == Blocks.CHEST.asItem()) {
+                  this.setChest(true);
+                  this.playChestEquipsSound();
+                  var4 = true;
+                  this.createInventory();
+               }
+
+               if (!this.isBaby() && !this.isSaddled() && var3.getItem() == Items.SADDLE) {
+                  this.openInventory(var1);
+                  return true;
+               }
+            }
+
+            if (var4) {
+               if (!var1.abilities.instabuild) {
+                  var3.shrink(1);
+               }
+
+               return true;
+            }
+         }
+
+         if (this.isBaby()) {
+            return super.mobInteract(var1, var2);
+         } else {
+            this.doPlayerRide(var1);
+            return true;
+         }
       }
    }
 

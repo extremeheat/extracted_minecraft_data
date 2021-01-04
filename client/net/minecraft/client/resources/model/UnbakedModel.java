@@ -1,6 +1,5 @@
 package net.minecraft.client.resources.model;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
@@ -11,8 +10,8 @@ import net.minecraft.resources.ResourceLocation;
 public interface UnbakedModel {
    Collection<ResourceLocation> getDependencies();
 
-   Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> var1, Set<Pair<String, String>> var2);
+   Collection<ResourceLocation> getTextures(Function<ResourceLocation, UnbakedModel> var1, Set<String> var2);
 
    @Nullable
-   BakedModel bake(ModelBakery var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4);
+   BakedModel bake(ModelBakery var1, Function<ResourceLocation, TextureAtlasSprite> var2, ModelState var3);
 }

@@ -7,7 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +55,7 @@ public class ScoreboardSaveData extends SavedData {
          }
 
          PlayerTeam var5 = this.scoreboard.addPlayerTeam(var4);
-         MutableComponent var6 = Component.Serializer.fromJson(var3.getString("DisplayName"));
+         Component var6 = Component.Serializer.fromJson(var3.getString("DisplayName"));
          if (var6 != null) {
             var5.setDisplayName(var6);
          }
@@ -73,7 +72,7 @@ public class ScoreboardSaveData extends SavedData {
             var5.setSeeFriendlyInvisibles(var3.getBoolean("SeeFriendlyInvisibles"));
          }
 
-         MutableComponent var7;
+         Component var7;
          if (var3.contains("MemberNamePrefix", 8)) {
             var7 = Component.Serializer.fromJson(var3.getString("MemberNamePrefix"));
             if (var7 != null) {
@@ -142,7 +141,7 @@ public class ScoreboardSaveData extends SavedData {
                var3x = var3x.substring(0, 16);
             }
 
-            MutableComponent var4 = Component.Serializer.fromJson(var3.getString("DisplayName"));
+            Component var4 = Component.Serializer.fromJson(var3.getString("DisplayName"));
             ObjectiveCriteria.RenderType var5 = ObjectiveCriteria.RenderType.byId(var3.getString("RenderType"));
             this.scoreboard.addObjective(var3x, var2x, var4, var5);
          });
@@ -189,7 +188,7 @@ public class ScoreboardSaveData extends SavedData {
 
          while(var7.hasNext()) {
             String var8 = (String)var7.next();
-            var6.add(StringTag.valueOf(var8));
+            var6.add(new StringTag(var8));
          }
 
          var5.put("Players", var6);

@@ -1,11 +1,8 @@
 package net.minecraft.server.packs.repository;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 
 public enum PackCompatibility {
    TOO_OLD("old"),
@@ -16,25 +13,20 @@ public enum PackCompatibility {
    private final Component confirmation;
 
    private PackCompatibility(String var3) {
-      this.description = (new TranslatableComponent("pack.incompatible." + var3)).withStyle(ChatFormatting.GRAY);
-      this.confirmation = new TranslatableComponent("pack.incompatible.confirm." + var3);
+      this.description = new TranslatableComponent("resourcePack.incompatible." + var3, new Object[0]);
+      this.confirmation = new TranslatableComponent("resourcePack.incompatible.confirm." + var3, new Object[0]);
    }
 
    public boolean isCompatible() {
       return this == COMPATIBLE;
    }
 
-   public static PackCompatibility forFormat(int var0, PackType var1) {
-      int var2 = var1.getVersion(SharedConstants.getCurrentVersion());
-      if (var0 < var2) {
+   public static PackCompatibility forFormat(int var0) {
+      if (var0 < SharedConstants.getCurrentVersion().getPackVersion()) {
          return TOO_OLD;
       } else {
-         return var0 > var2 ? TOO_NEW : COMPATIBLE;
+         return var0 > SharedConstants.getCurrentVersion().getPackVersion() ? TOO_NEW : COMPATIBLE;
       }
-   }
-
-   public static PackCompatibility forMetadata(PackMetadataSection var0, PackType var1) {
-      return forFormat(var0.getPackFormat(), var1);
    }
 
    public Component getDescription() {

@@ -1,14 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.HorseModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.item.DyeableHorseArmorItem;
@@ -16,36 +10,36 @@ import net.minecraft.world.item.HorseArmorItem;
 import net.minecraft.world.item.ItemStack;
 
 public class HorseArmorLayer extends RenderLayer<Horse, HorseModel<Horse>> {
-   private final HorseModel<Horse> model;
+   private final HorseModel<Horse> model = new HorseModel(0.1F);
 
-   public HorseArmorLayer(RenderLayerParent<Horse, HorseModel<Horse>> var1, EntityModelSet var2) {
+   public HorseArmorLayer(RenderLayerParent<Horse, HorseModel<Horse>> var1) {
       super(var1);
-      this.model = new HorseModel(var2.getLayer(ModelLayers.HORSE_ARMOR));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Horse var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      ItemStack var11 = var4.getArmor();
-      if (var11.getItem() instanceof HorseArmorItem) {
-         HorseArmorItem var12 = (HorseArmorItem)var11.getItem();
+   public void render(Horse var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      ItemStack var9 = var1.getArmor();
+      if (var9.getItem() instanceof HorseArmorItem) {
+         HorseArmorItem var10 = (HorseArmorItem)var9.getItem();
          ((HorseModel)this.getParentModel()).copyPropertiesTo(this.model);
-         this.model.prepareMobModel((AbstractHorse)var4, var5, var6, var7);
-         this.model.setupAnim((AbstractHorse)var4, var5, var6, var8, var9, var10);
-         float var13;
-         float var14;
-         float var15;
-         if (var12 instanceof DyeableHorseArmorItem) {
-            int var16 = ((DyeableHorseArmorItem)var12).getColor(var11);
-            var13 = (float)(var16 >> 16 & 255) / 255.0F;
-            var14 = (float)(var16 >> 8 & 255) / 255.0F;
-            var15 = (float)(var16 & 255) / 255.0F;
-         } else {
-            var13 = 1.0F;
-            var14 = 1.0F;
-            var15 = 1.0F;
+         this.model.prepareMobModel((AbstractHorse)var1, var2, var3, var4);
+         this.bindTexture(var10.getTexture());
+         if (var10 instanceof DyeableHorseArmorItem) {
+            int var11 = ((DyeableHorseArmorItem)var10).getColor(var9);
+            float var12 = (float)(var11 >> 16 & 255) / 255.0F;
+            float var13 = (float)(var11 >> 8 & 255) / 255.0F;
+            float var14 = (float)(var11 & 255) / 255.0F;
+            GlStateManager.color4f(var12, var13, var14, 1.0F);
+            this.model.render((AbstractHorse)var1, var2, var3, var5, var6, var7, var8);
+            return;
          }
 
-         VertexConsumer var17 = var2.getBuffer(RenderType.entityCutoutNoCull(var12.getTexture()));
-         this.model.renderToBuffer(var1, var17, var3, OverlayTexture.NO_OVERLAY, var13, var14, var15, 1.0F);
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         this.model.render((AbstractHorse)var1, var2, var3, var5, var6, var7, var8);
       }
+
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

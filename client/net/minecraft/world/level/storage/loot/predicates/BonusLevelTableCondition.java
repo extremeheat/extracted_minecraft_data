@@ -26,10 +26,6 @@ public class BonusLevelTableCondition implements LootItemCondition {
       this.values = var2;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.TABLE_BONUS;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return ImmutableSet.of(LootContextParams.TOOL);
    }
@@ -57,9 +53,9 @@ public class BonusLevelTableCondition implements LootItemCondition {
       this(var1, var2);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<BonusLevelTableCondition> {
+   public static class Serializer extends LootItemCondition.Serializer<BonusLevelTableCondition> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("table_bonus"), BonusLevelTableCondition.class);
       }
 
       public void serialize(JsonObject var1, BonusLevelTableCondition var2, JsonSerializationContext var3) {
@@ -77,7 +73,7 @@ public class BonusLevelTableCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

@@ -3,16 +3,15 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemPotionFix extends DataFix {
    private static final String[] POTIONS = (String[])DataFixUtils.make(new String[128], (var0) -> {
@@ -152,7 +151,7 @@ public class ItemPotionFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), DSL.namespacedString()));
       OpticFinder var3 = var1.findField("tag");
       return this.fixTypeEverywhereTyped("ItemPotionFix", var1, (var2x) -> {
          Optional var3x = var2x.getOptional(var2);
@@ -163,7 +162,7 @@ public class ItemPotionFix extends DataFix {
             if (var5.isPresent()) {
                Typed var7 = var2x;
                Dynamic var8 = (Dynamic)((Typed)var5.get()).get(DSL.remainderFinder());
-               Optional var9 = var8.get("Potion").asString().result();
+               Optional var9 = var8.get("Potion").asString();
                if (!var9.isPresent()) {
                   String var10 = POTIONS[var6 & 127];
                   Typed var11 = ((Typed)var5.get()).set(DSL.remainderFinder(), var8.set("Potion", var8.createString(var10 == null ? "minecraft:water" : var10)));

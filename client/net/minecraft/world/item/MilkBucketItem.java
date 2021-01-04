@@ -4,6 +4,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,7 @@ public class MilkBucketItem extends Item {
          var4.awardStat(Stats.ITEM_USED.get(this));
       }
 
-      if (var3 instanceof Player && !((Player)var3).getAbilities().instabuild) {
+      if (var3 instanceof Player && !((Player)var3).abilities.instabuild) {
          var1.shrink(1);
       }
 
@@ -41,6 +42,7 @@ public class MilkBucketItem extends Item {
    }
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      return ItemUtils.startUsingInstantly(var1, var2, var3);
+      var2.startUsingItem(var3);
+      return new InteractionResultHolder(InteractionResult.SUCCESS, var2.getItemInHand(var3));
    }
 }

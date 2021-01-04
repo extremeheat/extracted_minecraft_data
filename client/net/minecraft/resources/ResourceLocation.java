@@ -10,8 +10,6 @@ import com.google.gson.JsonSerializer;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import java.lang.reflect.Type;
 import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
@@ -20,8 +18,7 @@ import net.minecraft.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
 
 public class ResourceLocation implements Comparable<ResourceLocation> {
-   public static final Codec<ResourceLocation> CODEC;
-   private static final SimpleCommandExceptionType ERROR_INVALID;
+   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(new TranslatableComponent("argument.id.invalid", new Object[0]));
    protected final String namespace;
    protected final String path;
 
@@ -68,14 +65,6 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       }
 
       return var2;
-   }
-
-   private static DataResult<ResourceLocation> read(String var0) {
-      try {
-         return DataResult.success(new ResourceLocation(var0));
-      } catch (ResourceLocationException var2) {
-         return DataResult.error("Not a valid resource location: " + var0 + " " + var2.getMessage());
-      }
    }
 
    public String getPath() {
@@ -136,31 +125,15 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    private static boolean isValidPath(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         if (!validPathChar(var0.charAt(var1))) {
-            return false;
-         }
-      }
-
-      return true;
+      return var0.chars().allMatch((var0x) -> {
+         return var0x == 95 || var0x == 45 || var0x >= 97 && var0x <= 122 || var0x >= 48 && var0x <= 57 || var0x == 47 || var0x == 46;
+      });
    }
 
    private static boolean isValidNamespace(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         if (!validNamespaceChar(var0.charAt(var1))) {
-            return false;
-         }
-      }
-
-      return true;
-   }
-
-   public static boolean validPathChar(char var0) {
-      return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '/' || var0 == '.';
-   }
-
-   private static boolean validNamespaceChar(char var0) {
-      return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '.';
+      return var0.chars().allMatch((var0x) -> {
+         return var0x == 95 || var0x == 45 || var0x >= 97 && var0x <= 122 || var0x >= 48 && var0x <= 57 || var0x == 46;
+      });
    }
 
    public static boolean isValidResourceLocation(String var0) {
@@ -171,11 +144,6 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    // $FF: synthetic method
    public int compareTo(Object var1) {
       return this.compareTo((ResourceLocation)var1);
-   }
-
-   static {
-      CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
-      ERROR_INVALID = new SimpleCommandExceptionType(new TranslatableComponent("argument.id.invalid"));
    }
 
    public static class Serializer implements JsonDeserializer<ResourceLocation>, JsonSerializer<ResourceLocation> {

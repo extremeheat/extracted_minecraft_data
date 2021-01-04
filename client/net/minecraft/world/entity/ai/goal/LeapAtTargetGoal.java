@@ -27,7 +27,7 @@ public class LeapAtTargetGoal extends Goal {
          } else {
             double var1 = this.mob.distanceToSqr(this.target);
             if (var1 >= 4.0D && var1 <= 16.0D) {
-               if (!this.mob.isOnGround()) {
+               if (!this.mob.onGround) {
                   return false;
                } else {
                   return this.mob.getRandom().nextInt(5) == 0;
@@ -40,12 +40,12 @@ public class LeapAtTargetGoal extends Goal {
    }
 
    public boolean canContinueToUse() {
-      return !this.mob.isOnGround();
+      return !this.mob.onGround;
    }
 
    public void start() {
       Vec3 var1 = this.mob.getDeltaMovement();
-      Vec3 var2 = new Vec3(this.target.getX() - this.mob.getX(), 0.0D, this.target.getZ() - this.mob.getZ());
+      Vec3 var2 = new Vec3(this.target.x - this.mob.x, 0.0D, this.target.z - this.mob.z);
       if (var2.lengthSqr() > 1.0E-7D) {
          var2 = var2.normalize().scale(0.4D).add(var1.scale(0.2D));
       }

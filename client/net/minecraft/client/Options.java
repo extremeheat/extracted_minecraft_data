@@ -1,21 +1,20 @@
 package net.minecraft.client;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.VideoMode;
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -24,13 +23,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
+import net.minecraft.client.resources.UnopenedResourcePack;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
@@ -39,6 +37,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,21 +45,30 @@ import org.apache.logging.log4j.Logger;
 public class Options {
    private static final Logger LOGGER = LogManager.getLogger();
    private static final Gson GSON = new Gson();
-   private static final TypeToken<List<String>> RESOURCE_PACK_TYPE = new TypeToken<List<String>>() {
+   private static final Type RESOURCE_PACK_TYPE = new ParameterizedType() {
+      public Type[] getActualTypeArguments() {
+         return new Type[]{String.class};
+      }
+
+      public Type getRawType() {
+         return List.class;
+      }
+
+      public Type getOwnerType() {
+         return null;
+      }
    };
-   private static final Splitter OPTION_SPLITTER = Splitter.on(':').limit(2);
+   public static final Splitter COLON_SPLITTER = Splitter.on(':');
    public double sensitivity = 0.5D;
    public int renderDistance = -1;
-   public float entityDistanceScaling = 1.0F;
    public int framerateLimit = 120;
    public CloudStatus renderClouds;
-   public GraphicsStatus graphicsMode;
+   public boolean fancyGraphics;
    public AmbientOcclusionStatus ambientOcclusion;
    public List<String> resourcePacks;
    public List<String> incompatibleResourcePacks;
    public ChatVisiblity chatVisibility;
    public double chatOpacity;
-   public double chatLineSpacing;
    public double textBackgroundOpacity;
    @Nullable
    public String fullscreenVideoModeString;
@@ -76,13 +84,11 @@ public class Options {
    public double chatWidth;
    public double chatHeightUnfocused;
    public double chatHeightFocused;
-   public double chatDelay;
    public int mipmapLevels;
    private final Map<SoundSource, Float> sourceVolumes;
    public boolean useNativeTransport;
    public AttackIndicatorStatus attackIndicator;
    public TutorialSteps tutorialStep;
-   public boolean joinedFirstServer;
    public int biomeBlendRadius;
    public double mouseWheelSensitivity;
    public boolean rawMouseInput;
@@ -105,19 +111,15 @@ public class Options {
    public boolean touchscreen;
    public boolean fullscreen;
    public boolean bobView;
-   public boolean toggleCrouch;
-   public boolean toggleSprint;
-   public boolean skipMultiplayerWarning;
-   public boolean hideMatchedNames;
    public final KeyMapping keyUp;
    public final KeyMapping keyLeft;
    public final KeyMapping keyDown;
    public final KeyMapping keyRight;
    public final KeyMapping keyJump;
-   public final KeyMapping keyShift;
+   public final KeyMapping keySneak;
    public final KeyMapping keySprint;
    public final KeyMapping keyInventory;
-   public final KeyMapping keySwapOffhand;
+   public final KeyMapping keySwapHands;
    public final KeyMapping keyDrop;
    public final KeyMapping keyUse;
    public final KeyMapping keyAttack;
@@ -125,7 +127,6 @@ public class Options {
    public final KeyMapping keyChat;
    public final KeyMapping keyPlayerList;
    public final KeyMapping keyCommand;
-   public final KeyMapping keySocialInteractions;
    public final KeyMapping keyScreenshot;
    public final KeyMapping keyTogglePerspective;
    public final KeyMapping keySmoothCamera;
@@ -140,26 +141,23 @@ public class Options {
    private final File optionsFile;
    public Difficulty difficulty;
    public boolean hideGui;
-   private CameraType cameraType;
+   public int thirdPersonView;
    public boolean renderDebug;
    public boolean renderDebugCharts;
    public boolean renderFpsChart;
    public String lastMpIp;
    public boolean smoothCamera;
    public double fov;
-   public float screenEffectScale;
-   public float fovEffectScale;
    public double gamma;
    public int guiScale;
    public ParticleStatus particles;
    public NarratorStatus narratorStatus;
    public String languageCode;
-   public boolean syncWrites;
 
    public Options(Minecraft var1, File var2) {
       super();
       this.renderClouds = CloudStatus.FANCY;
-      this.graphicsMode = GraphicsStatus.FANCY;
+      this.fancyGraphics = true;
       this.ambientOcclusion = AmbientOcclusionStatus.MAX;
       this.resourcePacks = Lists.newArrayList();
       this.incompatibleResourcePacks = Lists.newArrayList();
@@ -179,7 +177,6 @@ public class Options {
       this.useNativeTransport = true;
       this.attackIndicator = AttackIndicatorStatus.CROSSHAIR;
       this.tutorialStep = TutorialSteps.MOVEMENT;
-      this.joinedFirstServer = false;
       this.biomeBlendRadius = 2;
       this.mouseWheelSensitivity = 1.0D;
       this.rawMouseInput = true;
@@ -195,20 +192,15 @@ public class Options {
       this.snooperEnabled = true;
       this.backgroundForChatOnly = true;
       this.bobView = true;
-      this.hideMatchedNames = true;
       this.keyUp = new KeyMapping("key.forward", 87, "key.categories.movement");
       this.keyLeft = new KeyMapping("key.left", 65, "key.categories.movement");
       this.keyDown = new KeyMapping("key.back", 83, "key.categories.movement");
       this.keyRight = new KeyMapping("key.right", 68, "key.categories.movement");
       this.keyJump = new KeyMapping("key.jump", 32, "key.categories.movement");
-      this.keyShift = new ToggleKeyMapping("key.sneak", 340, "key.categories.movement", () -> {
-         return this.toggleCrouch;
-      });
-      this.keySprint = new ToggleKeyMapping("key.sprint", 341, "key.categories.movement", () -> {
-         return this.toggleSprint;
-      });
+      this.keySneak = new KeyMapping("key.sneak", 340, "key.categories.movement");
+      this.keySprint = new KeyMapping("key.sprint", 341, "key.categories.movement");
       this.keyInventory = new KeyMapping("key.inventory", 69, "key.categories.inventory");
-      this.keySwapOffhand = new KeyMapping("key.swapOffhand", 70, "key.categories.inventory");
+      this.keySwapHands = new KeyMapping("key.swapHands", 70, "key.categories.inventory");
       this.keyDrop = new KeyMapping("key.drop", 81, "key.categories.inventory");
       this.keyUse = new KeyMapping("key.use", InputConstants.Type.MOUSE, 1, "key.categories.gameplay");
       this.keyAttack = new KeyMapping("key.attack", InputConstants.Type.MOUSE, 0, "key.categories.gameplay");
@@ -216,7 +208,6 @@ public class Options {
       this.keyChat = new KeyMapping("key.chat", 84, "key.categories.multiplayer");
       this.keyPlayerList = new KeyMapping("key.playerlist", 258, "key.categories.multiplayer");
       this.keyCommand = new KeyMapping("key.command", 47, "key.categories.multiplayer");
-      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 80, "key.categories.multiplayer");
       this.keyScreenshot = new KeyMapping("key.screenshot", 291, "key.categories.misc");
       this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, "key.categories.misc");
       this.keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
@@ -226,13 +217,10 @@ public class Options {
       this.keyHotbarSlots = new KeyMapping[]{new KeyMapping("key.hotbar.1", 49, "key.categories.inventory"), new KeyMapping("key.hotbar.2", 50, "key.categories.inventory"), new KeyMapping("key.hotbar.3", 51, "key.categories.inventory"), new KeyMapping("key.hotbar.4", 52, "key.categories.inventory"), new KeyMapping("key.hotbar.5", 53, "key.categories.inventory"), new KeyMapping("key.hotbar.6", 54, "key.categories.inventory"), new KeyMapping("key.hotbar.7", 55, "key.categories.inventory"), new KeyMapping("key.hotbar.8", 56, "key.categories.inventory"), new KeyMapping("key.hotbar.9", 57, "key.categories.inventory")};
       this.keySaveHotbarActivator = new KeyMapping("key.saveToolbarActivator", 67, "key.categories.creative");
       this.keyLoadHotbarActivator = new KeyMapping("key.loadToolbarActivator", 88, "key.categories.creative");
-      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keySocialInteractions, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements}, this.keyHotbarSlots);
+      this.keyMappings = (KeyMapping[])ArrayUtils.addAll(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keySneak, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySwapHands, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements}, this.keyHotbarSlots);
       this.difficulty = Difficulty.NORMAL;
-      this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = 70.0D;
-      this.screenEffectScale = 1.0F;
-      this.fovEffectScale = 1.0F;
       this.particles = ParticleStatus.ALL;
       this.narratorStatus = NarratorStatus.OFF;
       this.languageCode = "en_us";
@@ -245,7 +233,6 @@ public class Options {
       }
 
       this.renderDistance = var1.is64Bit() ? 12 : 8;
-      this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
    }
 
@@ -273,345 +260,277 @@ public class Options {
          }
 
          this.sourceVolumes.clear();
-         CompoundTag var1 = new CompoundTag();
-         BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8);
-         Throwable var3 = null;
+         List var1 = IOUtils.readLines(new FileInputStream(this.optionsFile));
+         CompoundTag var2 = new CompoundTag();
+         Iterator var3 = var1.iterator();
 
-         try {
-            var2.lines().forEach((var1x) -> {
-               try {
-                  Iterator var2 = OPTION_SPLITTER.split(var1x).iterator();
-                  var1.putString((String)var2.next(), (String)var2.next());
-               } catch (Exception var3) {
-                  LOGGER.warn("Skipping bad option: {}", var1x);
-               }
+         String var4;
+         while(var3.hasNext()) {
+            var4 = (String)var3.next();
 
-            });
-         } catch (Throwable var17) {
-            var3 = var17;
-            throw var17;
-         } finally {
-            if (var2 != null) {
-               if (var3 != null) {
-                  try {
-                     var2.close();
-                  } catch (Throwable var16) {
-                     var3.addSuppressed(var16);
-                  }
-               } else {
-                  var2.close();
-               }
-            }
-
-         }
-
-         CompoundTag var21 = this.dataFix(var1);
-         if (!var21.contains("graphicsMode") && var21.contains("fancyGraphics")) {
-            if ("true".equals(var21.getString("fancyGraphics"))) {
-               this.graphicsMode = GraphicsStatus.FANCY;
-            } else {
-               this.graphicsMode = GraphicsStatus.FAST;
+            try {
+               Iterator var5 = COLON_SPLITTER.omitEmptyStrings().limit(2).split(var4).iterator();
+               var2.putString((String)var5.next(), (String)var5.next());
+            } catch (Exception var10) {
+               LOGGER.warn("Skipping bad option: {}", var4);
             }
          }
 
-         Iterator var22 = var21.getAllKeys().iterator();
+         var2 = this.dataFix(var2);
+         var3 = var2.getAllKeys().iterator();
 
-         while(var22.hasNext()) {
-            String var4 = (String)var22.next();
-            String var5 = var21.getString(var4);
+         while(var3.hasNext()) {
+            var4 = (String)var3.next();
+            String var13 = var2.getString(var4);
 
             try {
                if ("autoJump".equals(var4)) {
-                  Option.AUTO_JUMP.set(this, var5);
+                  Option.AUTO_JUMP.set(this, var13);
                }
 
                if ("autoSuggestions".equals(var4)) {
-                  Option.AUTO_SUGGESTIONS.set(this, var5);
+                  Option.AUTO_SUGGESTIONS.set(this, var13);
                }
 
                if ("chatColors".equals(var4)) {
-                  Option.CHAT_COLOR.set(this, var5);
+                  Option.CHAT_COLOR.set(this, var13);
                }
 
                if ("chatLinks".equals(var4)) {
-                  Option.CHAT_LINKS.set(this, var5);
+                  Option.CHAT_LINKS.set(this, var13);
                }
 
                if ("chatLinksPrompt".equals(var4)) {
-                  Option.CHAT_LINKS_PROMPT.set(this, var5);
+                  Option.CHAT_LINKS_PROMPT.set(this, var13);
                }
 
                if ("enableVsync".equals(var4)) {
-                  Option.ENABLE_VSYNC.set(this, var5);
+                  Option.ENABLE_VSYNC.set(this, var13);
                }
 
                if ("entityShadows".equals(var4)) {
-                  Option.ENTITY_SHADOWS.set(this, var5);
+                  Option.ENTITY_SHADOWS.set(this, var13);
                }
 
                if ("forceUnicodeFont".equals(var4)) {
-                  Option.FORCE_UNICODE_FONT.set(this, var5);
+                  Option.FORCE_UNICODE_FONT.set(this, var13);
                }
 
                if ("discrete_mouse_scroll".equals(var4)) {
-                  Option.DISCRETE_MOUSE_SCROLL.set(this, var5);
+                  Option.DISCRETE_MOUSE_SCROLL.set(this, var13);
                }
 
                if ("invertYMouse".equals(var4)) {
-                  Option.INVERT_MOUSE.set(this, var5);
+                  Option.INVERT_MOUSE.set(this, var13);
                }
 
                if ("realmsNotifications".equals(var4)) {
-                  Option.REALMS_NOTIFICATIONS.set(this, var5);
+                  Option.REALMS_NOTIFICATIONS.set(this, var13);
                }
 
                if ("reducedDebugInfo".equals(var4)) {
-                  Option.REDUCED_DEBUG_INFO.set(this, var5);
+                  Option.REDUCED_DEBUG_INFO.set(this, var13);
                }
 
                if ("showSubtitles".equals(var4)) {
-                  Option.SHOW_SUBTITLES.set(this, var5);
+                  Option.SHOW_SUBTITLES.set(this, var13);
                }
 
                if ("snooperEnabled".equals(var4)) {
-                  Option.SNOOPER_ENABLED.set(this, var5);
+                  Option.SNOOPER_ENABLED.set(this, var13);
                }
 
                if ("touchscreen".equals(var4)) {
-                  Option.TOUCHSCREEN.set(this, var5);
+                  Option.TOUCHSCREEN.set(this, var13);
                }
 
                if ("fullscreen".equals(var4)) {
-                  Option.USE_FULLSCREEN.set(this, var5);
+                  Option.USE_FULLSCREEN.set(this, var13);
                }
 
                if ("bobView".equals(var4)) {
-                  Option.VIEW_BOBBING.set(this, var5);
-               }
-
-               if ("toggleCrouch".equals(var4)) {
-                  this.toggleCrouch = "true".equals(var5);
-               }
-
-               if ("toggleSprint".equals(var4)) {
-                  this.toggleSprint = "true".equals(var5);
+                  Option.VIEW_BOBBING.set(this, var13);
                }
 
                if ("mouseSensitivity".equals(var4)) {
-                  this.sensitivity = (double)readFloat(var5);
+                  this.sensitivity = (double)readFloat(var13);
                }
 
                if ("fov".equals(var4)) {
-                  this.fov = (double)(readFloat(var5) * 40.0F + 70.0F);
-               }
-
-               if ("screenEffectScale".equals(var4)) {
-                  this.screenEffectScale = readFloat(var5);
-               }
-
-               if ("fovEffectScale".equals(var4)) {
-                  this.fovEffectScale = readFloat(var5);
+                  this.fov = (double)(readFloat(var13) * 40.0F + 70.0F);
                }
 
                if ("gamma".equals(var4)) {
-                  this.gamma = (double)readFloat(var5);
+                  this.gamma = (double)readFloat(var13);
                }
 
                if ("renderDistance".equals(var4)) {
-                  this.renderDistance = Integer.parseInt(var5);
-               }
-
-               if ("entityDistanceScaling".equals(var4)) {
-                  this.entityDistanceScaling = Float.parseFloat(var5);
+                  this.renderDistance = Integer.parseInt(var13);
                }
 
                if ("guiScale".equals(var4)) {
-                  this.guiScale = Integer.parseInt(var5);
+                  this.guiScale = Integer.parseInt(var13);
                }
 
                if ("particles".equals(var4)) {
-                  this.particles = ParticleStatus.byId(Integer.parseInt(var5));
+                  this.particles = ParticleStatus.byId(Integer.parseInt(var13));
                }
 
                if ("maxFps".equals(var4)) {
-                  this.framerateLimit = Integer.parseInt(var5);
-                  if (this.minecraft.getWindow() != null) {
-                     this.minecraft.getWindow().setFramerateLimit(this.framerateLimit);
+                  this.framerateLimit = Integer.parseInt(var13);
+                  if (this.minecraft.window != null) {
+                     this.minecraft.window.setFramerateLimit(this.framerateLimit);
                   }
                }
 
                if ("difficulty".equals(var4)) {
-                  this.difficulty = Difficulty.byId(Integer.parseInt(var5));
+                  this.difficulty = Difficulty.byId(Integer.parseInt(var13));
                }
 
-               if ("graphicsMode".equals(var4)) {
-                  this.graphicsMode = GraphicsStatus.byId(Integer.parseInt(var5));
+               if ("fancyGraphics".equals(var4)) {
+                  this.fancyGraphics = "true".equals(var13);
                }
 
                if ("tutorialStep".equals(var4)) {
-                  this.tutorialStep = TutorialSteps.getByName(var5);
+                  this.tutorialStep = TutorialSteps.getByName(var13);
                }
 
                if ("ao".equals(var4)) {
-                  if ("true".equals(var5)) {
+                  if ("true".equals(var13)) {
                      this.ambientOcclusion = AmbientOcclusionStatus.MAX;
-                  } else if ("false".equals(var5)) {
+                  } else if ("false".equals(var13)) {
                      this.ambientOcclusion = AmbientOcclusionStatus.OFF;
                   } else {
-                     this.ambientOcclusion = AmbientOcclusionStatus.byId(Integer.parseInt(var5));
+                     this.ambientOcclusion = AmbientOcclusionStatus.byId(Integer.parseInt(var13));
                   }
                }
 
                if ("renderClouds".equals(var4)) {
-                  if ("true".equals(var5)) {
+                  if ("true".equals(var13)) {
                      this.renderClouds = CloudStatus.FANCY;
-                  } else if ("false".equals(var5)) {
+                  } else if ("false".equals(var13)) {
                      this.renderClouds = CloudStatus.OFF;
-                  } else if ("fast".equals(var5)) {
+                  } else if ("fast".equals(var13)) {
                      this.renderClouds = CloudStatus.FAST;
                   }
                }
 
                if ("attackIndicator".equals(var4)) {
-                  this.attackIndicator = AttackIndicatorStatus.byId(Integer.parseInt(var5));
+                  this.attackIndicator = AttackIndicatorStatus.byId(Integer.parseInt(var13));
                }
 
                if ("resourcePacks".equals(var4)) {
-                  this.resourcePacks = (List)GsonHelper.fromJson(GSON, var5, RESOURCE_PACK_TYPE);
+                  this.resourcePacks = (List)GsonHelper.fromJson(GSON, var13, RESOURCE_PACK_TYPE);
                   if (this.resourcePacks == null) {
                      this.resourcePacks = Lists.newArrayList();
                   }
                }
 
                if ("incompatibleResourcePacks".equals(var4)) {
-                  this.incompatibleResourcePacks = (List)GsonHelper.fromJson(GSON, var5, RESOURCE_PACK_TYPE);
+                  this.incompatibleResourcePacks = (List)GsonHelper.fromJson(GSON, var13, RESOURCE_PACK_TYPE);
                   if (this.incompatibleResourcePacks == null) {
                      this.incompatibleResourcePacks = Lists.newArrayList();
                   }
                }
 
                if ("lastServer".equals(var4)) {
-                  this.lastMpIp = var5;
+                  this.lastMpIp = var13;
                }
 
                if ("lang".equals(var4)) {
-                  this.languageCode = var5;
+                  this.languageCode = var13;
                }
 
                if ("chatVisibility".equals(var4)) {
-                  this.chatVisibility = ChatVisiblity.byId(Integer.parseInt(var5));
+                  this.chatVisibility = ChatVisiblity.byId(Integer.parseInt(var13));
                }
 
                if ("chatOpacity".equals(var4)) {
-                  this.chatOpacity = (double)readFloat(var5);
-               }
-
-               if ("chatLineSpacing".equals(var4)) {
-                  this.chatLineSpacing = (double)readFloat(var5);
+                  this.chatOpacity = (double)readFloat(var13);
                }
 
                if ("textBackgroundOpacity".equals(var4)) {
-                  this.textBackgroundOpacity = (double)readFloat(var5);
+                  this.textBackgroundOpacity = (double)readFloat(var13);
                }
 
                if ("backgroundForChatOnly".equals(var4)) {
-                  this.backgroundForChatOnly = "true".equals(var5);
+                  this.backgroundForChatOnly = "true".equals(var13);
                }
 
                if ("fullscreenResolution".equals(var4)) {
-                  this.fullscreenVideoModeString = var5;
+                  this.fullscreenVideoModeString = var13;
                }
 
                if ("hideServerAddress".equals(var4)) {
-                  this.hideServerAddress = "true".equals(var5);
+                  this.hideServerAddress = "true".equals(var13);
                }
 
                if ("advancedItemTooltips".equals(var4)) {
-                  this.advancedItemTooltips = "true".equals(var5);
+                  this.advancedItemTooltips = "true".equals(var13);
                }
 
                if ("pauseOnLostFocus".equals(var4)) {
-                  this.pauseOnLostFocus = "true".equals(var5);
+                  this.pauseOnLostFocus = "true".equals(var13);
                }
 
                if ("overrideHeight".equals(var4)) {
-                  this.overrideHeight = Integer.parseInt(var5);
+                  this.overrideHeight = Integer.parseInt(var13);
                }
 
                if ("overrideWidth".equals(var4)) {
-                  this.overrideWidth = Integer.parseInt(var5);
+                  this.overrideWidth = Integer.parseInt(var13);
                }
 
                if ("heldItemTooltips".equals(var4)) {
-                  this.heldItemTooltips = "true".equals(var5);
+                  this.heldItemTooltips = "true".equals(var13);
                }
 
                if ("chatHeightFocused".equals(var4)) {
-                  this.chatHeightFocused = (double)readFloat(var5);
-               }
-
-               if ("chatDelay".equals(var4)) {
-                  this.chatDelay = (double)readFloat(var5);
+                  this.chatHeightFocused = (double)readFloat(var13);
                }
 
                if ("chatHeightUnfocused".equals(var4)) {
-                  this.chatHeightUnfocused = (double)readFloat(var5);
+                  this.chatHeightUnfocused = (double)readFloat(var13);
                }
 
                if ("chatScale".equals(var4)) {
-                  this.chatScale = (double)readFloat(var5);
+                  this.chatScale = (double)readFloat(var13);
                }
 
                if ("chatWidth".equals(var4)) {
-                  this.chatWidth = (double)readFloat(var5);
+                  this.chatWidth = (double)readFloat(var13);
                }
 
                if ("mipmapLevels".equals(var4)) {
-                  this.mipmapLevels = Integer.parseInt(var5);
+                  this.mipmapLevels = Integer.parseInt(var13);
                }
 
                if ("useNativeTransport".equals(var4)) {
-                  this.useNativeTransport = "true".equals(var5);
+                  this.useNativeTransport = "true".equals(var13);
                }
 
                if ("mainHand".equals(var4)) {
-                  this.mainHand = "left".equals(var5) ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
+                  this.mainHand = "left".equals(var13) ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
                }
 
                if ("narrator".equals(var4)) {
-                  this.narratorStatus = NarratorStatus.byId(Integer.parseInt(var5));
+                  this.narratorStatus = NarratorStatus.byId(Integer.parseInt(var13));
                }
 
                if ("biomeBlendRadius".equals(var4)) {
-                  this.biomeBlendRadius = Integer.parseInt(var5);
+                  this.biomeBlendRadius = Integer.parseInt(var13);
                }
 
                if ("mouseWheelSensitivity".equals(var4)) {
-                  this.mouseWheelSensitivity = (double)readFloat(var5);
+                  this.mouseWheelSensitivity = (double)readFloat(var13);
                }
 
                if ("rawMouseInput".equals(var4)) {
-                  this.rawMouseInput = "true".equals(var5);
+                  this.rawMouseInput = "true".equals(var13);
                }
 
                if ("glDebugVerbosity".equals(var4)) {
-                  this.glDebugVerbosity = Integer.parseInt(var5);
-               }
-
-               if ("skipMultiplayerWarning".equals(var4)) {
-                  this.skipMultiplayerWarning = "true".equals(var5);
-               }
-
-               if ("hideMatchedNames".equals(var4)) {
-                  this.hideMatchedNames = "true".equals(var5);
-               }
-
-               if ("joinedFirstServer".equals(var4)) {
-                  this.joinedFirstServer = "true".equals(var5);
-               }
-
-               if ("syncChunkWrites".equals(var4)) {
-                  this.syncWrites = "true".equals(var5);
+                  this.glDebugVerbosity = Integer.parseInt(var13);
                }
 
                KeyMapping[] var6 = this.keyMappings;
@@ -621,37 +540,37 @@ public class Options {
                for(var8 = 0; var8 < var7; ++var8) {
                   KeyMapping var9 = var6[var8];
                   if (var4.equals("key_" + var9.getName())) {
-                     var9.setKey(InputConstants.getKey(var5));
+                     var9.setKey(InputConstants.getKey(var13));
                   }
                }
 
-               SoundSource[] var23 = SoundSource.values();
-               var7 = var23.length;
+               SoundSource[] var14 = SoundSource.values();
+               var7 = var14.length;
 
                for(var8 = 0; var8 < var7; ++var8) {
-                  SoundSource var25 = var23[var8];
-                  if (var4.equals("soundCategory_" + var25.getName())) {
-                     this.sourceVolumes.put(var25, readFloat(var5));
+                  SoundSource var16 = var14[var8];
+                  if (var4.equals("soundCategory_" + var16.getName())) {
+                     this.sourceVolumes.put(var16, readFloat(var13));
                   }
                }
 
-               PlayerModelPart[] var24 = PlayerModelPart.values();
-               var7 = var24.length;
+               PlayerModelPart[] var15 = PlayerModelPart.values();
+               var7 = var15.length;
 
                for(var8 = 0; var8 < var7; ++var8) {
-                  PlayerModelPart var26 = var24[var8];
-                  if (var4.equals("modelPart_" + var26.getId())) {
-                     this.setModelPart(var26, "true".equals(var5));
+                  PlayerModelPart var17 = var15[var8];
+                  if (var4.equals("modelPart_" + var17.getId())) {
+                     this.setModelPart(var17, "true".equals(var13));
                   }
                }
-            } catch (Exception var19) {
-               LOGGER.warn("Skipping bad option: {}:{}", var4, var5);
+            } catch (Exception var11) {
+               LOGGER.warn("Skipping bad option: {}:{}", var4, var13);
             }
          }
 
          KeyMapping.resetMapping();
-      } catch (Exception var20) {
-         LOGGER.error("Failed to load options", var20);
+      } catch (Exception var12) {
+         LOGGER.error("Failed to load options", var12);
       }
 
    }
@@ -699,20 +618,15 @@ public class Options {
             var1.println("touchscreen:" + Option.TOUCHSCREEN.get(this));
             var1.println("fullscreen:" + Option.USE_FULLSCREEN.get(this));
             var1.println("bobView:" + Option.VIEW_BOBBING.get(this));
-            var1.println("toggleCrouch:" + this.toggleCrouch);
-            var1.println("toggleSprint:" + this.toggleSprint);
             var1.println("mouseSensitivity:" + this.sensitivity);
             var1.println("fov:" + (this.fov - 70.0D) / 40.0D);
-            var1.println("screenEffectScale:" + this.screenEffectScale);
-            var1.println("fovEffectScale:" + this.fovEffectScale);
             var1.println("gamma:" + this.gamma);
             var1.println("renderDistance:" + this.renderDistance);
-            var1.println("entityDistanceScaling:" + this.entityDistanceScaling);
             var1.println("guiScale:" + this.guiScale);
             var1.println("particles:" + this.particles.getId());
             var1.println("maxFps:" + this.framerateLimit);
             var1.println("difficulty:" + this.difficulty.getId());
-            var1.println("graphicsMode:" + this.graphicsMode.getId());
+            var1.println("fancyGraphics:" + this.fancyGraphics);
             var1.println("ao:" + this.ambientOcclusion.getId());
             var1.println("biomeBlendRadius:" + this.biomeBlendRadius);
             switch(this.renderClouds) {
@@ -732,11 +646,10 @@ public class Options {
             var1.println("lang:" + this.languageCode);
             var1.println("chatVisibility:" + this.chatVisibility.getId());
             var1.println("chatOpacity:" + this.chatOpacity);
-            var1.println("chatLineSpacing:" + this.chatLineSpacing);
             var1.println("textBackgroundOpacity:" + this.textBackgroundOpacity);
             var1.println("backgroundForChatOnly:" + this.backgroundForChatOnly);
-            if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
-               var1.println("fullscreenResolution:" + ((VideoMode)this.minecraft.getWindow().getPreferredFullscreenVideoMode().get()).write());
+            if (this.minecraft.window.getPreferredFullscreenVideoMode().isPresent()) {
+               var1.println("fullscreenResolution:" + ((VideoMode)this.minecraft.window.getPreferredFullscreenVideoMode().get()).write());
             }
 
             var1.println("hideServerAddress:" + this.hideServerAddress);
@@ -746,7 +659,6 @@ public class Options {
             var1.println("overrideHeight:" + this.overrideHeight);
             var1.println("heldItemTooltips:" + this.heldItemTooltips);
             var1.println("chatHeightFocused:" + this.chatHeightFocused);
-            var1.println("chatDelay: " + this.chatDelay);
             var1.println("chatHeightUnfocused:" + this.chatHeightUnfocused);
             var1.println("chatScale:" + this.chatScale);
             var1.println("chatWidth:" + this.chatWidth);
@@ -759,10 +671,6 @@ public class Options {
             var1.println("mouseWheelSensitivity:" + this.mouseWheelSensitivity);
             var1.println("rawMouseInput:" + Option.RAW_MOUSE_INPUT.get(this));
             var1.println("glDebugVerbosity:" + this.glDebugVerbosity);
-            var1.println("skipMultiplayerWarning:" + this.skipMultiplayerWarning);
-            var1.println("hideMatchedNames:" + this.hideMatchedNames);
-            var1.println("joinedFirstServer:" + this.joinedFirstServer);
-            var1.println("syncChunkWrites:" + this.syncWrites);
             KeyMapping[] var3 = this.keyMappings;
             int var4 = var3.length;
 
@@ -866,16 +774,17 @@ public class Options {
       return this.useNativeTransport;
    }
 
-   public void loadSelectedResourcePacks(PackRepository var1) {
+   public void loadResourcePacks(PackRepository<UnopenedResourcePack> var1) {
+      var1.reload();
       LinkedHashSet var2 = Sets.newLinkedHashSet();
       Iterator var3 = this.resourcePacks.iterator();
 
       while(true) {
          while(var3.hasNext()) {
             String var4 = (String)var3.next();
-            Pack var5 = var1.getPack(var4);
+            UnopenedResourcePack var5 = (UnopenedResourcePack)var1.getPack(var4);
             if (var5 == null && !var4.startsWith("file/")) {
-               var5 = var1.getPack("file/" + var4);
+               var5 = (UnopenedResourcePack)var1.getPack("file/" + var4);
             }
 
             if (var5 == null) {
@@ -888,20 +797,12 @@ public class Options {
                LOGGER.info("Removed resource pack {} from incompatibility list because it's now compatible", var4);
                this.incompatibleResourcePacks.remove(var4);
             } else {
-               var2.add(var5.getId());
+               var2.add(var5);
             }
          }
 
          var1.setSelected(var2);
          return;
       }
-   }
-
-   public CameraType getCameraType() {
-      return this.cameraType;
-   }
-
-   public void setCameraType(CameraType var1) {
-      this.cameraType = var1;
    }
 }

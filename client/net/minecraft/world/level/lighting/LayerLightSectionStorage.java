@@ -1,7 +1,6 @@
 package net.minecraft.world.level.lighting;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -29,8 +28,7 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
    protected final M updatingSectionData;
    protected final LongSet changedSections = new LongOpenHashSet();
    protected final LongSet sectionsAffectedByLightUpdates = new LongOpenHashSet();
-   protected final Long2ObjectMap<DataLayer> queuedSections = Long2ObjectMaps.synchronize(new Long2ObjectOpenHashMap());
-   private final LongSet untrustedSections = new LongOpenHashSet();
+   protected final Long2ObjectMap<DataLayer> queuedSections = new Long2ObjectOpenHashMap();
    private final LongSet columnsToRetainQueuedDataFor = new LongOpenHashSet();
    private final LongSet toRemove = new LongOpenHashSet();
    protected volatile boolean hasToRemove;
@@ -152,25 +150,19 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
    }
 
    protected void clearQueuedSectionBlocks(LayerLightEngine<?, ?> var1, long var2) {
-      if (var1.getQueueSize() < 8192) {
-         var1.removeIf((var2x) -> {
-            return SectionPos.blockToSection(var2x) == var2;
-         });
-      } else {
-         int var4 = SectionPos.sectionToBlockCoord(SectionPos.x(var2));
-         int var5 = SectionPos.sectionToBlockCoord(SectionPos.y(var2));
-         int var6 = SectionPos.sectionToBlockCoord(SectionPos.z(var2));
+      int var4 = SectionPos.sectionToBlockCoord(SectionPos.x(var2));
+      int var5 = SectionPos.sectionToBlockCoord(SectionPos.y(var2));
+      int var6 = SectionPos.sectionToBlockCoord(SectionPos.z(var2));
 
-         for(int var7 = 0; var7 < 16; ++var7) {
-            for(int var8 = 0; var8 < 16; ++var8) {
-               for(int var9 = 0; var9 < 16; ++var9) {
-                  long var10 = BlockPos.asLong(var4 + var7, var5 + var8, var6 + var9);
-                  var1.removeFromQueue(var10);
-               }
+      for(int var7 = 0; var7 < 16; ++var7) {
+         for(int var8 = 0; var8 < 16; ++var8) {
+            for(int var9 = 0; var9 < 16; ++var9) {
+               long var10 = BlockPos.asLong(var4 + var7, var5 + var8, var6 + var9);
+               var1.removeFromQueue(var10);
             }
          }
-
       }
+
    }
 
    protected boolean hasInconsistencies() {
@@ -207,15 +199,15 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
 
          this.toRemove.clear();
          this.hasToRemove = false;
-         ObjectIterator var9 = this.queuedSections.long2ObjectEntrySet().iterator();
+         ObjectIterator var22 = this.queuedSections.long2ObjectEntrySet().iterator();
 
          long var6;
-         Entry var10;
-         while(var9.hasNext()) {
-            var10 = (Entry)var9.next();
-            var6 = var10.getLongKey();
+         Entry var23;
+         while(var22.hasNext()) {
+            var23 = (Entry)var22.next();
+            var6 = var23.getLongKey();
             if (this.storingLightForSection(var6)) {
-               var8 = (DataLayer)var10.getValue();
+               var8 = (DataLayer)var23.getValue();
                if (this.updatingSectionData.getLayer(var6) != var8) {
                   this.clearQueuedSectionBlocks(var1, var6);
                   this.updatingSectionData.setLayer(var6, var8);
@@ -228,79 +220,72 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          if (!var3) {
             var4 = this.queuedSections.keySet().iterator();
 
-            while(var4.hasNext()) {
-               var5 = (Long)var4.next();
-               this.checkEdgesForSection(var1, var5);
-            }
-         } else {
-            var4 = this.untrustedSections.iterator();
+            label99:
+            while(true) {
+               do {
+                  if (!var4.hasNext()) {
+                     break label99;
+                  }
 
-            while(var4.hasNext()) {
-               var5 = (Long)var4.next();
-               this.checkEdgesForSection(var1, var5);
-            }
-         }
+                  var5 = (Long)var4.next();
+               } while(!this.storingLightForSection(var5));
 
-         this.untrustedSections.clear();
-         var9 = this.queuedSections.long2ObjectEntrySet().iterator();
+               int var24 = SectionPos.sectionToBlockCoord(SectionPos.x(var5));
+               int var25 = SectionPos.sectionToBlockCoord(SectionPos.y(var5));
+               int var9 = SectionPos.sectionToBlockCoord(SectionPos.z(var5));
+               Direction[] var10 = DIRECTIONS;
+               int var11 = var10.length;
 
-         while(var9.hasNext()) {
-            var10 = (Entry)var9.next();
-            var6 = var10.getLongKey();
-            if (this.storingLightForSection(var6)) {
-               var9.remove();
-            }
-         }
+               for(int var12 = 0; var12 < var11; ++var12) {
+                  Direction var13 = var10[var12];
+                  long var14 = SectionPos.offset(var5, var13);
+                  if (!this.queuedSections.containsKey(var14) && this.storingLightForSection(var14)) {
+                     for(int var16 = 0; var16 < 16; ++var16) {
+                        for(int var17 = 0; var17 < 16; ++var17) {
+                           long var18;
+                           long var20;
+                           switch(var13) {
+                           case DOWN:
+                              var18 = BlockPos.asLong(var24 + var17, var25, var9 + var16);
+                              var20 = BlockPos.asLong(var24 + var17, var25 - 1, var9 + var16);
+                              break;
+                           case UP:
+                              var18 = BlockPos.asLong(var24 + var17, var25 + 16 - 1, var9 + var16);
+                              var20 = BlockPos.asLong(var24 + var17, var25 + 16, var9 + var16);
+                              break;
+                           case NORTH:
+                              var18 = BlockPos.asLong(var24 + var16, var25 + var17, var9);
+                              var20 = BlockPos.asLong(var24 + var16, var25 + var17, var9 - 1);
+                              break;
+                           case SOUTH:
+                              var18 = BlockPos.asLong(var24 + var16, var25 + var17, var9 + 16 - 1);
+                              var20 = BlockPos.asLong(var24 + var16, var25 + var17, var9 + 16);
+                              break;
+                           case WEST:
+                              var18 = BlockPos.asLong(var24, var25 + var16, var9 + var17);
+                              var20 = BlockPos.asLong(var24 - 1, var25 + var16, var9 + var17);
+                              break;
+                           default:
+                              var18 = BlockPos.asLong(var24 + 16 - 1, var25 + var16, var9 + var17);
+                              var20 = BlockPos.asLong(var24 + 16, var25 + var16, var9 + var17);
+                           }
 
-      }
-   }
-
-   private void checkEdgesForSection(LayerLightEngine<M, ?> var1, long var2) {
-      if (this.storingLightForSection(var2)) {
-         int var4 = SectionPos.sectionToBlockCoord(SectionPos.x(var2));
-         int var5 = SectionPos.sectionToBlockCoord(SectionPos.y(var2));
-         int var6 = SectionPos.sectionToBlockCoord(SectionPos.z(var2));
-         Direction[] var7 = DIRECTIONS;
-         int var8 = var7.length;
-
-         for(int var9 = 0; var9 < var8; ++var9) {
-            Direction var10 = var7[var9];
-            long var11 = SectionPos.offset(var2, var10);
-            if (!this.queuedSections.containsKey(var11) && this.storingLightForSection(var11)) {
-               for(int var13 = 0; var13 < 16; ++var13) {
-                  for(int var14 = 0; var14 < 16; ++var14) {
-                     long var15;
-                     long var17;
-                     switch(var10) {
-                     case DOWN:
-                        var15 = BlockPos.asLong(var4 + var14, var5, var6 + var13);
-                        var17 = BlockPos.asLong(var4 + var14, var5 - 1, var6 + var13);
-                        break;
-                     case UP:
-                        var15 = BlockPos.asLong(var4 + var14, var5 + 16 - 1, var6 + var13);
-                        var17 = BlockPos.asLong(var4 + var14, var5 + 16, var6 + var13);
-                        break;
-                     case NORTH:
-                        var15 = BlockPos.asLong(var4 + var13, var5 + var14, var6);
-                        var17 = BlockPos.asLong(var4 + var13, var5 + var14, var6 - 1);
-                        break;
-                     case SOUTH:
-                        var15 = BlockPos.asLong(var4 + var13, var5 + var14, var6 + 16 - 1);
-                        var17 = BlockPos.asLong(var4 + var13, var5 + var14, var6 + 16);
-                        break;
-                     case WEST:
-                        var15 = BlockPos.asLong(var4, var5 + var13, var6 + var14);
-                        var17 = BlockPos.asLong(var4 - 1, var5 + var13, var6 + var14);
-                        break;
-                     default:
-                        var15 = BlockPos.asLong(var4 + 16 - 1, var5 + var13, var6 + var14);
-                        var17 = BlockPos.asLong(var4 + 16, var5 + var13, var6 + var14);
+                           var1.checkEdge(var18, var20, var1.computeLevelFromNeighbor(var18, var20, var1.getLevel(var18)), false);
+                           var1.checkEdge(var20, var18, var1.computeLevelFromNeighbor(var20, var18, var1.getLevel(var20)), false);
+                        }
                      }
-
-                     var1.checkEdge(var15, var17, var1.computeLevelFromNeighbor(var15, var17, var1.getLevel(var15)), false);
-                     var1.checkEdge(var17, var15, var1.computeLevelFromNeighbor(var17, var15, var1.getLevel(var17)), false);
                   }
                }
+            }
+         }
+
+         var22 = this.queuedSections.long2ObjectEntrySet().iterator();
+
+         while(var22.hasNext()) {
+            var23 = (Entry)var22.next();
+            var6 = var23.getLongKey();
+            if (this.storingLightForSection(var6)) {
+               var22.remove();
             }
          }
 
@@ -325,12 +310,9 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
 
    }
 
-   protected void queueSectionData(long var1, @Nullable DataLayer var3, boolean var4) {
+   protected void queueSectionData(long var1, @Nullable DataLayer var3) {
       if (var3 != null) {
          this.queuedSections.put(var1, var3);
-         if (!var4) {
-            this.untrustedSections.add(var1);
-         }
       } else {
          this.queuedSections.remove(var1);
       }

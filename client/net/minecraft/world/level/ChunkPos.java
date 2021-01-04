@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 
 public class ChunkPos {
    public static final long INVALID_CHUNK_POS = asLong(1875016, 1875016);
@@ -21,8 +20,8 @@ public class ChunkPos {
 
    public ChunkPos(BlockPos var1) {
       super();
-      this.x = SectionPos.blockToSectionCoord(var1.getX());
-      this.z = SectionPos.blockToSectionCoord(var1.getZ());
+      this.x = var1.getX() >> 4;
+      this.z = var1.getZ() >> 4;
    }
 
    public ChunkPos(long var1) {
@@ -65,19 +64,19 @@ public class ChunkPos {
    }
 
    public int getMinBlockX() {
-      return SectionPos.sectionToBlockCoord(this.x);
+      return this.x << 4;
    }
 
    public int getMinBlockZ() {
-      return SectionPos.sectionToBlockCoord(this.z);
+      return this.z << 4;
    }
 
    public int getMaxBlockX() {
-      return SectionPos.sectionToBlockCoord(this.x, 15);
+      return (this.x << 4) + 15;
    }
 
    public int getMaxBlockZ() {
-      return SectionPos.sectionToBlockCoord(this.z, 15);
+      return (this.z << 4) + 15;
    }
 
    public int getRegionX() {
@@ -96,16 +95,16 @@ public class ChunkPos {
       return this.z & 31;
    }
 
+   public BlockPos getBlockAt(int var1, int var2, int var3) {
+      return new BlockPos((this.x << 4) + var1, var2, (this.z << 4) + var3);
+   }
+
    public String toString() {
       return "[" + this.x + ", " + this.z + "]";
    }
 
    public BlockPos getWorldPosition() {
-      return new BlockPos(this.getMinBlockX(), 0, this.getMinBlockZ());
-   }
-
-   public int getChessboardDistance(ChunkPos var1) {
-      return Math.max(Math.abs(this.x - var1.x), Math.abs(this.z - var1.z));
+      return new BlockPos(this.x << 4, 0, this.z << 4);
    }
 
    public static Stream<ChunkPos> rangeClosed(ChunkPos var0, int var1) {

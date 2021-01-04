@@ -28,7 +28,7 @@ public class AdvancementProvider implements DataProvider {
       this.generator = var1;
    }
 
-   public void run(HashCache var1) {
+   public void run(HashCache var1) throws IOException {
       Path var2 = this.generator.getOutputFolder();
       HashSet var3 = Sets.newHashSet();
       Consumer var4 = (var3x) -> {

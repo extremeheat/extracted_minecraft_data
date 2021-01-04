@@ -27,12 +27,6 @@ public class SetEntityLookTarget extends Behavior<LivingEntity> {
       }, var2);
    }
 
-   public SetEntityLookTarget(float var1) {
-      this((var0) -> {
-         return true;
-      }, var1);
-   }
-
    public SetEntityLookTarget(Predicate<LivingEntity> var1, float var2) {
       super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT));
       this.predicate = var1;
@@ -49,7 +43,7 @@ public class SetEntityLookTarget extends Behavior<LivingEntity> {
          var3x.stream().filter(this.predicate).filter((var2x) -> {
             return var2x.distanceToSqr(var2) <= (double)this.maxDistSqr;
          }).findFirst().ifPresent((var1) -> {
-            var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1, true)));
+            var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityPosWrapper(var1)));
          });
       });
    }

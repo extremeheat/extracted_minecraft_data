@@ -26,7 +26,6 @@ public class Foods {
    public static final FoodProperties ENCHANTED_GOLDEN_APPLE;
    public static final FoodProperties GOLDEN_APPLE;
    public static final FoodProperties GOLDEN_CARROT;
-   public static final FoodProperties HONEY_BOTTLE;
    public static final FoodProperties MELON_SLICE;
    public static final FoodProperties MUSHROOM_STEW;
    public static final FoodProperties MUTTON;
@@ -64,14 +63,13 @@ public class Foods {
       ENCHANTED_GOLDEN_APPLE = (new FoodProperties.Builder()).nutrition(4).saturationMod(1.2F).effect(new MobEffectInstance(MobEffects.REGENERATION, 400, 1), 1.0F).effect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 6000, 0), 1.0F).effect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 6000, 0), 1.0F).effect(new MobEffectInstance(MobEffects.ABSORPTION, 2400, 3), 1.0F).alwaysEat().build();
       GOLDEN_APPLE = (new FoodProperties.Builder()).nutrition(4).saturationMod(1.2F).effect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1), 1.0F).effect(new MobEffectInstance(MobEffects.ABSORPTION, 2400, 0), 1.0F).alwaysEat().build();
       GOLDEN_CARROT = (new FoodProperties.Builder()).nutrition(6).saturationMod(1.2F).build();
-      HONEY_BOTTLE = (new FoodProperties.Builder()).nutrition(6).saturationMod(0.1F).build();
       MELON_SLICE = (new FoodProperties.Builder()).nutrition(2).saturationMod(0.3F).build();
       MUSHROOM_STEW = stew(6);
       MUTTON = (new FoodProperties.Builder()).nutrition(2).saturationMod(0.3F).meat().build();
       POISONOUS_POTATO = (new FoodProperties.Builder()).nutrition(2).saturationMod(0.3F).effect(new MobEffectInstance(MobEffects.POISON, 100, 0), 0.6F).build();
       PORKCHOP = (new FoodProperties.Builder()).nutrition(3).saturationMod(0.3F).meat().build();
       POTATO = (new FoodProperties.Builder()).nutrition(1).saturationMod(0.3F).build();
-      PUFFERFISH = (new FoodProperties.Builder()).nutrition(1).saturationMod(0.1F).effect(new MobEffectInstance(MobEffects.POISON, 1200, 3), 1.0F).effect(new MobEffectInstance(MobEffects.HUNGER, 300, 2), 1.0F).effect(new MobEffectInstance(MobEffects.CONFUSION, 300, 0), 1.0F).build();
+      PUFFERFISH = (new FoodProperties.Builder()).nutrition(1).saturationMod(0.1F).effect(new MobEffectInstance(MobEffects.POISON, 1200, 3), 1.0F).effect(new MobEffectInstance(MobEffects.HUNGER, 300, 2), 1.0F).effect(new MobEffectInstance(MobEffects.CONFUSION, 300, 1), 1.0F).build();
       PUMPKIN_PIE = (new FoodProperties.Builder()).nutrition(8).saturationMod(0.3F).build();
       RABBIT = (new FoodProperties.Builder()).nutrition(3).saturationMod(0.3F).meat().build();
       RABBIT_STEW = stew(10);

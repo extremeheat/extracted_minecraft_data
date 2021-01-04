@@ -9,7 +9,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -49,27 +48,24 @@ public class MinecartFurnace extends AbstractMinecart {
 
    public void tick() {
       super.tick();
-      if (!this.level.isClientSide()) {
-         if (this.fuel > 0) {
-            --this.fuel;
-         }
-
-         if (this.fuel <= 0) {
-            this.xPush = 0.0D;
-            this.zPush = 0.0D;
-         }
-
-         this.setHasFuel(this.fuel > 0);
+      if (this.fuel > 0) {
+         --this.fuel;
       }
 
+      if (this.fuel <= 0) {
+         this.xPush = 0.0D;
+         this.zPush = 0.0D;
+      }
+
+      this.setHasFuel(this.fuel > 0);
       if (this.hasFuel() && this.random.nextInt(4) == 0) {
-         this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 0.8D, this.getZ(), 0.0D, 0.0D, 0.0D);
+         this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.x, this.y + 0.8D, this.z, 0.0D, 0.0D, 0.0D);
       }
 
    }
 
    protected double getMaxSpeed() {
-      return (this.isInWater() ? 3.0D : 4.0D) / 20.0D;
+      return 0.2D;
    }
 
    public void destroy(DamageSource var1) {
@@ -81,17 +77,21 @@ public class MinecartFurnace extends AbstractMinecart {
    }
 
    protected void moveAlongTrack(BlockPos var1, BlockState var2) {
-      double var3 = 1.0E-4D;
-      double var5 = 0.001D;
       super.moveAlongTrack(var1, var2);
-      Vec3 var7 = this.getDeltaMovement();
-      double var8 = getHorizontalDistanceSqr(var7);
-      double var10 = this.xPush * this.xPush + this.zPush * this.zPush;
-      if (var10 > 1.0E-4D && var8 > 0.001D) {
-         double var12 = (double)Mth.sqrt(var8);
-         double var14 = (double)Mth.sqrt(var10);
-         this.xPush = var7.x / var12 * var14;
-         this.zPush = var7.z / var12 * var14;
+      double var3 = this.xPush * this.xPush + this.zPush * this.zPush;
+      Vec3 var5 = this.getDeltaMovement();
+      if (var3 > 1.0E-4D && getHorizontalDistanceSqr(var5) > 0.001D) {
+         var3 = (double)Mth.sqrt(var3);
+         this.xPush /= var3;
+         this.zPush /= var3;
+         if (this.xPush * var5.x + this.zPush * var5.z < 0.0D) {
+            this.xPush = 0.0D;
+            this.zPush = 0.0D;
+         } else {
+            double var6 = var3 / this.getMaxSpeed();
+            this.xPush *= var6;
+            this.zPush *= var6;
+         }
       }
 
    }
@@ -102,12 +102,7 @@ public class MinecartFurnace extends AbstractMinecart {
          var1 = (double)Mth.sqrt(var1);
          this.xPush /= var1;
          this.zPush /= var1;
-         Vec3 var3 = this.getDeltaMovement().multiply(0.8D, 0.0D, 0.8D).add(this.xPush, 0.0D, this.zPush);
-         if (this.isInWater()) {
-            var3 = var3.scale(0.1D);
-         }
-
-         this.setDeltaMovement(var3);
+         this.setDeltaMovement(this.getDeltaMovement().multiply(0.8D, 0.0D, 0.8D).add(this.xPush, 0.0D, this.zPush));
       } else {
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.98D, 0.0D, 0.98D));
       }
@@ -115,22 +110,19 @@ public class MinecartFurnace extends AbstractMinecart {
       super.applyNaturalSlowdown();
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
+   public boolean interact(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (INGREDIENT.test(var3) && this.fuel + 3600 <= 32000) {
-         if (!var1.getAbilities().instabuild) {
+         if (!var1.abilities.instabuild) {
             var3.shrink(1);
          }
 
          this.fuel += 3600;
       }
 
-      if (this.fuel > 0) {
-         this.xPush = this.getX() - var1.getX();
-         this.zPush = this.getZ() - var1.getZ();
-      }
-
-      return InteractionResult.sidedSuccess(this.level.isClientSide);
+      this.xPush = this.x - var1.x;
+      this.zPush = this.z - var1.z;
+      return true;
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {

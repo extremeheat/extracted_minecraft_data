@@ -2,8 +2,6 @@ package net.minecraft.client;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 
 public enum NarratorStatus {
@@ -16,19 +14,19 @@ public enum NarratorStatus {
       return new NarratorStatus[var0];
    });
    private final int id;
-   private final Component name;
+   private final String key;
 
    private NarratorStatus(int var3, String var4) {
       this.id = var3;
-      this.name = new TranslatableComponent(var4);
+      this.key = var4;
    }
 
    public int getId() {
       return this.id;
    }
 
-   public Component getName() {
-      return this.name;
+   public String getKey() {
+      return this.key;
    }
 
    public static NarratorStatus byId(int var0) {

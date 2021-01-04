@@ -2,9 +2,9 @@ package net.minecraft.world.level.block.grower;
 
 import java.util.Random;
 import javax.annotation.Nullable;
-import net.minecraft.data.worldgen.Features;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.AbstractTreeFeature;
+import net.minecraft.world.level.levelgen.feature.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.SavannaTreeFeature;
 
 public class AcaciaTreeGrower extends AbstractTreeGrower {
    public AcaciaTreeGrower() {
@@ -12,7 +12,7 @@ public class AcaciaTreeGrower extends AbstractTreeGrower {
    }
 
    @Nullable
-   protected ConfiguredFeature<TreeConfiguration, ?> getConfiguredFeature(Random var1, boolean var2) {
-      return Features.ACACIA;
+   protected AbstractTreeFeature<NoneFeatureConfiguration> getFeature(Random var1) {
+      return new SavannaTreeFeature(NoneFeatureConfiguration::deserialize, true);
    }
 }

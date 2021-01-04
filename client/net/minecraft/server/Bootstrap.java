@@ -5,22 +5,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import net.minecraft.SharedConstants;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.commands.synchronization.ArgumentTypes;
 import net.minecraft.core.Registry;
-import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.locale.Language;
-import net.minecraft.tags.StaticTags;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.minecraft.world.level.block.FireBlock;
@@ -35,7 +30,7 @@ public class Bootstrap {
    public static void bootStrap() {
       if (!isBootstrapped) {
          isBootstrapped = true;
-         if (Registry.REGISTRY.keySet().isEmpty()) {
+         if (Registry.REGISTRY.isEmpty()) {
             throw new IllegalStateException("Unable to load registries");
          } else {
             FireBlock.bootStrap();
@@ -46,65 +41,45 @@ public class Bootstrap {
                PotionBrewing.bootStrap();
                EntitySelectorOptions.bootStrap();
                DispenseItemBehavior.bootStrap();
-               CauldronInteraction.bootStrap();
                ArgumentTypes.bootStrap();
-               StaticTags.bootStrap();
                wrapStreams();
             }
          }
       }
    }
 
-   private static <T> void checkTranslations(Iterable<T> var0, Function<T, String> var1, Set<String> var2) {
+   private static <T> void checkTranslations(Registry<T> var0, Function<T, String> var1, Set<String> var2) {
       Language var3 = Language.getInstance();
-      var0.forEach((var3x) -> {
+      var0.iterator().forEachRemaining((var3x) -> {
          String var4 = (String)var1.apply(var3x);
-         if (!var3.has(var4)) {
+         if (!var3.exists(var4)) {
             var2.add(var4);
          }
 
       });
    }
 
-   private static void checkGameruleTranslations(final Set<String> var0) {
-      final Language var1 = Language.getInstance();
-      GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
-         public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1x, GameRules.Type<T> var2) {
-            if (!var1.has(var1x.getDescriptionId())) {
-               var0.add(var1x.getId());
-            }
-
-         }
-      });
-   }
-
    public static Set<String> getMissingTranslations() {
       TreeSet var0 = new TreeSet();
-      checkTranslations(Registry.ATTRIBUTE, Attribute::getDescriptionId, var0);
       checkTranslations(Registry.ENTITY_TYPE, EntityType::getDescriptionId, var0);
       checkTranslations(Registry.MOB_EFFECT, MobEffect::getDescriptionId, var0);
       checkTranslations(Registry.ITEM, Item::getDescriptionId, var0);
       checkTranslations(Registry.ENCHANTMENT, Enchantment::getDescriptionId, var0);
+      checkTranslations(Registry.BIOME, Biome::getDescriptionId, var0);
       checkTranslations(Registry.BLOCK, Block::getDescriptionId, var0);
       checkTranslations(Registry.CUSTOM_STAT, (var0x) -> {
          return "stat." + var0x.toString().replace(':', '.');
       }, var0);
-      checkGameruleTranslations(var0);
       return var0;
    }
 
    public static void validate() {
       if (!isBootstrapped) {
          throw new IllegalArgumentException("Not bootstrapped");
-      } else {
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
-            getMissingTranslations().forEach((var0) -> {
-               LOGGER.error("Missing translations: {}", var0);
-            });
-            Commands.validate();
-         }
-
-         DefaultAttributes.validate();
+      } else if (!SharedConstants.IS_RUNNING_IN_IDE) {
+         getMissingTranslations().forEach((var0) -> {
+            LOGGER.error("Missing translations: " + var0);
+         });
       }
    }
 

@@ -19,7 +19,8 @@ import net.minecraft.world.item.ItemStack;
 public abstract class Enchantment {
    private final EquipmentSlot[] slots;
    private final Enchantment.Rarity rarity;
-   public final EnchantmentCategory category;
+   @Nullable
+   public EnchantmentCategory category;
    @Nullable
    protected String descriptionId;
 
@@ -100,7 +101,7 @@ public abstract class Enchantment {
    }
 
    public Component getFullname(int var1) {
-      TranslatableComponent var2 = new TranslatableComponent(this.getDescriptionId());
+      TranslatableComponent var2 = new TranslatableComponent(this.getDescriptionId(), new Object[0]);
       if (this.isCurse()) {
          var2.withStyle(ChatFormatting.RED);
       } else {
@@ -108,7 +109,7 @@ public abstract class Enchantment {
       }
 
       if (var1 != 1 || this.getMaxLevel() != 1) {
-         var2.append(" ").append((Component)(new TranslatableComponent("enchantment.level." + var1)));
+         var2.append(" ").append((Component)(new TranslatableComponent("enchantment.level." + var1, new Object[0])));
       }
 
       return var2;
@@ -130,14 +131,6 @@ public abstract class Enchantment {
 
    public boolean isCurse() {
       return false;
-   }
-
-   public boolean isTradeable() {
-      return true;
-   }
-
-   public boolean isDiscoverable() {
-      return true;
    }
 
    public static enum Rarity {

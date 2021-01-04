@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -20,19 +19,18 @@ import java.util.Map.Entry;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TickList;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
@@ -45,8 +43,7 @@ public class ProtoChunk implements ChunkAccess {
    private static final Logger LOGGER = LogManager.getLogger();
    private final ChunkPos chunkPos;
    private volatile boolean isDirty;
-   @Nullable
-   private ChunkBiomeContainer biomes;
+   private Biome[] biomes;
    @Nullable
    private volatile LevelLightEngine lightEngine;
    private final Map<Heightmap.Types, Heightmap> heightmaps;
@@ -57,41 +54,40 @@ public class ProtoChunk implements ChunkAccess {
    private final List<CompoundTag> entities;
    private final List<BlockPos> lights;
    private final ShortList[] postProcessing;
-   private final Map<StructureFeature<?>, StructureStart<?>> structureStarts;
-   private final Map<StructureFeature<?>, LongSet> structuresRefences;
+   private final Map<String, StructureStart> structureStarts;
+   private final Map<String, LongSet> structuresRefences;
    private final UpgradeData upgradeData;
    private final ProtoTickList<Block> blockTicks;
    private final ProtoTickList<Fluid> liquidTicks;
-   private final LevelHeightAccessor levelHeightAccessor;
    private long inhabitedTime;
    private final Map<GenerationStep.Carving, BitSet> carvingMasks;
    private volatile boolean isLightCorrect;
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2) {
       this(var1, var2, (LevelChunkSection[])null, new ProtoTickList((var0) -> {
          return var0 == null || var0.defaultBlockState().isAir();
-      }, var1, var3), new ProtoTickList((var0) -> {
+      }, var1), new ProtoTickList((var0) -> {
          return var0 == null || var0 == Fluids.EMPTY;
-      }, var1, var3), var3);
+      }, var1));
    }
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoTickList<Block> var4, ProtoTickList<Fluid> var5, LevelHeightAccessor var6) {
+   public ProtoChunk(ChunkPos var1, UpgradeData var2, @Nullable LevelChunkSection[] var3, ProtoTickList<Block> var4, ProtoTickList<Fluid> var5) {
       super();
       this.heightmaps = Maps.newEnumMap(Heightmap.Types.class);
       this.status = ChunkStatus.EMPTY;
       this.blockEntities = Maps.newHashMap();
       this.blockEntityNbts = Maps.newHashMap();
+      this.sections = new LevelChunkSection[16];
       this.entities = Lists.newArrayList();
       this.lights = Lists.newArrayList();
+      this.postProcessing = new ShortList[16];
       this.structureStarts = Maps.newHashMap();
       this.structuresRefences = Maps.newHashMap();
-      this.carvingMasks = new Object2ObjectArrayMap();
+      this.carvingMasks = Maps.newHashMap();
       this.chunkPos = var1;
       this.upgradeData = var2;
       this.blockTicks = var4;
       this.liquidTicks = var5;
-      this.levelHeightAccessor = var6;
-      this.sections = new LevelChunkSection[var6.getSectionsCount()];
       if (var3 != null) {
          if (this.sections.length == var3.length) {
             System.arraycopy(var3, 0, this.sections, 0, this.sections.length);
@@ -100,25 +96,24 @@ public class ProtoChunk implements ChunkAccess {
          }
       }
 
-      this.postProcessing = new ShortList[var6.getSectionsCount()];
    }
 
    public BlockState getBlockState(BlockPos var1) {
       int var2 = var1.getY();
-      if (this.isOutsideBuildHeight(var2)) {
+      if (Level.isOutsideBuildHeight(var2)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
-         LevelChunkSection var3 = this.getSections()[this.getSectionIndex(var2)];
+         LevelChunkSection var3 = this.getSections()[var2 >> 4];
          return LevelChunkSection.isEmpty(var3) ? Blocks.AIR.defaultBlockState() : var3.getBlockState(var1.getX() & 15, var2 & 15, var1.getZ() & 15);
       }
    }
 
    public FluidState getFluidState(BlockPos var1) {
       int var2 = var1.getY();
-      if (this.isOutsideBuildHeight(var2)) {
+      if (Level.isOutsideBuildHeight(var2)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
-         LevelChunkSection var3 = this.getSections()[this.getSectionIndex(var2)];
+         LevelChunkSection var3 = this.getSections()[var2 >> 4];
          return LevelChunkSection.isEmpty(var3) ? Fluids.EMPTY.defaultFluidState() : var3.getFluidState(var1.getX() & 15, var2 & 15, var1.getZ() & 15);
       }
    }
@@ -128,19 +123,19 @@ public class ProtoChunk implements ChunkAccess {
    }
 
    public ShortList[] getPackedLights() {
-      ShortList[] var1 = new ShortList[this.getSectionsCount()];
+      ShortList[] var1 = new ShortList[16];
       Iterator var2 = this.lights.iterator();
 
       while(var2.hasNext()) {
          BlockPos var3 = (BlockPos)var2.next();
-         ChunkAccess.getOrCreateOffsetList(var1, this.getSectionIndex(var3.getY())).add(packOffsetCoordinates(var3));
+         ChunkAccess.getOrCreateOffsetList(var1, var3.getY() >> 4).add(packOffsetCoordinates(var3));
       }
 
       return var1;
    }
 
    public void addLight(short var1, int var2) {
-      this.addLight(unpackOffsetCoordinates(var1, this.getSectionYFromSectionIndex(var2), this.chunkPos));
+      this.addLight(unpackOffsetCoordinates(var1, var2, this.chunkPos));
    }
 
    public void addLight(BlockPos var1) {
@@ -152,51 +147,50 @@ public class ProtoChunk implements ChunkAccess {
       int var4 = var1.getX();
       int var5 = var1.getY();
       int var6 = var1.getZ();
-      if (var5 >= this.getMinBuildHeight() && var5 < this.getMaxBuildHeight()) {
-         int var7 = this.getSectionIndex(var5);
-         if (this.sections[var7] == LevelChunk.EMPTY_SECTION && var2.is(Blocks.AIR)) {
+      if (var5 >= 0 && var5 < 256) {
+         if (this.sections[var5 >> 4] == LevelChunk.EMPTY_SECTION && var2.getBlock() == Blocks.AIR) {
             return var2;
          } else {
             if (var2.getLightEmission() > 0) {
                this.lights.add(new BlockPos((var4 & 15) + this.getPos().getMinBlockX(), var5, (var6 & 15) + this.getPos().getMinBlockZ()));
             }
 
-            LevelChunkSection var8 = this.getOrCreateSection(var7);
-            BlockState var9 = var8.setBlockState(var4 & 15, var5 & 15, var6 & 15, var2);
-            if (this.status.isOrAfter(ChunkStatus.FEATURES) && var2 != var9 && (var2.getLightBlock(this, var1) != var9.getLightBlock(this, var1) || var2.getLightEmission() != var9.getLightEmission() || var2.useShapeForLightOcclusion() || var9.useShapeForLightOcclusion())) {
-               LevelLightEngine var10 = this.getLightEngine();
-               var10.checkBlock(var1);
+            LevelChunkSection var7 = this.getOrCreateSection(var5 >> 4);
+            BlockState var8 = var7.setBlockState(var4 & 15, var5 & 15, var6 & 15, var2);
+            if (this.status.isOrAfter(ChunkStatus.FEATURES) && var2 != var8 && (var2.getLightBlock(this, var1) != var8.getLightBlock(this, var1) || var2.getLightEmission() != var8.getLightEmission() || var2.useShapeForLightOcclusion() || var8.useShapeForLightOcclusion())) {
+               LevelLightEngine var9 = this.getLightEngine();
+               var9.checkBlock(var1);
             }
 
-            EnumSet var15 = this.getStatus().heightmapsAfter();
-            EnumSet var11 = null;
-            Iterator var12 = var15.iterator();
+            EnumSet var14 = this.getStatus().heightmapsAfter();
+            EnumSet var10 = null;
+            Iterator var11 = var14.iterator();
 
-            Heightmap.Types var13;
-            while(var12.hasNext()) {
-               var13 = (Heightmap.Types)var12.next();
-               Heightmap var14 = (Heightmap)this.heightmaps.get(var13);
-               if (var14 == null) {
-                  if (var11 == null) {
-                     var11 = EnumSet.noneOf(Heightmap.Types.class);
+            Heightmap.Types var12;
+            while(var11.hasNext()) {
+               var12 = (Heightmap.Types)var11.next();
+               Heightmap var13 = (Heightmap)this.heightmaps.get(var12);
+               if (var13 == null) {
+                  if (var10 == null) {
+                     var10 = EnumSet.noneOf(Heightmap.Types.class);
                   }
 
-                  var11.add(var13);
+                  var10.add(var12);
                }
             }
 
-            if (var11 != null) {
-               Heightmap.primeHeightmaps(this, var11);
+            if (var10 != null) {
+               Heightmap.primeHeightmaps(this, var10);
             }
 
-            var12 = var15.iterator();
+            var11 = var14.iterator();
 
-            while(var12.hasNext()) {
-               var13 = (Heightmap.Types)var12.next();
-               ((Heightmap)this.heightmaps.get(var13)).update(var4 & 15, var5, var6 & 15, var2);
+            while(var11.hasNext()) {
+               var12 = (Heightmap.Types)var11.next();
+               ((Heightmap)this.heightmaps.get(var12)).update(var4 & 15, var5, var6 & 15, var2);
             }
 
-            return var9;
+            return var8;
          }
       } else {
          return Blocks.VOID_AIR.defaultBlockState();
@@ -205,14 +199,15 @@ public class ProtoChunk implements ChunkAccess {
 
    public LevelChunkSection getOrCreateSection(int var1) {
       if (this.sections[var1] == LevelChunk.EMPTY_SECTION) {
-         this.sections[var1] = new LevelChunkSection(this.getSectionYFromSectionIndex(var1));
+         this.sections[var1] = new LevelChunkSection(var1 << 4);
       }
 
       return this.sections[var1];
    }
 
-   public void setBlockEntity(BlockEntity var1) {
-      this.blockEntities.put(var1.getBlockPos(), var1);
+   public void setBlockEntity(BlockPos var1, BlockEntity var2) {
+      var2.setPosition(var1);
+      this.blockEntities.put(var1, var2);
    }
 
    public Set<BlockPos> getBlockEntitiesPos() {
@@ -235,23 +230,20 @@ public class ProtoChunk implements ChunkAccess {
    }
 
    public void addEntity(Entity var1) {
-      if (!var1.isPassenger()) {
-         CompoundTag var2 = new CompoundTag();
-         var1.save(var2);
-         this.addEntity(var2);
-      }
+      CompoundTag var2 = new CompoundTag();
+      var1.save(var2);
+      this.addEntity(var2);
    }
 
    public List<CompoundTag> getEntities() {
       return this.entities;
    }
 
-   public void setBiomes(ChunkBiomeContainer var1) {
+   public void setBiomes(Biome[] var1) {
       this.biomes = var1;
    }
 
-   @Nullable
-   public ChunkBiomeContainer getBiomes() {
+   public Biome[] getBiomes() {
       return this.biomes;
    }
 
@@ -309,44 +301,47 @@ public class ProtoChunk implements ChunkAccess {
       return this.chunkPos;
    }
 
+   public void setLastSaveTime(long var1) {
+   }
+
    @Nullable
-   public StructureStart<?> getStartForFeature(StructureFeature<?> var1) {
+   public StructureStart getStartForFeature(String var1) {
       return (StructureStart)this.structureStarts.get(var1);
    }
 
-   public void setStartForFeature(StructureFeature<?> var1, StructureStart<?> var2) {
+   public void setStartForFeature(String var1, StructureStart var2) {
       this.structureStarts.put(var1, var2);
       this.isDirty = true;
    }
 
-   public Map<StructureFeature<?>, StructureStart<?>> getAllStarts() {
+   public Map<String, StructureStart> getAllStarts() {
       return Collections.unmodifiableMap(this.structureStarts);
    }
 
-   public void setAllStarts(Map<StructureFeature<?>, StructureStart<?>> var1) {
+   public void setAllStarts(Map<String, StructureStart> var1) {
       this.structureStarts.clear();
       this.structureStarts.putAll(var1);
       this.isDirty = true;
    }
 
-   public LongSet getReferencesForFeature(StructureFeature<?> var1) {
+   public LongSet getReferencesForFeature(String var1) {
       return (LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> {
          return new LongOpenHashSet();
       });
    }
 
-   public void addReferenceForFeature(StructureFeature<?> var1, long var2) {
+   public void addReferenceForFeature(String var1, long var2) {
       ((LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> {
          return new LongOpenHashSet();
       })).add(var2);
       this.isDirty = true;
    }
 
-   public Map<StructureFeature<?>, LongSet> getAllReferences() {
+   public Map<String, LongSet> getAllReferences() {
       return Collections.unmodifiableMap(this.structuresRefences);
    }
 
-   public void setAllReferences(Map<StructureFeature<?>, LongSet> var1) {
+   public void setAllReferences(Map<String, LongSet> var1) {
       this.structuresRefences.clear();
       this.structuresRefences.putAll(var1);
       this.isDirty = true;
@@ -363,15 +358,15 @@ public class ProtoChunk implements ChunkAccess {
    }
 
    public static BlockPos unpackOffsetCoordinates(short var0, int var1, ChunkPos var2) {
-      int var3 = SectionPos.sectionToBlockCoord(var2.x, var0 & 15);
-      int var4 = SectionPos.sectionToBlockCoord(var1, var0 >>> 4 & 15);
-      int var5 = SectionPos.sectionToBlockCoord(var2.z, var0 >>> 8 & 15);
+      int var3 = (var0 & 15) + (var2.x << 4);
+      int var4 = (var0 >>> 4 & 15) + (var1 << 4);
+      int var5 = (var0 >>> 8 & 15) + (var2.z << 4);
       return new BlockPos(var3, var4, var5);
    }
 
    public void markPosForPostprocessing(BlockPos var1) {
-      if (!this.isOutsideBuildHeight(var1)) {
-         ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(var1.getY())).add(packOffsetCoordinates(var1));
+      if (!Level.isOutsideBuildHeight(var1)) {
+         ChunkAccess.getOrCreateOffsetList(this.postProcessing, var1.getY() >> 4).add(packOffsetCoordinates(var1));
       }
 
    }
@@ -427,12 +422,7 @@ public class ProtoChunk implements ChunkAccess {
       this.blockEntityNbts.remove(var1);
    }
 
-   @Nullable
    public BitSet getCarvingMask(GenerationStep.Carving var1) {
-      return (BitSet)this.carvingMasks.get(var1);
-   }
-
-   public BitSet getOrCreateCarvingMask(GenerationStep.Carving var1) {
       return (BitSet)this.carvingMasks.computeIfAbsent(var1, (var0) -> {
          return new BitSet(65536);
       });
@@ -453,14 +443,6 @@ public class ProtoChunk implements ChunkAccess {
    public void setLightCorrect(boolean var1) {
       this.isLightCorrect = var1;
       this.setUnsaved(true);
-   }
-
-   public int getSectionsCount() {
-      return this.levelHeightAccessor.getSectionsCount();
-   }
-
-   public int getMinSection() {
-      return this.levelHeightAccessor.getMinSection();
    }
 
    // $FF: synthetic method

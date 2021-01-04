@@ -1,19 +1,20 @@
 package net.minecraft.world.level.levelgen.surfacebuilders;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
 public class SwampSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseConfiguration> {
-   public SwampSurfaceBuilder(Codec<SurfaceBuilderBaseConfiguration> var1) {
+   public SwampSurfaceBuilder(Function<Dynamic<?>, ? extends SurfaceBuilderBaseConfiguration> var1) {
       super(var1);
    }
 
    public void apply(Random var1, ChunkAccess var2, Biome var3, int var4, int var5, int var6, double var7, BlockState var9, BlockState var10, int var11, long var12, SurfaceBuilderBaseConfiguration var14) {
-      double var15 = Biome.BIOME_INFO_NOISE.getValue((double)var4 * 0.25D, (double)var5 * 0.25D, false);
+      double var15 = Biome.BIOME_INFO_NOISE.getValue((double)var4 * 0.25D, (double)var5 * 0.25D);
       if (var15 > 0.0D) {
          int var17 = var4 & 15;
          int var18 = var5 & 15;
@@ -22,7 +23,7 @@ public class SwampSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseConfig
          for(int var20 = var6; var20 >= 0; --var20) {
             var19.set(var17, var20, var18);
             if (!var2.getBlockState(var19).isAir()) {
-               if (var20 == 62 && !var2.getBlockState(var19).is(var10.getBlock())) {
+               if (var20 == 62 && var2.getBlockState(var19).getBlock() != var10.getBlock()) {
                   var2.setBlockState(var19, var10, false);
                }
                break;

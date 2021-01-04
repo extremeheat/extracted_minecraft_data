@@ -1,18 +1,11 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.gson.annotations.SerializedName;
-
-public class PlayerInfo extends ValueObject implements ReflectionBasedSerialization {
-   @SerializedName("name")
+public class PlayerInfo extends ValueObject {
    private String name;
-   @SerializedName("uuid")
    private String uuid;
-   @SerializedName("operator")
-   private boolean operator;
-   @SerializedName("accepted")
-   private boolean accepted;
-   @SerializedName("online")
-   private boolean online;
+   private boolean operator = false;
+   private boolean accepted = false;
+   private boolean online = false;
 
    public PlayerInfo() {
       super();

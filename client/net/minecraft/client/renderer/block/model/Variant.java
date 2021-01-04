@@ -5,9 +5,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.math.Transformation;
 import java.lang.reflect.Type;
-import java.util.Objects;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
@@ -15,11 +13,11 @@ import net.minecraft.util.GsonHelper;
 
 public class Variant implements ModelState {
    private final ResourceLocation modelLocation;
-   private final Transformation rotation;
+   private final BlockModelRotation rotation;
    private final boolean uvLock;
    private final int weight;
 
-   public Variant(ResourceLocation var1, Transformation var2, boolean var3, int var4) {
+   public Variant(ResourceLocation var1, BlockModelRotation var2, boolean var3, int var4) {
       super();
       this.modelLocation = var1;
       this.rotation = var2;
@@ -31,7 +29,7 @@ public class Variant implements ModelState {
       return this.modelLocation;
    }
 
-   public Transformation getRotation() {
+   public BlockModelRotation getRotation() {
       return this.rotation;
    }
 
@@ -54,7 +52,7 @@ public class Variant implements ModelState {
          return false;
       } else {
          Variant var2 = (Variant)var1;
-         return this.modelLocation.equals(var2.modelLocation) && Objects.equals(this.rotation, var2.rotation) && this.uvLock == var2.uvLock && this.weight == var2.weight;
+         return this.modelLocation.equals(var2.modelLocation) && this.rotation == var2.rotation && this.uvLock == var2.uvLock && this.weight == var2.weight;
       }
    }
 
@@ -77,7 +75,7 @@ public class Variant implements ModelState {
          BlockModelRotation var6 = this.getBlockRotation(var4);
          boolean var7 = this.getUvLock(var4);
          int var8 = this.getWeight(var4);
-         return new Variant(var5, var6.getRotation(), var7, var8);
+         return new Variant(var5, var6, var7, var8);
       }
 
       private boolean getUvLock(JsonObject var1) {

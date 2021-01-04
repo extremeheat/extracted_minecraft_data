@@ -13,7 +13,7 @@ public enum IslandLayer implements AreaTransformer0 {
       if (var2 == 0 && var3 == 0) {
          return 1;
       } else {
-         return var1.nextRandom(10) == 0 ? 1 : 0;
+         return var1.nextRandom(10) == 0 ? 1 : Layers.OCEAN;
       }
    }
 }

@@ -1,24 +1,26 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SnowyDirtBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
-   public SnowAndFreezeFeature(Codec<NoneFeatureConfiguration> var1) {
+   public SnowAndFreezeFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
 
@@ -28,7 +30,7 @@ public class SnowAndFreezeFeature extends Feature<NoneFeatureConfiguration> {
             int var11 = var4.getZ() + var9;
             int var12 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var10, var11);
             var6.set(var10, var12, var11);
-            var7.set(var6).move(Direction.DOWN, 1);
+            var7.set((Vec3i)var6).move(Direction.DOWN, 1);
             Biome var13 = var1.getBiome(var6);
             if (var13.shouldFreeze(var1, var7, false)) {
                var1.setBlock(var7, Blocks.ICE.defaultBlockState(), 2);

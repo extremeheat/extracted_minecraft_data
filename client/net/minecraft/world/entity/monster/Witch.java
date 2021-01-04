@@ -22,8 +22,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -96,8 +94,10 @@ public class Witch extends Raider implements RangedAttackMob {
       return (Boolean)this.getEntityData().get(DATA_USING_ITEM);
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 26.0D).add(Attributes.MOVEMENT_SPEED, 0.25D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(26.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
    }
 
    public void aiStep() {
@@ -114,7 +114,7 @@ public class Witch extends Raider implements RangedAttackMob {
                this.setUsingItem(false);
                ItemStack var6 = this.getMainHandItem();
                this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-               if (var6.is(Items.POTION)) {
+               if (var6.getItem() == Items.POTION) {
                   List var5 = PotionUtils.getMobEffects(var6);
                   if (var5 != null) {
                      Iterator var3 = var5.iterator();
@@ -126,11 +126,11 @@ public class Witch extends Raider implements RangedAttackMob {
                   }
                }
 
-               this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SPEED_MODIFIER_DRINKING);
+               this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).removeModifier(SPEED_MODIFIER_DRINKING);
             }
          } else {
             Potion var1 = null;
-            if (this.random.nextFloat() < 0.15F && this.isEyeInFluid(FluidTags.WATER) && !this.hasEffect(MobEffects.WATER_BREATHING)) {
+            if (this.random.nextFloat() < 0.15F && this.isUnderLiquid(FluidTags.WATER) && !this.hasEffect(MobEffects.WATER_BREATHING)) {
                var1 = Potions.WATER_BREATHING;
             } else if (this.random.nextFloat() < 0.15F && (this.isOnFire() || this.getLastDamageSource() != null && this.getLastDamageSource().isFire()) && !this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
                var1 = Potions.FIRE_RESISTANCE;
@@ -144,13 +144,10 @@ public class Witch extends Raider implements RangedAttackMob {
                this.setItemSlot(EquipmentSlot.MAINHAND, PotionUtils.setPotion(new ItemStack(Items.POTION), var1));
                this.usingTime = this.getMainHandItem().getUseDuration();
                this.setUsingItem(true);
-               if (!this.isSilent()) {
-                  this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
-               }
-
-               AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
+               this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+               AttributeInstance var2 = this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
                var2.removeModifier(SPEED_MODIFIER_DRINKING);
-               var2.addTransientModifier(SPEED_MODIFIER_DRINKING);
+               var2.addModifier(SPEED_MODIFIER_DRINKING);
             }
          }
 
@@ -169,7 +166,7 @@ public class Witch extends Raider implements RangedAttackMob {
    public void handleEntityEvent(byte var1) {
       if (var1 == 15) {
          for(int var2 = 0; var2 < this.random.nextInt(35) + 10; ++var2) {
-            this.level.addParticle(ParticleTypes.WITCH, this.getX() + this.random.nextGaussian() * 0.12999999523162842D, this.getBoundingBox().maxY + 0.5D + this.random.nextGaussian() * 0.12999999523162842D, this.getZ() + this.random.nextGaussian() * 0.12999999523162842D, 0.0D, 0.0D, 0.0D);
+            this.level.addParticle(ParticleTypes.WITCH, this.x + this.random.nextGaussian() * 0.12999999523162842D, this.getBoundingBox().maxY + 0.5D + this.random.nextGaussian() * 0.12999999523162842D, this.z + this.random.nextGaussian() * 0.12999999523162842D, 0.0D, 0.0D, 0.0D);
          }
       } else {
          super.handleEntityEvent(var1);
@@ -193,9 +190,9 @@ public class Witch extends Raider implements RangedAttackMob {
    public void performRangedAttack(LivingEntity var1, float var2) {
       if (!this.isDrinkingPotion()) {
          Vec3 var3 = var1.getDeltaMovement();
-         double var4 = var1.getX() + var3.x - this.getX();
-         double var6 = var1.getEyeY() - 1.100000023841858D - this.getY();
-         double var8 = var1.getZ() + var3.z - this.getZ();
+         double var4 = var1.x + var3.x - this.x;
+         double var6 = var1.y + (double)var1.getEyeHeight() - 1.100000023841858D - this.y;
+         double var8 = var1.z + var3.z - this.z;
          float var10 = Mth.sqrt(var4 * var4 + var8 * var8);
          Potion var11 = Potions.HARMING;
          if (var1 instanceof Raider) {
@@ -218,10 +215,7 @@ public class Witch extends Raider implements RangedAttackMob {
          var12.setItem(PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), var11));
          var12.xRot -= -20.0F;
          var12.shoot(var4, var6 + (double)(var10 * 0.2F), var8, 0.75F, 8.0F);
-         if (!this.isSilent()) {
-            this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
-         }
-
+         this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
          this.level.addFreshEntity(var12);
       }
    }
@@ -238,7 +232,7 @@ public class Witch extends Raider implements RangedAttackMob {
    }
 
    static {
-      SPEED_MODIFIER_DRINKING = new AttributeModifier(SPEED_MODIFIER_DRINKING_UUID, "Drinking speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
+      SPEED_MODIFIER_DRINKING = (new AttributeModifier(SPEED_MODIFIER_DRINKING_UUID, "Drinking speed penalty", -0.25D, AttributeModifier.Operation.ADDITION)).setSerialize(false);
       DATA_USING_ITEM = SynchedEntityData.defineId(Witch.class, EntityDataSerializers.BOOLEAN);
    }
 }

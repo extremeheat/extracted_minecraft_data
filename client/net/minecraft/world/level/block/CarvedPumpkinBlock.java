@@ -10,11 +10,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
-import net.minecraft.world.item.Wearable;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
@@ -25,7 +23,7 @@ import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 
-public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements Wearable {
+public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    public static final DirectionProperty FACING;
    @Nullable
    private BlockPattern snowGolemBase;
@@ -37,13 +35,13 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements We
    private BlockPattern ironGolemFull;
    private static final Predicate<BlockState> PUMPKINS_PREDICATE;
 
-   protected CarvedPumpkinBlock(BlockBehaviour.Properties var1) {
+   protected CarvedPumpkinBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
+      if (var4.getBlock() != var1.getBlock()) {
          this.trySpawnGolem(var2, var3);
       }
    }
@@ -157,7 +155,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements We
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       PUMPKINS_PREDICATE = (var0) -> {
-         return var0 != null && (var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN));
+         return var0 != null && (var0.getBlock() == Blocks.CARVED_PUMPKIN || var0.getBlock() == Blocks.JACK_O_LANTERN);
       };
    }
 }

@@ -1,25 +1,26 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class CoralTreeFeature extends CoralFeature {
-   public CoralTreeFeature(Codec<NoneFeatureConfiguration> var1) {
+   public CoralTreeFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
    protected boolean placeFeature(LevelAccessor var1, Random var2, BlockPos var3, BlockState var4) {
-      BlockPos.MutableBlockPos var5 = var3.mutable();
+      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos(var3);
       int var6 = var2.nextInt(3) + 1;
 
       for(int var7 = 0; var7 < var6; ++var7) {
@@ -39,7 +40,7 @@ public class CoralTreeFeature extends CoralFeature {
 
       while(var11.hasNext()) {
          Direction var12 = (Direction)var11.next();
-         var5.set(var16);
+         var5.set((Vec3i)var16);
          var5.move(var12);
          int var13 = var2.nextInt(5) + 2;
          int var14 = 0;

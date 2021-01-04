@@ -22,11 +22,11 @@ import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.players.UserBanListEntry;
 
 public class BanPlayerCommands {
-   private static final SimpleCommandExceptionType ERROR_ALREADY_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.ban.failed"));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.ban.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires((var0x) -> {
-         return var0x.hasPermission(3);
+         return var0x.getServer().getPlayerList().getBans().isEnabled() && var0x.hasPermission(3);
       })).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((var0x) -> {
          return banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), (Component)null);
       })).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> {
@@ -48,7 +48,7 @@ public class BanPlayerCommands {
             var0.sendSuccess(new TranslatableComponent("commands.ban.success", new Object[]{ComponentUtils.getDisplayName(var6), var7.getReason()}), true);
             ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.getId());
             if (var8 != null) {
-               var8.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.banned"));
+               var8.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.banned", new Object[0]));
             }
          }
       }

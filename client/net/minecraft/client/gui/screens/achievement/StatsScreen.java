@@ -2,29 +2,25 @@ package net.minecraft.client.gui.screens.achievement;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.Tesselator;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Registry;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -41,7 +37,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 public class StatsScreen extends Screen implements StatsUpdateListener {
-   private static final Component PENDING_TEXT = new TranslatableComponent("multiplayer.downloadingStats");
    protected final Screen lastScreen;
    private StatsScreen.GeneralStatisticsList statsList;
    private StatsScreen.ItemStatisticsList itemStatsList;
@@ -52,7 +47,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    private boolean isLoading = true;
 
    public StatsScreen(Screen var1, StatsCounter var2) {
-      super(new TranslatableComponent("gui.stats"));
+      super(new TranslatableComponent("gui.stats", new Object[0]));
       this.lastScreen = var1;
       this.stats = var2;
    }
@@ -69,16 +64,16 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    }
 
    public void initButtons() {
-      this.addButton(new Button(this.width / 2 - 120, this.height - 52, 80, 20, new TranslatableComponent("stat.generalButton"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 120, this.height - 52, 80, 20, I18n.get("stat.generalButton"), (var1x) -> {
          this.setActiveList(this.statsList);
       }));
-      Button var1 = (Button)this.addButton(new Button(this.width / 2 - 40, this.height - 52, 80, 20, new TranslatableComponent("stat.itemsButton"), (var1x) -> {
+      Button var1 = (Button)this.addButton(new Button(this.width / 2 - 40, this.height - 52, 80, 20, I18n.get("stat.itemsButton"), (var1x) -> {
          this.setActiveList(this.itemStatsList);
       }));
-      Button var2 = (Button)this.addButton(new Button(this.width / 2 + 40, this.height - 52, 80, 20, new TranslatableComponent("stat.mobsButton"), (var1x) -> {
+      Button var2 = (Button)this.addButton(new Button(this.width / 2 + 40, this.height - 52, 80, 20, I18n.get("stat.mobsButton"), (var1x) -> {
          this.setActiveList(this.mobsStatsList);
       }));
-      this.addButton(new Button(this.width / 2 - 100, this.height - 28, 200, 20, CommonComponents.GUI_DONE, (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height - 28, 200, 20, I18n.get("gui.done"), (var1x) -> {
          this.minecraft.setScreen(this.lastScreen);
       }));
       if (this.itemStatsList.children().isEmpty()) {
@@ -91,20 +86,20 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(int var1, int var2, float var3) {
       if (this.isLoading) {
-         this.renderBackground(var1);
-         drawCenteredString(var1, this.font, PENDING_TEXT, this.width / 2, this.height / 2, 16777215);
+         this.renderBackground();
+         this.drawCenteredString(this.font, I18n.get("multiplayer.downloadingStats"), this.width / 2, this.height / 2, 16777215);
          Font var10001 = this.font;
          String var10002 = LOADING_SYMBOLS[(int)(Util.getMillis() / 150L % (long)LOADING_SYMBOLS.length)];
          int var10003 = this.width / 2;
          int var10004 = this.height / 2;
          this.font.getClass();
-         drawCenteredString(var1, var10001, var10002, var10003, var10004 + 9 * 2, 16777215);
+         this.drawCenteredString(var10001, var10002, var10003, var10004 + 9 * 2, 16777215);
       } else {
-         this.getActiveList().render(var1, var2, var3, var4);
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
-         super.render(var1, var2, var3, var4);
+         this.getActiveList().render(var1, var2, var3);
+         this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 20, 16777215);
+         super.render(var1, var2, var3);
       }
 
    }
@@ -139,25 +134,23 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
    }
 
-   private static String getTranslationKey(Stat<ResourceLocation> var0) {
-      return "stat." + ((ResourceLocation)var0.getValue()).toString().replace(':', '.');
-   }
-
    private int getColumnX(int var1) {
       return 115 + 40 * var1;
    }
 
-   private void blitSlot(PoseStack var1, int var2, int var3, Item var4) {
-      this.blitSlotIcon(var1, var2 + 1, var3 + 1, 0, 0);
-      RenderSystem.enableRescaleNormal();
-      this.itemRenderer.renderGuiItem(var4.getDefaultInstance(), var2 + 2, var3 + 2);
-      RenderSystem.disableRescaleNormal();
+   private void blitSlot(int var1, int var2, Item var3) {
+      this.blitSlotIcon(var1 + 1, var2 + 1, 0, 0);
+      GlStateManager.enableRescaleNormal();
+      Lighting.turnOnGui();
+      this.itemRenderer.renderGuiItem(var3.getDefaultInstance(), var1 + 2, var2 + 2);
+      Lighting.turnOff();
+      GlStateManager.disableRescaleNormal();
    }
 
-   private void blitSlotIcon(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   private void blitSlotIcon(int var1, int var2, int var3, int var4) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(STATS_ICON_LOCATION);
-      blit(var1, var2, var3, this.getBlitOffset(), (float)var4, (float)var5, 18, 18, 128, 128);
+      blit(var1, var2, this.blitOffset, (float)var3, (float)var4, 18, 18, 128, 128);
    }
 
    class MobsStatisticsList extends ObjectSelectionList<StatsScreen.MobsStatisticsList.MobRow> {
@@ -183,56 +176,47 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          }
       }
 
-      protected void renderBackground(PoseStack var1) {
-         StatsScreen.this.renderBackground(var1);
+      protected void renderBackground() {
+         StatsScreen.this.renderBackground();
       }
 
       class MobRow extends ObjectSelectionList.Entry<StatsScreen.MobsStatisticsList.MobRow> {
          private final EntityType<?> type;
-         private final Component mobName;
-         private final Component kills;
-         private final boolean hasKills;
-         private final Component killedBy;
-         private final boolean wasKilledBy;
 
          public MobRow(EntityType<?> var2) {
             super();
             this.type = var2;
-            this.mobName = var2.getDescription();
-            int var3 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var2));
-            if (var3 == 0) {
-               this.kills = new TranslatableComponent("stat_type.minecraft.killed.none", new Object[]{this.mobName});
-               this.hasKills = false;
-            } else {
-               this.kills = new TranslatableComponent("stat_type.minecraft.killed", new Object[]{var3, this.mobName});
-               this.hasKills = true;
-            }
-
-            int var4 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var2));
-            if (var4 == 0) {
-               this.killedBy = new TranslatableComponent("stat_type.minecraft.killed_by.none", new Object[]{this.mobName});
-               this.wasKilledBy = false;
-            } else {
-               this.killedBy = new TranslatableComponent("stat_type.minecraft.killed_by", new Object[]{this.mobName, var4});
-               this.wasKilledBy = true;
-            }
-
          }
 
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            GuiComponent.drawString(var1, StatsScreen.this.font, this.mobName, var4 + 2, var3 + 1, 16777215);
+         public void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9) {
+            String var10 = I18n.get(Util.makeDescriptionId("entity", EntityType.getKey(this.type)));
+            int var11 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(this.type));
+            int var12 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(this.type));
+            MobsStatisticsList.this.drawString(StatsScreen.this.font, var10, var3 + 2, var2 + 1, 16777215);
+            StatsScreen.MobsStatisticsList var10000 = MobsStatisticsList.this;
             Font var10001 = StatsScreen.this.font;
-            Component var10002 = this.kills;
-            int var10003 = var4 + 2 + 10;
-            int var10004 = var3 + 1;
+            String var10002 = this.killsMessage(var10, var11);
+            int var10003 = var3 + 2 + 10;
+            int var10004 = var2 + 1;
             StatsScreen.this.font.getClass();
-            GuiComponent.drawString(var1, var10001, var10002, var10003, var10004 + 9, this.hasKills ? 9474192 : 6316128);
+            var10000.drawString(var10001, var10002, var10003, var10004 + 9, var11 == 0 ? 6316128 : 9474192);
+            var10000 = MobsStatisticsList.this;
             var10001 = StatsScreen.this.font;
-            var10002 = this.killedBy;
-            var10003 = var4 + 2 + 10;
-            var10004 = var3 + 1;
+            var10002 = this.killedByMessage(var10, var12);
+            var10003 = var3 + 2 + 10;
+            var10004 = var2 + 1;
             StatsScreen.this.font.getClass();
-            GuiComponent.drawString(var1, var10001, var10002, var10003, var10004 + 9 * 2, this.wasKilledBy ? 9474192 : 6316128);
+            var10000.drawString(var10001, var10002, var10003, var10004 + 9 * 2, var12 == 0 ? 6316128 : 9474192);
+         }
+
+         private String killsMessage(String var1, int var2) {
+            String var3 = Stats.ENTITY_KILLED.getTranslationKey();
+            return var2 == 0 ? I18n.get(var3 + ".none", var1) : I18n.get(var3, var2, var1);
+         }
+
+         private String killedByMessage(String var1, int var2) {
+            String var3 = Stats.ENTITY_KILLED_BY.getTranslationKey();
+            return var2 == 0 ? I18n.get(var3 + ".none", var1) : I18n.get(var3, var1, var2);
          }
       }
    }
@@ -304,26 +288,26 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
       }
 
-      protected void renderHeader(PoseStack var1, int var2, int var3, Tesselator var4) {
+      protected void renderHeader(int var1, int var2, Tesselator var3) {
          if (!this.minecraft.mouseHandler.isLeftPressed()) {
             this.headerPressed = -1;
          }
 
+         int var4;
+         for(var4 = 0; var4 < this.iconOffsets.length; ++var4) {
+            StatsScreen.this.blitSlotIcon(var1 + StatsScreen.this.getColumnX(var4) - 18, var2 + 1, 0, this.headerPressed == var4 ? 0 : 18);
+         }
+
          int var5;
-         for(var5 = 0; var5 < this.iconOffsets.length; ++var5) {
-            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var5) - 18, var3 + 1, 0, this.headerPressed == var5 ? 0 : 18);
-         }
-
-         int var6;
          if (this.sortColumn != null) {
-            var5 = StatsScreen.this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
-            var6 = this.sortOrder == 1 ? 2 : 1;
-            StatsScreen.this.blitSlotIcon(var1, var2 + var5, var3 + 1, 18 * var6, 0);
+            var4 = StatsScreen.this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
+            var5 = this.sortOrder == 1 ? 2 : 1;
+            StatsScreen.this.blitSlotIcon(var1 + var4, var2 + 1, 18 * var5, 0);
          }
 
-         for(var5 = 0; var5 < this.iconOffsets.length; ++var5) {
-            var6 = this.headerPressed == var5 ? 1 : 0;
-            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var5) - 18 + var6, var3 + 1 + var6, 18 * this.iconOffsets[var5], 18);
+         for(var4 = 0; var4 < this.iconOffsets.length; ++var4) {
+            var5 = this.headerPressed == var4 ? 1 : 0;
+            StatsScreen.this.blitSlotIcon(var1 + StatsScreen.this.getColumnX(var4) - 18 + var5, var2 + 1 + var5, 18 * this.iconOffsets[var4], 18);
          }
 
       }
@@ -336,8 +320,8 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          return this.width / 2 + 140;
       }
 
-      protected void renderBackground(PoseStack var1) {
-         StatsScreen.this.renderBackground(var1);
+      protected void renderBackground() {
+         StatsScreen.this.renderBackground();
       }
 
       protected void clickedHeader(int var1, int var2) {
@@ -372,45 +356,43 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          }
       }
 
-      protected void renderDecorations(PoseStack var1, int var2, int var3) {
-         if (var3 >= this.y0 && var3 <= this.y1) {
-            StatsScreen.ItemStatisticsList.ItemRow var4 = (StatsScreen.ItemStatisticsList.ItemRow)this.getEntryAtPosition((double)var2, (double)var3);
-            int var5 = (this.width - this.getRowWidth()) / 2;
-            if (var4 != null) {
-               if (var2 < var5 + 40 || var2 > var5 + 40 + 20) {
+      protected void renderDecorations(int var1, int var2) {
+         if (var2 >= this.y0 && var2 <= this.y1) {
+            StatsScreen.ItemStatisticsList.ItemRow var3 = (StatsScreen.ItemStatisticsList.ItemRow)this.getEntryAtPosition((double)var1, (double)var2);
+            int var4 = (this.width - this.getRowWidth()) / 2;
+            if (var3 != null) {
+               if (var1 < var4 + 40 || var1 > var4 + 40 + 20) {
                   return;
                }
 
-               Item var10 = (Item)this.statItemList.get(this.children().indexOf(var4));
-               this.renderMousehoverTooltip(var1, this.getString(var10), var2, var3);
+               Item var9 = (Item)this.statItemList.get(this.children().indexOf(var3));
+               this.renderMousehoverTooltip(this.getString(var9), var1, var2);
             } else {
-               Component var6 = null;
-               int var7 = var2 - var5;
+               TranslatableComponent var5 = null;
+               int var6 = var1 - var4;
 
-               for(int var8 = 0; var8 < this.iconOffsets.length; ++var8) {
-                  int var9 = StatsScreen.this.getColumnX(var8);
-                  if (var7 >= var9 - 18 && var7 <= var9) {
-                     var6 = this.getColumn(var8).getDisplayName();
+               for(int var7 = 0; var7 < this.iconOffsets.length; ++var7) {
+                  int var8 = StatsScreen.this.getColumnX(var7);
+                  if (var6 >= var8 - 18 && var6 <= var8) {
+                     var5 = new TranslatableComponent(this.getColumn(var7).getTranslationKey(), new Object[0]);
                      break;
                   }
                }
 
-               this.renderMousehoverTooltip(var1, var6, var2, var3);
+               this.renderMousehoverTooltip(var5, var1, var2);
             }
 
          }
       }
 
-      protected void renderMousehoverTooltip(PoseStack var1, @Nullable Component var2, int var3, int var4) {
-         if (var2 != null) {
-            int var5 = var3 + 12;
-            int var6 = var4 - 12;
-            int var7 = StatsScreen.this.font.width((FormattedText)var2);
-            this.fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
-            RenderSystem.pushMatrix();
-            RenderSystem.translatef(0.0F, 0.0F, 400.0F);
-            StatsScreen.this.font.drawShadow(var1, (Component)var2, (float)var5, (float)var6, -1);
-            RenderSystem.popMatrix();
+      protected void renderMousehoverTooltip(@Nullable Component var1, int var2, int var3) {
+         if (var1 != null) {
+            String var4 = var1.getColoredString();
+            int var5 = var2 + 12;
+            int var6 = var3 - 12;
+            int var7 = StatsScreen.this.font.width(var4);
+            this.fillGradient(var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+            StatsScreen.this.font.drawShadow(var4, (float)var5, (float)var6, -1);
          }
       }
 
@@ -437,31 +419,31 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
             super();
          }
 
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            Item var11 = (Item)StatsScreen.this.itemStatsList.statItemList.get(var2);
-            StatsScreen.this.blitSlot(var1, var4 + 40, var3, var11);
+         public void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9) {
+            Item var10 = (Item)StatsScreen.this.itemStatsList.statItemList.get(var1);
+            StatsScreen.this.blitSlot(var3 + 40, var2, var10);
 
-            int var12;
-            for(var12 = 0; var12 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var12) {
-               Stat var13;
-               if (var11 instanceof BlockItem) {
-                  var13 = ((StatType)StatsScreen.this.itemStatsList.blockColumns.get(var12)).get(((BlockItem)var11).getBlock());
+            int var11;
+            for(var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
+               Stat var12;
+               if (var10 instanceof BlockItem) {
+                  var12 = ((StatType)StatsScreen.this.itemStatsList.blockColumns.get(var11)).get(((BlockItem)var10).getBlock());
                } else {
-                  var13 = null;
+                  var12 = null;
                }
 
-               this.renderStat(var1, var13, var4 + StatsScreen.this.getColumnX(var12), var3, var2 % 2 == 0);
+               this.renderStat(var12, var3 + StatsScreen.this.getColumnX(var11), var2, var1 % 2 == 0);
             }
 
-            for(var12 = 0; var12 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var12) {
-               this.renderStat(var1, ((StatType)StatsScreen.this.itemStatsList.itemColumns.get(var12)).get(var11), var4 + StatsScreen.this.getColumnX(var12 + StatsScreen.this.itemStatsList.blockColumns.size()), var3, var2 % 2 == 0);
+            for(var11 = 0; var11 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var11) {
+               this.renderStat(((StatType)StatsScreen.this.itemStatsList.itemColumns.get(var11)).get(var10), var3 + StatsScreen.this.getColumnX(var11 + StatsScreen.this.itemStatsList.blockColumns.size()), var2, var1 % 2 == 0);
             }
 
          }
 
-         protected void renderStat(PoseStack var1, @Nullable Stat<?> var2, int var3, int var4, boolean var5) {
-            String var6 = var2 == null ? "-" : var2.format(StatsScreen.this.stats.getValue(var2));
-            GuiComponent.drawString(var1, StatsScreen.this.font, var6, var3 - StatsScreen.this.font.width(var6), var4 + 5, var5 ? 16777215 : 9474192);
+         protected void renderStat(@Nullable Stat<?> var1, int var2, int var3, boolean var4) {
+            String var5 = var1 == null ? "-" : var1.format(StatsScreen.this.stats.getValue(var1));
+            ItemStatisticsList.this.drawString(StatsScreen.this.font, var5, var2 - StatsScreen.this.font.width(var5), var3 + 5, var4 ? 16777215 : 9474192);
          }
 
          // $FF: synthetic method
@@ -512,37 +494,32 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    class GeneralStatisticsList extends ObjectSelectionList<StatsScreen.GeneralStatisticsList.Entry> {
       public GeneralStatisticsList(Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height, 32, StatsScreen.this.height - 64, 10);
-         ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
-         var3.sort(Comparator.comparing((var0) -> {
-            return I18n.get(StatsScreen.getTranslationKey(var0));
-         }));
-         ObjectListIterator var4 = var3.iterator();
+         Iterator var3 = Stats.CUSTOM.iterator();
 
-         while(var4.hasNext()) {
-            Stat var5 = (Stat)var4.next();
-            this.addEntry(new StatsScreen.GeneralStatisticsList.Entry(var5));
+         while(var3.hasNext()) {
+            Stat var4 = (Stat)var3.next();
+            this.addEntry(new StatsScreen.GeneralStatisticsList.Entry(var4));
          }
 
       }
 
-      protected void renderBackground(PoseStack var1) {
-         StatsScreen.this.renderBackground(var1);
+      protected void renderBackground() {
+         StatsScreen.this.renderBackground();
       }
 
       class Entry extends ObjectSelectionList.Entry<StatsScreen.GeneralStatisticsList.Entry> {
          private final Stat<ResourceLocation> stat;
-         private final Component statDisplay;
 
          private Entry(Stat<ResourceLocation> var2) {
             super();
             this.stat = var2;
-            this.statDisplay = new TranslatableComponent(StatsScreen.getTranslationKey(var2));
          }
 
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            GuiComponent.drawString(var1, StatsScreen.this.font, this.statDisplay, var4 + 2, var3 + 1, var2 % 2 == 0 ? 16777215 : 9474192);
+         public void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9) {
+            Component var10 = (new TranslatableComponent("stat." + ((ResourceLocation)this.stat.getValue()).toString().replace(':', '.'), new Object[0])).withStyle(ChatFormatting.GRAY);
+            GeneralStatisticsList.this.drawString(StatsScreen.this.font, var10.getString(), var3 + 2, var2 + 1, var1 % 2 == 0 ? 16777215 : 9474192);
             String var11 = this.stat.format(StatsScreen.this.stats.getValue(this.stat));
-            GuiComponent.drawString(var1, StatsScreen.this.font, var11, var4 + 2 + 213 - StatsScreen.this.font.width(var11), var3 + 1, var2 % 2 == 0 ? 16777215 : 9474192);
+            GeneralStatisticsList.this.drawString(StatsScreen.this.font, var11, var3 + 2 + 213 - StatsScreen.this.font.width(var11), var2 + 1, var1 % 2 == 0 ? 16777215 : 9474192);
          }
 
          // $FF: synthetic method

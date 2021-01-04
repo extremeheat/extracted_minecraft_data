@@ -1,48 +1,44 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
-import net.minecraft.client.model.ColorableHierarchicalModel;
+import com.mojang.blaze3d.platform.GlStateManager;
+import javax.annotation.Nullable;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.TropicalFishModelA;
 import net.minecraft.client.model.TropicalFishModelB;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.TropicalFishPatternLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.TropicalFish;
 
-public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHierarchicalModel<TropicalFish>> {
-   private final ColorableHierarchicalModel<TropicalFish> modelA = (ColorableHierarchicalModel)this.getModel();
-   private final ColorableHierarchicalModel<TropicalFish> modelB;
+public class TropicalFishRenderer extends MobRenderer<TropicalFish, EntityModel<TropicalFish>> {
+   private final TropicalFishModelA<TropicalFish> modelA = new TropicalFishModelA();
+   private final TropicalFishModelB<TropicalFish> modelB = new TropicalFishModelB();
 
-   public TropicalFishRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new TropicalFishModelA(var1.getLayer(ModelLayers.TROPICAL_FISH_SMALL)), 0.15F);
-      this.modelB = new TropicalFishModelB(var1.getLayer(ModelLayers.TROPICAL_FISH_LARGE));
-      this.addLayer(new TropicalFishPatternLayer(this, var1.getModelSet()));
+   public TropicalFishRenderer(EntityRenderDispatcher var1) {
+      super(var1, new TropicalFishModelA(), 0.15F);
+      this.addLayer(new TropicalFishPatternLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(TropicalFish var1) {
+   @Nullable
+   protected ResourceLocation getTextureLocation(TropicalFish var1) {
       return var1.getBaseTextureLocation();
    }
 
-   public void render(TropicalFish var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      ColorableHierarchicalModel var7 = var1.getBaseVariant() == 0 ? this.modelA : this.modelB;
-      this.model = var7;
-      float[] var8 = var1.getBaseColor();
-      var7.setColor(var8[0], var8[1], var8[2]);
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
-      var7.setColor(1.0F, 1.0F, 1.0F);
+   public void render(TropicalFish var1, double var2, double var4, double var6, float var8, float var9) {
+      this.model = (EntityModel)(var1.getBaseVariant() == 0 ? this.modelA : this.modelB);
+      float[] var10 = var1.getBaseColor();
+      GlStateManager.color3f(var10[0], var10[1], var10[2]);
+      super.render((Mob)var1, var2, var4, var6, var8, var9);
    }
 
-   protected void setupRotations(TropicalFish var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
-      float var6 = 4.3F * Mth.sin(0.6F * var3);
-      var2.mulPose(Vector3f.YP.rotationDegrees(var6));
+   protected void setupRotations(TropicalFish var1, float var2, float var3, float var4) {
+      super.setupRotations(var1, var2, var3, var4);
+      float var5 = 4.3F * Mth.sin(0.6F * var2);
+      GlStateManager.rotatef(var5, 0.0F, 1.0F, 0.0F);
       if (!var1.isInWater()) {
-         var2.translate(0.20000000298023224D, 0.10000000149011612D, 0.0D);
-         var2.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+         GlStateManager.translatef(0.2F, 0.1F, 0.0F);
+         GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
       }
 
    }

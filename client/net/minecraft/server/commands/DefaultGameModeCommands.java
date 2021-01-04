@@ -33,7 +33,7 @@ public class DefaultGameModeCommands {
    private static int setMode(CommandSourceStack var0, GameType var1) {
       int var2 = 0;
       MinecraftServer var3 = var0.getServer();
-      var3.setDefaultGameType(var1);
+      var3.setDefaultGameMode(var1);
       if (var3.getForceGameType()) {
          Iterator var4 = var3.getPlayerList().getPlayers().iterator();
 

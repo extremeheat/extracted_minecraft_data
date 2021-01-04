@@ -1,10 +1,10 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -18,8 +18,8 @@ public class Backup extends ValueObject {
    public Date lastModifiedDate;
    public long size;
    private boolean uploadedVersion;
-   public Map<String, String> metadata = Maps.newHashMap();
-   public Map<String, String> changeList = Maps.newHashMap();
+   public Map<String, String> metadata = new HashMap();
+   public Map<String, String> changeList = new HashMap();
 
    public Backup() {
       super();
@@ -46,7 +46,7 @@ public class Backup extends ValueObject {
             }
          }
       } catch (Exception var7) {
-         LOGGER.error("Could not parse Backup: {}", var7.getMessage());
+         LOGGER.error("Could not parse Backup: " + var7.getMessage());
       }
 
       return var2;
@@ -65,7 +65,7 @@ public class Backup extends ValueObject {
                var2.append(var6).append(" ");
             } else {
                char var7 = Character.toUpperCase(var6.charAt(0));
-               var2.append(var7).append(var6.substring(1)).append(" ");
+               var2.append(var7).append(var6.substring(1, var6.length())).append(" ");
             }
          }
       }

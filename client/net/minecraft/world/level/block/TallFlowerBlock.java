@@ -2,16 +2,14 @@ package net.minecraft.world.level.block;
 
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlock {
-   public TallFlowerBlock(BlockBehaviour.Properties var1) {
+   public TallFlowerBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -27,7 +25,7 @@ public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlo
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       popResource(var1, var3, new ItemStack(this));
    }
 }

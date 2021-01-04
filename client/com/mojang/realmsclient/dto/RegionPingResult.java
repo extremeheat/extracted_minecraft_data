@@ -1,12 +1,9 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.gson.annotations.SerializedName;
 import java.util.Locale;
 
-public class RegionPingResult extends ValueObject implements ReflectionBasedSerialization {
-   @SerializedName("regionName")
+public class RegionPingResult extends ValueObject {
    private final String regionName;
-   @SerializedName("ping")
    private final int ping;
 
    public RegionPingResult(String var1, int var2) {

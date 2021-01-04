@@ -7,13 +7,11 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JukeboxBlock;
@@ -35,7 +33,7 @@ public class RecordItem extends Item {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      if (var4.is(Blocks.JUKEBOX) && !(Boolean)var4.getValue(JukeboxBlock.HAS_RECORD)) {
+      if (var4.getBlock() == Blocks.JUKEBOX && !(Boolean)var4.getValue(JukeboxBlock.HAS_RECORD)) {
          ItemStack var5 = var1.getItemInHand();
          if (!var2.isClientSide) {
             ((JukeboxBlock)Blocks.JUKEBOX).setRecord(var2, var3, var4, var5);
@@ -47,7 +45,7 @@ public class RecordItem extends Item {
             }
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
@@ -61,8 +59,8 @@ public class RecordItem extends Item {
       var3.add(this.getDisplayName().withStyle(ChatFormatting.GRAY));
    }
 
-   public MutableComponent getDisplayName() {
-      return new TranslatableComponent(this.getDescriptionId() + ".desc");
+   public Component getDisplayName() {
+      return new TranslatableComponent(this.getDescriptionId() + ".desc", new Object[0]);
    }
 
    @Nullable

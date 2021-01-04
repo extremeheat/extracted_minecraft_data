@@ -31,7 +31,7 @@ public class MobEffectArgument implements ArgumentType<MobEffect> {
       return new MobEffectArgument();
    }
 
-   public static MobEffect getEffect(CommandContext<CommandSourceStack> var0, String var1) {
+   public static MobEffect getEffect(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return (MobEffect)var0.getArgument(var1, MobEffect.class);
    }
 

@@ -50,7 +50,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    }
 
    public ClientboundAddEntityPacket(Entity var1, int var2) {
-      this(var1.getId(), var1.getUUID(), var1.getX(), var1.getY(), var1.getZ(), var1.xRot, var1.yRot, var1.getType(), var2, var1.getDeltaMovement());
+      this(var1.getId(), var1.getUUID(), var1.x, var1.y, var1.z, var1.xRot, var1.yRot, var1.getType(), var2, var1.getDeltaMovement());
    }
 
    public ClientboundAddEntityPacket(Entity var1, EntityType<?> var2, int var3, BlockPos var4) {

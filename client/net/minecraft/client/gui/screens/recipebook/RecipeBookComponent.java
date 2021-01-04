@@ -1,15 +1,14 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
@@ -20,18 +19,16 @@ import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.LanguageInfo;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.resources.language.Language;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.searchtree.SearchRegistry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
+import net.minecraft.network.protocol.game.ServerboundRecipeBookUpdatePacket;
 import net.minecraft.recipebook.PlaceRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.RecipeBookMenu;
-import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -39,9 +36,6 @@ import net.minecraft.world.item.crafting.Recipe;
 
 public class RecipeBookComponent extends GuiComponent implements Widget, GuiEventListener, RecipeShownListener, PlaceRecipe<Ingredient> {
    protected static final ResourceLocation RECIPE_BOOK_LOCATION = new ResourceLocation("textures/gui/recipe_book.png");
-   private static final Component SEARCH_HINT;
-   private static final Component ONLY_CRAFTABLES_TOOLTIP;
-   private static final Component ALL_RECIPES_TOOLTIP;
    private int xOffset;
    private int width;
    private int height;
@@ -53,9 +47,9 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
    protected Minecraft minecraft;
    private EditBox searchBox;
    private String lastSearch = "";
-   private ClientRecipeBook book;
-   private final RecipeBookPage recipeBookPage = new RecipeBookPage();
-   private final StackedContents stackedContents = new StackedContents();
+   protected ClientRecipeBook book;
+   protected final RecipeBookPage recipeBookPage = new RecipeBookPage();
+   protected final StackedContents stackedContents = new StackedContents();
    private int timesInventoryChanged;
    private boolean ignoreTextInput;
 
@@ -70,7 +64,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       this.menu = var5;
       var3.player.containerMenu = var5;
       this.book = var3.player.getRecipeBook();
-      this.timesInventoryChanged = var3.player.getInventory().getTimesChanged();
+      this.timesInventoryChanged = var3.player.inventory.getTimesChanged();
       if (this.isVisible()) {
          this.initVisuals(var4);
       }
@@ -83,14 +77,14 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       int var2 = (this.width - 147) / 2 - this.xOffset;
       int var3 = (this.height - 166) / 2;
       this.stackedContents.clear();
-      this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
+      this.minecraft.player.inventory.fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       String var4 = this.searchBox != null ? this.searchBox.getValue() : "";
       Font var10003 = this.minecraft.font;
       int var10004 = var2 + 25;
       int var10005 = var3 + 14;
       this.minecraft.font.getClass();
-      this.searchBox = new EditBox(var10003, var10004, var10005, 80, 9 + 5, new TranslatableComponent("itemGroup.search"));
+      this.searchBox = new EditBox(var10003, var10004, var10005, 80, 9 + 5, I18n.get("itemGroup.search"));
       this.searchBox.setMaxLength(50);
       this.searchBox.setBordered(false);
       this.searchBox.setVisible(true);
@@ -98,10 +92,10 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       this.searchBox.setValue(var4);
       this.recipeBookPage.init(this.minecraft, var2, var3);
       this.recipeBookPage.addListener(this);
-      this.filterButton = new StateSwitchingButton(var2 + 110, var3 + 12, 26, 16, this.book.isFiltering(this.menu));
+      this.filterButton = new StateSwitchingButton(var2 + 110, var3 + 12, 26, 16, this.book.isFilteringCraftable(this.menu));
       this.initFilterButtonTextures();
       this.tabButtons.clear();
-      Iterator var5 = RecipeBookCategories.getCategories(this.menu.getRecipeBookType()).iterator();
+      Iterator var5 = ClientRecipeBook.getCategories(this.menu).iterator();
 
       while(var5.hasNext()) {
          RecipeBookCategories var6 = (RecipeBookCategories)var5.next();
@@ -153,11 +147,11 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
    }
 
    public boolean isVisible() {
-      return this.book.isOpen(this.menu.getRecipeBookType());
+      return this.book.isGuiOpen();
    }
 
    protected void setVisible(boolean var1) {
-      this.book.setOpen(this.menu.getRecipeBookType(), var1);
+      this.book.setGuiOpen(var1);
       if (!var1) {
          this.recipeBookPage.setInvisible();
       }
@@ -195,7 +189,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
          });
       }
 
-      if (this.book.isFiltering(this.menu)) {
+      if (this.book.isFilteringCraftable(this.menu)) {
          var3.removeIf((var0) -> {
             return !var0.hasCraftable();
          });
@@ -215,7 +209,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
          while(var5.hasNext()) {
             RecipeBookTabButton var6 = (RecipeBookTabButton)var5.next();
             RecipeBookCategories var7 = var6.getCategory();
-            if (var7 != RecipeBookCategories.CRAFTING_SEARCH && var7 != RecipeBookCategories.FURNACE_SEARCH) {
+            if (var7 != RecipeBookCategories.SEARCH && var7 != RecipeBookCategories.FURNACE_SEARCH) {
                if (var6.updateVisibility(this.book)) {
                   var6.setPosition(var1, var2 + 27 * var4++);
                   var6.startAnimation(this.minecraft);
@@ -232,92 +226,85 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
 
    public void tick() {
       if (this.isVisible()) {
-         if (this.timesInventoryChanged != this.minecraft.player.getInventory().getTimesChanged()) {
+         if (this.timesInventoryChanged != this.minecraft.player.inventory.getTimesChanged()) {
             this.updateStackedContents();
-            this.timesInventoryChanged = this.minecraft.player.getInventory().getTimesChanged();
+            this.timesInventoryChanged = this.minecraft.player.inventory.getTimesChanged();
          }
 
-         this.searchBox.tick();
       }
    }
 
    private void updateStackedContents() {
       this.stackedContents.clear();
-      this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
+      this.minecraft.player.inventory.fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       this.updateCollections(false);
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(int var1, int var2, float var3) {
       if (this.isVisible()) {
-         RenderSystem.pushMatrix();
-         RenderSystem.translatef(0.0F, 0.0F, 100.0F);
+         Lighting.turnOnGui();
+         GlStateManager.disableLighting();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.0F, 0.0F, 100.0F);
          this.minecraft.getTextureManager().bind(RECIPE_BOOK_LOCATION);
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         int var5 = (this.width - 147) / 2 - this.xOffset;
-         int var6 = (this.height - 166) / 2;
-         this.blit(var1, var5, var6, 1, 1, 147, 166);
-         if (!this.searchBox.isFocused() && this.searchBox.getValue().isEmpty()) {
-            drawString(var1, this.minecraft.font, SEARCH_HINT, var5 + 25, var6 + 14, -1);
-         } else {
-            this.searchBox.render(var1, var2, var3, var4);
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         int var4 = (this.width - 147) / 2 - this.xOffset;
+         int var5 = (this.height - 166) / 2;
+         this.blit(var4, var5, 1, 1, 147, 166);
+         this.searchBox.render(var1, var2, var3);
+         Lighting.turnOff();
+         Iterator var6 = this.tabButtons.iterator();
+
+         while(var6.hasNext()) {
+            RecipeBookTabButton var7 = (RecipeBookTabButton)var6.next();
+            var7.render(var1, var2, var3);
          }
 
-         Iterator var7 = this.tabButtons.iterator();
-
-         while(var7.hasNext()) {
-            RecipeBookTabButton var8 = (RecipeBookTabButton)var7.next();
-            var8.render(var1, var2, var3, var4);
-         }
-
-         this.filterButton.render(var1, var2, var3, var4);
-         this.recipeBookPage.render(var1, var5, var6, var2, var3, var4);
-         RenderSystem.popMatrix();
+         this.filterButton.render(var1, var2, var3);
+         this.recipeBookPage.render(var4, var5, var1, var2, var3);
+         GlStateManager.popMatrix();
       }
    }
 
-   public void renderTooltip(PoseStack var1, int var2, int var3, int var4, int var5) {
+   public void renderTooltip(int var1, int var2, int var3, int var4) {
       if (this.isVisible()) {
-         this.recipeBookPage.renderTooltip(var1, var4, var5);
+         this.recipeBookPage.renderTooltip(var3, var4);
          if (this.filterButton.isHovered()) {
-            Component var6 = this.getFilterButtonTooltip();
+            String var5 = this.getFilterButtonTooltip();
             if (this.minecraft.screen != null) {
-               this.minecraft.screen.renderTooltip(var1, var6, var4, var5);
+               this.minecraft.screen.renderTooltip(var5, var3, var4);
             }
          }
 
-         this.renderGhostRecipeTooltip(var1, var2, var3, var4, var5);
+         this.renderGhostRecipeTooltip(var1, var2, var3, var4);
       }
    }
 
-   private Component getFilterButtonTooltip() {
-      return this.filterButton.isStateTriggered() ? this.getRecipeFilterName() : ALL_RECIPES_TOOLTIP;
+   protected String getFilterButtonTooltip() {
+      return I18n.get(this.filterButton.isStateTriggered() ? "gui.recipebook.toggleRecipes.craftable" : "gui.recipebook.toggleRecipes.all");
    }
 
-   protected Component getRecipeFilterName() {
-      return ONLY_CRAFTABLES_TOOLTIP;
-   }
+   private void renderGhostRecipeTooltip(int var1, int var2, int var3, int var4) {
+      ItemStack var5 = null;
 
-   private void renderGhostRecipeTooltip(PoseStack var1, int var2, int var3, int var4, int var5) {
-      ItemStack var6 = null;
-
-      for(int var7 = 0; var7 < this.ghostRecipe.size(); ++var7) {
-         GhostRecipe.GhostIngredient var8 = this.ghostRecipe.get(var7);
-         int var9 = var8.getX() + var2;
-         int var10 = var8.getY() + var3;
-         if (var4 >= var9 && var5 >= var10 && var4 < var9 + 16 && var5 < var10 + 16) {
-            var6 = var8.getItem();
+      for(int var6 = 0; var6 < this.ghostRecipe.size(); ++var6) {
+         GhostRecipe.GhostIngredient var7 = this.ghostRecipe.get(var6);
+         int var8 = var7.getX() + var1;
+         int var9 = var7.getY() + var2;
+         if (var3 >= var8 && var4 >= var9 && var3 < var8 + 16 && var4 < var9 + 16) {
+            var5 = var7.getItem();
          }
       }
 
-      if (var6 != null && this.minecraft.screen != null) {
-         this.minecraft.screen.renderComponentTooltip(var1, this.minecraft.screen.getTooltipFromItem(var6), var4, var5);
+      if (var5 != null && this.minecraft.screen != null) {
+         this.minecraft.screen.renderTooltip(this.minecraft.screen.getTooltipFromItem(var5), var3, var4);
       }
 
    }
 
-   public void renderGhostRecipe(PoseStack var1, int var2, int var3, boolean var4, float var5) {
-      this.ghostRecipe.render(var1, this.minecraft, var2, var3, var4, var5);
+   public void renderGhostRecipe(int var1, int var2, boolean var3, float var4) {
+      this.ghostRecipe.render(this.minecraft, var1, var2, var3, var4);
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
@@ -341,7 +328,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
          } else if (this.searchBox.mouseClicked(var1, var3, var5)) {
             return true;
          } else if (this.filterButton.mouseClicked(var1, var3, var5)) {
-            boolean var8 = this.toggleFiltering();
+            boolean var8 = this.updateFiltering();
             this.filterButton.setStateTriggered(var8);
             this.sendUpdateSettings();
             this.updateCollections(false);
@@ -372,11 +359,10 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
       }
    }
 
-   private boolean toggleFiltering() {
-      RecipeBookType var1 = this.menu.getRecipeBookType();
-      boolean var2 = !this.book.isFiltering(var1);
-      this.book.setFiltering(var1, var2);
-      return var2;
+   protected boolean updateFiltering() {
+      boolean var1 = !this.book.isFilteringCraftable();
+      this.book.setFilteringCraftable(var1);
+      return var1;
    }
 
    public boolean hasClickedOutside(double var1, double var3, int var5, int var6, int var7, int var8, int var9) {
@@ -449,7 +435,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
    private void pirateSpeechForThePeople(String var1) {
       if ("excitedze".equals(var1)) {
          LanguageManager var2 = this.minecraft.getLanguageManager();
-         LanguageInfo var3 = var2.getLanguage("en_pt");
+         Language var3 = var2.getLanguage("en_pt");
          if (var2.getSelected().compareTo(var3) == 0) {
             return;
          }
@@ -457,6 +443,7 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
          var2.setSelected(var3);
          this.minecraft.options.languageCode = var3.getCode();
          this.minecraft.reloadResourcePacks();
+         this.minecraft.font.setBidirectional(var2.isBidirectional());
          this.minecraft.options.save();
       }
 
@@ -502,17 +489,8 @@ public class RecipeBookComponent extends GuiComponent implements Widget, GuiEven
 
    protected void sendUpdateSettings() {
       if (this.minecraft.getConnection() != null) {
-         RecipeBookType var1 = this.menu.getRecipeBookType();
-         boolean var2 = this.book.getBookSettings().isOpen(var1);
-         boolean var3 = this.book.getBookSettings().isFiltering(var1);
-         this.minecraft.getConnection().send((Packet)(new ServerboundRecipeBookChangeSettingsPacket(var1, var2, var3)));
+         this.minecraft.getConnection().send((Packet)(new ServerboundRecipeBookUpdatePacket(this.book.isGuiOpen(), this.book.isFilteringCraftable(), this.book.isFurnaceGuiOpen(), this.book.isFurnaceFilteringCraftable(), this.book.isBlastingFurnaceGuiOpen(), this.book.isBlastingFurnaceFilteringCraftable())));
       }
 
-   }
-
-   static {
-      SEARCH_HINT = (new TranslatableComponent("gui.recipebook.search_hint")).withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY);
-      ONLY_CRAFTABLES_TOOLTIP = new TranslatableComponent("gui.recipebook.toggleRecipes.craftable");
-      ALL_RECIPES_TOOLTIP = new TranslatableComponent("gui.recipebook.toggleRecipes.all");
    }
 }

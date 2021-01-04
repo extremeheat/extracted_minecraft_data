@@ -1,358 +1,122 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import java.util.Random;
-import javax.annotation.Nullable;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.model.dragon.DragonModel;
+import net.minecraft.client.renderer.entity.layers.EnderDragonDeathLayer;
+import net.minecraft.client.renderer.entity.layers.EnderDragonEyesLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 
-public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
+public class EnderDragonRenderer extends MobRenderer<EnderDragon, DragonModel> {
    public static final ResourceLocation CRYSTAL_BEAM_LOCATION = new ResourceLocation("textures/entity/end_crystal/end_crystal_beam.png");
    private static final ResourceLocation DRAGON_EXPLODING_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon_exploding.png");
    private static final ResourceLocation DRAGON_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon.png");
-   private static final ResourceLocation DRAGON_EYES_LOCATION = new ResourceLocation("textures/entity/enderdragon/dragon_eyes.png");
-   private static final RenderType RENDER_TYPE;
-   private static final RenderType DECAL;
-   private static final RenderType EYES;
-   private static final RenderType BEAM;
-   private static final float HALF_SQRT_3;
-   private final EnderDragonRenderer.DragonModel model;
 
-   public EnderDragonRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.shadowRadius = 0.5F;
-      this.model = new EnderDragonRenderer.DragonModel(var1.getLayer(ModelLayers.ENDER_DRAGON));
+   public EnderDragonRenderer(EntityRenderDispatcher var1) {
+      super(var1, new DragonModel(0.0F), 0.5F);
+      this.addLayer(new EnderDragonEyesLayer(this));
+      this.addLayer(new EnderDragonDeathLayer(this));
    }
 
-   public void render(EnderDragon var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      float var7 = (float)var1.getLatencyPos(7, var3)[0];
-      float var8 = (float)(var1.getLatencyPos(5, var3)[1] - var1.getLatencyPos(10, var3)[1]);
-      var4.mulPose(Vector3f.YP.rotationDegrees(-var7));
-      var4.mulPose(Vector3f.XP.rotationDegrees(var8 * 10.0F));
-      var4.translate(0.0D, 0.0D, 1.0D);
-      var4.scale(-1.0F, -1.0F, 1.0F);
-      var4.translate(0.0D, -1.5010000467300415D, 0.0D);
-      boolean var9 = var1.hurtTime > 0;
-      this.model.prepareMobModel(var1, 0.0F, 0.0F, var3);
-      VertexConsumer var20;
-      if (var1.dragonDeathTime > 0) {
-         float var10 = (float)var1.dragonDeathTime / 200.0F;
-         VertexConsumer var11 = var5.getBuffer(RenderType.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION, var10));
-         this.model.renderToBuffer(var4, var11, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-         VertexConsumer var12 = var5.getBuffer(DECAL);
-         this.model.renderToBuffer(var4, var12, var6, OverlayTexture.pack(0.0F, var9), 1.0F, 1.0F, 1.0F, 1.0F);
-      } else {
-         var20 = var5.getBuffer(RENDER_TYPE);
-         this.model.renderToBuffer(var4, var20, var6, OverlayTexture.pack(0.0F, var9), 1.0F, 1.0F, 1.0F, 1.0F);
-      }
-
-      var20 = var5.getBuffer(EYES);
-      this.model.renderToBuffer(var4, var20, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-      float var21;
-      float var22;
-      if (var1.dragonDeathTime > 0) {
-         var21 = ((float)var1.dragonDeathTime + var3) / 200.0F;
-         var22 = Math.min(var21 > 0.8F ? (var21 - 0.8F) / 0.2F : 0.0F, 1.0F);
-         Random var13 = new Random(432L);
-         VertexConsumer var14 = var5.getBuffer(RenderType.lightning());
-         var4.pushPose();
-         var4.translate(0.0D, -1.0D, -2.0D);
-
-         for(int var15 = 0; (float)var15 < (var21 + var21 * var21) / 2.0F * 60.0F; ++var15) {
-            var4.mulPose(Vector3f.XP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.YP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.ZP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.XP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.YP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.ZP.rotationDegrees(var13.nextFloat() * 360.0F + var21 * 90.0F));
-            float var16 = var13.nextFloat() * 20.0F + 5.0F + var22 * 10.0F;
-            float var17 = var13.nextFloat() * 2.0F + 1.0F + var22 * 2.0F;
-            Matrix4f var18 = var4.last().pose();
-            int var19 = (int)(255.0F * (1.0F - var22));
-            vertex01(var14, var18, var19);
-            vertex2(var14, var18, var16, var17);
-            vertex3(var14, var18, var16, var17);
-            vertex01(var14, var18, var19);
-            vertex3(var14, var18, var16, var17);
-            vertex4(var14, var18, var16, var17);
-            vertex01(var14, var18, var19);
-            vertex4(var14, var18, var16, var17);
-            vertex2(var14, var18, var16, var17);
+   protected void setupRotations(EnderDragon var1, float var2, float var3, float var4) {
+      float var5 = (float)var1.getLatencyPos(7, var4)[0];
+      float var6 = (float)(var1.getLatencyPos(5, var4)[1] - var1.getLatencyPos(10, var4)[1]);
+      GlStateManager.rotatef(-var5, 0.0F, 1.0F, 0.0F);
+      GlStateManager.rotatef(var6 * 10.0F, 1.0F, 0.0F, 0.0F);
+      GlStateManager.translatef(0.0F, 0.0F, 1.0F);
+      if (var1.deathTime > 0) {
+         float var7 = ((float)var1.deathTime + var4 - 1.0F) / 20.0F * 1.6F;
+         var7 = Mth.sqrt(var7);
+         if (var7 > 1.0F) {
+            var7 = 1.0F;
          }
 
-         var4.popPose();
+         GlStateManager.rotatef(var7 * this.getFlipDegrees(var1), 0.0F, 0.0F, 1.0F);
       }
 
-      var4.popPose();
+   }
+
+   protected void renderModel(EnderDragon var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      if (var1.dragonDeathTime > 0) {
+         float var8 = (float)var1.dragonDeathTime / 200.0F;
+         GlStateManager.depthFunc(515);
+         GlStateManager.enableAlphaTest();
+         GlStateManager.alphaFunc(516, var8);
+         this.bindTexture(DRAGON_EXPLODING_LOCATION);
+         ((DragonModel)this.model).render(var1, var2, var3, var4, var5, var6, var7);
+         GlStateManager.alphaFunc(516, 0.1F);
+         GlStateManager.depthFunc(514);
+      }
+
+      this.bindTexture(var1);
+      ((DragonModel)this.model).render(var1, var2, var3, var4, var5, var6, var7);
+      if (var1.hurtTime > 0) {
+         GlStateManager.depthFunc(514);
+         GlStateManager.disableTexture();
+         GlStateManager.enableBlend();
+         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+         GlStateManager.color4f(1.0F, 0.0F, 0.0F, 0.5F);
+         ((DragonModel)this.model).render(var1, var2, var3, var4, var5, var6, var7);
+         GlStateManager.enableTexture();
+         GlStateManager.disableBlend();
+         GlStateManager.depthFunc(515);
+      }
+
+   }
+
+   public void render(EnderDragon var1, double var2, double var4, double var6, float var8, float var9) {
+      super.render((Mob)var1, var2, var4, var6, var8, var9);
       if (var1.nearestCrystal != null) {
-         var4.pushPose();
-         var21 = (float)(var1.nearestCrystal.getX() - Mth.lerp((double)var3, var1.xo, var1.getX()));
-         var22 = (float)(var1.nearestCrystal.getY() - Mth.lerp((double)var3, var1.yo, var1.getY()));
-         float var23 = (float)(var1.nearestCrystal.getZ() - Mth.lerp((double)var3, var1.zo, var1.getZ()));
-         renderCrystalBeams(var21, var22 + EndCrystalRenderer.getY(var1.nearestCrystal, var3), var23, var3, var1.tickCount, var4, var5, var6);
-         var4.popPose();
+         this.bindTexture(CRYSTAL_BEAM_LOCATION);
+         float var10 = Mth.sin(((float)var1.nearestCrystal.tickCount + var9) * 0.2F) / 2.0F + 0.5F;
+         var10 = (var10 * var10 + var10) * 0.2F;
+         renderCrystalBeams(var2, var4, var6, var9, Mth.lerp((double)(1.0F - var9), var1.x, var1.xo), Mth.lerp((double)(1.0F - var9), var1.y, var1.yo), Mth.lerp((double)(1.0F - var9), var1.z, var1.zo), var1.tickCount, var1.nearestCrystal.x, (double)var10 + var1.nearestCrystal.y, var1.nearestCrystal.z);
       }
 
-      super.render(var1, var2, var3, var4, var5, var6);
    }
 
-   private static void vertex01(VertexConsumer var0, Matrix4f var1, int var2) {
-      var0.vertex(var1, 0.0F, 0.0F, 0.0F).color(255, 255, 255, var2).endVertex();
-   }
+   public static void renderCrystalBeams(double var0, double var2, double var4, float var6, double var7, double var9, double var11, int var13, double var14, double var16, double var18) {
+      float var20 = (float)(var14 - var7);
+      float var21 = (float)(var16 - 1.0D - var9);
+      float var22 = (float)(var18 - var11);
+      float var23 = Mth.sqrt(var20 * var20 + var22 * var22);
+      float var24 = Mth.sqrt(var20 * var20 + var21 * var21 + var22 * var22);
+      GlStateManager.pushMatrix();
+      GlStateManager.translatef((float)var0, (float)var2 + 2.0F, (float)var4);
+      GlStateManager.rotatef((float)(-Math.atan2((double)var22, (double)var20)) * 57.295776F - 90.0F, 0.0F, 1.0F, 0.0F);
+      GlStateManager.rotatef((float)(-Math.atan2((double)var23, (double)var21)) * 57.295776F - 90.0F, 1.0F, 0.0F, 0.0F);
+      Tesselator var25 = Tesselator.getInstance();
+      BufferBuilder var26 = var25.getBuilder();
+      Lighting.turnOff();
+      GlStateManager.disableCull();
+      GlStateManager.shadeModel(7425);
+      float var27 = 0.0F - ((float)var13 + var6) * 0.01F;
+      float var28 = Mth.sqrt(var20 * var20 + var21 * var21 + var22 * var22) / 32.0F - ((float)var13 + var6) * 0.01F;
+      var26.begin(5, DefaultVertexFormat.POSITION_TEX_COLOR);
+      boolean var29 = true;
 
-   private static void vertex2(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.vertex(var1, -HALF_SQRT_3 * var3, var2, -0.5F * var3).color(255, 0, 255, 0).endVertex();
-   }
-
-   private static void vertex3(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.vertex(var1, HALF_SQRT_3 * var3, var2, -0.5F * var3).color(255, 0, 255, 0).endVertex();
-   }
-
-   private static void vertex4(VertexConsumer var0, Matrix4f var1, float var2, float var3) {
-      var0.vertex(var1, 0.0F, var2, 1.0F * var3).color(255, 0, 255, 0).endVertex();
-   }
-
-   public static void renderCrystalBeams(float var0, float var1, float var2, float var3, int var4, PoseStack var5, MultiBufferSource var6, int var7) {
-      float var8 = Mth.sqrt(var0 * var0 + var2 * var2);
-      float var9 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2);
-      var5.pushPose();
-      var5.translate(0.0D, 2.0D, 0.0D);
-      var5.mulPose(Vector3f.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
-      var5.mulPose(Vector3f.XP.rotation((float)(-Math.atan2((double)var8, (double)var1)) - 1.5707964F));
-      VertexConsumer var10 = var6.getBuffer(BEAM);
-      float var11 = 0.0F - ((float)var4 + var3) * 0.01F;
-      float var12 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2) / 32.0F - ((float)var4 + var3) * 0.01F;
-      boolean var13 = true;
-      float var14 = 0.0F;
-      float var15 = 0.75F;
-      float var16 = 0.0F;
-      PoseStack.Pose var17 = var5.last();
-      Matrix4f var18 = var17.pose();
-      Matrix3f var19 = var17.normal();
-
-      for(int var20 = 1; var20 <= 8; ++var20) {
-         float var21 = Mth.sin((float)var20 * 6.2831855F / 8.0F) * 0.75F;
-         float var22 = Mth.cos((float)var20 * 6.2831855F / 8.0F) * 0.75F;
-         float var23 = (float)var20 / 8.0F;
-         var10.vertex(var18, var14 * 0.2F, var15 * 0.2F, 0.0F).color(0, 0, 0, 255).uv(var16, var11).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var7).normal(var19, 0.0F, -1.0F, 0.0F).endVertex();
-         var10.vertex(var18, var14, var15, var9).color(255, 255, 255, 255).uv(var16, var12).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var7).normal(var19, 0.0F, -1.0F, 0.0F).endVertex();
-         var10.vertex(var18, var21, var22, var9).color(255, 255, 255, 255).uv(var23, var12).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var7).normal(var19, 0.0F, -1.0F, 0.0F).endVertex();
-         var10.vertex(var18, var21 * 0.2F, var22 * 0.2F, 0.0F).color(0, 0, 0, 255).uv(var23, var11).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(var7).normal(var19, 0.0F, -1.0F, 0.0F).endVertex();
-         var14 = var21;
-         var15 = var22;
-         var16 = var23;
+      for(int var30 = 0; var30 <= 8; ++var30) {
+         float var31 = Mth.sin((float)(var30 % 8) * 6.2831855F / 8.0F) * 0.75F;
+         float var32 = Mth.cos((float)(var30 % 8) * 6.2831855F / 8.0F) * 0.75F;
+         float var33 = (float)(var30 % 8) / 8.0F;
+         var26.vertex((double)(var31 * 0.2F), (double)(var32 * 0.2F), 0.0D).uv((double)var33, (double)var27).color(0, 0, 0, 255).endVertex();
+         var26.vertex((double)var31, (double)var32, (double)var24).uv((double)var33, (double)var28).color(255, 255, 255, 255).endVertex();
       }
 
-      var5.popPose();
+      var25.end();
+      GlStateManager.enableCull();
+      GlStateManager.shadeModel(7424);
+      Lighting.turnOn();
+      GlStateManager.popMatrix();
    }
 
-   public ResourceLocation getTextureLocation(EnderDragon var1) {
+   protected ResourceLocation getTextureLocation(EnderDragon var1) {
       return DRAGON_LOCATION;
-   }
-
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      float var2 = -16.0F;
-      PartDefinition var3 = var1.addOrReplaceChild("head", CubeListBuilder.create().addBox("upperlip", -6.0F, -1.0F, -24.0F, 12, 5, 16, 176, 44).addBox("upperhead", -8.0F, -8.0F, -10.0F, 16, 16, 16, 112, 30).mirror().addBox("scale", -5.0F, -12.0F, -4.0F, 2, 4, 6, 0, 0).addBox("nostril", -5.0F, -3.0F, -22.0F, 2, 2, 4, 112, 0).mirror().addBox("scale", 3.0F, -12.0F, -4.0F, 2, 4, 6, 0, 0).addBox("nostril", 3.0F, -3.0F, -22.0F, 2, 2, 4, 112, 0), PartPose.ZERO);
-      var3.addOrReplaceChild("jaw", CubeListBuilder.create().addBox("jaw", -6.0F, 0.0F, -16.0F, 12, 4, 16, 176, 65), PartPose.offset(0.0F, 4.0F, -8.0F));
-      var1.addOrReplaceChild("neck", CubeListBuilder.create().addBox("box", -5.0F, -5.0F, -5.0F, 10, 10, 10, 192, 104).addBox("scale", -1.0F, -9.0F, -3.0F, 2, 4, 6, 48, 0), PartPose.ZERO);
-      var1.addOrReplaceChild("body", CubeListBuilder.create().addBox("body", -12.0F, 0.0F, -16.0F, 24, 24, 64, 0, 0).addBox("scale", -1.0F, -6.0F, -10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -6.0F, 10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -6.0F, 30.0F, 2, 6, 12, 220, 53), PartPose.offset(0.0F, 4.0F, 8.0F));
-      PartDefinition var4 = var1.addOrReplaceChild("left_wing", CubeListBuilder.create().mirror().addBox("bone", 0.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", 0.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(12.0F, 5.0F, 2.0F));
-      var4.addOrReplaceChild("left_wing_tip", CubeListBuilder.create().mirror().addBox("bone", 0.0F, -2.0F, -2.0F, 56, 4, 4, 112, 136).addBox("skin", 0.0F, 0.0F, 2.0F, 56, 0, 56, -56, 144), PartPose.offset(56.0F, 0.0F, 0.0F));
-      PartDefinition var5 = var1.addOrReplaceChild("left_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offset(12.0F, 20.0F, 2.0F));
-      PartDefinition var6 = var5.addOrReplaceChild("left_front_leg_tip", CubeListBuilder.create().addBox("main", -3.0F, -1.0F, -3.0F, 6, 24, 6, 226, 138), PartPose.offset(0.0F, 20.0F, -1.0F));
-      var6.addOrReplaceChild("left_front_foot", CubeListBuilder.create().addBox("main", -4.0F, 0.0F, -12.0F, 8, 4, 16, 144, 104), PartPose.offset(0.0F, 23.0F, 0.0F));
-      PartDefinition var7 = var1.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offset(16.0F, 16.0F, 42.0F));
-      PartDefinition var8 = var7.addOrReplaceChild("left_hind_leg_tip", CubeListBuilder.create().addBox("main", -6.0F, -2.0F, 0.0F, 12, 32, 12, 196, 0), PartPose.offset(0.0F, 32.0F, -4.0F));
-      var8.addOrReplaceChild("left_hind_foot", CubeListBuilder.create().addBox("main", -9.0F, 0.0F, -20.0F, 18, 6, 24, 112, 0), PartPose.offset(0.0F, 31.0F, 4.0F));
-      PartDefinition var9 = var1.addOrReplaceChild("right_wing", CubeListBuilder.create().addBox("bone", -56.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", -56.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(-12.0F, 5.0F, 2.0F));
-      var9.addOrReplaceChild("right_wing_tip", CubeListBuilder.create().addBox("bone", -56.0F, -2.0F, -2.0F, 56, 4, 4, 112, 136).addBox("skin", -56.0F, 0.0F, 2.0F, 56, 0, 56, -56, 144), PartPose.offset(-56.0F, 0.0F, 0.0F));
-      PartDefinition var10 = var1.addOrReplaceChild("right_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offset(-12.0F, 20.0F, 2.0F));
-      PartDefinition var11 = var10.addOrReplaceChild("right_front_leg_tip", CubeListBuilder.create().addBox("main", -3.0F, -1.0F, -3.0F, 6, 24, 6, 226, 138), PartPose.offset(0.0F, 20.0F, -1.0F));
-      var11.addOrReplaceChild("right_front_foot", CubeListBuilder.create().addBox("main", -4.0F, 0.0F, -12.0F, 8, 4, 16, 144, 104), PartPose.offset(0.0F, 23.0F, 0.0F));
-      PartDefinition var12 = var1.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offset(-16.0F, 16.0F, 42.0F));
-      PartDefinition var13 = var12.addOrReplaceChild("right_hind_leg_tip", CubeListBuilder.create().addBox("main", -6.0F, -2.0F, 0.0F, 12, 32, 12, 196, 0), PartPose.offset(0.0F, 32.0F, -4.0F));
-      var13.addOrReplaceChild("right_hind_foot", CubeListBuilder.create().addBox("main", -9.0F, 0.0F, -20.0F, 18, 6, 24, 112, 0), PartPose.offset(0.0F, 31.0F, 4.0F));
-      return LayerDefinition.create(var0, 256, 256);
-   }
-
-   static {
-      RENDER_TYPE = RenderType.entityCutoutNoCull(DRAGON_LOCATION);
-      DECAL = RenderType.entityDecal(DRAGON_LOCATION);
-      EYES = RenderType.eyes(DRAGON_EYES_LOCATION);
-      BEAM = RenderType.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
-      HALF_SQRT_3 = (float)(Math.sqrt(3.0D) / 2.0D);
-   }
-
-   public static class DragonModel extends EntityModel<EnderDragon> {
-      private final ModelPart head;
-      private final ModelPart neck;
-      private final ModelPart jaw;
-      private final ModelPart body;
-      private final ModelPart leftWing;
-      private final ModelPart leftWingTip;
-      private final ModelPart leftFrontLeg;
-      private final ModelPart leftFrontLegTip;
-      private final ModelPart leftFrontFoot;
-      private final ModelPart leftRearLeg;
-      private final ModelPart leftRearLegTip;
-      private final ModelPart leftRearFoot;
-      private final ModelPart rightWing;
-      private final ModelPart rightWingTip;
-      private final ModelPart rightFrontLeg;
-      private final ModelPart rightFrontLegTip;
-      private final ModelPart rightFrontFoot;
-      private final ModelPart rightRearLeg;
-      private final ModelPart rightRearLegTip;
-      private final ModelPart rightRearFoot;
-      @Nullable
-      private EnderDragon entity;
-      private float a;
-
-      public DragonModel(ModelPart var1) {
-         super();
-         this.head = var1.getChild("head");
-         this.jaw = this.head.getChild("jaw");
-         this.neck = var1.getChild("neck");
-         this.body = var1.getChild("body");
-         this.leftWing = var1.getChild("left_wing");
-         this.leftWingTip = this.leftWing.getChild("left_wing_tip");
-         this.leftFrontLeg = var1.getChild("left_front_leg");
-         this.leftFrontLegTip = this.leftFrontLeg.getChild("left_front_leg_tip");
-         this.leftFrontFoot = this.leftFrontLegTip.getChild("left_front_foot");
-         this.leftRearLeg = var1.getChild("left_hind_leg");
-         this.leftRearLegTip = this.leftRearLeg.getChild("left_hind_leg_tip");
-         this.leftRearFoot = this.leftRearLegTip.getChild("left_hind_foot");
-         this.rightWing = var1.getChild("right_wing");
-         this.rightWingTip = this.rightWing.getChild("right_wing_tip");
-         this.rightFrontLeg = var1.getChild("right_front_leg");
-         this.rightFrontLegTip = this.rightFrontLeg.getChild("right_front_leg_tip");
-         this.rightFrontFoot = this.rightFrontLegTip.getChild("right_front_foot");
-         this.rightRearLeg = var1.getChild("right_hind_leg");
-         this.rightRearLegTip = this.rightRearLeg.getChild("right_hind_leg_tip");
-         this.rightRearFoot = this.rightRearLegTip.getChild("right_hind_foot");
-      }
-
-      public void prepareMobModel(EnderDragon var1, float var2, float var3, float var4) {
-         this.entity = var1;
-         this.a = var4;
-      }
-
-      public void setupAnim(EnderDragon var1, float var2, float var3, float var4, float var5, float var6) {
-      }
-
-      public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
-         var1.pushPose();
-         float var9 = Mth.lerp(this.a, this.entity.oFlapTime, this.entity.flapTime);
-         this.jaw.xRot = (float)(Math.sin((double)(var9 * 6.2831855F)) + 1.0D) * 0.2F;
-         float var10 = (float)(Math.sin((double)(var9 * 6.2831855F - 1.0F)) + 1.0D);
-         var10 = (var10 * var10 + var10 * 2.0F) * 0.05F;
-         var1.translate(0.0D, (double)(var10 - 2.0F), -3.0D);
-         var1.mulPose(Vector3f.XP.rotationDegrees(var10 * 2.0F));
-         float var11 = 0.0F;
-         float var12 = 20.0F;
-         float var13 = -12.0F;
-         float var14 = 1.5F;
-         double[] var15 = this.entity.getLatencyPos(6, this.a);
-         float var16 = Mth.rotWrap(this.entity.getLatencyPos(5, this.a)[0] - this.entity.getLatencyPos(10, this.a)[0]);
-         float var17 = Mth.rotWrap(this.entity.getLatencyPos(5, this.a)[0] + (double)(var16 / 2.0F));
-         float var18 = var9 * 6.2831855F;
-
-         float var21;
-         for(int var19 = 0; var19 < 5; ++var19) {
-            double[] var20 = this.entity.getLatencyPos(5 - var19, this.a);
-            var21 = (float)Math.cos((double)((float)var19 * 0.45F + var18)) * 0.15F;
-            this.neck.yRot = Mth.rotWrap(var20[0] - var15[0]) * 0.017453292F * 1.5F;
-            this.neck.xRot = var21 + this.entity.getHeadPartYOffset(var19, var15, var20) * 0.017453292F * 1.5F * 5.0F;
-            this.neck.zRot = -Mth.rotWrap(var20[0] - (double)var17) * 0.017453292F * 1.5F;
-            this.neck.y = var12;
-            this.neck.z = var13;
-            this.neck.x = var11;
-            var12 = (float)((double)var12 + Math.sin((double)this.neck.xRot) * 10.0D);
-            var13 = (float)((double)var13 - Math.cos((double)this.neck.yRot) * Math.cos((double)this.neck.xRot) * 10.0D);
-            var11 = (float)((double)var11 - Math.sin((double)this.neck.yRot) * Math.cos((double)this.neck.xRot) * 10.0D);
-            this.neck.render(var1, var2, var3, var4);
-         }
-
-         this.head.y = var12;
-         this.head.z = var13;
-         this.head.x = var11;
-         double[] var23 = this.entity.getLatencyPos(0, this.a);
-         this.head.yRot = Mth.rotWrap(var23[0] - var15[0]) * 0.017453292F;
-         this.head.xRot = Mth.rotWrap((double)this.entity.getHeadPartYOffset(6, var15, var23)) * 0.017453292F * 1.5F * 5.0F;
-         this.head.zRot = -Mth.rotWrap(var23[0] - (double)var17) * 0.017453292F;
-         this.head.render(var1, var2, var3, var4);
-         var1.pushPose();
-         var1.translate(0.0D, 1.0D, 0.0D);
-         var1.mulPose(Vector3f.ZP.rotationDegrees(-var16 * 1.5F));
-         var1.translate(0.0D, -1.0D, 0.0D);
-         this.body.zRot = 0.0F;
-         this.body.render(var1, var2, var3, var4);
-         float var24 = var9 * 6.2831855F;
-         this.leftWing.xRot = 0.125F - (float)Math.cos((double)var24) * 0.2F;
-         this.leftWing.yRot = -0.25F;
-         this.leftWing.zRot = -((float)(Math.sin((double)var24) + 0.125D)) * 0.8F;
-         this.leftWingTip.zRot = (float)(Math.sin((double)(var24 + 2.0F)) + 0.5D) * 0.75F;
-         this.rightWing.xRot = this.leftWing.xRot;
-         this.rightWing.yRot = -this.leftWing.yRot;
-         this.rightWing.zRot = -this.leftWing.zRot;
-         this.rightWingTip.zRot = -this.leftWingTip.zRot;
-         this.renderSide(var1, var2, var3, var4, var10, this.leftWing, this.leftFrontLeg, this.leftFrontLegTip, this.leftFrontFoot, this.leftRearLeg, this.leftRearLegTip, this.leftRearFoot);
-         this.renderSide(var1, var2, var3, var4, var10, this.rightWing, this.rightFrontLeg, this.rightFrontLegTip, this.rightFrontFoot, this.rightRearLeg, this.rightRearLegTip, this.rightRearFoot);
-         var1.popPose();
-         var21 = -((float)Math.sin((double)(var9 * 6.2831855F))) * 0.0F;
-         var18 = var9 * 6.2831855F;
-         var12 = 10.0F;
-         var13 = 60.0F;
-         var11 = 0.0F;
-         var15 = this.entity.getLatencyPos(11, this.a);
-
-         for(int var22 = 0; var22 < 12; ++var22) {
-            var23 = this.entity.getLatencyPos(12 + var22, this.a);
-            var21 = (float)((double)var21 + Math.sin((double)((float)var22 * 0.45F + var18)) * 0.05000000074505806D);
-            this.neck.yRot = (Mth.rotWrap(var23[0] - var15[0]) * 1.5F + 180.0F) * 0.017453292F;
-            this.neck.xRot = var21 + (float)(var23[1] - var15[1]) * 0.017453292F * 1.5F * 5.0F;
-            this.neck.zRot = Mth.rotWrap(var23[0] - (double)var17) * 0.017453292F * 1.5F;
-            this.neck.y = var12;
-            this.neck.z = var13;
-            this.neck.x = var11;
-            var12 = (float)((double)var12 + Math.sin((double)this.neck.xRot) * 10.0D);
-            var13 = (float)((double)var13 - Math.cos((double)this.neck.yRot) * Math.cos((double)this.neck.xRot) * 10.0D);
-            var11 = (float)((double)var11 - Math.sin((double)this.neck.yRot) * Math.cos((double)this.neck.xRot) * 10.0D);
-            this.neck.render(var1, var2, var3, var4);
-         }
-
-         var1.popPose();
-      }
-
-      private void renderSide(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, ModelPart var6, ModelPart var7, ModelPart var8, ModelPart var9, ModelPart var10, ModelPart var11, ModelPart var12) {
-         var10.xRot = 1.0F + var5 * 0.1F;
-         var11.xRot = 0.5F + var5 * 0.1F;
-         var12.xRot = 0.75F + var5 * 0.1F;
-         var7.xRot = 1.3F + var5 * 0.1F;
-         var8.xRot = -0.5F - var5 * 0.1F;
-         var9.xRot = 0.75F + var5 * 0.1F;
-         var6.render(var1, var2, var3, var4);
-         var7.render(var1, var2, var3, var4);
-         var10.render(var1, var2, var3, var4);
-      }
    }
 }

@@ -1,12 +1,12 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.function.Function;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.IdMapper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class LinearPalette<T> implements Palette<T> {
    private final IdMapper<T> registry;
@@ -43,14 +43,8 @@ public class LinearPalette<T> implements Palette<T> {
       }
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         if (var1.test(this.values[var2])) {
-            return true;
-         }
-      }
-
-      return false;
+   public boolean maybeHas(T var1) {
+      return ArrayUtils.contains(this.values, var1);
    }
 
    @Nullable

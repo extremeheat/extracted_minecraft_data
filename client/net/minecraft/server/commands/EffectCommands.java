@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -22,16 +21,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 
 public class EffectCommands {
-   private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.give.failed"));
-   private static final SimpleCommandExceptionType ERROR_CLEAR_EVERYTHING_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.clear.everything.failed"));
-   private static final SimpleCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.clear.specific.failed"));
+   private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.give.failed", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_CLEAR_EVERYTHING_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.clear.everything.failed", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.effect.clear.specific.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("effect").requires((var0x) -> {
          return var0x.hasPermission(2);
-      })).then(((LiteralArgumentBuilder)Commands.literal("clear").executes((var0x) -> {
-         return clearEffects((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getEntityOrException()));
-      })).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
+      })).then(Commands.literal("clear").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> {
          return clearEffects((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"));
       })).then(Commands.argument("effect", MobEffectArgument.effect()).executes((var0x) -> {
          return clearEffect((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), MobEffectArgument.getEffect(var0x, "effect"));

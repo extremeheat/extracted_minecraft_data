@@ -16,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import net.minecraft.client.User;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
@@ -40,21 +39,21 @@ public class FileUpload {
    private final String username;
    private final String clientVersion;
    private final UploadStatus uploadStatus;
-   private final AtomicBoolean cancelled = new AtomicBoolean(false);
+   private AtomicBoolean cancelled = new AtomicBoolean(false);
    private CompletableFuture<UploadResult> uploadTask;
    private final RequestConfig requestConfig;
 
-   public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, UploadStatus var8) {
+   public FileUpload(File var1, long var2, int var4, UploadInfo var5, String var6, String var7, String var8, UploadStatus var9) {
       super();
       this.requestConfig = RequestConfig.custom().setSocketTimeout((int)TimeUnit.MINUTES.toMillis(10L)).setConnectTimeout((int)TimeUnit.SECONDS.toMillis(15L)).build();
       this.file = var1;
       this.worldId = var2;
       this.slotId = var4;
       this.uploadInfo = var5;
-      this.sessionId = var6.getSessionId();
-      this.username = var6.getName();
-      this.clientVersion = var7;
-      this.uploadStatus = var8;
+      this.sessionId = var6;
+      this.username = var7;
+      this.clientVersion = var8;
+      this.uploadStatus = var9;
    }
 
    public void upload(Consumer<UploadResult> var1) {
@@ -81,7 +80,7 @@ public class FileUpload {
          return var2.build();
       } else {
          this.uploadStatus.totalBytes = this.file.length();
-         HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.worldId + "/" + this.slotId));
+         HttpPost var3 = new HttpPost("http://" + this.uploadInfo.getUploadEndpoint() + ":" + this.uploadInfo.getPort() + "/upload" + "/" + this.worldId + "/" + this.slotId);
          CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
 
          try {
@@ -128,7 +127,7 @@ public class FileUpload {
    private void handleResponse(HttpResponse var1, UploadResult.Builder var2) throws IOException {
       int var3 = var1.getStatusLine().getStatusCode();
       if (var3 == 401) {
-         LOGGER.debug("Realms server returned 401: {}", var1.getFirstHeader("WWW-Authenticate"));
+         LOGGER.debug("Realms server returned 401: " + var1.getFirstHeader("WWW-Authenticate"));
       }
 
       var2.withStatusCode(var3);
@@ -182,13 +181,12 @@ public class FileUpload {
 
          try {
             byte[] var3 = new byte[4096];
-            UploadStatus var10000;
             int var4;
             if (this.length < 0L) {
                while((var4 = var2.read(var3)) != -1) {
                   var1.write(var3, 0, var4);
-                  var10000 = this.uploadStatus;
-                  var10000.bytesWritten += (long)var4;
+                  UploadStatus var11 = this.uploadStatus;
+                  var11.bytesWritten = var11.bytesWritten + (long)var4;
                }
             } else {
                long var5 = this.length;
@@ -200,8 +198,8 @@ public class FileUpload {
                   }
 
                   var1.write(var3, 0, var4);
-                  var10000 = this.uploadStatus;
-                  var10000.bytesWritten += (long)var4;
+                  UploadStatus var7 = this.uploadStatus;
+                  var7.bytesWritten = var7.bytesWritten + (long)var4;
                   var5 -= (long)var4;
                   var1.flush();
                }

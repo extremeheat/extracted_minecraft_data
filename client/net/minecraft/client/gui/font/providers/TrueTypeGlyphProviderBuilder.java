@@ -16,9 +16,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTruetype;
-import org.lwjgl.system.MemoryUtil;
 
 public class TrueTypeGlyphProviderBuilder implements GlyphProviderBuilder {
    private static final Logger LOGGER = LogManager.getLogger();
@@ -71,51 +68,38 @@ public class TrueTypeGlyphProviderBuilder implements GlyphProviderBuilder {
 
    @Nullable
    public GlyphProvider create(ResourceManager var1) {
-      STBTTFontinfo var2 = null;
-      ByteBuffer var3 = null;
-
       try {
-         Resource var4 = var1.getResource(new ResourceLocation(this.location.getNamespace(), "font/" + this.location.getPath()));
-         Throwable var5 = null;
+         Resource var2 = var1.getResource(new ResourceLocation(this.location.getNamespace(), "font/" + this.location.getPath()));
+         Throwable var3 = null;
 
-         TrueTypeGlyphProvider var6;
+         TrueTypeGlyphProvider var5;
          try {
-            LOGGER.debug("Loading font {}", this.location);
-            var2 = STBTTFontinfo.malloc();
-            var3 = TextureUtil.readResource(var4.getInputStream());
-            var3.flip();
-            LOGGER.debug("Reading font {}", this.location);
-            if (!STBTruetype.stbtt_InitFont(var2, var3)) {
-               throw new IOException("Invalid ttf");
-            }
-
-            var6 = new TrueTypeGlyphProvider(var3, var2, this.size, this.oversample, this.shiftX, this.shiftY, this.skip);
-         } catch (Throwable var16) {
-            var5 = var16;
-            throw var16;
+            LOGGER.info("Loading font");
+            ByteBuffer var4 = TextureUtil.readResource(var2.getInputStream());
+            var4.flip();
+            LOGGER.info("Reading font");
+            var5 = new TrueTypeGlyphProvider(TrueTypeGlyphProvider.getStbttFontinfo(var4), this.size, this.oversample, this.shiftX, this.shiftY, this.skip);
+         } catch (Throwable var15) {
+            var3 = var15;
+            throw var15;
          } finally {
-            if (var4 != null) {
-               if (var5 != null) {
+            if (var2 != null) {
+               if (var3 != null) {
                   try {
-                     var4.close();
-                  } catch (Throwable var15) {
-                     var5.addSuppressed(var15);
+                     var2.close();
+                  } catch (Throwable var14) {
+                     var3.addSuppressed(var14);
                   }
                } else {
-                  var4.close();
+                  var2.close();
                }
             }
 
          }
 
-         return var6;
-      } catch (Exception var18) {
-         LOGGER.error("Couldn't load truetype font {}", this.location, var18);
-         if (var2 != null) {
-            var2.free();
-         }
-
-         MemoryUtil.memFree(var3);
+         return var5;
+      } catch (IOException var17) {
+         LOGGER.error("Couldn't load truetype font {}", this.location, var17);
          return null;
       }
    }

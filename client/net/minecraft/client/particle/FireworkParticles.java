@@ -1,11 +1,9 @@
 package net.minecraft.client.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +14,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.FireworkRocketItem;
+import net.minecraft.world.level.Level;
 
 public class FireworkParticles {
    public static class SparkProvider implements ParticleProvider<SimpleParticleType> {
@@ -26,7 +25,7 @@ public class FireworkParticles {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          FireworkParticles.SparkParticle var15 = new FireworkParticles.SparkParticle(var2, var3, var5, var7, var9, var11, var13, Minecraft.getInstance().particleEngine, this.sprites);
          var15.setAlpha(0.99F);
          return var15;
@@ -41,7 +40,7 @@ public class FireworkParticles {
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          FireworkParticles.OverlayParticle var15 = new FireworkParticles.OverlayParticle(var2, var3, var5, var7);
          var15.pickSprite(this.sprite);
          return var15;
@@ -49,7 +48,7 @@ public class FireworkParticles {
    }
 
    public static class OverlayParticle extends TextureSheetParticle {
-      private OverlayParticle(ClientLevel var1, double var2, double var4, double var6) {
+      private OverlayParticle(Level var1, double var2, double var4, double var6) {
          super(var1, var2, var4, var6);
          this.lifetime = 4;
       }
@@ -58,9 +57,9 @@ public class FireworkParticles {
          return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
       }
 
-      public void render(VertexConsumer var1, Camera var2, float var3) {
+      public void render(BufferBuilder var1, Camera var2, float var3, float var4, float var5, float var6, float var7, float var8) {
          this.setAlpha(0.6F - ((float)this.age + var3 - 1.0F) * 0.25F * 0.5F);
-         super.render(var1, var2, var3);
+         super.render(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
       public float getQuadSize(float var1) {
@@ -68,7 +67,7 @@ public class FireworkParticles {
       }
 
       // $FF: synthetic method
-      OverlayParticle(ClientLevel var1, double var2, double var4, double var6, Object var8) {
+      OverlayParticle(Level var1, double var2, double var4, double var6, Object var8) {
          this(var1, var2, var4, var6);
       }
    }
@@ -82,7 +81,7 @@ public class FireworkParticles {
       private float fadeB;
       private boolean hasFade;
 
-      private SparkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, SpriteSet var15) {
+      private SparkParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, SpriteSet var15) {
          super(var1, var2, var4, var6, var15, -0.004F);
          this.xd = var8;
          this.yd = var10;
@@ -101,9 +100,9 @@ public class FireworkParticles {
          this.flicker = var1;
       }
 
-      public void render(VertexConsumer var1, Camera var2, float var3) {
+      public void render(BufferBuilder var1, Camera var2, float var3, float var4, float var5, float var6, float var7, float var8) {
          if (!this.flicker || this.age < this.lifetime / 3 || (this.age + this.lifetime) / 3 % 2 == 0) {
-            super.render(var1, var2, var3);
+            super.render(var1, var2, var3, var4, var5, var6, var7, var8);
          }
 
       }
@@ -129,7 +128,7 @@ public class FireworkParticles {
       }
 
       // $FF: synthetic method
-      SparkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, SpriteSet var15, Object var16) {
+      SparkParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, SpriteSet var15, Object var16) {
          this(var1, var2, var4, var6, var8, var10, var12, var14, var15);
       }
    }
@@ -140,7 +139,7 @@ public class FireworkParticles {
       private ListTag explosions;
       private boolean twinkleDelay;
 
-      public Starter(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, @Nullable CompoundTag var15) {
+      public Starter(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, @Nullable CompoundTag var15) {
          super(var1, var2, var4, var6);
          this.xd = var8;
          this.yd = var10;
@@ -258,7 +257,7 @@ public class FireworkParticles {
          int var18 = this.random.nextInt(var13.length);
          var17.setColor(var13[var18]);
          if (var14.length > 0) {
-            var17.setFadeColor(Util.getRandom(var14, this.random));
+            var17.setFadeColor(var14[this.random.nextInt(var14.length)]);
          }
 
       }

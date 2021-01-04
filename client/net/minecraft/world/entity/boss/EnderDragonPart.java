@@ -49,8 +49,4 @@ public class EnderDragonPart extends Entity {
    public EntityDimensions getDimensions(Pose var1) {
       return this.size;
    }
-
-   public boolean shouldBeSaved() {
-      return false;
-   }
 }

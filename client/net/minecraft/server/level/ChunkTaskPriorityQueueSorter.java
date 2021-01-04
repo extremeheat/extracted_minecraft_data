@@ -22,7 +22,7 @@ import net.minecraft.world.level.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeListener, AutoCloseable {
+public class ChunkTaskPriorityQueueSorter implements AutoCloseable, ChunkHolder.LevelChangeListener {
    private static final Logger LOGGER = LogManager.getLogger();
    private final Map<ProcessorHandle<?>, ChunkTaskPriorityQueue<? extends Function<ProcessorHandle<Unit>, ?>>> queues;
    private final Set<ProcessorHandle<?>> sleeping;
@@ -137,7 +137,7 @@ public class ChunkTaskPriorityQueueSorter implements ChunkHolder.LevelChangeList
    private <T> ChunkTaskPriorityQueue<Function<ProcessorHandle<Unit>, T>> getQueue(ProcessorHandle<T> var1) {
       ChunkTaskPriorityQueue var2 = (ChunkTaskPriorityQueue)this.queues.get(var1);
       if (var2 == null) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("No queue for: " + var1));
+         throw new IllegalArgumentException("No queue for: " + var1);
       } else {
          return var2;
       }

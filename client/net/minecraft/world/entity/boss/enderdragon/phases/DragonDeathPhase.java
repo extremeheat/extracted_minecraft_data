@@ -21,7 +21,7 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
          float var1 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
          float var2 = (this.dragon.getRandom().nextFloat() - 0.5F) * 4.0F;
          float var3 = (this.dragon.getRandom().nextFloat() - 0.5F) * 8.0F;
-         this.dragon.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, this.dragon.getX() + (double)var1, this.dragon.getY() + 2.0D + (double)var2, this.dragon.getZ() + (double)var3, 0.0D, 0.0D, 0.0D);
+         this.dragon.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, this.dragon.x + (double)var1, this.dragon.y + 2.0D + (double)var2, this.dragon.z + (double)var3, 0.0D, 0.0D, 0.0D);
       }
 
    }
@@ -30,10 +30,10 @@ public class DragonDeathPhase extends AbstractDragonPhaseInstance {
       ++this.time;
       if (this.targetLocation == null) {
          BlockPos var1 = this.dragon.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.END_PODIUM_LOCATION);
-         this.targetLocation = Vec3.atBottomCenterOf(var1);
+         this.targetLocation = new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
       }
 
-      double var3 = this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      double var3 = this.targetLocation.distanceToSqr(this.dragon.x, this.dragon.y, this.dragon.z);
       if (var3 >= 100.0D && var3 <= 22500.0D && !this.dragon.horizontalCollision && !this.dragon.verticalCollision) {
          this.dragon.setHealth(1.0F);
       } else {

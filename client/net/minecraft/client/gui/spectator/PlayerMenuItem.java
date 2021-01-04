@@ -3,8 +3,7 @@ package net.minecraft.client.gui.spectator;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.player.Player;
 public class PlayerMenuItem implements SpectatorMenuItem {
    private final GameProfile profile;
    private final ResourceLocation location;
-   private final TextComponent name;
 
    public PlayerMenuItem(GameProfile var1) {
       super();
@@ -32,7 +30,6 @@ public class PlayerMenuItem implements SpectatorMenuItem {
          this.location = DefaultPlayerSkin.getDefaultSkin(Player.createPlayerUUID(var1));
       }
 
-      this.name = new TextComponent(var1.getName());
    }
 
    public void selectItem(SpectatorMenu var1) {
@@ -40,14 +37,14 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    }
 
    public Component getName() {
-      return this.name;
+      return new TextComponent(this.profile.getName());
    }
 
-   public void renderIcon(PoseStack var1, float var2, int var3) {
+   public void renderIcon(float var1, int var2) {
       Minecraft.getInstance().getTextureManager().bind(this.location);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, (float)var3 / 255.0F);
-      GuiComponent.blit(var1, 2, 2, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
-      GuiComponent.blit(var1, 2, 2, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, (float)var2 / 255.0F);
+      GuiComponent.blit(2, 2, 12, 12, 8.0F, 8.0F, 8, 8, 64, 64);
+      GuiComponent.blit(2, 2, 12, 12, 40.0F, 8.0F, 8, 8, 64, 64);
    }
 
    public boolean isEnabled() {

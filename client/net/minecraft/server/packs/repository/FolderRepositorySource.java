@@ -2,11 +2,11 @@ package net.minecraft.server.packs.repository;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.util.function.Consumer;
+import java.util.Map;
 import java.util.function.Supplier;
-import net.minecraft.server.packs.FilePackResources;
-import net.minecraft.server.packs.FolderPackResources;
-import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.FileResourcePack;
+import net.minecraft.server.packs.FolderResourcePack;
+import net.minecraft.server.packs.Pack;
 
 public class FolderRepositorySource implements RepositorySource {
    private static final FileFilter RESOURCEPACK_FILTER = (var0) -> {
@@ -15,15 +15,13 @@ public class FolderRepositorySource implements RepositorySource {
       return var1 || var2;
    };
    private final File folder;
-   private final PackSource packSource;
 
-   public FolderRepositorySource(File var1, PackSource var2) {
+   public FolderRepositorySource(File var1) {
       super();
       this.folder = var1;
-      this.packSource = var2;
    }
 
-   public void loadPacks(Consumer<Pack> var1, Pack.PackConstructor var2) {
+   public <T extends UnopenedPack> void loadPacks(Map<String, T> var1, UnopenedPack.UnopenedPackConstructor<T> var2) {
       if (!this.folder.isDirectory()) {
          this.folder.mkdirs();
       }
@@ -36,20 +34,20 @@ public class FolderRepositorySource implements RepositorySource {
          for(int var6 = 0; var6 < var5; ++var6) {
             File var7 = var4[var6];
             String var8 = "file/" + var7.getName();
-            Pack var9 = Pack.create(var8, false, this.createSupplier(var7), var2, Pack.Position.TOP, this.packSource);
+            UnopenedPack var9 = UnopenedPack.create(var8, false, this.createSupplier(var7), var2, UnopenedPack.Position.TOP);
             if (var9 != null) {
-               var1.accept(var9);
+               var1.put(var8, var9);
             }
          }
 
       }
    }
 
-   private Supplier<PackResources> createSupplier(File var1) {
+   private Supplier<Pack> createSupplier(File var1) {
       return var1.isDirectory() ? () -> {
-         return new FolderPackResources(var1);
+         return new FolderResourcePack(var1);
       } : () -> {
-         return new FilePackResources(var1);
+         return new FileResourcePack(var1);
       };
    }
 }

@@ -104,14 +104,14 @@ public class SoundBufferLibrary {
       });
    }
 
-   public CompletableFuture<AudioStream> getStream(ResourceLocation var1, boolean var2) {
+   public CompletableFuture<AudioStream> getStream(ResourceLocation var1) {
       return CompletableFuture.supplyAsync(() -> {
          try {
-            Resource var3 = this.resourceManager.getResource(var1);
-            InputStream var4 = var3.getInputStream();
-            return (AudioStream)(var2 ? new LoopingAudioStream(OggAudioStream::new, var4) : new OggAudioStream(var4));
-         } catch (IOException var5) {
-            throw new CompletionException(var5);
+            Resource var2 = this.resourceManager.getResource(var1);
+            InputStream var3 = var2.getInputStream();
+            return new OggAudioStream(var3);
+         } catch (IOException var4) {
+            throw new CompletionException(var4);
          }
       }, Util.backgroundExecutor());
    }

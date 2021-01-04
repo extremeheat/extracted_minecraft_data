@@ -10,6 +10,6 @@ public class UpdateActivityFromSchedule extends Behavior<LivingEntity> {
    }
 
    protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      var2.getBrain().updateActivityFromSchedule(var1.getDayTime(), var1.getGameTime());
+      var2.getBrain().updateActivity(var1.getDayTime(), var1.getGameTime());
    }
 }

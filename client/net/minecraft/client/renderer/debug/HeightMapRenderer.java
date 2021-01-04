@@ -1,22 +1,15 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Vector3f;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -27,61 +20,34 @@ public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      ClientLevel var9 = this.minecraft.level;
-      RenderSystem.pushMatrix();
-      RenderSystem.disableBlend();
-      RenderSystem.disableTexture();
-      RenderSystem.enableDepthTest();
-      BlockPos var10 = new BlockPos(var3, 0.0D, var7);
-      Tesselator var11 = Tesselator.getInstance();
-      BufferBuilder var12 = var11.getBuilder();
-      var12.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+   public void render(long var1) {
+      Camera var3 = this.minecraft.gameRenderer.getMainCamera();
+      MultiPlayerLevel var4 = this.minecraft.level;
+      double var5 = var3.getPosition().x;
+      double var7 = var3.getPosition().y;
+      double var9 = var3.getPosition().z;
+      GlStateManager.pushMatrix();
+      GlStateManager.enableBlend();
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+      GlStateManager.disableTexture();
+      BlockPos var11 = new BlockPos(var3.getPosition().x, 0.0D, var3.getPosition().z);
+      Tesselator var12 = Tesselator.getInstance();
+      BufferBuilder var13 = var12.getBuilder();
+      var13.begin(5, DefaultVertexFormat.POSITION_COLOR);
+      Iterator var14 = BlockPos.betweenClosed(var11.offset(-40, 0, -40), var11.offset(40, 0, 40)).iterator();
 
-      for(int var13 = -2; var13 <= 2; ++var13) {
-         for(int var14 = -2; var14 <= 2; ++var14) {
-            ChunkAccess var15 = var9.getChunk(var10.offset(var13 * 16, 0, var14 * 16));
-            Iterator var16 = var15.getHeightmaps().iterator();
-
-            while(var16.hasNext()) {
-               Entry var17 = (Entry)var16.next();
-               Heightmap.Types var18 = (Heightmap.Types)var17.getKey();
-               ChunkPos var19 = var15.getPos();
-               Vector3f var20 = this.getColor(var18);
-
-               for(int var21 = 0; var21 < 16; ++var21) {
-                  for(int var22 = 0; var22 < 16; ++var22) {
-                     int var23 = SectionPos.sectionToBlockCoord(var19.x, var21);
-                     int var24 = SectionPos.sectionToBlockCoord(var19.z, var22);
-                     float var25 = (float)((double)((float)var9.getHeight(var18, var23, var24) + (float)var18.ordinal() * 0.09375F) - var5);
-                     LevelRenderer.addChainedFilledBoxVertices(var12, (double)((float)var23 + 0.25F) - var3, (double)var25, (double)((float)var24 + 0.25F) - var7, (double)((float)var23 + 0.75F) - var3, (double)(var25 + 0.09375F), (double)((float)var24 + 0.75F) - var7, var20.x(), var20.y(), var20.z(), 1.0F);
-                  }
-               }
-            }
+      while(var14.hasNext()) {
+         BlockPos var15 = (BlockPos)var14.next();
+         int var16 = var4.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var15.getX(), var15.getZ());
+         if (var4.getBlockState(var15.offset(0, var16, 0).below()).isAir()) {
+            LevelRenderer.addChainedFilledBoxVertices(var13, (double)((float)var15.getX() + 0.25F) - var5, (double)var16 - var7, (double)((float)var15.getZ() + 0.25F) - var9, (double)((float)var15.getX() + 0.75F) - var5, (double)var16 + 0.09375D - var7, (double)((float)var15.getZ() + 0.75F) - var9, 0.0F, 0.0F, 1.0F, 0.5F);
+         } else {
+            LevelRenderer.addChainedFilledBoxVertices(var13, (double)((float)var15.getX() + 0.25F) - var5, (double)var16 - var7, (double)((float)var15.getZ() + 0.25F) - var9, (double)((float)var15.getX() + 0.75F) - var5, (double)var16 + 0.09375D - var7, (double)((float)var15.getZ() + 0.75F) - var9, 0.0F, 1.0F, 0.0F, 0.5F);
          }
       }
 
-      var11.end();
-      RenderSystem.enableTexture();
-      RenderSystem.popMatrix();
-   }
-
-   private Vector3f getColor(Heightmap.Types var1) {
-      switch(var1) {
-      case WORLD_SURFACE_WG:
-         return new Vector3f(1.0F, 1.0F, 0.0F);
-      case OCEAN_FLOOR_WG:
-         return new Vector3f(1.0F, 0.0F, 1.0F);
-      case WORLD_SURFACE:
-         return new Vector3f(0.0F, 0.7F, 0.0F);
-      case OCEAN_FLOOR:
-         return new Vector3f(0.0F, 0.0F, 0.5F);
-      case MOTION_BLOCKING:
-         return new Vector3f(0.0F, 0.3F, 0.3F);
-      case MOTION_BLOCKING_NO_LEAVES:
-         return new Vector3f(0.0F, 0.5F, 0.5F);
-      default:
-         return new Vector3f(0.0F, 0.0F, 0.0F);
-      }
+      var12.end();
+      GlStateManager.enableTexture();
+      GlStateManager.popMatrix();
    }
 }

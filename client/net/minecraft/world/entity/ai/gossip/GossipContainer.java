@@ -3,9 +3,8 @@ package net.minecraft.world.entity.ai.gossip;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -16,6 +15,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -23,7 +23,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.core.SerializableUUID;
 
 public class GossipContainer {
    private final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap();
@@ -118,9 +117,7 @@ public class GossipContainer {
    }
 
    public void update(Dynamic<?> var1) {
-      var1.asStream().map(GossipContainer.GossipEntry::load).flatMap((var0) -> {
-         return Util.toStream(var0.result());
-      }).forEach((var1x) -> {
+      var1.asStream().map(GossipContainer.GossipEntry::load).flatMap(Util::toStream).forEach((var1x) -> {
          this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value);
       });
    }
@@ -218,11 +215,17 @@ public class GossipContainer {
       }
 
       public <T> Dynamic<T> store(DynamicOps<T> var1) {
-         return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("Target"), SerializableUUID.CODEC.encodeStart(var1, this.target).result().orElseThrow(RuntimeException::new), var1.createString("Type"), var1.createString(this.type.id), var1.createString("Value"), var1.createInt(this.value))));
+         return Util.writeUUID("Target", this.target, new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("Type"), var1.createString(this.type.id), var1.createString("Value"), var1.createInt(this.value)))));
       }
 
-      public static DataResult<GossipContainer.GossipEntry> load(Dynamic<?> var0) {
-         return DataResult.unbox(DataResult.instance().group(var0.get("Target").read(SerializableUUID.CODEC), var0.get("Type").asString().map(GossipType::byId), var0.get("Value").asNumber().map(Number::intValue)).apply(DataResult.instance(), GossipContainer.GossipEntry::new));
+      public static Optional<GossipContainer.GossipEntry> load(Dynamic<?> var0) {
+         return var0.get("Type").asString().map(GossipType::byId).flatMap((var1) -> {
+            return Util.readUUID("Target", var0).flatMap((var2) -> {
+               return var0.get("Value").asNumber().map((var2x) -> {
+                  return new GossipContainer.GossipEntry(var2, var1, var2x.intValue());
+               });
+            });
+         });
       }
    }
 }

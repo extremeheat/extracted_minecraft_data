@@ -11,7 +11,6 @@ public class Objective {
    private final String name;
    private final ObjectiveCriteria criteria;
    private Component displayName;
-   private Component formattedDisplayName;
    private ObjectiveCriteria.RenderType renderType;
 
    public Objective(Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5) {
@@ -20,7 +19,6 @@ public class Objective {
       this.name = var2;
       this.criteria = var3;
       this.displayName = var4;
-      this.formattedDisplayName = this.createFormattedDisplayName();
       this.renderType = var5;
    }
 
@@ -40,19 +38,14 @@ public class Objective {
       return this.displayName;
    }
 
-   private Component createFormattedDisplayName() {
-      return ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle((var1) -> {
-         return var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(this.name)));
-      }));
-   }
-
    public Component getFormattedDisplayName() {
-      return this.formattedDisplayName;
+      return ComponentUtils.wrapInSquareBrackets(this.displayName.deepCopy().withStyle((var1) -> {
+         var1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(this.getName())));
+      }));
    }
 
    public void setDisplayName(Component var1) {
       this.displayName = var1;
-      this.formattedDisplayName = this.createFormattedDisplayName();
       this.scoreboard.onObjectiveChanged(this);
    }
 

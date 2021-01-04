@@ -6,8 +6,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -30,20 +30,20 @@ public class GroundPathNavigation extends PathNavigation {
    }
 
    protected boolean canUpdatePath() {
-      return this.mob.isOnGround() || this.isInLiquid() || this.mob.isPassenger();
+      return this.mob.onGround || this.isInLiquid() || this.mob.isPassenger();
    }
 
    protected Vec3 getTempMobPos() {
-      return new Vec3(this.mob.getX(), (double)this.getSurfaceY(), this.mob.getZ());
+      return new Vec3(this.mob.x, (double)this.getSurfaceY(), this.mob.z);
    }
 
    public Path createPath(BlockPos var1, int var2) {
       BlockPos var3;
       if (this.level.getBlockState(var1).isAir()) {
-         for(var3 = var1.below(); var3.getY() > this.level.getMinBuildHeight() && this.level.getBlockState(var3).isAir(); var3 = var3.below()) {
+         for(var3 = var1.below(); var3.getY() > 0 && this.level.getBlockState(var3).isAir(); var3 = var3.below()) {
          }
 
-         if (var3.getY() > this.level.getMinBuildHeight()) {
+         if (var3.getY() > 0) {
             return super.createPath(var3.above(), var2);
          }
 
@@ -65,42 +65,42 @@ public class GroundPathNavigation extends PathNavigation {
    }
 
    public Path createPath(Entity var1, int var2) {
-      return this.createPath(var1.blockPosition(), var2);
+      return this.createPath(new BlockPos(var1), var2);
    }
 
    private int getSurfaceY() {
       if (this.mob.isInWater() && this.canFloat()) {
-         int var1 = this.mob.getBlockY();
-         BlockState var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ()));
+         int var1 = Mth.floor(this.mob.getBoundingBox().minY);
+         Block var2 = this.level.getBlockState(new BlockPos(this.mob.x, (double)var1, this.mob.z)).getBlock();
          int var3 = 0;
 
          do {
-            if (!var2.is(Blocks.WATER)) {
+            if (var2 != Blocks.WATER) {
                return var1;
             }
 
             ++var1;
-            var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ()));
+            var2 = this.level.getBlockState(new BlockPos(this.mob.x, (double)var1, this.mob.z)).getBlock();
             ++var3;
          } while(var3 <= 16);
 
-         return this.mob.getBlockY();
+         return Mth.floor(this.mob.getBoundingBox().minY);
       } else {
-         return Mth.floor(this.mob.getY() + 0.5D);
+         return Mth.floor(this.mob.getBoundingBox().minY + 0.5D);
       }
    }
 
    protected void trimPath() {
       super.trimPath();
       if (this.avoidSun) {
-         if (this.level.canSeeSky(new BlockPos(this.mob.getX(), this.mob.getY() + 0.5D, this.mob.getZ()))) {
+         if (this.level.canSeeSky(new BlockPos(this.mob.x, this.mob.getBoundingBox().minY + 0.5D, this.mob.z))) {
             return;
          }
 
-         for(int var1 = 0; var1 < this.path.getNodeCount(); ++var1) {
-            Node var2 = this.path.getNode(var1);
+         for(int var1 = 0; var1 < this.path.getSize(); ++var1) {
+            Node var2 = this.path.get(var1);
             if (this.level.canSeeSky(new BlockPos(var2.x, var2.y, var2.z))) {
-               this.path.truncateNodes(var1);
+               this.path.truncate(var1);
                return;
             }
          }
@@ -181,7 +181,15 @@ public class GroundPathNavigation extends PathNavigation {
                double var18 = (double)var15 + 0.5D - var7.z;
                if (var16 * var8 + var18 * var10 >= 0.0D) {
                   BlockPathTypes var20 = this.nodeEvaluator.getBlockPathType(this.level, var14, var2 - 1, var15, this.mob, var4, var5, var6, true, true);
-                  if (!this.hasValidPathType(var20)) {
+                  if (var20 == BlockPathTypes.WATER) {
+                     return false;
+                  }
+
+                  if (var20 == BlockPathTypes.LAVA) {
+                     return false;
+                  }
+
+                  if (var20 == BlockPathTypes.OPEN) {
                      return false;
                   }
 
@@ -199,16 +207,6 @@ public class GroundPathNavigation extends PathNavigation {
          }
 
          return true;
-      }
-   }
-
-   protected boolean hasValidPathType(BlockPathTypes var1) {
-      if (var1 == BlockPathTypes.WATER) {
-         return false;
-      } else if (var1 == BlockPathTypes.LAVA) {
-         return false;
-      } else {
-         return var1 != BlockPathTypes.OPEN;
       }
    }
 

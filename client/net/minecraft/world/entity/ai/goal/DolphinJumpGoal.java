@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Dolphin;
 import net.minecraft.world.level.material.FluidState;
@@ -29,7 +28,7 @@ public class DolphinJumpGoal extends JumpGoal {
          Direction var1 = this.dolphin.getMotionDirection();
          int var2 = var1.getStepX();
          int var3 = var1.getStepZ();
-         BlockPos var4 = this.dolphin.blockPosition();
+         BlockPos var4 = new BlockPos(this.dolphin);
          int[] var5 = STEPS_TO_CHECK;
          int var6 = var5.length;
 
@@ -55,7 +54,7 @@ public class DolphinJumpGoal extends JumpGoal {
 
    public boolean canContinueToUse() {
       double var1 = this.dolphin.getDeltaMovement().y;
-      return (var1 * var1 >= 0.029999999329447746D || this.dolphin.xRot == 0.0F || Math.abs(this.dolphin.xRot) >= 10.0F || !this.dolphin.isInWater()) && !this.dolphin.isOnGround();
+      return (var1 * var1 >= 0.029999999329447746D || this.dolphin.xRot == 0.0F || Math.abs(this.dolphin.xRot) >= 10.0F || !this.dolphin.isInWater()) && !this.dolphin.onGround;
    }
 
    public boolean isInterruptable() {
@@ -75,7 +74,7 @@ public class DolphinJumpGoal extends JumpGoal {
    public void tick() {
       boolean var1 = this.breached;
       if (!var1) {
-         FluidState var2 = this.dolphin.level.getFluidState(this.dolphin.blockPosition());
+         FluidState var2 = this.dolphin.level.getFluidState(new BlockPos(this.dolphin));
          this.breached = var2.is(FluidTags.WATER);
       }
 
@@ -85,7 +84,7 @@ public class DolphinJumpGoal extends JumpGoal {
 
       Vec3 var7 = this.dolphin.getDeltaMovement();
       if (var7.y * var7.y < 0.029999999329447746D && this.dolphin.xRot != 0.0F) {
-         this.dolphin.xRot = Mth.rotlerp(this.dolphin.xRot, 0.0F, 0.2F);
+         this.dolphin.xRot = this.rotlerp(this.dolphin.xRot, 0.0F, 0.2F);
       } else {
          double var3 = Math.sqrt(Entity.getHorizontalDistanceSqr(var7));
          double var5 = Math.signum(-var7.y) * Math.acos(var3 / var7.length()) * 57.2957763671875D;

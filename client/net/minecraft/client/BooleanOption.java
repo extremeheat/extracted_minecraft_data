@@ -2,27 +2,18 @@ package net.minecraft.client;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.OptionButton;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.resources.language.I18n;
 
 public class BooleanOption extends Option {
    private final Predicate<Options> getter;
    private final BiConsumer<Options, Boolean> setter;
-   @Nullable
-   private final Component tooltipText;
 
    public BooleanOption(String var1, Predicate<Options> var2, BiConsumer<Options, Boolean> var3) {
-      this(var1, (Component)null, var2, var3);
-   }
-
-   public BooleanOption(String var1, @Nullable Component var2, Predicate<Options> var3, BiConsumer<Options, Boolean> var4) {
       super(var1);
-      this.getter = var3;
-      this.setter = var4;
-      this.tooltipText = var2;
+      this.getter = var2;
+      this.setter = var3;
    }
 
    public void set(Options var1, String var2) {
@@ -43,17 +34,13 @@ public class BooleanOption extends Option {
    }
 
    public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
-      if (this.tooltipText != null) {
-         this.setTooltip(Minecraft.getInstance().font.split(this.tooltipText, 200));
-      }
-
       return new OptionButton(var2, var3, var4, 20, this, this.getMessage(var1), (var2x) -> {
          this.toggle(var1);
          var2x.setMessage(this.getMessage(var1));
       });
    }
 
-   public Component getMessage(Options var1) {
-      return CommonComponents.optionStatus(this.getCaption(), this.get(var1));
+   public String getMessage(Options var1) {
+      return this.getCaption() + I18n.get(this.get(var1) ? "options.on" : "options.off");
    }
 }

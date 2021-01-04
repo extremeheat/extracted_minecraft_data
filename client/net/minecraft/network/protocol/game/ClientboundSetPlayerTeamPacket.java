@@ -14,9 +14,9 @@ import net.minecraft.world.scores.Team;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
    private String name = "";
-   private Component displayName;
-   private Component playerPrefix;
-   private Component playerSuffix;
+   private Component displayName = new TextComponent("");
+   private Component playerPrefix = new TextComponent("");
+   private Component playerSuffix = new TextComponent("");
    private String nametagVisibility;
    private String collisionRule;
    private ChatFormatting color;
@@ -26,9 +26,6 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    public ClientboundSetPlayerTeamPacket() {
       super();
-      this.displayName = TextComponent.EMPTY;
-      this.playerPrefix = TextComponent.EMPTY;
-      this.playerSuffix = TextComponent.EMPTY;
       this.nametagVisibility = Team.Visibility.ALWAYS.name;
       this.collisionRule = Team.CollisionRule.ALWAYS.name;
       this.color = ChatFormatting.RESET;
@@ -37,9 +34,6 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    public ClientboundSetPlayerTeamPacket(PlayerTeam var1, int var2) {
       super();
-      this.displayName = TextComponent.EMPTY;
-      this.playerPrefix = TextComponent.EMPTY;
-      this.playerSuffix = TextComponent.EMPTY;
       this.nametagVisibility = Team.Visibility.ALWAYS.name;
       this.collisionRule = Team.CollisionRule.ALWAYS.name;
       this.color = ChatFormatting.RESET;
@@ -64,9 +58,6 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    public ClientboundSetPlayerTeamPacket(PlayerTeam var1, Collection<String> var2, int var3) {
       super();
-      this.displayName = TextComponent.EMPTY;
-      this.playerPrefix = TextComponent.EMPTY;
-      this.playerSuffix = TextComponent.EMPTY;
       this.nametagVisibility = Team.Visibility.ALWAYS.name;
       this.collisionRule = Team.CollisionRule.ALWAYS.name;
       this.color = ChatFormatting.RESET;

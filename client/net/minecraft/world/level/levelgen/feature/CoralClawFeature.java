@@ -1,21 +1,20 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import net.minecraft.Util;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class CoralClawFeature extends CoralFeature {
-   public CoralClawFeature(Codec<NoneFeatureConfiguration> var1) {
+   public CoralClawFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
@@ -32,7 +31,7 @@ public class CoralClawFeature extends CoralFeature {
 
          while(var9.hasNext()) {
             Direction var10 = (Direction)var9.next();
-            BlockPos.MutableBlockPos var11 = var3.mutable();
+            BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos(var3);
             int var12 = var2.nextInt(2) + 1;
             var11.move(var10);
             int var13;
@@ -43,7 +42,7 @@ public class CoralClawFeature extends CoralFeature {
             } else {
                var11.move(Direction.UP);
                Direction[] var15 = new Direction[]{var10, Direction.UP};
-               var14 = (Direction)Util.getRandom((Object[])var15, var2);
+               var14 = var15[var2.nextInt(var15.length)];
                var13 = var2.nextInt(3) + 3;
             }
 

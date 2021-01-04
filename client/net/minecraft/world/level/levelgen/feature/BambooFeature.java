@@ -1,17 +1,19 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BambooBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 
 public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
    private static final BlockState BAMBOO_TRUNK;
@@ -19,14 +21,14 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
    private static final BlockState BAMBOO_TOP_LARGE;
    private static final BlockState BAMBOO_TOP_SMALL;
 
-   public BambooFeature(Codec<ProbabilityFeatureConfiguration> var1) {
+   public BambooFeature(Function<Dynamic<?>, ? extends ProbabilityFeatureConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, ProbabilityFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, ProbabilityFeatureConfiguration var5) {
       int var6 = 0;
-      BlockPos.MutableBlockPos var7 = var4.mutable();
-      BlockPos.MutableBlockPos var8 = var4.mutable();
+      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos(var4);
+      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos(var4);
       if (var1.isEmptyBlock(var7)) {
          if (Blocks.BAMBOO.defaultBlockState().canSurvive(var1, var7)) {
             int var9 = var3.nextInt(12) + 5;
@@ -40,7 +42,7 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
                      int var14 = var12 - var4.getZ();
                      if (var13 * var13 + var14 * var14 <= var10 * var10) {
                         var8.set(var11, var1.getHeight(Heightmap.Types.WORLD_SURFACE, var11, var12) - 1, var12);
-                        if (isDirt(var1.getBlockState(var8))) {
+                        if (var1.getBlockState(var8).getBlock().is(BlockTags.DIRT_LIKE)) {
                            var1.setBlock(var8, Blocks.PODZOL.defaultBlockState(), 2);
                         }
                      }

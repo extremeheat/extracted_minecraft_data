@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
@@ -20,7 +19,7 @@ public class MapIdFix extends DataFix {
       return this.fixTypeEverywhereTyped("Map id fix", var1, (var1x) -> {
          Optional var2x = var1x.getOptionalTyped(var2);
          return var2x.isPresent() ? var1x : var1x.update(DSL.remainderFinder(), (var0) -> {
-            return var0.createMap(ImmutableMap.of(var0.createString("data"), var0));
+            return var0.emptyMap().merge(var0.createString("data"), var0);
          });
       });
    }

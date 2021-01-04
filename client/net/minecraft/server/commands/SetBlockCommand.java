@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class SetBlockCommand {
-   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.setblock.failed"));
+   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.setblock.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires((var0x) -> {
@@ -47,7 +47,7 @@ public class SetBlockCommand {
          boolean var6;
          if (var3 == SetBlockCommand.Mode.DESTROY) {
             var5.destroyBlock(var1, true);
-            var6 = !var2.getState().isAir() || !var5.getBlockState(var1).isAir();
+            var6 = !var2.getState().isAir();
          } else {
             BlockEntity var7 = var5.getBlockEntity(var1);
             Clearable.tryClear(var7);

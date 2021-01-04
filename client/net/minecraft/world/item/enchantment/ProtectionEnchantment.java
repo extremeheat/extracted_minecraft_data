@@ -9,8 +9,12 @@ public class ProtectionEnchantment extends Enchantment {
    public final ProtectionEnchantment.Type type;
 
    public ProtectionEnchantment(Enchantment.Rarity var1, ProtectionEnchantment.Type var2, EquipmentSlot... var3) {
-      super(var1, var2 == ProtectionEnchantment.Type.FALL ? EnchantmentCategory.ARMOR_FEET : EnchantmentCategory.ARMOR, var3);
+      super(var1, EnchantmentCategory.ARMOR, var3);
       this.type = var2;
+      if (var2 == ProtectionEnchantment.Type.FALL) {
+         this.category = EnchantmentCategory.ARMOR_FEET;
+      }
+
    }
 
    public int getMinCost(int var1) {

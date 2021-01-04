@@ -6,12 +6,10 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -26,7 +24,7 @@ public class NoteBlock extends Block {
    public static final BooleanProperty POWERED;
    public static final IntegerProperty NOTE;
 
-   public NoteBlock(BlockBehaviour.Properties var1) {
+   public NoteBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(INSTRUMENT, NoteBlockInstrument.HARP)).setValue(NOTE, 0)).setValue(POWERED, false));
    }
@@ -58,15 +56,15 @@ public class NoteBlock extends Block {
 
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          var1 = (BlockState)var1.cycle(NOTE);
          var2.setBlock(var3, var1, 3);
          this.playNote(var2, var3);
          var4.awardStat(Stats.TUNE_NOTEBLOCK);
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 

@@ -1,84 +1,71 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
-import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.resources.model.Material;
+import com.mojang.blaze3d.platform.GlStateManager;
+import java.util.Arrays;
+import java.util.Comparator;
+import net.minecraft.client.model.BedModel;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
-public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
-   private final ModelPart headRoot;
-   private final ModelPart footRoot;
+public class BedRenderer extends BlockEntityRenderer<BedBlockEntity> {
+   private static final ResourceLocation[] TEXTURES = (ResourceLocation[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map((var0) -> {
+      return new ResourceLocation("textures/entity/bed/" + var0.getName() + ".png");
+   }).toArray((var0) -> {
+      return new ResourceLocation[var0];
+   });
+   private final BedModel bedModel = new BedModel();
 
-   public BedRenderer(BlockEntityRendererProvider.Context var1) {
+   public BedRenderer() {
       super();
-      this.headRoot = var1.getLayer(ModelLayers.BED_HEAD);
-      this.footRoot = var1.getLayer(ModelLayers.BED_FOOT);
    }
 
-   public static LayerDefinition createHeadLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 6).addBox(0.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 1.5707964F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 18).addBox(-16.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 3.1415927F));
-      return LayerDefinition.create(var0, 64, 64);
-   }
-
-   public static LayerDefinition createFootLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 0).addBox(0.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 12).addBox(-16.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 4.712389F));
-      return LayerDefinition.create(var0, 64, 64);
-   }
-
-   public void render(BedBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Material var7 = Sheets.BED_TEXTURES[var1.getColor().getId()];
-      Level var8 = var1.getLevel();
-      if (var8 != null) {
-         BlockState var9 = var1.getBlockState();
-         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var8, var1.getBlockPos(), (var0, var1x) -> {
-            return false;
-         });
-         int var11 = ((Int2IntFunction)var10.apply(new BrightnessCombiner())).get(var5);
-         this.renderPiece(var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headRoot : this.footRoot, (Direction)var9.getValue(BedBlock.FACING), var7, var11, var6, false);
+   public void render(BedBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      if (var9 >= 0) {
+         this.bindTexture(BREAKING_LOCATIONS[var9]);
+         GlStateManager.matrixMode(5890);
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(4.0F, 4.0F, 1.0F);
+         GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
+         GlStateManager.matrixMode(5888);
       } else {
-         this.renderPiece(var3, var4, this.headRoot, Direction.SOUTH, var7, var5, var6, false);
-         this.renderPiece(var3, var4, this.footRoot, Direction.SOUTH, var7, var5, var6, true);
+         ResourceLocation var10 = TEXTURES[var1.getColor().getId()];
+         if (var10 != null) {
+            this.bindTexture(var10);
+         }
+      }
+
+      if (var1.hasLevel()) {
+         BlockState var11 = var1.getBlockState();
+         this.renderPiece(var11.getValue(BedBlock.PART) == BedPart.HEAD, var2, var4, var6, (Direction)var11.getValue(BedBlock.FACING));
+      } else {
+         this.renderPiece(true, var2, var4, var6, Direction.SOUTH);
+         this.renderPiece(false, var2, var4, var6 - 1.0D, Direction.SOUTH);
+      }
+
+      if (var9 >= 0) {
+         GlStateManager.matrixMode(5890);
+         GlStateManager.popMatrix();
+         GlStateManager.matrixMode(5888);
       }
 
    }
 
-   private void renderPiece(PoseStack var1, MultiBufferSource var2, ModelPart var3, Direction var4, Material var5, int var6, int var7, boolean var8) {
-      var1.pushPose();
-      var1.translate(0.0D, 0.5625D, var8 ? -1.0D : 0.0D);
-      var1.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-      var1.translate(0.5D, 0.5D, 0.5D);
-      var1.mulPose(Vector3f.ZP.rotationDegrees(180.0F + var4.toYRot()));
-      var1.translate(-0.5D, -0.5D, -0.5D);
-      VertexConsumer var9 = var5.buffer(var2, RenderType::entitySolid);
-      var3.render(var1, var9, var6, var7);
-      var1.popPose();
+   private void renderPiece(boolean var1, double var2, double var4, double var6, Direction var8) {
+      this.bedModel.preparePiece(var1);
+      GlStateManager.pushMatrix();
+      GlStateManager.translatef((float)var2, (float)var4 + 0.5625F, (float)var6);
+      GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+      GlStateManager.translatef(0.5F, 0.5F, 0.5F);
+      GlStateManager.rotatef(180.0F + var8.toYRot(), 0.0F, 0.0F, 1.0F);
+      GlStateManager.translatef(-0.5F, -0.5F, -0.5F);
+      GlStateManager.enableRescaleNormal();
+      this.bedModel.render();
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.popMatrix();
    }
 }

@@ -24,7 +24,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
 
          for(int var4 = 0; var4 < var1.getContainerSize() && var3.isEmpty(); ++var4) {
             ItemStack var5 = var1.getItem(var4);
-            if (var5.is(Items.FILLED_MAP)) {
+            if (var5.getItem() == Items.FILLED_MAP) {
                var3 = var5;
             }
          }
@@ -64,7 +64,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
 
       for(int var3 = 0; var3 < var1.getContainerSize() && var2.isEmpty(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
-         if (var4.is(Items.FILLED_MAP)) {
+         if (var4.getItem() == Items.FILLED_MAP) {
             var2 = var4;
          }
       }

@@ -1,8 +1,8 @@
 package com.mojang.realmsclient.client;
 
 public class UploadStatus {
-   public volatile long bytesWritten;
-   public volatile long totalBytes;
+   public volatile Long bytesWritten = 0L;
+   public volatile Long totalBytes = 0L;
 
    public UploadStatus() {
       super();

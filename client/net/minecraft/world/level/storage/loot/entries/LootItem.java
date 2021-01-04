@@ -22,10 +22,6 @@ public class LootItem extends LootPoolSingletonContainer {
       this.item = var1;
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.ITEM;
-   }
-
    public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
       var1.accept(new ItemStack(this.item));
    }
@@ -43,11 +39,11 @@ public class LootItem extends LootPoolSingletonContainer {
 
    public static class Serializer extends LootPoolSingletonContainer.Serializer<LootItem> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("item"), LootItem.class);
       }
 
-      public void serializeCustom(JsonObject var1, LootItem var2, JsonSerializationContext var3) {
-         super.serializeCustom(var1, (LootPoolSingletonContainer)var2, var3);
+      public void serialize(JsonObject var1, LootItem var2, JsonSerializationContext var3) {
+         super.serialize(var1, (LootPoolSingletonContainer)var2, var3);
          ResourceLocation var4 = Registry.ITEM.getKey(var2.item);
          if (var4 == null) {
             throw new IllegalArgumentException("Can't serialize unknown item " + var2.item);

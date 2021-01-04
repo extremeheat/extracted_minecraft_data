@@ -15,7 +15,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.players.PlayerList;
 
 public class DeOpCommands {
-   private static final SimpleCommandExceptionType ERROR_NOT_OP = new SimpleCommandExceptionType(new TranslatableComponent("commands.deop.failed"));
+   private static final SimpleCommandExceptionType ERROR_NOT_OP = new SimpleCommandExceptionType(new TranslatableComponent("commands.deop.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("deop").requires((var0x) -> {

@@ -14,16 +14,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
@@ -31,13 +27,13 @@ import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomSwimmingGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractFish extends WaterAnimal {
@@ -52,16 +48,17 @@ public abstract class AbstractFish extends WaterAnimal {
       return var2.height * 0.65F;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 3.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(3.0D);
    }
 
    public boolean requiresCustomPersistence() {
-      return super.requiresCustomPersistence() || this.fromBucket();
+      return this.fromBucket();
    }
 
    public static boolean checkFishSpawnRules(EntityType<? extends AbstractFish> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
-      return var1.getBlockState(var3).is(Blocks.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER);
+      return var1.getBlockState(var3).getBlock() == Blocks.WATER && var1.getBlockState(var3.above()).getBlock() == Blocks.WATER;
    }
 
    public boolean removeWhenFarAway(double var1) {
@@ -134,9 +131,9 @@ public abstract class AbstractFish extends WaterAnimal {
       super.aiStep();
    }
 
-   protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   protected boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.WATER_BUCKET) && this.isAlive()) {
+      if (var3.getItem() == Items.WATER_BUCKET && this.isAlive()) {
          this.playSound(SoundEvents.BUCKET_FILL_FISH, 1.0F, 1.0F);
          var3.shrink(1);
          ItemStack var4 = this.getBucketItemStack();
@@ -147,12 +144,12 @@ public abstract class AbstractFish extends WaterAnimal {
 
          if (var3.isEmpty()) {
             var1.setItemInHand(var2, var4);
-         } else if (!var1.getInventory().add(var4)) {
+         } else if (!var1.inventory.add(var4)) {
             var1.drop(var4, false);
          }
 
-         this.discard();
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         this.remove();
+         return true;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -177,9 +174,6 @@ public abstract class AbstractFish extends WaterAnimal {
       return SoundEvents.FISH_SWIM;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-   }
-
    static {
       FROM_BUCKET = SynchedEntityData.defineId(AbstractFish.class, EntityDataSerializers.BOOLEAN);
    }
@@ -193,27 +187,22 @@ public abstract class AbstractFish extends WaterAnimal {
       }
 
       public void tick() {
-         if (this.fish.isEyeInFluid(FluidTags.WATER)) {
+         if (this.fish.isUnderLiquid(FluidTags.WATER)) {
             this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0D, 0.005D, 0.0D));
          }
 
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.fish.getNavigation().isDone()) {
-            float var1 = (float)(this.speedModifier * this.fish.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            this.fish.setSpeed(Mth.lerp(0.125F, this.fish.getSpeed(), var1));
-            double var2 = this.wantedX - this.fish.getX();
-            double var4 = this.wantedY - this.fish.getY();
-            double var6 = this.wantedZ - this.fish.getZ();
-            if (var4 != 0.0D) {
-               double var8 = (double)Mth.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
-               this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0D, (double)this.fish.getSpeed() * (var4 / var8) * 0.1D, 0.0D));
-            }
-
-            if (var2 != 0.0D || var6 != 0.0D) {
-               float var10 = (float)(Mth.atan2(var6, var2) * 57.2957763671875D) - 90.0F;
-               this.fish.yRot = this.rotlerp(this.fish.yRot, var10, 90.0F);
-               this.fish.yBodyRot = this.fish.yRot;
-            }
-
+            double var1 = this.wantedX - this.fish.x;
+            double var3 = this.wantedY - this.fish.y;
+            double var5 = this.wantedZ - this.fish.z;
+            double var7 = (double)Mth.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
+            var3 /= var7;
+            float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875D) - 90.0F;
+            this.fish.yRot = this.rotlerp(this.fish.yRot, var9, 90.0F);
+            this.fish.yBodyRot = this.fish.yRot;
+            float var10 = (float)(this.speedModifier * this.fish.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue());
+            this.fish.setSpeed(Mth.lerp(0.125F, this.fish.getSpeed(), var10));
+            this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0D, (double)this.fish.getSpeed() * var3 * 0.1D, 0.0D));
          } else {
             this.fish.setSpeed(0.0F);
          }

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
@@ -19,8 +20,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
@@ -36,7 +35,7 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -50,8 +49,8 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       this.clientSideIllusionOffsets = new Vec3[2][4];
 
       for(int var3 = 0; var3 < 4; ++var3) {
-         this.clientSideIllusionOffsets[0][var3] = Vec3.ZERO;
-         this.clientSideIllusionOffsets[1][var3] = Vec3.ZERO;
+         this.clientSideIllusionOffsets[0][var3] = new Vec3(0.0D, 0.0D, 0.0D);
+         this.clientSideIllusionOffsets[1][var3] = new Vec3(0.0D, 0.0D, 0.0D);
       }
 
    }
@@ -72,11 +71,14 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       this.targetSelector.addGoal(3, (new NearestAttackableTargetGoal(this, IronGolem.class, false)).setUnseenMemoryTicks(300));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.5D).add(Attributes.FOLLOW_RANGE, 18.0D).add(Attributes.MAX_HEALTH, 32.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(18.0D);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(32.0D);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
@@ -118,10 +120,10 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             }
 
             for(var3 = 0; var3 < 16; ++var3) {
-               this.level.addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5D), this.getRandomY(), this.getZ(0.5D), 0.0D, 0.0D, 0.0D);
+               this.level.addParticle(ParticleTypes.CLOUD, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), this.y + this.random.nextDouble() * (double)this.getBbHeight(), this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), 0.0D, 0.0D, 0.0D);
             }
 
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ILLUSIONER_MIRROR_MOVE, this.getSoundSource(), 1.0F, 1.0F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.ILLUSIONER_MIRROR_MOVE, this.getSoundSource(), 1.0F, 1.0F, false);
          }
       }
 
@@ -179,9 +181,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    public void performRangedAttack(LivingEntity var1, float var2) {
       ItemStack var3 = this.getProjectile(this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
       AbstractArrow var4 = ProjectileUtil.getMobArrow(this, var3, var2);
-      double var5 = var1.getX() - this.getX();
-      double var7 = var1.getY(0.3333333333333333D) - var4.getY();
-      double var9 = var1.getZ() - this.getZ();
+      double var5 = var1.x - this.x;
+      double var7 = var1.getBoundingBox().minY + (double)(var1.getBbHeight() / 3.0F) - var4.y;
+      double var9 = var1.z - this.z;
       double var11 = (double)Mth.sqrt(var5 * var5 + var9 * var9);
       var4.shoot(var5, var7 + var11 * 0.20000000298023224D, var9, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -211,7 +213,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          } else if (Illusioner.this.getTarget().getId() == this.lastTargetId) {
             return false;
          } else {
-            return Illusioner.this.level.getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
+            return Illusioner.this.level.getCurrentDifficultyAt(new BlockPos(Illusioner.this)).isHarderThan((float)Difficulty.NORMAL.ordinal());
          }
       }
 

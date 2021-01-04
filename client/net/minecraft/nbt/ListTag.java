@@ -1,64 +1,22 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Iterables;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 
 public class ListTag extends CollectionTag<Tag> {
-   public static final TagType<ListTag> TYPE = new TagType<ListTag>() {
-      public ListTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(296L);
-         if (var2 > 512) {
-            throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
-         } else {
-            byte var4 = var1.readByte();
-            int var5 = var1.readInt();
-            if (var4 == 0 && var5 > 0) {
-               throw new RuntimeException("Missing type on ListTag");
-            } else {
-               var3.accountBits(32L * (long)var5);
-               TagType var6 = TagTypes.getType(var4);
-               ArrayList var7 = Lists.newArrayListWithCapacity(var5);
-
-               for(int var8 = 0; var8 < var5; ++var8) {
-                  var7.add(var6.load(var1, var2 + 1, var3));
-               }
-
-               return new ListTag(var7, var4);
-            }
-         }
-      }
-
-      public String getName() {
-         return "LIST";
-      }
-
-      public String getPrettyName() {
-         return "TAG_List";
-      }
-
-      // $FF: synthetic method
-      public Tag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         return this.load(var1, var2, var3);
-      }
-   };
-   private final List<Tag> list;
-   private byte type;
-
-   private ListTag(List<Tag> var1, byte var2) {
-      super();
-      this.list = var1;
-      this.type = var2;
-   }
+   private List<Tag> list = Lists.newArrayList();
+   private byte type = 0;
 
    public ListTag() {
-      this(Lists.newArrayList(), (byte)0);
+      super();
    }
 
    public void write(DataOutput var1) throws IOException {
@@ -79,16 +37,45 @@ public class ListTag extends CollectionTag<Tag> {
 
    }
 
+   public void load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+      var3.accountBits(296L);
+      if (var2 > 512) {
+         throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
+      } else {
+         this.type = var1.readByte();
+         int var4 = var1.readInt();
+         if (this.type == 0 && var4 > 0) {
+            throw new RuntimeException("Missing type on ListTag");
+         } else {
+            var3.accountBits(32L * (long)var4);
+            this.list = Lists.newArrayListWithCapacity(var4);
+
+            for(int var5 = 0; var5 < var4; ++var5) {
+               Tag var6 = Tag.newTag(this.type);
+               var6.load(var1, var2 + 1, var3);
+               this.list.add(var6);
+            }
+
+         }
+      }
+   }
+
    public byte getId() {
       return 9;
    }
 
-   public TagType<ListTag> getType() {
-      return TYPE;
-   }
-
    public String toString() {
-      return this.getAsString();
+      StringBuilder var1 = new StringBuilder("[");
+
+      for(int var2 = 0; var2 < this.list.size(); ++var2) {
+         if (var2 != 0) {
+            var1.append(',');
+         }
+
+         var1.append(this.list.get(var2));
+      }
+
+      return var1.append(']').toString();
    }
 
    private void updateTypeAfterRemove() {
@@ -247,9 +234,17 @@ public class ListTag extends CollectionTag<Tag> {
    }
 
    public ListTag copy() {
-      Object var1 = TagTypes.getType(this.type).isValue() ? this.list : Iterables.transform(this.list, Tag::copy);
-      ArrayList var2 = Lists.newArrayList((Iterable)var1);
-      return new ListTag(var2, this.type);
+      ListTag var1 = new ListTag();
+      var1.type = this.type;
+      Iterator var2 = this.list.iterator();
+
+      while(var2.hasNext()) {
+         Tag var3 = (Tag)var2.next();
+         Tag var4 = var3.copy();
+         var1.list.add(var4);
+      }
+
+      return var1;
    }
 
    public boolean equals(Object var1) {
@@ -264,11 +259,35 @@ public class ListTag extends CollectionTag<Tag> {
       return this.list.hashCode();
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitList(this);
+   public Component getPrettyDisplay(String var1, int var2) {
+      if (this.isEmpty()) {
+         return new TextComponent("[]");
+      } else {
+         TextComponent var3 = new TextComponent("[");
+         if (!var1.isEmpty()) {
+            var3.append("\n");
+         }
+
+         for(int var4 = 0; var4 < this.list.size(); ++var4) {
+            TextComponent var5 = new TextComponent(Strings.repeat(var1, var2 + 1));
+            var5.append(((Tag)this.list.get(var4)).getPrettyDisplay(var1, var2 + 1));
+            if (var4 != this.list.size() - 1) {
+               var5.append(String.valueOf(',')).append(var1.isEmpty() ? " " : "\n");
+            }
+
+            var3.append((Component)var5);
+         }
+
+         if (!var1.isEmpty()) {
+            var3.append("\n").append(Strings.repeat(var1, var2));
+         }
+
+         var3.append("]");
+         return var3;
+      }
    }
 
-   public byte getElementType() {
+   public int getElementType() {
       return this.type;
    }
 
@@ -300,10 +319,5 @@ public class ListTag extends CollectionTag<Tag> {
    // $FF: synthetic method
    public Object get(int var1) {
       return this.get(var1);
-   }
-
-   // $FF: synthetic method
-   ListTag(List var1, byte var2, Object var3) {
-      this(var1, var2);
    }
 }

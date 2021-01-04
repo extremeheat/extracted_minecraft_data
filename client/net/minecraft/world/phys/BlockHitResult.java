@@ -29,10 +29,6 @@ public class BlockHitResult extends HitResult {
       return new BlockHitResult(this.miss, this.location, var1, this.blockPos, this.inside);
    }
 
-   public BlockHitResult withPosition(BlockPos var1) {
-      return new BlockHitResult(this.miss, this.location, this.direction, var1, this.inside);
-   }
-
    public BlockPos getBlockPos() {
       return this.blockPos;
    }

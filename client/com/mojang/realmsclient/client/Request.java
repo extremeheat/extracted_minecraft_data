@@ -110,25 +110,30 @@ public abstract class Request<T extends Request<T>> {
       byte[] var1 = new byte[1024];
 
       try {
-         InputStream var2 = this.connection.getInputStream();
-
-         while(var2.read(var1) > 0) {
-         }
-
-         var2.close();
-         return;
-      } catch (Exception var9) {
+         InputStream var3;
          try {
-            InputStream var3 = this.connection.getErrorStream();
-            if (var3 != null) {
-               while(var3.read(var1) > 0) {
-               }
+            boolean var2 = false;
+            var3 = this.connection.getInputStream();
 
-               var3.close();
+            while(var3.read(var1) > 0) {
+            }
+
+            var3.close();
+            return;
+         } catch (Exception var10) {
+            try {
+               var3 = this.connection.getErrorStream();
+               boolean var4 = false;
+               if (var3 != null) {
+                  while(var3.read(var1) > 0) {
+                  }
+
+                  var3.close();
+                  return;
+               }
+            } catch (IOException var9) {
                return;
             }
-         } catch (IOException var8) {
-            return;
          }
       } finally {
          if (this.connection != null) {

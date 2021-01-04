@@ -7,35 +7,29 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.dimension.DimensionType;
 
-public abstract class AbstractVillager extends AgeableMob implements Npc, Merchant {
+public abstract class AbstractVillager extends AgableMob implements Npc, Merchant {
    private static final EntityDataAccessor<Integer> DATA_UNHAPPY_COUNTER;
    @Nullable
    private Player tradingPlayer;
@@ -45,16 +39,6 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
 
    public AbstractVillager(EntityType<? extends AbstractVillager> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
-   }
-
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(false);
-      }
-
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
    }
 
    public int getUnhappyCounter() {
@@ -149,7 +133,16 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
          var1.put("Offers", var2.createTag());
       }
 
-      var1.put("Inventory", this.inventory.createTag());
+      ListTag var3 = new ListTag();
+
+      for(int var4 = 0; var4 < this.inventory.getContainerSize(); ++var4) {
+         ItemStack var5 = this.inventory.getItem(var4);
+         if (!var5.isEmpty()) {
+            var3.add(var5.save(new CompoundTag()));
+         }
+      }
+
+      var1.put("Inventory", var3);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -158,11 +151,19 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
          this.offers = new MerchantOffers(var1.getCompound("Offers"));
       }
 
-      this.inventory.fromTag(var1.getList("Inventory", 10));
+      ListTag var2 = var1.getList("Inventory", 10);
+
+      for(int var3 = 0; var3 < var2.size(); ++var3) {
+         ItemStack var4 = ItemStack.of(var2.getCompound(var3));
+         if (!var4.isEmpty()) {
+            this.inventory.addItem(var4);
+         }
+      }
+
    }
 
    @Nullable
-   public Entity changeDimension(ServerLevel var1) {
+   public Entity changeDimension(DimensionType var1) {
       this.stopTrading();
       return super.changeDimension(var1);
    }
@@ -181,7 +182,7 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
          double var3 = this.random.nextGaussian() * 0.02D;
          double var5 = this.random.nextGaussian() * 0.02D;
          double var7 = this.random.nextGaussian() * 0.02D;
-         this.level.addParticle(var1, this.getRandomX(1.0D), this.getRandomY() + 1.0D, this.getRandomZ(1.0D), var3, var5, var7);
+         this.level.addParticle(var1, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 1.0D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), var3, var5, var7);
       }
 
    }
@@ -237,12 +238,6 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
          }
       }
 
-   }
-
-   public Vec3 getRopeHoldPosition(float var1) {
-      float var2 = Mth.lerp(var1, this.yBodyRotO, this.yBodyRot) * 0.017453292F;
-      Vec3 var3 = new Vec3(0.0D, this.getBoundingBox().getYsize() - 1.0D, 0.2D);
-      return this.getPosition(var1).add(var3.yRot(-var2));
    }
 
    static {

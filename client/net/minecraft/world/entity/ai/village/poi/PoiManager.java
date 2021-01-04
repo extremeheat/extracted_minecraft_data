@@ -1,18 +1,14 @@
 package net.minecraft.world.entity.ai.village.poi;
 
 import com.mojang.datafixers.DataFixer;
-import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
@@ -25,19 +21,15 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.SectionTracker;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.storage.SectionStorage;
 
 public class PoiManager extends SectionStorage<PoiSection> {
    private final PoiManager.DistanceTracker distanceTracker = new PoiManager.DistanceTracker();
-   private final LongSet loadedChunks = new LongOpenHashSet();
 
-   public PoiManager(File var1, DataFixer var2, boolean var3, LevelHeightAccessor var4) {
-      super(var1, PoiSection::codec, PoiSection::new, var2, DataFixTypes.POI_CHUNK, var3, var4);
+   public PoiManager(File var1, DataFixer var2) {
+      super(var1, PoiSection::new, PoiSection::new, var2, DataFixTypes.POI_CHUNK);
    }
 
    public void add(BlockPos var1, PoiType var2) {
@@ -52,54 +44,39 @@ public class PoiManager extends SectionStorage<PoiSection> {
       return this.getInRange(var1, var2, var3, var4).count();
    }
 
-   public boolean existsAtPosition(PoiType var1, BlockPos var2) {
-      Optional var3 = ((PoiSection)this.getOrCreate(SectionPos.of(var2).asLong())).getType(var2);
-      return var3.isPresent() && ((PoiType)var3.get()).equals(var1);
-   }
-
-   public Stream<PoiRecord> getInSquare(Predicate<PoiType> var1, BlockPos var2, int var3, PoiManager.Occupancy var4) {
-      int var5 = Math.floorDiv(var3, 16) + 1;
-      return ChunkPos.rangeClosed(new ChunkPos(var2), var5).flatMap((var3x) -> {
-         return this.getInChunk(var1, var3x, var4);
-      }).filter((var2x) -> {
-         BlockPos var3x = var2x.getPos();
-         return Math.abs(var3x.getX() - var2.getX()) <= var3 && Math.abs(var3x.getZ() - var2.getZ()) <= var3;
-      });
-   }
-
    public Stream<PoiRecord> getInRange(Predicate<PoiType> var1, BlockPos var2, int var3, PoiManager.Occupancy var4) {
       int var5 = var3 * var3;
-      return this.getInSquare(var1, var2, var3, var4).filter((var2x) -> {
-         return var2x.getPos().distSqr(var2) <= (double)var5;
+      return ChunkPos.rangeClosed(new ChunkPos(var2), Math.floorDiv(var3, 16)).flatMap((var5x) -> {
+         return this.getInChunk(var1, var5x, var4).filter((var2x) -> {
+            return var2x.getPos().distSqr(var2) <= (double)var5;
+         });
       });
    }
 
    public Stream<PoiRecord> getInChunk(Predicate<PoiType> var1, ChunkPos var2, PoiManager.Occupancy var3) {
-      return IntStream.range(this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection()).boxed().map((var2x) -> {
-         return this.getOrLoad(SectionPos.of(var2, var2x).asLong());
-      }).filter(Optional::isPresent).flatMap((var2x) -> {
-         return ((PoiSection)var2x.get()).getRecords(var1, var3);
+      return IntStream.range(0, 16).boxed().flatMap((var4) -> {
+         return this.getInSection(var1, SectionPos.of(var2, var4).asLong(), var3);
       });
+   }
+
+   private Stream<PoiRecord> getInSection(Predicate<PoiType> var1, long var2, PoiManager.Occupancy var4) {
+      return (Stream)this.getOrLoad(var2).map((var2x) -> {
+         return var2x.getRecords(var1, var4);
+      }).orElseGet(Stream::empty);
    }
 
    public Stream<BlockPos> findAll(Predicate<PoiType> var1, Predicate<BlockPos> var2, BlockPos var3, int var4, PoiManager.Occupancy var5) {
       return this.getInRange(var1, var3, var4, var5).map(PoiRecord::getPos).filter(var2);
    }
 
-   public Stream<BlockPos> findAllClosestFirst(Predicate<PoiType> var1, Predicate<BlockPos> var2, BlockPos var3, int var4, PoiManager.Occupancy var5) {
-      return this.findAll(var1, var2, var3, var4, var5).sorted(Comparator.comparingDouble((var1x) -> {
-         return var1x.distSqr(var3);
-      }));
-   }
-
    public Optional<BlockPos> find(Predicate<PoiType> var1, Predicate<BlockPos> var2, BlockPos var3, int var4, PoiManager.Occupancy var5) {
       return this.findAll(var1, var2, var3, var4, var5).findFirst();
    }
 
-   public Optional<BlockPos> findClosest(Predicate<PoiType> var1, BlockPos var2, int var3, PoiManager.Occupancy var4) {
-      return this.getInRange(var1, var2, var3, var4).map(PoiRecord::getPos).min(Comparator.comparingDouble((var1x) -> {
-         return var1x.distSqr(var2);
-      }));
+   public Optional<BlockPos> findClosest(Predicate<PoiType> var1, Predicate<BlockPos> var2, BlockPos var3, int var4, PoiManager.Occupancy var5) {
+      return this.getInRange(var1, var3, var4, var5).map(PoiRecord::getPos).sorted(Comparator.comparingDouble((var1x) -> {
+         return var1x.distSqr(var3);
+      })).filter(var2).findFirst();
    }
 
    public Optional<BlockPos> take(Predicate<PoiType> var1, Predicate<BlockPos> var2, BlockPos var3, int var4) {
@@ -161,7 +138,7 @@ public class PoiManager extends SectionStorage<PoiSection> {
    }
 
    public void checkConsistencyWithBlocks(ChunkPos var1, LevelChunkSection var2) {
-      SectionPos var3 = SectionPos.of(var1, SectionPos.blockToSectionCoord(var2.bottomBlockY()));
+      SectionPos var3 = SectionPos.of(var1, var2.bottomBlockY() >> 4);
       Util.ifElse(this.getOrLoad(var3.asLong()), (var3x) -> {
          var3x.refresh((var3xx) -> {
             if (mayHavePoi(var2)) {
@@ -179,9 +156,9 @@ public class PoiManager extends SectionStorage<PoiSection> {
    }
 
    private static boolean mayHavePoi(LevelChunkSection var0) {
-      Set var10001 = PoiType.ALL_STATES;
-      var10001.getClass();
-      return var0.maybeHas(var10001::contains);
+      Stream var10000 = PoiType.allPoiStates();
+      var0.getClass();
+      return var10000.anyMatch(var0::maybeHas);
    }
 
    private void updateFromSection(LevelChunkSection var1, SectionPos var2, BiConsumer<BlockPos, PoiType> var3) {
@@ -190,20 +167,6 @@ public class PoiManager extends SectionStorage<PoiSection> {
          PoiType.forState(var3x).ifPresent((var2) -> {
             var3.accept(var2x, var2);
          });
-      });
-   }
-
-   public void ensureLoadedAndValid(LevelReader var1, BlockPos var2, int var3) {
-      SectionPos.aroundChunk(new ChunkPos(var2), Math.floorDiv(var3, 16), this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection()).map((var1x) -> {
-         return Pair.of(var1x, this.getOrLoad(var1x.asLong()));
-      }).filter((var0) -> {
-         return !(Boolean)((Optional)var0.getSecond()).map(PoiSection::isValid).orElse(false);
-      }).map((var0) -> {
-         return ((SectionPos)var0.getFirst()).chunk();
-      }).filter((var1x) -> {
-         return this.loadedChunks.add(var1x.toLong());
-      }).forEach((var1x) -> {
-         var1.getChunk(var1x.x, var1x.z, ChunkStatus.EMPTY);
       });
    }
 

@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -31,10 +31,6 @@ public class SetNameFunction extends LootItemConditionalFunction {
       super(var1);
       this.name = var2;
       this.resolutionContext = var3;
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_NAME;
    }
 
    public Set<LootContextParam<?>> getReferencedContextParams() {
@@ -77,7 +73,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetNameFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("set_name"), SetNameFunction.class);
       }
 
       public void serialize(JsonObject var1, SetNameFunction var2, JsonSerializationContext var3) {
@@ -93,7 +89,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       }
 
       public SetNameFunction deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         MutableComponent var4 = Component.Serializer.fromJson(var1.get("name"));
+         Component var4 = Component.Serializer.fromJson(var1.get("name"));
          LootContext.EntityTarget var5 = (LootContext.EntityTarget)GsonHelper.getAsObject(var1, "entity", (Object)null, var2, LootContext.EntityTarget.class);
          return new SetNameFunction(var3, var4, var5);
       }

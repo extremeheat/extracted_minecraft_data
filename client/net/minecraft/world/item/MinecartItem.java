@@ -5,11 +5,9 @@ import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -22,7 +20,7 @@ public class MinecartItem extends Item {
 
       public ItemStack execute(BlockSource var1, ItemStack var2) {
          Direction var3 = (Direction)var1.getBlockState().getValue(DispenserBlock.FACING);
-         ServerLevel var4 = var1.getLevel();
+         Level var4 = var1.getLevel();
          double var5 = var1.x() + (double)var3.getStepX() * 1.125D;
          double var7 = Math.floor(var1.y()) + (double)var3.getStepY();
          double var9 = var1.z() + (double)var3.getStepZ() * 1.125D;
@@ -96,7 +94,7 @@ public class MinecartItem extends Item {
          }
 
          var5.shrink(1);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 }

@@ -11,7 +11,7 @@ public class Varint21LengthFieldPrepender extends MessageToByteEncoder<ByteBuf> 
       super();
    }
 
-   protected void encode(ChannelHandlerContext var1, ByteBuf var2, ByteBuf var3) {
+   protected void encode(ChannelHandlerContext var1, ByteBuf var2, ByteBuf var3) throws Exception {
       int var4 = var2.readableBytes();
       int var5 = FriendlyByteBuf.getVarIntSize(var4);
       if (var5 > 3) {

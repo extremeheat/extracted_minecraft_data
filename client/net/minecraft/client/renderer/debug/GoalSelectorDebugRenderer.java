@@ -1,13 +1,11 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 
 public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -27,29 +25,29 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      Camera var9 = this.minecraft.gameRenderer.getMainCamera();
-      RenderSystem.pushMatrix();
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
-      BlockPos var10 = new BlockPos(var9.getPosition().x, 0.0D, var9.getPosition().z);
-      this.goalSelectors.forEach((var1x, var2x) -> {
-         for(int var3 = 0; var3 < var2x.size(); ++var3) {
-            GoalSelectorDebugRenderer.DebugGoal var4 = (GoalSelectorDebugRenderer.DebugGoal)var2x.get(var3);
-            if (var10.closerThan(var4.pos, 160.0D)) {
-               double var5 = (double)var4.pos.getX() + 0.5D;
-               double var7 = (double)var4.pos.getY() + 2.0D + (double)var3 * 0.25D;
-               double var9 = (double)var4.pos.getZ() + 0.5D;
-               int var11 = var4.isRunning ? -16711936 : -3355444;
-               DebugRenderer.renderFloatingText(var4.name, var5, var7, var9, var11);
+   public void render(long var1) {
+      Camera var3 = this.minecraft.gameRenderer.getMainCamera();
+      GlStateManager.pushMatrix();
+      GlStateManager.enableBlend();
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+      GlStateManager.disableTexture();
+      BlockPos var4 = new BlockPos(var3.getPosition().x, 0.0D, var3.getPosition().z);
+      this.goalSelectors.forEach((var1x, var2) -> {
+         for(int var3 = 0; var3 < var2.size(); ++var3) {
+            GoalSelectorDebugRenderer.DebugGoal var4x = (GoalSelectorDebugRenderer.DebugGoal)var2.get(var3);
+            if (var4.closerThan(var4x.pos, 160.0D)) {
+               double var5 = (double)var4x.pos.getX() + 0.5D;
+               double var7 = (double)var4x.pos.getY() + 2.0D + (double)var3 * 0.25D;
+               double var9 = (double)var4x.pos.getZ() + 0.5D;
+               int var11 = var4x.isRunning ? -16711936 : -3355444;
+               DebugRenderer.renderFloatingText(var4x.name, var5, var7, var9, var11);
             }
          }
 
       });
-      RenderSystem.enableDepthTest();
-      RenderSystem.enableTexture();
-      RenderSystem.popMatrix();
+      GlStateManager.enableDepthTest();
+      GlStateManager.enableTexture();
+      GlStateManager.popMatrix();
    }
 
    public static class DebugGoal {

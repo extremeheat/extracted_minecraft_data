@@ -19,7 +19,7 @@ public class WallClimberNavigation extends GroundPathNavigation {
    }
 
    public Path createPath(Entity var1, int var2) {
-      this.pathToPosition = var1.blockPosition();
+      this.pathToPosition = new BlockPos(var1);
       return super.createPath(var1, var2);
    }
 
@@ -28,7 +28,7 @@ public class WallClimberNavigation extends GroundPathNavigation {
       if (var4 != null) {
          return this.moveTo(var4, var2);
       } else {
-         this.pathToPosition = var1.blockPosition();
+         this.pathToPosition = new BlockPos(var1);
          this.speedModifier = var2;
          return true;
       }
@@ -39,7 +39,7 @@ public class WallClimberNavigation extends GroundPathNavigation {
          super.tick();
       } else {
          if (this.pathToPosition != null) {
-            if (!this.pathToPosition.closerThan(this.mob.position(), (double)this.mob.getBbWidth()) && (this.mob.getY() <= (double)this.pathToPosition.getY() || !(new BlockPos((double)this.pathToPosition.getX(), this.mob.getY(), (double)this.pathToPosition.getZ())).closerThan(this.mob.position(), (double)this.mob.getBbWidth()))) {
+            if (!this.pathToPosition.closerThan(this.mob.position(), (double)this.mob.getBbWidth()) && (this.mob.y <= (double)this.pathToPosition.getY() || !(new BlockPos((double)this.pathToPosition.getX(), this.mob.y, (double)this.pathToPosition.getZ())).closerThan(this.mob.position(), (double)this.mob.getBbWidth()))) {
                this.mob.getMoveControl().setWantedPosition((double)this.pathToPosition.getX(), (double)this.pathToPosition.getY(), (double)this.pathToPosition.getZ(), this.speedModifier);
             } else {
                this.pathToPosition = null;

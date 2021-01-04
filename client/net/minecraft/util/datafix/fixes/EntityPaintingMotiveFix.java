@@ -3,9 +3,9 @@ package net.minecraft.util.datafix.fixes;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -23,7 +23,7 @@ public class EntityPaintingMotiveFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      Optional var2 = var1.get("Motive").asString().result();
+      Optional var2 = var1.get("Motive").asString();
       if (var2.isPresent()) {
          String var3 = ((String)var2.get()).toLowerCase(Locale.ROOT);
          return var1.set("Motive", var1.createString((new ResourceLocation((String)MAP.getOrDefault(var3, var3))).toString()));

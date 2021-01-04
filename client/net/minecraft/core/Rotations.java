@@ -21,9 +21,9 @@ public class Rotations {
 
    public ListTag save() {
       ListTag var1 = new ListTag();
-      var1.add(FloatTag.valueOf(this.x));
-      var1.add(FloatTag.valueOf(this.y));
-      var1.add(FloatTag.valueOf(this.z));
+      var1.add(new FloatTag(this.x));
+      var1.add(new FloatTag(this.y));
+      var1.add(new FloatTag(this.z));
       return var1;
    }
 

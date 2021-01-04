@@ -17,11 +17,8 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -47,7 +44,7 @@ public class Ghast extends FlyingMob implements Enemy {
       this.goalSelector.addGoal(7, new Ghast.GhastLookGoal(this));
       this.goalSelector.addGoal(7, new Ghast.GhastShootFireballGoal(this));
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1) -> {
-         return Math.abs(var1.getY() - this.getY()) <= 4.0D;
+         return Math.abs(var1.y - this.y) <= 4.0D;
       }));
    }
 
@@ -63,8 +60,12 @@ public class Ghast extends FlyingMob implements Enemy {
       return this.explosionPower;
    }
 
-   protected boolean shouldDespawnInPeaceful() {
-      return true;
+   public void tick() {
+      super.tick();
+      if (!this.level.isClientSide && this.level.getDifficulty() == Difficulty.PEACEFUL) {
+         this.remove();
+      }
+
    }
 
    public boolean hurt(DamageSource var1, float var2) {
@@ -83,8 +84,10 @@ public class Ghast extends FlyingMob implements Enemy {
       this.entityData.define(DATA_IS_CHARGING, false);
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0D).add(Attributes.FOLLOW_RANGE, 100.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(100.0D);
    }
 
    public SoundSource getSoundSource() {
@@ -104,7 +107,7 @@ public class Ghast extends FlyingMob implements Enemy {
    }
 
    protected float getSoundVolume() {
-      return 5.0F;
+      return 10.0F;
    }
 
    public static boolean checkGhastSpawnRules(EntityType<Ghast> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
@@ -163,23 +166,22 @@ public class Ghast extends FlyingMob implements Enemy {
          if (var1.distanceToSqr(this.ghast) < 4096.0D && this.ghast.canSee(var1)) {
             Level var4 = this.ghast.level;
             ++this.chargeTime;
-            if (this.chargeTime == 10 && !this.ghast.isSilent()) {
-               var4.levelEvent((Player)null, 1015, this.ghast.blockPosition(), 0);
+            if (this.chargeTime == 10) {
+               var4.levelEvent((Player)null, 1015, new BlockPos(this.ghast), 0);
             }
 
             if (this.chargeTime == 20) {
                double var5 = 4.0D;
                Vec3 var7 = this.ghast.getViewVector(1.0F);
-               double var8 = var1.getX() - (this.ghast.getX() + var7.x * 4.0D);
-               double var10 = var1.getY(0.5D) - (0.5D + this.ghast.getY(0.5D));
-               double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0D);
-               if (!this.ghast.isSilent()) {
-                  var4.levelEvent((Player)null, 1016, this.ghast.blockPosition(), 0);
-               }
-
+               double var8 = var1.x - (this.ghast.x + var7.x * 4.0D);
+               double var10 = var1.getBoundingBox().minY + (double)(var1.getBbHeight() / 2.0F) - (0.5D + this.ghast.y + (double)(this.ghast.getBbHeight() / 2.0F));
+               double var12 = var1.z - (this.ghast.z + var7.z * 4.0D);
+               var4.levelEvent((Player)null, 1016, new BlockPos(this.ghast), 0);
                LargeFireball var14 = new LargeFireball(var4, this.ghast, var8, var10, var12);
                var14.explosionPower = this.ghast.getExplosionPower();
-               var14.setPos(this.ghast.getX() + var7.x * 4.0D, this.ghast.getY(0.5D) + 0.5D, var14.getZ() + var7.z * 4.0D);
+               var14.x = this.ghast.x + var7.x * 4.0D;
+               var14.y = this.ghast.y + (double)(this.ghast.getBbHeight() / 2.0F) + 0.5D;
+               var14.z = this.ghast.z + var7.z * 4.0D;
                var4.addFreshEntity(var14);
                this.chargeTime = -40;
             }
@@ -213,8 +215,8 @@ public class Ghast extends FlyingMob implements Enemy {
             LivingEntity var8 = this.ghast.getTarget();
             double var2 = 64.0D;
             if (var8.distanceToSqr(this.ghast) < 4096.0D) {
-               double var4 = var8.getX() - this.ghast.getX();
-               double var6 = var8.getZ() - this.ghast.getZ();
+               double var4 = var8.x - this.ghast.x;
+               double var6 = var8.z - this.ghast.z;
                this.ghast.yRot = -((float)Mth.atan2(var4, var6)) * 57.295776F;
                this.ghast.yBodyRot = this.ghast.yRot;
             }
@@ -237,9 +239,9 @@ public class Ghast extends FlyingMob implements Enemy {
          if (!var1.hasWanted()) {
             return true;
          } else {
-            double var2 = var1.getWantedX() - this.ghast.getX();
-            double var4 = var1.getWantedY() - this.ghast.getY();
-            double var6 = var1.getWantedZ() - this.ghast.getZ();
+            double var2 = var1.getWantedX() - this.ghast.x;
+            double var4 = var1.getWantedY() - this.ghast.y;
+            double var6 = var1.getWantedZ() - this.ghast.z;
             double var8 = var2 * var2 + var4 * var4 + var6 * var6;
             return var8 < 1.0D || var8 > 3600.0D;
          }
@@ -251,9 +253,9 @@ public class Ghast extends FlyingMob implements Enemy {
 
       public void start() {
          Random var1 = this.ghast.getRandom();
-         double var2 = this.ghast.getX() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
-         double var4 = this.ghast.getY() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
-         double var6 = this.ghast.getZ() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         double var2 = this.ghast.x + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         double var4 = this.ghast.y + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         double var6 = this.ghast.z + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
          this.ghast.getMoveControl().setWantedPosition(var2, var4, var6, 1.0D);
       }
    }
@@ -271,7 +273,7 @@ public class Ghast extends FlyingMob implements Enemy {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             if (this.floatDuration-- <= 0) {
                this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
-               Vec3 var1 = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
+               Vec3 var1 = new Vec3(this.wantedX - this.ghast.x, this.wantedY - this.ghast.y, this.wantedZ - this.ghast.z);
                double var2 = var1.length();
                var1 = var1.normalize();
                if (this.canReach(var1, Mth.ceil(var2))) {

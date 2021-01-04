@@ -1,25 +1,22 @@
 package net.minecraft.world.level.block;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
-   public BeaconBlock(BlockBehaviour.Properties var1) {
+   public BeaconBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -27,18 +24,13 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       return DyeColor.WHITE;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BeaconBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new BeaconBlockEntity();
    }
 
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.BEACON, BeaconBlockEntity::tick);
-   }
-
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof BeaconBlockEntity) {
@@ -46,8 +38,12 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
             var4.awardStat(Stats.INTERACT_WITH_BEACON);
          }
 
-         return InteractionResult.CONSUME;
+         return true;
       }
+   }
+
+   public boolean isRedstoneConductor(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return false;
    }
 
    public RenderShape getRenderShape(BlockState var1) {
@@ -62,5 +58,9 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
          }
       }
 
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 }

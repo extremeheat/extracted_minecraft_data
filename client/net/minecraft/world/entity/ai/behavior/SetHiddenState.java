@@ -28,14 +28,14 @@ public class SetHiddenState extends Behavior<LivingEntity> {
       boolean var7 = (Long)var6.get() + 300L <= var3;
       if (this.ticksHidden <= this.stayHiddenTicks && !var7) {
          BlockPos var8 = ((GlobalPos)var5.getMemory(MemoryModuleType.HIDING_PLACE).get()).pos();
-         if (var8.closerThan(var2.blockPosition(), (double)this.closeEnoughDist)) {
+         if (var8.closerThan(new BlockPos(var2), (double)(this.closeEnoughDist + 1))) {
             ++this.ticksHidden;
          }
 
       } else {
          var5.eraseMemory(MemoryModuleType.HEARD_BELL_TIME);
          var5.eraseMemory(MemoryModuleType.HIDING_PLACE);
-         var5.updateActivityFromSchedule(var1.getDayTime(), var1.getGameTime());
+         var5.updateActivity(var1.getDayTime(), var1.getGameTime());
          this.ticksHidden = 0;
       }
    }

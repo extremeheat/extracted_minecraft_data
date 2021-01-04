@@ -1,19 +1,10 @@
 package net.minecraft.world.level.levelgen.surfacebuilders;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.Dynamic;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SurfaceBuilderBaseConfiguration implements SurfaceBuilderConfiguration {
-   public static final Codec<SurfaceBuilderBaseConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BlockState.CODEC.fieldOf("top_material").forGetter((var0x) -> {
-         return var0x.topMaterial;
-      }), BlockState.CODEC.fieldOf("under_material").forGetter((var0x) -> {
-         return var0x.underMaterial;
-      }), BlockState.CODEC.fieldOf("underwater_material").forGetter((var0x) -> {
-         return var0x.underwaterMaterial;
-      })).apply(var0, SurfaceBuilderBaseConfiguration::new);
-   });
    private final BlockState topMaterial;
    private final BlockState underMaterial;
    private final BlockState underwaterMaterial;
@@ -35,5 +26,12 @@ public class SurfaceBuilderBaseConfiguration implements SurfaceBuilderConfigurat
 
    public BlockState getUnderwaterMaterial() {
       return this.underwaterMaterial;
+   }
+
+   public static SurfaceBuilderBaseConfiguration deserialize(Dynamic<?> var0) {
+      BlockState var1 = (BlockState)var0.get("top_material").map(BlockState::deserialize).orElse(Blocks.AIR.defaultBlockState());
+      BlockState var2 = (BlockState)var0.get("under_material").map(BlockState::deserialize).orElse(Blocks.AIR.defaultBlockState());
+      BlockState var3 = (BlockState)var0.get("underwater_material").map(BlockState::deserialize).orElse(Blocks.AIR.defaultBlockState());
+      return new SurfaceBuilderBaseConfiguration(var1, var2, var3);
    }
 }

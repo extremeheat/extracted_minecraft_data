@@ -1,17 +1,16 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.pathfinder.Node;
@@ -19,12 +18,14 @@ import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 
 public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
+   private final Minecraft minecraft;
    private final Map<Integer, Path> pathMap = Maps.newHashMap();
    private final Map<Integer, Float> pathMaxDist = Maps.newHashMap();
    private final Map<Integer, Long> creationMap = Maps.newHashMap();
 
-   public PathfindingRenderer() {
+   public PathfindingRenderer(Minecraft var1) {
       super();
+      this.minecraft = var1;
    }
 
    public void addPath(int var1, Path var2, float var3) {
@@ -33,120 +34,132 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       this.pathMaxDist.put(var1, var3);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
+   public void render(long var1) {
       if (!this.pathMap.isEmpty()) {
-         long var9 = Util.getMillis();
-         Iterator var11 = this.pathMap.keySet().iterator();
+         long var3 = Util.getMillis();
+         Iterator var5 = this.pathMap.keySet().iterator();
 
-         while(var11.hasNext()) {
-            Integer var12 = (Integer)var11.next();
-            Path var13 = (Path)this.pathMap.get(var12);
-            float var14 = (Float)this.pathMaxDist.get(var12);
-            renderPath(var13, var14, true, true, var3, var5, var7);
+         while(var5.hasNext()) {
+            Integer var6 = (Integer)var5.next();
+            Path var7 = (Path)this.pathMap.get(var6);
+            float var8 = (Float)this.pathMaxDist.get(var6);
+            renderPath(this.getCamera(), var7, var8, true, true);
          }
 
-         Integer[] var15 = (Integer[])this.creationMap.keySet().toArray(new Integer[0]);
-         int var16 = var15.length;
+         Integer[] var9 = (Integer[])this.creationMap.keySet().toArray(new Integer[0]);
+         int var10 = var9.length;
 
-         for(int var17 = 0; var17 < var16; ++var17) {
-            Integer var18 = var15[var17];
-            if (var9 - (Long)this.creationMap.get(var18) > 5000L) {
-               this.pathMap.remove(var18);
-               this.creationMap.remove(var18);
+         for(int var11 = 0; var11 < var10; ++var11) {
+            Integer var12 = var9[var11];
+            if (var3 - (Long)this.creationMap.get(var12) > 20000L) {
+               this.pathMap.remove(var12);
+               this.creationMap.remove(var12);
             }
          }
 
       }
    }
 
-   public static void renderPath(Path var0, float var1, boolean var2, boolean var3, double var4, double var6, double var8) {
-      RenderSystem.pushMatrix();
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.color4f(0.0F, 1.0F, 0.0F, 0.75F);
-      RenderSystem.disableTexture();
-      RenderSystem.lineWidth(6.0F);
-      doRenderPath(var0, var1, var2, var3, var4, var6, var8);
-      RenderSystem.enableTexture();
-      RenderSystem.disableBlend();
-      RenderSystem.popMatrix();
+   public static void renderPath(Camera var0, Path var1, float var2, boolean var3, boolean var4) {
+      GlStateManager.pushMatrix();
+      GlStateManager.enableBlend();
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+      GlStateManager.color4f(0.0F, 1.0F, 0.0F, 0.75F);
+      GlStateManager.disableTexture();
+      GlStateManager.lineWidth(6.0F);
+      doRenderPath(var0, var1, var2, var3, var4);
+      GlStateManager.enableTexture();
+      GlStateManager.disableBlend();
+      GlStateManager.popMatrix();
    }
 
-   private static void doRenderPath(Path var0, float var1, boolean var2, boolean var3, double var4, double var6, double var8) {
-      renderPathLine(var0, var4, var6, var8);
-      BlockPos var10 = var0.getTarget();
-      int var11;
-      Node var12;
-      if (distanceToCamera(var10, var4, var6, var8) <= 80.0F) {
-         DebugRenderer.renderFilledBox((new AABB((double)((float)var10.getX() + 0.25F), (double)((float)var10.getY() + 0.25F), (double)var10.getZ() + 0.25D, (double)((float)var10.getX() + 0.75F), (double)((float)var10.getY() + 0.75F), (double)((float)var10.getZ() + 0.75F))).move(-var4, -var6, -var8), 0.0F, 1.0F, 0.0F, 0.5F);
+   private static void doRenderPath(Camera var0, Path var1, float var2, boolean var3, boolean var4) {
+      renderPathLine(var0, var1);
+      double var5 = var0.getPosition().x;
+      double var7 = var0.getPosition().y;
+      double var9 = var0.getPosition().z;
+      BlockPos var11 = var1.getTarget();
+      int var12;
+      Node var13;
+      if (distanceToCamera(var0, var11) <= 40.0F) {
+         DebugRenderer.renderFilledBox((new AABB((double)((float)var11.getX() + 0.25F), (double)((float)var11.getY() + 0.25F), (double)var11.getZ() + 0.25D, (double)((float)var11.getX() + 0.75F), (double)((float)var11.getY() + 0.75F), (double)((float)var11.getZ() + 0.75F))).move(-var5, -var7, -var9), 0.0F, 1.0F, 0.0F, 0.5F);
 
-         for(var11 = 0; var11 < var0.getNodeCount(); ++var11) {
-            var12 = var0.getNode(var11);
-            if (distanceToCamera(var12.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               float var13 = var11 == var0.getNextNodeIndex() ? 1.0F : 0.0F;
-               float var14 = var11 == var0.getNextNodeIndex() ? 0.0F : 1.0F;
-               DebugRenderer.renderFilledBox((new AABB((double)((float)var12.x + 0.5F - var1), (double)((float)var12.y + 0.01F * (float)var11), (double)((float)var12.z + 0.5F - var1), (double)((float)var12.x + 0.5F + var1), (double)((float)var12.y + 0.25F + 0.01F * (float)var11), (double)((float)var12.z + 0.5F + var1))).move(-var4, -var6, -var8), var13, 0.0F, var14, 0.5F);
-            }
-         }
-      }
-
-      if (var2) {
-         Node[] var15 = var0.getClosedSet();
-         int var16 = var15.length;
-
-         int var17;
-         Node var18;
-         for(var17 = 0; var17 < var16; ++var17) {
-            var18 = var15[var17];
-            if (distanceToCamera(var18.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               DebugRenderer.renderFilledBox((new AABB((double)((float)var18.x + 0.5F - var1 / 2.0F), (double)((float)var18.y + 0.01F), (double)((float)var18.z + 0.5F - var1 / 2.0F), (double)((float)var18.x + 0.5F + var1 / 2.0F), (double)var18.y + 0.1D, (double)((float)var18.z + 0.5F + var1 / 2.0F))).move(-var4, -var6, -var8), 1.0F, 0.8F, 0.8F, 0.5F);
-            }
-         }
-
-         var15 = var0.getOpenSet();
-         var16 = var15.length;
-
-         for(var17 = 0; var17 < var16; ++var17) {
-            var18 = var15[var17];
-            if (distanceToCamera(var18.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               DebugRenderer.renderFilledBox((new AABB((double)((float)var18.x + 0.5F - var1 / 2.0F), (double)((float)var18.y + 0.01F), (double)((float)var18.z + 0.5F - var1 / 2.0F), (double)((float)var18.x + 0.5F + var1 / 2.0F), (double)var18.y + 0.1D, (double)((float)var18.z + 0.5F + var1 / 2.0F))).move(-var4, -var6, -var8), 0.8F, 1.0F, 1.0F, 0.5F);
+         for(var12 = 0; var12 < var1.getSize(); ++var12) {
+            var13 = var1.get(var12);
+            if (distanceToCamera(var0, var13.asBlockPos()) <= 40.0F) {
+               float var14 = var12 == var1.getIndex() ? 1.0F : 0.0F;
+               float var15 = var12 == var1.getIndex() ? 0.0F : 1.0F;
+               DebugRenderer.renderFilledBox((new AABB((double)((float)var13.x + 0.5F - var2), (double)((float)var13.y + 0.01F * (float)var12), (double)((float)var13.z + 0.5F - var2), (double)((float)var13.x + 0.5F + var2), (double)((float)var13.y + 0.25F + 0.01F * (float)var12), (double)((float)var13.z + 0.5F + var2))).move(-var5, -var7, -var9), var14, 0.0F, var15, 0.5F);
             }
          }
       }
 
       if (var3) {
-         for(var11 = 0; var11 < var0.getNodeCount(); ++var11) {
-            var12 = var0.getNode(var11);
-            if (distanceToCamera(var12.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               DebugRenderer.renderFloatingText(String.format("%s", var12.type), (double)var12.x + 0.5D, (double)var12.y + 0.75D, (double)var12.z + 0.5D, -1, 0.02F, true, 0.0F, true);
-               DebugRenderer.renderFloatingText(String.format(Locale.ROOT, "%.2f", var12.costMalus), (double)var12.x + 0.5D, (double)var12.y + 0.25D, (double)var12.z + 0.5D, -1, 0.02F, true, 0.0F, true);
+         Node[] var16 = var1.getClosedSet();
+         int var17 = var16.length;
+
+         int var18;
+         Node var19;
+         for(var18 = 0; var18 < var17; ++var18) {
+            var19 = var16[var18];
+            if (distanceToCamera(var0, var19.asBlockPos()) <= 40.0F) {
+               DebugRenderer.renderFloatingText(String.format("%s", var19.type), (double)var19.x + 0.5D, (double)var19.y + 0.75D, (double)var19.z + 0.5D, -65536);
+               DebugRenderer.renderFloatingText(String.format(Locale.ROOT, "%.2f", var19.costMalus), (double)var19.x + 0.5D, (double)var19.y + 0.25D, (double)var19.z + 0.5D, -65536);
+            }
+         }
+
+         var16 = var1.getOpenSet();
+         var17 = var16.length;
+
+         for(var18 = 0; var18 < var17; ++var18) {
+            var19 = var16[var18];
+            if (distanceToCamera(var0, var19.asBlockPos()) <= 40.0F) {
+               DebugRenderer.renderFloatingText(String.format("%s", var19.type), (double)var19.x + 0.5D, (double)var19.y + 0.75D, (double)var19.z + 0.5D, -16776961);
+               DebugRenderer.renderFloatingText(String.format(Locale.ROOT, "%.2f", var19.costMalus), (double)var19.x + 0.5D, (double)var19.y + 0.25D, (double)var19.z + 0.5D, -16776961);
+            }
+         }
+      }
+
+      if (var4) {
+         for(var12 = 0; var12 < var1.getSize(); ++var12) {
+            var13 = var1.get(var12);
+            if (distanceToCamera(var0, var13.asBlockPos()) <= 40.0F) {
+               DebugRenderer.renderFloatingText(String.format("%s", var13.type), (double)var13.x + 0.5D, (double)var13.y + 0.75D, (double)var13.z + 0.5D, -1);
+               DebugRenderer.renderFloatingText(String.format(Locale.ROOT, "%.2f", var13.costMalus), (double)var13.x + 0.5D, (double)var13.y + 0.25D, (double)var13.z + 0.5D, -1);
             }
          }
       }
 
    }
 
-   public static void renderPathLine(Path var0, double var1, double var3, double var5) {
-      Tesselator var7 = Tesselator.getInstance();
-      BufferBuilder var8 = var7.getBuilder();
-      var8.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+   public static void renderPathLine(Camera var0, Path var1) {
+      Tesselator var2 = Tesselator.getInstance();
+      BufferBuilder var3 = var2.getBuilder();
+      double var4 = var0.getPosition().x;
+      double var6 = var0.getPosition().y;
+      double var8 = var0.getPosition().z;
+      var3.begin(3, DefaultVertexFormat.POSITION_COLOR);
 
-      for(int var9 = 0; var9 < var0.getNodeCount(); ++var9) {
-         Node var10 = var0.getNode(var9);
-         if (distanceToCamera(var10.asBlockPos(), var1, var3, var5) <= 80.0F) {
-            float var11 = (float)var9 / (float)var0.getNodeCount() * 0.33F;
-            int var12 = var9 == 0 ? 0 : Mth.hsvToRgb(var11, 0.9F, 0.9F);
-            int var13 = var12 >> 16 & 255;
-            int var14 = var12 >> 8 & 255;
-            int var15 = var12 & 255;
-            var8.vertex((double)var10.x - var1 + 0.5D, (double)var10.y - var3 + 0.5D, (double)var10.z - var5 + 0.5D).color(var13, var14, var15, 255).endVertex();
+      for(int var10 = 0; var10 < var1.getSize(); ++var10) {
+         Node var11 = var1.get(var10);
+         if (distanceToCamera(var0, var11.asBlockPos()) <= 40.0F) {
+            float var12 = (float)var10 / (float)var1.getSize() * 0.33F;
+            int var13 = var10 == 0 ? 0 : Mth.hsvToRgb(var12, 0.9F, 0.9F);
+            int var14 = var13 >> 16 & 255;
+            int var15 = var13 >> 8 & 255;
+            int var16 = var13 & 255;
+            var3.vertex((double)var11.x - var4 + 0.5D, (double)var11.y - var6 + 0.5D, (double)var11.z - var8 + 0.5D).color(var14, var15, var16, 255).endVertex();
          }
       }
 
-      var7.end();
+      var2.end();
    }
 
-   private static float distanceToCamera(BlockPos var0, double var1, double var3, double var5) {
-      return (float)(Math.abs((double)var0.getX() - var1) + Math.abs((double)var0.getY() - var3) + Math.abs((double)var0.getZ() - var5));
+   private static float distanceToCamera(Camera var0, BlockPos var1) {
+      return (float)(Math.abs((double)var1.getX() - var0.getPosition().x) + Math.abs((double)var1.getY() - var0.getPosition().y) + Math.abs((double)var1.getZ() - var0.getPosition().z));
+   }
+
+   private Camera getCamera() {
+      return this.minecraft.gameRenderer.getMainCamera();
    }
 }

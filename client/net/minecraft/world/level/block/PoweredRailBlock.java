@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -15,9 +14,9 @@ public class PoweredRailBlock extends BaseRailBlock {
    public static final EnumProperty<RailShape> SHAPE;
    public static final BooleanProperty POWERED;
 
-   protected PoweredRailBlock(BlockBehaviour.Properties var1) {
+   protected PoweredRailBlock(Block.Properties var1) {
       super(true, var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(POWERED, false)).setValue(WATERLOGGED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(POWERED, false));
    }
 
    protected boolean findPoweredRailSignal(Level var1, BlockPos var2, BlockState var3, boolean var4, int var5) {
@@ -99,7 +98,7 @@ public class PoweredRailBlock extends BaseRailBlock {
 
    protected boolean isSameRailWithPower(Level var1, BlockPos var2, boolean var3, int var4, RailShape var5) {
       BlockState var6 = var1.getBlockState(var2);
-      if (!var6.is(this)) {
+      if (var6.getBlock() != this) {
          return false;
       } else {
          RailShape var7 = (RailShape)var6.getValue(SHAPE);
@@ -249,7 +248,7 @@ public class PoweredRailBlock extends BaseRailBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE, POWERED, WATERLOGGED);
+      var1.add(SHAPE, POWERED);
    }
 
    static {

@@ -18,31 +18,27 @@ public class LargeFireball extends Fireball {
       super(var1, var2);
    }
 
+   public LargeFireball(Level var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+      super(EntityType.FIREBALL, var2, var4, var6, var8, var10, var12, var1);
+   }
+
    public LargeFireball(Level var1, LivingEntity var2, double var3, double var5, double var7) {
       super(EntityType.FIREBALL, var2, var3, var5, var7, var1);
    }
 
    protected void onHit(HitResult var1) {
-      super.onHit(var1);
       if (!this.level.isClientSide) {
-         boolean var2 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-         this.level.explode((Entity)null, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var2, var2 ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
-         this.discard();
-      }
-
-   }
-
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      if (!this.level.isClientSide) {
-         Entity var2 = var1.getEntity();
-         Entity var3 = this.getOwner();
-         var2.hurt(DamageSource.fireball(this, var3), 6.0F);
-         if (var3 instanceof LivingEntity) {
-            this.doEnchantDamageEffects((LivingEntity)var3, var2);
+         if (var1.getType() == HitResult.Type.ENTITY) {
+            Entity var2 = ((EntityHitResult)var1).getEntity();
+            var2.hurt(DamageSource.fireball(this, this.owner), 6.0F);
+            this.doEnchantDamageEffects(this.owner, var2);
          }
 
+         boolean var3 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
+         this.level.explode((Entity)null, this.x, this.y, this.z, (float)this.explosionPower, var3, var3 ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE);
+         this.remove();
       }
+
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {

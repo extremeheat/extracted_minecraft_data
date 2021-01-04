@@ -1,8 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
@@ -12,39 +14,42 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class RuleProcessor extends StructureProcessor {
-   public static final Codec<RuleProcessor> CODEC;
    private final ImmutableList<ProcessorRule> rules;
 
-   public RuleProcessor(List<? extends ProcessorRule> var1) {
+   public RuleProcessor(List<ProcessorRule> var1) {
       super();
       this.rules = ImmutableList.copyOf(var1);
    }
 
-   @Nullable
-   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      Random var7 = new Random(Mth.getSeed(var5.pos));
-      BlockState var8 = var1.getBlockState(var5.pos);
-      UnmodifiableIterator var9 = this.rules.iterator();
-
-      ProcessorRule var10;
-      do {
-         if (!var9.hasNext()) {
-            return var5;
-         }
-
-         var10 = (ProcessorRule)var9.next();
-      } while(!var10.test(var5.state, var8, var4.pos, var5.pos, var3, var7));
-
-      return new StructureTemplate.StructureBlockInfo(var5.pos, var10.getOutputState(), var10.getOutputTag());
+   public RuleProcessor(Dynamic<?> var1) {
+      this(var1.get("rules").asList(ProcessorRule::deserialize));
    }
 
-   protected StructureProcessorType<?> getType() {
+   @Nullable
+   public StructureTemplate.StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, StructureTemplate.StructureBlockInfo var3, StructureTemplate.StructureBlockInfo var4, StructurePlaceSettings var5) {
+      Random var6 = new Random(Mth.getSeed(var4.pos));
+      BlockState var7 = var1.getBlockState(var4.pos);
+      UnmodifiableIterator var8 = this.rules.iterator();
+
+      ProcessorRule var9;
+      do {
+         if (!var8.hasNext()) {
+            return var4;
+         }
+
+         var9 = (ProcessorRule)var8.next();
+      } while(!var9.test(var4.state, var7, var6));
+
+      return new StructureTemplate.StructureBlockInfo(var4.pos, var9.getOutputState(), var9.getOutputTag());
+   }
+
+   protected StructureProcessorType getType() {
       return StructureProcessorType.RULE;
    }
 
-   static {
-      CODEC = ProcessorRule.CODEC.listOf().fieldOf("rules").xmap(RuleProcessor::new, (var0) -> {
-         return var0.rules;
-      }).codec();
+   protected <T> Dynamic<T> getDynamic(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("rules"), var1.createList(this.rules.stream().map((var1x) -> {
+         return var1x.serialize(var1).getValue();
+      })))));
    }
 }

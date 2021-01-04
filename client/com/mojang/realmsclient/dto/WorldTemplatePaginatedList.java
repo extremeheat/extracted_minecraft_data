@@ -1,10 +1,10 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.realmsclient.util.JsonUtils;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -30,9 +30,13 @@ public class WorldTemplatePaginatedList extends ValueObject {
       this.total = -1;
    }
 
+   public boolean isLastPage() {
+      return this.page * this.size >= this.total && this.page > 0 && this.total > 0 && this.size > 0;
+   }
+
    public static WorldTemplatePaginatedList parse(String var0) {
       WorldTemplatePaginatedList var1 = new WorldTemplatePaginatedList();
-      var1.templates = Lists.newArrayList();
+      var1.templates = new ArrayList();
 
       try {
          JsonParser var2 = new JsonParser();
@@ -49,7 +53,7 @@ public class WorldTemplatePaginatedList extends ValueObject {
          var1.size = JsonUtils.getIntOr("size", var3, 0);
          var1.total = JsonUtils.getIntOr("total", var3, 0);
       } catch (Exception var5) {
-         LOGGER.error("Could not parse WorldTemplatePaginatedList: {}", var5.getMessage());
+         LOGGER.error("Could not parse WorldTemplatePaginatedList: " + var5.getMessage());
       }
 
       return var1;

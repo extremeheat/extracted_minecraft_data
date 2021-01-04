@@ -5,8 +5,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.NodeEvaluator;
@@ -57,7 +58,7 @@ public class MoveControl {
    public void tick() {
       float var9;
       if (this.operation == MoveControl.Operation.STRAFE) {
-         float var1 = (float)this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED);
+         float var1 = (float)this.mob.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue();
          float var2 = (float)this.speedModifier * var1;
          float var3 = this.strafeForwards;
          float var4 = this.strafeRight;
@@ -73,9 +74,14 @@ public class MoveControl {
          float var7 = Mth.cos(this.mob.yRot * 0.017453292F);
          float var8 = var3 * var7 - var4 * var6;
          var9 = var4 * var7 + var3 * var6;
-         if (!this.isWalkable(var8, var9)) {
-            this.strafeForwards = 1.0F;
-            this.strafeRight = 0.0F;
+         PathNavigation var10 = this.mob.getNavigation();
+         if (var10 != null) {
+            NodeEvaluator var11 = var10.getNodeEvaluator();
+            if (var11 != null && var11.getBlockPathType(this.mob.level, Mth.floor(this.mob.x + (double)var8), Mth.floor(this.mob.y), Mth.floor(this.mob.z + (double)var9)) != BlockPathTypes.WALKABLE) {
+               this.strafeForwards = 1.0F;
+               this.strafeRight = 0.0F;
+               var2 = var1;
+            }
          }
 
          this.mob.setSpeed(var2);
@@ -84,46 +90,35 @@ public class MoveControl {
          this.operation = MoveControl.Operation.WAIT;
       } else if (this.operation == MoveControl.Operation.MOVE_TO) {
          this.operation = MoveControl.Operation.WAIT;
-         double var13 = this.wantedX - this.mob.getX();
-         double var14 = this.wantedZ - this.mob.getZ();
-         double var15 = this.wantedY - this.mob.getY();
-         double var16 = var13 * var13 + var15 * var15 + var14 * var14;
-         if (var16 < 2.500000277905201E-7D) {
+         double var14 = this.wantedX - this.mob.x;
+         double var15 = this.wantedZ - this.mob.z;
+         double var16 = this.wantedY - this.mob.y;
+         double var17 = var14 * var14 + var16 * var16 + var15 * var15;
+         if (var17 < 2.500000277905201E-7D) {
             this.mob.setZza(0.0F);
             return;
          }
 
-         var9 = (float)(Mth.atan2(var14, var13) * 57.2957763671875D) - 90.0F;
+         var9 = (float)(Mth.atan2(var15, var14) * 57.2957763671875D) - 90.0F;
          this.mob.yRot = this.rotlerp(this.mob.yRot, var9, 90.0F);
-         this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
-         BlockPos var10 = this.mob.blockPosition();
-         BlockState var11 = this.mob.level.getBlockState(var10);
-         VoxelShape var12 = var11.getCollisionShape(this.mob.level, var10);
-         if (var15 > (double)this.mob.maxUpStep && var13 * var13 + var14 * var14 < (double)Math.max(1.0F, this.mob.getBbWidth()) || !var12.isEmpty() && this.mob.getY() < var12.max(Direction.Axis.Y) + (double)var10.getY() && !var11.is(BlockTags.DOORS) && !var11.is(BlockTags.FENCES)) {
+         this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue()));
+         BlockPos var18 = new BlockPos(this.mob);
+         BlockState var19 = this.mob.level.getBlockState(var18);
+         Block var12 = var19.getBlock();
+         VoxelShape var13 = var19.getCollisionShape(this.mob.level, var18);
+         if (var16 > (double)this.mob.maxUpStep && var14 * var14 + var15 * var15 < (double)Math.max(1.0F, this.mob.getBbWidth()) || !var13.isEmpty() && this.mob.y < var13.max(Direction.Axis.Y) + (double)var18.getY() && !var12.is(BlockTags.DOORS) && !var12.is(BlockTags.FENCES)) {
             this.mob.getJumpControl().jump();
             this.operation = MoveControl.Operation.JUMPING;
          }
       } else if (this.operation == MoveControl.Operation.JUMPING) {
-         this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
-         if (this.mob.isOnGround()) {
+         this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue()));
+         if (this.mob.onGround) {
             this.operation = MoveControl.Operation.WAIT;
          }
       } else {
          this.mob.setZza(0.0F);
       }
 
-   }
-
-   private boolean isWalkable(float var1, float var2) {
-      PathNavigation var3 = this.mob.getNavigation();
-      if (var3 != null) {
-         NodeEvaluator var4 = var3.getNodeEvaluator();
-         if (var4 != null && var4.getBlockPathType(this.mob.level, Mth.floor(this.mob.getX() + (double)var1), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + (double)var2)) != BlockPathTypes.WALKABLE) {
-            return false;
-         }
-      }
-
-      return true;
    }
 
    protected float rotlerp(float var1, float var2, float var3) {

@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -11,12 +12,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 public class StonecutterMenu extends AbstractContainerMenu {
+   static final ImmutableList<Item> validItems;
    private final ContainerLevelAccess access;
    private final DataSlot selectedRecipeIndex;
    private final Level level;
@@ -57,13 +60,12 @@ public class StonecutterMenu extends AbstractContainerMenu {
          }
 
          public ItemStack onTake(Player var1, ItemStack var2) {
-            var2.onCraftedBy(var1.level, var1, var2.getCount());
-            StonecutterMenu.this.resultContainer.awardUsedRecipes(var1);
             ItemStack var3x = StonecutterMenu.this.inputSlot.remove(1);
             if (!var3x.isEmpty()) {
                StonecutterMenu.this.setupResultSlot();
             }
 
+            var2.getItem().onCraftedBy(var2, var1.level, var1);
             var3.execute((var1x, var2x) -> {
                long var3x = var1x.getGameTime();
                if (StonecutterMenu.this.lastSoundTime != var3x) {
@@ -111,7 +113,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    }
 
    public boolean clickMenuButton(Player var1, int var2) {
-      if (this.isValidRecipeIndex(var2)) {
+      if (var2 >= 0 && var2 < this.recipes.size()) {
          this.selectedRecipeIndex.set(var2);
          this.setupResultSlot();
       }
@@ -119,13 +121,9 @@ public class StonecutterMenu extends AbstractContainerMenu {
       return true;
    }
 
-   private boolean isValidRecipeIndex(int var1) {
-      return var1 >= 0 && var1 < this.recipes.size();
-   }
-
    public void slotsChanged(Container var1) {
       ItemStack var2 = this.inputSlot.getItem();
-      if (!var2.is(this.input.getItem())) {
+      if (var2.getItem() != this.input.getItem()) {
          this.input = var2.copy();
          this.setupRecipeList(var1, var2);
       }
@@ -143,9 +141,8 @@ public class StonecutterMenu extends AbstractContainerMenu {
    }
 
    private void setupResultSlot() {
-      if (!this.recipes.isEmpty() && this.isValidRecipeIndex(this.selectedRecipeIndex.get())) {
+      if (!this.recipes.isEmpty()) {
          StonecutterRecipe var1 = (StonecutterRecipe)this.recipes.get(this.selectedRecipeIndex.get());
-         this.resultContainer.setRecipeUsed(var1);
          this.resultSlot.set(var1.assemble(this.container));
       } else {
          this.resultSlot.set(ItemStack.EMPTY);
@@ -163,7 +160,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    }
 
    public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
-      return var2.container != this.resultContainer && super.canTakeItemForPickAll(var1, var2);
+      return false;
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {
@@ -184,7 +181,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, 2, 38, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.level.getRecipeManager().getRecipeFor(RecipeType.STONECUTTING, new SimpleContainer(new ItemStack[]{var5}), this.level).isPresent()) {
+         } else if (validItems.contains(var6)) {
             if (!this.moveItemStackTo(var5, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
@@ -216,7 +213,11 @@ public class StonecutterMenu extends AbstractContainerMenu {
       super.removed(var1);
       this.resultContainer.removeItemNoUpdate(1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.container);
+         this.clearContainer(var1, var1.level, this.container);
       });
+   }
+
+   static {
+      validItems = ImmutableList.of(Items.STONE, Items.SANDSTONE, Items.RED_SANDSTONE, Items.QUARTZ_BLOCK, Items.COBBLESTONE, Items.STONE_BRICKS, Items.BRICKS, Items.NETHER_BRICKS, Items.RED_NETHER_BRICKS, Items.PURPUR_BLOCK, Items.PRISMARINE, Items.PRISMARINE_BRICKS, new Item[]{Items.DARK_PRISMARINE, Items.ANDESITE, Items.POLISHED_ANDESITE, Items.GRANITE, Items.POLISHED_GRANITE, Items.DIORITE, Items.POLISHED_DIORITE, Items.MOSSY_STONE_BRICKS, Items.MOSSY_COBBLESTONE, Items.SMOOTH_SANDSTONE, Items.SMOOTH_RED_SANDSTONE, Items.SMOOTH_QUARTZ, Items.END_STONE, Items.END_STONE_BRICKS, Items.SMOOTH_STONE, Items.CUT_SANDSTONE, Items.CUT_RED_SANDSTONE});
    }
 }

@@ -69,6 +69,29 @@ public enum ChatFormatting {
       this.toString = "\u00a7" + var4;
    }
 
+   public static String getLastColors(String var0) {
+      StringBuilder var1 = new StringBuilder();
+      int var2 = -1;
+      int var3 = var0.length();
+
+      while((var2 = var0.indexOf(167, var2 + 1)) != -1) {
+         if (var2 < var3 - 1) {
+            ChatFormatting var4 = getByCode(var0.charAt(var2 + 1));
+            if (var4 != null) {
+               if (var4.shouldReset()) {
+                  var1.setLength(0);
+               }
+
+               if (var4 != RESET) {
+                  var1.append(var4);
+               }
+            }
+         }
+      }
+
+      return var1.toString();
+   }
+
    public int getId() {
       return this.id;
    }
@@ -84,6 +107,10 @@ public enum ChatFormatting {
    @Nullable
    public Integer getColor() {
       return this.color;
+   }
+
+   public boolean shouldReset() {
+      return !this.isFormat;
    }
 
    public String getName() {

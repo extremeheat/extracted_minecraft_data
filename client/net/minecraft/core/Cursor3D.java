@@ -1,65 +1,75 @@
 package net.minecraft.core;
 
 public class Cursor3D {
-   private final int originX;
-   private final int originY;
-   private final int originZ;
-   private final int width;
-   private final int height;
-   private final int depth;
-   private final int end;
-   private int index;
+   private final int minX;
+   private final int minY;
+   private final int minZ;
+   private final int maxX;
+   private final int maxY;
+   private final int maxZ;
    private int x;
    private int y;
    private int z;
+   private boolean started;
 
    public Cursor3D(int var1, int var2, int var3, int var4, int var5, int var6) {
       super();
-      this.originX = var1;
-      this.originY = var2;
-      this.originZ = var3;
-      this.width = var4 - var1 + 1;
-      this.height = var5 - var2 + 1;
-      this.depth = var6 - var3 + 1;
-      this.end = this.width * this.height * this.depth;
+      this.minX = var1;
+      this.minY = var2;
+      this.minZ = var3;
+      this.maxX = var4;
+      this.maxY = var5;
+      this.maxZ = var6;
    }
 
    public boolean advance() {
-      if (this.index == this.end) {
+      if (!this.started) {
+         this.x = this.minX;
+         this.y = this.minY;
+         this.z = this.minZ;
+         this.started = true;
+         return true;
+      } else if (this.x == this.maxX && this.y == this.maxY && this.z == this.maxZ) {
          return false;
       } else {
-         this.x = this.index % this.width;
-         int var1 = this.index / this.width;
-         this.y = var1 % this.height;
-         this.z = var1 / this.height;
-         ++this.index;
+         if (this.x < this.maxX) {
+            ++this.x;
+         } else if (this.y < this.maxY) {
+            this.x = this.minX;
+            ++this.y;
+         } else if (this.z < this.maxZ) {
+            this.x = this.minX;
+            this.y = this.minY;
+            ++this.z;
+         }
+
          return true;
       }
    }
 
    public int nextX() {
-      return this.originX + this.x;
+      return this.x;
    }
 
    public int nextY() {
-      return this.originY + this.y;
+      return this.y;
    }
 
    public int nextZ() {
-      return this.originZ + this.z;
+      return this.z;
    }
 
    public int getNextType() {
       int var1 = 0;
-      if (this.x == 0 || this.x == this.width - 1) {
+      if (this.x == this.minX || this.x == this.maxX) {
          ++var1;
       }
 
-      if (this.y == 0 || this.y == this.height - 1) {
+      if (this.y == this.minY || this.y == this.maxY) {
          ++var1;
       }
 
-      if (this.z == 0 || this.z == this.depth - 1) {
+      if (this.z == this.minZ || this.z == this.maxZ) {
          ++var1;
       }
 

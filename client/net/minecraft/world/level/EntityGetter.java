@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -13,19 +15,18 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public interface EntityGetter {
-   List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3);
+   List<Entity> getEntities(@Nullable Entity var1, AABB var2, @Nullable Predicate<? super Entity> var3);
 
-   <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3);
+   <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> var1, AABB var2, @Nullable Predicate<? super T> var3);
 
-   default <T extends Entity> List<T> getEntitiesOfClass(Class<T> var1, AABB var2, Predicate<? super T> var3) {
-      return this.getEntities(EntityTypeTest.forClass(var1), var2, var3);
+   default <T extends Entity> List<T> getLoadedEntitiesOfClass(Class<? extends T> var1, AABB var2, @Nullable Predicate<? super T> var3) {
+      return this.getEntitiesOfClass(var1, var2, var3);
    }
 
    List<? extends Player> players();
@@ -35,59 +36,35 @@ public interface EntityGetter {
    }
 
    default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
-      if (var2.isEmpty()) {
-         return true;
-      } else {
-         Iterator var3 = this.getEntities(var1, var2.bounds()).iterator();
-
-         Entity var4;
-         do {
-            do {
-               do {
-                  do {
-                     if (!var3.hasNext()) {
-                        return true;
-                     }
-
-                     var4 = (Entity)var3.next();
-                  } while(var4.isRemoved());
-               } while(!var4.blocksBuilding);
-            } while(var1 != null && var4.isPassengerOfSameVehicle(var1));
-         } while(!Shapes.joinIsNotEmpty(var2, Shapes.create(var4.getBoundingBox()), BooleanOp.AND));
-
-         return false;
-      }
+      return var2.isEmpty() ? true : this.getEntities(var1, var2.bounds()).stream().filter((var1x) -> {
+         return !var1x.removed && var1x.blocksBuilding && (var1 == null || !var1x.isPassengerOfSameVehicle(var1));
+      }).noneMatch((var1x) -> {
+         return Shapes.joinIsNotEmpty(var2, Shapes.create(var1x.getBoundingBox()), BooleanOp.AND);
+      });
    }
 
-   default <T extends Entity> List<T> getEntitiesOfClass(Class<T> var1, AABB var2) {
+   default <T extends Entity> List<T> getEntitiesOfClass(Class<? extends T> var1, AABB var2) {
       return this.getEntitiesOfClass(var1, var2, EntitySelector.NO_SPECTATORS);
    }
 
-   default Stream<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2, Predicate<Entity> var3) {
+   default <T extends Entity> List<T> getLoadedEntitiesOfClass(Class<? extends T> var1, AABB var2) {
+      return this.getLoadedEntitiesOfClass(var1, var2, EntitySelector.NO_SPECTATORS);
+   }
+
+   default Stream<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2, Set<Entity> var3) {
       if (var2.getSize() < 1.0E-7D) {
          return Stream.empty();
       } else {
          AABB var4 = var2.inflate(1.0E-7D);
-         return this.getEntities(var1, var4, var3.and((var2x) -> {
-            boolean var10000;
-            label25: {
-               if (var2x.getBoundingBox().intersects(var4)) {
-                  if (var1 == null) {
-                     if (var2x.canBeCollidedWith()) {
-                        break label25;
-                     }
-                  } else if (var1.canCollideWith(var2x)) {
-                     break label25;
-                  }
-               }
-
-               var10000 = false;
-               return var10000;
-            }
-
-            var10000 = true;
-            return var10000;
-         })).stream().map(Entity::getBoundingBox).map(Shapes::create);
+         Stream var10000 = this.getEntities(var1, var4).stream().filter((var1x) -> {
+            return !var3.contains(var1x);
+         }).filter((var1x) -> {
+            return var1 == null || !var1.isPassengerOfSameVehicle(var1x);
+         }).flatMap((var1x) -> {
+            return Stream.of(var1x.getCollideBox(), var1 == null ? null : var1.getCollideAgainstBox(var1x));
+         }).filter(Objects::nonNull);
+         var4.getClass();
+         return var10000.filter(var4::intersects).map(Shapes::create);
       }
    }
 
@@ -121,13 +98,41 @@ public interface EntityGetter {
 
    @Nullable
    default Player getNearestPlayer(Entity var1, double var2) {
-      return this.getNearestPlayer(var1.getX(), var1.getY(), var1.getZ(), var2, false);
+      return this.getNearestPlayer(var1.x, var1.y, var1.z, var2, false);
    }
 
    @Nullable
    default Player getNearestPlayer(double var1, double var3, double var5, double var7, boolean var9) {
       Predicate var10 = var9 ? EntitySelector.NO_CREATIVE_OR_SPECTATOR : EntitySelector.NO_SPECTATORS;
       return this.getNearestPlayer(var1, var3, var5, var7, var10);
+   }
+
+   @Nullable
+   default Player getNearestPlayerIgnoreY(double var1, double var3, double var5) {
+      double var7 = -1.0D;
+      Player var9 = null;
+      Iterator var10 = this.players().iterator();
+
+      while(true) {
+         Player var11;
+         double var12;
+         do {
+            do {
+               do {
+                  if (!var10.hasNext()) {
+                     return var9;
+                  }
+
+                  var11 = (Player)var10.next();
+               } while(!EntitySelector.NO_SPECTATORS.test(var11));
+
+               var12 = var11.distanceToSqr(var1, var11.y, var3);
+            } while(var5 >= 0.0D && var12 >= var5 * var5);
+         } while(var7 != -1.0D && var12 >= var7);
+
+         var7 = var12;
+         var9 = var11;
+      }
    }
 
    default boolean hasNearbyAlivePlayer(double var1, double var3, double var5, double var7) {
@@ -154,7 +159,7 @@ public interface EntityGetter {
 
    @Nullable
    default Player getNearestPlayer(TargetingConditions var1, LivingEntity var2) {
-      return (Player)this.getNearestEntity(this.players(), var1, var2, var2.getX(), var2.getY(), var2.getZ());
+      return (Player)this.getNearestEntity(this.players(), var1, var2, var2.x, var2.y, var2.z);
    }
 
    @Nullable
@@ -169,9 +174,12 @@ public interface EntityGetter {
 
    @Nullable
    default <T extends LivingEntity> T getNearestEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
-      return this.getNearestEntity(this.getEntitiesOfClass(var1, var10, (var0) -> {
-         return true;
-      }), var2, var3, var4, var6, var8);
+      return this.getNearestEntity(this.getEntitiesOfClass(var1, var10, (Predicate)null), var2, var3, var4, var6, var8);
+   }
+
+   @Nullable
+   default <T extends LivingEntity> T getNearestLoadedEntity(Class<? extends T> var1, TargetingConditions var2, @Nullable LivingEntity var3, double var4, double var6, double var8, AABB var10) {
+      return this.getNearestEntity(this.getLoadedEntitiesOfClass(var1, var10, (Predicate)null), var2, var3, var4, var6, var8);
    }
 
    @Nullable
@@ -206,7 +214,7 @@ public interface EntityGetter {
 
       while(var5.hasNext()) {
          Player var6 = (Player)var5.next();
-         if (var3.contains(var6.getX(), var6.getY(), var6.getZ()) && var1.test(var2, var6)) {
+         if (var3.contains(var6.x, var6.y, var6.z) && var1.test(var2, var6)) {
             var4.add(var6);
          }
       }
@@ -214,10 +222,8 @@ public interface EntityGetter {
       return var4;
    }
 
-   default <T extends LivingEntity> List<T> getNearbyEntities(Class<T> var1, TargetingConditions var2, LivingEntity var3, AABB var4) {
-      List var5 = this.getEntitiesOfClass(var1, var4, (var0) -> {
-         return true;
-      });
+   default <T extends LivingEntity> List<T> getNearbyEntities(Class<? extends T> var1, TargetingConditions var2, LivingEntity var3, AABB var4) {
+      List var5 = this.getEntitiesOfClass(var1, var4, (Predicate)null);
       ArrayList var6 = Lists.newArrayList();
       Iterator var7 = var5.iterator();
 

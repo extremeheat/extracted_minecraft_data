@@ -1,29 +1,37 @@
 package net.minecraft.core;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Objects;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.Serializable;
+import net.minecraft.world.level.dimension.DimensionType;
 
-public final class GlobalPos {
-   public static final Codec<GlobalPos> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(GlobalPos::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(GlobalPos::pos)).apply(var0, GlobalPos::of);
-   });
-   private final ResourceKey<Level> dimension;
+public final class GlobalPos implements Serializable {
+   private final DimensionType dimension;
    private final BlockPos pos;
 
-   private GlobalPos(ResourceKey<Level> var1, BlockPos var2) {
+   private GlobalPos(DimensionType var1, BlockPos var2) {
       super();
       this.dimension = var1;
       this.pos = var2;
    }
 
-   public static GlobalPos of(ResourceKey<Level> var0, BlockPos var1) {
+   public static GlobalPos of(DimensionType var0, BlockPos var1) {
       return new GlobalPos(var0, var1);
    }
 
-   public ResourceKey<Level> dimension() {
+   public static GlobalPos of(Dynamic<?> var0) {
+      return (GlobalPos)var0.get("dimension").map(DimensionType::of).flatMap((var1) -> {
+         return var0.get("pos").map(BlockPos::deserialize).map((var1x) -> {
+            return new GlobalPos(var1, var1x);
+         });
+      }).orElseThrow(() -> {
+         return new IllegalArgumentException("Could not parse GlobalPos");
+      });
+   }
+
+   public DimensionType dimension() {
       return this.dimension;
    }
 
@@ -46,7 +54,11 @@ public final class GlobalPos {
       return Objects.hash(new Object[]{this.dimension, this.pos});
    }
 
+   public <T> T serialize(DynamicOps<T> var1) {
+      return var1.createMap(ImmutableMap.of(var1.createString("dimension"), this.dimension.serialize(var1), var1.createString("pos"), this.pos.serialize(var1)));
+   }
+
    public String toString() {
-      return this.dimension + " " + this.pos;
+      return this.dimension.toString() + " " + this.pos;
    }
 }

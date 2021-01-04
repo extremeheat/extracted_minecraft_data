@@ -1,67 +1,96 @@
 package net.minecraft.client.renderer.culling;
 
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector4f;
-import net.minecraft.world.phys.AABB;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.MemoryTracker;
+import java.nio.FloatBuffer;
+import net.minecraft.util.Mth;
 
-public class Frustum {
-   private final Vector4f[] frustumData = new Vector4f[6];
-   private double camX;
-   private double camY;
-   private double camZ;
+public class Frustum extends FrustumData {
+   private static final Frustum FRUSTUM = new Frustum();
+   private final FloatBuffer _proj = MemoryTracker.createFloatBuffer(16);
+   private final FloatBuffer _modl = MemoryTracker.createFloatBuffer(16);
+   private final FloatBuffer _clip = MemoryTracker.createFloatBuffer(16);
 
-   public Frustum(Matrix4f var1, Matrix4f var2) {
+   public Frustum() {
       super();
-      this.calculateFrustum(var1, var2);
    }
 
-   public void prepare(double var1, double var3, double var5) {
-      this.camX = var1;
-      this.camY = var3;
-      this.camZ = var5;
+   public static FrustumData getFrustum() {
+      FRUSTUM.calculateFrustum();
+      return FRUSTUM;
    }
 
-   private void calculateFrustum(Matrix4f var1, Matrix4f var2) {
-      Matrix4f var3 = var2.copy();
-      var3.multiply(var1);
-      var3.transpose();
-      this.getPlane(var3, -1, 0, 0, 0);
-      this.getPlane(var3, 1, 0, 0, 1);
-      this.getPlane(var3, 0, -1, 0, 2);
-      this.getPlane(var3, 0, 1, 0, 3);
-      this.getPlane(var3, 0, 0, -1, 4);
-      this.getPlane(var3, 0, 0, 1, 5);
+   private void normalizePlane(float[] var1) {
+      float var2 = Mth.sqrt(var1[0] * var1[0] + var1[1] * var1[1] + var1[2] * var1[2]);
+      var1[0] /= var2;
+      var1[1] /= var2;
+      var1[2] /= var2;
+      var1[3] /= var2;
    }
 
-   private void getPlane(Matrix4f var1, int var2, int var3, int var4, int var5) {
-      Vector4f var6 = new Vector4f((float)var2, (float)var3, (float)var4, 1.0F);
-      var6.transform(var1);
-      var6.normalize();
-      this.frustumData[var5] = var6;
-   }
-
-   public boolean isVisible(AABB var1) {
-      return this.cubeInFrustum(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
-   }
-
-   private boolean cubeInFrustum(double var1, double var3, double var5, double var7, double var9, double var11) {
-      float var13 = (float)(var1 - this.camX);
-      float var14 = (float)(var3 - this.camY);
-      float var15 = (float)(var5 - this.camZ);
-      float var16 = (float)(var7 - this.camX);
-      float var17 = (float)(var9 - this.camY);
-      float var18 = (float)(var11 - this.camZ);
-      return this.cubeInFrustum(var13, var14, var15, var16, var17, var18);
-   }
-
-   private boolean cubeInFrustum(float var1, float var2, float var3, float var4, float var5, float var6) {
-      for(int var7 = 0; var7 < 6; ++var7) {
-         Vector4f var8 = this.frustumData[var7];
-         if (var8.dot(new Vector4f(var1, var2, var3, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var4, var2, var3, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var1, var5, var3, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var4, var5, var3, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var1, var2, var6, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var4, var2, var6, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var1, var5, var6, 1.0F)) <= 0.0F && var8.dot(new Vector4f(var4, var5, var6, 1.0F)) <= 0.0F) {
-            return false;
-         }
-      }
-
-      return true;
+   public void calculateFrustum() {
+      this._proj.clear();
+      this._modl.clear();
+      this._clip.clear();
+      GlStateManager.getMatrix(2983, this._proj);
+      GlStateManager.getMatrix(2982, this._modl);
+      float[] var1 = this.projectionMatrix;
+      float[] var2 = this.modelViewMatrix;
+      this._proj.flip().limit(16);
+      this._proj.get(var1);
+      this._modl.flip().limit(16);
+      this._modl.get(var2);
+      this.clip[0] = var2[0] * var1[0] + var2[1] * var1[4] + var2[2] * var1[8] + var2[3] * var1[12];
+      this.clip[1] = var2[0] * var1[1] + var2[1] * var1[5] + var2[2] * var1[9] + var2[3] * var1[13];
+      this.clip[2] = var2[0] * var1[2] + var2[1] * var1[6] + var2[2] * var1[10] + var2[3] * var1[14];
+      this.clip[3] = var2[0] * var1[3] + var2[1] * var1[7] + var2[2] * var1[11] + var2[3] * var1[15];
+      this.clip[4] = var2[4] * var1[0] + var2[5] * var1[4] + var2[6] * var1[8] + var2[7] * var1[12];
+      this.clip[5] = var2[4] * var1[1] + var2[5] * var1[5] + var2[6] * var1[9] + var2[7] * var1[13];
+      this.clip[6] = var2[4] * var1[2] + var2[5] * var1[6] + var2[6] * var1[10] + var2[7] * var1[14];
+      this.clip[7] = var2[4] * var1[3] + var2[5] * var1[7] + var2[6] * var1[11] + var2[7] * var1[15];
+      this.clip[8] = var2[8] * var1[0] + var2[9] * var1[4] + var2[10] * var1[8] + var2[11] * var1[12];
+      this.clip[9] = var2[8] * var1[1] + var2[9] * var1[5] + var2[10] * var1[9] + var2[11] * var1[13];
+      this.clip[10] = var2[8] * var1[2] + var2[9] * var1[6] + var2[10] * var1[10] + var2[11] * var1[14];
+      this.clip[11] = var2[8] * var1[3] + var2[9] * var1[7] + var2[10] * var1[11] + var2[11] * var1[15];
+      this.clip[12] = var2[12] * var1[0] + var2[13] * var1[4] + var2[14] * var1[8] + var2[15] * var1[12];
+      this.clip[13] = var2[12] * var1[1] + var2[13] * var1[5] + var2[14] * var1[9] + var2[15] * var1[13];
+      this.clip[14] = var2[12] * var1[2] + var2[13] * var1[6] + var2[14] * var1[10] + var2[15] * var1[14];
+      this.clip[15] = var2[12] * var1[3] + var2[13] * var1[7] + var2[14] * var1[11] + var2[15] * var1[15];
+      float[] var3 = this.frustumData[0];
+      var3[0] = this.clip[3] - this.clip[0];
+      var3[1] = this.clip[7] - this.clip[4];
+      var3[2] = this.clip[11] - this.clip[8];
+      var3[3] = this.clip[15] - this.clip[12];
+      this.normalizePlane(var3);
+      float[] var4 = this.frustumData[1];
+      var4[0] = this.clip[3] + this.clip[0];
+      var4[1] = this.clip[7] + this.clip[4];
+      var4[2] = this.clip[11] + this.clip[8];
+      var4[3] = this.clip[15] + this.clip[12];
+      this.normalizePlane(var4);
+      float[] var5 = this.frustumData[2];
+      var5[0] = this.clip[3] + this.clip[1];
+      var5[1] = this.clip[7] + this.clip[5];
+      var5[2] = this.clip[11] + this.clip[9];
+      var5[3] = this.clip[15] + this.clip[13];
+      this.normalizePlane(var5);
+      float[] var6 = this.frustumData[3];
+      var6[0] = this.clip[3] - this.clip[1];
+      var6[1] = this.clip[7] - this.clip[5];
+      var6[2] = this.clip[11] - this.clip[9];
+      var6[3] = this.clip[15] - this.clip[13];
+      this.normalizePlane(var6);
+      float[] var7 = this.frustumData[4];
+      var7[0] = this.clip[3] - this.clip[2];
+      var7[1] = this.clip[7] - this.clip[6];
+      var7[2] = this.clip[11] - this.clip[10];
+      var7[3] = this.clip[15] - this.clip[14];
+      this.normalizePlane(var7);
+      float[] var8 = this.frustumData[5];
+      var8[0] = this.clip[3] + this.clip[2];
+      var8[1] = this.clip[7] + this.clip[6];
+      var8[2] = this.clip[11] + this.clip[10];
+      var8[3] = this.clip[15] + this.clip[14];
+      this.normalizePlane(var8);
    }
 }

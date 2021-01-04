@@ -2,17 +2,18 @@ package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import java.util.Set;
+import java.util.function.Function;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class AlternativesEntry extends CompositeEntryBase {
    AlternativesEntry(LootPoolEntryContainer[] var1, LootItemCondition[] var2) {
       super(var1, var2);
-   }
-
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.ALTERNATIVES;
    }
 
    protected ComposableEntryContainer compose(ComposableEntryContainer[] var1) {
@@ -40,11 +41,11 @@ public class AlternativesEntry extends CompositeEntryBase {
       }
    }
 
-   public void validate(ValidationContext var1) {
-      super.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      super.validate(var1, var2, var3, var4);
 
-      for(int var2 = 0; var2 < this.children.length - 1; ++var2) {
-         if (ArrayUtils.isEmpty(this.children[var2].conditions)) {
+      for(int var5 = 0; var5 < this.children.length - 1; ++var5) {
+         if (ArrayUtils.isEmpty(this.children[var5].conditions)) {
             var1.reportProblem("Unreachable entry!");
          }
       }

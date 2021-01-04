@@ -186,7 +186,6 @@ public class Library {
       @Nullable
       public Channel acquire() {
          if (this.activeChannels.size() >= this.limit) {
-            Library.LOGGER.warn("Maximum sound pool size {} reached", this.limit);
             return null;
          } else {
             Channel var1 = Channel.create();

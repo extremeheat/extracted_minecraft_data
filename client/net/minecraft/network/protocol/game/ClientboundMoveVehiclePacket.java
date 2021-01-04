@@ -18,9 +18,9 @@ public class ClientboundMoveVehiclePacket implements Packet<ClientGamePacketList
 
    public ClientboundMoveVehiclePacket(Entity var1) {
       super();
-      this.x = var1.getX();
-      this.y = var1.getY();
-      this.z = var1.getZ();
+      this.x = var1.x;
+      this.y = var1.y;
+      this.z = var1.z;
       this.yRot = var1.yRot;
       this.xRot = var1.xRot;
    }

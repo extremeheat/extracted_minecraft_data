@@ -2,7 +2,6 @@ package net.minecraft.util;
 
 import java.util.List;
 import java.util.Random;
-import net.minecraft.Util;
 
 public class WeighedRandom {
    public static int getTotalWeight(List<? extends WeighedRandom.WeighedRandomItem> var0) {
@@ -19,7 +18,7 @@ public class WeighedRandom {
 
    public static <T extends WeighedRandom.WeighedRandomItem> T getRandomItem(Random var0, List<T> var1, int var2) {
       if (var2 <= 0) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
+         throw new IllegalArgumentException();
       } else {
          int var3 = var0.nextInt(var2);
          return getWeightedItem(var1, var3);

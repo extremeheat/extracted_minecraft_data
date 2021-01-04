@@ -15,12 +15,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -35,10 +32,6 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       this.modifiers = ImmutableList.copyOf(var2);
    }
 
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_ATTRIBUTES;
-   }
-
    public ItemStack run(ItemStack var1, LootContext var2) {
       Random var3 = var2.getRandom();
       Iterator var4 = this.modifiers.iterator();
@@ -50,7 +43,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
             var6 = UUID.randomUUID();
          }
 
-         EquipmentSlot var7 = (EquipmentSlot)Util.getRandom((Object[])var5.slots, var3);
+         EquipmentSlot var7 = var5.slots[var3.nextInt(var5.slots.length)];
          var1.addAttributeModifier(var5.attribute, new AttributeModifier(var6, var5.name, (double)var5.amount.getFloat(var3), var5.operation), var7);
       }
 
@@ -64,14 +57,14 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
    static class Modifier {
       private final String name;
-      private final Attribute attribute;
+      private final String attribute;
       private final AttributeModifier.Operation operation;
       private final RandomValueBounds amount;
       @Nullable
       private final UUID id;
       private final EquipmentSlot[] slots;
 
-      private Modifier(String var1, Attribute var2, AttributeModifier.Operation var3, RandomValueBounds var4, EquipmentSlot[] var5, @Nullable UUID var6) {
+      private Modifier(String var1, String var2, AttributeModifier.Operation var3, RandomValueBounds var4, EquipmentSlot[] var5, @Nullable UUID var6) {
          super();
          this.name = var1;
          this.attribute = var2;
@@ -84,7 +77,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       public JsonObject serialize(JsonSerializationContext var1) {
          JsonObject var2 = new JsonObject();
          var2.addProperty("name", this.name);
-         var2.addProperty("attribute", Registry.ATTRIBUTE.getKey(this.attribute).toString());
+         var2.addProperty("attribute", this.attribute);
          var2.addProperty("operation", operationToString(this.operation));
          var2.add("amount", var1.serialize(this.amount));
          if (this.id != null) {
@@ -111,48 +104,43 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       public static SetAttributesFunction.Modifier deserialize(JsonObject var0, JsonDeserializationContext var1) {
          String var2 = GsonHelper.getAsString(var0, "name");
-         ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var0, "attribute"));
-         Attribute var4 = (Attribute)Registry.ATTRIBUTE.get(var3);
-         if (var4 == null) {
-            throw new JsonSyntaxException("Unknown attribute: " + var3);
+         String var3 = GsonHelper.getAsString(var0, "attribute");
+         AttributeModifier.Operation var4 = operationFromString(GsonHelper.getAsString(var0, "operation"));
+         RandomValueBounds var5 = (RandomValueBounds)GsonHelper.getAsObject(var0, "amount", var1, RandomValueBounds.class);
+         UUID var7 = null;
+         EquipmentSlot[] var6;
+         if (GsonHelper.isStringValue(var0, "slot")) {
+            var6 = new EquipmentSlot[]{EquipmentSlot.byName(GsonHelper.getAsString(var0, "slot"))};
          } else {
-            AttributeModifier.Operation var5 = operationFromString(GsonHelper.getAsString(var0, "operation"));
-            RandomValueBounds var6 = (RandomValueBounds)GsonHelper.getAsObject(var0, "amount", var1, RandomValueBounds.class);
-            UUID var8 = null;
-            EquipmentSlot[] var7;
-            if (GsonHelper.isStringValue(var0, "slot")) {
-               var7 = new EquipmentSlot[]{EquipmentSlot.byName(GsonHelper.getAsString(var0, "slot"))};
-            } else {
-               if (!GsonHelper.isArrayNode(var0, "slot")) {
-                  throw new JsonSyntaxException("Invalid or missing attribute modifier slot; must be either string or array of strings.");
-               }
-
-               JsonArray var9 = GsonHelper.getAsJsonArray(var0, "slot");
-               var7 = new EquipmentSlot[var9.size()];
-               int var10 = 0;
-
-               JsonElement var12;
-               for(Iterator var11 = var9.iterator(); var11.hasNext(); var7[var10++] = EquipmentSlot.byName(GsonHelper.convertToString(var12, "slot"))) {
-                  var12 = (JsonElement)var11.next();
-               }
-
-               if (var7.length == 0) {
-                  throw new JsonSyntaxException("Invalid attribute modifier slot; must contain at least one entry.");
-               }
+            if (!GsonHelper.isArrayNode(var0, "slot")) {
+               throw new JsonSyntaxException("Invalid or missing attribute modifier slot; must be either string or array of strings.");
             }
 
-            if (var0.has("id")) {
-               String var14 = GsonHelper.getAsString(var0, "id");
+            JsonArray var8 = GsonHelper.getAsJsonArray(var0, "slot");
+            var6 = new EquipmentSlot[var8.size()];
+            int var9 = 0;
 
-               try {
-                  var8 = UUID.fromString(var14);
-               } catch (IllegalArgumentException var13) {
-                  throw new JsonSyntaxException("Invalid attribute modifier id '" + var14 + "' (must be UUID format, with dashes)");
-               }
+            JsonElement var11;
+            for(Iterator var10 = var8.iterator(); var10.hasNext(); var6[var9++] = EquipmentSlot.byName(GsonHelper.convertToString(var11, "slot"))) {
+               var11 = (JsonElement)var10.next();
             }
 
-            return new SetAttributesFunction.Modifier(var2, var4, var5, var6, var7, var8);
+            if (var6.length == 0) {
+               throw new JsonSyntaxException("Invalid attribute modifier slot; must contain at least one entry.");
+            }
          }
+
+         if (var0.has("id")) {
+            String var13 = GsonHelper.getAsString(var0, "id");
+
+            try {
+               var7 = UUID.fromString(var13);
+            } catch (IllegalArgumentException var12) {
+               throw new JsonSyntaxException("Invalid attribute modifier id '" + var13 + "' (must be UUID format, with dashes)");
+            }
+         }
+
+         return new SetAttributesFunction.Modifier(var2, var3, var4, var5, var6, var7);
       }
 
       private static String operationToString(AttributeModifier.Operation var0) {
@@ -202,7 +190,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetAttributesFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("set_attributes"), SetAttributesFunction.class);
       }
 
       public void serialize(JsonObject var1, SetAttributesFunction var2, JsonSerializationContext var3) {

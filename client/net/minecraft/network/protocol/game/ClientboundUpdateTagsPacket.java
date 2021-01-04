@@ -3,22 +3,22 @@ package net.minecraft.network.protocol.game;
 import java.io.IOException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.tags.TagContainer;
+import net.minecraft.tags.TagManager;
 
 public class ClientboundUpdateTagsPacket implements Packet<ClientGamePacketListener> {
-   private TagContainer tags;
+   private TagManager tags;
 
    public ClientboundUpdateTagsPacket() {
       super();
    }
 
-   public ClientboundUpdateTagsPacket(TagContainer var1) {
+   public ClientboundUpdateTagsPacket(TagManager var1) {
       super();
       this.tags = var1;
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
-      this.tags = TagContainer.deserializeFromNetwork(var1);
+      this.tags = TagManager.deserializeFromNetwork(var1);
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
@@ -29,7 +29,7 @@ public class ClientboundUpdateTagsPacket implements Packet<ClientGamePacketListe
       var1.handleUpdateTags(this);
    }
 
-   public TagContainer getTags() {
+   public TagManager getTags() {
       return this.tags;
    }
 }

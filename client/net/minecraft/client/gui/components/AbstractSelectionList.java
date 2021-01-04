@@ -2,17 +2,13 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -21,6 +17,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerEventHandler implements Widget {
+   protected static final int DRAG_OUTSIDE = -2;
    protected final Minecraft minecraft;
    protected final int itemHeight;
    private final List<E> children = new AbstractSelectionList.TrackedList();
@@ -31,14 +28,13 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    protected int x1;
    protected int x0;
    protected boolean centerListVertically = true;
+   protected int yDrag = -2;
    private double scrollAmount;
-   private boolean renderSelection = true;
-   private boolean renderHeader;
+   protected boolean renderSelection = true;
+   protected boolean renderHeader;
    protected int headerHeight;
    private boolean scrolling;
    private E selected;
-   private boolean renderBackground = true;
-   private boolean renderTopAndBottom = true;
 
    public AbstractSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
       super();
@@ -76,14 +72,6 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    public void setSelected(@Nullable E var1) {
       this.selected = var1;
-   }
-
-   public void setRenderBackground(boolean var1) {
-      this.renderBackground = var1;
-   }
-
-   public void setRenderTopAndBottom(boolean var1) {
-      this.renderTopAndBottom = var1;
    }
 
    @Nullable
@@ -153,107 +141,94 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    protected void clickedHeader(int var1, int var2) {
    }
 
-   protected void renderHeader(PoseStack var1, int var2, int var3, Tesselator var4) {
+   protected void renderHeader(int var1, int var2, Tesselator var3) {
    }
 
-   protected void renderBackground(PoseStack var1) {
+   protected void renderBackground() {
    }
 
-   protected void renderDecorations(PoseStack var1, int var2, int var3) {
+   protected void renderDecorations(int var1, int var2) {
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      int var5 = this.getScrollbarPosition();
-      int var6 = var5 + 6;
-      Tesselator var7 = Tesselator.getInstance();
-      BufferBuilder var8 = var7.getBuilder();
-      if (this.renderBackground) {
-         this.minecraft.getTextureManager().bind(GuiComponent.BACKGROUND_LOCATION);
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         float var9 = 32.0F;
-         var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-         var8.vertex((double)this.x0, (double)this.y1, 0.0D).uv((float)this.x0 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).endVertex();
-         var8.vertex((double)this.x1, (double)this.y1, 0.0D).uv((float)this.x1 / 32.0F, (float)(this.y1 + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).endVertex();
-         var8.vertex((double)this.x1, (double)this.y0, 0.0D).uv((float)this.x1 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).endVertex();
-         var8.vertex((double)this.x0, (double)this.y0, 0.0D).uv((float)this.x0 / 32.0F, (float)(this.y0 + (int)this.getScrollAmount()) / 32.0F).color(32, 32, 32, 255).endVertex();
-         var7.end();
-      }
-
-      int var14 = this.getRowLeft();
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      int var4 = this.getScrollbarPosition();
+      int var5 = var4 + 6;
+      GlStateManager.disableLighting();
+      GlStateManager.disableFog();
+      Tesselator var6 = Tesselator.getInstance();
+      BufferBuilder var7 = var6.getBuilder();
+      this.minecraft.getTextureManager().bind(GuiComponent.BACKGROUND_LOCATION);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      float var8 = 32.0F;
+      var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var7.vertex((double)this.x0, (double)this.y1, 0.0D).uv((double)((float)this.x0 / 32.0F), (double)((float)(this.y1 + (int)this.getScrollAmount()) / 32.0F)).color(32, 32, 32, 255).endVertex();
+      var7.vertex((double)this.x1, (double)this.y1, 0.0D).uv((double)((float)this.x1 / 32.0F), (double)((float)(this.y1 + (int)this.getScrollAmount()) / 32.0F)).color(32, 32, 32, 255).endVertex();
+      var7.vertex((double)this.x1, (double)this.y0, 0.0D).uv((double)((float)this.x1 / 32.0F), (double)((float)(this.y0 + (int)this.getScrollAmount()) / 32.0F)).color(32, 32, 32, 255).endVertex();
+      var7.vertex((double)this.x0, (double)this.y0, 0.0D).uv((double)((float)this.x0 / 32.0F), (double)((float)(this.y0 + (int)this.getScrollAmount()) / 32.0F)).color(32, 32, 32, 255).endVertex();
+      var6.end();
+      int var9 = this.getRowLeft();
       int var10 = this.y0 + 4 - (int)this.getScrollAmount();
       if (this.renderHeader) {
-         this.renderHeader(var1, var14, var10, var7);
+         this.renderHeader(var9, var10, var6);
       }
 
-      this.renderList(var1, var14, var10, var2, var3, var4);
-      if (this.renderTopAndBottom) {
-         this.minecraft.getTextureManager().bind(GuiComponent.BACKGROUND_LOCATION);
-         RenderSystem.enableDepthTest();
-         RenderSystem.depthFunc(519);
-         float var11 = 32.0F;
-         boolean var12 = true;
-         var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-         var8.vertex((double)this.x0, (double)this.y0, -100.0D).uv(0.0F, (float)this.y0 / 32.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)(this.x0 + this.width), (double)this.y0, -100.0D).uv((float)this.width / 32.0F, (float)this.y0 / 32.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)(this.x0 + this.width), 0.0D, -100.0D).uv((float)this.width / 32.0F, 0.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)this.x0, 0.0D, -100.0D).uv(0.0F, 0.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)this.x0, (double)this.height, -100.0D).uv(0.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)(this.x0 + this.width), (double)this.height, -100.0D).uv((float)this.width / 32.0F, (float)this.height / 32.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)(this.x0 + this.width), (double)this.y1, -100.0D).uv((float)this.width / 32.0F, (float)this.y1 / 32.0F).color(64, 64, 64, 255).endVertex();
-         var8.vertex((double)this.x0, (double)this.y1, -100.0D).uv(0.0F, (float)this.y1 / 32.0F).color(64, 64, 64, 255).endVertex();
-         var7.end();
-         RenderSystem.depthFunc(515);
-         RenderSystem.disableDepthTest();
-         RenderSystem.enableBlend();
-         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
-         RenderSystem.disableAlphaTest();
-         RenderSystem.shadeModel(7425);
-         RenderSystem.disableTexture();
-         boolean var13 = true;
-         var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-         var8.vertex((double)this.x0, (double)(this.y0 + 4), 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-         var8.vertex((double)this.x1, (double)(this.y0 + 4), 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 0).endVertex();
-         var8.vertex((double)this.x1, (double)this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)this.x0, (double)this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)this.x0, (double)this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)this.x1, (double)this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)this.x1, (double)(this.y1 - 4), 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-         var8.vertex((double)this.x0, (double)(this.y1 - 4), 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 0).endVertex();
-         var7.end();
-      }
-
-      int var15 = this.getMaxScroll();
-      if (var15 > 0) {
-         RenderSystem.disableTexture();
-         int var16 = (int)((float)((this.y1 - this.y0) * (this.y1 - this.y0)) / (float)this.getMaxPosition());
-         var16 = Mth.clamp(var16, 32, this.y1 - this.y0 - 8);
-         int var17 = (int)this.getScrollAmount() * (this.y1 - this.y0 - var16) / var15 + this.y0;
-         if (var17 < this.y0) {
-            var17 = this.y0;
+      this.renderList(var9, var10, var1, var2, var3);
+      GlStateManager.disableDepthTest();
+      this.renderHoleBackground(0, this.y0, 255, 255);
+      this.renderHoleBackground(this.y1, this.height, 255, 255);
+      GlStateManager.enableBlend();
+      GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE);
+      GlStateManager.disableAlphaTest();
+      GlStateManager.shadeModel(7425);
+      GlStateManager.disableTexture();
+      boolean var11 = true;
+      var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var7.vertex((double)this.x0, (double)(this.y0 + 4), 0.0D).uv(0.0D, 1.0D).color(0, 0, 0, 0).endVertex();
+      var7.vertex((double)this.x1, (double)(this.y0 + 4), 0.0D).uv(1.0D, 1.0D).color(0, 0, 0, 0).endVertex();
+      var7.vertex((double)this.x1, (double)this.y0, 0.0D).uv(1.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+      var7.vertex((double)this.x0, (double)this.y0, 0.0D).uv(0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+      var6.end();
+      var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var7.vertex((double)this.x0, (double)this.y1, 0.0D).uv(0.0D, 1.0D).color(0, 0, 0, 255).endVertex();
+      var7.vertex((double)this.x1, (double)this.y1, 0.0D).uv(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
+      var7.vertex((double)this.x1, (double)(this.y1 - 4), 0.0D).uv(1.0D, 0.0D).color(0, 0, 0, 0).endVertex();
+      var7.vertex((double)this.x0, (double)(this.y1 - 4), 0.0D).uv(0.0D, 0.0D).color(0, 0, 0, 0).endVertex();
+      var6.end();
+      int var12 = this.getMaxScroll();
+      if (var12 > 0) {
+         int var13 = (int)((float)((this.y1 - this.y0) * (this.y1 - this.y0)) / (float)this.getMaxPosition());
+         var13 = Mth.clamp(var13, 32, this.y1 - this.y0 - 8);
+         int var14 = (int)this.getScrollAmount() * (this.y1 - this.y0 - var13) / var12 + this.y0;
+         if (var14 < this.y0) {
+            var14 = this.y0;
          }
 
-         var8.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-         var8.vertex((double)var5, (double)this.y1, 0.0D).uv(0.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)var6, (double)this.y1, 0.0D).uv(1.0F, 1.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)var6, (double)this.y0, 0.0D).uv(1.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)var5, (double)this.y0, 0.0D).uv(0.0F, 0.0F).color(0, 0, 0, 255).endVertex();
-         var8.vertex((double)var5, (double)(var17 + var16), 0.0D).uv(0.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-         var8.vertex((double)var6, (double)(var17 + var16), 0.0D).uv(1.0F, 1.0F).color(128, 128, 128, 255).endVertex();
-         var8.vertex((double)var6, (double)var17, 0.0D).uv(1.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-         var8.vertex((double)var5, (double)var17, 0.0D).uv(0.0F, 0.0F).color(128, 128, 128, 255).endVertex();
-         var8.vertex((double)var5, (double)(var17 + var16 - 1), 0.0D).uv(0.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-         var8.vertex((double)(var6 - 1), (double)(var17 + var16 - 1), 0.0D).uv(1.0F, 1.0F).color(192, 192, 192, 255).endVertex();
-         var8.vertex((double)(var6 - 1), (double)var17, 0.0D).uv(1.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-         var8.vertex((double)var5, (double)var17, 0.0D).uv(0.0F, 0.0F).color(192, 192, 192, 255).endVertex();
-         var7.end();
+         var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+         var7.vertex((double)var4, (double)this.y1, 0.0D).uv(0.0D, 1.0D).color(0, 0, 0, 255).endVertex();
+         var7.vertex((double)var5, (double)this.y1, 0.0D).uv(1.0D, 1.0D).color(0, 0, 0, 255).endVertex();
+         var7.vertex((double)var5, (double)this.y0, 0.0D).uv(1.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+         var7.vertex((double)var4, (double)this.y0, 0.0D).uv(0.0D, 0.0D).color(0, 0, 0, 255).endVertex();
+         var6.end();
+         var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+         var7.vertex((double)var4, (double)(var14 + var13), 0.0D).uv(0.0D, 1.0D).color(128, 128, 128, 255).endVertex();
+         var7.vertex((double)var5, (double)(var14 + var13), 0.0D).uv(1.0D, 1.0D).color(128, 128, 128, 255).endVertex();
+         var7.vertex((double)var5, (double)var14, 0.0D).uv(1.0D, 0.0D).color(128, 128, 128, 255).endVertex();
+         var7.vertex((double)var4, (double)var14, 0.0D).uv(0.0D, 0.0D).color(128, 128, 128, 255).endVertex();
+         var6.end();
+         var7.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+         var7.vertex((double)var4, (double)(var14 + var13 - 1), 0.0D).uv(0.0D, 1.0D).color(192, 192, 192, 255).endVertex();
+         var7.vertex((double)(var5 - 1), (double)(var14 + var13 - 1), 0.0D).uv(1.0D, 1.0D).color(192, 192, 192, 255).endVertex();
+         var7.vertex((double)(var5 - 1), (double)var14, 0.0D).uv(1.0D, 0.0D).color(192, 192, 192, 255).endVertex();
+         var7.vertex((double)var4, (double)var14, 0.0D).uv(0.0D, 0.0D).color(192, 192, 192, 255).endVertex();
+         var6.end();
       }
 
-      this.renderDecorations(var1, var2, var3);
-      RenderSystem.enableTexture();
-      RenderSystem.shadeModel(7424);
-      RenderSystem.enableAlphaTest();
-      RenderSystem.disableBlend();
+      this.renderDecorations(var1, var2);
+      GlStateManager.enableTexture();
+      GlStateManager.shadeModel(7424);
+      GlStateManager.enableAlphaTest();
+      GlStateManager.disableBlend();
    }
 
    protected void centerScrollOn(E var1) {
@@ -276,6 +251,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    private void scroll(int var1) {
       this.setScrollAmount(this.getScrollAmount() + (double)var1);
+      this.yDrag = -2;
    }
 
    public double getScrollAmount() {
@@ -286,8 +262,12 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       this.scrollAmount = Mth.clamp(var1, 0.0D, (double)this.getMaxScroll());
    }
 
-   public int getMaxScroll() {
+   private int getMaxScroll() {
       return Math.max(0, this.getMaxPosition() - (this.y1 - this.y0 - 4));
+   }
+
+   public int getScrollBottom() {
+      return (int)this.getScrollAmount() - this.height - this.headerHeight;
    }
 
    protected void updateScrollingState(double var1, double var3, int var5) {
@@ -358,51 +338,23 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       if (super.keyPressed(var1, var2, var3)) {
          return true;
       } else if (var1 == 264) {
-         this.moveSelection(AbstractSelectionList.SelectionDirection.DOWN);
+         this.moveSelection(1);
          return true;
       } else if (var1 == 265) {
-         this.moveSelection(AbstractSelectionList.SelectionDirection.UP);
+         this.moveSelection(-1);
          return true;
       } else {
          return false;
       }
    }
 
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-      this.moveSelection(var1, (var0) -> {
-         return true;
-      });
-   }
-
-   protected void refreshSelection() {
-      AbstractSelectionList.Entry var1 = this.getSelected();
-      if (var1 != null) {
-         this.setSelected(var1);
-         this.ensureVisible(var1);
-      }
-
-   }
-
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1, Predicate<E> var2) {
-      int var3 = var1 == AbstractSelectionList.SelectionDirection.UP ? -1 : 1;
+   protected void moveSelection(int var1) {
       if (!this.children().isEmpty()) {
-         int var4 = this.children().indexOf(this.getSelected());
-
-         while(true) {
-            int var5 = Mth.clamp(var4 + var3, 0, this.getItemCount() - 1);
-            if (var4 == var5) {
-               break;
-            }
-
-            AbstractSelectionList.Entry var6 = (AbstractSelectionList.Entry)this.children().get(var5);
-            if (var2.test(var6)) {
-               this.setSelected(var6);
-               this.ensureVisible(var6);
-               break;
-            }
-
-            var4 = var5;
-         }
+         int var2 = this.children().indexOf(this.getSelected());
+         int var3 = Mth.clamp(var2 + var1, 0, this.getItemCount() - 1);
+         AbstractSelectionList.Entry var4 = (AbstractSelectionList.Entry)this.children().get(var3);
+         this.setSelected(var4);
+         this.ensureVisible(var4);
       }
 
    }
@@ -411,55 +363,51 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return var3 >= (double)this.y0 && var3 <= (double)this.y1 && var1 >= (double)this.x0 && var1 <= (double)this.x1;
    }
 
-   protected void renderList(PoseStack var1, int var2, int var3, int var4, int var5, float var6) {
-      int var7 = this.getItemCount();
-      Tesselator var8 = Tesselator.getInstance();
-      BufferBuilder var9 = var8.getBuilder();
+   protected void renderList(int var1, int var2, int var3, int var4, float var5) {
+      int var6 = this.getItemCount();
+      Tesselator var7 = Tesselator.getInstance();
+      BufferBuilder var8 = var7.getBuilder();
 
-      for(int var10 = 0; var10 < var7; ++var10) {
-         int var11 = this.getRowTop(var10);
-         int var12 = this.getRowBottom(var10);
-         if (var12 >= this.y0 && var11 <= this.y1) {
-            int var13 = var3 + var10 * this.itemHeight + this.headerHeight;
-            int var14 = this.itemHeight - 4;
-            AbstractSelectionList.Entry var15 = this.getEntry(var10);
-            int var16 = this.getRowWidth();
-            int var17;
-            if (this.renderSelection && this.isSelectedItem(var10)) {
-               var17 = this.x0 + this.width / 2 - var16 / 2;
-               int var18 = this.x0 + this.width / 2 + var16 / 2;
-               RenderSystem.disableTexture();
-               float var19 = this.isFocused() ? 1.0F : 0.5F;
-               RenderSystem.color4f(var19, var19, var19, 1.0F);
-               var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-               var9.vertex((double)var17, (double)(var13 + var14 + 2), 0.0D).endVertex();
-               var9.vertex((double)var18, (double)(var13 + var14 + 2), 0.0D).endVertex();
-               var9.vertex((double)var18, (double)(var13 - 2), 0.0D).endVertex();
-               var9.vertex((double)var17, (double)(var13 - 2), 0.0D).endVertex();
-               var8.end();
-               RenderSystem.color4f(0.0F, 0.0F, 0.0F, 1.0F);
-               var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-               var9.vertex((double)(var17 + 1), (double)(var13 + var14 + 1), 0.0D).endVertex();
-               var9.vertex((double)(var18 - 1), (double)(var13 + var14 + 1), 0.0D).endVertex();
-               var9.vertex((double)(var18 - 1), (double)(var13 - 1), 0.0D).endVertex();
-               var9.vertex((double)(var17 + 1), (double)(var13 - 1), 0.0D).endVertex();
-               var8.end();
-               RenderSystem.enableTexture();
+      for(int var9 = 0; var9 < var6; ++var9) {
+         int var10 = this.getRowTop(var9);
+         int var11 = this.getRowBottom(var9);
+         if (var11 >= this.y0 && var10 <= this.y1) {
+            int var12 = var2 + var9 * this.itemHeight + this.headerHeight;
+            int var13 = this.itemHeight - 4;
+            AbstractSelectionList.Entry var14 = this.getEntry(var9);
+            int var15 = this.getRowWidth();
+            int var16;
+            if (this.renderSelection && this.isSelectedItem(var9)) {
+               var16 = this.x0 + this.width / 2 - var15 / 2;
+               int var17 = this.x0 + this.width / 2 + var15 / 2;
+               GlStateManager.disableTexture();
+               float var18 = this.isFocused() ? 1.0F : 0.5F;
+               GlStateManager.color4f(var18, var18, var18, 1.0F);
+               var8.begin(7, DefaultVertexFormat.POSITION);
+               var8.vertex((double)var16, (double)(var12 + var13 + 2), 0.0D).endVertex();
+               var8.vertex((double)var17, (double)(var12 + var13 + 2), 0.0D).endVertex();
+               var8.vertex((double)var17, (double)(var12 - 2), 0.0D).endVertex();
+               var8.vertex((double)var16, (double)(var12 - 2), 0.0D).endVertex();
+               var7.end();
+               GlStateManager.color4f(0.0F, 0.0F, 0.0F, 1.0F);
+               var8.begin(7, DefaultVertexFormat.POSITION);
+               var8.vertex((double)(var16 + 1), (double)(var12 + var13 + 1), 0.0D).endVertex();
+               var8.vertex((double)(var17 - 1), (double)(var12 + var13 + 1), 0.0D).endVertex();
+               var8.vertex((double)(var17 - 1), (double)(var12 - 1), 0.0D).endVertex();
+               var8.vertex((double)(var16 + 1), (double)(var12 - 1), 0.0D).endVertex();
+               var7.end();
+               GlStateManager.enableTexture();
             }
 
-            var17 = this.getRowLeft();
-            var15.render(var1, var10, var11, var17, var16, var14, var4, var5, this.isMouseOver((double)var4, (double)var5) && Objects.equals(this.getEntryAtPosition((double)var4, (double)var5), var15), var6);
+            var16 = this.getRowLeft();
+            var14.render(var9, var10, var16, var15, var13, var3, var4, this.isMouseOver((double)var3, (double)var4) && Objects.equals(this.getEntryAtPosition((double)var3, (double)var4), var14), var5);
          }
       }
 
    }
 
-   public int getRowLeft() {
+   protected int getRowLeft() {
       return this.x0 + this.width / 2 - this.getRowWidth() / 2 + 2;
-   }
-
-   public int getRowRight() {
-      return this.getRowLeft() + this.getRowWidth();
    }
 
    protected int getRowTop(int var1) {
@@ -474,6 +422,20 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return false;
    }
 
+   protected void renderHoleBackground(int var1, int var2, int var3, int var4) {
+      Tesselator var5 = Tesselator.getInstance();
+      BufferBuilder var6 = var5.getBuilder();
+      this.minecraft.getTextureManager().bind(GuiComponent.BACKGROUND_LOCATION);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      float var7 = 32.0F;
+      var6.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var6.vertex((double)this.x0, (double)var2, 0.0D).uv(0.0D, (double)((float)var2 / 32.0F)).color(64, 64, 64, var4).endVertex();
+      var6.vertex((double)(this.x0 + this.width), (double)var2, 0.0D).uv((double)((float)this.width / 32.0F), (double)((float)var2 / 32.0F)).color(64, 64, 64, var4).endVertex();
+      var6.vertex((double)(this.x0 + this.width), (double)var1, 0.0D).uv((double)((float)this.width / 32.0F), (double)((float)var1 / 32.0F)).color(64, 64, 64, var3).endVertex();
+      var6.vertex((double)this.x0, (double)var1, 0.0D).uv(0.0D, (double)((float)var1 / 32.0F)).color(64, 64, 64, var3).endVertex();
+      var5.end();
+   }
+
    protected E remove(int var1) {
       AbstractSelectionList.Entry var2 = (AbstractSelectionList.Entry)this.children.get(var1);
       return this.removeEntry((AbstractSelectionList.Entry)this.children.get(var1)) ? var2 : null;
@@ -486,16 +448,6 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       }
 
       return var2;
-   }
-
-   private void bindEntryToSelf(AbstractSelectionList.Entry<E> var1) {
-      var1.list = this;
-   }
-
-   // $FF: synthetic method
-   @Nullable
-   public GuiEventListener getFocused() {
-      return this.getFocused();
    }
 
    class TrackedList extends AbstractList<E> {
@@ -516,13 +468,13 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
       public E set(int var1, E var2) {
          AbstractSelectionList.Entry var3 = (AbstractSelectionList.Entry)this.delegate.set(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
+         var2.list = AbstractSelectionList.this;
          return var3;
       }
 
       public void add(int var1, E var2) {
          this.delegate.add(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
+         var2.list = AbstractSelectionList.this;
       }
 
       public E remove(int var1) {
@@ -557,24 +509,16 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    public abstract static class Entry<E extends AbstractSelectionList.Entry<E>> implements GuiEventListener {
       @Deprecated
-      private AbstractSelectionList<E> list;
+      AbstractSelectionList<E> list;
 
       public Entry() {
          super();
       }
 
-      public abstract void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10);
+      public abstract void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9);
 
       public boolean isMouseOver(double var1, double var3) {
          return Objects.equals(this.list.getEntryAtPosition(var1, var3), this);
-      }
-   }
-
-   public static enum SelectionDirection {
-      UP,
-      DOWN;
-
-      private SelectionDirection() {
       }
    }
 }

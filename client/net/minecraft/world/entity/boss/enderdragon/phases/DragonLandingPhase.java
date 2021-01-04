@@ -20,9 +20,9 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
    public void doClientTick() {
       Vec3 var1 = this.dragon.getHeadLookVector(1.0F).normalize();
       var1.yRot(-0.7853982F);
-      double var2 = this.dragon.head.getX();
-      double var4 = this.dragon.head.getY(0.5D);
-      double var6 = this.dragon.head.getZ();
+      double var2 = this.dragon.head.x;
+      double var4 = this.dragon.head.y + (double)(this.dragon.head.getBbHeight() / 2.0F);
+      double var6 = this.dragon.head.z;
 
       for(int var8 = 0; var8 < 8; ++var8) {
          Random var9 = this.dragon.getRandom();
@@ -38,10 +38,10 @@ public class DragonLandingPhase extends AbstractDragonPhaseInstance {
 
    public void doServerTick() {
       if (this.targetLocation == null) {
-         this.targetLocation = Vec3.atBottomCenterOf(this.dragon.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.END_PODIUM_LOCATION));
+         this.targetLocation = new Vec3(this.dragon.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.END_PODIUM_LOCATION));
       }
 
-      if (this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ()) < 1.0D) {
+      if (this.targetLocation.distanceToSqr(this.dragon.x, this.dragon.y, this.dragon.z) < 1.0D) {
          ((DragonSittingFlamingPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.SITTING_FLAMING)).resetFlameCount();
          this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_SCANNING);
       }

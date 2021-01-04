@@ -36,10 +36,6 @@ public class WeightedBakedModel implements BakedModel {
       return this.wrapped.isGui3d();
    }
 
-   public boolean usesBlockLight() {
-      return this.wrapped.usesBlockLight();
-   }
-
    public boolean isCustomRenderer() {
       return this.wrapped.isCustomRenderer();
    }

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import net.minecraft.util.IntRange;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
@@ -13,14 +12,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & CrossbowAttackMob> extends Goal {
-   public static final IntRange PATHFINDING_DELAY_RANGE = new IntRange(20, 40);
    private final T mob;
    private RangedCrossbowAttackGoal.CrossbowState crossbowState;
    private final double speedModifier;
    private final float attackRadiusSqr;
    private int seeTime;
    private int attackDelay;
-   private int updatePathDelay;
 
    public RangedCrossbowAttackGoal(T var1, double var2, float var4) {
       super();
@@ -78,13 +75,8 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
          double var4 = this.mob.distanceToSqr(var1);
          boolean var6 = (var4 > (double)this.attackRadiusSqr || this.seeTime < 5) && this.attackDelay == 0;
          if (var6) {
-            --this.updatePathDelay;
-            if (this.updatePathDelay <= 0) {
-               this.mob.getNavigation().moveTo((Entity)var1, this.canRun() ? this.speedModifier : this.speedModifier * 0.5D);
-               this.updatePathDelay = PATHFINDING_DELAY_RANGE.randomValue(this.mob.getRandom());
-            }
+            this.mob.getNavigation().moveTo((Entity)var1, this.canRun() ? this.speedModifier : this.speedModifier * 0.5D);
          } else {
-            this.updatePathDelay = 0;
             this.mob.getNavigation().stop();
          }
 

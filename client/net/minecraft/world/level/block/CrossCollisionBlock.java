@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.UnmodifiableIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
@@ -8,7 +7,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -30,17 +28,10 @@ public class CrossCollisionBlock extends Block implements SimpleWaterloggedBlock
    protected final VoxelShape[] shapeByIndex;
    private final Object2IntMap<BlockState> stateToIndex = new Object2IntOpenHashMap();
 
-   protected CrossCollisionBlock(float var1, float var2, float var3, float var4, float var5, BlockBehaviour.Properties var6) {
+   protected CrossCollisionBlock(float var1, float var2, float var3, float var4, float var5, Block.Properties var6) {
       super(var6);
       this.collisionShapeByIndex = this.makeShapes(var1, var2, var5, 0.0F, var5);
       this.shapeByIndex = this.makeShapes(var1, var2, var3, 0.0F, var4);
-      UnmodifiableIterator var7 = this.stateDefinition.getPossibleStates().iterator();
-
-      while(var7.hasNext()) {
-         BlockState var8 = (BlockState)var7.next();
-         this.getAABBIndex(var8);
-      }
-
    }
 
    protected VoxelShape[] makeShapes(float var1, float var2, float var3, float var4, float var5) {

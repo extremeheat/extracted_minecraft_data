@@ -4,12 +4,12 @@ import java.util.Iterator;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -22,7 +22,7 @@ public class SugarCaneBlock extends Block {
    public static final IntegerProperty AGE;
    protected static final VoxelShape SHAPE;
 
-   protected SugarCaneBlock(BlockBehaviour.Properties var1) {
+   protected SugarCaneBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
@@ -31,17 +31,12 @@ public class SugarCaneBlock extends Block {
       return SHAPE;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
-      }
-
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      if (var2.isEmptyBlock(var3.above())) {
+      } else if (var2.isEmptyBlock(var3.above())) {
          int var5;
-         for(var5 = 1; var2.getBlockState(var3.below(var5)).is(this); ++var5) {
+         for(var5 = 1; var2.getBlockState(var3.below(var5)).getBlock() == this; ++var5) {
          }
 
          if (var5 < 3) {
@@ -66,11 +61,11 @@ public class SugarCaneBlock extends Block {
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.below());
-      if (var4.is(this)) {
+      Block var4 = var2.getBlockState(var3.below()).getBlock();
+      if (var4 == this) {
          return true;
       } else {
-         if (var4.is(Blocks.GRASS_BLOCK) || var4.is(Blocks.DIRT) || var4.is(Blocks.COARSE_DIRT) || var4.is(Blocks.PODZOL) || var4.is(Blocks.SAND) || var4.is(Blocks.RED_SAND)) {
+         if (var4 == Blocks.GRASS_BLOCK || var4 == Blocks.DIRT || var4 == Blocks.COARSE_DIRT || var4 == Blocks.PODZOL || var4 == Blocks.SAND || var4 == Blocks.RED_SAND) {
             BlockPos var5 = var3.below();
             Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
@@ -78,7 +73,7 @@ public class SugarCaneBlock extends Block {
                Direction var7 = (Direction)var6.next();
                BlockState var8 = var2.getBlockState(var5.relative(var7));
                FluidState var9 = var2.getFluidState(var5.relative(var7));
-               if (var9.is(FluidTags.WATER) || var8.is(Blocks.FROSTED_ICE)) {
+               if (var9.is(FluidTags.WATER) || var8.getBlock() == Blocks.FROSTED_ICE) {
                   return true;
                }
             }
@@ -86,6 +81,10 @@ public class SugarCaneBlock extends Block {
 
          return false;
       }
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

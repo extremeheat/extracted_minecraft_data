@@ -1,31 +1,22 @@
 package net.minecraft.world.level.block;
 
 import java.util.Random;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -38,25 +29,23 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> implements SimpleWaterloggedBlock {
+public class EnderChestBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final DirectionProperty FACING;
    public static final BooleanProperty WATERLOGGED;
    protected static final VoxelShape SHAPE;
-   private static final Component CONTAINER_TITLE;
+   public static final TranslatableComponent CONTAINER_TITLE;
 
-   protected EnderChestBlock(BlockBehaviour.Properties var1) {
-      super(var1, () -> {
-         return BlockEntityType.ENDER_CHEST;
-      });
+   protected EnderChestBlock(Block.Properties var1) {
+      super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
-   }
-
-   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      return DoubleBlockCombiner.Combiner::acceptNone;
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
+   }
+
+   public boolean hasCustomBreakingProgress(BlockState var1) {
+      return true;
    }
 
    public RenderShape getRenderShape(BlockState var1) {
@@ -68,15 +57,15 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, var2.getType() == Fluids.WATER);
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       PlayerEnderChestContainer var7 = var4.getEnderChestInventory();
       BlockEntity var8 = var2.getBlockEntity(var3);
       if (var7 != null && var8 instanceof EnderChestBlockEntity) {
          BlockPos var9 = var3.above();
          if (var2.getBlockState(var9).isRedstoneConductor(var2, var9)) {
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return true;
          } else if (var2.isClientSide) {
-            return InteractionResult.SUCCESS;
+            return true;
          } else {
             EnderChestBlockEntity var10 = (EnderChestBlockEntity)var8;
             var7.setActiveChest(var10);
@@ -84,21 +73,15 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
                return ChestMenu.threeRows(var1x, var2x, var7);
             }, CONTAINER_TITLE));
             var4.awardStat(Stats.OPEN_ENDERCHEST);
-            PiglinAi.angerNearbyPiglins(var4, true);
-            return InteractionResult.CONSUME;
+            return true;
          }
       } else {
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       }
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new EnderChestBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? createTickerHelper(var3, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new EnderChestBlockEntity();
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
@@ -144,18 +127,10 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
       return false;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof EnderChestBlockEntity) {
-         ((EnderChestBlockEntity)var5).recheckOpen();
-      }
-
-   }
-
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 14.0D, 15.0D);
-      CONTAINER_TITLE = new TranslatableComponent("container.enderchest");
+      CONTAINER_TITLE = new TranslatableComponent("container.enderchest", new Object[0]);
    }
 }

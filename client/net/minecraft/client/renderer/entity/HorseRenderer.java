@@ -2,33 +2,31 @@ package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HorseModel;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HorseArmorLayer;
-import net.minecraft.client.renderer.entity.layers.HorseMarkingLayer;
+import net.minecraft.client.renderer.texture.LayeredTexture;
+import net.minecraft.client.renderer.texture.TextureObject;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.Horse;
-import net.minecraft.world.entity.animal.horse.Variant;
 
 public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseModel<Horse>> {
-   private static final Map<Variant, ResourceLocation> LOCATION_BY_VARIANT = (Map)Util.make(Maps.newEnumMap(Variant.class), (var0) -> {
-      var0.put(Variant.WHITE, new ResourceLocation("textures/entity/horse/horse_white.png"));
-      var0.put(Variant.CREAMY, new ResourceLocation("textures/entity/horse/horse_creamy.png"));
-      var0.put(Variant.CHESTNUT, new ResourceLocation("textures/entity/horse/horse_chestnut.png"));
-      var0.put(Variant.BROWN, new ResourceLocation("textures/entity/horse/horse_brown.png"));
-      var0.put(Variant.BLACK, new ResourceLocation("textures/entity/horse/horse_black.png"));
-      var0.put(Variant.GRAY, new ResourceLocation("textures/entity/horse/horse_gray.png"));
-      var0.put(Variant.DARKBROWN, new ResourceLocation("textures/entity/horse/horse_darkbrown.png"));
-   });
+   private static final Map<String, ResourceLocation> LAYERED_LOCATION_CACHE = Maps.newHashMap();
 
-   public HorseRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new HorseModel(var1.getLayer(ModelLayers.HORSE)), 1.1F);
-      this.addLayer(new HorseMarkingLayer(this));
-      this.addLayer(new HorseArmorLayer(this, var1.getModelSet()));
+   public HorseRenderer(EntityRenderDispatcher var1) {
+      super(var1, new HorseModel(0.0F), 1.1F);
+      this.addLayer(new HorseArmorLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(Horse var1) {
-      return (ResourceLocation)LOCATION_BY_VARIANT.get(var1.getVariant());
+   protected ResourceLocation getTextureLocation(Horse var1) {
+      String var2 = var1.getLayeredTextureHashName();
+      ResourceLocation var3 = (ResourceLocation)LAYERED_LOCATION_CACHE.get(var2);
+      if (var3 == null) {
+         var3 = new ResourceLocation(var2);
+         Minecraft.getInstance().getTextureManager().register((ResourceLocation)var3, (TextureObject)(new LayeredTexture(var1.getLayeredTextureLayers())));
+         LAYERED_LOCATION_CACHE.put(var2, var3);
+      }
+
+      return var3;
    }
 }

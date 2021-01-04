@@ -112,7 +112,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    private LivingEntity lookAtTarget(Villager var1) {
       Brain var2 = var1.getBrain();
       LivingEntity var3 = (LivingEntity)var2.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var3, true)));
+      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityPosWrapper(var3)));
       return var3;
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -14,35 +13,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 
 public class RecipeCollection {
-   private final List<Recipe<?>> recipes;
-   private final boolean singleResultItem;
+   private final List<Recipe<?>> recipes = Lists.newArrayList();
    private final Set<Recipe<?>> craftable = Sets.newHashSet();
    private final Set<Recipe<?>> fitsDimensions = Sets.newHashSet();
    private final Set<Recipe<?>> known = Sets.newHashSet();
+   private boolean singleResultItem = true;
 
-   public RecipeCollection(List<Recipe<?>> var1) {
+   public RecipeCollection() {
       super();
-      this.recipes = ImmutableList.copyOf(var1);
-      if (var1.size() <= 1) {
-         this.singleResultItem = true;
-      } else {
-         this.singleResultItem = allRecipesHaveSameResult(var1);
-      }
-
-   }
-
-   private static boolean allRecipesHaveSameResult(List<Recipe<?>> var0) {
-      int var1 = var0.size();
-      ItemStack var2 = ((Recipe)var0.get(0)).getResultItem();
-
-      for(int var3 = 1; var3 < var1; ++var3) {
-         ItemStack var4 = ((Recipe)var0.get(var3)).getResultItem();
-         if (!ItemStack.isSame(var2, var4) || !ItemStack.tagMatches(var2, var4)) {
-            return false;
-         }
-      }
-
-      return true;
    }
 
    public boolean hasKnownRecipes() {
@@ -62,27 +40,22 @@ public class RecipeCollection {
    }
 
    public void canCraft(StackedContents var1, int var2, int var3, RecipeBook var4) {
-      Iterator var5 = this.recipes.iterator();
-
-      while(true) {
-         while(var5.hasNext()) {
-            Recipe var6 = (Recipe)var5.next();
-            boolean var7 = var6.canCraftInDimensions(var2, var3) && var4.contains(var6);
-            if (var7) {
-               this.fitsDimensions.add(var6);
-            } else {
-               this.fitsDimensions.remove(var6);
-            }
-
-            if (var7 && var1.canCraft(var6, (IntList)null)) {
-               this.craftable.add(var6);
-            } else {
-               this.craftable.remove(var6);
-            }
+      for(int var5 = 0; var5 < this.recipes.size(); ++var5) {
+         Recipe var6 = (Recipe)this.recipes.get(var5);
+         boolean var7 = var6.canCraftInDimensions(var2, var3) && var4.contains(var6);
+         if (var7) {
+            this.fitsDimensions.add(var6);
+         } else {
+            this.fitsDimensions.remove(var6);
          }
 
-         return;
+         if (var7 && var1.canCraft(var6, (IntList)null)) {
+            this.craftable.add(var6);
+         } else {
+            this.craftable.remove(var6);
+         }
       }
+
    }
 
    public boolean isCraftable(Recipe<?> var1) {
@@ -128,6 +101,16 @@ public class RecipeCollection {
       }
 
       return var2;
+   }
+
+   public void add(Recipe<?> var1) {
+      this.recipes.add(var1);
+      if (this.singleResultItem) {
+         ItemStack var2 = ((Recipe)this.recipes.get(0)).getResultItem();
+         ItemStack var3 = var1.getResultItem();
+         this.singleResultItem = ItemStack.isSame(var2, var3) && ItemStack.tagMatches(var2, var3);
+      }
+
    }
 
    public boolean hasSingleResultItem() {

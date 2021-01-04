@@ -24,12 +24,12 @@ import net.minecraft.server.players.IpBanListEntry;
 
 public class BanIpCommands {
    public static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-   private static final SimpleCommandExceptionType ERROR_INVALID_IP = new SimpleCommandExceptionType(new TranslatableComponent("commands.banip.invalid"));
-   private static final SimpleCommandExceptionType ERROR_ALREADY_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.banip.failed"));
+   private static final SimpleCommandExceptionType ERROR_INVALID_IP = new SimpleCommandExceptionType(new TranslatableComponent("commands.banip.invalid", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.banip.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires((var0x) -> {
-         return var0x.hasPermission(3);
+         return var0x.getServer().getPlayerList().getIpBans().isEnabled() && var0x.hasPermission(3);
       })).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((var0x) -> {
          return banIpOrName((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"), (Component)null);
       })).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> {
@@ -68,7 +68,7 @@ public class BanIpCommands {
 
          while(var6.hasNext()) {
             ServerPlayer var7 = (ServerPlayer)var6.next();
-            var7.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.ip_banned"));
+            var7.connection.disconnect(new TranslatableComponent("multiplayer.disconnect.ip_banned", new Object[0]));
          }
 
          return var4.size();

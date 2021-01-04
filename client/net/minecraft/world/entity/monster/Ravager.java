@@ -16,8 +16,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -81,8 +79,14 @@ public class Ravager extends Raider {
       this.goalSelector.setControlFlag(Goal.Flag.TARGET, var1);
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 100.0D).add(Attributes.MOVEMENT_SPEED, 0.3D).add(Attributes.KNOCKBACK_RESISTANCE, 0.75D).add(Attributes.ATTACK_DAMAGE, 12.0D).add(Attributes.ATTACK_KNOCKBACK, 1.5D).add(Attributes.FOLLOW_RANGE, 32.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(100.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
+      this.getAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE).setBaseValue(0.5D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(12.0D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_KNOCKBACK).setBaseValue(1.5D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(32.0D);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -111,7 +115,7 @@ public class Ravager extends Raider {
       return 45;
    }
 
-   public double getPassengersRidingOffset() {
+   public double getRideHeight() {
       return 2.1D;
    }
 
@@ -121,18 +125,18 @@ public class Ravager extends Raider {
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getFirstPassenger();
+      return this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
    }
 
    public void aiStep() {
       super.aiStep();
       if (this.isAlive()) {
          if (this.isImmobile()) {
-            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.0D);
+            this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.0D);
          } else {
             double var1 = this.getTarget() != null ? 0.35D : 0.3D;
-            double var3 = this.getAttribute(Attributes.MOVEMENT_SPEED).getBaseValue();
-            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(Mth.lerp(0.1D, var3, var1));
+            double var3 = this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue();
+            this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(Mth.lerp(0.1D, var3, var1));
          }
 
          if (this.horizontalCollision && this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
@@ -157,7 +161,7 @@ public class Ravager extends Raider {
                   var6 = var5.getBlock();
                } while(!(var6 instanceof LeavesBlock));
 
-               var7 = this.level.destroyBlock(var4, true, this) || var7;
+               var7 = this.level.destroyBlock(var4, true) || var7;
             }
          }
 
@@ -186,9 +190,9 @@ public class Ravager extends Raider {
 
    private void stunEffect() {
       if (this.random.nextInt(6) == 0) {
-         double var1 = this.getX() - (double)this.getBbWidth() * Math.sin((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6D - 0.3D);
-         double var3 = this.getY() + (double)this.getBbHeight() - 0.3D;
-         double var5 = this.getZ() + (double)this.getBbWidth() * Math.cos((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6D - 0.3D);
+         double var1 = this.x - (double)this.getBbWidth() * Math.sin((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6D - 0.3D);
+         double var3 = this.y + (double)this.getBbHeight() - 0.3D;
+         double var5 = this.z + (double)this.getBbWidth() * Math.cos((double)(this.yBodyRot * 0.017453292F)) + (this.random.nextDouble() * 0.6D - 0.3D);
          this.level.addParticle(ParticleTypes.ENTITY_EFFECT, var1, var3, var5, 0.4980392156862745D, 0.5137254901960784D, 0.5725490196078431D);
       }
 
@@ -222,9 +226,9 @@ public class Ravager extends Raider {
       if (this.isAlive()) {
          List var1 = this.level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(4.0D), NO_RAVAGER_AND_ALIVE);
 
-         LivingEntity var3;
+         Entity var3;
          for(Iterator var2 = var1.iterator(); var2.hasNext(); this.strongKnockback(var3)) {
-            var3 = (LivingEntity)var2.next();
+            var3 = (Entity)var2.next();
             if (!(var3 instanceof AbstractIllager)) {
                var3.hurt(DamageSource.mobAttack(this), 6.0F);
             }
@@ -243,8 +247,8 @@ public class Ravager extends Raider {
    }
 
    private void strongKnockback(Entity var1) {
-      double var2 = var1.getX() - this.getX();
-      double var4 = var1.getZ() - this.getZ();
+      double var2 = var1.x - this.x;
+      double var4 = var1.z - this.z;
       double var6 = Math.max(var2 * var2 + var4 * var4, 0.001D);
       var1.push(var2 / var6 * 4.0D, 0.2D, var4 / var6 * 4.0D);
    }

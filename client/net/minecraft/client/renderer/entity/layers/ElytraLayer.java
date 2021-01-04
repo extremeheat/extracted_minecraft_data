@@ -1,17 +1,10 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.ElytraModel;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,37 +14,45 @@ import net.minecraft.world.item.Items;
 
 public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
    private static final ResourceLocation WINGS_LOCATION = new ResourceLocation("textures/entity/elytra.png");
-   private final ElytraModel<T> elytraModel;
+   private final ElytraModel<T> elytraModel = new ElytraModel();
 
-   public ElytraLayer(RenderLayerParent<T, M> var1, EntityModelSet var2) {
+   public ElytraLayer(RenderLayerParent<T, M> var1) {
       super(var1);
-      this.elytraModel = new ElytraModel(var2.getLayer(ModelLayers.ELYTRA));
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      ItemStack var11 = var4.getItemBySlot(EquipmentSlot.CHEST);
-      if (var11.is(Items.ELYTRA)) {
-         ResourceLocation var12;
-         if (var4 instanceof AbstractClientPlayer) {
-            AbstractClientPlayer var13 = (AbstractClientPlayer)var4;
-            if (var13.isElytraLoaded() && var13.getElytraTextureLocation() != null) {
-               var12 = var13.getElytraTextureLocation();
-            } else if (var13.isCapeLoaded() && var13.getCloakTextureLocation() != null && var13.isModelPartShown(PlayerModelPart.CAPE)) {
-               var12 = var13.getCloakTextureLocation();
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.CHEST);
+      if (var9.getItem() == Items.ELYTRA) {
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         GlStateManager.enableBlend();
+         GlStateManager.blendFunc(GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+         if (var1 instanceof AbstractClientPlayer) {
+            AbstractClientPlayer var10 = (AbstractClientPlayer)var1;
+            if (var10.isElytraLoaded() && var10.getElytraTextureLocation() != null) {
+               this.bindTexture(var10.getElytraTextureLocation());
+            } else if (var10.isCapeLoaded() && var10.getCloakTextureLocation() != null && var10.isModelPartShown(PlayerModelPart.CAPE)) {
+               this.bindTexture(var10.getCloakTextureLocation());
             } else {
-               var12 = WINGS_LOCATION;
+               this.bindTexture(WINGS_LOCATION);
             }
          } else {
-            var12 = WINGS_LOCATION;
+            this.bindTexture(WINGS_LOCATION);
          }
 
-         var1.pushPose();
-         var1.translate(0.0D, 0.0D, 0.125D);
-         this.getParentModel().copyPropertiesTo(this.elytraModel);
-         this.elytraModel.setupAnim(var4, var5, var6, var8, var9, var10);
-         VertexConsumer var14 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), false, var11.hasFoil());
-         this.elytraModel.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-         var1.popPose();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.0F, 0.0F, 0.125F);
+         this.elytraModel.setupAnim(var1, var2, var3, var5, var6, var7, var8);
+         this.elytraModel.render(var1, var2, var3, var5, var6, var7, var8);
+         if (var9.isEnchanted()) {
+            AbstractArmorLayer.renderFoil(this::bindTexture, var1, this.elytraModel, var2, var3, var4, var5, var6, var7, var8);
+         }
+
+         GlStateManager.disableBlend();
+         GlStateManager.popMatrix();
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

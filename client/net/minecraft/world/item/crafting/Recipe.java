@@ -51,11 +51,4 @@ public interface Recipe<C extends Container> {
    RecipeSerializer<?> getSerializer();
 
    RecipeType<?> getType();
-
-   default boolean isIncomplete() {
-      NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().anyMatch((var0) -> {
-         return var0.getItems().length == 0;
-      });
-   }
 }

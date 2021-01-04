@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import java.util.Optional;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -17,10 +18,6 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
 
    private SmeltItemFunction(LootItemCondition[] var1) {
       super(var1);
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.FURNACE_SMELT;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -52,8 +49,8 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
    }
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SmeltItemFunction> {
-      public Serializer() {
-         super();
+      protected Serializer() {
+         super(new ResourceLocation("furnace_smelt"), SmeltItemFunction.class);
       }
 
       public SmeltItemFunction deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {

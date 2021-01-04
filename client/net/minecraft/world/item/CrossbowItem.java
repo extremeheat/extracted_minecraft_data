@@ -15,12 +15,14 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,12 +36,28 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
+public class CrossbowItem extends ProjectileWeaponItem {
    private boolean startSoundPlayed = false;
    private boolean midLoadSoundPlayed = false;
 
    public CrossbowItem(Item.Properties var1) {
       super(var1);
+      this.addProperty(new ResourceLocation("pull"), (var1x, var2, var3) -> {
+         if (var3 != null && var1x.getItem() == this) {
+            return isCharged(var1x) ? 0.0F : (float)(var1x.getUseDuration() - var3.getUseItemRemainingTicks()) / (float)getChargeDuration(var1x);
+         } else {
+            return 0.0F;
+         }
+      });
+      this.addProperty(new ResourceLocation("pulling"), (var0, var1x, var2) -> {
+         return var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 && !isCharged(var0) ? 1.0F : 0.0F;
+      });
+      this.addProperty(new ResourceLocation("charged"), (var0, var1x, var2) -> {
+         return var2 != null && isCharged(var0) ? 1.0F : 0.0F;
+      });
+      this.addProperty(new ResourceLocation("firework"), (var0, var1x, var2) -> {
+         return var2 != null && isCharged(var0) && containsChargedProjectile(var0, Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
+      });
    }
 
    public Predicate<ItemStack> getSupportedHeldProjectiles() {
@@ -55,7 +73,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       if (isCharged(var4)) {
          performShooting(var1, var2, var3, var4, getShootingPower(var4), 1.0F);
          setCharged(var4, false);
-         return InteractionResultHolder.consume(var4);
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       } else if (!var2.getProjectile(var4).isEmpty()) {
          if (!isCharged(var4)) {
             this.startSoundPlayed = false;
@@ -63,14 +81,10 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
             var2.startUsingItem(var3);
          }
 
-         return InteractionResultHolder.consume(var4);
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       } else {
-         return InteractionResultHolder.fail(var4);
+         return new InteractionResultHolder(InteractionResult.FAIL, var4);
       }
-   }
-
-   private static float getShootingPower(ItemStack var0) {
-      return containsChargedProjectile(var0, Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
    }
 
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
@@ -79,7 +93,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
          setCharged(var1, true);
          SoundSource var7 = var3 instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
-         var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.CROSSBOW_LOADING_END, var7, 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
+         var2.playSound((Player)null, var3.x, var3.y, var3.z, SoundEvents.CROSSBOW_LOADING_END, var7, 1.0F, 1.0F / (random.nextFloat() * 0.5F + 1.0F) + 0.2F);
       }
 
    }
@@ -87,7 +101,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
    private static boolean tryLoadProjectiles(LivingEntity var0, ItemStack var1) {
       int var2 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, var1);
       int var3 = var2 == 0 ? 1 : 3;
-      boolean var4 = var0 instanceof Player && ((Player)var0).getAbilities().instabuild;
+      boolean var4 = var0 instanceof Player && ((Player)var0).abilities.instabuild;
       ItemStack var5 = var0.getProjectile(var1);
       ItemStack var6 = var5.copy();
 
@@ -118,7 +132,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
          if (!var5 && !var4 && !var3) {
             var6 = var2.split(1);
             if (var2.isEmpty() && var0 instanceof Player) {
-               ((Player)var0).getInventory().removeItem(var2);
+               ((Player)var0).inventory.removeItem(var2);
             }
          } else {
             var6 = var2.copy();
@@ -180,18 +194,18 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
    }
 
-   public static boolean containsChargedProjectile(ItemStack var0, Item var1) {
+   private static boolean containsChargedProjectile(ItemStack var0, Item var1) {
       return getChargedProjectiles(var0).stream().anyMatch((var1x) -> {
-         return var1x.is(var1);
+         return var1x.getItem() == var1;
       });
    }
 
    private static void shootProjectile(Level var0, LivingEntity var1, InteractionHand var2, ItemStack var3, ItemStack var4, float var5, boolean var6, float var7, float var8, float var9) {
       if (!var0.isClientSide) {
-         boolean var10 = var4.is(Items.FIREWORK_ROCKET);
+         boolean var10 = var4.getItem() == Items.FIREWORK_ROCKET;
          Object var11;
          if (var10) {
-            var11 = new FireworkRocketEntity(var0, var4, var1, var1.getX(), var1.getEyeY() - 0.15000000596046448D, var1.getZ(), true);
+            var11 = new FireworkRocketEntity(var0, var4, var1.x, var1.y + (double)var1.getEyeHeight() - 0.15000000596046448D, var1.z, true);
          } else {
             var11 = getArrow(var0, var1, var3, var4);
             if (var6 || var9 != 0.0F) {
@@ -201,7 +215,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
          if (var1 instanceof CrossbowAttackMob) {
             CrossbowAttackMob var12 = (CrossbowAttackMob)var1;
-            var12.shootCrossbowProjectile(var12.getTarget(), var3, (Projectile)var11, var9);
+            var12.shootProjectile(var12.getTarget(), var3, (Projectile)var11, var9);
          } else {
             Vec3 var16 = var1.getUpVector(1.0F);
             Quaternion var13 = new Quaternion(new Vector3f(var16), var9, true);
@@ -215,7 +229,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
             var1x.broadcastBreakEvent(var2);
          });
          var0.addFreshEntity((Entity)var11);
-         var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.0F, var5);
+         var0.playSound((Player)null, var1.x, var1.y, var1.z, SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.0F, var5);
       }
    }
 
@@ -242,7 +256,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
       for(int var8 = 0; var8 < var6.size(); ++var8) {
          ItemStack var9 = (ItemStack)var6.get(var8);
-         boolean var10 = var1 instanceof Player && ((Player)var1).getAbilities().instabuild;
+         boolean var10 = var1 instanceof Player && ((Player)var1).abilities.instabuild;
          if (!var9.isEmpty()) {
             if (var8 == 0) {
                shootProjectile(var0, var1, var2, var3, var9, var7[var8], var10, var4, var5, 0.0F);
@@ -259,12 +273,12 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
    private static float[] getShotPitches(Random var0) {
       boolean var1 = var0.nextBoolean();
-      return new float[]{1.0F, getRandomShotPitch(var1, var0), getRandomShotPitch(!var1, var0)};
+      return new float[]{1.0F, getRandomShotPitch(var1), getRandomShotPitch(!var1)};
    }
 
-   private static float getRandomShotPitch(boolean var0, Random var1) {
-      float var2 = var0 ? 0.63F : 0.43F;
-      return 1.0F / (var1.nextFloat() * 0.5F + 1.8F) + var2;
+   private static float getRandomShotPitch(boolean var0) {
+      float var1 = var0 ? 0.63F : 0.43F;
+      return 1.0F / (random.nextFloat() * 0.5F + 1.8F) + var1;
    }
 
    private static void onCrossbowShot(Level var0, LivingEntity var1, ItemStack var2) {
@@ -293,12 +307,12 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
          if (var8 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
-            var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), var6, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var1.playSound((Player)null, var2.x, var2.y, var2.z, var6, SoundSource.PLAYERS, 0.5F, 1.0F);
          }
 
          if (var8 >= 0.5F && var7 != null && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
-            var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), var7, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var1.playSound((Player)null, var2.x, var2.y, var2.z, var7, SoundSource.PLAYERS, 0.5F, 1.0F);
          }
       }
 
@@ -343,8 +357,8 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       List var5 = getChargedProjectiles(var1);
       if (isCharged(var1) && !var5.isEmpty()) {
          ItemStack var6 = (ItemStack)var5.get(0);
-         var3.add((new TranslatableComponent("item.minecraft.crossbow.projectile")).append(" ").append(var6.getDisplayName()));
-         if (var4.isAdvanced() && var6.is(Items.FIREWORK_ROCKET)) {
+         var3.add((new TranslatableComponent("item.minecraft.crossbow.projectile", new Object[0])).append(" ").append(var6.getDisplayName()));
+         if (var4.isAdvanced() && var6.getItem() == Items.FIREWORK_ROCKET) {
             ArrayList var7 = Lists.newArrayList();
             Items.FIREWORK_ROCKET.appendHoverText(var6, var2, var7, var4);
             if (!var7.isEmpty()) {
@@ -359,11 +373,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       }
    }
 
-   public boolean useOnRelease(ItemStack var1) {
-      return var1.is((Item)this);
-   }
-
-   public int getDefaultProjectileRange() {
-      return 8;
+   private static float getShootingPower(ItemStack var0) {
+      return var0.getItem() == Items.CROSSBOW && containsChargedProjectile(var0, Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
    }
 }

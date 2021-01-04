@@ -6,9 +6,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -22,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -32,14 +32,11 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TickableTextureObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
@@ -54,6 +51,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -61,7 +59,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ParticleEngine implements PreparableReloadListener {
    private static final List<ParticleRenderType> RENDER_ORDER;
-   protected ClientLevel level;
+   protected Level level;
    private final Map<ParticleRenderType, Queue<Particle>> particles = Maps.newIdentityHashMap();
    private final Queue<TrackingEmitter> trackingEmitters = Queues.newArrayDeque();
    private final TextureManager textureManager;
@@ -69,12 +67,11 @@ public class ParticleEngine implements PreparableReloadListener {
    private final Int2ObjectMap<ParticleProvider<?>> providers = new Int2ObjectOpenHashMap();
    private final Queue<Particle> particlesToAdd = Queues.newArrayDeque();
    private final Map<ResourceLocation, ParticleEngine.MutableSpriteSet> spriteSets = Maps.newHashMap();
-   private final TextureAtlas textureAtlas;
+   private final TextureAtlas textureAtlas = new TextureAtlas("textures/particle");
 
-   public ParticleEngine(ClientLevel var1, TextureManager var2) {
+   public ParticleEngine(Level var1, TextureManager var2) {
       super();
-      this.textureAtlas = new TextureAtlas(TextureAtlas.LOCATION_PARTICLES);
-      var2.register((ResourceLocation)this.textureAtlas.location(), (AbstractTexture)this.textureAtlas);
+      var2.register((ResourceLocation)TextureAtlas.LOCATION_PARTICLES, (TickableTextureObject)this.textureAtlas);
       this.level = var1;
       this.textureManager = var2;
       this.registerProviders();
@@ -115,8 +112,6 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.FIREWORK, (ParticleEngine.SpriteParticleRegistration)(FireworkParticles.SparkProvider::new));
       this.register(ParticleTypes.FISHING, (ParticleEngine.SpriteParticleRegistration)(WakeParticle.Provider::new));
       this.register(ParticleTypes.FLAME, (ParticleEngine.SpriteParticleRegistration)(FlameParticle.Provider::new));
-      this.register(ParticleTypes.SOUL, (ParticleEngine.SpriteParticleRegistration)(SoulParticle.Provider::new));
-      this.register(ParticleTypes.SOUL_FIRE_FLAME, (ParticleEngine.SpriteParticleRegistration)(FlameParticle.Provider::new));
       this.register(ParticleTypes.FLASH, (ParticleEngine.SpriteParticleRegistration)(FireworkParticles.FlashProvider::new));
       this.register(ParticleTypes.HAPPY_VILLAGER, (ParticleEngine.SpriteParticleRegistration)(SuspendedTownParticle.HappyVillagerProvider::new));
       this.register(ParticleTypes.HEART, (ParticleEngine.SpriteParticleRegistration)(HeartParticle.Provider::new));
@@ -138,22 +133,9 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SWEEP_ATTACK, (ParticleEngine.SpriteParticleRegistration)(AttackSweepParticle.Provider::new));
       this.register(ParticleTypes.TOTEM_OF_UNDYING, (ParticleEngine.SpriteParticleRegistration)(TotemParticle.Provider::new));
       this.register(ParticleTypes.SQUID_INK, (ParticleEngine.SpriteParticleRegistration)(SquidInkParticle.Provider::new));
-      this.register(ParticleTypes.UNDERWATER, (ParticleEngine.SpriteParticleRegistration)(SuspendedParticle.UnderwaterProvider::new));
+      this.register(ParticleTypes.UNDERWATER, (ParticleEngine.SpriteParticleRegistration)(SuspendedParticle.Provider::new));
       this.register(ParticleTypes.SPLASH, (ParticleEngine.SpriteParticleRegistration)(SplashParticle.Provider::new));
       this.register(ParticleTypes.WITCH, (ParticleEngine.SpriteParticleRegistration)(SpellParticle.WitchProvider::new));
-      this.register(ParticleTypes.DRIPPING_HONEY, (ParticleEngine.SpriteParticleRegistration)(DripParticle.HoneyHangProvider::new));
-      this.register(ParticleTypes.FALLING_HONEY, (ParticleEngine.SpriteParticleRegistration)(DripParticle.HoneyFallProvider::new));
-      this.register(ParticleTypes.LANDING_HONEY, (ParticleEngine.SpriteParticleRegistration)(DripParticle.HoneyLandProvider::new));
-      this.register(ParticleTypes.FALLING_NECTAR, (ParticleEngine.SpriteParticleRegistration)(DripParticle.NectarFallProvider::new));
-      this.register(ParticleTypes.ASH, (ParticleEngine.SpriteParticleRegistration)(AshParticle.Provider::new));
-      this.register(ParticleTypes.CRIMSON_SPORE, (ParticleEngine.SpriteParticleRegistration)(SuspendedParticle.CrimsonSporeProvider::new));
-      this.register(ParticleTypes.WARPED_SPORE, (ParticleEngine.SpriteParticleRegistration)(SuspendedParticle.WarpedSporeProvider::new));
-      this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (ParticleEngine.SpriteParticleRegistration)(DripParticle.ObsidianTearHangProvider::new));
-      this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, (ParticleEngine.SpriteParticleRegistration)(DripParticle.ObsidianTearFallProvider::new));
-      this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, (ParticleEngine.SpriteParticleRegistration)(DripParticle.ObsidianTearLandProvider::new));
-      this.register(ParticleTypes.REVERSE_PORTAL, (ParticleEngine.SpriteParticleRegistration)(ReversePortalParticle.ReversePortalProvider::new));
-      this.register(ParticleTypes.WHITE_ASH, (ParticleEngine.SpriteParticleRegistration)(WhiteAshParticle.Provider::new));
-      this.register(ParticleTypes.SMALL_FLAME, (ParticleEngine.SpriteParticleRegistration)(FlameParticle.SmallFlameProvider::new));
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
@@ -178,14 +160,14 @@ public class ParticleEngine implements PreparableReloadListener {
       CompletableFuture var10000 = CompletableFuture.allOf(var8).thenApplyAsync((var4x) -> {
          var3.startTick();
          var3.push("stitching");
-         TextureAtlas.Preparations var5 = this.textureAtlas.prepareToStitch(var2, var7.values().stream().flatMap(Collection::stream), var3, 0);
+         Set var5 = (Set)var7.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+         TextureAtlas.Preparations var6 = this.textureAtlas.prepareToStitch(var2, var5, var3);
          var3.pop();
          var3.endTick();
-         return var5;
+         return var6;
       }, var5);
       var1.getClass();
       return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
-         this.particles.clear();
          var4.startTick();
          var4.push("upload");
          this.textureAtlas.reload(var3x);
@@ -238,9 +220,7 @@ public class ParticleEngine implements PreparableReloadListener {
                      throw new IllegalStateException("Redundant texture list for particle " + var2);
                   }
 
-                  var3.put(var2, var10.stream().map((var0) -> {
-                     return new ResourceLocation(var0.getNamespace(), "particle/" + var0.getPath());
-                  }).collect(Collectors.toList()));
+                  var3.put(var2, var10);
                }
             } catch (Throwable var35) {
                var8 = var35;
@@ -371,60 +351,57 @@ public class ParticleEngine implements PreparableReloadListener {
       }
    }
 
-   public void render(PoseStack var1, MultiBufferSource.BufferSource var2, LightTexture var3, Camera var4, float var5) {
-      var3.turnOnLightLayer();
-      RenderSystem.enableAlphaTest();
-      RenderSystem.defaultAlphaFunc();
-      RenderSystem.enableDepthTest();
-      RenderSystem.enableFog();
-      RenderSystem.pushMatrix();
-      RenderSystem.multMatrix(var1.last().pose());
-      Iterator var6 = RENDER_ORDER.iterator();
+   public void render(Camera var1, float var2) {
+      float var3 = Mth.cos(var1.getYRot() * 0.017453292F);
+      float var4 = Mth.sin(var1.getYRot() * 0.017453292F);
+      float var5 = -var4 * Mth.sin(var1.getXRot() * 0.017453292F);
+      float var6 = var3 * Mth.sin(var1.getXRot() * 0.017453292F);
+      float var7 = Mth.cos(var1.getXRot() * 0.017453292F);
+      Particle.xOff = var1.getPosition().x;
+      Particle.yOff = var1.getPosition().y;
+      Particle.zOff = var1.getPosition().z;
+      Iterator var8 = RENDER_ORDER.iterator();
 
       while(true) {
-         ParticleRenderType var7;
-         Iterable var8;
+         ParticleRenderType var9;
+         Iterable var10;
          do {
-            if (!var6.hasNext()) {
-               RenderSystem.popMatrix();
-               RenderSystem.depthMask(true);
-               RenderSystem.depthFunc(515);
-               RenderSystem.disableBlend();
-               RenderSystem.defaultAlphaFunc();
-               var3.turnOffLightLayer();
-               RenderSystem.disableFog();
+            if (!var8.hasNext()) {
+               GlStateManager.depthMask(true);
+               GlStateManager.disableBlend();
+               GlStateManager.alphaFunc(516, 0.1F);
                return;
             }
 
-            var7 = (ParticleRenderType)var6.next();
-            var8 = (Iterable)this.particles.get(var7);
-         } while(var8 == null);
+            var9 = (ParticleRenderType)var8.next();
+            var10 = (Iterable)this.particles.get(var9);
+         } while(var10 == null);
 
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         Tesselator var9 = Tesselator.getInstance();
-         BufferBuilder var10 = var9.getBuilder();
-         var7.begin(var10, this.textureManager);
-         Iterator var11 = var8.iterator();
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         Tesselator var11 = Tesselator.getInstance();
+         BufferBuilder var12 = var11.getBuilder();
+         var9.begin(var12, this.textureManager);
+         Iterator var13 = var10.iterator();
 
-         while(var11.hasNext()) {
-            Particle var12 = (Particle)var11.next();
+         while(var13.hasNext()) {
+            Particle var14 = (Particle)var13.next();
 
             try {
-               var12.render(var10, var4, var5);
-            } catch (Throwable var16) {
-               CrashReport var14 = CrashReport.forThrowable(var16, "Rendering Particle");
-               CrashReportCategory var15 = var14.addCategory("Particle being rendered");
-               var15.setDetail("Particle", var12::toString);
-               var15.setDetail("Particle Type", var7::toString);
-               throw new ReportedException(var14);
+               var14.render(var12, var1, var2, var3, var7, var4, var5, var6);
+            } catch (Throwable var18) {
+               CrashReport var16 = CrashReport.forThrowable(var18, "Rendering Particle");
+               CrashReportCategory var17 = var16.addCategory("Particle being rendered");
+               var17.setDetail("Particle", var14::toString);
+               var17.setDetail("Particle Type", var9::toString);
+               throw new ReportedException(var16);
             }
          }
 
-         var7.end(var9);
+         var9.end(var11);
       }
    }
 
-   public void setLevel(@Nullable ClientLevel var1) {
+   public void setLevel(@Nullable Level var1) {
       this.level = var1;
       this.particles.clear();
       this.trackingEmitters.clear();

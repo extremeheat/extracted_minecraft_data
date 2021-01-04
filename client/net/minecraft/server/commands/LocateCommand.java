@@ -4,55 +4,69 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 
 public class LocateCommand {
-   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.locate.failed"));
+   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.locate.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("locate").requires((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("locate").requires((var0x) -> {
          return var0x.hasPermission(2);
-      });
-
-      Entry var3;
-      for(Iterator var2 = StructureFeature.STRUCTURES_REGISTRY.entrySet().iterator(); var2.hasNext(); var1 = (LiteralArgumentBuilder)var1.then(Commands.literal((String)var3.getKey()).executes((var1x) -> {
-         return locate((CommandSourceStack)var1x.getSource(), (StructureFeature)var3.getValue());
-      }))) {
-         var3 = (Entry)var2.next();
-      }
-
-      var0.register(var1);
+      })).then(Commands.literal("Pillager_Outpost").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Pillager_Outpost");
+      }))).then(Commands.literal("Mineshaft").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Mineshaft");
+      }))).then(Commands.literal("Mansion").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Mansion");
+      }))).then(Commands.literal("Igloo").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Igloo");
+      }))).then(Commands.literal("Desert_Pyramid").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Desert_Pyramid");
+      }))).then(Commands.literal("Jungle_Pyramid").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Jungle_Pyramid");
+      }))).then(Commands.literal("Swamp_Hut").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Swamp_Hut");
+      }))).then(Commands.literal("Stronghold").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Stronghold");
+      }))).then(Commands.literal("Monument").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Monument");
+      }))).then(Commands.literal("Fortress").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Fortress");
+      }))).then(Commands.literal("EndCity").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "EndCity");
+      }))).then(Commands.literal("Ocean_Ruin").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Ocean_Ruin");
+      }))).then(Commands.literal("Buried_Treasure").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Buried_Treasure");
+      }))).then(Commands.literal("Shipwreck").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Shipwreck");
+      }))).then(Commands.literal("Village").executes((var0x) -> {
+         return locate((CommandSourceStack)var0x.getSource(), "Village");
+      })));
    }
 
-   private static int locate(CommandSourceStack var0, StructureFeature<?> var1) throws CommandSyntaxException {
+   private static int locate(CommandSourceStack var0, String var1) throws CommandSyntaxException {
       BlockPos var2 = new BlockPos(var0.getPosition());
       BlockPos var3 = var0.getLevel().findNearestMapFeature(var1, var2, 100, false);
       if (var3 == null) {
          throw ERROR_FAILED.create();
       } else {
-         return showLocateResult(var0, var1.getFeatureName(), var2, var3, "commands.locate.success");
+         int var4 = Mth.floor(dist(var2.getX(), var2.getZ(), var3.getX(), var3.getZ()));
+         Component var5 = ComponentUtils.wrapInSquareBrackets(new TranslatableComponent("chat.coordinates", new Object[]{var3.getX(), "~", var3.getZ()})).withStyle((var1x) -> {
+            var1x.setColor(ChatFormatting.GREEN).setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + var3.getX() + " ~ " + var3.getZ())).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("chat.coordinates.tooltip", new Object[0])));
+         });
+         var0.sendSuccess(new TranslatableComponent("commands.locate.success", new Object[]{var1, var5, var4}), false);
+         return var4;
       }
-   }
-
-   public static int showLocateResult(CommandSourceStack var0, String var1, BlockPos var2, BlockPos var3, String var4) {
-      int var5 = Mth.floor(dist(var2.getX(), var2.getZ(), var3.getX(), var3.getZ()));
-      MutableComponent var6 = ComponentUtils.wrapInSquareBrackets(new TranslatableComponent("chat.coordinates", new Object[]{var3.getX(), "~", var3.getZ()})).withStyle((var1x) -> {
-         return var1x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + var3.getX() + " ~ " + var3.getZ())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("chat.coordinates.tooltip")));
-      });
-      var0.sendSuccess(new TranslatableComponent(var4, new Object[]{var1, var6, var5}), false);
-      return var5;
    }
 
    private static float dist(int var0, int var1, int var2, int var3) {

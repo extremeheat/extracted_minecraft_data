@@ -12,7 +12,7 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
       super();
    }
 
-   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) {
+   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
       var2.markReaderIndex();
       byte[] var4 = new byte[3];
 
@@ -28,12 +28,12 @@ public class Varint21FrameDecoder extends ByteToMessageDecoder {
 
             try {
                int var7 = var6.readVarInt();
-               if (var2.readableBytes() >= var7) {
-                  var3.add(var2.readBytes(var7));
+               if (var2.readableBytes() < var7) {
+                  var2.resetReaderIndex();
                   return;
                }
 
-               var2.resetReaderIndex();
+               var3.add(var2.readBytes(var7));
             } finally {
                var6.release();
             }

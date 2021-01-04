@@ -1,16 +1,14 @@
 package net.minecraft.world.level.lighting;
 
-import it.unimi.dsi.fastutil.longs.Long2ByteMap;
+import it.unimi.dsi.fastutil.longs.Long2ByteFunction;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import java.util.function.LongPredicate;
 import net.minecraft.util.Mth;
 
 public abstract class DynamicGraphMinFixedPoint {
    private final int levelCount;
    private final LongLinkedOpenHashSet[] queues;
-   private final Long2ByteMap computedLevels;
+   private final Long2ByteFunction computedLevels;
    private int firstQueuedLevel;
    private volatile boolean hasWork;
 
@@ -80,17 +78,6 @@ public abstract class DynamicGraphMinFixedPoint {
          this.dequeue(var1, var5, this.levelCount, true);
          this.hasWork = this.firstQueuedLevel < this.levelCount;
       }
-   }
-
-   public void removeIf(LongPredicate var1) {
-      LongArrayList var2 = new LongArrayList();
-      this.computedLevels.keySet().forEach((var2x) -> {
-         if (var1.test(var2x)) {
-            var2.add(var2x);
-         }
-
-      });
-      var2.forEach(this::removeFromQueue);
    }
 
    private void dequeue(long var1, int var3, int var4, boolean var5) {
@@ -211,10 +198,6 @@ public abstract class DynamicGraphMinFixedPoint {
          this.hasWork = this.firstQueuedLevel < this.levelCount;
          return var1;
       }
-   }
-
-   public int getQueueSize() {
-      return this.computedLevels.size();
    }
 
    protected abstract boolean isSource(long var1);

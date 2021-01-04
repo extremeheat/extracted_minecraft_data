@@ -5,8 +5,6 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.font.GlyphProvider;
 import com.mojang.blaze3d.font.RawGlyph;
 import com.mojang.blaze3d.platform.NativeImage;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -34,7 +32,7 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
 
       label324:
       for(int var4 = 0; var4 < 256; ++var4) {
-         int var5 = var4 * 256;
+         char var5 = (char)(var4 * 256);
          ResourceLocation var6 = this.getSheetLocation(var5);
 
          try {
@@ -108,39 +106,23 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
       this.textures.values().forEach(NativeImage::close);
    }
 
-   private ResourceLocation getSheetLocation(int var1) {
+   private ResourceLocation getSheetLocation(char var1) {
       ResourceLocation var2 = new ResourceLocation(String.format(this.texturePattern, String.format("%02x", var1 / 256)));
       return new ResourceLocation(var2.getNamespace(), "textures/" + var2.getPath());
    }
 
    @Nullable
-   public RawGlyph getGlyph(int var1) {
-      if (var1 >= 0 && var1 <= 65535) {
-         byte var2 = this.sizes[var1];
-         if (var2 != 0) {
-            NativeImage var3 = (NativeImage)this.textures.computeIfAbsent(this.getSheetLocation(var1), this::loadTexture);
-            if (var3 != null) {
-               int var4 = getLeft(var2);
-               return new LegacyUnicodeBitmapsProvider.Glyph(var1 % 16 * 16 + var4, (var1 & 255) / 16 * 16, getRight(var2) - var4, 16, var3);
-            }
-         }
-
-         return null;
-      } else {
-         return null;
-      }
-   }
-
-   public IntSet getSupportedGlyphs() {
-      IntOpenHashSet var1 = new IntOpenHashSet();
-
-      for(int var2 = 0; var2 < 65535; ++var2) {
-         if (this.sizes[var2] != 0) {
-            var1.add(var2);
+   public RawGlyph getGlyph(char var1) {
+      byte var2 = this.sizes[var1];
+      if (var2 != 0) {
+         NativeImage var3 = (NativeImage)this.textures.computeIfAbsent(this.getSheetLocation(var1), this::loadTexture);
+         if (var3 != null) {
+            int var4 = getLeft(var2);
+            return new LegacyUnicodeBitmapsProvider.Glyph(var1 % 16 * 16 + var4, (var1 & 255) / 16 * 16, getRight(var2) - var4, 16, var3);
          }
       }
 
-      return var1;
+      return null;
    }
 
    @Nullable
@@ -218,7 +200,7 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
       }
 
       public void upload(int var1, int var2) {
-         this.source.upload(0, var1, var2, this.sourceX, this.sourceY, this.width, this.height, false, false);
+         this.source.upload(0, var1, var2, this.sourceX, this.sourceY, this.width, this.height, false);
       }
 
       public boolean isColored() {

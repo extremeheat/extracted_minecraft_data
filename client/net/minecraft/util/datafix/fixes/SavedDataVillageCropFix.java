@@ -1,10 +1,10 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class SavedDataVillageCropFix extends DataFix {
@@ -21,9 +21,9 @@ public class SavedDataVillageCropFix extends DataFix {
    }
 
    private static <T> Dynamic<T> updateChildren(Dynamic<T> var0) {
-      DataResult var10000 = var0.asStreamOpt().map(SavedDataVillageCropFix::updateChildren);
+      Optional var10000 = var0.asStreamOpt().map(SavedDataVillageCropFix::updateChildren);
       var0.getClass();
-      return (Dynamic)var10000.map(var0::createList).result().orElse(var0);
+      return (Dynamic)var10000.map(var0::createList).orElse(var0);
    }
 
    private static Stream<? extends Dynamic<?>> updateChildren(Stream<? extends Dynamic<?>> var0) {
@@ -50,6 +50,6 @@ public class SavedDataVillageCropFix extends DataFix {
    }
 
    private static <T> Dynamic<T> updateCrop(Dynamic<T> var0, String var1) {
-      return var0.get(var1).asNumber().result().isPresent() ? var0.set(var1, BlockStateData.getTag(var0.get(var1).asInt(0) << 4)) : var0;
+      return var0.get(var1).asNumber().isPresent() ? var0.set(var1, BlockStateData.getTag(var0.get(var1).asInt(0) << 4)) : var0;
    }
 }

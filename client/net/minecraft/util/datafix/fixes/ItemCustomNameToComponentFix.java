@@ -2,11 +2,11 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -18,16 +18,16 @@ public class ItemCustomNameToComponentFix extends DataFix {
    }
 
    private Dynamic<?> fixTag(Dynamic<?> var1) {
-      Optional var2 = var1.get("display").result();
+      Optional var2 = var1.get("display").get();
       if (var2.isPresent()) {
          Dynamic var3 = (Dynamic)var2.get();
-         Optional var4 = var3.get("Name").asString().result();
+         Optional var4 = var3.get("Name").asString();
          if (var4.isPresent()) {
             var3 = var3.set("Name", var3.createString(Component.Serializer.toJson(new TextComponent((String)var4.get()))));
          } else {
-            Optional var5 = var3.get("LocName").asString().result();
+            Optional var5 = var3.get("LocName").asString();
             if (var5.isPresent()) {
-               var3 = var3.set("Name", var3.createString(Component.Serializer.toJson(new TranslatableComponent((String)var5.get()))));
+               var3 = var3.set("Name", var3.createString(Component.Serializer.toJson(new TranslatableComponent((String)var5.get(), new Object[0]))));
                var3 = var3.remove("LocName");
             }
          }

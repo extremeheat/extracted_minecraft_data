@@ -12,12 +12,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.ColumnPosArgument;
-import net.minecraft.core.SectionPos;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ColumnPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class ForceLoadCommand {
    private static final Dynamic2CommandExceptionType ERROR_TOO_MANY_CHUNKS = new Dynamic2CommandExceptionType((var0, var1) -> {
@@ -26,8 +25,8 @@ public class ForceLoadCommand {
    private static final Dynamic2CommandExceptionType ERROR_NOT_TICKING = new Dynamic2CommandExceptionType((var0, var1) -> {
       return new TranslatableComponent("commands.forceload.query.failure", new Object[]{var0, var1});
    });
-   private static final SimpleCommandExceptionType ERROR_ALL_ADDED = new SimpleCommandExceptionType(new TranslatableComponent("commands.forceload.added.failure"));
-   private static final SimpleCommandExceptionType ERROR_NONE_REMOVED = new SimpleCommandExceptionType(new TranslatableComponent("commands.forceload.removed.failure"));
+   private static final SimpleCommandExceptionType ERROR_ALL_ADDED = new SimpleCommandExceptionType(new TranslatableComponent("commands.forceload.added.failure", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NONE_REMOVED = new SimpleCommandExceptionType(new TranslatableComponent("commands.forceload.removed.failure", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("forceload").requires((var0x) -> {
@@ -50,45 +49,43 @@ public class ForceLoadCommand {
    }
 
    private static int queryForceLoad(CommandSourceStack var0, ColumnPos var1) throws CommandSyntaxException {
-      ChunkPos var2 = new ChunkPos(SectionPos.blockToSectionCoord(var1.x), SectionPos.blockToSectionCoord(var1.z));
-      ServerLevel var3 = var0.getLevel();
-      ResourceKey var4 = var3.dimension();
-      boolean var5 = var3.getForcedChunks().contains(var2.toLong());
-      if (var5) {
-         var0.sendSuccess(new TranslatableComponent("commands.forceload.query.success", new Object[]{var2, var4.location()}), false);
+      ChunkPos var2 = new ChunkPos(var1.x >> 4, var1.z >> 4);
+      DimensionType var3 = var0.getLevel().getDimension().getType();
+      boolean var4 = var0.getServer().getLevel(var3).getForcedChunks().contains(var2.toLong());
+      if (var4) {
+         var0.sendSuccess(new TranslatableComponent("commands.forceload.query.success", new Object[]{var2, var3}), false);
          return 1;
       } else {
-         throw ERROR_NOT_TICKING.create(var2, var4.location());
+         throw ERROR_NOT_TICKING.create(var2, var3);
       }
    }
 
    private static int listForceLoad(CommandSourceStack var0) {
-      ServerLevel var1 = var0.getLevel();
-      ResourceKey var2 = var1.dimension();
-      LongSet var3 = var1.getForcedChunks();
-      int var4 = var3.size();
-      if (var4 > 0) {
-         String var5 = Joiner.on(", ").join(var3.stream().sorted().map(ChunkPos::new).map(ChunkPos::toString).iterator());
-         if (var4 == 1) {
-            var0.sendSuccess(new TranslatableComponent("commands.forceload.list.single", new Object[]{var2.location(), var5}), false);
+      DimensionType var1 = var0.getLevel().getDimension().getType();
+      LongSet var2 = var0.getServer().getLevel(var1).getForcedChunks();
+      int var3 = var2.size();
+      if (var3 > 0) {
+         String var4 = Joiner.on(", ").join(var2.stream().sorted().map(ChunkPos::new).map(ChunkPos::toString).iterator());
+         if (var3 == 1) {
+            var0.sendSuccess(new TranslatableComponent("commands.forceload.list.single", new Object[]{var1, var4}), false);
          } else {
-            var0.sendSuccess(new TranslatableComponent("commands.forceload.list.multiple", new Object[]{var4, var2.location(), var5}), false);
+            var0.sendSuccess(new TranslatableComponent("commands.forceload.list.multiple", new Object[]{var3, var1, var4}), false);
          }
       } else {
-         var0.sendFailure(new TranslatableComponent("commands.forceload.added.none", new Object[]{var2.location()}));
+         var0.sendFailure(new TranslatableComponent("commands.forceload.added.none", new Object[]{var1}));
       }
 
-      return var4;
+      return var3;
    }
 
    private static int removeAll(CommandSourceStack var0) {
-      ServerLevel var1 = var0.getLevel();
-      ResourceKey var2 = var1.dimension();
-      LongSet var3 = var1.getForcedChunks();
+      DimensionType var1 = var0.getLevel().getDimension().getType();
+      ServerLevel var2 = var0.getServer().getLevel(var1);
+      LongSet var3 = var2.getForcedChunks();
       var3.forEach((var1x) -> {
-         var1.setChunkForced(ChunkPos.getX(var1x), ChunkPos.getZ(var1x), false);
+         var2.setChunkForced(ChunkPos.getX(var1x), ChunkPos.getZ(var1x), false);
       });
-      var0.sendSuccess(new TranslatableComponent("commands.forceload.removed.all", new Object[]{var2.location()}), true);
+      var0.sendSuccess(new TranslatableComponent("commands.forceload.removed.all", new Object[]{var1}), true);
       return 0;
    }
 
@@ -98,22 +95,22 @@ public class ForceLoadCommand {
       int var6 = Math.max(var1.x, var2.x);
       int var7 = Math.max(var1.z, var2.z);
       if (var4 >= -30000000 && var5 >= -30000000 && var6 < 30000000 && var7 < 30000000) {
-         int var8 = SectionPos.blockToSectionCoord(var4);
-         int var9 = SectionPos.blockToSectionCoord(var5);
-         int var10 = SectionPos.blockToSectionCoord(var6);
-         int var11 = SectionPos.blockToSectionCoord(var7);
+         int var8 = var4 >> 4;
+         int var9 = var5 >> 4;
+         int var10 = var6 >> 4;
+         int var11 = var7 >> 4;
          long var12 = ((long)(var10 - var8) + 1L) * ((long)(var11 - var9) + 1L);
          if (var12 > 256L) {
             throw ERROR_TOO_MANY_CHUNKS.create(256, var12);
          } else {
-            ServerLevel var14 = var0.getLevel();
-            ResourceKey var15 = var14.dimension();
+            DimensionType var14 = var0.getLevel().getDimension().getType();
+            ServerLevel var15 = var0.getServer().getLevel(var14);
             ChunkPos var16 = null;
             int var17 = 0;
 
             for(int var18 = var8; var18 <= var10; ++var18) {
                for(int var19 = var9; var19 <= var11; ++var19) {
-                  boolean var20 = var14.setChunkForced(var18, var19, var3);
+                  boolean var20 = var15.setChunkForced(var18, var19, var3);
                   if (var20) {
                      ++var17;
                      if (var16 == null) {
@@ -127,11 +124,11 @@ public class ForceLoadCommand {
                throw (var3 ? ERROR_ALL_ADDED : ERROR_NONE_REMOVED).create();
             } else {
                if (var17 == 1) {
-                  var0.sendSuccess(new TranslatableComponent("commands.forceload." + (var3 ? "added" : "removed") + ".single", new Object[]{var16, var15.location()}), true);
+                  var0.sendSuccess(new TranslatableComponent("commands.forceload." + (var3 ? "added" : "removed") + ".single", new Object[]{var16, var14}), true);
                } else {
                   ChunkPos var21 = new ChunkPos(var8, var9);
                   ChunkPos var22 = new ChunkPos(var10, var11);
-                  var0.sendSuccess(new TranslatableComponent("commands.forceload." + (var3 ? "added" : "removed") + ".multiple", new Object[]{var17, var15.location(), var21, var22}), true);
+                  var0.sendSuccess(new TranslatableComponent("commands.forceload." + (var3 ? "added" : "removed") + ".multiple", new Object[]{var17, var14, var21, var22}), true);
                }
 
                return var17;

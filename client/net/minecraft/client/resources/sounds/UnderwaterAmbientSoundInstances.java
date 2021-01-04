@@ -21,7 +21,7 @@ public class UnderwaterAmbientSoundInstances {
       }
 
       public void tick() {
-         if (!this.player.isRemoved() && this.fade >= 0) {
+         if (!this.player.removed && this.fade >= 0) {
             if (this.player.isUnderWater()) {
                ++this.fade;
             } else {
@@ -31,7 +31,7 @@ public class UnderwaterAmbientSoundInstances {
             this.fade = Math.min(this.fade, 40);
             this.volume = Math.max(0.0F, Math.min((float)this.fade / 40.0F, 1.0F));
          } else {
-            this.stop();
+            this.stopped = true;
          }
       }
    }
@@ -50,8 +50,8 @@ public class UnderwaterAmbientSoundInstances {
       }
 
       public void tick() {
-         if (this.player.isRemoved() || !this.player.isUnderWater()) {
-            this.stop();
+         if (this.player.removed || !this.player.isUnderWater()) {
+            this.stopped = true;
          }
 
       }

@@ -11,13 +11,9 @@ public abstract class DiscreteVoxelShape {
 
    protected DiscreteVoxelShape(int var1, int var2, int var3) {
       super();
-      if (var1 >= 0 && var2 >= 0 && var3 >= 0) {
-         this.xSize = var1;
-         this.ySize = var2;
-         this.zSize = var3;
-      } else {
-         throw new IllegalArgumentException("Need all positive sizes: x: " + var1 + ", y: " + var2 + ", z: " + var3);
-      }
+      this.xSize = var1;
+      this.ySize = var2;
+      this.zSize = var3;
    }
 
    public boolean isFullWide(AxisCycle var1, int var2, int var3, int var4) {
@@ -38,7 +34,7 @@ public abstract class DiscreteVoxelShape {
 
    public abstract boolean isFull(int var1, int var2, int var3);
 
-   public abstract void fill(int var1, int var2, int var3);
+   public abstract void setFull(int var1, int var2, int var3, boolean var4, boolean var5);
 
    public boolean isEmpty() {
       Direction.Axis[] var1 = AXIS_VALUES;
@@ -57,6 +53,29 @@ public abstract class DiscreteVoxelShape {
    public abstract int firstFull(Direction.Axis var1);
 
    public abstract int lastFull(Direction.Axis var1);
+
+   public int firstFull(Direction.Axis var1, int var2, int var3) {
+      int var4 = this.getSize(var1);
+      if (var2 >= 0 && var3 >= 0) {
+         Direction.Axis var5 = AxisCycle.FORWARD.cycle(var1);
+         Direction.Axis var6 = AxisCycle.BACKWARD.cycle(var1);
+         if (var2 < this.getSize(var5) && var3 < this.getSize(var6)) {
+            AxisCycle var7 = AxisCycle.between(Direction.Axis.X, var1);
+
+            for(int var8 = 0; var8 < var4; ++var8) {
+               if (this.isFull(var7, var8, var2, var3)) {
+                  return var8;
+               }
+            }
+
+            return var4;
+         } else {
+            return var4;
+         }
+      } else {
+         return var4;
+      }
+   }
 
    public int lastFull(Direction.Axis var1, int var2, int var3) {
       if (var2 >= 0 && var3 >= 0) {
@@ -144,8 +163,90 @@ public abstract class DiscreteVoxelShape {
 
    }
 
+   protected boolean isZStripFull(int var1, int var2, int var3, int var4) {
+      for(int var5 = var1; var5 < var2; ++var5) {
+         if (!this.isFullWide(var3, var4, var5)) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
+   protected void setZStrip(int var1, int var2, int var3, int var4, boolean var5) {
+      for(int var6 = var1; var6 < var2; ++var6) {
+         this.setFull(var3, var4, var6, false, var5);
+      }
+
+   }
+
+   protected boolean isXZRectangleFull(int var1, int var2, int var3, int var4, int var5) {
+      for(int var6 = var1; var6 < var2; ++var6) {
+         if (!this.isZStripFull(var3, var4, var6, var5)) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
    public void forAllBoxes(DiscreteVoxelShape.IntLineConsumer var1, boolean var2) {
-      BitSetDiscreteVoxelShape.forAllBoxes(this, var1, var2);
+      BitSetDiscreteVoxelShape var3 = new BitSetDiscreteVoxelShape(this);
+
+      for(int var4 = 0; var4 <= this.xSize; ++var4) {
+         for(int var5 = 0; var5 <= this.ySize; ++var5) {
+            int var6 = -1;
+
+            for(int var7 = 0; var7 <= this.zSize; ++var7) {
+               if (var3.isFullWide(var4, var5, var7)) {
+                  if (var2) {
+                     if (var6 == -1) {
+                        var6 = var7;
+                     }
+                  } else {
+                     var1.consume(var4, var5, var7, var4 + 1, var5 + 1, var7 + 1);
+                  }
+               } else if (var6 != -1) {
+                  int var8 = var4;
+                  int var9 = var4;
+                  int var10 = var5;
+                  int var11 = var5;
+                  var3.setZStrip(var6, var7, var4, var5, false);
+
+                  while(var3.isZStripFull(var6, var7, var8 - 1, var10)) {
+                     var3.setZStrip(var6, var7, var8 - 1, var10, false);
+                     --var8;
+                  }
+
+                  while(var3.isZStripFull(var6, var7, var9 + 1, var10)) {
+                     var3.setZStrip(var6, var7, var9 + 1, var10, false);
+                     ++var9;
+                  }
+
+                  int var12;
+                  while(var3.isXZRectangleFull(var8, var9 + 1, var6, var7, var10 - 1)) {
+                     for(var12 = var8; var12 <= var9; ++var12) {
+                        var3.setZStrip(var6, var7, var12, var10 - 1, false);
+                     }
+
+                     --var10;
+                  }
+
+                  while(var3.isXZRectangleFull(var8, var9 + 1, var6, var7, var11 + 1)) {
+                     for(var12 = var8; var12 <= var9; ++var12) {
+                        var3.setZStrip(var6, var7, var12, var11 + 1, false);
+                     }
+
+                     ++var11;
+                  }
+
+                  var1.consume(var8, var10, var6, var9 + 1, var11 + 1, var7);
+                  var6 = -1;
+               }
+            }
+         }
+      }
+
    }
 
    public void forAllFaces(DiscreteVoxelShape.IntFaceConsumer var1) {

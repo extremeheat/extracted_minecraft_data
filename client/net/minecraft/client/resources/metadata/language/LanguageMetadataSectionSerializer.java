@@ -7,7 +7,7 @@ import com.google.gson.JsonParseException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import net.minecraft.client.resources.language.LanguageInfo;
+import net.minecraft.client.resources.language.Language;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.util.GsonHelper;
 
@@ -46,7 +46,7 @@ public class LanguageMetadataSectionSerializer implements MetadataSectionSeriali
          if (var8.isEmpty()) {
             throw new JsonParseException("Invalid language->'" + var5 + "'->name: empty value");
          }
-      } while(var2.add(new LanguageInfo(var5, var7, var8, var9)));
+      } while(var2.add(new Language(var5, var7, var8, var9)));
 
       throw new JsonParseException("Duplicate language->'" + var5 + "' defined");
    }

@@ -5,15 +5,31 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.TridentItem;
-import net.minecraft.world.item.Vanishable;
-import net.minecraft.world.item.Wearable;
+import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.PumpkinBlock;
 
 public enum EnchantmentCategory {
+   ALL {
+      public boolean canEnchant(Item var1) {
+         EnchantmentCategory[] var2 = EnchantmentCategory.values();
+         int var3 = var2.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            EnchantmentCategory var5 = var2[var4];
+            if (var5 != EnchantmentCategory.ALL && var5.canEnchant(var1)) {
+               return true;
+            }
+         }
+
+         return false;
+      }
+   },
    ARMOR {
       public boolean canEnchant(Item var1) {
          return var1 instanceof ArmorItem;
@@ -71,17 +87,13 @@ public enum EnchantmentCategory {
    },
    WEARABLE {
       public boolean canEnchant(Item var1) {
-         return var1 instanceof Wearable || Block.byItem(var1) instanceof Wearable;
+         Block var2 = Block.byItem(var1);
+         return var1 instanceof ArmorItem || var1 instanceof ElytraItem || var2 instanceof AbstractSkullBlock || var2 instanceof PumpkinBlock;
       }
    },
    CROSSBOW {
       public boolean canEnchant(Item var1) {
          return var1 instanceof CrossbowItem;
-      }
-   },
-   VANISHABLE {
-      public boolean canEnchant(Item var1) {
-         return var1 instanceof Vanishable || Block.byItem(var1) instanceof Vanishable || BREAKABLE.canEnchant(var1);
       }
    };
 

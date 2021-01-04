@@ -2,15 +2,19 @@ package net.minecraft.advancements;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandFunction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,7 +45,7 @@ public class AdvancementRewards {
 
    public void grant(ServerPlayer var1) {
       var1.giveExperiencePoints(this.experience);
-      LootContext var2 = (new LootContext.Builder(var1.getLevel())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var1.position()).withRandom(var1.getRandom()).create(LootContextParamSets.ADVANCEMENT_REWARD);
+      LootContext var2 = (new LootContext.Builder(var1.getLevel())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_POS, new BlockPos(var1)).withRandom(var1.getRandom()).create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean var3 = false;
       ResourceLocation[] var4 = this.loot;
       int var5 = var4.length;
@@ -53,7 +57,7 @@ public class AdvancementRewards {
          while(var8.hasNext()) {
             ItemStack var9 = (ItemStack)var8.next();
             if (var1.addItem(var9)) {
-               var1.level.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               var1.level.playSound((Player)null, var1.x, var1.y, var1.z, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                var3 = true;
             } else {
                ItemEntity var10 = var1.drop(var9, false);
@@ -131,32 +135,6 @@ public class AdvancementRewards {
       }
    }
 
-   public static AdvancementRewards deserialize(JsonObject var0) throws JsonParseException {
-      int var1 = GsonHelper.getAsInt(var0, "experience", 0);
-      JsonArray var2 = GsonHelper.getAsJsonArray(var0, "loot", new JsonArray());
-      ResourceLocation[] var3 = new ResourceLocation[var2.size()];
-
-      for(int var4 = 0; var4 < var3.length; ++var4) {
-         var3[var4] = new ResourceLocation(GsonHelper.convertToString(var2.get(var4), "loot[" + var4 + "]"));
-      }
-
-      JsonArray var7 = GsonHelper.getAsJsonArray(var0, "recipes", new JsonArray());
-      ResourceLocation[] var5 = new ResourceLocation[var7.size()];
-
-      for(int var6 = 0; var6 < var5.length; ++var6) {
-         var5[var6] = new ResourceLocation(GsonHelper.convertToString(var7.get(var6), "recipes[" + var6 + "]"));
-      }
-
-      CommandFunction.CacheableFunction var8;
-      if (var0.has("function")) {
-         var8 = new CommandFunction.CacheableFunction(new ResourceLocation(GsonHelper.getAsString(var0, "function")));
-      } else {
-         var8 = CommandFunction.CacheableFunction.NONE;
-      }
-
-      return new AdvancementRewards(var1, var3, var5, var8);
-   }
-
    static {
       EMPTY = new AdvancementRewards(0, new ResourceLocation[0], new ResourceLocation[0], CommandFunction.CacheableFunction.NONE);
    }
@@ -192,6 +170,44 @@ public class AdvancementRewards {
 
       public AdvancementRewards build() {
          return new AdvancementRewards(this.experience, (ResourceLocation[])this.loot.toArray(new ResourceLocation[0]), (ResourceLocation[])this.recipes.toArray(new ResourceLocation[0]), this.function == null ? CommandFunction.CacheableFunction.NONE : new CommandFunction.CacheableFunction(this.function));
+      }
+   }
+
+   public static class Deserializer implements JsonDeserializer<AdvancementRewards> {
+      public Deserializer() {
+         super();
+      }
+
+      public AdvancementRewards deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         JsonObject var4 = GsonHelper.convertToJsonObject(var1, "rewards");
+         int var5 = GsonHelper.getAsInt(var4, "experience", 0);
+         JsonArray var6 = GsonHelper.getAsJsonArray(var4, "loot", new JsonArray());
+         ResourceLocation[] var7 = new ResourceLocation[var6.size()];
+
+         for(int var8 = 0; var8 < var7.length; ++var8) {
+            var7[var8] = new ResourceLocation(GsonHelper.convertToString(var6.get(var8), "loot[" + var8 + "]"));
+         }
+
+         JsonArray var12 = GsonHelper.getAsJsonArray(var4, "recipes", new JsonArray());
+         ResourceLocation[] var9 = new ResourceLocation[var12.size()];
+
+         for(int var10 = 0; var10 < var9.length; ++var10) {
+            var9[var10] = new ResourceLocation(GsonHelper.convertToString(var12.get(var10), "recipes[" + var10 + "]"));
+         }
+
+         CommandFunction.CacheableFunction var11;
+         if (var4.has("function")) {
+            var11 = new CommandFunction.CacheableFunction(new ResourceLocation(GsonHelper.getAsString(var4, "function")));
+         } else {
+            var11 = CommandFunction.CacheableFunction.NONE;
+         }
+
+         return new AdvancementRewards(var5, var7, var9, var11);
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

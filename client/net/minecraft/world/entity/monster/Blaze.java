@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,8 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
@@ -50,8 +49,11 @@ public class Blaze extends Monster {
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.ATTACK_DAMAGE, 6.0D).add(Attributes.MOVEMENT_SPEED, 0.23000000417232513D).add(Attributes.FOLLOW_RANGE, 48.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(48.0D);
    }
 
    protected void defineSynchedData() {
@@ -71,6 +73,10 @@ public class Blaze extends Monster {
       return SoundEvents.BLAZE_DEATH;
    }
 
+   public int getLightColor() {
+      return 15728880;
+   }
+
    public float getBrightness() {
       return 1.0F;
    }
@@ -82,22 +88,22 @@ public class Blaze extends Monster {
 
       if (this.level.isClientSide) {
          if (this.random.nextInt(24) == 0 && !this.isSilent()) {
-            this.level.playLocalSound(this.getX() + 0.5D, this.getY() + 0.5D, this.getZ() + 0.5D, SoundEvents.BLAZE_BURN, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
+            this.level.playLocalSound(this.x + 0.5D, this.y + 0.5D, this.z + 0.5D, SoundEvents.BLAZE_BURN, this.getSoundSource(), 1.0F + this.random.nextFloat(), this.random.nextFloat() * 0.7F + 0.3F, false);
          }
 
          for(int var1 = 0; var1 < 2; ++var1) {
-            this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getRandomX(0.5D), this.getRandomY(), this.getRandomZ(0.5D), 0.0D, 0.0D, 0.0D);
+            this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.x + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), this.y + this.random.nextDouble() * (double)this.getBbHeight(), this.z + (this.random.nextDouble() - 0.5D) * (double)this.getBbWidth(), 0.0D, 0.0D, 0.0D);
          }
       }
 
       super.aiStep();
    }
 
-   public boolean isSensitiveToWater() {
-      return true;
-   }
-
    protected void customServerAiStep() {
+      if (this.isInWaterRainOrBubble()) {
+         this.hurt(DamageSource.DROWN, 1.0F);
+      }
+
       --this.nextHeightOffsetChangeTick;
       if (this.nextHeightOffsetChangeTick <= 0) {
          this.nextHeightOffsetChangeTick = 100;
@@ -105,7 +111,7 @@ public class Blaze extends Monster {
       }
 
       LivingEntity var1 = this.getTarget();
-      if (var1 != null && var1.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(var1)) {
+      if (var1 != null && var1.y + (double)var1.getEyeHeight() > this.y + (double)this.getEyeHeight() + (double)this.allowedHeightOffset && this.canAttack(var1)) {
          Vec3 var2 = this.getDeltaMovement();
          this.setDeltaMovement(this.getDeltaMovement().add(0.0D, (0.30000001192092896D - var2.y) * 0.30000001192092896D, 0.0D));
          this.hasImpulse = true;
@@ -114,8 +120,7 @@ public class Blaze extends Monster {
       super.customServerAiStep();
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    public boolean isOnFire() {
@@ -189,11 +194,11 @@ public class Blaze extends Monster {
                   this.blaze.doHurtTarget(var1);
                }
 
-               this.blaze.getMoveControl().setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), 1.0D);
+               this.blaze.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, 1.0D);
             } else if (var3 < this.getFollowDistance() * this.getFollowDistance() && var2) {
-               double var5 = var1.getX() - this.blaze.getX();
-               double var7 = var1.getY(0.5D) - this.blaze.getY(0.5D);
-               double var9 = var1.getZ() - this.blaze.getZ();
+               double var5 = var1.x - this.blaze.x;
+               double var7 = var1.getBoundingBox().minY + (double)(var1.getBbHeight() / 2.0F) - (this.blaze.y + (double)(this.blaze.getBbHeight() / 2.0F));
+               double var9 = var1.z - this.blaze.z;
                if (this.attackTime <= 0) {
                   ++this.attackStep;
                   if (this.attackStep == 1) {
@@ -209,13 +214,11 @@ public class Blaze extends Monster {
 
                   if (this.attackStep > 1) {
                      float var11 = Mth.sqrt(Mth.sqrt(var3)) * 0.5F;
-                     if (!this.blaze.isSilent()) {
-                        this.blaze.level.levelEvent((Player)null, 1018, this.blaze.blockPosition(), 0);
-                     }
+                     this.blaze.level.levelEvent((Player)null, 1018, new BlockPos(this.blaze), 0);
 
                      for(int var12 = 0; var12 < 1; ++var12) {
                         SmallFireball var13 = new SmallFireball(this.blaze.level, this.blaze, var5 + this.blaze.getRandom().nextGaussian() * (double)var11, var7, var9 + this.blaze.getRandom().nextGaussian() * (double)var11);
-                        var13.setPos(var13.getX(), this.blaze.getY(0.5D) + 0.5D, var13.getZ());
+                        var13.y = this.blaze.y + (double)(this.blaze.getBbHeight() / 2.0F) + 0.5D;
                         this.blaze.level.addFreshEntity(var13);
                      }
                   }
@@ -223,7 +226,7 @@ public class Blaze extends Monster {
 
                this.blaze.getLookControl().setLookAt(var1, 10.0F, 10.0F);
             } else if (this.lastSeen < 5) {
-               this.blaze.getMoveControl().setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), 1.0D);
+               this.blaze.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, 1.0D);
             }
 
             super.tick();
@@ -231,7 +234,7 @@ public class Blaze extends Monster {
       }
 
       private double getFollowDistance() {
-         return this.blaze.getAttributeValue(Attributes.FOLLOW_RANGE);
+         return this.blaze.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).getValue();
       }
    }
 }

@@ -197,7 +197,7 @@ public class V1460 extends NamespacedSchema {
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       var1.registerType(false, References.LEVEL, DSL::remainder);
       var1.registerType(false, References.RECIPE, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.PLAYER, () -> {
          return DSL.optionalFields("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1)), "Inventory", DSL.list(References.ITEM_STACK.in(var1)), "EnderItems", DSL.list(References.ITEM_STACK.in(var1)), DSL.optionalFields("ShoulderEntityLeft", References.ENTITY_TREE.in(var1), "ShoulderEntityRight", References.ENTITY_TREE.in(var1), "recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1)))));
@@ -206,13 +206,13 @@ public class V1460 extends NamespacedSchema {
          return DSL.fields("Level", DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1)), "TileEntities", DSL.list(References.BLOCK_ENTITY.in(var1)), "TileTicks", DSL.list(DSL.fields("i", References.BLOCK_NAME.in(var1))), "Sections", DSL.list(DSL.optionalFields("Palette", DSL.list(References.BLOCK_STATE.in(var1))))));
       });
       var1.registerType(true, References.BLOCK_ENTITY, () -> {
-         return DSL.taggedChoiceLazy("id", namespacedString(), var3);
+         return DSL.taggedChoiceLazy("id", DSL.namespacedString(), var3);
       });
       var1.registerType(true, References.ENTITY_TREE, () -> {
          return DSL.optionalFields("Passengers", DSL.list(References.ENTITY_TREE.in(var1)), References.ENTITY.in(var1));
       });
       var1.registerType(true, References.ENTITY, () -> {
-         return DSL.taggedChoiceLazy("id", namespacedString(), var2);
+         return DSL.taggedChoiceLazy("id", DSL.namespacedString(), var2);
       });
       var1.registerType(true, References.ITEM_STACK, () -> {
          return DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", DSL.optionalFields("EntityTag", References.ENTITY_TREE.in(var1), "BlockEntityTag", References.BLOCK_ENTITY.in(var1), "CanDestroy", DSL.list(References.BLOCK_NAME.in(var1)), "CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1)))), V705.ADD_NAMES, HookFunction.IDENTITY);
@@ -225,17 +225,17 @@ public class V1460 extends NamespacedSchema {
          return DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(var1))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(var1))), "palette", DSL.list(References.BLOCK_STATE.in(var1)));
       });
       var1.registerType(false, References.BLOCK_NAME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.ITEM_NAME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.BLOCK_STATE, DSL::remainder);
       Supplier var4 = () -> {
          return DSL.compoundList(References.ITEM_NAME.in(var1), DSL.constType(DSL.intType()));
       };
       var1.registerType(false, References.STATS, () -> {
-         return DSL.optionalFields("stats", DSL.optionalFields("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:crafted", (TypeTemplate)var4.get(), "minecraft:used", (TypeTemplate)var4.get(), "minecraft:broken", (TypeTemplate)var4.get(), "minecraft:picked_up", (TypeTemplate)var4.get(), DSL.optionalFields("minecraft:dropped", (TypeTemplate)var4.get(), "minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))));
+         return DSL.optionalFields("stats", DSL.optionalFields("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:crafted", (TypeTemplate)var4.get(), "minecraft:used", (TypeTemplate)var4.get(), "minecraft:broken", (TypeTemplate)var4.get(), "minecraft:picked_up", (TypeTemplate)var4.get(), DSL.optionalFields("minecraft:dropped", (TypeTemplate)var4.get(), "minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())), "minecraft:custom", DSL.compoundList(DSL.constType(DSL.namespacedString()), DSL.constType(DSL.intType())))));
       });
       var1.registerType(false, References.SAVED_DATA, () -> {
          return DSL.optionalFields("data", DSL.optionalFields("Features", DSL.compoundList(References.STRUCTURE_FEATURE.in(var1)), "Objectives", DSL.list(References.OBJECTIVE.in(var1)), "Teams", DSL.list(References.TEAM.in(var1))));
@@ -252,15 +252,11 @@ public class V1460 extends NamespacedSchema {
          return DSL.optionalFields("minecraft:adventure/adventuring_time", DSL.optionalFields("criteria", DSL.compoundList(References.BIOME.in(var1), DSL.constType(DSL.string()))), "minecraft:adventure/kill_a_mob", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))), "minecraft:adventure/kill_all_mobs", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))), "minecraft:husbandry/bred_all_animals", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))));
       });
       var1.registerType(false, References.BIOME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.ENTITY_NAME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
-      var1.registerType(true, References.WORLD_GEN_SETTINGS, DSL::remainder);
-      var1.registerType(false, References.ENTITY_CHUNK, () -> {
-         return DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1)));
-      });
    }
 }

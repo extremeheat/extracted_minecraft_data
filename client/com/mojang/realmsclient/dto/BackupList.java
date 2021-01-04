@@ -1,8 +1,8 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +19,7 @@ public class BackupList extends ValueObject {
    public static BackupList parse(String var0) {
       JsonParser var1 = new JsonParser();
       BackupList var2 = new BackupList();
-      var2.backups = Lists.newArrayList();
+      var2.backups = new ArrayList();
 
       try {
          JsonElement var3 = var1.parse(var0).getAsJsonObject().get("backups");
@@ -31,7 +31,7 @@ public class BackupList extends ValueObject {
             }
          }
       } catch (Exception var5) {
-         LOGGER.error("Could not parse BackupList: {}", var5.getMessage());
+         LOGGER.error("Could not parse BackupList: " + var5.getMessage());
       }
 
       return var2;

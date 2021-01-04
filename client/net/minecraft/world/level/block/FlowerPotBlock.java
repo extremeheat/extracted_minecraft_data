@@ -6,17 +6,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -26,7 +24,7 @@ public class FlowerPotBlock extends Block {
    protected static final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6.0D, 11.0D);
    private final Block content;
 
-   public FlowerPotBlock(Block var1, BlockBehaviour.Properties var2) {
+   public FlowerPotBlock(Block var1, Block.Properties var2) {
       super(var2);
       this.content = var1;
       POTTED_BY_CONTENT.put(var1, this);
@@ -40,17 +38,17 @@ public class FlowerPotBlock extends Block {
       return RenderShape.MODEL;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       ItemStack var7 = var4.getItemInHand(var5);
       Item var8 = var7.getItem();
-      BlockState var9 = (var8 instanceof BlockItem ? (Block)POTTED_BY_CONTENT.getOrDefault(((BlockItem)var8).getBlock(), Blocks.AIR) : Blocks.AIR).defaultBlockState();
-      boolean var10 = var9.is(Blocks.AIR);
-      boolean var11 = this.isEmpty();
+      Block var9 = var8 instanceof BlockItem ? (Block)POTTED_BY_CONTENT.getOrDefault(((BlockItem)var8).getBlock(), Blocks.AIR) : Blocks.AIR;
+      boolean var10 = var9 == Blocks.AIR;
+      boolean var11 = this.content == Blocks.AIR;
       if (var10 != var11) {
          if (var11) {
-            var2.setBlock(var3, var9, 3);
+            var2.setBlock(var3, var9.defaultBlockState(), 3);
             var4.awardStat(Stats.POT_FLOWER);
-            if (!var4.getAbilities().instabuild) {
+            if (!var4.abilities.instabuild) {
                var7.shrink(1);
             }
          } else {
@@ -63,30 +61,24 @@ public class FlowerPotBlock extends Block {
 
             var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
          }
-
-         return InteractionResult.sidedSuccess(var2.isClientSide);
-      } else {
-         return InteractionResult.CONSUME;
       }
+
+      return true;
    }
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return this.isEmpty() ? super.getCloneItemStack(var1, var2, var3) : new ItemStack(this.content);
-   }
-
-   private boolean isEmpty() {
-      return this.content == Blocks.AIR;
+      return this.content == Blocks.AIR ? super.getCloneItemStack(var1, var2, var3) : new ItemStack(this.content);
    }
 
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
-   public Block getContent() {
-      return this.content;
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      return false;
+   public Block getContent() {
+      return this.content;
    }
 }

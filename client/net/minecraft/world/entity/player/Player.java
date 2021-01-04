@@ -1,12 +1,10 @@
 package net.minecraft.world.entity.player;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +15,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +24,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -62,19 +58,18 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.entity.fishing.FishingHook;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Strider;
-import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.food.FoodData;
@@ -96,9 +91,10 @@ import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RespawnAnchorBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -121,7 +117,7 @@ public abstract class Player extends LivingEntity {
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_LEFT;
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
    private long timeEntitySatOnShoulder;
-   private final Inventory inventory = new Inventory(this);
+   public final Inventory inventory = new Inventory(this);
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
    public AbstractContainerMenu containerMenu;
@@ -138,7 +134,9 @@ public abstract class Player extends LivingEntity {
    public double zCloak;
    private int sleepCounter;
    protected boolean wasUnderwater;
-   private final Abilities abilities = new Abilities();
+   private BlockPos respawnPosition;
+   private boolean respawnForced;
+   public final Abilities abilities = new Abilities();
    public int experienceLevel;
    public int totalExperience;
    public float experienceProgress;
@@ -152,15 +150,16 @@ public abstract class Player extends LivingEntity {
    @Nullable
    public FishingHook fishing;
 
-   public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
+   public Player(Level var1, GameProfile var2) {
       super(EntityType.PLAYER, var1);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
-      this.setUUID(createPlayerUUID(var4));
-      this.gameProfile = var4;
+      this.setUUID(createPlayerUUID(var2));
+      this.gameProfile = var2;
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
-      this.moveTo((double)var2.getX() + 0.5D, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5D, var3, 0.0F);
+      BlockPos var3 = var1.getSharedSpawnPos();
+      this.moveTo((double)var3.getX() + 0.5D, (double)(var3.getY() + 1), (double)var3.getZ() + 0.5D, 0.0F, 0.0F);
       this.rotOffs = 180.0F;
    }
 
@@ -177,8 +176,12 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return LivingEntity.createLivingAttributes().add(Attributes.ATTACK_DAMAGE, 1.0D).add(Attributes.MOVEMENT_SPEED, 0.10000000149011612D).add(Attributes.ATTACK_SPEED).add(Attributes.LUCK);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10000000149011612D);
+      this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_SPEED);
+      this.getAttributes().registerAttribute(SharedMonsterAttributes.LUCK);
    }
 
    protected void defineSynchedData() {
@@ -208,7 +211,7 @@ public abstract class Player extends LivingEntity {
          }
 
          if (!this.level.isClientSide && this.level.isDay()) {
-            this.stopSleepInBed(false, true);
+            this.stopSleepInBed(false, true, true);
          }
       } else if (this.sleepCounter > 0) {
          ++this.sleepCounter;
@@ -224,6 +227,10 @@ public abstract class Player extends LivingEntity {
          this.containerMenu = this.inventoryMenu;
       }
 
+      if (this.isOnFire() && this.abilities.invulnerable) {
+         this.clearFire();
+      }
+
       this.moveCloak();
       if (!this.level.isClientSide) {
          this.foodData.tick(this);
@@ -232,8 +239,8 @@ public abstract class Player extends LivingEntity {
             this.awardStat(Stats.TIME_SINCE_DEATH);
          }
 
-         if (this.isDiscrete()) {
-            this.awardStat(Stats.CROUCH_TIME);
+         if (this.isSneaking()) {
+            this.awardStat(Stats.SNEAK_TIME);
          }
 
          if (!this.isSleeping()) {
@@ -242,10 +249,10 @@ public abstract class Player extends LivingEntity {
       }
 
       int var1 = 29999999;
-      double var2 = Mth.clamp(this.getX(), -2.9999999E7D, 2.9999999E7D);
-      double var4 = Mth.clamp(this.getZ(), -2.9999999E7D, 2.9999999E7D);
-      if (var2 != this.getX() || var4 != this.getZ()) {
-         this.setPos(var2, this.getY(), var4);
+      double var2 = Mth.clamp(this.x, -2.9999999E7D, 2.9999999E7D);
+      double var4 = Mth.clamp(this.z, -2.9999999E7D, 2.9999999E7D);
+      if (var2 != this.x || var4 != this.z) {
+         this.setPos(var2, this.y, var4);
       }
 
       ++this.attackStrengthTicker;
@@ -255,7 +262,7 @@ public abstract class Player extends LivingEntity {
             this.resetAttackStrengthTicker();
          }
 
-         this.lastItemInMainHand = var6.copy();
+         this.lastItemInMainHand = var6.isEmpty() ? ItemStack.EMPTY : var6.copy();
       }
 
       this.turtleHelmetTick();
@@ -263,26 +270,14 @@ public abstract class Player extends LivingEntity {
       this.updatePlayerPose();
    }
 
-   public boolean isSecondaryUseActive() {
-      return this.isShiftKeyDown();
-   }
-
-   protected boolean wantsToStopRiding() {
-      return this.isShiftKeyDown();
-   }
-
-   protected boolean isStayingOnGroundSurface() {
-      return this.isShiftKeyDown();
-   }
-
    protected boolean updateIsUnderwater() {
-      this.wasUnderwater = this.isEyeInFluid(FluidTags.WATER);
+      this.wasUnderwater = this.isUnderLiquid(FluidTags.WATER, true);
       return this.wasUnderwater;
    }
 
    private void turtleHelmetTick() {
       ItemStack var1 = this.getItemBySlot(EquipmentSlot.HEAD);
-      if (var1.is(Items.TURTLE_HELMET) && !this.isEyeInFluid(FluidTags.WATER)) {
+      if (var1.getItem() == Items.TURTLE_HELMET && !this.isUnderLiquid(FluidTags.WATER)) {
          this.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 200, 0, false, false, true));
       }
 
@@ -296,37 +291,37 @@ public abstract class Player extends LivingEntity {
       this.xCloakO = this.xCloak;
       this.yCloakO = this.yCloak;
       this.zCloakO = this.zCloak;
-      double var1 = this.getX() - this.xCloak;
-      double var3 = this.getY() - this.yCloak;
-      double var5 = this.getZ() - this.zCloak;
+      double var1 = this.x - this.xCloak;
+      double var3 = this.y - this.yCloak;
+      double var5 = this.z - this.zCloak;
       double var7 = 10.0D;
       if (var1 > 10.0D) {
-         this.xCloak = this.getX();
+         this.xCloak = this.x;
          this.xCloakO = this.xCloak;
       }
 
       if (var5 > 10.0D) {
-         this.zCloak = this.getZ();
+         this.zCloak = this.z;
          this.zCloakO = this.zCloak;
       }
 
       if (var3 > 10.0D) {
-         this.yCloak = this.getY();
+         this.yCloak = this.y;
          this.yCloakO = this.yCloak;
       }
 
       if (var1 < -10.0D) {
-         this.xCloak = this.getX();
+         this.xCloak = this.x;
          this.xCloakO = this.xCloak;
       }
 
       if (var5 < -10.0D) {
-         this.zCloak = this.getZ();
+         this.zCloak = this.z;
          this.zCloakO = this.zCloak;
       }
 
       if (var3 < -10.0D) {
-         this.yCloak = this.getY();
+         this.yCloak = this.y;
          this.yCloakO = this.yCloak;
       }
 
@@ -346,16 +341,16 @@ public abstract class Player extends LivingEntity {
             var1 = Pose.SWIMMING;
          } else if (this.isAutoSpinAttack()) {
             var1 = Pose.SPIN_ATTACK;
-         } else if (this.isShiftKeyDown() && !this.abilities.flying) {
-            var1 = Pose.CROUCHING;
+         } else if (this.isSneaking() && !this.abilities.flying) {
+            var1 = Pose.SNEAKING;
          } else {
             var1 = Pose.STANDING;
          }
 
          Pose var2;
          if (!this.isSpectator() && !this.isPassenger() && !this.canEnterPose(var1)) {
-            if (this.canEnterPose(Pose.CROUCHING)) {
-               var2 = Pose.CROUCHING;
+            if (this.canEnterPose(Pose.SNEAKING)) {
+               var2 = Pose.SNEAKING;
             } else {
                var2 = Pose.SWIMMING;
             }
@@ -388,7 +383,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public void playSound(SoundEvent var1, float var2, float var3) {
-      this.level.playSound(this, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
+      this.level.playSound(this, this.x, this.y, this.z, var1, this.getSoundSource(), var2, var3);
    }
 
    public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
@@ -422,7 +417,7 @@ public abstract class Player extends LivingEntity {
          double var3 = this.random.nextGaussian() * 0.02D;
          double var5 = this.random.nextGaussian() * 0.02D;
          double var7 = this.random.nextGaussian() * 0.02D;
-         this.level.addParticle(var1, this.getRandomX(1.0D), this.getRandomY() + 1.0D, this.getRandomZ(1.0D), var3, var5, var7);
+         this.level.addParticle(var1, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 1.0D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), var3, var5, var7);
       }
 
    }
@@ -432,17 +427,25 @@ public abstract class Player extends LivingEntity {
    }
 
    public void rideTick() {
-      if (this.wantsToStopRiding() && this.isPassenger()) {
+      if (!this.level.isClientSide && this.isSneaking() && this.isPassenger()) {
          this.stopRiding();
-         this.setShiftKeyDown(false);
+         this.setSneaking(false);
       } else {
-         double var1 = this.getX();
-         double var3 = this.getY();
-         double var5 = this.getZ();
+         double var1 = this.x;
+         double var3 = this.y;
+         double var5 = this.z;
+         float var7 = this.yRot;
+         float var8 = this.xRot;
          super.rideTick();
          this.oBob = this.bob;
          this.bob = 0.0F;
-         this.checkRidingStatistics(this.getX() - var1, this.getY() - var3, this.getZ() - var5);
+         this.checkRidingStatistiscs(this.x - var1, this.y - var3, this.z - var5);
+         if (this.getVehicle() instanceof Pig) {
+            this.xRot = var8;
+            this.yRot = var7;
+            this.yBodyRot = ((Pig)this.getVehicle()).yBodyRot;
+         }
+
       }
    }
 
@@ -477,63 +480,58 @@ public abstract class Player extends LivingEntity {
       this.inventory.tick();
       this.oBob = this.bob;
       super.aiStep();
+      AttributeInstance var1 = this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+      if (!this.level.isClientSide) {
+         var1.setBaseValue((double)this.abilities.getWalkingSpeed());
+      }
+
       this.flyingSpeed = 0.02F;
       if (this.isSprinting()) {
          this.flyingSpeed = (float)((double)this.flyingSpeed + 0.005999999865889549D);
       }
 
-      this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
-      float var1;
-      if (this.onGround && !this.isDeadOrDying() && !this.isSwimming()) {
-         var1 = Math.min(0.1F, Mth.sqrt(getHorizontalDistanceSqr(this.getDeltaMovement())));
+      this.setSpeed((float)var1.getValue());
+      float var2;
+      if (this.onGround && this.getHealth() > 0.0F && !this.isSwimming()) {
+         var2 = Math.min(0.1F, Mth.sqrt(getHorizontalDistanceSqr(this.getDeltaMovement())));
       } else {
-         var1 = 0.0F;
+         var2 = 0.0F;
       }
 
-      this.bob += (var1 - this.bob) * 0.4F;
+      this.bob += (var2 - this.bob) * 0.4F;
       if (this.getHealth() > 0.0F && !this.isSpectator()) {
-         AABB var2;
-         if (this.isPassenger() && !this.getVehicle().isRemoved()) {
-            var2 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0D, 0.0D, 1.0D);
+         AABB var3;
+         if (this.isPassenger() && !this.getVehicle().removed) {
+            var3 = this.getBoundingBox().minmax(this.getVehicle().getBoundingBox()).inflate(1.0D, 0.0D, 1.0D);
          } else {
-            var2 = this.getBoundingBox().inflate(1.0D, 0.5D, 1.0D);
+            var3 = this.getBoundingBox().inflate(1.0D, 0.5D, 1.0D);
          }
 
-         List var3 = this.level.getEntities(this, var2);
-         ArrayList var4 = Lists.newArrayList();
+         List var4 = this.level.getEntities(this, var3);
 
-         for(int var5 = 0; var5 < var3.size(); ++var5) {
-            Entity var6 = (Entity)var3.get(var5);
-            if (var6.getType() == EntityType.EXPERIENCE_ORB) {
-               var4.add(var6);
-            } else if (!var6.isRemoved()) {
+         for(int var5 = 0; var5 < var4.size(); ++var5) {
+            Entity var6 = (Entity)var4.get(var5);
+            if (!var6.removed) {
                this.touch(var6);
             }
-         }
-
-         if (!var4.isEmpty()) {
-            this.touch((Entity)Util.getRandom((List)var4, this.random));
          }
       }
 
       this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
       this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
-      if (!this.level.isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping()) {
+      if (!this.level.isClientSide && (this.fallDistance > 0.5F || this.isInWater() || this.isPassenger()) || this.abilities.flying || this.isSleeping()) {
          this.removeEntitiesOnShoulder();
       }
 
    }
 
    private void playShoulderEntityAmbientSound(@Nullable CompoundTag var1) {
-      if (var1 != null && (!var1.contains("Silent") || !var1.getBoolean("Silent")) && this.level.random.nextInt(200) == 0) {
+      if (var1 != null && !var1.contains("Silent") || !var1.getBoolean("Silent")) {
          String var2 = var1.getString("id");
          EntityType.byString(var2).filter((var0) -> {
             return var0 == EntityType.PARROT;
          }).ifPresent((var1x) -> {
-            if (!Parrot.imitateNearbyMobs(this.level, this)) {
-               this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), Parrot.getAmbient(this.level, this.level.random), this.getSoundSource(), 1.0F, Parrot.getPitch(this.level.random));
-            }
-
+            Parrot.playAmbientSound(this.level, this);
          });
       }
 
@@ -558,7 +556,7 @@ public abstract class Player extends LivingEntity {
 
    public void die(DamageSource var1) {
       super.die(var1);
-      this.reapplyPosition();
+      this.setPos(this.x, this.y, this.z);
       if (!this.isSpectator()) {
          this.dropAllDeathLoot(var1);
       }
@@ -609,8 +607,9 @@ public abstract class Player extends LivingEntity {
       return SoundEvents.PLAYER_DEATH;
    }
 
-   public boolean drop(boolean var1) {
-      return this.drop(this.inventory.removeItem(this.inventory.selected, var1 && !this.inventory.getSelected().isEmpty() ? this.inventory.getSelected().getCount() : 1), false, true) != null;
+   @Nullable
+   public ItemEntity drop(boolean var1) {
+      return this.drop(this.inventory.removeItem(this.inventory.selected, var1 && !this.inventory.getSelected().isEmpty() ? this.inventory.getSelected().getCount() : 1), false, true);
    }
 
    @Nullable
@@ -623,12 +622,8 @@ public abstract class Player extends LivingEntity {
       if (var1.isEmpty()) {
          return null;
       } else {
-         if (this.level.isClientSide) {
-            this.swing(InteractionHand.MAIN_HAND);
-         }
-
-         double var4 = this.getEyeY() - 0.30000001192092896D;
-         ItemEntity var6 = new ItemEntity(this.level, this.getX(), var4, this.getZ(), var1);
+         double var4 = this.y - 0.30000001192092896D + (double)this.getEyeHeight();
+         ItemEntity var6 = new ItemEntity(this.level, this.x, var4, this.z, var1);
          var6.setPickUpDelay(40);
          if (var3) {
             var6.setThrower(this.getUUID());
@@ -639,7 +634,7 @@ public abstract class Player extends LivingEntity {
          if (var2) {
             var7 = this.random.nextFloat() * 0.5F;
             var8 = this.random.nextFloat() * 6.2831855F;
-            var6.setDeltaMovement((double)(-Mth.sin(var8) * var7), 0.20000000298023224D, (double)(Mth.cos(var8) * var7));
+            this.setDeltaMovement((double)(-Mth.sin(var8) * var7), 0.20000000298023224D, (double)(Mth.cos(var8) * var7));
          } else {
             var7 = 0.3F;
             var8 = Mth.sin(this.xRot * 0.017453292F);
@@ -689,7 +684,7 @@ public abstract class Player extends LivingEntity {
          var2 *= var5;
       }
 
-      if (this.isEyeInFluid(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(this)) {
+      if (this.isUnderLiquid(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(this)) {
          var2 /= 5.0F;
       }
 
@@ -700,8 +695,8 @@ public abstract class Player extends LivingEntity {
       return var2;
    }
 
-   public boolean hasCorrectToolForDrops(BlockState var1) {
-      return !var1.requiresCorrectToolForDrops() || this.inventory.getSelected().isCorrectToolForDrops(var1);
+   public boolean canDestroy(BlockState var1) {
+      return var1.getMaterial().isAlwaysDestroyable() || this.inventory.canDestroy(var1);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -720,9 +715,13 @@ public abstract class Player extends LivingEntity {
       }
 
       this.setScore(var1.getInt("Score"));
+      if (var1.contains("SpawnX", 99) && var1.contains("SpawnY", 99) && var1.contains("SpawnZ", 99)) {
+         this.respawnPosition = new BlockPos(var1.getInt("SpawnX"), var1.getInt("SpawnY"), var1.getInt("SpawnZ"));
+         this.respawnForced = var1.getBoolean("SpawnForced");
+      }
+
       this.foodData.readAdditionalSaveData(var1);
       this.abilities.loadSaveData(var1);
-      this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
       if (var1.contains("EnderItems", 9)) {
          this.enderChestInventory.fromTag(var1.getList("EnderItems", 10));
       }
@@ -748,6 +747,13 @@ public abstract class Player extends LivingEntity {
       var1.putInt("XpTotal", this.totalExperience);
       var1.putInt("XpSeed", this.enchantmentSeed);
       var1.putInt("Score", this.getScore());
+      if (this.respawnPosition != null) {
+         var1.putInt("SpawnX", this.respawnPosition.getX());
+         var1.putInt("SpawnY", this.respawnPosition.getY());
+         var1.putInt("SpawnZ", this.respawnPosition.getZ());
+         var1.putBoolean("SpawnForced", this.respawnForced);
+      }
+
       this.foodData.addAdditionalSaveData(var1);
       this.abilities.addSaveData(var1);
       var1.put("EnderItems", this.enderChestInventory.createTag());
@@ -761,20 +767,6 @@ public abstract class Player extends LivingEntity {
 
    }
 
-   public boolean isInvulnerableTo(DamageSource var1) {
-      if (super.isInvulnerableTo(var1)) {
-         return true;
-      } else if (var1 == DamageSource.DROWN) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
-      } else if (var1 == DamageSource.FALL) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
-      } else if (var1.isFire()) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
-      } else {
-         return false;
-      }
-   }
-
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
@@ -782,7 +774,7 @@ public abstract class Player extends LivingEntity {
          return false;
       } else {
          this.noActionTime = 0;
-         if (this.isDeadOrDying()) {
+         if (this.getHealth() <= 0.0F) {
             return false;
          } else {
             this.removeEntitiesOnShoulder();
@@ -823,35 +815,29 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   protected void hurtArmor(DamageSource var1, float var2) {
-      this.inventory.hurtArmor(var1, var2);
+   protected void hurtArmor(float var1) {
+      this.inventory.hurtArmor(var1);
    }
 
    protected void hurtCurrentlyUsedShield(float var1) {
-      if (this.useItem.is(Items.SHIELD)) {
-         if (!this.level.isClientSide) {
-            this.awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
-         }
-
-         if (var1 >= 3.0F) {
-            int var2 = 1 + Mth.floor(var1);
-            InteractionHand var3 = this.getUsedItemHand();
-            this.useItem.hurtAndBreak(var2, this, (var1x) -> {
-               var1x.broadcastBreakEvent(var3);
-            });
-            if (this.useItem.isEmpty()) {
-               if (var3 == InteractionHand.MAIN_HAND) {
-                  this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-               } else {
-                  this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-               }
-
-               this.useItem = ItemStack.EMPTY;
-               this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
+      if (var1 >= 3.0F && this.useItem.getItem() == Items.SHIELD) {
+         int var2 = 1 + Mth.floor(var1);
+         InteractionHand var3 = this.getUsedItemHand();
+         this.useItem.hurtAndBreak(var2, this, (var1x) -> {
+            var1x.broadcastBreakEvent(var3);
+         });
+         if (this.useItem.isEmpty()) {
+            if (var3 == InteractionHand.MAIN_HAND) {
+               this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            } else {
+               this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             }
-         }
 
+            this.useItem = ItemStack.EMPTY;
+            this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
+         }
       }
+
    }
 
    protected void actuallyHurt(DamageSource var1, float var2) {
@@ -877,10 +863,6 @@ public abstract class Player extends LivingEntity {
 
          }
       }
-   }
-
-   protected boolean onSoulSpeedBlock() {
-      return !this.abilities.flying && super.onSoulSpeedBlock();
    }
 
    public void openTextEdit(SignBlockEntity var1) {
@@ -920,27 +902,25 @@ public abstract class Player extends LivingEntity {
          return InteractionResult.PASS;
       } else {
          ItemStack var3 = this.getItemInHand(var2);
-         ItemStack var4 = var3.copy();
-         InteractionResult var5 = var1.interact(this, var2);
-         if (var5.consumesAction()) {
+         ItemStack var4 = var3.isEmpty() ? ItemStack.EMPTY : var3.copy();
+         if (var1.interact(this, var2)) {
             if (this.abilities.instabuild && var3 == this.getItemInHand(var2) && var3.getCount() < var4.getCount()) {
                var3.setCount(var4.getCount());
             }
 
-            return var5;
+            return InteractionResult.SUCCESS;
          } else {
             if (!var3.isEmpty() && var1 instanceof LivingEntity) {
                if (this.abilities.instabuild) {
                   var3 = var4;
                }
 
-               InteractionResult var6 = var3.interactLivingEntity(this, (LivingEntity)var1, var2);
-               if (var6.consumesAction()) {
+               if (var3.interactEnemy(this, (LivingEntity)var1, var2)) {
                   if (var3.isEmpty() && !this.abilities.instabuild) {
                      this.setItemInHand(var2, ItemStack.EMPTY);
                   }
 
-                  return var6;
+                  return InteractionResult.SUCCESS;
                }
             }
 
@@ -949,12 +929,12 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   public double getMyRidingOffset() {
+   public double getRidingHeight() {
       return -0.35D;
    }
 
-   public void removeVehicle() {
-      super.removeVehicle();
+   public void stopRiding() {
+      super.stopRiding();
       this.boardingCooldown = 0;
    }
 
@@ -962,75 +942,10 @@ public abstract class Player extends LivingEntity {
       return super.isImmobile() || this.isSleeping();
    }
 
-   public boolean isAffectedByFluids() {
-      return !this.abilities.flying;
-   }
-
-   protected Vec3 maybeBackOffFromEdge(Vec3 var1, MoverType var2) {
-      if (!this.abilities.flying && (var2 == MoverType.SELF || var2 == MoverType.PLAYER) && this.isStayingOnGroundSurface() && this.isAboveGround()) {
-         double var3 = var1.x;
-         double var5 = var1.z;
-         double var7 = 0.05D;
-
-         while(true) {
-            while(var3 != 0.0D && this.level.noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep), 0.0D))) {
-               if (var3 < 0.05D && var3 >= -0.05D) {
-                  var3 = 0.0D;
-               } else if (var3 > 0.0D) {
-                  var3 -= 0.05D;
-               } else {
-                  var3 += 0.05D;
-               }
-            }
-
-            while(true) {
-               while(var5 != 0.0D && this.level.noCollision(this, this.getBoundingBox().move(0.0D, (double)(-this.maxUpStep), var5))) {
-                  if (var5 < 0.05D && var5 >= -0.05D) {
-                     var5 = 0.0D;
-                  } else if (var5 > 0.0D) {
-                     var5 -= 0.05D;
-                  } else {
-                     var5 += 0.05D;
-                  }
-               }
-
-               while(true) {
-                  while(var3 != 0.0D && var5 != 0.0D && this.level.noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep), var5))) {
-                     if (var3 < 0.05D && var3 >= -0.05D) {
-                        var3 = 0.0D;
-                     } else if (var3 > 0.0D) {
-                        var3 -= 0.05D;
-                     } else {
-                        var3 += 0.05D;
-                     }
-
-                     if (var5 < 0.05D && var5 >= -0.05D) {
-                        var5 = 0.0D;
-                     } else if (var5 > 0.0D) {
-                        var5 -= 0.05D;
-                     } else {
-                        var5 += 0.05D;
-                     }
-                  }
-
-                  var1 = new Vec3(var3, var1.y, var5);
-                  return var1;
-               }
-            }
-         }
-      } else {
-         return var1;
-      }
-   }
-
-   private boolean isAboveGround() {
-      return this.onGround || this.fallDistance < this.maxUpStep && !this.level.noCollision(this, this.getBoundingBox().move(0.0D, (double)(this.fallDistance - this.maxUpStep), 0.0D));
-   }
-
    public void attack(Entity var1) {
       if (var1.isAttackable()) {
          if (!var1.skipAttackInteraction(this)) {
-            float var2 = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+            float var2 = (float)this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getValue();
             float var3;
             if (var1 instanceof LivingEntity) {
                var3 = EnchantmentHelper.getDamageBonus(this.getMainHandItem(), ((LivingEntity)var1).getMobType());
@@ -1048,12 +963,12 @@ public abstract class Player extends LivingEntity {
                byte var7 = 0;
                int var21 = var7 + EnchantmentHelper.getKnockbackBonus(this);
                if (this.isSprinting() && var5) {
-                  this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
+                  this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
                   ++var21;
                   var6 = true;
                }
 
-               boolean var8 = var5 && this.fallDistance > 0.0F && !this.onGround && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity;
+               boolean var8 = var5 && this.fallDistance > 0.0F && !this.onGround && !this.onLadder() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity;
                var8 = var8 && !this.isSprinting();
                if (var8) {
                   var2 *= 1.5F;
@@ -1085,7 +1000,7 @@ public abstract class Player extends LivingEntity {
                if (var16) {
                   if (var21 > 0) {
                      if (var1 instanceof LivingEntity) {
-                        ((LivingEntity)var1).knockback((float)var21 * 0.5F, (double)Mth.sin(this.yRot * 0.017453292F), (double)(-Mth.cos(this.yRot * 0.017453292F)));
+                        ((LivingEntity)var1).knockback(this, (float)var21 * 0.5F, (double)Mth.sin(this.yRot * 0.017453292F), (double)(-Mth.cos(this.yRot * 0.017453292F)));
                      } else {
                         var1.push((double)(-Mth.sin(this.yRot * 0.017453292F) * (float)var21 * 0.5F), 0.1D, (double)(Mth.cos(this.yRot * 0.017453292F) * (float)var21 * 0.5F));
                      }
@@ -1107,7 +1022,7 @@ public abstract class Player extends LivingEntity {
                               do {
                                  do {
                                     if (!var19.hasNext()) {
-                                       this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
+                                       this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
                                        this.sweepAttack();
                                        break label166;
                                     }
@@ -1119,7 +1034,7 @@ public abstract class Player extends LivingEntity {
                         } while(var20 instanceof ArmorStand && ((ArmorStand)var20).isMarker());
 
                         if (this.distanceToSqr(var20) < 9.0D) {
-                           var20.knockback(0.4F, (double)Mth.sin(this.yRot * 0.017453292F), (double)(-Mth.cos(this.yRot * 0.017453292F)));
+                           var20.knockback(this, 0.4F, (double)Mth.sin(this.yRot * 0.017453292F), (double)(-Mth.cos(this.yRot * 0.017453292F)));
                            var20.hurt(DamageSource.playerAttack(this), var17);
                         }
                      }
@@ -1132,15 +1047,15 @@ public abstract class Player extends LivingEntity {
                   }
 
                   if (var8) {
-                     this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
+                     this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
                      this.crit(var1);
                   }
 
                   if (!var8 && !var9) {
                      if (var5) {
-                        this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
+                        this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
                      } else {
-                        this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
+                        this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
                      }
                   }
 
@@ -1176,13 +1091,13 @@ public abstract class Player extends LivingEntity {
 
                      if (this.level instanceof ServerLevel && var25 > 2.0F) {
                         int var26 = (int)((double)var25 * 0.5D);
-                        ((ServerLevel)this.level).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5D), var1.getZ(), var26, 0.1D, 0.0D, 0.1D, 0.2D);
+                        ((ServerLevel)this.level).sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.x, var1.y + (double)(var1.getBbHeight() * 0.5F), var1.z, var26, 0.1D, 0.0D, 0.1D, 0.2D);
                      }
                   }
 
                   this.causeFoodExhaustion(0.1F);
                } else {
-                  this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
+                  this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
                   if (var13) {
                      var1.clearFire();
                   }
@@ -1221,7 +1136,7 @@ public abstract class Player extends LivingEntity {
       double var1 = (double)(-Mth.sin(this.yRot * 0.017453292F));
       double var3 = (double)Mth.cos(this.yRot * 0.017453292F);
       if (this.level instanceof ServerLevel) {
-         ((ServerLevel)this.level).sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + var1, this.getY(0.5D), this.getZ() + var3, 0, var1, 0.0D, var3, 0.0D);
+         ((ServerLevel)this.level).sendParticles(ParticleTypes.SWEEP_ATTACK, this.x + var1, this.y + (double)this.getBbHeight() * 0.5D, this.z + var3, 0, var1, 0.0D, var3, 0.0D);
       }
 
    }
@@ -1229,8 +1144,8 @@ public abstract class Player extends LivingEntity {
    public void respawn() {
    }
 
-   public void remove(Entity.RemovalReason var1) {
-      super.remove(var1);
+   public void remove() {
+      super.remove();
       this.inventoryMenu.removed(this);
       if (this.containerMenu != null) {
          this.containerMenu.removed(this);
@@ -1246,51 +1161,101 @@ public abstract class Player extends LivingEntity {
       return this.gameProfile;
    }
 
-   public Inventory getInventory() {
-      return this.inventory;
-   }
-
-   public Abilities getAbilities() {
-      return this.abilities;
-   }
-
    public Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos var1) {
+      Direction var2 = (Direction)this.level.getBlockState(var1).getValue(HorizontalDirectionalBlock.FACING);
+      if (!this.level.isClientSide) {
+         if (this.isSleeping() || !this.isAlive()) {
+            return Either.left(Player.BedSleepingProblem.OTHER_PROBLEM);
+         }
+
+         if (!this.level.dimension.isNaturalDimension()) {
+            return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_HERE);
+         }
+
+         if (this.level.isDay()) {
+            return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
+         }
+
+         if (!this.bedInRange(var1, var2)) {
+            return Either.left(Player.BedSleepingProblem.TOO_FAR_AWAY);
+         }
+
+         if (this.bedBlocked(var1, var2)) {
+            return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
+         }
+
+         if (!this.isCreative()) {
+            double var3 = 8.0D;
+            double var5 = 5.0D;
+            List var7 = this.level.getEntitiesOfClass(Monster.class, new AABB((double)var1.getX() - 8.0D, (double)var1.getY() - 5.0D, (double)var1.getZ() - 8.0D, (double)var1.getX() + 8.0D, (double)var1.getY() + 5.0D, (double)var1.getZ() + 8.0D), (var1x) -> {
+               return var1x.isPreventingPlayerRest(this);
+            });
+            if (!var7.isEmpty()) {
+               return Either.left(Player.BedSleepingProblem.NOT_SAFE);
+            }
+         }
+      }
+
       this.startSleeping(var1);
       this.sleepCounter = 0;
+      if (this.level instanceof ServerLevel) {
+         ((ServerLevel)this.level).updateSleepingPlayerList();
+      }
+
       return Either.right(Unit.INSTANCE);
    }
 
-   public void stopSleepInBed(boolean var1, boolean var2) {
+   public void startSleeping(BlockPos var1) {
+      this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
+      super.startSleeping(var1);
+   }
+
+   private boolean bedInRange(BlockPos var1, Direction var2) {
+      if (Math.abs(this.x - (double)var1.getX()) <= 3.0D && Math.abs(this.y - (double)var1.getY()) <= 2.0D && Math.abs(this.z - (double)var1.getZ()) <= 3.0D) {
+         return true;
+      } else {
+         BlockPos var3 = var1.relative(var2.getOpposite());
+         return Math.abs(this.x - (double)var3.getX()) <= 3.0D && Math.abs(this.y - (double)var3.getY()) <= 2.0D && Math.abs(this.z - (double)var3.getZ()) <= 3.0D;
+      }
+   }
+
+   private boolean bedBlocked(BlockPos var1, Direction var2) {
+      BlockPos var3 = var1.above();
+      return !this.freeAt(var3) || !this.freeAt(var3.relative(var2.getOpposite()));
+   }
+
+   public void stopSleepInBed(boolean var1, boolean var2, boolean var3) {
+      Optional var4 = this.getSleepingPos();
       super.stopSleeping();
       if (this.level instanceof ServerLevel && var2) {
          ((ServerLevel)this.level).updateSleepingPlayerList();
       }
 
       this.sleepCounter = var1 ? 0 : 100;
+      if (var3) {
+         var4.ifPresent((var1x) -> {
+            this.setRespawnPosition(var1x, false);
+         });
+      }
+
    }
 
    public void stopSleeping() {
-      this.stopSleepInBed(true, true);
+      this.stopSleepInBed(true, true, false);
    }
 
-   public static Optional<Vec3> findRespawnPositionAndUseSpawnBlock(ServerLevel var0, BlockPos var1, float var2, boolean var3, boolean var4) {
-      BlockState var5 = var0.getBlockState(var1);
-      Block var6 = var5.getBlock();
-      if (var6 instanceof RespawnAnchorBlock && (Integer)var5.getValue(RespawnAnchorBlock.CHARGE) > 0 && RespawnAnchorBlock.canSetSpawn(var0)) {
-         Optional var9 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
-         if (!var4 && var9.isPresent()) {
-            var0.setBlock(var1, (BlockState)var5.setValue(RespawnAnchorBlock.CHARGE, (Integer)var5.getValue(RespawnAnchorBlock.CHARGE) - 1), 3);
+   public static Optional<Vec3> checkBedValidRespawnPosition(LevelReader var0, BlockPos var1, boolean var2) {
+      Block var3 = var0.getBlockState(var1).getBlock();
+      if (!(var3 instanceof BedBlock)) {
+         if (!var2) {
+            return Optional.empty();
+         } else {
+            boolean var4 = var3.isPossibleToRespawnInThis();
+            boolean var5 = var0.getBlockState(var1.above()).getBlock().isPossibleToRespawnInThis();
+            return var4 && var5 ? Optional.of(new Vec3((double)var1.getX() + 0.5D, (double)var1.getY() + 0.1D, (double)var1.getZ() + 0.5D)) : Optional.empty();
          }
-
-         return var9;
-      } else if (var6 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, var2);
-      } else if (!var3) {
-         return Optional.empty();
       } else {
-         boolean var7 = var6.isPossibleToRespawnInThis();
-         boolean var8 = var0.getBlockState(var1.above()).getBlock().isPossibleToRespawnInThis();
-         return var7 && var8 ? Optional.of(new Vec3((double)var1.getX() + 0.5D, (double)var1.getY() + 0.1D, (double)var1.getZ() + 0.5D)) : Optional.empty();
+         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, 0);
       }
    }
 
@@ -1303,6 +1268,25 @@ public abstract class Player extends LivingEntity {
    }
 
    public void displayClientMessage(Component var1, boolean var2) {
+   }
+
+   public BlockPos getRespawnPosition() {
+      return this.respawnPosition;
+   }
+
+   public boolean isRespawnForced() {
+      return this.respawnForced;
+   }
+
+   public void setRespawnPosition(BlockPos var1, boolean var2) {
+      if (var1 != null) {
+         this.respawnPosition = var1;
+         this.respawnForced = var2;
+      } else {
+         this.respawnPosition = null;
+         this.respawnForced = false;
+      }
+
    }
 
    public void awardStat(ResourceLocation var1) {
@@ -1346,14 +1330,14 @@ public abstract class Player extends LivingEntity {
    }
 
    public void travel(Vec3 var1) {
-      double var2 = this.getX();
-      double var4 = this.getY();
-      double var6 = this.getZ();
+      double var2 = this.x;
+      double var4 = this.y;
+      double var6 = this.z;
       double var8;
       if (this.isSwimming() && !this.isPassenger()) {
          var8 = this.getLookAngle().y;
          double var10 = var8 < -0.2D ? 0.085D : 0.06D;
-         if (var8 <= 0.0D || this.jumping || !this.level.getBlockState(new BlockPos(this.getX(), this.getY() + 1.0D - 0.1D, this.getZ())).getFluidState().isEmpty()) {
+         if (var8 <= 0.0D || this.jumping || !this.level.getBlockState(new BlockPos(this.x, this.y + 1.0D - 0.1D, this.z)).getFluidState().isEmpty()) {
             Vec3 var12 = this.getDeltaMovement();
             this.setDeltaMovement(var12.add(0.0D, (var8 - var12.y) * var10, 0.0D));
          }
@@ -1373,7 +1357,7 @@ public abstract class Player extends LivingEntity {
          super.travel(var1);
       }
 
-      this.checkMovementStatistics(this.getX() - var2, this.getY() - var4, this.getZ() - var6);
+      this.checkMovementStatistics(this.x - var2, this.y - var4, this.z - var6);
    }
 
    public void updateSwimming() {
@@ -1386,11 +1370,11 @@ public abstract class Player extends LivingEntity {
    }
 
    protected boolean freeAt(BlockPos var1) {
-      return !this.level.getBlockState(var1).isSuffocating(this.level, var1);
+      return !this.level.getBlockState(var1).isViewBlocking(this.level, var1);
    }
 
    public float getSpeed() {
-      return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
+      return (float)this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getValue();
    }
 
    public void checkMovementStatistics(double var1, double var3, double var5) {
@@ -1402,7 +1386,7 @@ public abstract class Player extends LivingEntity {
                this.awardStat(Stats.SWIM_ONE_CM, var7);
                this.causeFoodExhaustion(0.01F * (float)var7 * 0.01F);
             }
-         } else if (this.isEyeInFluid(FluidTags.WATER)) {
+         } else if (this.isUnderLiquid(FluidTags.WATER, true)) {
             var7 = Math.round(Mth.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
             if (var7 > 0) {
                this.awardStat(Stats.WALK_UNDER_WATER_ONE_CM, var7);
@@ -1414,7 +1398,7 @@ public abstract class Player extends LivingEntity {
                this.awardStat(Stats.WALK_ON_WATER_ONE_CM, var7);
                this.causeFoodExhaustion(0.01F * (float)var7 * 0.01F);
             }
-         } else if (this.onClimbable()) {
+         } else if (this.onLadder()) {
             if (var3 > 0.0D) {
                this.awardStat(Stats.CLIMB_ONE_CM, (int)Math.round(var3 * 100.0D));
             }
@@ -1424,7 +1408,7 @@ public abstract class Player extends LivingEntity {
                if (this.isSprinting()) {
                   this.awardStat(Stats.SPRINT_ONE_CM, var7);
                   this.causeFoodExhaustion(0.1F * (float)var7 * 0.01F);
-               } else if (this.isCrouching()) {
+               } else if (this.isSneaking()) {
                   this.awardStat(Stats.CROUCH_ONE_CM, var7);
                   this.causeFoodExhaustion(0.0F * (float)var7 * 0.01F);
                } else {
@@ -1445,58 +1429,32 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   private void checkRidingStatistics(double var1, double var3, double var5) {
+   private void checkRidingStatistiscs(double var1, double var3, double var5) {
       if (this.isPassenger()) {
          int var7 = Math.round(Mth.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
          if (var7 > 0) {
-            Entity var8 = this.getVehicle();
-            if (var8 instanceof AbstractMinecart) {
+            if (this.getVehicle() instanceof AbstractMinecart) {
                this.awardStat(Stats.MINECART_ONE_CM, var7);
-            } else if (var8 instanceof Boat) {
+            } else if (this.getVehicle() instanceof Boat) {
                this.awardStat(Stats.BOAT_ONE_CM, var7);
-            } else if (var8 instanceof Pig) {
+            } else if (this.getVehicle() instanceof Pig) {
                this.awardStat(Stats.PIG_ONE_CM, var7);
-            } else if (var8 instanceof AbstractHorse) {
+            } else if (this.getVehicle() instanceof AbstractHorse) {
                this.awardStat(Stats.HORSE_ONE_CM, var7);
-            } else if (var8 instanceof Strider) {
-               this.awardStat(Stats.STRIDER_ONE_CM, var7);
             }
          }
       }
 
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      if (this.abilities.mayfly) {
-         return false;
-      } else {
+   public void causeFallDamage(float var1, float var2) {
+      if (!this.abilities.mayfly) {
          if (var1 >= 2.0F) {
             this.awardStat(Stats.FALL_ONE_CM, (int)Math.round((double)var1 * 100.0D));
          }
 
-         return super.causeFallDamage(var1, var2);
+         super.causeFallDamage(var1, var2);
       }
-   }
-
-   public boolean tryToStartFallFlying() {
-      if (!this.onGround && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
-         ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var1.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var1)) {
-            this.startFallFlying();
-            return true;
-         }
-      }
-
-      return false;
-   }
-
-   public void startFallFlying() {
-      this.setSharedFlag(7, true);
-   }
-
-   public void stopFallFlying() {
-      this.setSharedFlag(7, true);
-      this.setSharedFlag(7, false);
    }
 
    protected void doWaterSplashEffect() {
@@ -1510,8 +1468,8 @@ public abstract class Player extends LivingEntity {
       return var1 > 4 ? SoundEvents.PLAYER_BIG_FALL : SoundEvents.PLAYER_SMALL_FALL;
    }
 
-   public void killed(ServerLevel var1, LivingEntity var2) {
-      this.awardStat(Stats.ENTITY_KILLED.get(var2.getType()));
+   public void killed(LivingEntity var1) {
+      this.awardStat(Stats.ENTITY_KILLED.get(var1.getType()));
    }
 
    public void makeStuckInBlock(BlockState var1, Vec3 var2) {
@@ -1570,7 +1528,7 @@ public abstract class Player extends LivingEntity {
 
       if (var1 > 0 && this.experienceLevel % 5 == 0 && (float)this.lastLevelUpTime < (float)this.tickCount - 100.0F) {
          float var2 = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
-         this.level.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), var2 * 0.75F, 1.0F);
+         this.level.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), var2 * 0.75F, 1.0F);
          this.lastLevelUpTime = this.tickCount;
       }
 
@@ -1598,7 +1556,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean canEat(boolean var1) {
-      return this.abilities.invulnerable || var1 || this.foodData.needsFood();
+      return !this.abilities.invulnerable && (var1 || this.foodData.needsFood());
    }
 
    public boolean isHurt() {
@@ -1636,8 +1594,8 @@ public abstract class Player extends LivingEntity {
       return true;
    }
 
-   protected boolean isMovementNoisy() {
-      return !this.abilities.flying && (!this.onGround || !this.isDiscrete());
+   protected boolean makeStepSound() {
+      return !this.abilities.flying;
    }
 
    public void onUpdateAbilities() {
@@ -1726,11 +1684,22 @@ public abstract class Player extends LivingEntity {
                ((TamableAnimal)var1x).setOwnerUUID(this.uuid);
             }
 
-            var1x.setPos(this.getX(), this.getY() + 0.699999988079071D, this.getZ());
+            var1x.setPos(this.x, this.y + 0.699999988079071D, this.z);
             ((ServerLevel)this.level).addWithUUID(var1x);
          });
       }
 
+   }
+
+   public boolean isInvisibleTo(Player var1) {
+      if (!this.isInvisible()) {
+         return false;
+      } else if (var1.isSpectator()) {
+         return false;
+      } else {
+         Team var2 = this.getTeam();
+         return var2 == null || var1 == null || var1.getTeam() != var2 || !var2.canSeeFriendlyInvisibles();
+      }
    }
 
    public abstract boolean isSpectator();
@@ -1741,7 +1710,7 @@ public abstract class Player extends LivingEntity {
 
    public abstract boolean isCreative();
 
-   public boolean isPushedByFluid() {
+   public boolean isPushedByWater() {
       return !this.abilities.flying;
    }
 
@@ -1750,14 +1719,18 @@ public abstract class Player extends LivingEntity {
    }
 
    public Component getDisplayName() {
-      MutableComponent var1 = PlayerTeam.formatNameForTeam(this.getTeam(), this.getName());
+      Component var1 = PlayerTeam.formatNameForTeam(this.getTeam(), this.getName());
       return this.decorateDisplayNameComponent(var1);
    }
 
-   private MutableComponent decorateDisplayNameComponent(MutableComponent var1) {
+   public Component getDisplayNameWithUuid() {
+      return (new TextComponent("")).append(this.getName()).append(" (").append(this.gameProfile.getId().toString()).append(")");
+   }
+
+   private Component decorateDisplayNameComponent(Component var1) {
       String var2 = this.getGameProfile().getName();
       return var1.withStyle((var2x) -> {
-         return var2x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + var2 + " ")).withHoverEvent(this.createHoverEvent()).withInsertion(var2);
+         var2x.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tell " + var2 + " ")).setHoverEvent(this.createHoverEvent()).setInsertion(var2);
       });
    }
 
@@ -1771,7 +1744,7 @@ public abstract class Player extends LivingEntity {
       case FALL_FLYING:
       case SPIN_ATTACK:
          return 0.4F;
-      case CROUCHING:
+      case SNEAKING:
          return 1.27F;
       default:
          return 1.62F;
@@ -1864,10 +1837,6 @@ public abstract class Player extends LivingEntity {
       this.reducedDebugInfo = var1;
    }
 
-   public void setRemainingFireTicks(int var1) {
-      super.setRemainingFireTicks(this.abilities.invulnerable ? Math.min(var1, 1) : var1);
-   }
-
    public HumanoidArm getMainArm() {
       return (Byte)this.entityData.get(DATA_PLAYER_MAIN_HAND) == 0 ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
    }
@@ -1893,7 +1862,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public float getCurrentItemAttackStrengthDelay() {
-      return (float)(1.0D / this.getAttributeValue(Attributes.ATTACK_SPEED) * 20.0D);
+      return (float)(1.0D / this.getAttribute(SharedMonsterAttributes.ATTACK_SPEED).getValue() * 20.0D);
    }
 
    public float getAttackStrengthScale(float var1) {
@@ -1908,12 +1877,8 @@ public abstract class Player extends LivingEntity {
       return this.cooldowns;
    }
 
-   protected float getBlockSpeedFactor() {
-      return !this.abilities.flying && !this.isFallFlying() ? super.getBlockSpeedFactor() : 1.0F;
-   }
-
    public float getLuck() {
-      return (float)this.getAttributeValue(Attributes.LUCK);
+      return (float)this.getAttribute(SharedMonsterAttributes.LUCK).getValue();
    }
 
    public boolean canUseGameMasterBlocks() {
@@ -1927,10 +1892,6 @@ public abstract class Player extends LivingEntity {
 
    public EntityDimensions getDimensions(Pose var1) {
       return (EntityDimensions)POSES.getOrDefault(var1, STANDING_DIMENSIONS);
-   }
-
-   public ImmutableList<Pose> getDismountPoses() {
-      return ImmutableList.of(Pose.STANDING, Pose.CROUCHING, Pose.SWIMMING);
    }
 
    public ItemStack getProjectile(ItemStack var1) {
@@ -1959,7 +1920,7 @@ public abstract class Player extends LivingEntity {
    public ItemStack eat(Level var1, ItemStack var2) {
       this.getFoodData().eat(var2.getItem(), var2);
       this.awardStat(Stats.ITEM_USED.get(var2.getItem()));
-      var1.playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
+      var1.playSound((Player)null, this.x, this.y, this.z, SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, var1.random.nextFloat() * 0.1F + 0.9F);
       if (this instanceof ServerPlayer) {
          CriteriaTriggers.CONSUME_ITEM.trigger((ServerPlayer)this, var2);
       }
@@ -1967,51 +1928,8 @@ public abstract class Player extends LivingEntity {
       return super.eat(var1, var2);
    }
 
-   protected boolean shouldRemoveSoulSpeed(BlockState var1) {
-      return this.abilities.flying || super.shouldRemoveSoulSpeed(var1);
-   }
-
-   public Vec3 getRopeHoldPosition(float var1) {
-      double var2 = 0.22D * (this.getMainArm() == HumanoidArm.RIGHT ? -1.0D : 1.0D);
-      float var4 = Mth.lerp(var1 * 0.5F, this.xRot, this.xRotO) * 0.017453292F;
-      float var5 = Mth.lerp(var1, this.yBodyRotO, this.yBodyRot) * 0.017453292F;
-      double var8;
-      if (!this.isFallFlying() && !this.isAutoSpinAttack()) {
-         if (this.isVisuallySwimming()) {
-            return this.getPosition(var1).add((new Vec3(var2, 0.2D, -0.15D)).xRot(-var4).yRot(-var5));
-         } else {
-            double var17 = this.getBoundingBox().getYsize() - 1.0D;
-            var8 = this.isCrouching() ? -0.2D : 0.07D;
-            return this.getPosition(var1).add((new Vec3(var2, var17, var8)).yRot(-var5));
-         }
-      } else {
-         Vec3 var6 = this.getViewVector(var1);
-         Vec3 var7 = this.getDeltaMovement();
-         var8 = Entity.getHorizontalDistanceSqr(var7);
-         double var10 = Entity.getHorizontalDistanceSqr(var6);
-         float var12;
-         if (var8 > 0.0D && var10 > 0.0D) {
-            double var13 = (var7.x * var6.x + var7.z * var6.z) / Math.sqrt(var8 * var10);
-            double var15 = var7.x * var6.z - var7.z * var6.x;
-            var12 = (float)(Math.signum(var15) * Math.acos(var13));
-         } else {
-            var12 = 0.0F;
-         }
-
-         return this.getPosition(var1).add((new Vec3(var2, -0.11D, 0.85D)).zRot(-var12).xRot(-var4).yRot(-var5));
-      }
-   }
-
-   public boolean isAlwaysTicking() {
-      return true;
-   }
-
-   public boolean isScoping() {
-      return this.isUsingItem() && this.getUseItem().is(Items.SPYGLASS);
-   }
-
    static {
-      POSES = ImmutableMap.builder().put(Pose.STANDING, STANDING_DIMENSIONS).put(Pose.SLEEPING, SLEEPING_DIMENSIONS).put(Pose.FALL_FLYING, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.SWIMMING, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.SPIN_ATTACK, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.CROUCHING, EntityDimensions.scalable(0.6F, 1.5F)).put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F)).build();
+      POSES = ImmutableMap.builder().put(Pose.STANDING, STANDING_DIMENSIONS).put(Pose.SLEEPING, SLEEPING_DIMENSIONS).put(Pose.FALL_FLYING, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.SWIMMING, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.SPIN_ATTACK, EntityDimensions.scalable(0.6F, 0.6F)).put(Pose.SNEAKING, EntityDimensions.scalable(0.6F, 1.5F)).put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F)).build();
       DATA_PLAYER_ABSORPTION_ID = SynchedEntityData.defineId(Player.class, EntityDataSerializers.FLOAT);
       DATA_SCORE_ID = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
       DATA_PLAYER_MODE_CUSTOMISATION = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BYTE);
@@ -2022,11 +1940,11 @@ public abstract class Player extends LivingEntity {
 
    public static enum BedSleepingProblem {
       NOT_POSSIBLE_HERE,
-      NOT_POSSIBLE_NOW(new TranslatableComponent("block.minecraft.bed.no_sleep")),
-      TOO_FAR_AWAY(new TranslatableComponent("block.minecraft.bed.too_far_away")),
-      OBSTRUCTED(new TranslatableComponent("block.minecraft.bed.obstructed")),
+      NOT_POSSIBLE_NOW(new TranslatableComponent("block.minecraft.bed.no_sleep", new Object[0])),
+      TOO_FAR_AWAY(new TranslatableComponent("block.minecraft.bed.too_far_away", new Object[0])),
+      OBSTRUCTED(new TranslatableComponent("block.minecraft.bed.obstructed", new Object[0])),
       OTHER_PROBLEM,
-      NOT_SAFE(new TranslatableComponent("block.minecraft.bed.not_safe"));
+      NOT_SAFE(new TranslatableComponent("block.minecraft.bed.not_safe", new Object[0]));
 
       @Nullable
       private final Component message;

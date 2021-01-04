@@ -10,25 +10,19 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -38,6 +32,7 @@ import net.minecraft.world.entity.ai.goal.OcelotAttackGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -45,10 +40,9 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
 public class Ocelot extends Animal {
    private static final Ingredient TEMPT_INGREDIENT;
@@ -102,17 +96,17 @@ public class Ocelot extends Animal {
       if (this.getMoveControl().hasWanted()) {
          double var1 = this.getMoveControl().getSpeedModifier();
          if (var1 == 0.6D) {
-            this.setPose(Pose.CROUCHING);
+            this.setSneaking(true);
             this.setSprinting(false);
          } else if (var1 == 1.33D) {
-            this.setPose(Pose.STANDING);
+            this.setSneaking(false);
             this.setSprinting(true);
          } else {
-            this.setPose(Pose.STANDING);
+            this.setSneaking(false);
             this.setSprinting(false);
          }
       } else {
-         this.setPose(Pose.STANDING);
+         this.setSneaking(false);
          this.setSprinting(false);
       }
 
@@ -122,12 +116,13 @@ public class Ocelot extends Animal {
       return !this.isTrusting() && this.tickCount > 2400;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 10.0D).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896D).add(Attributes.ATTACK_DAMAGE, 3.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.30000001192092896D);
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    @Nullable
@@ -147,19 +142,15 @@ public class Ocelot extends Animal {
       return SoundEvents.OCELOT_DEATH;
    }
 
-   private float getAttackDamage() {
-      return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-   }
-
    public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(DamageSource.mobAttack(this), this.getAttackDamage());
+      return var1.hurt(DamageSource.mobAttack(this), 3.0F);
    }
 
    public boolean hurt(DamageSource var1, float var2) {
       return this.isInvulnerableTo(var1) ? false : super.hurt(var1, var2);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(var3) && var1.distanceToSqr(this) < 9.0D) {
          this.usePlayerItem(var1, var3);
@@ -174,7 +165,7 @@ public class Ocelot extends Animal {
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return true;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -201,7 +192,7 @@ public class Ocelot extends Animal {
          double var4 = this.random.nextGaussian() * 0.02D;
          double var6 = this.random.nextGaussian() * 0.02D;
          double var8 = this.random.nextGaussian() * 0.02D;
-         this.level.addParticle(var2, this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), var4, var6, var8);
+         this.level.addParticle(var2, this.x + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), this.y + 0.5D + (double)(this.random.nextFloat() * this.getBbHeight()), this.z + (double)(this.random.nextFloat() * this.getBbWidth() * 2.0F) - (double)this.getBbWidth(), var4, var6, var8);
       }
 
    }
@@ -218,8 +209,8 @@ public class Ocelot extends Animal {
 
    }
 
-   public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Ocelot)EntityType.OCELOT.create(var1);
+   public Ocelot getBreedOffspring(AgableMob var1) {
+      return (Ocelot)EntityType.OCELOT.create(this.level);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -232,13 +223,14 @@ public class Ocelot extends Animal {
 
    public boolean checkSpawnObstruction(LevelReader var1) {
       if (var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox())) {
-         BlockPos var2 = this.blockPosition();
+         BlockPos var2 = new BlockPos(this.x, this.getBoundingBox().minY, this.z);
          if (var2.getY() < var1.getSeaLevel()) {
             return false;
          }
 
          BlockState var3 = var1.getBlockState(var2.below());
-         if (var3.is(Blocks.GRASS_BLOCK) || var3.is(BlockTags.LEAVES)) {
+         Block var4 = var3.getBlock();
+         if (var4 == Blocks.GRASS_BLOCK || var3.is(BlockTags.LEAVES)) {
             return true;
          }
       }
@@ -246,22 +238,29 @@ public class Ocelot extends Animal {
       return false;
    }
 
-   @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(1.0F);
+   protected void addKittensDuringSpawn() {
+      for(int var1 = 0; var1 < 2; ++var1) {
+         Ocelot var2 = (Ocelot)EntityType.OCELOT.create(this.level);
+         var2.moveTo(this.x, this.y, this.z, this.yRot, 0.0F);
+         var2.setAge(-24000);
+         this.level.addFreshEntity(var2);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
    }
 
-   public Vec3 getLeashOffset() {
-      return new Vec3(0.0D, (double)(0.5F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
+   @Nullable
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+      if (var1.getRandom().nextInt(7) == 0) {
+         this.addKittensDuringSpawn();
+      }
+
+      return var4;
    }
 
    // $FF: synthetic method
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    static {

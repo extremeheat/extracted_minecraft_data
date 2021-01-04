@@ -1,49 +1,47 @@
 package com.mojang.realmsclient.util;
 
-import com.google.gson.annotations.SerializedName;
-import com.mojang.realmsclient.dto.GuardedSerializer;
-import com.mojang.realmsclient.dto.ReflectionBasedSerialization;
+import com.google.gson.Gson;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import net.minecraft.client.Minecraft;
+import net.minecraft.realms.Realms;
 import org.apache.commons.io.FileUtils;
 
 public class RealmsPersistence {
-   private static final GuardedSerializer GSON = new GuardedSerializer();
-
    public static RealmsPersistence.RealmsPersistenceData readFile() {
-      File var0 = getPathToData();
+      File var0 = new File(Realms.getGameDirectoryPath(), "realms_persistence.json");
+      Gson var1 = new Gson();
 
       try {
-         return (RealmsPersistence.RealmsPersistenceData)GSON.fromJson(FileUtils.readFileToString(var0, StandardCharsets.UTF_8), RealmsPersistence.RealmsPersistenceData.class);
-      } catch (IOException var2) {
+         return (RealmsPersistence.RealmsPersistenceData)var1.fromJson(FileUtils.readFileToString(var0), RealmsPersistence.RealmsPersistenceData.class);
+      } catch (IOException var3) {
          return new RealmsPersistence.RealmsPersistenceData();
       }
    }
 
    public static void writeFile(RealmsPersistence.RealmsPersistenceData var0) {
-      File var1 = getPathToData();
+      File var1 = new File(Realms.getGameDirectoryPath(), "realms_persistence.json");
+      Gson var2 = new Gson();
+      String var3 = var2.toJson(var0);
 
       try {
-         FileUtils.writeStringToFile(var1, GSON.toJson(var0), StandardCharsets.UTF_8);
-      } catch (IOException var3) {
+         FileUtils.writeStringToFile(var1, var3);
+      } catch (IOException var5) {
       }
 
    }
 
-   private static File getPathToData() {
-      return new File(Minecraft.getInstance().gameDirectory, "realms_persistence.json");
-   }
-
-   public static class RealmsPersistenceData implements ReflectionBasedSerialization {
-      @SerializedName("newsLink")
+   public static class RealmsPersistenceData {
       public String newsLink;
-      @SerializedName("hasUnreadNews")
       public boolean hasUnreadNews;
 
-      public RealmsPersistenceData() {
+      private RealmsPersistenceData() {
          super();
+         this.hasUnreadNews = false;
+      }
+
+      // $FF: synthetic method
+      RealmsPersistenceData(Object var1) {
+         this();
       }
    }
 }

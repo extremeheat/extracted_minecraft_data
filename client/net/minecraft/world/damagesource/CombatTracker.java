@@ -3,18 +3,16 @@ package net.minecraft.world.damagesource;
 import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class CombatTracker {
    private final List<CombatEntry> entries = Lists.newArrayList();
@@ -33,27 +31,12 @@ public class CombatTracker {
 
    public void prepareForDamage() {
       this.resetPreparedStatus();
-      Optional var1 = this.mob.getLastClimbablePos();
-      if (var1.isPresent()) {
-         BlockState var2 = this.mob.level.getBlockState((BlockPos)var1.get());
-         if (!var2.is(Blocks.LADDER) && !var2.is(BlockTags.TRAPDOORS)) {
-            if (var2.is(Blocks.VINE)) {
-               this.nextLocation = "vines";
-            } else if (!var2.is(Blocks.WEEPING_VINES) && !var2.is(Blocks.WEEPING_VINES_PLANT)) {
-               if (!var2.is(Blocks.TWISTING_VINES) && !var2.is(Blocks.TWISTING_VINES_PLANT)) {
-                  if (var2.is(Blocks.SCAFFOLDING)) {
-                     this.nextLocation = "scaffolding";
-                  } else {
-                     this.nextLocation = "other_climbable";
-                  }
-               } else {
-                  this.nextLocation = "twisting_vines";
-               }
-            } else {
-               this.nextLocation = "weeping_vines";
-            }
-         } else {
+      if (this.mob.onLadder()) {
+         Block var1 = this.mob.level.getBlockState(new BlockPos(this.mob.x, this.mob.getBoundingBox().minY, this.mob.z)).getBlock();
+         if (var1 == Blocks.LADDER) {
             this.nextLocation = "ladder";
+         } else if (var1 == Blocks.VINE) {
+            this.nextLocation = "vines";
          }
       } else if (this.mob.isInWater()) {
          this.nextLocation = "water";

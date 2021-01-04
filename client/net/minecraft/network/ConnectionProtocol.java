@@ -1,19 +1,16 @@
 package net.minecraft.network;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
+import net.minecraft.network.protocol.game.ClientboundAddGlobalEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAddMobPacket;
 import net.minecraft.network.protocol.game.ClientboundAddPaintingPacket;
 import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
@@ -27,6 +24,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundChatPacket;
+import net.minecraft.network.protocol.game.ClientboundChunkBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerAckPacket;
@@ -68,25 +66,24 @@ import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
-import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheRadiusPacket;
-import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEquippedItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
 import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundSetSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
@@ -116,7 +113,6 @@ import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQuery;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.network.protocol.game.ServerboundJigsawGeneratePacket;
 import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.game.ServerboundLockDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -128,8 +124,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
-import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
+import net.minecraft.network.protocol.game.ServerboundRecipeBookUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
 import net.minecraft.network.protocol.game.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
@@ -162,46 +157,227 @@ import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import org.apache.logging.log4j.LogManager;
 
 public enum ConnectionProtocol {
-   HANDSHAKING(-1, protocol().addFlow(PacketFlow.SERVERBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ClientIntentionPacket.class, ClientIntentionPacket::new))),
-   PLAY(0, protocol().addFlow(PacketFlow.CLIENTBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ClientboundAddEntityPacket.class, ClientboundAddEntityPacket::new).addPacket(ClientboundAddExperienceOrbPacket.class, ClientboundAddExperienceOrbPacket::new).addPacket(ClientboundAddMobPacket.class, ClientboundAddMobPacket::new).addPacket(ClientboundAddPaintingPacket.class, ClientboundAddPaintingPacket::new).addPacket(ClientboundAddPlayerPacket.class, ClientboundAddPlayerPacket::new).addPacket(ClientboundAnimatePacket.class, ClientboundAnimatePacket::new).addPacket(ClientboundAwardStatsPacket.class, ClientboundAwardStatsPacket::new).addPacket(ClientboundBlockBreakAckPacket.class, ClientboundBlockBreakAckPacket::new).addPacket(ClientboundBlockDestructionPacket.class, ClientboundBlockDestructionPacket::new).addPacket(ClientboundBlockEntityDataPacket.class, ClientboundBlockEntityDataPacket::new).addPacket(ClientboundBlockEventPacket.class, ClientboundBlockEventPacket::new).addPacket(ClientboundBlockUpdatePacket.class, ClientboundBlockUpdatePacket::new).addPacket(ClientboundBossEventPacket.class, ClientboundBossEventPacket::new).addPacket(ClientboundChangeDifficultyPacket.class, ClientboundChangeDifficultyPacket::new).addPacket(ClientboundChatPacket.class, ClientboundChatPacket::new).addPacket(ClientboundCommandSuggestionsPacket.class, ClientboundCommandSuggestionsPacket::new).addPacket(ClientboundCommandsPacket.class, ClientboundCommandsPacket::new).addPacket(ClientboundContainerAckPacket.class, ClientboundContainerAckPacket::new).addPacket(ClientboundContainerClosePacket.class, ClientboundContainerClosePacket::new).addPacket(ClientboundContainerSetContentPacket.class, ClientboundContainerSetContentPacket::new).addPacket(ClientboundContainerSetDataPacket.class, ClientboundContainerSetDataPacket::new).addPacket(ClientboundContainerSetSlotPacket.class, ClientboundContainerSetSlotPacket::new).addPacket(ClientboundCooldownPacket.class, ClientboundCooldownPacket::new).addPacket(ClientboundCustomPayloadPacket.class, ClientboundCustomPayloadPacket::new).addPacket(ClientboundCustomSoundPacket.class, ClientboundCustomSoundPacket::new).addPacket(ClientboundDisconnectPacket.class, ClientboundDisconnectPacket::new).addPacket(ClientboundEntityEventPacket.class, ClientboundEntityEventPacket::new).addPacket(ClientboundExplodePacket.class, ClientboundExplodePacket::new).addPacket(ClientboundForgetLevelChunkPacket.class, ClientboundForgetLevelChunkPacket::new).addPacket(ClientboundGameEventPacket.class, ClientboundGameEventPacket::new).addPacket(ClientboundHorseScreenOpenPacket.class, ClientboundHorseScreenOpenPacket::new).addPacket(ClientboundKeepAlivePacket.class, ClientboundKeepAlivePacket::new).addPacket(ClientboundLevelChunkPacket.class, ClientboundLevelChunkPacket::new).addPacket(ClientboundLevelEventPacket.class, ClientboundLevelEventPacket::new).addPacket(ClientboundLevelParticlesPacket.class, ClientboundLevelParticlesPacket::new).addPacket(ClientboundLightUpdatePacket.class, ClientboundLightUpdatePacket::new).addPacket(ClientboundLoginPacket.class, ClientboundLoginPacket::new).addPacket(ClientboundMapItemDataPacket.class, ClientboundMapItemDataPacket::new).addPacket(ClientboundMerchantOffersPacket.class, ClientboundMerchantOffersPacket::new).addPacket(ClientboundMoveEntityPacket.Pos.class, ClientboundMoveEntityPacket.Pos::new).addPacket(ClientboundMoveEntityPacket.PosRot.class, ClientboundMoveEntityPacket.PosRot::new).addPacket(ClientboundMoveEntityPacket.Rot.class, ClientboundMoveEntityPacket.Rot::new).addPacket(ClientboundMoveEntityPacket.class, ClientboundMoveEntityPacket::new).addPacket(ClientboundMoveVehiclePacket.class, ClientboundMoveVehiclePacket::new).addPacket(ClientboundOpenBookPacket.class, ClientboundOpenBookPacket::new).addPacket(ClientboundOpenScreenPacket.class, ClientboundOpenScreenPacket::new).addPacket(ClientboundOpenSignEditorPacket.class, ClientboundOpenSignEditorPacket::new).addPacket(ClientboundPlaceGhostRecipePacket.class, ClientboundPlaceGhostRecipePacket::new).addPacket(ClientboundPlayerAbilitiesPacket.class, ClientboundPlayerAbilitiesPacket::new).addPacket(ClientboundPlayerCombatPacket.class, ClientboundPlayerCombatPacket::new).addPacket(ClientboundPlayerInfoPacket.class, ClientboundPlayerInfoPacket::new).addPacket(ClientboundPlayerLookAtPacket.class, ClientboundPlayerLookAtPacket::new).addPacket(ClientboundPlayerPositionPacket.class, ClientboundPlayerPositionPacket::new).addPacket(ClientboundRecipePacket.class, ClientboundRecipePacket::new).addPacket(ClientboundRemoveEntitiesPacket.class, ClientboundRemoveEntitiesPacket::new).addPacket(ClientboundRemoveMobEffectPacket.class, ClientboundRemoveMobEffectPacket::new).addPacket(ClientboundResourcePackPacket.class, ClientboundResourcePackPacket::new).addPacket(ClientboundRespawnPacket.class, ClientboundRespawnPacket::new).addPacket(ClientboundRotateHeadPacket.class, ClientboundRotateHeadPacket::new).addPacket(ClientboundSectionBlocksUpdatePacket.class, ClientboundSectionBlocksUpdatePacket::new).addPacket(ClientboundSelectAdvancementsTabPacket.class, ClientboundSelectAdvancementsTabPacket::new).addPacket(ClientboundSetBorderPacket.class, ClientboundSetBorderPacket::new).addPacket(ClientboundSetCameraPacket.class, ClientboundSetCameraPacket::new).addPacket(ClientboundSetCarriedItemPacket.class, ClientboundSetCarriedItemPacket::new).addPacket(ClientboundSetChunkCacheCenterPacket.class, ClientboundSetChunkCacheCenterPacket::new).addPacket(ClientboundSetChunkCacheRadiusPacket.class, ClientboundSetChunkCacheRadiusPacket::new).addPacket(ClientboundSetDefaultSpawnPositionPacket.class, ClientboundSetDefaultSpawnPositionPacket::new).addPacket(ClientboundSetDisplayObjectivePacket.class, ClientboundSetDisplayObjectivePacket::new).addPacket(ClientboundSetEntityDataPacket.class, ClientboundSetEntityDataPacket::new).addPacket(ClientboundSetEntityLinkPacket.class, ClientboundSetEntityLinkPacket::new).addPacket(ClientboundSetEntityMotionPacket.class, ClientboundSetEntityMotionPacket::new).addPacket(ClientboundSetEquipmentPacket.class, ClientboundSetEquipmentPacket::new).addPacket(ClientboundSetExperiencePacket.class, ClientboundSetExperiencePacket::new).addPacket(ClientboundSetHealthPacket.class, ClientboundSetHealthPacket::new).addPacket(ClientboundSetObjectivePacket.class, ClientboundSetObjectivePacket::new).addPacket(ClientboundSetPassengersPacket.class, ClientboundSetPassengersPacket::new).addPacket(ClientboundSetPlayerTeamPacket.class, ClientboundSetPlayerTeamPacket::new).addPacket(ClientboundSetScorePacket.class, ClientboundSetScorePacket::new).addPacket(ClientboundSetTimePacket.class, ClientboundSetTimePacket::new).addPacket(ClientboundSetTitlesPacket.class, ClientboundSetTitlesPacket::new).addPacket(ClientboundSoundEntityPacket.class, ClientboundSoundEntityPacket::new).addPacket(ClientboundSoundPacket.class, ClientboundSoundPacket::new).addPacket(ClientboundStopSoundPacket.class, ClientboundStopSoundPacket::new).addPacket(ClientboundTabListPacket.class, ClientboundTabListPacket::new).addPacket(ClientboundTagQueryPacket.class, ClientboundTagQueryPacket::new).addPacket(ClientboundTakeItemEntityPacket.class, ClientboundTakeItemEntityPacket::new).addPacket(ClientboundTeleportEntityPacket.class, ClientboundTeleportEntityPacket::new).addPacket(ClientboundUpdateAdvancementsPacket.class, ClientboundUpdateAdvancementsPacket::new).addPacket(ClientboundUpdateAttributesPacket.class, ClientboundUpdateAttributesPacket::new).addPacket(ClientboundUpdateMobEffectPacket.class, ClientboundUpdateMobEffectPacket::new).addPacket(ClientboundUpdateRecipesPacket.class, ClientboundUpdateRecipesPacket::new).addPacket(ClientboundUpdateTagsPacket.class, ClientboundUpdateTagsPacket::new)).addFlow(PacketFlow.SERVERBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ServerboundAcceptTeleportationPacket.class, ServerboundAcceptTeleportationPacket::new).addPacket(ServerboundBlockEntityTagQuery.class, ServerboundBlockEntityTagQuery::new).addPacket(ServerboundChangeDifficultyPacket.class, ServerboundChangeDifficultyPacket::new).addPacket(ServerboundChatPacket.class, ServerboundChatPacket::new).addPacket(ServerboundClientCommandPacket.class, ServerboundClientCommandPacket::new).addPacket(ServerboundClientInformationPacket.class, ServerboundClientInformationPacket::new).addPacket(ServerboundCommandSuggestionPacket.class, ServerboundCommandSuggestionPacket::new).addPacket(ServerboundContainerAckPacket.class, ServerboundContainerAckPacket::new).addPacket(ServerboundContainerButtonClickPacket.class, ServerboundContainerButtonClickPacket::new).addPacket(ServerboundContainerClickPacket.class, ServerboundContainerClickPacket::new).addPacket(ServerboundContainerClosePacket.class, ServerboundContainerClosePacket::new).addPacket(ServerboundCustomPayloadPacket.class, ServerboundCustomPayloadPacket::new).addPacket(ServerboundEditBookPacket.class, ServerboundEditBookPacket::new).addPacket(ServerboundEntityTagQuery.class, ServerboundEntityTagQuery::new).addPacket(ServerboundInteractPacket.class, ServerboundInteractPacket::new).addPacket(ServerboundJigsawGeneratePacket.class, ServerboundJigsawGeneratePacket::new).addPacket(ServerboundKeepAlivePacket.class, ServerboundKeepAlivePacket::new).addPacket(ServerboundLockDifficultyPacket.class, ServerboundLockDifficultyPacket::new).addPacket(ServerboundMovePlayerPacket.Pos.class, ServerboundMovePlayerPacket.Pos::new).addPacket(ServerboundMovePlayerPacket.PosRot.class, ServerboundMovePlayerPacket.PosRot::new).addPacket(ServerboundMovePlayerPacket.Rot.class, ServerboundMovePlayerPacket.Rot::new).addPacket(ServerboundMovePlayerPacket.class, ServerboundMovePlayerPacket::new).addPacket(ServerboundMoveVehiclePacket.class, ServerboundMoveVehiclePacket::new).addPacket(ServerboundPaddleBoatPacket.class, ServerboundPaddleBoatPacket::new).addPacket(ServerboundPickItemPacket.class, ServerboundPickItemPacket::new).addPacket(ServerboundPlaceRecipePacket.class, ServerboundPlaceRecipePacket::new).addPacket(ServerboundPlayerAbilitiesPacket.class, ServerboundPlayerAbilitiesPacket::new).addPacket(ServerboundPlayerActionPacket.class, ServerboundPlayerActionPacket::new).addPacket(ServerboundPlayerCommandPacket.class, ServerboundPlayerCommandPacket::new).addPacket(ServerboundPlayerInputPacket.class, ServerboundPlayerInputPacket::new).addPacket(ServerboundRecipeBookChangeSettingsPacket.class, ServerboundRecipeBookChangeSettingsPacket::new).addPacket(ServerboundRecipeBookSeenRecipePacket.class, ServerboundRecipeBookSeenRecipePacket::new).addPacket(ServerboundRenameItemPacket.class, ServerboundRenameItemPacket::new).addPacket(ServerboundResourcePackPacket.class, ServerboundResourcePackPacket::new).addPacket(ServerboundSeenAdvancementsPacket.class, ServerboundSeenAdvancementsPacket::new).addPacket(ServerboundSelectTradePacket.class, ServerboundSelectTradePacket::new).addPacket(ServerboundSetBeaconPacket.class, ServerboundSetBeaconPacket::new).addPacket(ServerboundSetCarriedItemPacket.class, ServerboundSetCarriedItemPacket::new).addPacket(ServerboundSetCommandBlockPacket.class, ServerboundSetCommandBlockPacket::new).addPacket(ServerboundSetCommandMinecartPacket.class, ServerboundSetCommandMinecartPacket::new).addPacket(ServerboundSetCreativeModeSlotPacket.class, ServerboundSetCreativeModeSlotPacket::new).addPacket(ServerboundSetJigsawBlockPacket.class, ServerboundSetJigsawBlockPacket::new).addPacket(ServerboundSetStructureBlockPacket.class, ServerboundSetStructureBlockPacket::new).addPacket(ServerboundSignUpdatePacket.class, ServerboundSignUpdatePacket::new).addPacket(ServerboundSwingPacket.class, ServerboundSwingPacket::new).addPacket(ServerboundTeleportToEntityPacket.class, ServerboundTeleportToEntityPacket::new).addPacket(ServerboundUseItemOnPacket.class, ServerboundUseItemOnPacket::new).addPacket(ServerboundUseItemPacket.class, ServerboundUseItemPacket::new))),
-   STATUS(1, protocol().addFlow(PacketFlow.SERVERBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ServerboundStatusRequestPacket.class, ServerboundStatusRequestPacket::new).addPacket(ServerboundPingRequestPacket.class, ServerboundPingRequestPacket::new)).addFlow(PacketFlow.CLIENTBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ClientboundStatusResponsePacket.class, ClientboundStatusResponsePacket::new).addPacket(ClientboundPongResponsePacket.class, ClientboundPongResponsePacket::new))),
-   LOGIN(2, protocol().addFlow(PacketFlow.CLIENTBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ClientboundLoginDisconnectPacket.class, ClientboundLoginDisconnectPacket::new).addPacket(ClientboundHelloPacket.class, ClientboundHelloPacket::new).addPacket(ClientboundGameProfilePacket.class, ClientboundGameProfilePacket::new).addPacket(ClientboundLoginCompressionPacket.class, ClientboundLoginCompressionPacket::new).addPacket(ClientboundCustomQueryPacket.class, ClientboundCustomQueryPacket::new)).addFlow(PacketFlow.SERVERBOUND, (new ConnectionProtocol.PacketSet()).addPacket(ServerboundHelloPacket.class, ServerboundHelloPacket::new).addPacket(ServerboundKeyPacket.class, ServerboundKeyPacket::new).addPacket(ServerboundCustomQueryPacket.class, ServerboundCustomQueryPacket::new)));
+   HANDSHAKING(-1) {
+      {
+         this.addPacket(PacketFlow.SERVERBOUND, ClientIntentionPacket.class);
+      }
+   },
+   PLAY(0) {
+      {
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddExperienceOrbPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddGlobalEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddMobPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddPaintingPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAddPlayerPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAnimatePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundAwardStatsPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBlockDestructionPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBlockEntityDataPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBlockEventPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBlockUpdatePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBossEventPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundChangeDifficultyPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundChatPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundChunkBlocksUpdatePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCommandSuggestionsPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCommandsPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundContainerAckPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundContainerClosePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundContainerSetContentPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundContainerSetDataPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundContainerSetSlotPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCooldownPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCustomPayloadPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCustomSoundPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundDisconnectPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundEntityEventPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundExplodePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundForgetLevelChunkPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundGameEventPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundHorseScreenOpenPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundKeepAlivePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLevelChunkPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLevelEventPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLevelParticlesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLightUpdatePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLoginPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMapItemDataPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMerchantOffersPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMoveEntityPacket.Pos.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMoveEntityPacket.PosRot.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMoveEntityPacket.Rot.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMoveEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundMoveVehiclePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundOpenBookPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundOpenScreenPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundOpenSignEditorPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlaceGhostRecipePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlayerAbilitiesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlayerCombatPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlayerInfoPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlayerLookAtPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPlayerPositionPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundRecipePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundRemoveEntitiesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundRemoveMobEffectPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundResourcePackPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundRespawnPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundRotateHeadPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSelectAdvancementsTabPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetBorderPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetCameraPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetCarriedItemPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetChunkCacheCenterPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetChunkCacheRadiusPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetDisplayObjectivePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetEntityDataPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetEntityLinkPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetEntityMotionPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetEquippedItemPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetExperiencePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetHealthPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetObjectivePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetPassengersPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetPlayerTeamPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetScorePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetSpawnPositionPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetTimePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSetTitlesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSoundEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundSoundPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundStopSoundPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundTabListPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundTagQueryPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundTakeItemEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundTeleportEntityPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundUpdateAdvancementsPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundUpdateAttributesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundUpdateMobEffectPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundUpdateRecipesPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundUpdateTagsPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundBlockBreakAckPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundAcceptTeleportationPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundBlockEntityTagQuery.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundChangeDifficultyPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundChatPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundClientCommandPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundClientInformationPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundCommandSuggestionPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundContainerAckPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundContainerButtonClickPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundContainerClickPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundContainerClosePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundCustomPayloadPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundEditBookPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundEntityTagQuery.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundInteractPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundKeepAlivePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundLockDifficultyPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundMovePlayerPacket.Pos.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundMovePlayerPacket.PosRot.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundMovePlayerPacket.Rot.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundMovePlayerPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundMoveVehiclePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPaddleBoatPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPickItemPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPlaceRecipePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPlayerAbilitiesPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPlayerActionPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPlayerCommandPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPlayerInputPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundRecipeBookUpdatePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundRenameItemPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundResourcePackPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSeenAdvancementsPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSelectTradePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetBeaconPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetCarriedItemPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetCommandBlockPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetCommandMinecartPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetCreativeModeSlotPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetJigsawBlockPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSetStructureBlockPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSignUpdatePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundSwingPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundTeleportToEntityPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundUseItemOnPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundUseItemPacket.class);
+      }
+   },
+   STATUS(1) {
+      {
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundStatusRequestPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundStatusResponsePacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundPingRequestPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundPongResponsePacket.class);
+      }
+   },
+   LOGIN(2) {
+      {
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLoginDisconnectPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundHelloPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundGameProfilePacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundLoginCompressionPacket.class);
+         this.addPacket(PacketFlow.CLIENTBOUND, ClientboundCustomQueryPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundHelloPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundKeyPacket.class);
+         this.addPacket(PacketFlow.SERVERBOUND, ServerboundCustomQueryPacket.class);
+      }
+   };
 
    private static final ConnectionProtocol[] LOOKUP = new ConnectionProtocol[4];
    private static final Map<Class<? extends Packet<?>>, ConnectionProtocol> PROTOCOL_BY_PACKET = Maps.newHashMap();
    private final int id;
-   private final Map<PacketFlow, ? extends ConnectionProtocol.PacketSet<?>> flows;
+   private final Map<PacketFlow, BiMap<Integer, Class<? extends Packet<?>>>> packets;
 
-   private static ConnectionProtocol.ProtocolBuilder protocol() {
-      return new ConnectionProtocol.ProtocolBuilder();
-   }
-
-   private ConnectionProtocol(int var3, ConnectionProtocol.ProtocolBuilder var4) {
+   private ConnectionProtocol(int var3) {
+      this.packets = Maps.newEnumMap(PacketFlow.class);
       this.id = var3;
-      this.flows = var4.flows;
+   }
+
+   protected ConnectionProtocol addPacket(PacketFlow var1, Class<? extends Packet<?>> var2) {
+      Object var3 = (BiMap)this.packets.get(var1);
+      if (var3 == null) {
+         var3 = HashBiMap.create();
+         this.packets.put(var1, var3);
+      }
+
+      if (((BiMap)var3).containsValue(var2)) {
+         String var4 = var1 + " packet " + var2 + " is already known to ID " + ((BiMap)var3).inverse().get(var2);
+         LogManager.getLogger().fatal(var4);
+         throw new IllegalArgumentException(var4);
+      } else {
+         ((BiMap)var3).put(((BiMap)var3).size(), var2);
+         return this;
+      }
+   }
+
+   public Integer getPacketId(PacketFlow var1, Packet<?> var2) throws Exception {
+      return (Integer)((BiMap)this.packets.get(var1)).inverse().get(var2.getClass());
    }
 
    @Nullable
-   public Integer getPacketId(PacketFlow var1, Packet<?> var2) {
-      return ((ConnectionProtocol.PacketSet)this.flows.get(var1)).getId(var2.getClass());
-   }
-
-   @Nullable
-   public Packet<?> createPacket(PacketFlow var1, int var2) {
-      return ((ConnectionProtocol.PacketSet)this.flows.get(var1)).createPacket(var2);
+   public Packet<?> createPacket(PacketFlow var1, int var2) throws IllegalAccessException, InstantiationException {
+      Class var3 = (Class)((BiMap)this.packets.get(var1)).get(var2);
+      return var3 == null ? null : (Packet)var3.newInstance();
    }
 
    public int getId() {
       return this.id;
    }
 
-   @Nullable
    public static ConnectionProtocol getById(int var0) {
       return var0 >= -1 && var0 <= 2 ? LOOKUP[var0 - -1] : null;
    }
 
    public static ConnectionProtocol getProtocolForPacket(Packet<?> var0) {
       return (ConnectionProtocol)PROTOCOL_BY_PACKET.get(var0.getClass());
+   }
+
+   // $FF: synthetic method
+   ConnectionProtocol(int var3, Object var4) {
+      this(var3);
    }
 
    static {
@@ -216,82 +392,26 @@ public enum ConnectionProtocol {
          }
 
          LOOKUP[var4 - -1] = var3;
-         var3.flows.forEach((var1x, var2x) -> {
-            var2x.getAllPackets().forEach((var1xx) -> {
-               if (PROTOCOL_BY_PACKET.containsKey(var1xx) && PROTOCOL_BY_PACKET.get(var1xx) != var3) {
-                  throw new IllegalStateException("Packet " + var1xx + " is already assigned to protocol " + PROTOCOL_BY_PACKET.get(var1xx) + " - can't reassign to " + var3);
-               } else {
-                  PROTOCOL_BY_PACKET.put(var1xx, var3);
+         Iterator var5 = var3.packets.keySet().iterator();
+
+         while(var5.hasNext()) {
+            PacketFlow var6 = (PacketFlow)var5.next();
+
+            Class var8;
+            for(Iterator var7 = ((BiMap)var3.packets.get(var6)).values().iterator(); var7.hasNext(); PROTOCOL_BY_PACKET.put(var8, var3)) {
+               var8 = (Class)var7.next();
+               if (PROTOCOL_BY_PACKET.containsKey(var8) && PROTOCOL_BY_PACKET.get(var8) != var3) {
+                  throw new Error("Packet " + var8 + " is already assigned to protocol " + PROTOCOL_BY_PACKET.get(var8) + " - can't reassign to " + var3);
                }
-            });
-         });
-      }
 
-   }
-
-   static class ProtocolBuilder {
-      private final Map<PacketFlow, ConnectionProtocol.PacketSet<?>> flows;
-
-      private ProtocolBuilder() {
-         super();
-         this.flows = Maps.newEnumMap(PacketFlow.class);
-      }
-
-      public <T extends PacketListener> ConnectionProtocol.ProtocolBuilder addFlow(PacketFlow var1, ConnectionProtocol.PacketSet<T> var2) {
-         this.flows.put(var1, var2);
-         return this;
-      }
-
-      // $FF: synthetic method
-      ProtocolBuilder(Object var1) {
-         this();
-      }
-   }
-
-   static class PacketSet<T extends PacketListener> {
-      private final Object2IntMap<Class<? extends Packet<T>>> classToId;
-      private final List<Supplier<? extends Packet<T>>> idToConstructor;
-
-      private PacketSet() {
-         super();
-         this.classToId = (Object2IntMap)Util.make(new Object2IntOpenHashMap(), (var0) -> {
-            var0.defaultReturnValue(-1);
-         });
-         this.idToConstructor = Lists.newArrayList();
-      }
-
-      public <P extends Packet<T>> ConnectionProtocol.PacketSet<T> addPacket(Class<P> var1, Supplier<P> var2) {
-         int var3 = this.idToConstructor.size();
-         int var4 = this.classToId.put(var1, var3);
-         if (var4 != -1) {
-            String var5 = "Packet " + var1 + " is already registered to ID " + var4;
-            LogManager.getLogger().fatal(var5);
-            throw new IllegalArgumentException(var5);
-         } else {
-            this.idToConstructor.add(var2);
-            return this;
+               try {
+                  var8.newInstance();
+               } catch (Throwable var10) {
+                  throw new Error("Packet " + var8 + " fails instantiation checks! " + var8);
+               }
+            }
          }
       }
 
-      @Nullable
-      public Integer getId(Class<?> var1) {
-         int var2 = this.classToId.getInt(var1);
-         return var2 == -1 ? null : var2;
-      }
-
-      @Nullable
-      public Packet<?> createPacket(int var1) {
-         Supplier var2 = (Supplier)this.idToConstructor.get(var1);
-         return var2 != null ? (Packet)var2.get() : null;
-      }
-
-      public Iterable<Class<? extends Packet<?>>> getAllPackets() {
-         return Iterables.unmodifiableIterable(this.classToId.keySet());
-      }
-
-      // $FF: synthetic method
-      PacketSet(Object var1) {
-         this();
-      }
    }
 }

@@ -8,6 +8,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.yggdrasil.ProfileNotFoundException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -20,12 +21,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.storage.LevelResource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -80,7 +79,7 @@ public class OldUsersConverter {
          if (var1.getFile().exists()) {
             try {
                var1.load();
-            } catch (IOException var6) {
+            } catch (FileNotFoundException var6) {
                LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
             }
          }
@@ -133,7 +132,7 @@ public class OldUsersConverter {
          if (var1.getFile().exists()) {
             try {
                var1.load();
-            } catch (IOException var11) {
+            } catch (FileNotFoundException var11) {
                LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var11);
             }
          }
@@ -171,7 +170,7 @@ public class OldUsersConverter {
          if (var1.getFile().exists()) {
             try {
                var1.load();
-            } catch (IOException var6) {
+            } catch (FileNotFoundException var6) {
                LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
             }
          }
@@ -213,7 +212,7 @@ public class OldUsersConverter {
          if (var1.getFile().exists()) {
             try {
                var1.load();
-            } catch (IOException var6) {
+            } catch (FileNotFoundException var6) {
                LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
             }
          }
@@ -249,12 +248,11 @@ public class OldUsersConverter {
       }
    }
 
-   @Nullable
-   public static UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
+   public static String convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
       if (!StringUtil.isNullOrEmpty(var1) && var1.length() <= 16) {
          GameProfile var2 = var0.getProfileCache().get(var1);
          if (var2 != null && var2.getId() != null) {
-            return var2.getId();
+            return var2.getId().toString();
          } else if (!var0.isSingleplayer() && var0.usesAuthentication()) {
             final ArrayList var3 = Lists.newArrayList();
             ProfileLookupCallback var4 = new ProfileLookupCallback() {
@@ -268,16 +266,12 @@ public class OldUsersConverter {
                }
             };
             lookupPlayers(var0, Lists.newArrayList(new String[]{var1}), var4);
-            return !var3.isEmpty() && ((GameProfile)var3.get(0)).getId() != null ? ((GameProfile)var3.get(0)).getId() : null;
+            return !var3.isEmpty() && ((GameProfile)var3.get(0)).getId() != null ? ((GameProfile)var3.get(0)).getId().toString() : "";
          } else {
-            return Player.createPlayerUUID(new GameProfile((UUID)null, var1));
+            return Player.createPlayerUUID(new GameProfile((UUID)null, var1)).toString();
          }
       } else {
-         try {
-            return UUID.fromString(var1);
-         } catch (IllegalArgumentException var5) {
-            return null;
-         }
+         return var1;
       }
    }
 
@@ -440,7 +434,9 @@ public class OldUsersConverter {
    }
 
    private static File getWorldPlayersDirectory(MinecraftServer var0) {
-      return var0.getWorldPath(LevelResource.PLAYER_OLD_DATA_DIR).toFile();
+      String var1 = var0.getLevelIdName();
+      File var2 = new File(var1);
+      return new File(var2, "players");
    }
 
    private static void renameOldFile(File var0) {

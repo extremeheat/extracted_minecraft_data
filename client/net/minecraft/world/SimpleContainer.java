@@ -5,8 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.StackedContentsCompatible;
@@ -44,14 +42,6 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    public ItemStack getItem(int var1) {
       return var1 >= 0 && var1 < this.items.size() ? (ItemStack)this.items.get(var1) : ItemStack.EMPTY;
-   }
-
-   public List<ItemStack> removeAllItems() {
-      List var1 = (List)this.items.stream().filter((var0) -> {
-         return !var0.isEmpty();
-      }).collect(Collectors.toList());
-      this.clearContent();
-      return var1;
    }
 
    public ItemStack removeItem(int var1, int var2) {
@@ -94,21 +84,6 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
          this.moveItemToEmptySlots(var2);
          return var2.isEmpty() ? ItemStack.EMPTY : var2;
       }
-   }
-
-   public boolean canAddItem(ItemStack var1) {
-      boolean var2 = false;
-      Iterator var3 = this.items.iterator();
-
-      while(var3.hasNext()) {
-         ItemStack var4 = (ItemStack)var3.next();
-         if (var4.isEmpty() || ItemStack.isSameItemSameTags(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
-            var2 = true;
-            break;
-         }
-      }
-
-      return var2;
    }
 
    public ItemStack removeItemNoUpdate(int var1) {
@@ -201,7 +176,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    private void moveItemToOccupiedSlotsWithSameType(ItemStack var1) {
       for(int var2 = 0; var2 < this.size; ++var2) {
          ItemStack var3 = this.getItem(var2);
-         if (ItemStack.isSameItemSameTags(var3, var1)) {
+         if (ItemStack.isSame(var3, var1)) {
             this.moveItemsBetweenStacks(var1, var3);
             if (var1.isEmpty()) {
                return;
@@ -220,28 +195,5 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
          this.setChanged();
       }
 
-   }
-
-   public void fromTag(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         ItemStack var3 = ItemStack.of(var1.getCompound(var2));
-         if (!var3.isEmpty()) {
-            this.addItem(var3);
-         }
-      }
-
-   }
-
-   public ListTag createTag() {
-      ListTag var1 = new ListTag();
-
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            var1.add(var3.save(new CompoundTag()));
-         }
-      }
-
-      return var1;
    }
 }

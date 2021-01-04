@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.SerializationTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.player.StackedContents;
@@ -30,6 +30,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public final class Ingredient implements Predicate<ItemStack> {
+   private static final Predicate<? super Ingredient.Value> NON_ALL_EMPTY = (var0) -> {
+      return !var0.getItems().stream().allMatch(ItemStack::isEmpty);
+   };
    public static final Ingredient EMPTY = new Ingredient(Stream.empty());
    private final Ingredient.Value[] values;
    private ItemStack[] itemStacks;
@@ -37,7 +40,7 @@ public final class Ingredient implements Predicate<ItemStack> {
 
    private Ingredient(Stream<? extends Ingredient.Value> var1) {
       super();
-      this.values = (Ingredient.Value[])var1.toArray((var0) -> {
+      this.values = (Ingredient.Value[])var1.filter(NON_ALL_EMPTY).toArray((var0) -> {
          return new Ingredient.Value[var0];
       });
    }
@@ -61,23 +64,21 @@ public final class Ingredient implements Predicate<ItemStack> {
    public boolean test(@Nullable ItemStack var1) {
       if (var1 == null) {
          return false;
+      } else if (this.values.length == 0) {
+         return var1.isEmpty();
       } else {
          this.dissolve();
-         if (this.itemStacks.length == 0) {
-            return var1.isEmpty();
-         } else {
-            ItemStack[] var2 = this.itemStacks;
-            int var3 = var2.length;
+         ItemStack[] var2 = this.itemStacks;
+         int var3 = var2.length;
 
-            for(int var4 = 0; var4 < var3; ++var4) {
-               ItemStack var5 = var2[var4];
-               if (var5.is(var1.getItem())) {
-                  return true;
-               }
+         for(int var4 = 0; var4 < var3; ++var4) {
+            ItemStack var5 = var2[var4];
+            if (var5.getItem() == var1.getItem()) {
+               return true;
             }
-
-            return false;
          }
+
+         return false;
       }
    }
 
@@ -136,17 +137,13 @@ public final class Ingredient implements Predicate<ItemStack> {
    }
 
    public static Ingredient of(ItemLike... var0) {
-      return of(Arrays.stream(var0).map(ItemStack::new));
+      return fromValues(Arrays.stream(var0).map((var0x) -> {
+         return new Ingredient.ItemValue(new ItemStack(var0x));
+      }));
    }
 
    public static Ingredient of(ItemStack... var0) {
-      return of(Arrays.stream(var0));
-   }
-
-   public static Ingredient of(Stream<ItemStack> var0) {
-      return fromValues(var0.filter((var0x) -> {
-         return !var0x.isEmpty();
-      }).map((var0x) -> {
+      return fromValues(Arrays.stream(var0).map((var0x) -> {
          return new Ingredient.ItemValue(var0x);
       }));
    }
@@ -183,7 +180,7 @@ public final class Ingredient implements Predicate<ItemStack> {
       }
    }
 
-   private static Ingredient.Value valueFromJson(JsonObject var0) {
+   public static Ingredient.Value valueFromJson(JsonObject var0) {
       if (var0.has("item") && var0.has("tag")) {
          throw new JsonParseException("An ingredient entry is either a tag or an item, not both");
       } else {
@@ -196,7 +193,7 @@ public final class Ingredient implements Predicate<ItemStack> {
             return new Ingredient.ItemValue(new ItemStack(var3));
          } else if (var0.has("tag")) {
             var1 = new ResourceLocation(GsonHelper.getAsString(var0, "tag"));
-            Tag var2 = SerializationTags.getInstance().getItems().getTag(var1);
+            Tag var2 = ItemTags.getAllTags().getTag(var1);
             if (var2 == null) {
                throw new JsonSyntaxException("Unknown item tag '" + var1 + "'");
             } else {
@@ -235,7 +232,7 @@ public final class Ingredient implements Predicate<ItemStack> {
 
       public JsonObject serialize() {
          JsonObject var1 = new JsonObject();
-         var1.addProperty("tag", SerializationTags.getInstance().getItems().getIdOrThrow(this.tag).toString());
+         var1.addProperty("tag", this.tag.getId().toString());
          return var1;
       }
 

@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.EnumSet;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.phys.Vec3;
 
 public class MoveTowardsTargetGoal extends Goal {
@@ -30,7 +30,7 @@ public class MoveTowardsTargetGoal extends Goal {
       } else if (this.target.distanceToSqr(this.mob) > (double)(this.within * this.within)) {
          return false;
       } else {
-         Vec3 var1 = DefaultRandomPos.getPosTowards(this.mob, 16, 7, this.target.position(), 1.5707963705062866D);
+         Vec3 var1 = RandomPos.getPosTowards(this.mob, 16, 7, new Vec3(this.target.x, this.target.y, this.target.z));
          if (var1 == null) {
             return false;
          } else {

@@ -3,45 +3,46 @@ package net.minecraft.world.level.levelgen.feature;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 import net.minecraft.world.phys.AABB;
 
 public class SpikeFeature extends Feature<SpikeConfiguration> {
    private static final LoadingCache<Long, List<SpikeFeature.EndSpike>> SPIKE_CACHE;
 
-   public SpikeFeature(Codec<SpikeConfiguration> var1) {
+   public SpikeFeature(Function<Dynamic<?>, ? extends SpikeConfiguration> var1) {
       super(var1);
    }
 
-   public static List<SpikeFeature.EndSpike> getSpikesForLevel(WorldGenLevel var0) {
+   public static List<SpikeFeature.EndSpike> getSpikesForLevel(LevelAccessor var0) {
       Random var1 = new Random(var0.getSeed());
       long var2 = var1.nextLong() & 65535L;
       return (List)SPIKE_CACHE.getUnchecked(var2);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, SpikeConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, SpikeConfiguration var5) {
       List var6 = var5.getSpikes();
       if (var6.isEmpty()) {
          var6 = getSpikesForLevel(var1);
@@ -59,14 +60,14 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       return true;
    }
 
-   private void placeSpike(ServerLevelAccessor var1, Random var2, SpikeConfiguration var3, SpikeFeature.EndSpike var4) {
+   private void placeSpike(LevelAccessor var1, Random var2, SpikeConfiguration var3, SpikeFeature.EndSpike var4) {
       int var5 = var4.getRadius();
-      Iterator var6 = BlockPos.betweenClosed(new BlockPos(var4.getCenterX() - var5, var1.getMinBuildHeight(), var4.getCenterZ() - var5), new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)).iterator();
+      Iterator var6 = BlockPos.betweenClosed(new BlockPos(var4.getCenterX() - var5, 0, var4.getCenterZ() - var5), new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)).iterator();
 
       while(true) {
          while(var6.hasNext()) {
             BlockPos var7 = (BlockPos)var6.next();
-            if (var7.distSqr((double)var4.getCenterX(), (double)var7.getY(), (double)var4.getCenterZ(), false) <= (double)(var5 * var5 + 1) && var7.getY() < var4.getHeight()) {
+            if (var7.closerThan(new BlockPos(var4.getCenterX(), var7.getY(), var4.getCenterZ()), (double)var5) && var7.getY() < var4.getHeight()) {
                this.setBlock(var1, var7, Blocks.OBSIDIAN.defaultBlockState());
             } else if (var7.getY() > 65) {
                this.setBlock(var1, var7, Blocks.AIR.defaultBlockState());
@@ -99,7 +100,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          EndCrystal var20 = (EndCrystal)EntityType.END_CRYSTAL.create(var1.getLevel());
          var20.setBeamTarget(var3.getCrystalBeamTarget());
          var20.setInvulnerable(var3.isCrystalInvulnerable());
-         var20.moveTo((double)var4.getCenterX() + 0.5D, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5D, var2.nextFloat() * 360.0F, 0.0F);
+         var20.moveTo((double)((float)var4.getCenterX() + 0.5F), (double)(var4.getHeight() + 1), (double)((float)var4.getCenterZ() + 0.5F), var2.nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntity(var20);
          this.setBlock(var1, new BlockPos(var4.getCenterX(), var4.getHeight(), var4.getCenterZ()), Blocks.BEDROCK.defaultBlockState());
          return;
@@ -145,19 +146,6 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
    }
 
    public static class EndSpike {
-      public static final Codec<SpikeFeature.EndSpike> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("centerX").orElse(0).forGetter((var0x) -> {
-            return var0x.centerX;
-         }), Codec.INT.fieldOf("centerZ").orElse(0).forGetter((var0x) -> {
-            return var0x.centerZ;
-         }), Codec.INT.fieldOf("radius").orElse(0).forGetter((var0x) -> {
-            return var0x.radius;
-         }), Codec.INT.fieldOf("height").orElse(0).forGetter((var0x) -> {
-            return var0x.height;
-         }), Codec.BOOL.fieldOf("guarded").orElse(false).forGetter((var0x) -> {
-            return var0x.guarded;
-         })).apply(var0, SpikeFeature.EndSpike::new);
-      });
       private final int centerX;
       private final int centerZ;
       private final int radius;
@@ -176,7 +164,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       }
 
       public boolean isCenterWithinChunk(BlockPos var1) {
-         return SectionPos.blockToSectionCoord(var1.getX()) == SectionPos.blockToSectionCoord(this.centerX) && SectionPos.blockToSectionCoord(var1.getZ()) == SectionPos.blockToSectionCoord(this.centerZ);
+         return var1.getX() >> 4 == this.centerX >> 4 && var1.getZ() >> 4 == this.centerZ >> 4;
       }
 
       public int getCenterX() {
@@ -201,6 +189,20 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
 
       public AABB getTopBoundingBox() {
          return this.topBoundingBox;
+      }
+
+      <T> Dynamic<T> serialize(DynamicOps<T> var1) {
+         Builder var2 = ImmutableMap.builder();
+         var2.put(var1.createString("centerX"), var1.createInt(this.centerX));
+         var2.put(var1.createString("centerZ"), var1.createInt(this.centerZ));
+         var2.put(var1.createString("radius"), var1.createInt(this.radius));
+         var2.put(var1.createString("height"), var1.createInt(this.height));
+         var2.put(var1.createString("guarded"), var1.createBoolean(this.guarded));
+         return new Dynamic(var1, var1.createMap(var2.build()));
+      }
+
+      public static <T> SpikeFeature.EndSpike deserialize(Dynamic<T> var0) {
+         return new SpikeFeature.EndSpike(var0.get("centerX").asInt(0), var0.get("centerZ").asInt(0), var0.get("radius").asInt(0), var0.get("height").asInt(0), var0.get("guarded").asBoolean(false));
       }
    }
 }

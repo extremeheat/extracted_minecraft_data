@@ -3,12 +3,12 @@ package net.minecraft.world.level.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -27,7 +27,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    protected static final VoxelShape SOUTH_AABB;
    protected static final VoxelShape NORTH_AABB;
 
-   protected LadderBlock(BlockBehaviour.Properties var1) {
+   protected LadderBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
@@ -48,7 +48,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
 
    private boolean canAttachTo(BlockGetter var1, BlockPos var2, Direction var3) {
       BlockState var4 = var1.getBlockState(var2);
-      return var4.isFaceSturdy(var1, var2, var3);
+      return !var4.isSignalSource() && var4.isFaceSturdy(var1, var2, var3);
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -73,7 +73,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       BlockState var2;
       if (!var1.replacingClickedOnBlock()) {
          var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
-         if (var2.is(this) && var2.getValue(FACING) == var1.getClickedFace()) {
+         if (var2.getBlock() == this && var2.getValue(FACING) == var1.getClickedFace()) {
             return null;
          }
       }
@@ -96,6 +96,10 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
       }
 
       return null;
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {

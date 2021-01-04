@@ -22,7 +22,6 @@ public class SuggestionProviders {
    public static final SuggestionProvider<SharedSuggestionProvider> ASK_SERVER;
    public static final SuggestionProvider<CommandSourceStack> ALL_RECIPES;
    public static final SuggestionProvider<CommandSourceStack> AVAILABLE_SOUNDS;
-   public static final SuggestionProvider<CommandSourceStack> AVAILABLE_BIOMES;
    public static final SuggestionProvider<CommandSourceStack> SUMMONABLE_ENTITIES;
 
    public static <S extends SharedSuggestionProvider> SuggestionProvider<S> register(ResourceLocation var0, SuggestionProvider<SharedSuggestionProvider> var1) {
@@ -56,12 +55,9 @@ public class SuggestionProviders {
       AVAILABLE_SOUNDS = register(new ResourceLocation("available_sounds"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource((Iterable)((SharedSuggestionProvider)var0.getSource()).getAvailableSoundEvents(), var1);
       });
-      AVAILABLE_BIOMES = register(new ResourceLocation("available_biomes"), (var0, var1) -> {
-         return SharedSuggestionProvider.suggestResource((Iterable)((SharedSuggestionProvider)var0.getSource()).registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).keySet(), var1);
-      });
       SUMMONABLE_ENTITIES = register(new ResourceLocation("summonable_entities"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.stream().filter(EntityType::canSummon), var1, EntityType::getKey, (var0x) -> {
-            return new TranslatableComponent(Util.makeDescriptionId("entity", EntityType.getKey(var0x)));
+            return new TranslatableComponent(Util.makeDescriptionId("entity", EntityType.getKey(var0x)), new Object[0]);
          });
       });
    }

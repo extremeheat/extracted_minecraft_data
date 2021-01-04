@@ -42,13 +42,7 @@ public class DefendVillageTargetGoal extends TargetGoal {
          }
       }
 
-      if (this.potentialTarget == null) {
-         return false;
-      } else if (!(this.potentialTarget instanceof Player) || !this.potentialTarget.isSpectator() && !((Player)this.potentialTarget).isCreative()) {
-         return true;
-      } else {
-         return false;
-      }
+      return this.potentialTarget != null;
    }
 
    public void start() {

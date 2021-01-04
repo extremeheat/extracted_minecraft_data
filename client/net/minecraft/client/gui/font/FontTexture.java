@@ -3,17 +3,15 @@ package net.minecraft.client.gui.font;
 import com.mojang.blaze3d.font.RawGlyph;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import java.io.Closeable;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class FontTexture extends AbstractTexture {
+public class FontTexture extends AbstractTexture implements Closeable {
    private final ResourceLocation name;
-   private final RenderType normalType;
-   private final RenderType seeThroughType;
    private final boolean colored;
    private final FontTexture.Node root;
 
@@ -23,8 +21,6 @@ public class FontTexture extends AbstractTexture {
       this.colored = var2;
       this.root = new FontTexture.Node(0, 0, 256, 256);
       TextureUtil.prepareImage(var2 ? NativeImage.InternalGlFormat.RGBA : NativeImage.InternalGlFormat.INTENSITY, this.getId(), 256, 256);
-      this.normalType = RenderType.text(var1);
-      this.seeThroughType = RenderType.textSeeThrough(var1);
    }
 
    public void load(ResourceManager var1) {
@@ -46,7 +42,7 @@ public class FontTexture extends AbstractTexture {
             float var3 = 256.0F;
             float var4 = 256.0F;
             float var5 = 0.01F;
-            return new BakedGlyph(this.normalType, this.seeThroughType, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getUp(), var1.getDown());
+            return new BakedGlyph(this.name, ((float)var2.x + 0.01F) / 256.0F, ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F, ((float)var2.y + 0.01F) / 256.0F, ((float)var2.y - 0.01F + (float)var1.getPixelHeight()) / 256.0F, var1.getLeft(), var1.getRight(), var1.getUp(), var1.getDown());
          } else {
             return null;
          }

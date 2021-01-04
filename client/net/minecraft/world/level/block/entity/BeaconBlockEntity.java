@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffect;
@@ -30,7 +29,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.BeaconMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeaconBeamBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -38,13 +36,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
-public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
+public class BeaconBlockEntity extends BlockEntity implements MenuProvider, TickableBlockEntity {
    public static final MobEffect[][] BEACON_EFFECTS;
    private static final Set<MobEffect> VALID_EFFECTS;
    private List<BeaconBlockEntity.BeaconBeamSection> beamSections = Lists.newArrayList();
    private List<BeaconBlockEntity.BeaconBeamSection> checkingBeamSections = Lists.newArrayList();
-   private int levels;
-   private int lastCheckY;
+   private int levels = 0;
+   private int lastCheckY = -1;
    @Nullable
    private MobEffect primaryPower;
    @Nullable
@@ -54,8 +52,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
    private LockCode lockKey;
    private final ContainerData dataAccess;
 
-   public BeaconBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BEACON, var1, var2);
+   public BeaconBlockEntity() {
+      super(BlockEntityType.BEACON);
       this.lockKey = LockCode.NO_LOCK;
       this.dataAccess = new ContainerData() {
          public int get(int var1) {
@@ -78,7 +76,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
                break;
             case 1:
                if (!BeaconBlockEntity.this.level.isClientSide && !BeaconBlockEntity.this.beamSections.isEmpty()) {
-                  BeaconBlockEntity.playSound(BeaconBlockEntity.this.level, BeaconBlockEntity.this.worldPosition, SoundEvents.BEACON_POWER_SELECT);
+                  BeaconBlockEntity.this.playSound(SoundEvents.BEACON_POWER_SELECT);
                }
 
                BeaconBlockEntity.this.primaryPower = BeaconBlockEntity.getValidEffectById(var2);
@@ -95,157 +93,161 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
       };
    }
 
-   public static void tick(Level var0, BlockPos var1, BlockState var2, BeaconBlockEntity var3) {
-      int var4 = var1.getX();
-      int var5 = var1.getY();
-      int var6 = var1.getZ();
-      BlockPos var7;
-      if (var3.lastCheckY < var5) {
-         var7 = var1;
-         var3.checkingBeamSections = Lists.newArrayList();
-         var3.lastCheckY = var1.getY() - 1;
+   public void tick() {
+      int var1 = this.worldPosition.getX();
+      int var2 = this.worldPosition.getY();
+      int var3 = this.worldPosition.getZ();
+      BlockPos var4;
+      if (this.lastCheckY < var2) {
+         var4 = this.worldPosition;
+         this.checkingBeamSections = Lists.newArrayList();
+         this.lastCheckY = var4.getY() - 1;
       } else {
-         var7 = new BlockPos(var4, var3.lastCheckY + 1, var6);
+         var4 = new BlockPos(var1, this.lastCheckY + 1, var3);
       }
 
-      BeaconBlockEntity.BeaconBeamSection var8 = var3.checkingBeamSections.isEmpty() ? null : (BeaconBlockEntity.BeaconBeamSection)var3.checkingBeamSections.get(var3.checkingBeamSections.size() - 1);
-      int var9 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
+      BeaconBlockEntity.BeaconBeamSection var5 = this.checkingBeamSections.isEmpty() ? null : (BeaconBlockEntity.BeaconBeamSection)this.checkingBeamSections.get(this.checkingBeamSections.size() - 1);
+      int var6 = this.level.getHeight(Heightmap.Types.WORLD_SURFACE, var1, var3);
 
-      int var10;
-      for(var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
-         BlockState var11 = var0.getBlockState(var7);
-         Block var12 = var11.getBlock();
-         if (var12 instanceof BeaconBeamBlock) {
-            float[] var13 = ((BeaconBeamBlock)var12).getColor().getTextureDiffuseColors();
-            if (var3.checkingBeamSections.size() <= 1) {
-               var8 = new BeaconBlockEntity.BeaconBeamSection(var13);
-               var3.checkingBeamSections.add(var8);
-            } else if (var8 != null) {
-               if (Arrays.equals(var13, var8.color)) {
-                  var8.increaseHeight();
+      int var7;
+      for(var7 = 0; var7 < 10 && var4.getY() <= var6; ++var7) {
+         BlockState var8 = this.level.getBlockState(var4);
+         Block var9 = var8.getBlock();
+         if (var9 instanceof BeaconBeamBlock) {
+            float[] var10 = ((BeaconBeamBlock)var9).getColor().getTextureDiffuseColors();
+            if (this.checkingBeamSections.size() <= 1) {
+               var5 = new BeaconBlockEntity.BeaconBeamSection(var10);
+               this.checkingBeamSections.add(var5);
+            } else if (var5 != null) {
+               if (Arrays.equals(var10, var5.color)) {
+                  var5.increaseHeight();
                } else {
-                  var8 = new BeaconBlockEntity.BeaconBeamSection(new float[]{(var8.color[0] + var13[0]) / 2.0F, (var8.color[1] + var13[1]) / 2.0F, (var8.color[2] + var13[2]) / 2.0F});
-                  var3.checkingBeamSections.add(var8);
+                  var5 = new BeaconBlockEntity.BeaconBeamSection(new float[]{(var5.color[0] + var10[0]) / 2.0F, (var5.color[1] + var10[1]) / 2.0F, (var5.color[2] + var10[2]) / 2.0F});
+                  this.checkingBeamSections.add(var5);
                }
             }
          } else {
-            if (var8 == null || var11.getLightBlock(var0, var7) >= 15 && !var11.is(Blocks.BEDROCK)) {
-               var3.checkingBeamSections.clear();
-               var3.lastCheckY = var9;
+            if (var5 == null || var8.getLightBlock(this.level, var4) >= 15 && var9 != Blocks.BEDROCK) {
+               this.checkingBeamSections.clear();
+               this.lastCheckY = var6;
                break;
             }
 
-            var8.increaseHeight();
+            var5.increaseHeight();
          }
 
-         var7 = var7.above();
-         ++var3.lastCheckY;
+         var4 = var4.above();
+         ++this.lastCheckY;
       }
 
-      var10 = var3.levels;
-      if (var0.getGameTime() % 80L == 0L) {
-         if (!var3.beamSections.isEmpty()) {
-            var3.levels = updateBase(var0, var4, var5, var6);
+      var7 = this.levels;
+      if (this.level.getGameTime() % 80L == 0L) {
+         if (!this.beamSections.isEmpty()) {
+            this.updateBase(var1, var2, var3);
          }
 
-         if (var3.levels > 0 && !var3.beamSections.isEmpty()) {
-            applyEffects(var0, var1, var3.levels, var3.primaryPower, var3.secondaryPower);
-            playSound(var0, var1, SoundEvents.BEACON_AMBIENT);
+         if (this.levels > 0 && !this.beamSections.isEmpty()) {
+            this.applyEffects();
+            this.playSound(SoundEvents.BEACON_AMBIENT);
          }
       }
 
-      if (var3.lastCheckY >= var9) {
-         var3.lastCheckY = var0.getMinBuildHeight() - 1;
-         boolean var15 = var10 > 0;
-         var3.beamSections = var3.checkingBeamSections;
-         if (!var0.isClientSide) {
-            boolean var16 = var3.levels > 0;
-            if (!var15 && var16) {
-               playSound(var0, var1, SoundEvents.BEACON_ACTIVATE);
-               Iterator var17 = var0.getEntitiesOfClass(ServerPlayer.class, (new AABB((double)var4, (double)var5, (double)var6, (double)var4, (double)(var5 - 4), (double)var6)).inflate(10.0D, 5.0D, 10.0D)).iterator();
+      if (this.lastCheckY >= var6) {
+         this.lastCheckY = -1;
+         boolean var12 = var7 > 0;
+         this.beamSections = this.checkingBeamSections;
+         if (!this.level.isClientSide) {
+            boolean var13 = this.levels > 0;
+            if (!var12 && var13) {
+               this.playSound(SoundEvents.BEACON_ACTIVATE);
+               Iterator var14 = this.level.getEntitiesOfClass(ServerPlayer.class, (new AABB((double)var1, (double)var2, (double)var3, (double)var1, (double)(var2 - 4), (double)var3)).inflate(10.0D, 5.0D, 10.0D)).iterator();
 
-               while(var17.hasNext()) {
-                  ServerPlayer var14 = (ServerPlayer)var17.next();
-                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var14, var3.levels);
+               while(var14.hasNext()) {
+                  ServerPlayer var11 = (ServerPlayer)var14.next();
+                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var11, this);
                }
-            } else if (var15 && !var16) {
-               playSound(var0, var1, SoundEvents.BEACON_DEACTIVATE);
+            } else if (var12 && !var13) {
+               this.playSound(SoundEvents.BEACON_DEACTIVATE);
             }
          }
       }
 
    }
 
-   private static int updateBase(Level var0, int var1, int var2, int var3) {
-      int var4 = 0;
+   private void updateBase(int var1, int var2, int var3) {
+      this.levels = 0;
 
-      for(int var5 = 1; var5 <= 4; var4 = var5++) {
-         int var6 = var2 - var5;
-         if (var6 < var0.getMinBuildHeight()) {
+      for(int var4 = 1; var4 <= 4; this.levels = var4++) {
+         int var5 = var2 - var4;
+         if (var5 < 0) {
             break;
          }
 
-         boolean var7 = true;
+         boolean var6 = true;
 
-         for(int var8 = var1 - var5; var8 <= var1 + var5 && var7; ++var8) {
-            for(int var9 = var3 - var5; var9 <= var3 + var5; ++var9) {
-               if (!var0.getBlockState(new BlockPos(var8, var6, var9)).is(BlockTags.BEACON_BASE_BLOCKS)) {
-                  var7 = false;
+         for(int var7 = var1 - var4; var7 <= var1 + var4 && var6; ++var7) {
+            for(int var8 = var3 - var4; var8 <= var3 + var4; ++var8) {
+               Block var9 = this.level.getBlockState(new BlockPos(var7, var5, var8)).getBlock();
+               if (var9 != Blocks.EMERALD_BLOCK && var9 != Blocks.GOLD_BLOCK && var9 != Blocks.DIAMOND_BLOCK && var9 != Blocks.IRON_BLOCK) {
+                  var6 = false;
                   break;
                }
             }
          }
 
-         if (!var7) {
+         if (!var6) {
             break;
          }
       }
 
-      return var4;
    }
 
    public void setRemoved() {
-      playSound(this.level, this.worldPosition, SoundEvents.BEACON_DEACTIVATE);
+      this.playSound(SoundEvents.BEACON_DEACTIVATE);
       super.setRemoved();
    }
 
-   private static void applyEffects(Level var0, BlockPos var1, int var2, @Nullable MobEffect var3, @Nullable MobEffect var4) {
-      if (!var0.isClientSide && var3 != null) {
-         double var5 = (double)(var2 * 10 + 10);
-         byte var7 = 0;
-         if (var2 >= 4 && var3 == var4) {
-            var7 = 1;
+   private void applyEffects() {
+      if (!this.level.isClientSide && this.primaryPower != null) {
+         double var1 = (double)(this.levels * 10 + 10);
+         byte var3 = 0;
+         if (this.levels >= 4 && this.primaryPower == this.secondaryPower) {
+            var3 = 1;
          }
 
-         int var8 = (9 + var2 * 2) * 20;
-         AABB var9 = (new AABB(var1)).inflate(var5).expandTowards(0.0D, (double)var0.getMaxBuildHeight(), 0.0D);
-         List var10 = var0.getEntitiesOfClass(Player.class, var9);
-         Iterator var11 = var10.iterator();
+         int var4 = (9 + this.levels * 2) * 20;
+         AABB var5 = (new AABB(this.worldPosition)).inflate(var1).expandTowards(0.0D, (double)this.level.getMaxBuildHeight(), 0.0D);
+         List var6 = this.level.getEntitiesOfClass(Player.class, var5);
+         Iterator var7 = var6.iterator();
 
-         Player var12;
-         while(var11.hasNext()) {
-            var12 = (Player)var11.next();
-            var12.addEffect(new MobEffectInstance(var3, var8, var7, true, true));
+         Player var8;
+         while(var7.hasNext()) {
+            var8 = (Player)var7.next();
+            var8.addEffect(new MobEffectInstance(this.primaryPower, var4, var3, true, true));
          }
 
-         if (var2 >= 4 && var3 != var4 && var4 != null) {
-            var11 = var10.iterator();
+         if (this.levels >= 4 && this.primaryPower != this.secondaryPower && this.secondaryPower != null) {
+            var7 = var6.iterator();
 
-            while(var11.hasNext()) {
-               var12 = (Player)var11.next();
-               var12.addEffect(new MobEffectInstance(var4, var8, 0, true, true));
+            while(var7.hasNext()) {
+               var8 = (Player)var7.next();
+               var8.addEffect(new MobEffectInstance(this.secondaryPower, var4, 0, true, true));
             }
          }
 
       }
    }
 
-   public static void playSound(Level var0, BlockPos var1, SoundEvent var2) {
-      var0.playSound((Player)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, 1.0F);
+   public void playSound(SoundEvent var1) {
+      this.level.playSound((Player)null, (BlockPos)this.worldPosition, var1, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public List<BeaconBlockEntity.BeaconBeamSection> getBeamSections() {
       return (List)(this.levels == 0 ? ImmutableList.of() : this.beamSections);
+   }
+
+   public int getLevels() {
+      return this.levels;
    }
 
    @Nullable
@@ -258,7 +260,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
    }
 
    public double getViewDistance() {
-      return 256.0D;
+      return 65536.0D;
    }
 
    @Nullable
@@ -301,12 +303,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider {
    }
 
    public Component getDisplayName() {
-      return (Component)(this.name != null ? this.name : new TranslatableComponent("container.beacon"));
-   }
-
-   public void setLevel(Level var1) {
-      super.setLevel(var1);
-      this.lastCheckY = var1.getMinBuildHeight() - 1;
+      return (Component)(this.name != null ? this.name : new TranslatableComponent("container.beacon", new Object[0]));
    }
 
    static {

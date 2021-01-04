@@ -3,17 +3,16 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.phys.Vec3;
@@ -23,12 +22,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class BambooSaplingBlock extends Block implements BonemealableBlock {
    protected static final VoxelShape SAPLING_SHAPE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 12.0D, 12.0D);
 
-   public BambooSaplingBlock(BlockBehaviour.Properties var1) {
+   public BambooSaplingBlock(Block.Properties var1) {
       super(var1);
    }
 
-   public BlockBehaviour.OffsetType getOffsetType() {
-      return BlockBehaviour.OffsetType.XZ;
+   public Block.OffsetType getOffsetType() {
+      return Block.OffsetType.XZ;
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -36,7 +35,7 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
       return SAPLING_SHAPE.move(var5.x, var5.y, var5.z);
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (var4.nextInt(3) == 0 && var2.isEmptyBlock(var3.above()) && var2.getRawBrightness(var3.above(), 0) >= 9) {
          this.growBamboo(var2, var3);
       }
@@ -51,7 +50,7 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
       if (!var1.canSurvive(var4, var5)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         if (var2 == Direction.UP && var3.is(Blocks.BAMBOO)) {
+         if (var2 == Direction.UP && var3.getBlock() == Blocks.BAMBOO) {
             var4.setBlock(var5, Blocks.BAMBOO.defaultBlockState(), 2);
          }
 
@@ -71,12 +70,16 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
       this.growBamboo(var1, var3);
    }
 
    public float getDestroyProgress(BlockState var1, Player var2, BlockGetter var3, BlockPos var4) {
       return var2.getMainHandItem().getItem() instanceof SwordItem ? 1.0F : super.getDestroyProgress(var1, var2, var3, var4);
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    protected void growBamboo(Level var1, BlockPos var2) {

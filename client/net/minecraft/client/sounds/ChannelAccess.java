@@ -6,11 +6,9 @@ import com.mojang.blaze3d.audio.Library;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 
 public class ChannelAccess {
    private final Set<ChannelAccess.ChannelHandle> channels = Sets.newIdentityHashSet();
@@ -23,16 +21,13 @@ public class ChannelAccess {
       this.executor = var2;
    }
 
-   public CompletableFuture<ChannelAccess.ChannelHandle> createHandle(Library.Pool var1) {
-      CompletableFuture var2 = new CompletableFuture();
+   public ChannelAccess.ChannelHandle createHandle(Library.Pool var1) {
+      ChannelAccess.ChannelHandle var2 = new ChannelAccess.ChannelHandle();
       this.executor.execute(() -> {
          Channel var3 = this.library.acquireChannel(var1);
          if (var3 != null) {
-            ChannelAccess.ChannelHandle var4 = new ChannelAccess.ChannelHandle(var3);
-            this.channels.add(var4);
-            var2.complete(var4);
-         } else {
-            var2.complete((Object)null);
+            var2.channel = var3;
+            this.channels.add(var2);
          }
 
       });
@@ -69,17 +64,15 @@ public class ChannelAccess {
    }
 
    public class ChannelHandle {
-      @Nullable
       private Channel channel;
       private boolean stopped;
 
-      public boolean isStopped() {
-         return this.stopped;
+      public ChannelHandle() {
+         super();
       }
 
-      public ChannelHandle(Channel var2) {
-         super();
-         this.channel = var2;
+      public boolean isStopped() {
+         return this.stopped;
       }
 
       public void execute(Consumer<Channel> var1) {

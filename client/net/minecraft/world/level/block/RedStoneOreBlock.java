@@ -4,18 +4,13 @@ import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -24,9 +19,13 @@ import net.minecraft.world.phys.BlockHitResult;
 public class RedStoneOreBlock extends Block {
    public static final BooleanProperty LIT;
 
-   public RedStoneOreBlock(BlockBehaviour.Properties var1) {
+   public RedStoneOreBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
+   }
+
+   public int getLightEmission(BlockState var1) {
+      return (Boolean)var1.getValue(LIT) ? super.getLightEmission(var1) : 0;
    }
 
    public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
@@ -39,15 +38,9 @@ public class RedStoneOreBlock extends Block {
       super.stepOn(var1, var2, var3);
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var2.isClientSide) {
-         spawnParticles(var2, var3);
-      } else {
-         interact(var1, var2, var3);
-      }
-
-      ItemStack var7 = var4.getItemInHand(var5);
-      return var7.getItem() instanceof BlockItem && (new BlockPlaceContext(var4, var5, var7, var6)).canPlace() ? InteractionResult.PASS : InteractionResult.SUCCESS;
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      interact(var1, var2, var3);
+      return super.use(var1, var2, var3, var4, var5, var6);
    }
 
    private static void interact(BlockState var0, Level var1, BlockPos var2) {
@@ -58,18 +51,14 @@ public class RedStoneOreBlock extends Block {
 
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return (Boolean)var1.getValue(LIT);
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if ((Boolean)var1.getValue(LIT)) {
          var2.setBlock(var3, (BlockState)var1.setValue(LIT, false), 3);
       }
 
    }
 
-   public void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4) {
+   public void spawnAfterBreak(BlockState var1, Level var2, BlockPos var3, ItemStack var4) {
       super.spawnAfterBreak(var1, var2, var3, var4);
       if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var4) == 0) {
          int var5 = 1 + var2.random.nextInt(5);

@@ -1,30 +1,27 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import com.mojang.datafixers.Dynamic;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.Deserializer;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
 import net.minecraft.world.level.levelgen.feature.structures.EmptyPoolElement;
 import net.minecraft.world.level.levelgen.feature.structures.JigsawJunction;
 import net.minecraft.world.level.levelgen.feature.structures.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-public class PoolElementStructurePiece extends StructurePiece {
-   private static final Logger LOGGER = LogManager.getLogger();
+public abstract class PoolElementStructurePiece extends StructurePiece {
    protected final StructurePoolElement element;
    protected BlockPos position;
    private final int groundLevelDelta;
@@ -32,30 +29,27 @@ public class PoolElementStructurePiece extends StructurePiece {
    private final List<JigsawJunction> junctions = Lists.newArrayList();
    private final StructureManager structureManager;
 
-   public PoolElementStructurePiece(StructureManager var1, StructurePoolElement var2, BlockPos var3, int var4, Rotation var5, BoundingBox var6) {
-      super(StructurePieceType.JIGSAW, 0);
-      this.structureManager = var1;
-      this.element = var2;
-      this.position = var3;
-      this.groundLevelDelta = var4;
-      this.rotation = var5;
-      this.boundingBox = var6;
+   public PoolElementStructurePiece(StructurePieceType var1, StructureManager var2, StructurePoolElement var3, BlockPos var4, int var5, Rotation var6, BoundingBox var7) {
+      super(var1, 0);
+      this.structureManager = var2;
+      this.element = var3;
+      this.position = var4;
+      this.groundLevelDelta = var5;
+      this.rotation = var6;
+      this.boundingBox = var7;
    }
 
-   public PoolElementStructurePiece(StructureManager var1, CompoundTag var2) {
-      super(StructurePieceType.JIGSAW, var2);
+   public PoolElementStructurePiece(StructureManager var1, CompoundTag var2, StructurePieceType var3) {
+      super(var3, var2);
       this.structureManager = var1;
       this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
       this.groundLevelDelta = var2.getInt("ground_level_delta");
-      DataResult var10001 = StructurePoolElement.CODEC.parse(NbtOps.INSTANCE, var2.getCompound("pool_element"));
-      Logger var10002 = LOGGER;
-      var10002.getClass();
-      this.element = (StructurePoolElement)var10001.resultOrPartial(var10002::error).orElse(EmptyPoolElement.INSTANCE);
+      this.element = (StructurePoolElement)Deserializer.deserialize(new Dynamic(NbtOps.INSTANCE, var2.getCompound("pool_element")), Registry.STRUCTURE_POOL_ELEMENT, "element_type", EmptyPoolElement.INSTANCE);
       this.rotation = Rotation.valueOf(var2.getString("rotation"));
       this.boundingBox = this.element.getBoundingBox(var1, this.position, this.rotation);
-      ListTag var3 = var2.getList("junctions", 10);
+      ListTag var4 = var2.getList("junctions", 10);
       this.junctions.clear();
-      var3.forEach((var1x) -> {
+      var4.forEach((var1x) -> {
          this.junctions.add(JigsawJunction.deserialize(new Dynamic(NbtOps.INSTANCE, var1x)));
       });
    }
@@ -65,12 +59,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       var1.putInt("PosY", this.position.getY());
       var1.putInt("PosZ", this.position.getZ());
       var1.putInt("ground_level_delta", this.groundLevelDelta);
-      DataResult var10000 = StructurePoolElement.CODEC.encodeStart(NbtOps.INSTANCE, this.element);
-      Logger var10001 = LOGGER;
-      var10001.getClass();
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("pool_element", var1x);
-      });
+      var1.put("pool_element", (Tag)this.element.serialize(NbtOps.INSTANCE).getValue());
       var1.putString("rotation", this.rotation.name());
       ListTag var2 = new ListTag();
       Iterator var3 = this.junctions.iterator();
@@ -83,12 +72,8 @@ public class PoolElementStructurePiece extends StructurePiece {
       var1.put("junctions", var2);
    }
 
-   public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-      return this.place(var1, var2, var3, var4, var5, var7, false);
-   }
-
-   public boolean place(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, BlockPos var6, boolean var7) {
-      return this.element.place(this.structureManager, var1, var2, var3, this.position, var6, this.rotation, var5, var4, var7);
+   public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
+      return this.element.place(this.structureManager, var1, this.position, this.rotation, var3, var2);
    }
 
    public void move(int var1, int var2, int var3) {

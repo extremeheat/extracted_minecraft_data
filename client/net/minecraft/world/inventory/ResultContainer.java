@@ -11,7 +11,6 @@ import net.minecraft.world.item.crafting.Recipe;
 
 public class ResultContainer implements Container, RecipeHolder {
    private final NonNullList<ItemStack> itemStacks;
-   @Nullable
    private Recipe<?> recipeUsed;
 
    public ResultContainer() {

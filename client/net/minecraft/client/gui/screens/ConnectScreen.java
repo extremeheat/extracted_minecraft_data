@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,9 +11,9 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerAddress;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
@@ -28,7 +27,7 @@ public class ConnectScreen extends Screen {
    private Connection connection;
    private boolean aborted;
    private final Screen parent;
-   private Component status = new TranslatableComponent("connect.connecting");
+   private Component status = new TranslatableComponent("connect.connecting", new Object[0]);
    private long lastNarration = -1L;
 
    public ConnectScreen(Screen var1, Minecraft var2, ServerData var3) {
@@ -74,7 +73,7 @@ public class ConnectScreen extends Screen {
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var4);
                ConnectScreen.this.minecraft.execute(() -> {
-                  ConnectScreen.this.minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, CommonComponents.CONNECT_FAILED, new TranslatableComponent("disconnect.genericReason", new Object[]{"Unknown host"})));
+                  ConnectScreen.this.minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, "connect.failed", new TranslatableComponent("disconnect.genericReason", new Object[]{"Unknown host"})));
                });
             } catch (Exception var5) {
                if (ConnectScreen.this.aborted) {
@@ -84,7 +83,7 @@ public class ConnectScreen extends Screen {
                ConnectScreen.LOGGER.error("Couldn't connect to server", var5);
                String var3 = var1x == null ? var5.toString() : var5.toString().replaceAll(var1x + ":" + var2, "");
                ConnectScreen.this.minecraft.execute(() -> {
-                  ConnectScreen.this.minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, CommonComponents.CONNECT_FAILED, new TranslatableComponent("disconnect.genericReason", new Object[]{var3})));
+                  ConnectScreen.this.minecraft.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, "connect.failed", new TranslatableComponent("disconnect.genericReason", new Object[]{var3})));
                });
             }
 
@@ -114,25 +113,25 @@ public class ConnectScreen extends Screen {
    }
 
    protected void init() {
-      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, I18n.get("gui.cancel"), (var1) -> {
          this.aborted = true;
          if (this.connection != null) {
-            this.connection.disconnect(new TranslatableComponent("connect.aborted"));
+            this.connection.disconnect(new TranslatableComponent("connect.aborted", new Object[0]));
          }
 
          this.minecraft.setScreen(this.parent);
       }));
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      long var5 = Util.getMillis();
-      if (var5 - this.lastNarration > 2000L) {
-         this.lastNarration = var5;
-         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.joining")).getString());
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      long var4 = Util.getMillis();
+      if (var4 - this.lastNarration > 2000L) {
+         this.lastNarration = var4;
+         NarratorChatListener.INSTANCE.sayNow((new TranslatableComponent("narrator.joining", new Object[0])).getString());
       }
 
-      drawCenteredString(var1, this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);
-      super.render(var1, var2, var3, var4);
+      this.drawCenteredString(this.font, this.status.getColoredString(), this.width / 2, this.height / 2 - 50, 16777215);
+      super.render(var1, var2, var3);
    }
 }

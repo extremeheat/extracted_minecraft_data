@@ -1,9 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PandaModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.util.Mth;
@@ -16,20 +15,24 @@ public class PandaHoldsItemLayer extends RenderLayer<Panda, PandaModel<Panda>> {
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Panda var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      ItemStack var11 = var4.getItemBySlot(EquipmentSlot.MAINHAND);
-      if (var4.isSitting() && !var4.isScared()) {
-         float var12 = -0.6F;
-         float var13 = 1.4F;
-         if (var4.isEating()) {
-            var12 -= 0.2F * Mth.sin(var8 * 0.6F) + 0.2F;
-            var13 -= 0.09F * Mth.sin(var8 * 0.6F);
+   public void render(Panda var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.MAINHAND);
+      if (var1.isSitting() && !var9.isEmpty() && !var1.isScared()) {
+         float var10 = -0.6F;
+         float var11 = 1.4F;
+         if (var1.isEating()) {
+            var10 -= 0.2F * Mth.sin(var5 * 0.6F) + 0.2F;
+            var11 -= 0.09F * Mth.sin(var5 * 0.6F);
          }
 
-         var1.pushPose();
-         var1.translate(0.10000000149011612D, (double)var13, (double)var12);
-         Minecraft.getInstance().getItemInHandRenderer().renderItem(var4, var11, ItemTransforms.TransformType.GROUND, false, var1, var2, var3);
-         var1.popPose();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.1F, var11, var10);
+         Minecraft.getInstance().getItemRenderer().renderWithMobState(var9, var1, ItemTransforms.TransformType.GROUND, false);
+         GlStateManager.popMatrix();
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

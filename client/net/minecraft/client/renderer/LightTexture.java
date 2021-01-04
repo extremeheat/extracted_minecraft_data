@@ -1,39 +1,32 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class LightTexture implements AutoCloseable {
    private final DynamicTexture lightTexture;
    private final NativeImage lightPixels;
    private final ResourceLocation lightTextureLocation;
    private boolean updateLightTexture;
-   private float blockLightRedFlicker;
+   private float blockLightRed;
+   private float blockLightRedTotal;
    private final GameRenderer renderer;
    private final Minecraft minecraft;
 
-   public LightTexture(GameRenderer var1, Minecraft var2) {
+   public LightTexture(GameRenderer var1) {
       super();
       this.renderer = var1;
-      this.minecraft = var2;
+      this.minecraft = var1.getMinecraft();
       this.lightTexture = new DynamicTexture(16, 16, false);
       this.lightTextureLocation = this.minecraft.getTextureManager().register("light_map", this.lightTexture);
       this.lightPixels = this.lightTexture.getPixels();
-
-      for(int var3 = 0; var3 < 16; ++var3) {
-         for(int var4 = 0; var4 < 16; ++var4) {
-            this.lightPixels.setPixelRGBA(var4, var3, -1);
-         }
-      }
-
-      this.lightTexture.upload();
    }
 
    public void close() {
@@ -41,139 +34,161 @@ public class LightTexture implements AutoCloseable {
    }
 
    public void tick() {
-      this.blockLightRedFlicker = (float)((double)this.blockLightRedFlicker + (Math.random() - Math.random()) * Math.random() * Math.random() * 0.1D);
-      this.blockLightRedFlicker = (float)((double)this.blockLightRedFlicker * 0.9D);
+      this.blockLightRedTotal = (float)((double)this.blockLightRedTotal + (Math.random() - Math.random()) * Math.random() * Math.random());
+      this.blockLightRedTotal = (float)((double)this.blockLightRedTotal * 0.9D);
+      this.blockLightRed += this.blockLightRedTotal - this.blockLightRed;
       this.updateLightTexture = true;
    }
 
    public void turnOffLightLayer() {
-      RenderSystem.activeTexture(33986);
-      RenderSystem.disableTexture();
-      RenderSystem.activeTexture(33984);
+      GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+      GlStateManager.disableTexture();
+      GlStateManager.activeTexture(GLX.GL_TEXTURE0);
    }
 
    public void turnOnLightLayer() {
-      RenderSystem.activeTexture(33986);
-      RenderSystem.matrixMode(5890);
-      RenderSystem.loadIdentity();
+      GlStateManager.activeTexture(GLX.GL_TEXTURE1);
+      GlStateManager.matrixMode(5890);
+      GlStateManager.loadIdentity();
       float var1 = 0.00390625F;
-      RenderSystem.scalef(0.00390625F, 0.00390625F, 0.00390625F);
-      RenderSystem.translatef(8.0F, 8.0F, 8.0F);
-      RenderSystem.matrixMode(5888);
+      GlStateManager.scalef(0.00390625F, 0.00390625F, 0.00390625F);
+      GlStateManager.translatef(8.0F, 8.0F, 8.0F);
+      GlStateManager.matrixMode(5888);
       this.minecraft.getTextureManager().bind(this.lightTextureLocation);
-      RenderSystem.texParameter(3553, 10241, 9729);
-      RenderSystem.texParameter(3553, 10240, 9729);
-      RenderSystem.texParameter(3553, 10242, 10496);
-      RenderSystem.texParameter(3553, 10243, 10496);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      RenderSystem.enableTexture();
-      RenderSystem.activeTexture(33984);
+      GlStateManager.texParameter(3553, 10241, 9729);
+      GlStateManager.texParameter(3553, 10240, 9729);
+      GlStateManager.texParameter(3553, 10242, 10496);
+      GlStateManager.texParameter(3553, 10243, 10496);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.enableTexture();
+      GlStateManager.activeTexture(GLX.GL_TEXTURE0);
    }
 
    public void updateLightTexture(float var1) {
       if (this.updateLightTexture) {
-         this.updateLightTexture = false;
          this.minecraft.getProfiler().push("lightTex");
-         ClientLevel var2 = this.minecraft.level;
+         MultiPlayerLevel var2 = this.minecraft.level;
          if (var2 != null) {
             float var3 = var2.getSkyDarken(1.0F);
-            float var4;
-            if (var2.getSkyFlashTime() > 0) {
-               var4 = 1.0F;
-            } else {
-               var4 = var3 * 0.95F + 0.05F;
-            }
-
+            float var4 = var3 * 0.95F + 0.05F;
             float var6 = this.minecraft.player.getWaterVision();
             float var5;
             if (this.minecraft.player.hasEffect(MobEffects.NIGHT_VISION)) {
-               var5 = GameRenderer.getNightVisionScale(this.minecraft.player, var1);
+               var5 = this.renderer.getNightVisionScale(this.minecraft.player, var1);
             } else if (var6 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONDUIT_POWER)) {
                var5 = var6;
             } else {
                var5 = 0.0F;
             }
 
-            Vector3f var7 = new Vector3f(var3, var3, 1.0F);
-            var7.lerp(new Vector3f(1.0F, 1.0F, 1.0F), 0.35F);
-            float var8 = this.blockLightRedFlicker + 1.5F;
-            Vector3f var9 = new Vector3f();
-
-            for(int var10 = 0; var10 < 16; ++var10) {
-               for(int var11 = 0; var11 < 16; ++var11) {
-                  float var12 = this.getBrightness(var2, var10) * var4;
-                  float var13 = this.getBrightness(var2, var11) * var8;
-                  float var15 = var13 * ((var13 * 0.6F + 0.4F) * 0.6F + 0.4F);
-                  float var16 = var13 * (var13 * var13 * 0.6F + 0.4F);
-                  var9.set(var13, var15, var16);
-                  float var18;
-                  Vector3f var19;
-                  if (var2.effects().forceBrightLightmap()) {
-                     var9.lerp(new Vector3f(0.99F, 1.12F, 1.0F), 0.25F);
-                  } else {
-                     Vector3f var17 = var7.copy();
-                     var17.mul(var12);
-                     var9.add(var17);
-                     var9.lerp(new Vector3f(0.75F, 0.75F, 0.75F), 0.04F);
-                     if (this.renderer.getDarkenWorldAmount(var1) > 0.0F) {
-                        var18 = this.renderer.getDarkenWorldAmount(var1);
-                        var19 = var9.copy();
-                        var19.mul(0.7F, 0.6F, 0.6F);
-                        var9.lerp(var19, var18);
-                     }
+            for(int var7 = 0; var7 < 16; ++var7) {
+               for(int var8 = 0; var8 < 16; ++var8) {
+                  float var9 = var2.dimension.getBrightnessRamp()[var7] * var4;
+                  float var10 = var2.dimension.getBrightnessRamp()[var8] * (this.blockLightRed * 0.1F + 1.5F);
+                  if (var2.getSkyFlashTime() > 0) {
+                     var9 = var2.dimension.getBrightnessRamp()[var7];
                   }
 
-                  var9.clamp(0.0F, 1.0F);
-                  float var23;
+                  float var11 = var9 * (var3 * 0.65F + 0.35F);
+                  float var12 = var9 * (var3 * 0.65F + 0.35F);
+                  float var15 = var10 * ((var10 * 0.6F + 0.4F) * 0.6F + 0.4F);
+                  float var16 = var10 * (var10 * var10 * 0.6F + 0.4F);
+                  float var17 = var11 + var10;
+                  float var18 = var12 + var15;
+                  float var19 = var9 + var16;
+                  var17 = var17 * 0.96F + 0.03F;
+                  var18 = var18 * 0.96F + 0.03F;
+                  var19 = var19 * 0.96F + 0.03F;
+                  float var20;
+                  if (this.renderer.getDarkenWorldAmount(var1) > 0.0F) {
+                     var20 = this.renderer.getDarkenWorldAmount(var1);
+                     var17 = var17 * (1.0F - var20) + var17 * 0.7F * var20;
+                     var18 = var18 * (1.0F - var20) + var18 * 0.6F * var20;
+                     var19 = var19 * (1.0F - var20) + var19 * 0.6F * var20;
+                  }
+
+                  if (var2.dimension.getType() == DimensionType.THE_END) {
+                     var17 = 0.22F + var10 * 0.75F;
+                     var18 = 0.28F + var15 * 0.75F;
+                     var19 = 0.25F + var16 * 0.75F;
+                  }
+
                   if (var5 > 0.0F) {
-                     var23 = Math.max(var9.x(), Math.max(var9.y(), var9.z()));
-                     if (var23 < 1.0F) {
-                        var18 = 1.0F / var23;
-                        var19 = var9.copy();
-                        var19.mul(var18);
-                        var9.lerp(var19, var5);
+                     var20 = 1.0F / var17;
+                     if (var20 > 1.0F / var18) {
+                        var20 = 1.0F / var18;
                      }
+
+                     if (var20 > 1.0F / var19) {
+                        var20 = 1.0F / var19;
+                     }
+
+                     var17 = var17 * (1.0F - var5) + var17 * var20 * var5;
+                     var18 = var18 * (1.0F - var5) + var18 * var20 * var5;
+                     var19 = var19 * (1.0F - var5) + var19 * var20 * var5;
                   }
 
-                  var23 = (float)this.minecraft.options.gamma;
-                  Vector3f var24 = var9.copy();
-                  var24.map(this::notGamma);
-                  var9.lerp(var24, var23);
-                  var9.lerp(new Vector3f(0.75F, 0.75F, 0.75F), 0.04F);
-                  var9.clamp(0.0F, 1.0F);
-                  var9.mul(255.0F);
-                  boolean var25 = true;
-                  int var20 = (int)var9.x();
-                  int var21 = (int)var9.y();
-                  int var22 = (int)var9.z();
-                  this.lightPixels.setPixelRGBA(var11, var10, -16777216 | var22 << 16 | var21 << 8 | var20);
+                  if (var17 > 1.0F) {
+                     var17 = 1.0F;
+                  }
+
+                  if (var18 > 1.0F) {
+                     var18 = 1.0F;
+                  }
+
+                  if (var19 > 1.0F) {
+                     var19 = 1.0F;
+                  }
+
+                  var20 = (float)this.minecraft.options.gamma;
+                  float var21 = 1.0F - var17;
+                  float var22 = 1.0F - var18;
+                  float var23 = 1.0F - var19;
+                  var21 = 1.0F - var21 * var21 * var21 * var21;
+                  var22 = 1.0F - var22 * var22 * var22 * var22;
+                  var23 = 1.0F - var23 * var23 * var23 * var23;
+                  var17 = var17 * (1.0F - var20) + var21 * var20;
+                  var18 = var18 * (1.0F - var20) + var22 * var20;
+                  var19 = var19 * (1.0F - var20) + var23 * var20;
+                  var17 = var17 * 0.96F + 0.03F;
+                  var18 = var18 * 0.96F + 0.03F;
+                  var19 = var19 * 0.96F + 0.03F;
+                  if (var17 > 1.0F) {
+                     var17 = 1.0F;
+                  }
+
+                  if (var18 > 1.0F) {
+                     var18 = 1.0F;
+                  }
+
+                  if (var19 > 1.0F) {
+                     var19 = 1.0F;
+                  }
+
+                  if (var17 < 0.0F) {
+                     var17 = 0.0F;
+                  }
+
+                  if (var18 < 0.0F) {
+                     var18 = 0.0F;
+                  }
+
+                  if (var19 < 0.0F) {
+                     var19 = 0.0F;
+                  }
+
+                  boolean var24 = true;
+                  int var25 = (int)(var17 * 255.0F);
+                  int var26 = (int)(var18 * 255.0F);
+                  int var27 = (int)(var19 * 255.0F);
+                  this.lightPixels.setPixelRGBA(var8, var7, -16777216 | var27 << 16 | var26 << 8 | var25);
                }
             }
 
             this.lightTexture.upload();
+            this.updateLightTexture = false;
             this.minecraft.getProfiler().pop();
          }
       }
-   }
-
-   private float notGamma(float var1) {
-      float var2 = 1.0F - var1;
-      return 1.0F - var2 * var2 * var2 * var2;
-   }
-
-   private float getBrightness(Level var1, int var2) {
-      return var1.dimensionType().brightness(var2);
-   }
-
-   public static int pack(int var0, int var1) {
-      return var0 << 4 | var1 << 20;
-   }
-
-   public static int block(int var0) {
-      return var0 >> 4 & '\uffff';
-   }
-
-   public static int sky(int var0) {
-      return var0 >> 20 & '\uffff';
    }
 }

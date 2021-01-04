@@ -15,7 +15,7 @@ import net.minecraft.server.players.PlayerList;
 public class BanListCommands {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("banlist").requires((var0x) -> {
-         return var0x.hasPermission(3);
+         return (var0x.getServer().getPlayerList().getBans().isEnabled() || var0x.getServer().getPlayerList().getIpBans().isEnabled()) && var0x.hasPermission(3);
       })).executes((var0x) -> {
          PlayerList var1 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
          return showList((CommandSourceStack)var0x.getSource(), Lists.newArrayList(Iterables.concat(var1.getBans().getEntries(), var1.getIpBans().getEntries())));
@@ -28,7 +28,7 @@ public class BanListCommands {
 
    private static int showList(CommandSourceStack var0, Collection<? extends BanListEntry<?>> var1) {
       if (var1.isEmpty()) {
-         var0.sendSuccess(new TranslatableComponent("commands.banlist.none"), false);
+         var0.sendSuccess(new TranslatableComponent("commands.banlist.none", new Object[0]), false);
       } else {
          var0.sendSuccess(new TranslatableComponent("commands.banlist.list", new Object[]{var1.size()}), false);
          Iterator var2 = var1.iterator();

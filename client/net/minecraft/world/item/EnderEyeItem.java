@@ -2,7 +2,6 @@ package net.minecraft.world.item;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,7 +11,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,7 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EndPortalFrameBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -33,7 +30,7 @@ public class EnderEyeItem extends Item {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      if (var4.is(Blocks.END_PORTAL_FRAME) && !(Boolean)var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
+      if (var4.getBlock() == Blocks.END_PORTAL_FRAME && !(Boolean)var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
          if (var2.isClientSide) {
             return InteractionResult.SUCCESS;
          } else {
@@ -56,7 +53,7 @@ public class EnderEyeItem extends Item {
                var2.globalLevelEvent(1038, var7.offset(1, 0, 1), 0);
             }
 
-            return InteractionResult.CONSUME;
+            return InteractionResult.SUCCESS;
          }
       } else {
          return InteractionResult.PASS;
@@ -65,15 +62,15 @@ public class EnderEyeItem extends Item {
 
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.NONE);
-      if (var5.getType() == HitResult.Type.BLOCK && var1.getBlockState(((BlockHitResult)var5).getBlockPos()).is(Blocks.END_PORTAL_FRAME)) {
-         return InteractionResultHolder.pass(var4);
+      HitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.NONE);
+      if (var5.getType() == HitResult.Type.BLOCK && var1.getBlockState(((BlockHitResult)var5).getBlockPos()).getBlock() == Blocks.END_PORTAL_FRAME) {
+         return new InteractionResultHolder(InteractionResult.PASS, var4);
       } else {
          var2.startUsingItem(var3);
-         if (var1 instanceof ServerLevel) {
-            BlockPos var6 = ((ServerLevel)var1).getChunkSource().getGenerator().findNearestMapFeature((ServerLevel)var1, StructureFeature.STRONGHOLD, var2.blockPosition(), 100, false);
+         if (!var1.isClientSide) {
+            BlockPos var6 = var1.getChunkSource().getGenerator().findNearestMapFeature(var1, "Stronghold", new BlockPos(var2), 100, false);
             if (var6 != null) {
-               EyeOfEnder var7 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5D), var2.getZ());
+               EyeOfEnder var7 = new EyeOfEnder(var1, var2.x, var2.y + (double)(var2.getBbHeight() / 2.0F), var2.z);
                var7.setItem(var4);
                var7.signalTo(var6);
                var1.addFreshEntity(var7);
@@ -81,19 +78,18 @@ public class EnderEyeItem extends Item {
                   CriteriaTriggers.USED_ENDER_EYE.trigger((ServerPlayer)var2, var6);
                }
 
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-               var1.levelEvent((Player)null, 1003, var2.blockPosition(), 0);
-               if (!var2.getAbilities().instabuild) {
+               var1.playSound((Player)null, var2.x, var2.y, var2.z, SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 0.5F, 0.4F / (random.nextFloat() * 0.4F + 0.8F));
+               var1.levelEvent((Player)null, 1003, new BlockPos(var2), 0);
+               if (!var2.abilities.instabuild) {
                   var4.shrink(1);
                }
 
                var2.awardStat(Stats.ITEM_USED.get(this));
-               var2.swing(var3, true);
-               return InteractionResultHolder.success(var4);
+               return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
             }
          }
 
-         return InteractionResultHolder.consume(var4);
+         return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
       }
    }
 }

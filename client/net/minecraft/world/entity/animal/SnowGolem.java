@@ -8,20 +8,14 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.Shearable;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
@@ -29,6 +23,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.item.ItemStack;
@@ -37,9 +32,8 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
-public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
+public class SnowGolem extends AbstractGolem implements RangedAttackMob {
    private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID;
 
    public SnowGolem(EntityType<? extends SnowGolem> var1, Level var2) {
@@ -56,8 +50,10 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       }));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 4.0D).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.20000000298023224D);
    }
 
    protected void defineSynchedData() {
@@ -78,16 +74,16 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    }
 
-   public boolean isSensitiveToWater() {
-      return true;
-   }
-
    public void aiStep() {
       super.aiStep();
       if (!this.level.isClientSide) {
-         int var1 = Mth.floor(this.getX());
-         int var2 = Mth.floor(this.getY());
-         int var3 = Mth.floor(this.getZ());
+         int var1 = Mth.floor(this.x);
+         int var2 = Mth.floor(this.y);
+         int var3 = Mth.floor(this.z);
+         if (this.isInWaterRainOrBubble()) {
+            this.hurt(DamageSource.DROWN, 1.0F);
+         }
+
          if (this.level.getBiome(new BlockPos(var1, 0, var3)).getTemperature(new BlockPos(var1, var2, var3)) > 1.0F) {
             this.hurt(DamageSource.ON_FIRE, 1.0F);
          }
@@ -99,9 +95,9 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
          BlockState var4 = Blocks.SNOW.defaultBlockState();
 
          for(int var5 = 0; var5 < 4; ++var5) {
-            var1 = Mth.floor(this.getX() + (double)((float)(var5 % 2 * 2 - 1) * 0.25F));
-            var2 = Mth.floor(this.getY());
-            var3 = Mth.floor(this.getZ() + (double)((float)(var5 / 2 % 2 * 2 - 1) * 0.25F));
+            var1 = Mth.floor(this.x + (double)((float)(var5 % 2 * 2 - 1) * 0.25F));
+            var2 = Mth.floor(this.y);
+            var3 = Mth.floor(this.z + (double)((float)(var5 / 2 % 2 * 2 - 1) * 0.25F));
             BlockPos var6 = new BlockPos(var1, var2, var3);
             if (this.level.getBlockState(var6).isAir() && this.level.getBiome(var6).getTemperature(var6) < 0.8F && var4.canSurvive(this.level, var6)) {
                this.level.setBlockAndUpdate(var6, var4);
@@ -113,13 +109,13 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    public void performRangedAttack(LivingEntity var1, float var2) {
       Snowball var3 = new Snowball(this.level, this);
-      double var4 = var1.getEyeY() - 1.100000023841858D;
-      double var6 = var1.getX() - this.getX();
-      double var8 = var4 - var3.getY();
-      double var10 = var1.getZ() - this.getZ();
+      double var4 = var1.y + (double)var1.getEyeHeight() - 1.100000023841858D;
+      double var6 = var1.x - this.x;
+      double var8 = var4 - var3.y;
+      double var10 = var1.z - this.z;
       float var12 = Mth.sqrt(var6 * var6 + var10 * var10) * 0.2F;
       var3.shoot(var6, var8 + (double)var12, var10, 1.6F, 12.0F);
-      this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+      this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
       this.level.addFreshEntity(var3);
    }
 
@@ -127,33 +123,16 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       return 1.7F;
    }
 
-   protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   protected boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         this.shear(SoundSource.PLAYERS);
-         if (!this.level.isClientSide) {
-            var3.hurtAndBreak(1, var1, (var1x) -> {
-               var1x.broadcastBreakEvent(var2);
-            });
-         }
-
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else {
-         return InteractionResult.PASS;
-      }
-   }
-
-   public void shear(SoundSource var1) {
-      this.level.playSound((Player)null, (Entity)this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
-      if (!this.level.isClientSide()) {
+      if (var3.getItem() == Items.SHEARS && this.hasPumpkin() && !this.level.isClientSide) {
          this.setPumpkin(false);
-         this.spawnAtLocation(new ItemStack(Items.CARVED_PUMPKIN), 1.7F);
+         var3.hurtAndBreak(1, var1, (var1x) -> {
+            var1x.broadcastBreakEvent(var2);
+         });
       }
 
-   }
-
-   public boolean readyForShearing() {
-      return this.isAlive() && this.hasPumpkin();
+      return super.mobInteract(var1, var2);
    }
 
    public boolean hasPumpkin() {
@@ -183,10 +162,6 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    @Nullable
    protected SoundEvent getDeathSound() {
       return SoundEvents.SNOW_GOLEM_DEATH;
-   }
-
-   public Vec3 getLeashOffset() {
-      return new Vec3(0.0D, (double)(0.75F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
    }
 
    static {

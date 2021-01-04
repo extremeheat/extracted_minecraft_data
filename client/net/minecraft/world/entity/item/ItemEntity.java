@@ -2,11 +2,11 @@ package net.minecraft.world.entity.item;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
@@ -14,9 +14,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -29,6 +27,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemEntity extends Entity {
@@ -58,16 +57,7 @@ public class ItemEntity extends Entity {
       this.setItem(var8);
    }
 
-   private ItemEntity(ItemEntity var1) {
-      super(var1.getType(), var1.level);
-      this.health = 5;
-      this.setItem(var1.getItem().copy());
-      this.copyPosition(var1);
-      this.age = var1.age;
-      this.bobOffs = var1.bobOffs;
-   }
-
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -77,22 +67,19 @@ public class ItemEntity extends Entity {
 
    public void tick() {
       if (this.getItem().isEmpty()) {
-         this.discard();
+         this.remove();
       } else {
          super.tick();
          if (this.pickupDelay > 0 && this.pickupDelay != 32767) {
             --this.pickupDelay;
          }
 
-         this.xo = this.getX();
-         this.yo = this.getY();
-         this.zo = this.getZ();
+         this.xo = this.x;
+         this.yo = this.y;
+         this.zo = this.z;
          Vec3 var1 = this.getDeltaMovement();
-         float var2 = this.getEyeHeight() - 0.11111111F;
-         if (this.isInWater() && this.getFluidHeight(FluidTags.WATER) > (double)var2) {
+         if (this.isUnderLiquid(FluidTags.WATER)) {
             this.setUnderwaterMovement();
-         } else if (this.isInLava() && this.getFluidHeight(FluidTags.LAVA) > (double)var2) {
-            this.setUnderLavaMovement();
          } else if (!this.isNoGravity()) {
             this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
          }
@@ -102,30 +89,28 @@ public class ItemEntity extends Entity {
          } else {
             this.noPhysics = !this.level.noCollision(this);
             if (this.noPhysics) {
-               this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.getZ());
+               this.checkInBlock(this.x, (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0D, this.z);
             }
          }
 
          if (!this.onGround || getHorizontalDistanceSqr(this.getDeltaMovement()) > 9.999999747378752E-6D || (this.tickCount + this.getId()) % 4 == 0) {
             this.move(MoverType.SELF, this.getDeltaMovement());
-            float var3 = 0.98F;
+            float var2 = 0.98F;
             if (this.onGround) {
-               var3 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getBlock().getFriction() * 0.98F;
+               var2 = this.level.getBlockState(new BlockPos(this.x, this.getBoundingBox().minY - 1.0D, this.z)).getBlock().getFriction() * 0.98F;
             }
 
-            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var3, 0.98D, (double)var3));
+            this.setDeltaMovement(this.getDeltaMovement().multiply((double)var2, 0.98D, (double)var2));
             if (this.onGround) {
-               Vec3 var4 = this.getDeltaMovement();
-               if (var4.y < 0.0D) {
-                  this.setDeltaMovement(var4.multiply(1.0D, -0.5D, 1.0D));
-               }
+               this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, -0.5D, 1.0D));
             }
          }
 
-         boolean var7 = Mth.floor(this.xo) != Mth.floor(this.getX()) || Mth.floor(this.yo) != Mth.floor(this.getY()) || Mth.floor(this.zo) != Mth.floor(this.getZ());
-         int var8 = var7 ? 2 : 40;
-         if (this.tickCount % var8 == 0) {
-            if (this.level.getFluidState(this.blockPosition()).is(FluidTags.LAVA) && !this.fireImmune()) {
+         boolean var6 = Mth.floor(this.xo) != Mth.floor(this.x) || Mth.floor(this.yo) != Mth.floor(this.y) || Mth.floor(this.zo) != Mth.floor(this.z);
+         int var3 = var6 ? 2 : 40;
+         if (this.tickCount % var3 == 0) {
+            if (this.level.getFluidState(new BlockPos(this)).is(FluidTags.LAVA)) {
+               this.setDeltaMovement((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), 0.20000000298023224D, (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
                this.playSound(SoundEvents.GENERIC_BURN, 0.4F, 2.0F + this.random.nextFloat() * 0.4F);
             }
 
@@ -138,16 +123,16 @@ public class ItemEntity extends Entity {
             ++this.age;
          }
 
-         this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
+         this.hasImpulse |= this.updateInWaterState();
          if (!this.level.isClientSide) {
-            double var5 = this.getDeltaMovement().subtract(var1).lengthSqr();
-            if (var5 > 0.01D) {
+            double var4 = this.getDeltaMovement().subtract(var1).lengthSqr();
+            if (var4 > 0.01D) {
                this.hasImpulse = true;
             }
          }
 
          if (!this.level.isClientSide && this.age >= 6000) {
-            this.discard();
+            this.remove();
          }
 
       }
@@ -158,29 +143,23 @@ public class ItemEntity extends Entity {
       this.setDeltaMovement(var1.x * 0.9900000095367432D, var1.y + (double)(var1.y < 0.05999999865889549D ? 5.0E-4F : 0.0F), var1.z * 0.9900000095367432D);
    }
 
-   private void setUnderLavaMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.949999988079071D, var1.y + (double)(var1.y < 0.05999999865889549D ? 5.0E-4F : 0.0F), var1.z * 0.949999988079071D);
-   }
-
    private void mergeWithNeighbours() {
-      if (this.isMergable()) {
-         List var1 = this.level.getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5D, 0.0D, 0.5D), (var1x) -> {
-            return var1x != this && var1x.isMergable();
-         });
+      List var1 = this.level.getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5D, 0.0D, 0.5D), (var1x) -> {
+         return var1x != this && var1x.isMergable();
+      });
+      if (!var1.isEmpty()) {
          Iterator var2 = var1.iterator();
 
          while(var2.hasNext()) {
             ItemEntity var3 = (ItemEntity)var2.next();
-            if (var3.isMergable()) {
-               this.tryToMerge(var3);
-               if (this.isRemoved()) {
-                  break;
-               }
+            if (!this.isMergable()) {
+               return;
             }
-         }
 
+            this.merge(var3);
+         }
       }
+
    }
 
    private boolean isMergable() {
@@ -188,70 +167,58 @@ public class ItemEntity extends Entity {
       return this.isAlive() && this.pickupDelay != 32767 && this.age != -32768 && this.age < 6000 && var1.getCount() < var1.getMaxStackSize();
    }
 
-   private void tryToMerge(ItemEntity var1) {
+   private void merge(ItemEntity var1) {
       ItemStack var2 = this.getItem();
       ItemStack var3 = var1.getItem();
-      if (Objects.equals(this.getOwner(), var1.getOwner()) && areMergable(var2, var3)) {
-         if (var3.getCount() < var2.getCount()) {
-            merge(this, var2, var1, var3);
-         } else {
-            merge(var1, var3, this, var2);
+      if (var3.getItem() == var2.getItem()) {
+         if (var3.getCount() + var2.getCount() <= var3.getMaxStackSize()) {
+            if (!(var3.hasTag() ^ var2.hasTag())) {
+               if (!var3.hasTag() || var3.getTag().equals(var2.getTag())) {
+                  if (var3.getCount() < var2.getCount()) {
+                     merge(this, var2, var1, var3);
+                  } else {
+                     merge(var1, var3, this, var2);
+                  }
+
+               }
+            }
          }
-
       }
-   }
-
-   public static boolean areMergable(ItemStack var0, ItemStack var1) {
-      if (!var1.is(var0.getItem())) {
-         return false;
-      } else if (var1.getCount() + var0.getCount() > var1.getMaxStackSize()) {
-         return false;
-      } else if (var1.hasTag() ^ var0.hasTag()) {
-         return false;
-      } else {
-         return !var1.hasTag() || var1.getTag().equals(var0.getTag());
-      }
-   }
-
-   public static ItemStack merge(ItemStack var0, ItemStack var1, int var2) {
-      int var3 = Math.min(Math.min(var0.getMaxStackSize(), var2) - var0.getCount(), var1.getCount());
-      ItemStack var4 = var0.copy();
-      var4.grow(var3);
-      var1.shrink(var3);
-      return var4;
-   }
-
-   private static void merge(ItemEntity var0, ItemStack var1, ItemStack var2) {
-      ItemStack var3 = merge(var1, var2, 64);
-      var0.setItem(var3);
    }
 
    private static void merge(ItemEntity var0, ItemStack var1, ItemEntity var2, ItemStack var3) {
-      merge(var0, var1, var3);
+      int var4 = Math.min(var1.getMaxStackSize() - var1.getCount(), var3.getCount());
+      ItemStack var5 = var1.copy();
+      var5.grow(var4);
+      var0.setItem(var5);
+      var3.shrink(var4);
+      var2.setItem(var3);
       var0.pickupDelay = Math.max(var0.pickupDelay, var2.pickupDelay);
       var0.age = Math.min(var0.age, var2.age);
       if (var3.isEmpty()) {
-         var2.discard();
+         var2.remove();
       }
 
    }
 
-   public boolean fireImmune() {
-      return this.getItem().getItem().isFireResistant() || super.fireImmune();
+   public void setShortLifeTime() {
+      this.age = 4800;
+   }
+
+   protected void burn(int var1) {
+      this.hurt(DamageSource.IN_FIRE, (float)var1);
    }
 
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.isExplosion()) {
-         return false;
-      } else if (!this.getItem().getItem().canBeHurtBy(var1)) {
+      } else if (!this.getItem().isEmpty() && this.getItem().getItem() == Items.NETHER_STAR && var1.isExplosion()) {
          return false;
       } else {
          this.markHurt();
          this.health = (int)((float)this.health - var2);
          if (this.health <= 0) {
-            this.discard();
+            this.remove();
          }
 
          return false;
@@ -263,11 +230,11 @@ public class ItemEntity extends Entity {
       var1.putShort("Age", (short)this.age);
       var1.putShort("PickupDelay", (short)this.pickupDelay);
       if (this.getThrower() != null) {
-         var1.putUUID("Thrower", this.getThrower());
+         var1.put("Thrower", NbtUtils.createUUIDTag(this.getThrower()));
       }
 
       if (this.getOwner() != null) {
-         var1.putUUID("Owner", this.getOwner());
+         var1.put("Owner", NbtUtils.createUUIDTag(this.getOwner()));
       }
 
       if (!this.getItem().isEmpty()) {
@@ -283,18 +250,18 @@ public class ItemEntity extends Entity {
          this.pickupDelay = var1.getShort("PickupDelay");
       }
 
-      if (var1.hasUUID("Owner")) {
-         this.owner = var1.getUUID("Owner");
+      if (var1.contains("Owner", 10)) {
+         this.owner = NbtUtils.loadUUIDTag(var1.getCompound("Owner"));
       }
 
-      if (var1.hasUUID("Thrower")) {
-         this.thrower = var1.getUUID("Thrower");
+      if (var1.contains("Thrower", 10)) {
+         this.thrower = NbtUtils.loadUUIDTag(var1.getCompound("Thrower"));
       }
 
       CompoundTag var2 = var1.getCompound("Item");
       this.setItem(ItemStack.of(var2));
       if (this.getItem().isEmpty()) {
-         this.discard();
+         this.remove();
       }
 
    }
@@ -304,15 +271,14 @@ public class ItemEntity extends Entity {
          ItemStack var2 = this.getItem();
          Item var3 = var2.getItem();
          int var4 = var2.getCount();
-         if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(var1.getUUID())) && var1.getInventory().add(var2)) {
+         if (this.pickupDelay == 0 && (this.owner == null || 6000 - this.age <= 200 || this.owner.equals(var1.getUUID())) && var1.inventory.add(var2)) {
             var1.take(this, var4);
             if (var2.isEmpty()) {
-               this.discard();
+               this.remove();
                var2.setCount(var4);
             }
 
             var1.awardStat(Stats.ITEM_PICKED_UP.get(var3), var4);
-            var1.onItemPickup(this);
          }
 
       }
@@ -320,7 +286,7 @@ public class ItemEntity extends Entity {
 
    public Component getName() {
       Component var1 = this.getCustomName();
-      return (Component)(var1 != null ? var1 : new TranslatableComponent(this.getItem().getDescriptionId()));
+      return (Component)(var1 != null ? var1 : new TranslatableComponent(this.getItem().getDescriptionId(), new Object[0]));
    }
 
    public boolean isAttackable() {
@@ -328,7 +294,7 @@ public class ItemEntity extends Entity {
    }
 
    @Nullable
-   public Entity changeDimension(ServerLevel var1) {
+   public Entity changeDimension(DimensionType var1) {
       Entity var2 = super.changeDimension(var1);
       if (!this.level.isClientSide && var2 instanceof ItemEntity) {
          ((ItemEntity)var2).mergeWithNeighbours();
@@ -343,14 +309,6 @@ public class ItemEntity extends Entity {
 
    public void setItem(ItemStack var1) {
       this.getEntityData().set(DATA_ITEM, var1);
-   }
-
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      super.onSyncedDataUpdated(var1);
-      if (DATA_ITEM.equals(var1)) {
-         this.getItem().setEntityRepresentation(this);
-      }
-
    }
 
    @Nullable
@@ -404,20 +362,8 @@ public class ItemEntity extends Entity {
       this.age = 5999;
    }
 
-   public float getSpin(float var1) {
-      return ((float)this.getAge() + var1) / 20.0F + this.bobOffs;
-   }
-
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this);
-   }
-
-   public ItemEntity copy() {
-      return new ItemEntity(this);
-   }
-
-   public SoundSource getSoundSource() {
-      return SoundSource.AMBIENT;
    }
 
    static {

@@ -2,8 +2,8 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -34,15 +34,15 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
 
    protected void init() {
       super.init();
-      this.modeButton = (Button)this.addButton(new Button(this.width / 2 - 50 - 100 - 4, 165, 100, 20, new TranslatableComponent("advMode.mode.sequence"), (var1) -> {
+      this.modeButton = (Button)this.addButton(new Button(this.width / 2 - 50 - 100 - 4, 165, 100, 20, I18n.get("advMode.mode.sequence"), (var1) -> {
          this.nextMode();
          this.updateMode();
       }));
-      this.conditionalButton = (Button)this.addButton(new Button(this.width / 2 - 50, 165, 100, 20, new TranslatableComponent("advMode.mode.unconditional"), (var1) -> {
+      this.conditionalButton = (Button)this.addButton(new Button(this.width / 2 - 50, 165, 100, 20, I18n.get("advMode.mode.unconditional"), (var1) -> {
          this.conditional = !this.conditional;
          this.updateConditional();
       }));
-      this.autoexecButton = (Button)this.addButton(new Button(this.width / 2 + 50 + 4, 165, 100, 20, new TranslatableComponent("advMode.mode.redstoneTriggered"), (var1) -> {
+      this.autoexecButton = (Button)this.addButton(new Button(this.width / 2 + 50 + 4, 165, 100, 20, I18n.get("advMode.mode.redstoneTriggered"), (var1) -> {
          this.autoexec = !this.autoexec;
          this.updateAutoexec();
       }));
@@ -91,13 +91,13 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
    private void updateMode() {
       switch(this.mode) {
       case SEQUENCE:
-         this.modeButton.setMessage(new TranslatableComponent("advMode.mode.sequence"));
+         this.modeButton.setMessage(I18n.get("advMode.mode.sequence"));
          break;
       case AUTO:
-         this.modeButton.setMessage(new TranslatableComponent("advMode.mode.auto"));
+         this.modeButton.setMessage(I18n.get("advMode.mode.auto"));
          break;
       case REDSTONE:
-         this.modeButton.setMessage(new TranslatableComponent("advMode.mode.redstone"));
+         this.modeButton.setMessage(I18n.get("advMode.mode.redstone"));
       }
 
    }
@@ -118,18 +118,18 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
 
    private void updateConditional() {
       if (this.conditional) {
-         this.conditionalButton.setMessage(new TranslatableComponent("advMode.mode.conditional"));
+         this.conditionalButton.setMessage(I18n.get("advMode.mode.conditional"));
       } else {
-         this.conditionalButton.setMessage(new TranslatableComponent("advMode.mode.unconditional"));
+         this.conditionalButton.setMessage(I18n.get("advMode.mode.unconditional"));
       }
 
    }
 
    private void updateAutoexec() {
       if (this.autoexec) {
-         this.autoexecButton.setMessage(new TranslatableComponent("advMode.mode.autoexec.bat"));
+         this.autoexecButton.setMessage(I18n.get("advMode.mode.autoexec.bat"));
       } else {
-         this.autoexecButton.setMessage(new TranslatableComponent("advMode.mode.redstoneTriggered"));
+         this.autoexecButton.setMessage(I18n.get("advMode.mode.redstoneTriggered"));
       }
 
    }

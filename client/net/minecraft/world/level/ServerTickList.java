@@ -9,15 +9,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -29,19 +30,21 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 public class ServerTickList<T> implements TickList<T> {
    protected final Predicate<T> ignore;
    private final Function<T, ResourceLocation> toId;
+   private final Function<ResourceLocation, T> fromId;
    private final Set<TickNextTickData<T>> tickNextTickSet = Sets.newHashSet();
-   private final Set<TickNextTickData<T>> tickNextTickList = Sets.newTreeSet(TickNextTickData.createTimeComparator());
+   private final TreeSet<TickNextTickData<T>> tickNextTickList = Sets.newTreeSet(TickNextTickData.createTimeComparator());
    private final ServerLevel level;
    private final Queue<TickNextTickData<T>> currentlyTicking = Queues.newArrayDeque();
    private final List<TickNextTickData<T>> alreadyTicked = Lists.newArrayList();
    private final Consumer<TickNextTickData<T>> ticker;
 
-   public ServerTickList(ServerLevel var1, Predicate<T> var2, Function<T, ResourceLocation> var3, Consumer<TickNextTickData<T>> var4) {
+   public ServerTickList(ServerLevel var1, Predicate<T> var2, Function<T, ResourceLocation> var3, Function<ResourceLocation, T> var4, Consumer<TickNextTickData<T>> var5) {
       super();
       this.ignore = var2;
       this.toId = var3;
+      this.fromId = var4;
       this.level = var1;
-      this.ticker = var4;
+      this.ticker = var5;
    }
 
    public void tick() {
@@ -60,7 +63,7 @@ public class ServerTickList<T> implements TickList<T> {
          TickNextTickData var4;
          while(var1 > 0 && var3.hasNext()) {
             var4 = (TickNextTickData)var3.next();
-            if (var4.triggerTick > this.level.getGameTime()) {
+            if (var4.delay > this.level.getGameTime()) {
                break;
             }
 
@@ -82,7 +85,7 @@ public class ServerTickList<T> implements TickList<T> {
                } catch (Throwable var8) {
                   CrashReport var6 = CrashReport.forThrowable(var8, "Exception while ticking");
                   CrashReportCategory var7 = var6.addCategory("Block being ticked");
-                  CrashReportCategory.populateBlockDetails(var7, this.level, var4.pos, (BlockState)null);
+                  CrashReportCategory.populateBlockDetails(var7, var4.pos, (BlockState)null);
                   throw new ReportedException(var6);
                }
             } else {
@@ -100,12 +103,16 @@ public class ServerTickList<T> implements TickList<T> {
       return this.currentlyTicking.contains(new TickNextTickData(var1, var2));
    }
 
+   public void addAll(Stream<TickNextTickData<T>> var1) {
+      var1.forEach(this::addTickData);
+   }
+
    public List<TickNextTickData<T>> fetchTicksInChunk(ChunkPos var1, boolean var2, boolean var3) {
-      int var4 = SectionPos.sectionToBlockCoord(var1.x) - 2;
+      int var4 = (var1.x << 4) - 2;
       int var5 = var4 + 16 + 2;
-      int var6 = SectionPos.sectionToBlockCoord(var1.z) - 2;
+      int var6 = (var1.z << 4) - 2;
       int var7 = var6 + 16 + 2;
-      return this.fetchTicksInArea(new BoundingBox(var4, this.level.getMinBuildHeight(), var6, var5, this.level.getMaxBuildHeight(), var7), var2, var3);
+      return this.fetchTicksInArea(new BoundingBox(var4, 0, var6, var5, 256, var7), var2, var3);
    }
 
    public List<TickNextTickData<T>> fetchTicksInArea(BoundingBox var1, boolean var2, boolean var3) {
@@ -154,7 +161,7 @@ public class ServerTickList<T> implements TickList<T> {
          if (var1.isInside(var5.pos)) {
             BlockPos var6 = var5.pos.offset(var2);
             Object var7 = var5.getType();
-            this.addTickData(new TickNextTickData(var6, var7, var5.triggerTick, var5.priority));
+            this.addTickData(new TickNextTickData(var6, var7, var5.delay, var5.priority));
          }
       }
 
@@ -165,7 +172,7 @@ public class ServerTickList<T> implements TickList<T> {
       return saveTickList(this.toId, var2, this.level.getGameTime());
    }
 
-   private static <T> ListTag saveTickList(Function<T, ResourceLocation> var0, Iterable<TickNextTickData<T>> var1, long var2) {
+   public static <T> ListTag saveTickList(Function<T, ResourceLocation> var0, Iterable<TickNextTickData<T>> var1, long var2) {
       ListTag var4 = new ListTag();
       Iterator var5 = var1.iterator();
 
@@ -176,7 +183,7 @@ public class ServerTickList<T> implements TickList<T> {
          var7.putInt("x", var6.pos.getX());
          var7.putInt("y", var6.pos.getY());
          var7.putInt("z", var6.pos.getZ());
-         var7.putInt("t", (int)(var6.triggerTick - var2));
+         var7.putInt("t", (int)(var6.delay - var2));
          var7.putInt("p", var6.priority.getValue());
          var4.add(var7);
       }

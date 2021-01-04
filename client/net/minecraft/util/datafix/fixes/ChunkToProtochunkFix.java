@@ -2,16 +2,12 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
-import it.unimi.dsi.fastutil.shorts.ShortArrayList;
-import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -35,18 +31,14 @@ public class ChunkToProtochunkFix extends DataFix {
       OpticFinder var7 = DSL.fieldFinder("TileTicks", var5);
       return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("ChunkToProtoChunkFix", var1, this.getOutputSchema().getType(References.CHUNK), (var3x) -> {
          return var3x.updateTyped(var6, var4, (var2) -> {
-            Optional var3 = var2.getOptionalTyped(var7).flatMap((var0) -> {
-               return var0.write().result();
-            }).flatMap((var0) -> {
-               return var0.asStreamOpt().result();
-            });
+            Optional var3 = var2.getOptionalTyped(var7).map(Typed::write).flatMap(Dynamic::asStreamOpt);
             Dynamic var4x = (Dynamic)var2.get(DSL.remainderFinder());
-            boolean var5 = var4x.get("TerrainPopulated").asBoolean(false) && (!var4x.get("LightPopulated").asNumber().result().isPresent() || var4x.get("LightPopulated").asBoolean(false));
+            boolean var5 = var4x.get("TerrainPopulated").asBoolean(false) && (!var4x.get("LightPopulated").asNumber().isPresent() || var4x.get("LightPopulated").asBoolean(false));
             var4x = var4x.set("Status", var4x.createString(var5 ? "mobs_spawned" : "empty"));
             var4x = var4x.set("hasLegacyStructureData", var4x.createBoolean(true));
             Dynamic var6;
             if (var5) {
-               Optional var7x = var4x.get("Biomes").asByteBufferOpt().result();
+               Optional var7x = var4x.get("Biomes").asByteBufferOpt();
                if (var7x.isPresent()) {
                   ByteBuffer var8 = (ByteBuffer)var7x.get();
                   int[] var9 = new int[256];
@@ -60,32 +52,28 @@ public class ChunkToProtochunkFix extends DataFix {
                   var4x = var4x.set("Biomes", var4x.createIntList(Arrays.stream(var9)));
                }
 
-               List var11 = (List)IntStream.range(0, 16).mapToObj((var0) -> {
-                  return new ShortArrayList();
+               List var11 = (List)IntStream.range(0, 16).mapToObj((var1) -> {
+                  return var4x.createList(Stream.empty());
                }).collect(Collectors.toList());
                if (var3.isPresent()) {
-                  ((Stream)var3.get()).forEach((var1) -> {
-                     int var2 = var1.get("x").asInt(0);
-                     int var3 = var1.get("y").asInt(0);
-                     int var4 = var1.get("z").asInt(0);
-                     short var5 = packOffsetCoordinates(var2, var3, var4);
-                     ((ShortList)var11.get(var3 >> 4)).add(var5);
+                  ((Stream)var3.get()).forEach((var2x) -> {
+                     int var3 = var2x.get("x").asInt(0);
+                     int var4 = var2x.get("y").asInt(0);
+                     int var5 = var2x.get("z").asInt(0);
+                     short var6 = packOffsetCoordinates(var3, var4, var5);
+                     var11.set(var4 >> 4, ((Dynamic)var11.get(var4 >> 4)).merge(var4x.createShort(var6)));
                   });
-                  var4x = var4x.set("ToBeTicked", var4x.createList(var11.stream().map((var1) -> {
-                     Stream var10001 = var1.stream();
-                     var4x.getClass();
-                     return var4x.createList(var10001.map(var4x::createShort));
-                  })));
+                  var4x = var4x.set("ToBeTicked", var4x.createList(var11.stream()));
                }
 
-               var6 = (Dynamic)DataFixUtils.orElse(var2.set(DSL.remainderFinder(), var4x).write().result(), var4x);
+               var6 = var2.set(DSL.remainderFinder(), var4x).write();
             } else {
                var6 = var4x;
             }
 
-            return (Typed)((Pair)var4.readTyped(var6).result().orElseThrow(() -> {
+            return (Typed)((Optional)var4.readTyped(var6).getSecond()).orElseThrow(() -> {
                return new IllegalStateException("Could not read the new chunk");
-            })).getFirst();
+            });
          });
       }), this.writeAndRead("Structure biome inject", this.getInputSchema().getType(References.STRUCTURE_FEATURE), this.getOutputSchema().getType(References.STRUCTURE_FEATURE)));
    }

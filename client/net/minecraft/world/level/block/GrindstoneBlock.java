@@ -2,11 +2,8 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +12,6 @@ import net.minecraft.world.inventory.GrindstoneMenu;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -90,9 +86,9 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
    public static final VoxelShape CEILING_EAST_WEST_RIGHT_LEG;
    public static final VoxelShape CEILING_EAST_WEST_ALL_LEGS;
    public static final VoxelShape CEILING_EAST_WEST_GRINDSTONE;
-   private static final Component CONTAINER_TITLE;
+   private static final TranslatableComponent CONTAINER_TITLE;
 
-   protected GrindstoneBlock(BlockBehaviour.Properties var1) {
+   protected GrindstoneBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(FACE, AttachFace.WALL));
    }
@@ -145,14 +141,9 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
       return true;
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         var4.openMenu(var1.getMenuProvider(var2, var3));
-         var4.awardStat(Stats.INTERACT_WITH_GRINDSTONE);
-         return InteractionResult.CONSUME;
-      }
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      var4.openMenu(var1.getMenuProvider(var2, var3));
+      return true;
    }
 
    public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
@@ -238,6 +229,6 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
       CEILING_EAST_WEST_RIGHT_LEG = Shapes.or(CEILING_EAST_WEST_RIGHT_POST, CEILING_EAST_WEST_RIGHT_PIVOT);
       CEILING_EAST_WEST_ALL_LEGS = Shapes.or(CEILING_EAST_WEST_LEFT_LEG, CEILING_EAST_WEST_RIGHT_LEG);
       CEILING_EAST_WEST_GRINDSTONE = Shapes.or(CEILING_EAST_WEST_ALL_LEGS, Block.box(2.0D, 0.0D, 4.0D, 14.0D, 12.0D, 12.0D));
-      CONTAINER_TITLE = new TranslatableComponent("container.grindstone_title");
+      CONTAINER_TITLE = new TranslatableComponent("container.grindstone_title", new Object[0]);
    }
 }

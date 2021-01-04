@@ -1,6 +1,5 @@
 package net.minecraft.world.level.chunk;
 
-import java.util.function.Predicate;
 import net.minecraft.core.IdMapper;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,7 +19,7 @@ public class GlobalPalette<T> implements Palette<T> {
       return var2 == -1 ? 0 : var2;
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
+   public boolean maybeHas(T var1) {
       return true;
    }
 

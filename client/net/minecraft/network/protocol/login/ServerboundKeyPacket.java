@@ -7,7 +7,6 @@ import javax.crypto.SecretKey;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 
 public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
    private byte[] keybytes = new byte[0];
@@ -17,7 +16,7 @@ public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
       super();
    }
 
-   public ServerboundKeyPacket(SecretKey var1, PublicKey var2, byte[] var3) throws CryptException {
+   public ServerboundKeyPacket(SecretKey var1, PublicKey var2, byte[] var3) {
       super();
       this.keybytes = Crypt.encryptUsingKey(var2, var1.getEncoded());
       this.nonce = Crypt.encryptUsingKey(var2, var3);
@@ -37,11 +36,11 @@ public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
       var1.handleKey(this);
    }
 
-   public SecretKey getSecretKey(PrivateKey var1) throws CryptException {
+   public SecretKey getSecretKey(PrivateKey var1) {
       return Crypt.decryptByteToSecretKey(var1, this.keybytes);
    }
 
-   public byte[] getNonce(PrivateKey var1) throws CryptException {
-      return Crypt.decryptUsingKey(var1, this.nonce);
+   public byte[] getNonce(PrivateKey var1) {
+      return var1 == null ? this.nonce : Crypt.decryptUsingKey(var1, this.nonce);
    }
 }

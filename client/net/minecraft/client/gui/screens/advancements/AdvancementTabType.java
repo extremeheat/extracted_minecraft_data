@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
@@ -29,18 +29,18 @@ enum AdvancementTabType {
       return this.max;
    }
 
-   public void draw(PoseStack var1, GuiComponent var2, int var3, int var4, boolean var5, int var6) {
-      int var7 = this.textureX;
-      if (var6 > 0) {
-         var7 += this.width;
+   public void draw(GuiComponent var1, int var2, int var3, boolean var4, int var5) {
+      int var6 = this.textureX;
+      if (var5 > 0) {
+         var6 += this.width;
       }
 
-      if (var6 == this.max - 1) {
-         var7 += this.width;
+      if (var5 == this.max - 1) {
+         var6 += this.width;
       }
 
-      int var8 = var5 ? this.textureY + this.height : this.textureY;
-      var2.blit(var1, var3 + this.getX(var6), var4 + this.getY(var6), var7, var8, this.width, this.height);
+      int var7 = var4 ? this.textureY + this.height : this.textureY;
+      var1.blit(var2 + this.getX(var5), var3 + this.getY(var5), var6, var7, this.width, this.height);
    }
 
    public void drawIcon(int var1, int var2, int var3, ItemRenderer var4, ItemStack var5) {
@@ -64,7 +64,7 @@ enum AdvancementTabType {
          var7 += 5;
       }
 
-      var4.renderAndDecorateFakeItem(var5, var6, var7);
+      var4.renderAndDecorateItem((LivingEntity)null, var5, var6, var7);
    }
 
    public int getX(int var1) {

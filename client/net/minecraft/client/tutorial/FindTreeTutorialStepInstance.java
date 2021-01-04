@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import java.util.Iterator;
 import java.util.Set;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -42,7 +42,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
                while(var2.hasNext()) {
                   Block var3 = (Block)var2.next();
-                  if (var1.getInventory().contains(new ItemStack(var3))) {
+                  if (var1.inventory.contains(new ItemStack(var3))) {
                      this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                      return;
                   }
@@ -71,7 +71,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
 
    }
 
-   public void onLookAt(ClientLevel var1, HitResult var2) {
+   public void onLookAt(MultiPlayerLevel var1, HitResult var2) {
       if (var2.getType() == HitResult.Type.BLOCK) {
          BlockState var3 = var1.getBlockState(((BlockHitResult)var2).getBlockPos());
          if (TREE_BLOCKS.contains(var3.getBlock())) {
@@ -91,7 +91,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
          }
 
          var3 = (Block)var2.next();
-      } while(!var1.is(var3.asItem()));
+      } while(var1.getItem() != var3.asItem());
 
       this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
    }
@@ -112,8 +112,8 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    static {
-      TREE_BLOCKS = Sets.newHashSet(new Block[]{Blocks.OAK_LOG, Blocks.SPRUCE_LOG, Blocks.BIRCH_LOG, Blocks.JUNGLE_LOG, Blocks.ACACIA_LOG, Blocks.DARK_OAK_LOG, Blocks.WARPED_STEM, Blocks.CRIMSON_STEM, Blocks.OAK_WOOD, Blocks.SPRUCE_WOOD, Blocks.BIRCH_WOOD, Blocks.JUNGLE_WOOD, Blocks.ACACIA_WOOD, Blocks.DARK_OAK_WOOD, Blocks.WARPED_HYPHAE, Blocks.CRIMSON_HYPHAE, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.BIRCH_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.NETHER_WART_BLOCK, Blocks.WARPED_WART_BLOCK});
-      TITLE = new TranslatableComponent("tutorial.find_tree.title");
-      DESCRIPTION = new TranslatableComponent("tutorial.find_tree.description");
+      TREE_BLOCKS = Sets.newHashSet(new Block[]{Blocks.OAK_LOG, Blocks.SPRUCE_LOG, Blocks.BIRCH_LOG, Blocks.JUNGLE_LOG, Blocks.ACACIA_LOG, Blocks.DARK_OAK_LOG, Blocks.OAK_WOOD, Blocks.SPRUCE_WOOD, Blocks.BIRCH_WOOD, Blocks.JUNGLE_WOOD, Blocks.ACACIA_WOOD, Blocks.DARK_OAK_WOOD, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.BIRCH_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES});
+      TITLE = new TranslatableComponent("tutorial.find_tree.title", new Object[0]);
+      DESCRIPTION = new TranslatableComponent("tutorial.find_tree.description", new Object[0]);
    }
 }

@@ -1,18 +1,17 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.Iterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundSetBeaconPacket;
@@ -29,8 +28,6 @@ import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 
 public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    private static final ResourceLocation BEACON_LOCATION = new ResourceLocation("textures/gui/container/beacon.png");
-   private static final Component PRIMARY_EFFECT_LABEL = new TranslatableComponent("block.minecraft.beacon.primary");
-   private static final Component SECONDARY_EFFECT_LABEL = new TranslatableComponent("block.minecraft.beacon.secondary");
    private BeaconScreen.BeaconConfirmButton confirmButton;
    private boolean initPowerButtons;
    private MobEffect primary;
@@ -119,40 +116,41 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       this.confirmButton.active = ((BeaconMenu)this.menu).hasPayment() && this.primary != null;
    }
 
-   protected void renderLabels(PoseStack var1, int var2, int var3) {
-      drawCenteredString(var1, this.font, PRIMARY_EFFECT_LABEL, 62, 10, 14737632);
-      drawCenteredString(var1, this.font, SECONDARY_EFFECT_LABEL, 169, 10, 14737632);
-      Iterator var4 = this.buttons.iterator();
+   protected void renderLabels(int var1, int var2) {
+      Lighting.turnOff();
+      this.drawCenteredString(this.font, I18n.get("block.minecraft.beacon.primary"), 62, 10, 14737632);
+      this.drawCenteredString(this.font, I18n.get("block.minecraft.beacon.secondary"), 169, 10, 14737632);
+      Iterator var3 = this.buttons.iterator();
 
-      while(var4.hasNext()) {
-         AbstractWidget var5 = (AbstractWidget)var4.next();
-         if (var5.isHovered()) {
-            var5.renderToolTip(var1, var2 - this.leftPos, var3 - this.topPos);
+      while(var3.hasNext()) {
+         AbstractWidget var4 = (AbstractWidget)var3.next();
+         if (var4.isHovered()) {
+            var4.renderToolTip(var1 - this.leftPos, var2 - this.topPos);
             break;
          }
       }
 
+      Lighting.turnOnGui();
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(BEACON_LOCATION);
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      int var4 = (this.width - this.imageWidth) / 2;
+      int var5 = (this.height - this.imageHeight) / 2;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
       this.itemRenderer.blitOffset = 100.0F;
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
+      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.EMERALD), var4 + 42, var5 + 109);
+      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.DIAMOND), var4 + 42 + 22, var5 + 109);
+      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.GOLD_INGOT), var4 + 42 + 44, var5 + 109);
+      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.IRON_INGOT), var4 + 42 + 66, var5 + 109);
       this.itemRenderer.blitOffset = 0.0F;
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
    }
 
    class BeaconCancelButton extends BeaconScreen.BeaconSpriteScreenButton {
@@ -165,8 +163,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          BeaconScreen.this.minecraft.setScreen((Screen)null);
       }
 
-      public void renderToolTip(PoseStack var1, int var2, int var3) {
-         BeaconScreen.this.renderTooltip(var1, CommonComponents.GUI_CANCEL, var2, var3);
+      public void renderToolTip(int var1, int var2) {
+         BeaconScreen.this.renderTooltip(I18n.get("gui.cancel"), var1, var2);
       }
    }
 
@@ -181,8 +179,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          BeaconScreen.this.minecraft.setScreen((Screen)null);
       }
 
-      public void renderToolTip(PoseStack var1, int var2, int var3) {
-         BeaconScreen.this.renderTooltip(var1, CommonComponents.GUI_DONE, var2, var3);
+      public void renderToolTip(int var1, int var2) {
+         BeaconScreen.this.renderTooltip(I18n.get("gui.done"), var1, var2);
       }
    }
 
@@ -196,8 +194,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          this.iconY = var4;
       }
 
-      protected void renderIcon(PoseStack var1) {
-         this.blit(var1, this.x + 2, this.y + 2, this.iconX, this.iconY, 18, 18);
+      protected void renderIcon() {
+         this.blit(this.x + 2, this.y + 2, this.iconX, this.iconY, 18, 18);
       }
    }
 
@@ -205,23 +203,12 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private final MobEffect effect;
       private final TextureAtlasSprite sprite;
       private final boolean isPrimary;
-      private final Component tooltip;
 
       public BeaconPowerButton(int var2, int var3, MobEffect var4, boolean var5) {
          super(var2, var3);
          this.effect = var4;
          this.sprite = Minecraft.getInstance().getMobEffectTextures().get(var4);
          this.isPrimary = var5;
-         this.tooltip = this.createTooltip(var4, var5);
-      }
-
-      private Component createTooltip(MobEffect var1, boolean var2) {
-         TranslatableComponent var3 = new TranslatableComponent(var1.getDescriptionId());
-         if (!var2 && var1 != MobEffects.REGENERATION) {
-            var3.append(" II");
-         }
-
-         return var3;
       }
 
       public void onPress() {
@@ -239,13 +226,18 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          }
       }
 
-      public void renderToolTip(PoseStack var1, int var2, int var3) {
-         BeaconScreen.this.renderTooltip(var1, this.tooltip, var2, var3);
+      public void renderToolTip(int var1, int var2) {
+         String var3 = I18n.get(this.effect.getDescriptionId());
+         if (!this.isPrimary && this.effect != MobEffects.REGENERATION) {
+            var3 = var3 + " II";
+         }
+
+         BeaconScreen.this.renderTooltip(var3, var1, var2);
       }
 
-      protected void renderIcon(PoseStack var1) {
-         Minecraft.getInstance().getTextureManager().bind(this.sprite.atlas().location());
-         blit(var1, this.x + 2, this.y + 2, this.getBlitOffset(), 18, 18, this.sprite);
+      protected void renderIcon() {
+         Minecraft.getInstance().getTextureManager().bind(TextureAtlas.LOCATION_MOB_EFFECTS);
+         blit(this.x + 2, this.y + 2, this.blitOffset, 18, 18, this.sprite);
       }
    }
 
@@ -253,27 +245,27 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private boolean selected;
 
       protected BeaconScreenButton(int var1, int var2) {
-         super(var1, var2, 22, 22, TextComponent.EMPTY);
+         super(var1, var2, 22, 22, "");
       }
 
-      public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+      public void renderButton(int var1, int var2, float var3) {
          Minecraft.getInstance().getTextureManager().bind(BeaconScreen.BEACON_LOCATION);
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         boolean var5 = true;
-         int var6 = 0;
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         boolean var4 = true;
+         int var5 = 0;
          if (!this.active) {
-            var6 += this.width * 2;
+            var5 += this.width * 2;
          } else if (this.selected) {
-            var6 += this.width * 1;
+            var5 += this.width * 1;
          } else if (this.isHovered()) {
-            var6 += this.width * 3;
+            var5 += this.width * 3;
          }
 
-         this.blit(var1, this.x, this.y, var6, 219, this.width, this.height);
-         this.renderIcon(var1);
+         this.blit(this.x, this.y, var5, 219, this.width, this.height);
+         this.renderIcon();
       }
 
-      protected abstract void renderIcon(PoseStack var1);
+      protected abstract void renderIcon();
 
       public boolean isSelected() {
          return this.selected;

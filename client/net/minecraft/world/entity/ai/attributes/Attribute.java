@@ -1,34 +1,16 @@
 package net.minecraft.world.entity.ai.attributes;
 
-public class Attribute {
-   private final double defaultValue;
-   private boolean syncable;
-   private final String descriptionId;
+import javax.annotation.Nullable;
 
-   protected Attribute(String var1, double var2) {
-      super();
-      this.defaultValue = var2;
-      this.descriptionId = var1;
-   }
+public interface Attribute {
+   String getName();
 
-   public double getDefaultValue() {
-      return this.defaultValue;
-   }
+   double sanitizeValue(double var1);
 
-   public boolean isClientSyncable() {
-      return this.syncable;
-   }
+   double getDefaultValue();
 
-   public Attribute setSyncable(boolean var1) {
-      this.syncable = var1;
-      return this;
-   }
+   boolean isClientSyncable();
 
-   public double sanitizeValue(double var1) {
-      return var1;
-   }
-
-   public String getDescriptionId() {
-      return this.descriptionId;
-   }
+   @Nullable
+   Attribute getParentAttribute();
 }

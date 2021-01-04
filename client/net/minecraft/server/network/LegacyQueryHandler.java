@@ -20,17 +20,13 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
       this.serverConnectionListener = var1;
    }
 
-   public void channelRead(ChannelHandlerContext var1, Object var2) {
+   public void channelRead(ChannelHandlerContext var1, Object var2) throws Exception {
       ByteBuf var3 = (ByteBuf)var2;
       var3.markReaderIndex();
       boolean var4 = true;
 
       try {
-         try {
-            if (var3.readUnsignedByte() != 254) {
-               return;
-            }
-
+         if (var3.readUnsignedByte() == 254) {
             InetSocketAddress var5 = (InetSocketAddress)var1.channel().remoteAddress();
             MinecraftServer var6 = this.serverConnectionListener.getServer();
             int var7 = var3.readableBytes();
@@ -76,9 +72,10 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
 
             var3.release();
             var4 = false;
-         } catch (RuntimeException var21) {
+            return;
          }
-
+      } catch (RuntimeException var21) {
+         return;
       } finally {
          if (var4) {
             var3.resetReaderIndex();
@@ -87,6 +84,7 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
          }
 
       }
+
    }
 
    private void sendFlushAndClose(ChannelHandlerContext var1, ByteBuf var2) {

@@ -47,7 +47,7 @@ public class OcelotAttackGoal extends Goal {
    public void tick() {
       this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
       double var1 = (double)(this.mob.getBbWidth() * 2.0F * this.mob.getBbWidth() * 2.0F);
-      double var3 = this.mob.distanceToSqr(this.target.getX(), this.target.getY(), this.target.getZ());
+      double var3 = this.mob.distanceToSqr(this.target.x, this.target.getBoundingBox().minY, this.target.z);
       double var5 = 0.8D;
       if (var3 > var1 && var3 < 16.0D) {
          var5 = 1.33D;

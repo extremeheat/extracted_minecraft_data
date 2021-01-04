@@ -1,5 +1,6 @@
 package net.minecraft.world.level.lighting;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -10,7 +11,6 @@ import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 public final class BlockLightEngine extends LayerLightEngine<BlockLightSectionStorage.BlockDataLayerStorageMap, BlockLightSectionStorage> {
    private static final Direction[] DIRECTIONS = Direction.values();
@@ -24,7 +24,7 @@ public final class BlockLightEngine extends LayerLightEngine<BlockLightSectionSt
       int var3 = BlockPos.getX(var1);
       int var4 = BlockPos.getY(var1);
       int var5 = BlockPos.getZ(var1);
-      BlockGetter var6 = this.chunkSource.getChunkForLighting(SectionPos.blockToSectionCoord(var3), SectionPos.blockToSectionCoord(var5));
+      BlockGetter var6 = this.chunkSource.getChunkForLighting(var3 >> 4, var5 >> 4);
       return var6 != null ? var6.getLightEmission(this.pos.set(var3, var4, var5)) : 0;
    }
 
@@ -43,15 +43,15 @@ public final class BlockLightEngine extends LayerLightEngine<BlockLightSectionSt
          if (var9 == null) {
             return 15;
          } else {
-            MutableInt var10 = new MutableInt();
+            AtomicInteger var10 = new AtomicInteger();
             BlockState var11 = this.getStateAndOpacity(var3, var10);
-            if (var10.getValue() >= 15) {
+            if (var10.get() >= 15) {
                return 15;
             } else {
-               BlockState var12 = this.getStateAndOpacity(var1, (MutableInt)null);
+               BlockState var12 = this.getStateAndOpacity(var1, (AtomicInteger)null);
                VoxelShape var13 = this.getShape(var12, var1, var9);
                VoxelShape var14 = this.getShape(var11, var3, var9.getOpposite());
-               return Shapes.faceShapeOccludes(var13, var14) ? 15 : var5 + Math.max(1, var10.getValue());
+               return Shapes.faceShapeOccludes(var13, var14) ? 15 : var5 + Math.max(1, var10.get());
             }
          }
       }

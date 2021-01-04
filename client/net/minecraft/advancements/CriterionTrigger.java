@@ -1,7 +1,7 @@
 package net.minecraft.advancements;
 
+import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
-import net.minecraft.advancements.critereon.DeserializationContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 
@@ -14,7 +14,7 @@ public interface CriterionTrigger<T extends CriterionTriggerInstance> {
 
    void removePlayerListeners(PlayerAdvancements var1);
 
-   T createInstance(JsonObject var1, DeserializationContext var2);
+   T createInstance(JsonObject var1, JsonDeserializationContext var2);
 
    public static class Listener<T extends CriterionTriggerInstance> {
       private final T trigger;

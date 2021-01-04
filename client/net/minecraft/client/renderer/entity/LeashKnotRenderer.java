@@ -1,34 +1,43 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.LeashKnotModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 
 public class LeashKnotRenderer extends EntityRenderer<LeashFenceKnotEntity> {
    private static final ResourceLocation KNOT_LOCATION = new ResourceLocation("textures/entity/lead_knot.png");
-   private final LeashKnotModel<LeashFenceKnotEntity> model;
+   private final LeashKnotModel<LeashFenceKnotEntity> model = new LeashKnotModel();
 
-   public LeashKnotRenderer(EntityRendererProvider.Context var1) {
+   public LeashKnotRenderer(EntityRenderDispatcher var1) {
       super(var1);
-      this.model = new LeashKnotModel(var1.getLayer(ModelLayers.LEASH_KNOT));
    }
 
-   public void render(LeashFenceKnotEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      var4.scale(-1.0F, -1.0F, 1.0F);
-      this.model.setupAnim(var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-      VertexConsumer var7 = var5.getBuffer(this.model.renderType(KNOT_LOCATION));
-      this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-      var4.popPose();
-      super.render(var1, var2, var3, var4, var5, var6);
+   public void render(LeashFenceKnotEntity var1, double var2, double var4, double var6, float var8, float var9) {
+      GlStateManager.pushMatrix();
+      GlStateManager.disableCull();
+      GlStateManager.translatef((float)var2, (float)var4, (float)var6);
+      float var10 = 0.0625F;
+      GlStateManager.enableRescaleNormal();
+      GlStateManager.scalef(-1.0F, -1.0F, 1.0F);
+      GlStateManager.enableAlphaTest();
+      this.bindTexture(var1);
+      if (this.solidRender) {
+         GlStateManager.enableColorMaterial();
+         GlStateManager.setupSolidRenderingTextureCombine(this.getTeamColor(var1));
+      }
+
+      this.model.render(var1, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+      if (this.solidRender) {
+         GlStateManager.tearDownSolidRenderingTextureCombine();
+         GlStateManager.disableColorMaterial();
+      }
+
+      GlStateManager.popMatrix();
+      super.render(var1, var2, var4, var6, var8, var9);
    }
 
-   public ResourceLocation getTextureLocation(LeashFenceKnotEntity var1) {
+   protected ResourceLocation getTextureLocation(LeashFenceKnotEntity var1) {
       return KNOT_LOCATION;
    }
 }

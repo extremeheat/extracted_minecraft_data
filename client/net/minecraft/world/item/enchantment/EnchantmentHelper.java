@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
@@ -44,7 +43,7 @@ public class EnchantmentHelper {
             CompoundTag var5 = var3.getCompound(var4);
             ResourceLocation var6 = ResourceLocation.tryParse(var5.getString("id"));
             if (var6 != null && var6.equals(var2)) {
-               return Mth.clamp(var5.getInt("lvl"), 0, 255);
+               return var5.getInt("lvl");
             }
          }
 
@@ -53,17 +52,13 @@ public class EnchantmentHelper {
    }
 
    public static Map<Enchantment, Integer> getEnchantments(ItemStack var0) {
-      ListTag var1 = var0.is(Items.ENCHANTED_BOOK) ? EnchantedBookItem.getEnchantments(var0) : var0.getEnchantmentTags();
-      return deserializeEnchantments(var1);
-   }
-
-   public static Map<Enchantment, Integer> deserializeEnchantments(ListTag var0) {
       LinkedHashMap var1 = Maps.newLinkedHashMap();
+      ListTag var2 = var0.getItem() == Items.ENCHANTED_BOOK ? EnchantedBookItem.getEnchantments(var0) : var0.getEnchantmentTags();
 
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
-         CompoundTag var3 = var0.getCompound(var2);
-         Registry.ENCHANTMENT.getOptional(ResourceLocation.tryParse(var3.getString("id"))).ifPresent((var2x) -> {
-            Integer var10000 = (Integer)var1.put(var2x, var3.getInt("lvl"));
+      for(int var3 = 0; var3 < var2.size(); ++var3) {
+         CompoundTag var4 = var2.getCompound(var3);
+         Registry.ENCHANTMENT.getOptional(ResourceLocation.tryParse(var4.getString("id"))).ifPresent((var2x) -> {
+            Integer var10000 = (Integer)var1.put(var2x, var4.getInt("lvl"));
          });
       }
 
@@ -83,7 +78,7 @@ public class EnchantmentHelper {
             var7.putString("id", String.valueOf(Registry.ENCHANTMENT.getKey(var5)));
             var7.putShort("lvl", (short)var6);
             var2.add(var7);
-            if (var1.is(Items.ENCHANTED_BOOK)) {
+            if (var1.getItem() == Items.ENCHANTED_BOOK) {
                EnchantedBookItem.addEnchantment(var1, new EnchantmentInstance(var5, var6));
             }
          }
@@ -91,7 +86,7 @@ public class EnchantmentHelper {
 
       if (var2.isEmpty()) {
          var1.removeTagKey("Enchantments");
-      } else if (!var1.is(Items.ENCHANTED_BOOK)) {
+      } else if (var1.getItem() != Items.ENCHANTED_BOOK) {
          var1.addTagElement("Enchantments", var2);
       }
 
@@ -231,10 +226,6 @@ public class EnchantmentHelper {
       return getEnchantmentLevel(Enchantments.FROST_WALKER, var0) > 0;
    }
 
-   public static boolean hasSoulSpeed(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.SOUL_SPEED, var0) > 0;
-   }
-
    public static boolean hasBindingCurse(ItemStack var0) {
       return getItemEnchantmentLevel(Enchantments.BINDING_CURSE, var0) > 0;
    }
@@ -257,29 +248,22 @@ public class EnchantmentHelper {
 
    @Nullable
    public static Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1) {
-      return getRandomItemWith(var0, var1, (var0x) -> {
-         return true;
-      });
-   }
-
-   @Nullable
-   public static Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1, Predicate<ItemStack> var2) {
-      Map var3 = var0.getSlotItems(var1);
-      if (var3.isEmpty()) {
+      Map var2 = var0.getSlotItems(var1);
+      if (var2.isEmpty()) {
          return null;
       } else {
-         ArrayList var4 = Lists.newArrayList();
-         Iterator var5 = var3.entrySet().iterator();
+         ArrayList var3 = Lists.newArrayList();
+         Iterator var4 = var2.entrySet().iterator();
 
-         while(var5.hasNext()) {
-            Entry var6 = (Entry)var5.next();
-            ItemStack var7 = (ItemStack)var6.getValue();
-            if (!var7.isEmpty() && getItemEnchantmentLevel(var0, var7) > 0 && var2.test(var7)) {
-               var4.add(var6);
+         while(var4.hasNext()) {
+            Entry var5 = (Entry)var4.next();
+            ItemStack var6 = (ItemStack)var5.getValue();
+            if (!var6.isEmpty() && getItemEnchantmentLevel(var0, var6) > 0) {
+               var3.add(var5);
             }
          }
 
-         return var4.isEmpty() ? null : (Entry)var4.get(var1.getRandom().nextInt(var4.size()));
+         return var3.isEmpty() ? null : (Entry)var3.get(var1.getRandom().nextInt(var3.size()));
       }
    }
 
@@ -304,7 +288,7 @@ public class EnchantmentHelper {
 
    public static ItemStack enchantItem(Random var0, ItemStack var1, int var2, boolean var3) {
       List var4 = selectEnchantment(var0, var1, var2, var3);
-      boolean var5 = var1.is(Items.BOOK);
+      boolean var5 = var1.getItem() == Items.BOOK;
       if (var5) {
          var1 = new ItemStack(Items.ENCHANTED_BOOK);
       }
@@ -381,7 +365,7 @@ public class EnchantmentHelper {
    public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, boolean var2) {
       ArrayList var3 = Lists.newArrayList();
       Item var4 = var1.getItem();
-      boolean var5 = var1.is(Items.BOOK);
+      boolean var5 = var1.getItem() == Items.BOOK;
       Iterator var6 = Registry.ENCHANTMENT.iterator();
 
       while(true) {
@@ -389,14 +373,12 @@ public class EnchantmentHelper {
             Enchantment var7;
             do {
                do {
-                  do {
-                     if (!var6.hasNext()) {
-                        return var3;
-                     }
+                  if (!var6.hasNext()) {
+                     return var3;
+                  }
 
-                     var7 = (Enchantment)var6.next();
-                  } while(var7.isTreasureOnly() && !var2);
-               } while(!var7.isDiscoverable());
+                  var7 = (Enchantment)var6.next();
+               } while(var7.isTreasureOnly() && !var2);
             } while(!var7.category.canEnchant(var4) && !var5);
 
             for(int var8 = var7.getMaxLevel(); var8 > var7.getMinLevel() - 1; --var8) {

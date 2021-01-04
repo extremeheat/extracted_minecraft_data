@@ -1,64 +1,58 @@
 package com.mojang.blaze3d.vertex;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
 import com.mojang.blaze3d.platform.MemoryTracker;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Vector3f;
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntConsumer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.util.Mth;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.util.Arrays;
+import java.util.BitSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class BufferBuilder extends DefaultedVertexConsumer implements BufferVertexConsumer {
+public class BufferBuilder {
    private static final Logger LOGGER = LogManager.getLogger();
    private ByteBuffer buffer;
-   private final List<BufferBuilder.DrawState> drawStates = Lists.newArrayList();
-   private int lastPoppedStateIndex;
-   private int totalRenderedBytes;
-   private int nextElementByte;
-   private int totalUploadedBytes;
+   private IntBuffer intBuffer;
+   private ShortBuffer shortBuffer;
+   private FloatBuffer floatBuffer;
    private int vertices;
-   @Nullable
    private VertexFormatElement currentElement;
    private int elementIndex;
+   private boolean noColor;
+   private int mode;
+   private double xo;
+   private double yo;
+   private double zo;
    private VertexFormat format;
-   private VertexFormat.Mode mode;
-   private boolean fastFormat;
-   private boolean fullFormat;
    private boolean building;
-   @Nullable
-   private Vector3f[] sortingPoints;
-   private float sortX = 0.0F / 0.0;
-   private float sortY = 0.0F / 0.0;
-   private float sortZ = 0.0F / 0.0;
-   private boolean indexOnly;
 
    public BufferBuilder(int var1) {
       super();
-      this.buffer = MemoryTracker.createByteBuffer(var1 * 6);
-   }
-
-   private void ensureVertexCapacity() {
-      this.ensureCapacity(this.format.getVertexSize());
+      this.buffer = MemoryTracker.createByteBuffer(var1 * 4);
+      this.intBuffer = this.buffer.asIntBuffer();
+      this.shortBuffer = this.buffer.asShortBuffer();
+      this.floatBuffer = this.buffer.asFloatBuffer();
    }
 
    private void ensureCapacity(int var1) {
-      if (this.nextElementByte + var1 > this.buffer.capacity()) {
+      if (this.vertices * this.format.getVertexSize() + var1 > this.buffer.capacity()) {
          int var2 = this.buffer.capacity();
          int var3 = var2 + roundUp(var1);
          LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", var2, var3);
-         ByteBuffer var4 = MemoryTracker.createByteBuffer(var3);
+         int var4 = this.intBuffer.position();
+         ByteBuffer var5 = MemoryTracker.createByteBuffer(var3);
          this.buffer.position(0);
-         var4.put(this.buffer);
-         var4.rewind();
-         this.buffer = var4;
+         var5.put(this.buffer);
+         var5.rewind();
+         this.buffer = var5;
+         this.floatBuffer = this.buffer.asFloatBuffer().asReadOnlyBuffer();
+         this.intBuffer = this.buffer.asIntBuffer();
+         this.intBuffer.position(var4);
+         this.shortBuffer = this.buffer.asShortBuffer();
+         this.shortBuffer.position(var4 << 1);
       }
    }
 
@@ -76,373 +70,476 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       }
    }
 
-   public void setQuadSortOrigin(float var1, float var2, float var3) {
-      if (this.mode == VertexFormat.Mode.QUADS) {
-         if (this.sortX != var1 || this.sortY != var2 || this.sortZ != var3) {
-            this.sortX = var1;
-            this.sortY = var2;
-            this.sortZ = var3;
-            if (this.sortingPoints == null) {
-               this.sortingPoints = this.makeQuadSortingPoints();
+   public void sortQuads(float var1, float var2, float var3) {
+      int var4 = this.vertices / 4;
+      float[] var5 = new float[var4];
+
+      for(int var6 = 0; var6 < var4; ++var6) {
+         var5[var6] = getQuadDistanceFromPlayer(this.floatBuffer, (float)((double)var1 + this.xo), (float)((double)var2 + this.yo), (float)((double)var3 + this.zo), this.format.getIntegerSize(), var6 * this.format.getVertexSize());
+      }
+
+      Integer[] var15 = new Integer[var4];
+
+      for(int var7 = 0; var7 < var15.length; ++var7) {
+         var15[var7] = var7;
+      }
+
+      Arrays.sort(var15, (var1x, var2x) -> {
+         return Floats.compare(var5[var2x], var5[var1x]);
+      });
+      BitSet var16 = new BitSet();
+      int var8 = this.format.getVertexSize();
+      int[] var9 = new int[var8];
+
+      for(int var10 = var16.nextClearBit(0); var10 < var15.length; var10 = var16.nextClearBit(var10 + 1)) {
+         int var11 = var15[var10];
+         if (var11 != var10) {
+            this.intBuffer.limit(var11 * var8 + var8);
+            this.intBuffer.position(var11 * var8);
+            this.intBuffer.get(var9);
+            int var12 = var11;
+
+            for(int var13 = var15[var11]; var12 != var10; var13 = var15[var13]) {
+               this.intBuffer.limit(var13 * var8 + var8);
+               this.intBuffer.position(var13 * var8);
+               IntBuffer var14 = this.intBuffer.slice();
+               this.intBuffer.limit(var12 * var8 + var8);
+               this.intBuffer.position(var12 * var8);
+               this.intBuffer.put(var14);
+               var16.set(var12);
+               var12 = var13;
             }
+
+            this.intBuffer.limit(var10 * var8 + var8);
+            this.intBuffer.position(var10 * var8);
+            this.intBuffer.put(var9);
          }
 
+         var16.set(var10);
       }
+
    }
 
-   public BufferBuilder.SortState getSortState() {
-      return new BufferBuilder.SortState(this.mode, this.vertices, this.sortingPoints, this.sortX, this.sortY, this.sortZ);
+   public BufferBuilder.State getState() {
+      this.intBuffer.rewind();
+      int var1 = this.getBufferIndex();
+      this.intBuffer.limit(var1);
+      int[] var2 = new int[var1];
+      this.intBuffer.get(var2);
+      this.intBuffer.limit(this.intBuffer.capacity());
+      this.intBuffer.position(var1);
+      return new BufferBuilder.State(var2, new VertexFormat(this.format));
    }
 
-   public void restoreSortState(BufferBuilder.SortState var1) {
-      this.buffer.clear();
-      this.mode = var1.mode;
-      this.vertices = var1.vertices;
-      this.nextElementByte = this.totalRenderedBytes;
-      this.sortingPoints = var1.sortingPoints;
-      this.sortX = var1.sortX;
-      this.sortY = var1.sortY;
-      this.sortZ = var1.sortZ;
-      this.indexOnly = true;
+   private int getBufferIndex() {
+      return this.vertices * this.format.getIntegerSize();
    }
 
-   public void begin(VertexFormat.Mode var1, VertexFormat var2) {
+   private static float getQuadDistanceFromPlayer(FloatBuffer var0, float var1, float var2, float var3, int var4, int var5) {
+      float var6 = var0.get(var5 + var4 * 0 + 0);
+      float var7 = var0.get(var5 + var4 * 0 + 1);
+      float var8 = var0.get(var5 + var4 * 0 + 2);
+      float var9 = var0.get(var5 + var4 * 1 + 0);
+      float var10 = var0.get(var5 + var4 * 1 + 1);
+      float var11 = var0.get(var5 + var4 * 1 + 2);
+      float var12 = var0.get(var5 + var4 * 2 + 0);
+      float var13 = var0.get(var5 + var4 * 2 + 1);
+      float var14 = var0.get(var5 + var4 * 2 + 2);
+      float var15 = var0.get(var5 + var4 * 3 + 0);
+      float var16 = var0.get(var5 + var4 * 3 + 1);
+      float var17 = var0.get(var5 + var4 * 3 + 2);
+      float var18 = (var6 + var9 + var12 + var15) * 0.25F - var1;
+      float var19 = (var7 + var10 + var13 + var16) * 0.25F - var2;
+      float var20 = (var8 + var11 + var14 + var17) * 0.25F - var3;
+      return var18 * var18 + var19 * var19 + var20 * var20;
+   }
+
+   public void restoreState(BufferBuilder.State var1) {
+      this.intBuffer.clear();
+      this.ensureCapacity(var1.array().length * 4);
+      this.intBuffer.put(var1.array());
+      this.vertices = var1.vertices();
+      this.format = new VertexFormat(var1.getFormat());
+   }
+
+   public void clear() {
+      this.vertices = 0;
+      this.currentElement = null;
+      this.elementIndex = 0;
+   }
+
+   public void begin(int var1, VertexFormat var2) {
       if (this.building) {
          throw new IllegalStateException("Already building!");
       } else {
          this.building = true;
+         this.clear();
          this.mode = var1;
-         this.switchFormat(var2);
-         this.currentElement = (VertexFormatElement)var2.getElements().get(0);
-         this.elementIndex = 0;
-         this.buffer.clear();
+         this.format = var2;
+         this.currentElement = var2.getElement(this.elementIndex);
+         this.noColor = false;
+         this.buffer.limit(this.buffer.capacity());
       }
    }
 
-   private void switchFormat(VertexFormat var1) {
-      if (this.format != var1) {
-         this.format = var1;
-         boolean var2 = var1 == DefaultVertexFormat.NEW_ENTITY;
-         boolean var3 = var1 == DefaultVertexFormat.BLOCK;
-         this.fastFormat = var2 || var3;
-         this.fullFormat = var2;
-      }
-   }
-
-   private IntConsumer intConsumer(VertexFormat.IndexType var1) {
-      switch(var1) {
-      case BYTE:
-         return (var1x) -> {
-            this.buffer.put((byte)var1x);
-         };
-      case SHORT:
-         return (var1x) -> {
-            this.buffer.putShort((short)var1x);
-         };
+   public BufferBuilder uv(double var1, double var3) {
+      int var5 = this.vertices * this.format.getVertexSize() + this.format.getOffset(this.elementIndex);
+      switch(this.currentElement.getType()) {
+      case FLOAT:
+         this.buffer.putFloat(var5, (float)var1);
+         this.buffer.putFloat(var5 + 4, (float)var3);
+         break;
+      case UINT:
       case INT:
-      default:
-         return (var1x) -> {
-            this.buffer.putInt(var1x);
-         };
+         this.buffer.putInt(var5, (int)var1);
+         this.buffer.putInt(var5 + 4, (int)var3);
+         break;
+      case USHORT:
+      case SHORT:
+         this.buffer.putShort(var5, (short)((int)var3));
+         this.buffer.putShort(var5 + 2, (short)((int)var1));
+         break;
+      case UBYTE:
+      case BYTE:
+         this.buffer.put(var5, (byte)((int)var3));
+         this.buffer.put(var5 + 1, (byte)((int)var1));
+      }
+
+      this.nextElement();
+      return this;
+   }
+
+   public BufferBuilder uv2(int var1, int var2) {
+      int var3 = this.vertices * this.format.getVertexSize() + this.format.getOffset(this.elementIndex);
+      switch(this.currentElement.getType()) {
+      case FLOAT:
+         this.buffer.putFloat(var3, (float)var1);
+         this.buffer.putFloat(var3 + 4, (float)var2);
+         break;
+      case UINT:
+      case INT:
+         this.buffer.putInt(var3, var1);
+         this.buffer.putInt(var3 + 4, var2);
+         break;
+      case USHORT:
+      case SHORT:
+         this.buffer.putShort(var3, (short)var2);
+         this.buffer.putShort(var3 + 2, (short)var1);
+         break;
+      case UBYTE:
+      case BYTE:
+         this.buffer.put(var3, (byte)var2);
+         this.buffer.put(var3 + 1, (byte)var1);
+      }
+
+      this.nextElement();
+      return this;
+   }
+
+   public void faceTex2(int var1, int var2, int var3, int var4) {
+      int var5 = (this.vertices - 4) * this.format.getIntegerSize() + this.format.getUvOffset(1) / 4;
+      int var6 = this.format.getVertexSize() >> 2;
+      this.intBuffer.put(var5, var1);
+      this.intBuffer.put(var5 + var6, var2);
+      this.intBuffer.put(var5 + var6 * 2, var3);
+      this.intBuffer.put(var5 + var6 * 3, var4);
+   }
+
+   public void postProcessFacePosition(double var1, double var3, double var5) {
+      int var7 = this.format.getIntegerSize();
+      int var8 = (this.vertices - 4) * var7;
+
+      for(int var9 = 0; var9 < 4; ++var9) {
+         int var10 = var8 + var9 * var7;
+         int var11 = var10 + 1;
+         int var12 = var11 + 1;
+         this.intBuffer.put(var10, Float.floatToRawIntBits((float)(var1 + this.xo) + Float.intBitsToFloat(this.intBuffer.get(var10))));
+         this.intBuffer.put(var11, Float.floatToRawIntBits((float)(var3 + this.yo) + Float.intBitsToFloat(this.intBuffer.get(var11))));
+         this.intBuffer.put(var12, Float.floatToRawIntBits((float)(var5 + this.zo) + Float.intBitsToFloat(this.intBuffer.get(var12))));
+      }
+
+   }
+
+   private int getStartingColorIndex(int var1) {
+      return ((this.vertices - var1) * this.format.getVertexSize() + this.format.getColorOffset()) / 4;
+   }
+
+   public void faceTint(float var1, float var2, float var3, int var4) {
+      int var5 = this.getStartingColorIndex(var4);
+      int var6 = -1;
+      if (!this.noColor) {
+         var6 = this.intBuffer.get(var5);
+         int var7;
+         int var8;
+         int var9;
+         if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+            var7 = (int)((float)(var6 & 255) * var1);
+            var8 = (int)((float)(var6 >> 8 & 255) * var2);
+            var9 = (int)((float)(var6 >> 16 & 255) * var3);
+            var6 &= -16777216;
+            var6 |= var9 << 16 | var8 << 8 | var7;
+         } else {
+            var7 = (int)((float)(var6 >> 24 & 255) * var1);
+            var8 = (int)((float)(var6 >> 16 & 255) * var2);
+            var9 = (int)((float)(var6 >> 8 & 255) * var3);
+            var6 &= 255;
+            var6 |= var7 << 24 | var8 << 16 | var9 << 8;
+         }
+      }
+
+      this.intBuffer.put(var5, var6);
+   }
+
+   private void fixupVertexColor(int var1, int var2) {
+      int var3 = this.getStartingColorIndex(var2);
+      int var4 = var1 >> 16 & 255;
+      int var5 = var1 >> 8 & 255;
+      int var6 = var1 & 255;
+      this.putColor(var3, var4, var5, var6);
+   }
+
+   public void fixupVertexColor(float var1, float var2, float var3, int var4) {
+      int var5 = this.getStartingColorIndex(var4);
+      int var6 = clamp((int)(var1 * 255.0F), 0, 255);
+      int var7 = clamp((int)(var2 * 255.0F), 0, 255);
+      int var8 = clamp((int)(var3 * 255.0F), 0, 255);
+      this.putColor(var5, var6, var7, var8);
+   }
+
+   private static int clamp(int var0, int var1, int var2) {
+      if (var0 < var1) {
+         return var1;
+      } else {
+         return var0 > var2 ? var2 : var0;
       }
    }
 
-   private Vector3f[] makeQuadSortingPoints() {
-      FloatBuffer var1 = this.buffer.asFloatBuffer();
-      int var2 = this.totalRenderedBytes / 4;
-      int var3 = this.format.getIntegerSize();
-      int var4 = var3 * this.mode.primitiveStride;
-      int var5 = this.vertices / this.mode.primitiveStride;
-      Vector3f[] var6 = new Vector3f[var5];
-
-      for(int var7 = 0; var7 < var5; ++var7) {
-         float var8 = var1.get(var2 + var7 * var4 + 0);
-         float var9 = var1.get(var2 + var7 * var4 + 1);
-         float var10 = var1.get(var2 + var7 * var4 + 2);
-         float var11 = var1.get(var2 + var7 * var4 + var3 * 2 + 0);
-         float var12 = var1.get(var2 + var7 * var4 + var3 * 2 + 1);
-         float var13 = var1.get(var2 + var7 * var4 + var3 * 2 + 2);
-         float var14 = (var8 + var11) / 2.0F;
-         float var15 = (var9 + var12) / 2.0F;
-         float var16 = (var10 + var13) / 2.0F;
-         var6[var7] = new Vector3f(var14, var15, var16);
+   private void putColor(int var1, int var2, int var3, int var4) {
+      if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+         this.intBuffer.put(var1, -16777216 | var4 << 16 | var3 << 8 | var2);
+      } else {
+         this.intBuffer.put(var1, var2 << 24 | var3 << 16 | var4 << 8 | 255);
       }
 
-      return var6;
    }
 
-   private void putSortedQuadIndices(VertexFormat.IndexType var1) {
-      float[] var2 = new float[this.sortingPoints.length];
-      int[] var3 = new int[this.sortingPoints.length];
+   public void noColor() {
+      this.noColor = true;
+   }
 
-      for(int var4 = 0; var4 < this.sortingPoints.length; var3[var4] = var4++) {
-         float var5 = this.sortingPoints[var4].x() - this.sortX;
-         float var6 = this.sortingPoints[var4].y() - this.sortY;
-         float var7 = this.sortingPoints[var4].z() - this.sortZ;
-         var2[var4] = var5 * var5 + var6 * var6 + var7 * var7;
+   public BufferBuilder color(float var1, float var2, float var3, float var4) {
+      return this.color((int)(var1 * 255.0F), (int)(var2 * 255.0F), (int)(var3 * 255.0F), (int)(var4 * 255.0F));
+   }
+
+   public BufferBuilder color(int var1, int var2, int var3, int var4) {
+      if (this.noColor) {
+         return this;
+      } else {
+         int var5 = this.vertices * this.format.getVertexSize() + this.format.getOffset(this.elementIndex);
+         switch(this.currentElement.getType()) {
+         case FLOAT:
+            this.buffer.putFloat(var5, (float)var1 / 255.0F);
+            this.buffer.putFloat(var5 + 4, (float)var2 / 255.0F);
+            this.buffer.putFloat(var5 + 8, (float)var3 / 255.0F);
+            this.buffer.putFloat(var5 + 12, (float)var4 / 255.0F);
+            break;
+         case UINT:
+         case INT:
+            this.buffer.putFloat(var5, (float)var1);
+            this.buffer.putFloat(var5 + 4, (float)var2);
+            this.buffer.putFloat(var5 + 8, (float)var3);
+            this.buffer.putFloat(var5 + 12, (float)var4);
+            break;
+         case USHORT:
+         case SHORT:
+            this.buffer.putShort(var5, (short)var1);
+            this.buffer.putShort(var5 + 2, (short)var2);
+            this.buffer.putShort(var5 + 4, (short)var3);
+            this.buffer.putShort(var5 + 6, (short)var4);
+            break;
+         case UBYTE:
+         case BYTE:
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
+               this.buffer.put(var5, (byte)var1);
+               this.buffer.put(var5 + 1, (byte)var2);
+               this.buffer.put(var5 + 2, (byte)var3);
+               this.buffer.put(var5 + 3, (byte)var4);
+            } else {
+               this.buffer.put(var5, (byte)var4);
+               this.buffer.put(var5 + 1, (byte)var3);
+               this.buffer.put(var5 + 2, (byte)var2);
+               this.buffer.put(var5 + 3, (byte)var1);
+            }
+         }
+
+         this.nextElement();
+         return this;
+      }
+   }
+
+   public void putBulkData(int[] var1) {
+      this.ensureCapacity(var1.length * 4 + this.format.getVertexSize());
+      this.intBuffer.position(this.getBufferIndex());
+      this.intBuffer.put(var1);
+      this.vertices += var1.length / this.format.getIntegerSize();
+   }
+
+   public void endVertex() {
+      ++this.vertices;
+      this.ensureCapacity(this.format.getVertexSize());
+   }
+
+   public BufferBuilder vertex(double var1, double var3, double var5) {
+      int var7 = this.vertices * this.format.getVertexSize() + this.format.getOffset(this.elementIndex);
+      switch(this.currentElement.getType()) {
+      case FLOAT:
+         this.buffer.putFloat(var7, (float)(var1 + this.xo));
+         this.buffer.putFloat(var7 + 4, (float)(var3 + this.yo));
+         this.buffer.putFloat(var7 + 8, (float)(var5 + this.zo));
+         break;
+      case UINT:
+      case INT:
+         this.buffer.putInt(var7, Float.floatToRawIntBits((float)(var1 + this.xo)));
+         this.buffer.putInt(var7 + 4, Float.floatToRawIntBits((float)(var3 + this.yo)));
+         this.buffer.putInt(var7 + 8, Float.floatToRawIntBits((float)(var5 + this.zo)));
+         break;
+      case USHORT:
+      case SHORT:
+         this.buffer.putShort(var7, (short)((int)(var1 + this.xo)));
+         this.buffer.putShort(var7 + 2, (short)((int)(var3 + this.yo)));
+         this.buffer.putShort(var7 + 4, (short)((int)(var5 + this.zo)));
+         break;
+      case UBYTE:
+      case BYTE:
+         this.buffer.put(var7, (byte)((int)(var1 + this.xo)));
+         this.buffer.put(var7 + 1, (byte)((int)(var3 + this.yo)));
+         this.buffer.put(var7 + 2, (byte)((int)(var5 + this.zo)));
       }
 
-      IntArrays.mergeSort(var3, (var1x, var2x) -> {
-         return Floats.compare(var2[var2x], var2[var1x]);
-      });
-      IntConsumer var9 = this.intConsumer(var1);
-      this.buffer.position(this.nextElementByte);
-      int[] var10 = var3;
-      int var11 = var3.length;
+      this.nextElement();
+      return this;
+   }
 
-      for(int var12 = 0; var12 < var11; ++var12) {
-         int var8 = var10[var12];
-         var9.accept(var8 * this.mode.primitiveStride + 0);
-         var9.accept(var8 * this.mode.primitiveStride + 1);
-         var9.accept(var8 * this.mode.primitiveStride + 2);
-         var9.accept(var8 * this.mode.primitiveStride + 2);
-         var9.accept(var8 * this.mode.primitiveStride + 3);
-         var9.accept(var8 * this.mode.primitiveStride + 0);
+   public void postNormal(float var1, float var2, float var3) {
+      int var4 = (byte)((int)(var1 * 127.0F)) & 255;
+      int var5 = (byte)((int)(var2 * 127.0F)) & 255;
+      int var6 = (byte)((int)(var3 * 127.0F)) & 255;
+      int var7 = var4 | var5 << 8 | var6 << 16;
+      int var8 = this.format.getVertexSize() >> 2;
+      int var9 = (this.vertices - 4) * var8 + this.format.getNormalOffset() / 4;
+      this.intBuffer.put(var9, var7);
+      this.intBuffer.put(var9 + var8, var7);
+      this.intBuffer.put(var9 + var8 * 2, var7);
+      this.intBuffer.put(var9 + var8 * 3, var7);
+   }
+
+   private void nextElement() {
+      ++this.elementIndex;
+      this.elementIndex %= this.format.getElementCount();
+      this.currentElement = this.format.getElement(this.elementIndex);
+      if (this.currentElement.getUsage() == VertexFormatElement.Usage.PADDING) {
+         this.nextElement();
       }
 
+   }
+
+   public BufferBuilder normal(float var1, float var2, float var3) {
+      int var4 = this.vertices * this.format.getVertexSize() + this.format.getOffset(this.elementIndex);
+      switch(this.currentElement.getType()) {
+      case FLOAT:
+         this.buffer.putFloat(var4, var1);
+         this.buffer.putFloat(var4 + 4, var2);
+         this.buffer.putFloat(var4 + 8, var3);
+         break;
+      case UINT:
+      case INT:
+         this.buffer.putInt(var4, (int)var1);
+         this.buffer.putInt(var4 + 4, (int)var2);
+         this.buffer.putInt(var4 + 8, (int)var3);
+         break;
+      case USHORT:
+      case SHORT:
+         this.buffer.putShort(var4, (short)((int)var1 * 32767 & '\uffff'));
+         this.buffer.putShort(var4 + 2, (short)((int)var2 * 32767 & '\uffff'));
+         this.buffer.putShort(var4 + 4, (short)((int)var3 * 32767 & '\uffff'));
+         break;
+      case UBYTE:
+      case BYTE:
+         this.buffer.put(var4, (byte)((int)var1 * 127 & 255));
+         this.buffer.put(var4 + 1, (byte)((int)var2 * 127 & 255));
+         this.buffer.put(var4 + 2, (byte)((int)var3 * 127 & 255));
+      }
+
+      this.nextElement();
+      return this;
+   }
+
+   public void offset(double var1, double var3, double var5) {
+      this.xo = var1;
+      this.yo = var3;
+      this.zo = var5;
    }
 
    public void end() {
       if (!this.building) {
          throw new IllegalStateException("Not building!");
       } else {
-         int var1 = this.mode.indexCount(this.vertices);
-         VertexFormat.IndexType var2 = VertexFormat.IndexType.least(var1);
-         boolean var3;
-         if (this.sortingPoints != null) {
-            int var4 = Mth.roundToward(var1 * var2.bytes, 4);
-            this.ensureCapacity(var4);
-            this.putSortedQuadIndices(var2);
-            var3 = false;
-            this.nextElementByte += var4;
-            this.totalRenderedBytes += this.vertices * this.format.getVertexSize() + var4;
-         } else {
-            var3 = true;
-            this.totalRenderedBytes += this.vertices * this.format.getVertexSize();
-         }
-
          this.building = false;
-         this.drawStates.add(new BufferBuilder.DrawState(this.format, this.vertices, var1, this.mode, var2, this.indexOnly, var3));
-         this.vertices = 0;
-         this.currentElement = null;
-         this.elementIndex = 0;
-         this.sortingPoints = null;
-         this.sortX = 0.0F / 0.0;
-         this.sortY = 0.0F / 0.0;
-         this.sortZ = 0.0F / 0.0;
-         this.indexOnly = false;
+         this.buffer.position(0);
+         this.buffer.limit(this.getBufferIndex() * 4);
       }
    }
 
-   public void putByte(int var1, byte var2) {
-      this.buffer.put(this.nextElementByte + var1, var2);
+   public ByteBuffer getBuffer() {
+      return this.buffer;
    }
 
-   public void putShort(int var1, short var2) {
-      this.buffer.putShort(this.nextElementByte + var1, var2);
+   public VertexFormat getVertexFormat() {
+      return this.format;
    }
 
-   public void putFloat(int var1, float var2) {
-      this.buffer.putFloat(this.nextElementByte + var1, var2);
+   public int getVertexCount() {
+      return this.vertices;
    }
 
-   public void endVertex() {
-      if (this.elementIndex != 0) {
-         throw new IllegalStateException("Not filled all elements of the vertex");
-      } else {
-         ++this.vertices;
-         this.ensureVertexCapacity();
-      }
+   public int getDrawMode() {
+      return this.mode;
    }
 
-   public void nextElement() {
-      ImmutableList var1 = this.format.getElements();
-      this.elementIndex = (this.elementIndex + 1) % var1.size();
-      this.nextElementByte += this.currentElement.getByteSize();
-      VertexFormatElement var2 = (VertexFormatElement)var1.get(this.elementIndex);
-      this.currentElement = var2;
-      if (var2.getUsage() == VertexFormatElement.Usage.PADDING) {
-         this.nextElement();
-      }
-
-      if (this.defaultColorSet && this.currentElement.getUsage() == VertexFormatElement.Usage.COLOR) {
-         BufferVertexConsumer.super.color(this.defaultR, this.defaultG, this.defaultB, this.defaultA);
+   public void fixupQuadColor(int var1) {
+      for(int var2 = 0; var2 < 4; ++var2) {
+         this.fixupVertexColor(var1, var2 + 1);
       }
 
    }
 
-   public VertexConsumer color(int var1, int var2, int var3, int var4) {
-      if (this.defaultColorSet) {
-         throw new IllegalStateException();
-      } else {
-         return BufferVertexConsumer.super.color(var1, var2, var3, var4);
-      }
-   }
-
-   public void vertex(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, int var10, int var11, float var12, float var13, float var14) {
-      if (this.defaultColorSet) {
-         throw new IllegalStateException();
-      } else if (this.fastFormat) {
-         this.putFloat(0, var1);
-         this.putFloat(4, var2);
-         this.putFloat(8, var3);
-         this.putByte(12, (byte)((int)(var4 * 255.0F)));
-         this.putByte(13, (byte)((int)(var5 * 255.0F)));
-         this.putByte(14, (byte)((int)(var6 * 255.0F)));
-         this.putByte(15, (byte)((int)(var7 * 255.0F)));
-         this.putFloat(16, var8);
-         this.putFloat(20, var9);
-         byte var15;
-         if (this.fullFormat) {
-            this.putShort(24, (short)(var10 & '\uffff'));
-            this.putShort(26, (short)(var10 >> 16 & '\uffff'));
-            var15 = 28;
-         } else {
-            var15 = 24;
-         }
-
-         this.putShort(var15 + 0, (short)(var11 & '\uffff'));
-         this.putShort(var15 + 2, (short)(var11 >> 16 & '\uffff'));
-         this.putByte(var15 + 4, BufferVertexConsumer.normalIntValue(var12));
-         this.putByte(var15 + 5, BufferVertexConsumer.normalIntValue(var13));
-         this.putByte(var15 + 6, BufferVertexConsumer.normalIntValue(var14));
-         this.nextElementByte += var15 + 8;
-         this.endVertex();
-      } else {
-         super.vertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14);
-      }
-   }
-
-   public Pair<BufferBuilder.DrawState, ByteBuffer> popNextBuffer() {
-      BufferBuilder.DrawState var1 = (BufferBuilder.DrawState)this.drawStates.get(this.lastPoppedStateIndex++);
-      this.buffer.position(this.totalUploadedBytes);
-      this.totalUploadedBytes += Mth.roundToward(var1.bufferSize(), 4);
-      this.buffer.limit(this.totalUploadedBytes);
-      if (this.lastPoppedStateIndex == this.drawStates.size() && this.vertices == 0) {
-         this.clear();
+   public void fixupQuadColor(float var1, float var2, float var3) {
+      for(int var4 = 0; var4 < 4; ++var4) {
+         this.fixupVertexColor(var1, var2, var3, var4 + 1);
       }
 
-      ByteBuffer var2 = this.buffer.slice();
-      this.buffer.clear();
-      return Pair.of(var1, var2);
    }
 
-   public void clear() {
-      if (this.totalRenderedBytes != this.totalUploadedBytes) {
-         LOGGER.warn("Bytes mismatch {} {}", this.totalRenderedBytes, this.totalUploadedBytes);
-      }
-
-      this.discard();
-   }
-
-   public void discard() {
-      this.totalRenderedBytes = 0;
-      this.totalUploadedBytes = 0;
-      this.nextElementByte = 0;
-      this.drawStates.clear();
-      this.lastPoppedStateIndex = 0;
-   }
-
-   public VertexFormatElement currentElement() {
-      if (this.currentElement == null) {
-         throw new IllegalStateException("BufferBuilder not started");
-      } else {
-         return this.currentElement;
-      }
-   }
-
-   public boolean building() {
-      return this.building;
-   }
-
-   public static final class DrawState {
+   public class State {
+      private final int[] array;
       private final VertexFormat format;
-      private final int vertexCount;
-      private final int indexCount;
-      private final VertexFormat.Mode mode;
-      private final VertexFormat.IndexType indexType;
-      private final boolean indexOnly;
-      private final boolean sequentialIndex;
 
-      private DrawState(VertexFormat var1, int var2, int var3, VertexFormat.Mode var4, VertexFormat.IndexType var5, boolean var6, boolean var7) {
+      public State(int[] var2, VertexFormat var3) {
          super();
-         this.format = var1;
-         this.vertexCount = var2;
-         this.indexCount = var3;
-         this.mode = var4;
-         this.indexType = var5;
-         this.indexOnly = var6;
-         this.sequentialIndex = var7;
+         this.array = var2;
+         this.format = var3;
       }
 
-      public VertexFormat format() {
+      public int[] array() {
+         return this.array;
+      }
+
+      public int vertices() {
+         return this.array.length / this.format.getIntegerSize();
+      }
+
+      public VertexFormat getFormat() {
          return this.format;
-      }
-
-      public int vertexCount() {
-         return this.vertexCount;
-      }
-
-      public int indexCount() {
-         return this.indexCount;
-      }
-
-      public VertexFormat.Mode mode() {
-         return this.mode;
-      }
-
-      public VertexFormat.IndexType indexType() {
-         return this.indexType;
-      }
-
-      public int vertexBufferSize() {
-         return this.vertexCount * this.format.getVertexSize();
-      }
-
-      private int indexBufferSize() {
-         return this.sequentialIndex ? 0 : this.indexCount * this.indexType.bytes;
-      }
-
-      public int bufferSize() {
-         return this.vertexBufferSize() + this.indexBufferSize();
-      }
-
-      public boolean indexOnly() {
-         return this.indexOnly;
-      }
-
-      public boolean sequentialIndex() {
-         return this.sequentialIndex;
-      }
-
-      // $FF: synthetic method
-      DrawState(VertexFormat var1, int var2, int var3, VertexFormat.Mode var4, VertexFormat.IndexType var5, boolean var6, boolean var7, Object var8) {
-         this(var1, var2, var3, var4, var5, var6, var7);
-      }
-   }
-
-   public static class SortState {
-      private final VertexFormat.Mode mode;
-      private final int vertices;
-      @Nullable
-      private final Vector3f[] sortingPoints;
-      private final float sortX;
-      private final float sortY;
-      private final float sortZ;
-
-      private SortState(VertexFormat.Mode var1, int var2, @Nullable Vector3f[] var3, float var4, float var5, float var6) {
-         super();
-         this.mode = var1;
-         this.vertices = var2;
-         this.sortingPoints = var3;
-         this.sortX = var4;
-         this.sortY = var5;
-         this.sortZ = var6;
-      }
-
-      // $FF: synthetic method
-      SortState(VertexFormat.Mode var1, int var2, Vector3f[] var3, float var4, float var5, float var6, Object var7) {
-         this(var1, var2, var3, var4, var5, var6);
       }
    }
 }

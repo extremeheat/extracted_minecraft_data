@@ -1,13 +1,13 @@
 package net.minecraft.world.inventory;
 
 import javax.annotation.Nullable;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 public class BeaconMenu extends AbstractContainerMenu {
@@ -24,7 +24,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       super(MenuType.BEACON, var1);
       this.beacon = new SimpleContainer(1) {
          public boolean canPlaceItem(int var1, ItemStack var2) {
-            return var2.is((Tag)ItemTags.BEACON_PAYMENT_ITEMS);
+            return var2.getItem() == Items.EMERALD || var2.getItem() == Items.DIAMOND || var2.getItem() == Items.GOLD_INGOT || var2.getItem() == Items.IRON_INGOT;
          }
 
          public int getMaxStackSize() {
@@ -150,7 +150,8 @@ public class BeaconMenu extends AbstractContainerMenu {
       }
 
       public boolean mayPlace(ItemStack var1) {
-         return var1.is((Tag)ItemTags.BEACON_PAYMENT_ITEMS);
+         Item var2 = var1.getItem();
+         return var2 == Items.EMERALD || var2 == Items.DIAMOND || var2 == Items.GOLD_INGOT || var2 == Items.IRON_INGOT;
       }
 
       public int getMaxStackSize() {

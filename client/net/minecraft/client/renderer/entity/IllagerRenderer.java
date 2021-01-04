@@ -1,18 +1,23 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.world.entity.monster.AbstractIllager;
 
 public abstract class IllagerRenderer<T extends AbstractIllager> extends MobRenderer<T, IllagerModel<T>> {
-   protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<T> var2, float var3) {
+   protected IllagerRenderer(EntityRenderDispatcher var1, IllagerModel<T> var2, float var3) {
       super(var1, var2, var3);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
+      this.addLayer(new CustomHeadLayer(this));
    }
 
-   protected void scale(T var1, PoseStack var2, float var3) {
-      float var4 = 0.9375F;
-      var2.scale(0.9375F, 0.9375F, 0.9375F);
+   public IllagerRenderer(EntityRenderDispatcher var1) {
+      super(var1, new IllagerModel(0.0F, 0.0F, 64, 64), 0.5F);
+      this.addLayer(new CustomHeadLayer(this));
+   }
+
+   protected void scale(T var1, float var2) {
+      float var3 = 0.9375F;
+      GlStateManager.scalef(0.9375F, 0.9375F, 0.9375F);
    }
 }

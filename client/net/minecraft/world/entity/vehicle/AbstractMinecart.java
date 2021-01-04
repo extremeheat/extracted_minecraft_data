@@ -1,19 +1,10 @@
 package net.minecraft.world.entity.vehicle;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.datafixers.util.Pair;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
@@ -25,15 +16,11 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -54,9 +41,8 @@ public abstract class AbstractMinecart extends Entity {
    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_BLOCK;
    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_OFFSET;
    private static final EntityDataAccessor<Boolean> DATA_ID_CUSTOM_DISPLAY;
-   private static final ImmutableMap<Pose, ImmutableList<Integer>> POSE_DISMOUNT_HEIGHTS;
    private boolean flipped;
-   private static final Map<RailShape, Pair<Vec3i, Vec3i>> EXITS;
+   private static final int[][][] EXITS;
    private int lSteps;
    private double lx;
    private double ly;
@@ -75,6 +61,7 @@ public abstract class AbstractMinecart extends Entity {
    protected AbstractMinecart(EntityType<?> var1, Level var2, double var3, double var5, double var7) {
       this(var1, var2);
       this.setPos(var3, var5, var7);
+      this.setDeltaMovement(Vec3.ZERO);
       this.xo = var3;
       this.yo = var5;
       this.zo = var7;
@@ -96,7 +83,7 @@ public abstract class AbstractMinecart extends Entity {
       }
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -109,85 +96,21 @@ public abstract class AbstractMinecart extends Entity {
       this.entityData.define(DATA_ID_CUSTOM_DISPLAY, false);
    }
 
-   public boolean canCollideWith(Entity var1) {
-      return Boat.canVehicleCollide(this, var1);
+   @Nullable
+   public AABB getCollideAgainstBox(Entity var1) {
+      return var1.isPushable() ? var1.getBoundingBox() : null;
    }
 
    public boolean isPushable() {
       return true;
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
-      return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
-   }
-
-   public double getPassengersRidingOffset() {
+   public double getRideHeight() {
       return 0.0D;
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Direction var2 = this.getMotionDirection();
-      if (var2.getAxis() == Direction.Axis.Y) {
-         return super.getDismountLocationForPassenger(var1);
-      } else {
-         int[][] var3 = DismountHelper.offsetsForDirection(var2);
-         BlockPos var4 = this.blockPosition();
-         BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-         ImmutableList var6 = var1.getDismountPoses();
-         UnmodifiableIterator var7 = var6.iterator();
-
-         while(var7.hasNext()) {
-            Pose var8 = (Pose)var7.next();
-            EntityDimensions var9 = var1.getDimensions(var8);
-            float var10 = Math.min(var9.width, 1.0F) / 2.0F;
-            UnmodifiableIterator var11 = ((ImmutableList)POSE_DISMOUNT_HEIGHTS.get(var8)).iterator();
-
-            while(var11.hasNext()) {
-               int var12 = (Integer)var11.next();
-               int[][] var13 = var3;
-               int var14 = var3.length;
-
-               for(int var15 = 0; var15 < var14; ++var15) {
-                  int[] var16 = var13[var15];
-                  var5.set(var4.getX() + var16[0], var4.getY() + var12, var4.getZ() + var16[1]);
-                  double var17 = this.level.getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level, var5), () -> {
-                     return DismountHelper.nonClimbableShape(this.level, var5.below());
-                  });
-                  if (DismountHelper.isBlockFloorValid(var17)) {
-                     AABB var19 = new AABB((double)(-var10), 0.0D, (double)(-var10), (double)var10, (double)var9.height, (double)var10);
-                     Vec3 var20 = Vec3.upFromBottomCenterOf(var5, var17);
-                     if (DismountHelper.canDismountTo(this.level, var1, var19.move(var20))) {
-                        var1.setPose(var8);
-                        return var20;
-                     }
-                  }
-               }
-            }
-         }
-
-         double var21 = this.getBoundingBox().maxY;
-         var5.set((double)var4.getX(), var21, (double)var4.getZ());
-         UnmodifiableIterator var22 = var6.iterator();
-
-         while(var22.hasNext()) {
-            Pose var23 = (Pose)var22.next();
-            double var24 = (double)var1.getDimensions(var23).height;
-            int var25 = Mth.ceil(var21 - (double)var5.getY() + var24);
-            double var26 = DismountHelper.findCeilingFrom(var5, var25, (var1x) -> {
-               return this.level.getBlockState(var1x).getCollisionShape(this.level, var1x);
-            });
-            if (var21 + var24 <= var26) {
-               var1.setPose(var23);
-               break;
-            }
-         }
-
-         return super.getDismountLocationForPassenger(var1);
-      }
-   }
-
    public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level.isClientSide && !this.isRemoved()) {
+      if (!this.level.isClientSide && !this.removed) {
          if (this.isInvulnerableTo(var1)) {
             return false;
          } else {
@@ -195,11 +118,11 @@ public abstract class AbstractMinecart extends Entity {
             this.setHurtTime(10);
             this.markHurt();
             this.setDamage(this.getDamage() + var2 * 10.0F);
-            boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
+            boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).abilities.instabuild;
             if (var3 || this.getDamage() > 40.0F) {
                this.ejectPassengers();
                if (var3 && !this.hasCustomName()) {
-                  this.discard();
+                  this.remove();
                } else {
                   this.destroy(var1);
                }
@@ -212,13 +135,8 @@ public abstract class AbstractMinecart extends Entity {
       }
    }
 
-   protected float getBlockSpeedFactor() {
-      BlockState var1 = this.level.getBlockState(this.blockPosition());
-      return var1.is(BlockTags.RAILS) ? 1.0F : super.getBlockSpeedFactor();
-   }
-
    public void destroy(DamageSource var1) {
-      this.remove(Entity.RemovalReason.KILLED);
+      this.remove();
       if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
          ItemStack var2 = new ItemStack(Items.MINECART);
          if (this.hasCustomName()) {
@@ -237,11 +155,7 @@ public abstract class AbstractMinecart extends Entity {
    }
 
    public boolean isPickable() {
-      return !this.isRemoved();
-   }
-
-   private static Pair<Vec3i, Vec3i> exits(RailShape var0) {
-      return (Pair)EXITS.get(var0);
+      return !this.removed;
    }
 
    public Direction getMotionDirection() {
@@ -257,44 +171,48 @@ public abstract class AbstractMinecart extends Entity {
          this.setDamage(this.getDamage() - 1.0F);
       }
 
-      this.checkOutOfWorld();
+      if (this.y < -64.0D) {
+         this.outOfWorld();
+      }
+
       this.handleNetherPortal();
-      double var1;
       if (this.level.isClientSide) {
          if (this.lSteps > 0) {
-            var1 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
-            double var16 = this.getY() + (this.ly - this.getY()) / (double)this.lSteps;
-            double var17 = this.getZ() + (this.lz - this.getZ()) / (double)this.lSteps;
+            double var15 = this.x + (this.lx - this.x) / (double)this.lSteps;
+            double var16 = this.y + (this.ly - this.y) / (double)this.lSteps;
+            double var17 = this.z + (this.lz - this.z) / (double)this.lSteps;
             double var7 = Mth.wrapDegrees(this.lyr - (double)this.yRot);
             this.yRot = (float)((double)this.yRot + var7 / (double)this.lSteps);
             this.xRot = (float)((double)this.xRot + (this.lxr - (double)this.xRot) / (double)this.lSteps);
             --this.lSteps;
-            this.setPos(var1, var16, var17);
+            this.setPos(var15, var16, var17);
             this.setRot(this.yRot, this.xRot);
          } else {
-            this.reapplyPosition();
+            this.setPos(this.x, this.y, this.z);
             this.setRot(this.yRot, this.xRot);
          }
 
       } else {
+         this.xo = this.x;
+         this.yo = this.y;
+         this.zo = this.z;
          if (!this.isNoGravity()) {
-            var1 = this.isInWater() ? -0.005D : -0.04D;
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, var1, 0.0D));
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
          }
 
-         int var15 = Mth.floor(this.getX());
-         int var2 = Mth.floor(this.getY());
-         int var3 = Mth.floor(this.getZ());
-         if (this.level.getBlockState(new BlockPos(var15, var2 - 1, var3)).is(BlockTags.RAILS)) {
+         int var1 = Mth.floor(this.x);
+         int var2 = Mth.floor(this.y);
+         int var3 = Mth.floor(this.z);
+         if (this.level.getBlockState(new BlockPos(var1, var2 - 1, var3)).is(BlockTags.RAILS)) {
             --var2;
          }
 
-         BlockPos var4 = new BlockPos(var15, var2, var3);
+         BlockPos var4 = new BlockPos(var1, var2, var3);
          BlockState var5 = this.level.getBlockState(var4);
-         if (BaseRailBlock.isRail(var5)) {
+         if (var5.is(BlockTags.RAILS)) {
             this.moveAlongTrack(var4, var5);
-            if (var5.is(Blocks.ACTIVATOR_RAIL)) {
-               this.activateMinecart(var15, var2, var3, (Boolean)var5.getValue(PoweredRailBlock.POWERED));
+            if (var5.getBlock() == Blocks.ACTIVATOR_RAIL) {
+               this.activateMinecart(var1, var2, var3, (Boolean)var5.getValue(PoweredRailBlock.POWERED));
             }
          } else {
             this.comeOffTrack();
@@ -302,8 +220,8 @@ public abstract class AbstractMinecart extends Entity {
 
          this.checkInsideBlocks();
          this.xRot = 0.0F;
-         double var6 = this.xo - this.getX();
-         double var8 = this.zo - this.getZ();
+         double var6 = this.xo - this.x;
+         double var8 = this.zo - this.z;
          if (var6 * var6 + var8 * var8 > 0.001D) {
             this.yRot = (float)(Mth.atan2(var8, var6) * 180.0D / 3.141592653589793D);
             if (this.flipped) {
@@ -341,18 +259,12 @@ public abstract class AbstractMinecart extends Entity {
             }
          }
 
-         this.updateInWaterStateAndDoFluidPushing();
-         if (this.isInLava()) {
-            this.lavaHurt();
-            this.fallDistance *= 0.5F;
-         }
-
-         this.firstTick = false;
+         this.updateInWaterState();
       }
    }
 
    protected double getMaxSpeed() {
-      return (this.isInWater() ? 4.0D : 8.0D) / 20.0D;
+      return 0.4D;
    }
 
    public void activateMinecart(int var1, int var2, int var3, boolean var4) {
@@ -375,164 +287,158 @@ public abstract class AbstractMinecart extends Entity {
 
    protected void moveAlongTrack(BlockPos var1, BlockState var2) {
       this.fallDistance = 0.0F;
-      double var3 = this.getX();
-      double var5 = this.getY();
-      double var7 = this.getZ();
-      Vec3 var9 = this.getPos(var3, var5, var7);
-      var5 = (double)var1.getY();
-      boolean var10 = false;
-      boolean var11 = false;
-      if (var2.is(Blocks.POWERED_RAIL)) {
-         var10 = (Boolean)var2.getValue(PoweredRailBlock.POWERED);
-         var11 = !var10;
+      Vec3 var3 = this.getPos(this.x, this.y, this.z);
+      this.y = (double)var1.getY();
+      boolean var4 = false;
+      boolean var5 = false;
+      BaseRailBlock var6 = (BaseRailBlock)var2.getBlock();
+      if (var6 == Blocks.POWERED_RAIL) {
+         var4 = (Boolean)var2.getValue(PoweredRailBlock.POWERED);
+         var5 = !var4;
       }
 
-      double var12 = 0.0078125D;
-      if (this.isInWater()) {
-         var12 *= 0.2D;
-      }
-
-      Vec3 var14 = this.getDeltaMovement();
-      RailShape var15 = (RailShape)var2.getValue(((BaseRailBlock)var2.getBlock()).getShapeProperty());
-      switch(var15) {
+      double var7 = 0.0078125D;
+      Vec3 var9 = this.getDeltaMovement();
+      RailShape var10 = (RailShape)var2.getValue(var6.getShapeProperty());
+      switch(var10) {
       case ASCENDING_EAST:
-         this.setDeltaMovement(var14.add(-var12, 0.0D, 0.0D));
-         ++var5;
+         this.setDeltaMovement(var9.add(-0.0078125D, 0.0D, 0.0D));
+         ++this.y;
          break;
       case ASCENDING_WEST:
-         this.setDeltaMovement(var14.add(var12, 0.0D, 0.0D));
-         ++var5;
+         this.setDeltaMovement(var9.add(0.0078125D, 0.0D, 0.0D));
+         ++this.y;
          break;
       case ASCENDING_NORTH:
-         this.setDeltaMovement(var14.add(0.0D, 0.0D, var12));
-         ++var5;
+         this.setDeltaMovement(var9.add(0.0D, 0.0D, 0.0078125D));
+         ++this.y;
          break;
       case ASCENDING_SOUTH:
-         this.setDeltaMovement(var14.add(0.0D, 0.0D, -var12));
-         ++var5;
+         this.setDeltaMovement(var9.add(0.0D, 0.0D, -0.0078125D));
+         ++this.y;
       }
 
-      var14 = this.getDeltaMovement();
-      Pair var16 = exits(var15);
-      Vec3i var17 = (Vec3i)var16.getFirst();
-      Vec3i var18 = (Vec3i)var16.getSecond();
-      double var19 = (double)(var18.getX() - var17.getX());
-      double var21 = (double)(var18.getZ() - var17.getZ());
-      double var23 = Math.sqrt(var19 * var19 + var21 * var21);
-      double var25 = var14.x * var19 + var14.z * var21;
-      if (var25 < 0.0D) {
-         var19 = -var19;
-         var21 = -var21;
+      var9 = this.getDeltaMovement();
+      int[][] var11 = EXITS[var10.getData()];
+      double var12 = (double)(var11[1][0] - var11[0][0]);
+      double var14 = (double)(var11[1][2] - var11[0][2]);
+      double var16 = Math.sqrt(var12 * var12 + var14 * var14);
+      double var18 = var9.x * var12 + var9.z * var14;
+      if (var18 < 0.0D) {
+         var12 = -var12;
+         var14 = -var14;
       }
 
-      double var27 = Math.min(2.0D, Math.sqrt(getHorizontalDistanceSqr(var14)));
-      var14 = new Vec3(var27 * var19 / var23, var14.y, var27 * var21 / var23);
-      this.setDeltaMovement(var14);
-      Entity var29 = this.getFirstPassenger();
-      if (var29 instanceof Player) {
-         Vec3 var30 = var29.getDeltaMovement();
-         double var31 = getHorizontalDistanceSqr(var30);
-         double var33 = getHorizontalDistanceSqr(this.getDeltaMovement());
-         if (var31 > 1.0E-4D && var33 < 0.01D) {
-            this.setDeltaMovement(this.getDeltaMovement().add(var30.x * 0.1D, 0.0D, var30.z * 0.1D));
-            var11 = false;
+      double var20 = Math.min(2.0D, Math.sqrt(getHorizontalDistanceSqr(var9)));
+      var9 = new Vec3(var20 * var12 / var16, var9.y, var20 * var14 / var16);
+      this.setDeltaMovement(var9);
+      Entity var22 = this.getPassengers().isEmpty() ? null : (Entity)this.getPassengers().get(0);
+      if (var22 instanceof Player) {
+         Vec3 var23 = var22.getDeltaMovement();
+         double var24 = getHorizontalDistanceSqr(var23);
+         double var26 = getHorizontalDistanceSqr(this.getDeltaMovement());
+         if (var24 > 1.0E-4D && var26 < 0.01D) {
+            this.setDeltaMovement(this.getDeltaMovement().add(var23.x * 0.1D, 0.0D, var23.z * 0.1D));
+            var5 = false;
          }
       }
 
-      double var57;
-      if (var11) {
-         var57 = Math.sqrt(getHorizontalDistanceSqr(this.getDeltaMovement()));
-         if (var57 < 0.03D) {
+      double var48;
+      if (var5) {
+         var48 = Math.sqrt(getHorizontalDistanceSqr(this.getDeltaMovement()));
+         if (var48 < 0.03D) {
             this.setDeltaMovement(Vec3.ZERO);
          } else {
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.5D, 0.0D, 0.5D));
          }
       }
 
-      var57 = (double)var1.getX() + 0.5D + (double)var17.getX() * 0.5D;
-      double var32 = (double)var1.getZ() + 0.5D + (double)var17.getZ() * 0.5D;
-      double var34 = (double)var1.getX() + 0.5D + (double)var18.getX() * 0.5D;
-      double var36 = (double)var1.getZ() + 0.5D + (double)var18.getZ() * 0.5D;
-      var19 = var34 - var57;
-      var21 = var36 - var32;
-      double var38;
-      double var40;
-      double var42;
-      if (var19 == 0.0D) {
-         var38 = var7 - (double)var1.getZ();
-      } else if (var21 == 0.0D) {
-         var38 = var3 - (double)var1.getX();
+      var48 = (double)var1.getX() + 0.5D + (double)var11[0][0] * 0.5D;
+      double var25 = (double)var1.getZ() + 0.5D + (double)var11[0][2] * 0.5D;
+      double var27 = (double)var1.getX() + 0.5D + (double)var11[1][0] * 0.5D;
+      double var29 = (double)var1.getZ() + 0.5D + (double)var11[1][2] * 0.5D;
+      var12 = var27 - var48;
+      var14 = var29 - var25;
+      double var31;
+      double var33;
+      double var35;
+      if (var12 == 0.0D) {
+         this.x = (double)var1.getX() + 0.5D;
+         var31 = this.z - (double)var1.getZ();
+      } else if (var14 == 0.0D) {
+         this.z = (double)var1.getZ() + 0.5D;
+         var31 = this.x - (double)var1.getX();
       } else {
-         var40 = var3 - var57;
-         var42 = var7 - var32;
-         var38 = (var40 * var19 + var42 * var21) * 2.0D;
+         var33 = this.x - var48;
+         var35 = this.z - var25;
+         var31 = (var33 * var12 + var35 * var14) * 2.0D;
       }
 
-      var3 = var57 + var19 * var38;
-      var7 = var32 + var21 * var38;
-      this.setPos(var3, var5, var7);
-      var40 = this.isVehicle() ? 0.75D : 1.0D;
-      var42 = this.getMaxSpeed();
-      var14 = this.getDeltaMovement();
-      this.move(MoverType.SELF, new Vec3(Mth.clamp(var40 * var14.x, -var42, var42), 0.0D, Mth.clamp(var40 * var14.z, -var42, var42)));
-      if (var17.getY() != 0 && Mth.floor(this.getX()) - var1.getX() == var17.getX() && Mth.floor(this.getZ()) - var1.getZ() == var17.getZ()) {
-         this.setPos(this.getX(), this.getY() + (double)var17.getY(), this.getZ());
-      } else if (var18.getY() != 0 && Mth.floor(this.getX()) - var1.getX() == var18.getX() && Mth.floor(this.getZ()) - var1.getZ() == var18.getZ()) {
-         this.setPos(this.getX(), this.getY() + (double)var18.getY(), this.getZ());
+      this.x = var48 + var12 * var31;
+      this.z = var25 + var14 * var31;
+      this.setPos(this.x, this.y, this.z);
+      var33 = this.isVehicle() ? 0.75D : 1.0D;
+      var35 = this.getMaxSpeed();
+      var9 = this.getDeltaMovement();
+      this.move(MoverType.SELF, new Vec3(Mth.clamp(var33 * var9.x, -var35, var35), 0.0D, Mth.clamp(var33 * var9.z, -var35, var35)));
+      if (var11[0][1] != 0 && Mth.floor(this.x) - var1.getX() == var11[0][0] && Mth.floor(this.z) - var1.getZ() == var11[0][2]) {
+         this.setPos(this.x, this.y + (double)var11[0][1], this.z);
+      } else if (var11[1][1] != 0 && Mth.floor(this.x) - var1.getX() == var11[1][0] && Mth.floor(this.z) - var1.getZ() == var11[1][2]) {
+         this.setPos(this.x, this.y + (double)var11[1][1], this.z);
       }
 
       this.applyNaturalSlowdown();
-      Vec3 var44 = this.getPos(this.getX(), this.getY(), this.getZ());
-      Vec3 var47;
-      double var48;
-      if (var44 != null && var9 != null) {
-         double var45 = (var9.y - var44.y) * 0.05D;
-         var47 = this.getDeltaMovement();
-         var48 = Math.sqrt(getHorizontalDistanceSqr(var47));
-         if (var48 > 0.0D) {
-            this.setDeltaMovement(var47.multiply((var48 + var45) / var48, 1.0D, (var48 + var45) / var48));
+      Vec3 var37 = this.getPos(this.x, this.y, this.z);
+      Vec3 var40;
+      double var41;
+      if (var37 != null && var3 != null) {
+         double var38 = (var3.y - var37.y) * 0.05D;
+         var40 = this.getDeltaMovement();
+         var41 = Math.sqrt(getHorizontalDistanceSqr(var40));
+         if (var41 > 0.0D) {
+            this.setDeltaMovement(var40.multiply((var41 + var38) / var41, 1.0D, (var41 + var38) / var41));
          }
 
-         this.setPos(this.getX(), var44.y, this.getZ());
+         this.setPos(this.x, var37.y, this.z);
       }
 
-      int var55 = Mth.floor(this.getX());
-      int var46 = Mth.floor(this.getZ());
-      if (var55 != var1.getX() || var46 != var1.getZ()) {
-         var47 = this.getDeltaMovement();
-         var48 = Math.sqrt(getHorizontalDistanceSqr(var47));
-         this.setDeltaMovement(var48 * (double)(var55 - var1.getX()), var47.y, var48 * (double)(var46 - var1.getZ()));
+      int var49 = Mth.floor(this.x);
+      int var39 = Mth.floor(this.z);
+      if (var49 != var1.getX() || var39 != var1.getZ()) {
+         var40 = this.getDeltaMovement();
+         var41 = Math.sqrt(getHorizontalDistanceSqr(var40));
+         this.setDeltaMovement(var41 * (double)(var49 - var1.getX()), var40.y, var41 * (double)(var39 - var1.getZ()));
       }
 
-      if (var10) {
-         var47 = this.getDeltaMovement();
-         var48 = Math.sqrt(getHorizontalDistanceSqr(var47));
-         if (var48 > 0.01D) {
-            double var50 = 0.06D;
-            this.setDeltaMovement(var47.add(var47.x / var48 * 0.06D, 0.0D, var47.z / var48 * 0.06D));
+      if (var4) {
+         var40 = this.getDeltaMovement();
+         var41 = Math.sqrt(getHorizontalDistanceSqr(var40));
+         if (var41 > 0.01D) {
+            double var43 = 0.06D;
+            this.setDeltaMovement(var40.add(var40.x / var41 * 0.06D, 0.0D, var40.z / var41 * 0.06D));
          } else {
-            Vec3 var56 = this.getDeltaMovement();
-            double var51 = var56.x;
-            double var53 = var56.z;
-            if (var15 == RailShape.EAST_WEST) {
+            Vec3 var50 = this.getDeltaMovement();
+            double var44 = var50.x;
+            double var46 = var50.z;
+            if (var10 == RailShape.EAST_WEST) {
                if (this.isRedstoneConductor(var1.west())) {
-                  var51 = 0.02D;
+                  var44 = 0.02D;
                } else if (this.isRedstoneConductor(var1.east())) {
-                  var51 = -0.02D;
+                  var44 = -0.02D;
                }
             } else {
-               if (var15 != RailShape.NORTH_SOUTH) {
+               if (var10 != RailShape.NORTH_SOUTH) {
                   return;
                }
 
                if (this.isRedstoneConductor(var1.north())) {
-                  var53 = 0.02D;
+                  var46 = 0.02D;
                } else if (this.isRedstoneConductor(var1.south())) {
-                  var53 = -0.02D;
+                  var46 = -0.02D;
                }
             }
 
-            this.setDeltaMovement(var51, var56.y, var53);
+            this.setDeltaMovement(var44, var50.y, var46);
          }
       }
 
@@ -544,13 +450,7 @@ public abstract class AbstractMinecart extends Entity {
 
    protected void applyNaturalSlowdown() {
       double var1 = this.isVehicle() ? 0.997D : 0.96D;
-      Vec3 var3 = this.getDeltaMovement();
-      var3 = var3.multiply(var1, 0.0D, var1);
-      if (this.isInWater()) {
-         var3 = var3.scale(0.949999988079071D);
-      }
-
-      this.setDeltaMovement(var3);
+      this.setDeltaMovement(this.getDeltaMovement().multiply(var1, 0.0D, var1));
    }
 
    @Nullable
@@ -563,27 +463,25 @@ public abstract class AbstractMinecart extends Entity {
       }
 
       BlockState var12 = this.level.getBlockState(new BlockPos(var9, var10, var11));
-      if (BaseRailBlock.isRail(var12)) {
+      if (var12.is(BlockTags.RAILS)) {
          RailShape var13 = (RailShape)var12.getValue(((BaseRailBlock)var12.getBlock()).getShapeProperty());
          var3 = (double)var10;
          if (var13.isAscending()) {
             var3 = (double)(var10 + 1);
          }
 
-         Pair var14 = exits(var13);
-         Vec3i var15 = (Vec3i)var14.getFirst();
-         Vec3i var16 = (Vec3i)var14.getSecond();
-         double var17 = (double)(var16.getX() - var15.getX());
-         double var19 = (double)(var16.getZ() - var15.getZ());
-         double var21 = Math.sqrt(var17 * var17 + var19 * var19);
-         var17 /= var21;
-         var19 /= var21;
-         var1 += var17 * var7;
-         var5 += var19 * var7;
-         if (var15.getY() != 0 && Mth.floor(var1) - var9 == var15.getX() && Mth.floor(var5) - var11 == var15.getZ()) {
-            var3 += (double)var15.getY();
-         } else if (var16.getY() != 0 && Mth.floor(var1) - var9 == var16.getX() && Mth.floor(var5) - var11 == var16.getZ()) {
-            var3 += (double)var16.getY();
+         int[][] var14 = EXITS[var13.getData()];
+         double var15 = (double)(var14[1][0] - var14[0][0]);
+         double var17 = (double)(var14[1][2] - var14[0][2]);
+         double var19 = Math.sqrt(var15 * var15 + var17 * var17);
+         var15 /= var19;
+         var17 /= var19;
+         var1 += var15 * var7;
+         var5 += var17 * var7;
+         if (var14[0][1] != 0 && Mth.floor(var1) - var9 == var14[0][0] && Mth.floor(var5) - var11 == var14[0][2]) {
+            var3 += (double)var14[0][1];
+         } else if (var14[1][1] != 0 && Mth.floor(var1) - var9 == var14[1][0] && Mth.floor(var5) - var11 == var14[1][2]) {
+            var3 += (double)var14[1][1];
          }
 
          return this.getPos(var1, var3, var5);
@@ -602,37 +500,37 @@ public abstract class AbstractMinecart extends Entity {
       }
 
       BlockState var10 = this.level.getBlockState(new BlockPos(var7, var8, var9));
-      if (BaseRailBlock.isRail(var10)) {
+      if (var10.is(BlockTags.RAILS)) {
          RailShape var11 = (RailShape)var10.getValue(((BaseRailBlock)var10.getBlock()).getShapeProperty());
-         Pair var12 = exits(var11);
-         Vec3i var13 = (Vec3i)var12.getFirst();
-         Vec3i var14 = (Vec3i)var12.getSecond();
-         double var15 = (double)var7 + 0.5D + (double)var13.getX() * 0.5D;
-         double var17 = (double)var8 + 0.0625D + (double)var13.getY() * 0.5D;
-         double var19 = (double)var9 + 0.5D + (double)var13.getZ() * 0.5D;
-         double var21 = (double)var7 + 0.5D + (double)var14.getX() * 0.5D;
-         double var23 = (double)var8 + 0.0625D + (double)var14.getY() * 0.5D;
-         double var25 = (double)var9 + 0.5D + (double)var14.getZ() * 0.5D;
-         double var27 = var21 - var15;
-         double var29 = (var23 - var17) * 2.0D;
-         double var31 = var25 - var19;
-         double var33;
-         if (var27 == 0.0D) {
-            var33 = var5 - (double)var9;
-         } else if (var31 == 0.0D) {
-            var33 = var1 - (double)var7;
+         int[][] var12 = EXITS[var11.getData()];
+         double var13 = (double)var7 + 0.5D + (double)var12[0][0] * 0.5D;
+         double var15 = (double)var8 + 0.0625D + (double)var12[0][1] * 0.5D;
+         double var17 = (double)var9 + 0.5D + (double)var12[0][2] * 0.5D;
+         double var19 = (double)var7 + 0.5D + (double)var12[1][0] * 0.5D;
+         double var21 = (double)var8 + 0.0625D + (double)var12[1][1] * 0.5D;
+         double var23 = (double)var9 + 0.5D + (double)var12[1][2] * 0.5D;
+         double var25 = var19 - var13;
+         double var27 = (var21 - var15) * 2.0D;
+         double var29 = var23 - var17;
+         double var31;
+         if (var25 == 0.0D) {
+            var31 = var5 - (double)var9;
+         } else if (var29 == 0.0D) {
+            var31 = var1 - (double)var7;
          } else {
-            double var35 = var1 - var15;
-            double var37 = var5 - var19;
-            var33 = (var35 * var27 + var37 * var31) * 2.0D;
+            double var33 = var1 - var13;
+            double var35 = var5 - var17;
+            var31 = (var33 * var25 + var35 * var29) * 2.0D;
          }
 
-         var1 = var15 + var27 * var33;
-         var3 = var17 + var29 * var33;
-         var5 = var19 + var31 * var33;
-         if (var29 < 0.0D) {
+         var1 = var13 + var25 * var31;
+         var3 = var15 + var27 * var31;
+         var5 = var17 + var29 * var31;
+         if (var27 < 0.0D) {
             ++var3;
-         } else if (var29 > 0.0D) {
+         }
+
+         if (var27 > 0.0D) {
             var3 += 0.5D;
          }
 
@@ -668,8 +566,8 @@ public abstract class AbstractMinecart extends Entity {
       if (!this.level.isClientSide) {
          if (!var1.noPhysics && !this.noPhysics) {
             if (!this.hasPassenger(var1)) {
-               double var2 = var1.getX() - this.getX();
-               double var4 = var1.getZ() - this.getZ();
+               double var2 = var1.x - this.x;
+               double var4 = var1.z - this.z;
                double var6 = var2 * var2 + var4 * var4;
                if (var6 >= 9.999999747378752E-5D) {
                   var6 = (double)Mth.sqrt(var6);
@@ -689,8 +587,8 @@ public abstract class AbstractMinecart extends Entity {
                   var2 *= 0.5D;
                   var4 *= 0.5D;
                   if (var1 instanceof AbstractMinecart) {
-                     double var10 = var1.getX() - this.getX();
-                     double var12 = var1.getZ() - this.getZ();
+                     double var10 = var1.x - this.x;
+                     double var12 = var1.z - this.z;
                      Vec3 var14 = (new Vec3(var10, 0.0D, var12)).normalize();
                      Vec3 var15 = (new Vec3((double)Mth.cos(this.yRot * 0.017453292F), 0.0D, (double)Mth.sin(this.yRot * 0.017453292F))).normalize();
                      double var16 = Math.abs(var14.dot(var15));
@@ -808,31 +706,6 @@ public abstract class AbstractMinecart extends Entity {
       return new ClientboundAddEntityPacket(this);
    }
 
-   public ItemStack getPickResult() {
-      Item var1;
-      switch(this.getMinecartType()) {
-      case FURNACE:
-         var1 = Items.FURNACE_MINECART;
-         break;
-      case CHEST:
-         var1 = Items.CHEST_MINECART;
-         break;
-      case TNT:
-         var1 = Items.TNT_MINECART;
-         break;
-      case HOPPER:
-         var1 = Items.HOPPER_MINECART;
-         break;
-      case COMMAND_BLOCK:
-         var1 = Items.COMMAND_BLOCK_MINECART;
-         break;
-      default:
-         var1 = Items.MINECART;
-      }
-
-      return new ItemStack(var1);
-   }
-
    static {
       DATA_ID_HURT = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       DATA_ID_HURTDIR = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
@@ -840,27 +713,7 @@ public abstract class AbstractMinecart extends Entity {
       DATA_ID_DISPLAY_BLOCK = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       DATA_ID_DISPLAY_OFFSET = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.BOOLEAN);
-      POSE_DISMOUNT_HEIGHTS = ImmutableMap.of(Pose.STANDING, ImmutableList.of(0, 1, -1), Pose.CROUCHING, ImmutableList.of(0, 1, -1), Pose.SWIMMING, ImmutableList.of(0, 1));
-      EXITS = (Map)Util.make(Maps.newEnumMap(RailShape.class), (var0) -> {
-         Vec3i var1 = Direction.WEST.getNormal();
-         Vec3i var2 = Direction.EAST.getNormal();
-         Vec3i var3 = Direction.NORTH.getNormal();
-         Vec3i var4 = Direction.SOUTH.getNormal();
-         Vec3i var5 = var1.below();
-         Vec3i var6 = var2.below();
-         Vec3i var7 = var3.below();
-         Vec3i var8 = var4.below();
-         var0.put(RailShape.NORTH_SOUTH, Pair.of(var3, var4));
-         var0.put(RailShape.EAST_WEST, Pair.of(var1, var2));
-         var0.put(RailShape.ASCENDING_EAST, Pair.of(var5, var2));
-         var0.put(RailShape.ASCENDING_WEST, Pair.of(var1, var6));
-         var0.put(RailShape.ASCENDING_NORTH, Pair.of(var3, var8));
-         var0.put(RailShape.ASCENDING_SOUTH, Pair.of(var7, var4));
-         var0.put(RailShape.SOUTH_EAST, Pair.of(var4, var2));
-         var0.put(RailShape.SOUTH_WEST, Pair.of(var4, var1));
-         var0.put(RailShape.NORTH_WEST, Pair.of(var3, var1));
-         var0.put(RailShape.NORTH_EAST, Pair.of(var3, var2));
-      });
+      EXITS = new int[][][]{{{0, 0, -1}, {0, 0, 1}}, {{-1, 0, 0}, {1, 0, 0}}, {{-1, -1, 0}, {1, 0, 0}}, {{-1, 0, 0}, {1, -1, 0}}, {{0, 0, -1}, {0, -1, 1}}, {{0, -1, -1}, {0, 0, 1}}, {{0, 0, 1}, {1, 0, 0}}, {{0, 0, 1}, {-1, 0, 0}}, {{0, 0, -1}, {-1, 0, 0}}, {{0, 0, -1}, {1, 0, 0}}};
    }
 
    public static enum Type {

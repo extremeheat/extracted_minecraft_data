@@ -48,11 +48,9 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
 
    protected void findTarget() {
       if (this.targetType != Player.class && this.targetType != ServerPlayer.class) {
-         this.target = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.targetType, this.getTargetSearchArea(this.getFollowDistance()), (var0) -> {
-            return true;
-         }), this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+         this.target = this.mob.level.getNearestLoadedEntity(this.targetType, this.targetConditions, this.mob, this.mob.x, this.mob.y + (double)this.mob.getEyeHeight(), this.mob.z, this.getTargetSearchArea(this.getFollowDistance()));
       } else {
-         this.target = this.mob.level.getNearestPlayer(this.targetConditions, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+         this.target = this.mob.level.getNearestPlayer(this.targetConditions, this.mob, this.mob.x, this.mob.y + (double)this.mob.getEyeHeight(), this.mob.z);
       }
 
    }
@@ -60,9 +58,5 @@ public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetG
    public void start() {
       this.mob.setTarget(this.target);
       super.start();
-   }
-
-   public void setTarget(@Nullable LivingEntity var1) {
-      this.target = var1;
    }
 }

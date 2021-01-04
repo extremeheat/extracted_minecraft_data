@@ -1,32 +1,22 @@
 package net.minecraft.server.packs.repository;
 
-import java.util.function.Consumer;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.VanillaPackResources;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import java.util.Map;
+import net.minecraft.server.packs.VanillaPack;
 
 public class ServerPacksSource implements RepositorySource {
-   public static final PackMetadataSection BUILT_IN_METADATA;
-   private final VanillaPackResources vanillaPack;
+   private final VanillaPack vanillaPack = new VanillaPack(new String[]{"minecraft"});
 
    public ServerPacksSource() {
       super();
-      this.vanillaPack = new VanillaPackResources(BUILT_IN_METADATA, new String[]{"minecraft"});
    }
 
-   public void loadPacks(Consumer<Pack> var1, Pack.PackConstructor var2) {
-      Pack var3 = Pack.create("vanilla", false, () -> {
+   public <T extends UnopenedPack> void loadPacks(Map<String, T> var1, UnopenedPack.UnopenedPackConstructor<T> var2) {
+      UnopenedPack var3 = UnopenedPack.create("vanilla", false, () -> {
          return this.vanillaPack;
-      }, var2, Pack.Position.BOTTOM, PackSource.BUILT_IN);
+      }, var2, UnopenedPack.Position.BOTTOM);
       if (var3 != null) {
-         var1.accept(var3);
+         var1.put("vanilla", var3);
       }
 
-   }
-
-   static {
-      BUILT_IN_METADATA = new PackMetadataSection(new TranslatableComponent("dataPack.vanilla.description"), PackType.SERVER_DATA.getVersion(SharedConstants.getCurrentVersion()));
    }
 }

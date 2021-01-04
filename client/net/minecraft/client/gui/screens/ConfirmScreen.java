@@ -1,29 +1,29 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Iterator;
+import java.util.List;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
 public class ConfirmScreen extends Screen {
    private final Component title2;
-   private MultiLineLabel message;
-   protected Component yesButton;
-   protected Component noButton;
+   private final List<String> lines;
+   protected String yesButton;
+   protected String noButton;
    private int delayTicker;
    protected final BooleanConsumer callback;
 
    public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3) {
-      this(var1, var2, var3, CommonComponents.GUI_YES, CommonComponents.GUI_NO);
+      this(var1, var2, var3, I18n.get("gui.yes"), I18n.get("gui.no"));
    }
 
-   public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
+   public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3, String var4, String var5) {
       super(var2);
-      this.message = MultiLineLabel.EMPTY;
+      this.lines = Lists.newArrayList();
       this.callback = var1;
       this.title2 = var3;
       this.yesButton = var4;
@@ -42,14 +42,22 @@ public class ConfirmScreen extends Screen {
       this.addButton(new Button(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20, this.noButton, (var1) -> {
          this.callback.accept(false);
       }));
-      this.message = MultiLineLabel.create(this.font, this.title2, this.width - 50);
+      this.lines.clear();
+      this.lines.addAll(this.font.split(this.title2.getColoredString(), this.width - 50));
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 70, 16777215);
-      this.message.renderCentered(var1, this.width / 2, 90);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 70, 16777215);
+      int var4 = 90;
+
+      for(Iterator var5 = this.lines.iterator(); var5.hasNext(); var4 += 9) {
+         String var6 = (String)var5.next();
+         this.drawCenteredString(this.font, var6, this.width / 2, var4, 16777215);
+         this.font.getClass();
+      }
+
+      super.render(var1, var2, var3);
    }
 
    public void setDelay(int var1) {

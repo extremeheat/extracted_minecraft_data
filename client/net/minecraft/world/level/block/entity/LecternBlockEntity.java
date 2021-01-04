@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -18,11 +17,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.level.block.LecternBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
@@ -110,8 +109,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    private int page;
    private int pageCount;
 
-   public LecternBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.LECTERN, var1, var2);
+   public LecternBlockEntity() {
+      super(BlockEntityType.LECTERN);
       this.book = ItemStack.EMPTY;
    }
 
@@ -120,7 +119,8 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public boolean hasBook() {
-      return this.book.is(Items.WRITABLE_BOOK) || this.book.is(Items.WRITTEN_BOOK);
+      Item var1 = this.book.getItem();
+      return var1 == Items.WRITABLE_BOOK || var1 == Items.WRITTEN_BOOK;
    }
 
    public void setBook(ItemStack var1) {
@@ -160,7 +160,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
-      if (this.level instanceof ServerLevel && var1.is(Items.WRITTEN_BOOK)) {
+      if (this.level instanceof ServerLevel && var1.getItem() == Items.WRITTEN_BOOK) {
          WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2), var2);
       }
 
@@ -178,7 +178,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          var3 = var1.getDisplayName();
       }
 
-      Vec3 var4 = Vec3.atCenterOf(this.worldPosition);
+      Vec3 var4 = new Vec3((double)this.worldPosition.getX() + 0.5D, (double)this.worldPosition.getY() + 0.5D, (double)this.worldPosition.getZ() + 0.5D);
       return new CommandSourceStack(CommandSource.NULL, var4, Vec2.ZERO, (ServerLevel)this.level, 2, var2, (Component)var3, this.level.getServer(), var1);
    }
 
@@ -217,6 +217,6 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    public Component getDisplayName() {
-      return new TranslatableComponent("container.lectern");
+      return new TranslatableComponent("container.lectern", new Object[0]);
    }
 }

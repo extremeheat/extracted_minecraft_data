@@ -1,10 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Option;
@@ -40,43 +37,6 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
       return super.getScrollbarPosition() + 32;
    }
 
-   @Nullable
-   public AbstractWidget findOption(Option var1) {
-      Iterator var2 = this.children().iterator();
-
-      while(var2.hasNext()) {
-         OptionsList.Entry var3 = (OptionsList.Entry)var2.next();
-         Iterator var4 = var3.children.iterator();
-
-         while(var4.hasNext()) {
-            AbstractWidget var5 = (AbstractWidget)var4.next();
-            if (var5 instanceof OptionButton && ((OptionButton)var5).getOption() == var1) {
-               return var5;
-            }
-         }
-      }
-
-      return null;
-   }
-
-   public Optional<AbstractWidget> getMouseOver(double var1, double var3) {
-      Iterator var5 = this.children().iterator();
-
-      while(var5.hasNext()) {
-         OptionsList.Entry var6 = (OptionsList.Entry)var5.next();
-         Iterator var7 = var6.children.iterator();
-
-         while(var7.hasNext()) {
-            AbstractWidget var8 = (AbstractWidget)var7.next();
-            if (var8.isMouseOver(var1, var3)) {
-               return Optional.of(var8);
-            }
-         }
-      }
-
-      return Optional.empty();
-   }
-
    public static class Entry extends ContainerObjectSelectionList.Entry<OptionsList.Entry> {
       private final List<AbstractWidget> children;
 
@@ -94,10 +54,10 @@ public class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry>
          return var3 == null ? new OptionsList.Entry(ImmutableList.of(var4)) : new OptionsList.Entry(ImmutableList.of(var4, var3.createButton(var0, var1 / 2 - 155 + 160, 0, 150)));
       }
 
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         this.children.forEach((var5x) -> {
-            var5x.y = var3;
-            var5x.render(var1, var7, var8, var10);
+      public void render(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, float var9) {
+         this.children.forEach((var4x) -> {
+            var4x.y = var2;
+            var4x.render(var6, var7, var9);
          });
       }
 

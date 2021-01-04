@@ -1,22 +1,20 @@
 package net.minecraft.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.function.Function;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Random;
+import net.minecraft.client.model.geom.ModelPart;
 
-public abstract class Model {
-   protected final Function<ResourceLocation, RenderType> renderType;
+public class Model {
+   public final List<ModelPart> cubes = Lists.newArrayList();
+   public int texWidth = 64;
+   public int texHeight = 32;
 
-   public Model(Function<ResourceLocation, RenderType> var1) {
+   public Model() {
       super();
-      this.renderType = var1;
    }
 
-   public final RenderType renderType(ResourceLocation var1) {
-      return (RenderType)this.renderType.apply(var1);
+   public ModelPart getRandomModelPart(Random var1) {
+      return (ModelPart)this.cubes.get(var1.nextInt(this.cubes.size()));
    }
-
-   public abstract void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8);
 }

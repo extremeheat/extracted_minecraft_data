@@ -18,7 +18,7 @@ public class KickCommand {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kick").requires((var0x) -> {
          return var0x.hasPermission(3);
       })).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var0x) -> {
-         return kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), new TranslatableComponent("multiplayer.disconnect.kicked"));
+         return kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), new TranslatableComponent("multiplayer.disconnect.kicked", new Object[0]));
       })).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> {
          return kickPlayers((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"));
       }))));

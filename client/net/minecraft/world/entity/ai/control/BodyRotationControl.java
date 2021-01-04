@@ -52,12 +52,12 @@ public class BodyRotationControl {
    }
 
    private boolean notCarryingMobPassengers() {
-      return !(this.mob.getFirstPassenger() instanceof Mob);
+      return this.mob.getPassengers().isEmpty() || !(this.mob.getPassengers().get(0) instanceof Mob);
    }
 
    private boolean isMoving() {
-      double var1 = this.mob.getX() - this.mob.xo;
-      double var3 = this.mob.getZ() - this.mob.zo;
+      double var1 = this.mob.x - this.mob.xo;
+      double var3 = this.mob.z - this.mob.zo;
       return var1 * var1 + var3 * var3 > 2.500000277905201E-7D;
    }
 }

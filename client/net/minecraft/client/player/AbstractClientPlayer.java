@@ -5,18 +5,18 @@ import com.mojang.authlib.GameProfile;
 import java.io.File;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.MobSkinTextureProcessor;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureObject;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 
@@ -25,10 +25,10 @@ public abstract class AbstractClientPlayer extends Player {
    public float elytraRotX;
    public float elytraRotY;
    public float elytraRotZ;
-   public final ClientLevel clientLevel;
+   public final MultiPlayerLevel clientLevel;
 
-   public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
-      super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2);
+   public AbstractClientPlayer(MultiPlayerLevel var1, GameProfile var2) {
+      super(var1, var2);
       this.clientLevel = var1;
    }
 
@@ -85,8 +85,8 @@ public abstract class AbstractClientPlayer extends Player {
       TextureManager var2 = Minecraft.getInstance().getTextureManager();
       Object var3 = var2.getTexture(var0);
       if (var3 == null) {
-         var3 = new HttpTexture((File)null, String.format("http://skins.minecraft.net/MinecraftSkins/%s.png", StringUtil.stripColor(var1)), DefaultPlayerSkin.getDefaultSkin(createPlayerUUID(var1)), true, (Runnable)null);
-         var2.register((ResourceLocation)var0, (AbstractTexture)var3);
+         var3 = new HttpTexture((File)null, String.format("http://skins.minecraft.net/MinecraftSkins/%s.png", StringUtil.stripColor(var1)), DefaultPlayerSkin.getDefaultSkin(createPlayerUUID(var1)), new MobSkinTextureProcessor());
+         var2.register((ResourceLocation)var0, (TextureObject)var3);
       }
 
       return (HttpTexture)var3;
@@ -103,32 +103,28 @@ public abstract class AbstractClientPlayer extends Player {
 
    public float getFieldOfViewModifier() {
       float var1 = 1.0F;
-      if (this.getAbilities().flying) {
+      if (this.abilities.flying) {
          var1 *= 1.1F;
       }
 
-      var1 = (float)((double)var1 * ((this.getAttributeValue(Attributes.MOVEMENT_SPEED) / (double)this.getAbilities().getWalkingSpeed() + 1.0D) / 2.0D));
-      if (this.getAbilities().getWalkingSpeed() == 0.0F || Float.isNaN(var1) || Float.isInfinite(var1)) {
+      AttributeInstance var2 = this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+      var1 = (float)((double)var1 * ((var2.getValue() / (double)this.abilities.getWalkingSpeed() + 1.0D) / 2.0D));
+      if (this.abilities.getWalkingSpeed() == 0.0F || Float.isNaN(var1) || Float.isInfinite(var1)) {
          var1 = 1.0F;
       }
 
-      ItemStack var2 = this.getUseItem();
-      if (this.isUsingItem()) {
-         if (var2.is(Items.BOW)) {
-            int var3 = this.getTicksUsingItem();
-            float var4 = (float)var3 / 20.0F;
-            if (var4 > 1.0F) {
-               var4 = 1.0F;
-            } else {
-               var4 *= var4;
-            }
-
-            var1 *= 1.0F - var4 * 0.15F;
-         } else if (Minecraft.getInstance().options.getCameraType().isFirstPerson() && this.isScoping()) {
-            return 0.1F;
+      if (this.isUsingItem() && this.getUseItem().getItem() == Items.BOW) {
+         int var3 = this.getTicksUsingItem();
+         float var4 = (float)var3 / 20.0F;
+         if (var4 > 1.0F) {
+            var4 = 1.0F;
+         } else {
+            var4 *= var4;
          }
+
+         var1 *= 1.0F - var4 * 0.15F;
       }
 
-      return Mth.lerp(Minecraft.getInstance().options.fovEffectScale, 1.0F, var1);
+      return var1;
    }
 }

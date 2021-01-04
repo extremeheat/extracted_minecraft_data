@@ -1,35 +1,31 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
 
-public class LeashKnotModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class LeashKnotModel<T extends Entity> extends EntityModel<T> {
    private final ModelPart knot;
 
-   public LeashKnotModel(ModelPart var1) {
+   public LeashKnotModel() {
+      this(0, 0, 32, 32);
+   }
+
+   public LeashKnotModel(int var1, int var2, int var3, int var4) {
       super();
-      this.root = var1;
-      this.knot = var1.getChild("knot");
+      this.texWidth = var3;
+      this.texHeight = var4;
+      this.knot = new ModelPart(this, var1, var2);
+      this.knot.addBox(-3.0F, -6.0F, -3.0F, 6, 8, 6, 0.0F);
+      this.knot.setPos(0.0F, 0.0F, 0.0F);
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("knot", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -8.0F, -3.0F, 6.0F, 8.0F, 6.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 32, 32);
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.setupAnim(var1, var2, var3, var4, var5, var6, var7);
+      this.knot.render(var7);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
+   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      super.setupAnim(var1, var2, var3, var4, var5, var6, var7);
       this.knot.yRot = var5 * 0.017453292F;
       this.knot.xRot = var6 * 0.017453292F;
    }

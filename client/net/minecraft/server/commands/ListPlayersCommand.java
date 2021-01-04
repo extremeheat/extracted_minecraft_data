@@ -8,7 +8,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -28,15 +27,13 @@ public class ListPlayersCommand {
    }
 
    private static int listPlayersWithUuids(CommandSourceStack var0) {
-      return format(var0, (var0x) -> {
-         return new TranslatableComponent("commands.list.nameAndId", new Object[]{var0x.getName(), var0x.getGameProfile().getId()});
-      });
+      return format(var0, Player::getDisplayNameWithUuid);
    }
 
    private static int format(CommandSourceStack var0, Function<ServerPlayer, Component> var1) {
       PlayerList var2 = var0.getServer().getPlayerList();
       List var3 = var2.getPlayers();
-      MutableComponent var4 = ComponentUtils.formatList(var3, var1);
+      Component var4 = ComponentUtils.formatList(var3, var1);
       var0.sendSuccess(new TranslatableComponent("commands.list.players", new Object[]{var3.size(), var2.getMaxPlayers(), var4}), false);
       return var3.size();
    }

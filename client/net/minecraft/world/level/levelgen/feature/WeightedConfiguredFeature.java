@@ -1,37 +1,42 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
 import java.util.Random;
-import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
-public class WeightedConfiguredFeature {
-   public static final Codec<WeightedConfiguredFeature> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ConfiguredFeature.CODEC.fieldOf("feature").forGetter((var0x) -> {
-         return var0x.feature;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((var0x) -> {
-         return var0x.chance;
-      })).apply(var0, WeightedConfiguredFeature::new);
-   });
-   public final Supplier<ConfiguredFeature<?, ?>> feature;
-   public final float chance;
+public class WeightedConfiguredFeature<FC extends FeatureConfiguration> {
+   public final Feature<FC> feature;
+   public final FC config;
+   public final Float chance;
 
-   public WeightedConfiguredFeature(ConfiguredFeature<?, ?> var1, float var2) {
-      this(() -> {
-         return var1;
-      }, var2);
-   }
-
-   private WeightedConfiguredFeature(Supplier<ConfiguredFeature<?, ?>> var1, float var2) {
+   public WeightedConfiguredFeature(Feature<FC> var1, FC var2, Float var3) {
       super();
       this.feature = var1;
-      this.chance = var2;
+      this.config = var2;
+      this.chance = var3;
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4) {
-      return ((ConfiguredFeature)this.feature.get()).place(var1, var2, var3, var4);
+   public WeightedConfiguredFeature(Feature<FC> var1, Dynamic<?> var2, float var3) {
+      this(var1, var1.createSettings(var2), var3);
+   }
+
+   public <T> Dynamic<T> serialize(DynamicOps<T> var1) {
+      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("name"), var1.createString(Registry.FEATURE.getKey(this.feature).toString()), var1.createString("config"), this.config.serialize(var1).getValue(), var1.createString("chance"), var1.createFloat(this.chance))));
+   }
+
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4) {
+      return this.feature.place(var1, var2, var3, var4, this.config);
+   }
+
+   public static <T> WeightedConfiguredFeature<?> deserialize(Dynamic<T> var0) {
+      Feature var1 = (Feature)Registry.FEATURE.get(new ResourceLocation(var0.get("name").asString("")));
+      return new WeightedConfiguredFeature(var1, var0.get("config").orElseEmptyMap(), var0.get("chance").asFloat(0.0F));
    }
 }

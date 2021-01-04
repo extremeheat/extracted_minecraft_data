@@ -1,51 +1,99 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
-public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
-   public HugeRedMushroomFeature(Codec<HugeMushroomFeatureConfiguration> var1) {
+public class HugeRedMushroomFeature extends Feature<HugeMushroomFeatureConfig> {
+   public HugeRedMushroomFeature(Function<Dynamic<?>, ? extends HugeMushroomFeatureConfig> var1) {
       super(var1);
    }
 
-   protected void makeCap(LevelAccessor var1, Random var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
-      for(int var7 = var4 - 3; var7 <= var4; ++var7) {
-         int var8 = var7 < var4 ? var6.foliageRadius : var6.foliageRadius - 1;
-         int var9 = var6.foliageRadius - 2;
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, HugeMushroomFeatureConfig var5) {
+      int var6 = var3.nextInt(3) + 4;
+      if (var3.nextInt(12) == 0) {
+         var6 *= 2;
+      }
 
-         for(int var10 = -var8; var10 <= var8; ++var10) {
-            for(int var11 = -var8; var11 <= var8; ++var11) {
-               boolean var12 = var10 == -var8;
-               boolean var13 = var10 == var8;
-               boolean var14 = var11 == -var8;
-               boolean var15 = var11 == var8;
-               boolean var16 = var12 || var13;
-               boolean var17 = var14 || var15;
-               if (var7 >= var4 || var16 != var17) {
-                  var5.setWithOffset(var3, var10, var7, var11);
-                  if (!var1.getBlockState(var5).isSolidRender(var1, var5)) {
-                     this.setBlock(var1, var5, (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var6.capProvider.getState(var2, var3).setValue(HugeMushroomBlock.UP, var7 >= var4 - 1)).setValue(HugeMushroomBlock.WEST, var10 < -var9)).setValue(HugeMushroomBlock.EAST, var10 > var9)).setValue(HugeMushroomBlock.NORTH, var11 < -var9)).setValue(HugeMushroomBlock.SOUTH, var11 > var9));
+      int var7 = var4.getY();
+      if (var7 >= 1 && var7 + var6 + 1 < 256) {
+         Block var8 = var1.getBlockState(var4.below()).getBlock();
+         if (!Block.equalsDirt(var8) && var8 != Blocks.GRASS_BLOCK && var8 != Blocks.MYCELIUM) {
+            return false;
+         } else {
+            BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
+
+            int var12;
+            for(int var10 = 0; var10 <= var6; ++var10) {
+               byte var11 = 0;
+               if (var10 < var6 && var10 >= var6 - 3) {
+                  var11 = 2;
+               } else if (var10 == var6) {
+                  var11 = 1;
+               }
+
+               for(var12 = -var11; var12 <= var11; ++var12) {
+                  for(int var13 = -var11; var13 <= var11; ++var13) {
+                     BlockState var14 = var1.getBlockState(var9.set((Vec3i)var4).move(var12, var10, var13));
+                     if (!var14.isAir() && !var14.is(BlockTags.LEAVES)) {
+                        return false;
+                     }
                   }
                }
             }
+
+            BlockState var22 = (BlockState)Blocks.RED_MUSHROOM_BLOCK.defaultBlockState().setValue(HugeMushroomBlock.DOWN, false);
+
+            for(int var23 = var6 - 3; var23 <= var6; ++var23) {
+               var12 = var23 < var6 ? 2 : 1;
+               boolean var25 = false;
+
+               for(int var26 = -var12; var26 <= var12; ++var26) {
+                  for(int var15 = -var12; var15 <= var12; ++var15) {
+                     boolean var16 = var26 == -var12;
+                     boolean var17 = var26 == var12;
+                     boolean var18 = var15 == -var12;
+                     boolean var19 = var15 == var12;
+                     boolean var20 = var16 || var17;
+                     boolean var21 = var18 || var19;
+                     if (var23 >= var6 || var20 != var21) {
+                        var9.set((Vec3i)var4).move(var26, var23, var15);
+                        if (!var1.getBlockState(var9).isSolidRender(var1, var9)) {
+                           this.setBlock(var1, var9, (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var22.setValue(HugeMushroomBlock.UP, var23 >= var6 - 1)).setValue(HugeMushroomBlock.WEST, var26 < 0)).setValue(HugeMushroomBlock.EAST, var26 > 0)).setValue(HugeMushroomBlock.NORTH, var15 < 0)).setValue(HugeMushroomBlock.SOUTH, var15 > 0));
+                        }
+                     }
+                  }
+               }
+            }
+
+            BlockState var24 = (BlockState)((BlockState)Blocks.MUSHROOM_STEM.defaultBlockState().setValue(HugeMushroomBlock.UP, false)).setValue(HugeMushroomBlock.DOWN, false);
+
+            for(var12 = 0; var12 < var6; ++var12) {
+               var9.set((Vec3i)var4).move(Direction.UP, var12);
+               if (!var1.getBlockState(var9).isSolidRender(var1, var9)) {
+                  if (var5.planted) {
+                     var1.setBlock(var9, var24, 3);
+                  } else {
+                     this.setBlock(var1, var9, var24);
+                  }
+               }
+            }
+
+            return true;
          }
+      } else {
+         return false;
       }
-
-   }
-
-   protected int getTreeRadiusForHeight(int var1, int var2, int var3, int var4) {
-      int var5 = 0;
-      if (var4 < var2 && var4 >= var2 - 3) {
-         var5 = var3;
-      } else if (var4 == var2) {
-         var5 = var3;
-      }
-
-      return var5;
    }
 }

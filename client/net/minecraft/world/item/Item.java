@@ -1,13 +1,13 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -15,43 +15,52 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.Tag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.inventory.ClickAction;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Item implements ItemLike {
-   private static final Logger LOGGER = LogManager.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
+   private static final ItemPropertyFunction PROPERTY_DAMAGED = (var0, var1, var2) -> {
+      return var0.isDamaged() ? 1.0F : 0.0F;
+   };
+   private static final ItemPropertyFunction PROPERTY_DAMAGE = (var0, var1, var2) -> {
+      return Mth.clamp((float)var0.getDamageValue() / (float)var0.getMaxDamage(), 0.0F, 1.0F);
+   };
+   private static final ItemPropertyFunction PROPERTY_LEFTHANDED = (var0, var1, var2) -> {
+      return var2 != null && var2.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F;
+   };
+   private static final ItemPropertyFunction PROPERTY_COOLDOWN = (var0, var1, var2) -> {
+      return var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0.getItem(), 0.0F) : 0.0F;
+   };
+   private static final ItemPropertyFunction PROPERTY_CUSTOM_MODEL_DATA = (var0, var1, var2) -> {
+      return var0.hasTag() ? (float)var0.getTag().getInt("CustomModelData") : 0.0F;
+   };
    protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
    protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+   protected static final Random random = new Random();
+   private final Map<ResourceLocation, ItemPropertyFunction> properties = Maps.newHashMap();
    protected final CreativeModeTab category;
    private final Rarity rarity;
    private final int maxStackSize;
    private final int maxDamage;
-   private final boolean isFireResistant;
    private final Item craftingRemainingItem;
    @Nullable
    private String descriptionId;
@@ -73,23 +82,32 @@ public class Item implements ItemLike {
 
    public Item(Item.Properties var1) {
       super();
+      this.addProperty(new ResourceLocation("lefthanded"), PROPERTY_LEFTHANDED);
+      this.addProperty(new ResourceLocation("cooldown"), PROPERTY_COOLDOWN);
+      this.addProperty(new ResourceLocation("custom_model_data"), PROPERTY_CUSTOM_MODEL_DATA);
       this.category = var1.category;
       this.rarity = var1.rarity;
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.maxDamage = var1.maxDamage;
       this.maxStackSize = var1.maxStackSize;
       this.foodProperties = var1.foodProperties;
-      this.isFireResistant = var1.isFireResistant;
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         String var2 = this.getClass().getSimpleName();
-         if (!var2.endsWith("Item")) {
-            LOGGER.error("Item classes should end with Item and {} doesn't.", var2);
-         }
+      if (this.maxDamage > 0) {
+         this.addProperty(new ResourceLocation("damaged"), PROPERTY_DAMAGED);
+         this.addProperty(new ResourceLocation("damage"), PROPERTY_DAMAGE);
       }
 
    }
 
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
+   }
+
+   @Nullable
+   public ItemPropertyFunction getProperty(ResourceLocation var1) {
+      return (ItemPropertyFunction)this.properties.get(var1);
+   }
+
+   public boolean hasProperties() {
+      return !this.properties.isEmpty();
    }
 
    public boolean verifyTagAfterLoad(CompoundTag var1) {
@@ -102,6 +120,10 @@ public class Item implements ItemLike {
 
    public Item asItem() {
       return this;
+   }
+
+   public final void addProperty(ResourceLocation var1, ItemPropertyFunction var2) {
+      this.properties.put(var1, var2);
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -117,12 +139,12 @@ public class Item implements ItemLike {
          ItemStack var4 = var2.getItemInHand(var3);
          if (var2.canEat(this.getFoodProperties().canAlwaysEat())) {
             var2.startUsingItem(var3);
-            return InteractionResultHolder.consume(var4);
+            return new InteractionResultHolder(InteractionResult.SUCCESS, var4);
          } else {
-            return InteractionResultHolder.fail(var4);
+            return new InteractionResultHolder(InteractionResult.FAIL, var4);
          }
       } else {
-         return InteractionResultHolder.pass(var2.getItemInHand(var3));
+         return new InteractionResultHolder(InteractionResult.PASS, var2.getItemInHand(var3));
       }
    }
 
@@ -142,27 +164,6 @@ public class Item implements ItemLike {
       return this.maxDamage > 0;
    }
 
-   public boolean isBarVisible(ItemStack var1) {
-      return var1.isDamaged();
-   }
-
-   public int getBarWidth(ItemStack var1) {
-      return Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)this.maxDamage);
-   }
-
-   public int getBarColor(ItemStack var1) {
-      float var2 = Math.max(0.0F, ((float)this.maxDamage - (float)var1.getDamageValue()) / (float)this.maxDamage);
-      return Mth.hsvToRgb(var2 / 3.0F, 1.0F, 1.0F);
-   }
-
-   public boolean overrideStackedOnOther(ItemStack var1, ItemStack var2, ClickAction var3, Inventory var4) {
-      return false;
-   }
-
-   public boolean overrideOtherStackedOnMe(ItemStack var1, ItemStack var2, ClickAction var3, Inventory var4) {
-      return false;
-   }
-
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       return false;
    }
@@ -171,16 +172,16 @@ public class Item implements ItemLike {
       return false;
    }
 
-   public boolean isCorrectToolForDrops(BlockState var1) {
+   public boolean canDestroySpecial(BlockState var1) {
       return false;
    }
 
-   public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
-      return InteractionResult.PASS;
+   public boolean interactEnemy(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
+      return false;
    }
 
    public Component getDescription() {
-      return new TranslatableComponent(this.getDescriptionId());
+      return new TranslatableComponent(this.getDescriptionId(), new Object[0]);
    }
 
    public String toString() {
@@ -245,7 +246,7 @@ public class Item implements ItemLike {
    }
 
    public Component getName(ItemStack var1) {
-      return new TranslatableComponent(this.getDescriptionId(var1));
+      return new TranslatableComponent(this.getDescriptionId(var1), new Object[0]);
    }
 
    public boolean isFoil(ItemStack var1) {
@@ -273,7 +274,7 @@ public class Item implements ItemLike {
       return this.getMaxStackSize() == 1 && this.canBeDepleted();
    }
 
-   protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
+   protected static HitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
       float var3 = var1.xRot;
       float var4 = var1.yRot;
       Vec3 var5 = var1.getEyePosition(1.0F);
@@ -313,16 +314,20 @@ public class Item implements ItemLike {
       return false;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return ImmutableMultimap.of();
+   public Multimap<String, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+      return HashMultimap.create();
    }
 
    public boolean useOnRelease(ItemStack var1) {
-      return false;
+      return var1.getItem() == Items.CROSSBOW;
    }
 
    public ItemStack getDefaultInstance() {
       return new ItemStack(this);
+   }
+
+   public boolean is(Tag<Item> var1) {
+      return var1.contains(this);
    }
 
    public boolean isEdible() {
@@ -334,31 +339,6 @@ public class Item implements ItemLike {
       return this.foodProperties;
    }
 
-   public SoundEvent getDrinkingSound() {
-      return SoundEvents.GENERIC_DRINK;
-   }
-
-   public SoundEvent getEatingSound() {
-      return SoundEvents.GENERIC_EAT;
-   }
-
-   public boolean isFireResistant() {
-      return this.isFireResistant;
-   }
-
-   public boolean canBeHurtBy(DamageSource var1) {
-      return !this.isFireResistant || !var1.isFire();
-   }
-
-   @Nullable
-   public SoundEvent getEquipSound() {
-      return null;
-   }
-
-   public boolean canFitInsideContainerItems() {
-      return true;
-   }
-
    public static class Properties {
       private int maxStackSize = 64;
       private int maxDamage;
@@ -366,7 +346,6 @@ public class Item implements ItemLike {
       private CreativeModeTab category;
       private Rarity rarity;
       private FoodProperties foodProperties;
-      private boolean isFireResistant;
 
       public Properties() {
          super();
@@ -409,11 +388,6 @@ public class Item implements ItemLike {
 
       public Item.Properties rarity(Rarity var1) {
          this.rarity = var1;
-         return this;
-      }
-
-      public Item.Properties fireResistant() {
-         this.isFireResistant = true;
          return this;
       }
    }

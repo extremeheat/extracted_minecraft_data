@@ -1,13 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.util.Mth;
 
@@ -16,27 +11,30 @@ public class Deadmau5EarsLayer extends RenderLayer<AbstractClientPlayer, PlayerM
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, AbstractClientPlayer var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if ("deadmau5".equals(var4.getName().getString()) && var4.isSkinLoaded() && !var4.isInvisible()) {
-         VertexConsumer var11 = var2.getBuffer(RenderType.entitySolid(var4.getSkinTextureLocation()));
-         int var12 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
+   public void render(AbstractClientPlayer var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      if ("deadmau5".equals(var1.getName().getString()) && var1.isSkinLoaded() && !var1.isInvisible()) {
+         this.bindTexture(var1.getSkinTextureLocation());
 
-         for(int var13 = 0; var13 < 2; ++var13) {
-            float var14 = Mth.lerp(var7, var4.yRotO, var4.yRot) - Mth.lerp(var7, var4.yBodyRotO, var4.yBodyRot);
-            float var15 = Mth.lerp(var7, var4.xRotO, var4.xRot);
-            var1.pushPose();
-            var1.mulPose(Vector3f.YP.rotationDegrees(var14));
-            var1.mulPose(Vector3f.XP.rotationDegrees(var15));
-            var1.translate((double)(0.375F * (float)(var13 * 2 - 1)), 0.0D, 0.0D);
-            var1.translate(0.0D, -0.375D, 0.0D);
-            var1.mulPose(Vector3f.XP.rotationDegrees(-var15));
-            var1.mulPose(Vector3f.YP.rotationDegrees(-var14));
-            float var16 = 1.3333334F;
-            var1.scale(1.3333334F, 1.3333334F, 1.3333334F);
-            ((PlayerModel)this.getParentModel()).renderEars(var1, var11, var3, var12);
-            var1.popPose();
+         for(int var9 = 0; var9 < 2; ++var9) {
+            float var10 = Mth.lerp(var4, var1.yRotO, var1.yRot) - Mth.lerp(var4, var1.yBodyRotO, var1.yBodyRot);
+            float var11 = Mth.lerp(var4, var1.xRotO, var1.xRot);
+            GlStateManager.pushMatrix();
+            GlStateManager.rotatef(var10, 0.0F, 1.0F, 0.0F);
+            GlStateManager.rotatef(var11, 1.0F, 0.0F, 0.0F);
+            GlStateManager.translatef(0.375F * (float)(var9 * 2 - 1), 0.0F, 0.0F);
+            GlStateManager.translatef(0.0F, -0.375F, 0.0F);
+            GlStateManager.rotatef(-var11, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(-var10, 0.0F, 1.0F, 0.0F);
+            float var12 = 1.3333334F;
+            GlStateManager.scalef(1.3333334F, 1.3333334F, 1.3333334F);
+            ((PlayerModel)this.getParentModel()).renderEars(0.0625F);
+            GlStateManager.popMatrix();
          }
 
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return true;
    }
 }

@@ -1,106 +1,95 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.world.level.levelgen.feature.configurations.CountConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.DecoratorConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.NoiseDependantDecoratorConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneDecoratorConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.RangeDecoratorConfiguration;
-import net.minecraft.world.level.levelgen.placement.nether.CountMultiLayerDecorator;
-import net.minecraft.world.level.levelgen.placement.nether.FireDecorator;
-import net.minecraft.world.level.levelgen.placement.nether.GlowstoneDecorator;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.DecoratorChanceRange;
+import net.minecraft.world.level.levelgen.feature.DecoratorConfiguration;
+import net.minecraft.world.level.levelgen.feature.DecoratorCountRange;
+import net.minecraft.world.level.levelgen.feature.DecoratorNoiseDependant;
+import net.minecraft.world.level.levelgen.feature.FeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.NoneDecoratorConfiguration;
+import net.minecraft.world.level.levelgen.placement.nether.ChanceRangeDecorator;
+import net.minecraft.world.level.levelgen.placement.nether.CountRangeDecorator;
+import net.minecraft.world.level.levelgen.placement.nether.HellFireDecorator;
+import net.minecraft.world.level.levelgen.placement.nether.LightGemChanceDecorator;
 import net.minecraft.world.level.levelgen.placement.nether.MagmaDecorator;
+import net.minecraft.world.level.levelgen.placement.nether.RandomCountRangeDecorator;
 
 public abstract class FeatureDecorator<DC extends DecoratorConfiguration> {
-   public static final FeatureDecorator<NoneDecoratorConfiguration> NOPE;
-   public static final FeatureDecorator<ChanceDecoratorConfiguration> CHANCE;
-   public static final FeatureDecorator<CountConfiguration> COUNT;
-   public static final FeatureDecorator<NoiseDependantDecoratorConfiguration> COUNT_NOISE;
-   public static final FeatureDecorator<NoiseCountFactorDecoratorConfiguration> COUNT_NOISE_BIASED;
-   public static final FeatureDecorator<FrequencyWithExtraChanceDecoratorConfiguration> COUNT_EXTRA;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> SQUARE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> HEIGHTMAP;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> HEIGHTMAP_SPREAD_DOUBLE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> TOP_SOLID_HEIGHTMAP;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> HEIGHTMAP_WORLD_SURFACE;
-   public static final FeatureDecorator<RangeDecoratorConfiguration> RANGE;
-   public static final FeatureDecorator<RangeDecoratorConfiguration> RANGE_BIASED;
-   public static final FeatureDecorator<RangeDecoratorConfiguration> RANGE_VERY_BIASED;
-   public static final FeatureDecorator<DepthAverageConfigation> DEPTH_AVERAGE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> SPREAD_32_ABOVE;
-   public static final FeatureDecorator<CarvingMaskDecoratorConfiguration> CARVING_MASK;
-   public static final FeatureDecorator<CountConfiguration> FIRE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> MAGMA;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> EMERALD_ORE;
-   public static final FeatureDecorator<ChanceDecoratorConfiguration> LAVA_LAKE;
-   public static final FeatureDecorator<ChanceDecoratorConfiguration> WATER_LAKE;
-   public static final FeatureDecorator<CountConfiguration> GLOWSTONE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> END_GATEWAY;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> DARK_OAK_TREE;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> ICEBERG;
-   public static final FeatureDecorator<NoneDecoratorConfiguration> END_ISLAND;
-   public static final FeatureDecorator<DecoratedDecoratorConfiguration> DECORATED;
-   public static final FeatureDecorator<CountConfiguration> COUNT_MULTILAYER;
-   private final Codec<ConfiguredDecorator<DC>> configuredCodec;
+   public static final FeatureDecorator<DecoratorFrequency> COUNT_HEIGHTMAP = register("count_heightmap", new CountHeightmapDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> COUNT_TOP_SOLID = register("count_top_solid", new CountTopSolidDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> COUNT_HEIGHTMAP_32 = register("count_heightmap_32", new CountHeightmap32Decorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> COUNT_HEIGHTMAP_DOUBLE = register("count_heightmap_double", new CountHeighmapDoubleDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> COUNT_HEIGHT_64 = register("count_height_64", new CountHeight64Decorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorNoiseDependant> NOISE_HEIGHTMAP_32 = register("noise_heightmap_32", new NoiseHeightmap32Decorator(DecoratorNoiseDependant::deserialize));
+   public static final FeatureDecorator<DecoratorNoiseDependant> NOISE_HEIGHTMAP_DOUBLE = register("noise_heightmap_double", new NoiseHeightmapDoubleDecorator(DecoratorNoiseDependant::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> NOPE = register("nope", new NopePlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<DecoratorChance> CHANCE_HEIGHTMAP = register("chance_heightmap", new ChanceHeightmapDecorator(DecoratorChance::deserialize));
+   public static final FeatureDecorator<DecoratorChance> CHANCE_HEIGHTMAP_DOUBLE = register("chance_heightmap_double", new ChanceHeightmapDoubleDecorator(DecoratorChance::deserialize));
+   public static final FeatureDecorator<DecoratorChance> CHANCE_PASSTHROUGH = register("chance_passthrough", new ChancePassthroughDecorator(DecoratorChance::deserialize));
+   public static final FeatureDecorator<DecoratorChance> CHANCE_TOP_SOLID_HEIGHTMAP = register("chance_top_solid_heightmap", new ChanceTopSolidHeightmapDecorator(DecoratorChance::deserialize));
+   public static final FeatureDecorator<DecoratorFrequencyWithExtraChance> COUNT_EXTRA_HEIGHTMAP = register("count_extra_heightmap", new CountWithExtraChanceHeightmapDecorator(DecoratorFrequencyWithExtraChance::deserialize));
+   public static final FeatureDecorator<DecoratorCountRange> COUNT_RANGE = register("count_range", new CountRangeDecorator(DecoratorCountRange::deserialize));
+   public static final FeatureDecorator<DecoratorCountRange> COUNT_BIASED_RANGE = register("count_biased_range", new CountBiasedRangeDecorator(DecoratorCountRange::deserialize));
+   public static final FeatureDecorator<DecoratorCountRange> COUNT_VERY_BIASED_RANGE = register("count_very_biased_range", new CountVeryBiasedRangeDecorator(DecoratorCountRange::deserialize));
+   public static final FeatureDecorator<DecoratorCountRange> RANDOM_COUNT_RANGE = register("random_count_range", new RandomCountRangeDecorator(DecoratorCountRange::deserialize));
+   public static final FeatureDecorator<DecoratorChanceRange> CHANCE_RANGE = register("chance_range", new ChanceRangeDecorator(DecoratorChanceRange::deserialize));
+   public static final FeatureDecorator<DecoratorFrequencyChance> COUNT_CHANCE_HEIGHTMAP = register("count_chance_heightmap", new CountChanceHeightmapDecorator(DecoratorFrequencyChance::deserialize));
+   public static final FeatureDecorator<DecoratorFrequencyChance> COUNT_CHANCE_HEIGHTMAP_DOUBLE = register("count_chance_heightmap_double", new CountChanceHeightmapDoubleDecorator(DecoratorFrequencyChance::deserialize));
+   public static final FeatureDecorator<DepthAverageConfigation> COUNT_DEPTH_AVERAGE = register("count_depth_average", new CountDepthAverageDecorator(DepthAverageConfigation::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> TOP_SOLID_HEIGHTMAP = register("top_solid_heightmap", new TopSolidHeightMapDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<DecoratorRange> TOP_SOLID_HEIGHTMAP_RANGE = register("top_solid_heightmap_range", new TopSolidHeightMapRangeDecorator(DecoratorRange::deserialize));
+   public static final FeatureDecorator<DecoratorNoiseCountFactor> TOP_SOLID_HEIGHTMAP_NOISE_BIASED = register("top_solid_heightmap_noise_biased", new TopSolidHeightMapNoiseBasedDecorator(DecoratorNoiseCountFactor::deserialize));
+   public static final FeatureDecorator<DecoratorCarvingMaskConfig> CARVING_MASK = register("carving_mask", new CarvingMaskDecorator(DecoratorCarvingMaskConfig::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> FOREST_ROCK = register("forest_rock", new ForestRockPlacementDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> HELL_FIRE = register("hell_fire", new HellFireDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> MAGMA = register("magma", new MagmaDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> EMERALD_ORE = register("emerald_ore", new EmeraldPlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<LakeChanceDecoratorConfig> LAVA_LAKE = register("lava_lake", new LakeLavaPlacementDecorator(LakeChanceDecoratorConfig::deserialize));
+   public static final FeatureDecorator<LakeChanceDecoratorConfig> WATER_LAKE = register("water_lake", new LakeWaterPlacementDecorator(LakeChanceDecoratorConfig::deserialize));
+   public static final FeatureDecorator<MonsterRoomPlacementConfiguration> DUNGEONS = register("dungeons", new MonsterRoomPlacementDecorator(MonsterRoomPlacementConfiguration::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> DARK_OAK_TREE = register("dark_oak_tree", new DarkOakTreePlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<DecoratorChance> ICEBERG = register("iceberg", new IcebergPlacementDecorator(DecoratorChance::deserialize));
+   public static final FeatureDecorator<DecoratorFrequency> LIGHT_GEM_CHANCE = register("light_gem_chance", new LightGemChanceDecorator(DecoratorFrequency::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> END_ISLAND = register("end_island", new EndIslandPlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> CHORUS_PLANT = register("chorus_plant", new ChorusPlantPlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   public static final FeatureDecorator<NoneDecoratorConfiguration> END_GATEWAY = register("end_gateway", new EndGatewayPlacementDecorator(NoneDecoratorConfiguration::deserialize));
+   private final Function<Dynamic<?>, ? extends DC> configurationFactory;
 
    private static <T extends DecoratorConfiguration, G extends FeatureDecorator<T>> G register(String var0, G var1) {
       return (FeatureDecorator)Registry.register(Registry.DECORATOR, (String)var0, var1);
    }
 
-   public FeatureDecorator(Codec<DC> var1) {
+   public FeatureDecorator(Function<Dynamic<?>, ? extends DC> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap((var1x) -> {
-         return new ConfiguredDecorator(this, var1x);
-      }, ConfiguredDecorator::config).codec();
+      this.configurationFactory = var1;
    }
 
-   public ConfiguredDecorator<DC> configured(DC var1) {
-      return new ConfiguredDecorator(this, var1);
+   public DC createSettings(Dynamic<?> var1) {
+      return (DecoratorConfiguration)this.configurationFactory.apply(var1);
    }
 
-   public Codec<ConfiguredDecorator<DC>> configuredCodec() {
-      return this.configuredCodec;
+   protected <FC extends FeatureConfiguration> boolean placeFeature(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, DC var5, ConfiguredFeature<FC> var6) {
+      AtomicBoolean var7 = new AtomicBoolean(false);
+      this.getPositions(var1, var2, var3, var5, var4).forEach((var5x) -> {
+         boolean var6x = var6.place(var1, var2, var3, var5x);
+         var7.set(var7.get() || var6x);
+      });
+      return var7.get();
    }
 
-   public abstract Stream<BlockPos> getPositions(DecorationContext var1, Random var2, DC var3, BlockPos var4);
+   public abstract Stream<BlockPos> getPositions(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, DC var4, BlockPos var5);
 
    public String toString() {
       return this.getClass().getSimpleName() + "@" + Integer.toHexString(this.hashCode());
-   }
-
-   static {
-      NOPE = register("nope", new NopePlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      CHANCE = register("chance", new ChanceDecorator(ChanceDecoratorConfiguration.CODEC));
-      COUNT = register("count", new CountDecorator(CountConfiguration.CODEC));
-      COUNT_NOISE = register("count_noise", new CountNoiseDecorator(NoiseDependantDecoratorConfiguration.CODEC));
-      COUNT_NOISE_BIASED = register("count_noise_biased", new NoiseBasedDecorator(NoiseCountFactorDecoratorConfiguration.CODEC));
-      COUNT_EXTRA = register("count_extra", new CountWithExtraChanceDecorator(FrequencyWithExtraChanceDecoratorConfiguration.CODEC));
-      SQUARE = register("square", new SquareDecorator(NoneDecoratorConfiguration.CODEC));
-      HEIGHTMAP = register("heightmap", new HeightmapDecorator(NoneDecoratorConfiguration.CODEC));
-      HEIGHTMAP_SPREAD_DOUBLE = register("heightmap_spread_double", new HeightmapDoubleDecorator(NoneDecoratorConfiguration.CODEC));
-      TOP_SOLID_HEIGHTMAP = register("top_solid_heightmap", new TopSolidHeightMapDecorator(NoneDecoratorConfiguration.CODEC));
-      HEIGHTMAP_WORLD_SURFACE = register("heightmap_world_surface", new HeightMapWorldSurfaceDecorator(NoneDecoratorConfiguration.CODEC));
-      RANGE = register("range", new RangeDecorator(RangeDecoratorConfiguration.CODEC));
-      RANGE_BIASED = register("range_biased", new BiasedRangeDecorator(RangeDecoratorConfiguration.CODEC));
-      RANGE_VERY_BIASED = register("range_very_biased", new VeryBiasedRangeDecorator(RangeDecoratorConfiguration.CODEC));
-      DEPTH_AVERAGE = register("depth_average", new DepthAverageDecorator(DepthAverageConfigation.CODEC));
-      SPREAD_32_ABOVE = register("spread_32_above", new Spread32Decorator(NoneDecoratorConfiguration.CODEC));
-      CARVING_MASK = register("carving_mask", new CarvingMaskDecorator(CarvingMaskDecoratorConfiguration.CODEC));
-      FIRE = register("fire", new FireDecorator(CountConfiguration.CODEC));
-      MAGMA = register("magma", new MagmaDecorator(NoneDecoratorConfiguration.CODEC));
-      EMERALD_ORE = register("emerald_ore", new EmeraldPlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      LAVA_LAKE = register("lava_lake", new LakeLavaPlacementDecorator(ChanceDecoratorConfiguration.CODEC));
-      WATER_LAKE = register("water_lake", new LakeWaterPlacementDecorator(ChanceDecoratorConfiguration.CODEC));
-      GLOWSTONE = register("glowstone", new GlowstoneDecorator(CountConfiguration.CODEC));
-      END_GATEWAY = register("end_gateway", new EndGatewayPlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      DARK_OAK_TREE = register("dark_oak_tree", new DarkOakTreePlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      ICEBERG = register("iceberg", new IcebergPlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      END_ISLAND = register("end_island", new EndIslandPlacementDecorator(NoneDecoratorConfiguration.CODEC));
-      DECORATED = register("decorated", new DecoratedDecorator(DecoratedDecoratorConfiguration.CODEC));
-      COUNT_MULTILAYER = register("count_multilayer", new CountMultiLayerDecorator(CountConfiguration.CODEC));
    }
 }

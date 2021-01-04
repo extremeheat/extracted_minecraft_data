@@ -3,14 +3,12 @@ package net.minecraft.client.multiplayer;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-import com.mojang.authlib.exceptions.InsufficientPrivilegesException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -18,7 +16,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.login.ClientLoginPacketListener;
@@ -30,9 +27,8 @@ import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
 import net.minecraft.network.protocol.login.ServerboundCustomQueryPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
-import net.minecraft.realms.RealmsScreen;
+import net.minecraft.realms.RealmsScreenProxy;
 import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 import net.minecraft.util.HttpUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,36 +51,25 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    public void handleHello(ClientboundHelloPacket var1) {
-      Cipher var2;
-      Cipher var3;
-      String var4;
-      ServerboundKeyPacket var5;
-      try {
-         SecretKey var6 = Crypt.generateSecretKey();
-         PublicKey var7 = var1.getPublicKey();
-         var4 = (new BigInteger(Crypt.digestData(var1.getServerId(), var7, var6))).toString(16);
-         var2 = Crypt.getCipher(2, var6);
-         var3 = Crypt.getCipher(1, var6);
-         var5 = new ServerboundKeyPacket(var6, var7, var1.getNonce());
-      } catch (CryptException var8) {
-         throw new IllegalStateException("Protocol error", var8);
-      }
-
-      this.updateStatus.accept(new TranslatableComponent("connect.authorizing"));
+      SecretKey var2 = Crypt.generateSecretKey();
+      PublicKey var3 = var1.getPublicKey();
+      String var4 = (new BigInteger(Crypt.digestData(var1.getServerId(), var3, var2))).toString(16);
+      ServerboundKeyPacket var5 = new ServerboundKeyPacket(var2, var3, var1.getNonce());
+      this.updateStatus.accept(new TranslatableComponent("connect.authorizing", new Object[0]));
       HttpUtil.DOWNLOAD_EXECUTOR.submit(() -> {
-         Component var5x = this.authenticateServer(var4);
-         if (var5x != null) {
+         Component var4x = this.authenticateServer(var4);
+         if (var4x != null) {
             if (this.minecraft.getCurrentServer() == null || !this.minecraft.getCurrentServer().isLan()) {
-               this.connection.disconnect(var5x);
+               this.connection.disconnect(var4x);
                return;
             }
 
-            LOGGER.warn(var5x.getString());
+            LOGGER.warn(var4x.getString());
          }
 
-         this.updateStatus.accept(new TranslatableComponent("connect.encrypting"));
-         this.connection.send(var5, (var3x) -> {
-            this.connection.setEncryptionKey(var2, var3);
+         this.updateStatus.accept(new TranslatableComponent("connect.encrypting", new Object[0]));
+         this.connection.send(var5, (var2x) -> {
+            this.connection.setEncryptionKey(var2);
          });
       });
    }
@@ -95,13 +80,11 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          this.getMinecraftSessionService().joinServer(this.minecraft.getUser().getGameProfile(), this.minecraft.getUser().getAccessToken(), var1);
          return null;
       } catch (AuthenticationUnavailableException var3) {
-         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{new TranslatableComponent("disconnect.loginFailedInfo.serversUnavailable")});
+         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{new TranslatableComponent("disconnect.loginFailedInfo.serversUnavailable", new Object[0])});
       } catch (InvalidCredentialsException var4) {
-         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{new TranslatableComponent("disconnect.loginFailedInfo.invalidSession")});
-      } catch (InsufficientPrivilegesException var5) {
-         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{new TranslatableComponent("disconnect.loginFailedInfo.insufficientPrivileges")});
-      } catch (AuthenticationException var6) {
-         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{var6.getMessage()});
+         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{new TranslatableComponent("disconnect.loginFailedInfo.invalidSession", new Object[0])});
+      } catch (AuthenticationException var5) {
+         return new TranslatableComponent("disconnect.loginFailedInfo", new Object[]{var5.getMessage()});
       }
    }
 
@@ -110,17 +93,17 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    public void handleGameProfile(ClientboundGameProfilePacket var1) {
-      this.updateStatus.accept(new TranslatableComponent("connect.joining"));
+      this.updateStatus.accept(new TranslatableComponent("connect.joining", new Object[0]));
       this.localGameProfile = var1.getGameProfile();
       this.connection.setProtocol(ConnectionProtocol.PLAY);
       this.connection.setListener(new ClientPacketListener(this.minecraft, this.parent, this.connection, this.localGameProfile));
    }
 
    public void onDisconnect(Component var1) {
-      if (this.parent != null && this.parent instanceof RealmsScreen) {
-         this.minecraft.setScreen(new DisconnectedRealmsScreen(this.parent, CommonComponents.CONNECT_FAILED, var1));
+      if (this.parent != null && this.parent instanceof RealmsScreenProxy) {
+         this.minecraft.setScreen((new DisconnectedRealmsScreen(((RealmsScreenProxy)this.parent).getScreen(), "connect.failed", var1)).getProxy());
       } else {
-         this.minecraft.setScreen(new DisconnectedScreen(this.parent, CommonComponents.CONNECT_FAILED, var1));
+         this.minecraft.setScreen(new DisconnectedScreen(this.parent, "connect.failed", var1));
       }
 
    }
@@ -141,7 +124,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    public void handleCustomQuery(ClientboundCustomQueryPacket var1) {
-      this.updateStatus.accept(new TranslatableComponent("connect.negotiating"));
+      this.updateStatus.accept(new TranslatableComponent("connect.negotiating", new Object[0]));
       this.connection.send(new ServerboundCustomQueryPacket(var1.getTransactionId(), (FriendlyByteBuf)null));
    }
 }

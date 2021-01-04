@@ -1,14 +1,13 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -18,17 +17,15 @@ import it.unimi.dsi.fastutil.ints.IntListIterator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.util.BitStorage;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
-import net.minecraft.util.datafix.PackedBitStorage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -263,8 +260,8 @@ public class ChunkPalettedStorageFix extends DataFix {
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {
-      Optional var2 = var1.get("Level").result();
-      return var2.isPresent() && ((Dynamic)var2.get()).get("Sections").asStreamOpt().result().isPresent() ? var1.set("Level", (new ChunkPalettedStorageFix.UpgradeChunk((Dynamic)var2.get())).write()) : var1;
+      Optional var2 = var1.get("Level").get();
+      return var2.isPresent() && ((Dynamic)var2.get()).get("Sections").asStreamOpt().isPresent() ? var1.set("Level", (new ChunkPalettedStorageFix.UpgradeChunk((Dynamic)var2.get())).write()) : var1;
    }
 
    public TypeRewriteRule makeRule() {
@@ -456,7 +453,7 @@ public class ChunkPalettedStorageFix extends DataFix {
          this.level = var1;
          this.x = var1.get("xPos").asInt(0) << 4;
          this.z = var1.get("zPos").asInt(0) << 4;
-         var1.get("TileEntities").asStreamOpt().result().ifPresent((var1x) -> {
+         var1.get("TileEntities").asStreamOpt().ifPresent((var1x) -> {
             var1x.forEach((var1) -> {
                int var2 = var1.get("x").asInt(0) - this.x & 15;
                int var3 = var1.get("y").asInt(0);
@@ -469,7 +466,7 @@ public class ChunkPalettedStorageFix extends DataFix {
             });
          });
          boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
-         var1.get("Sections").asStreamOpt().result().ifPresent((var1x) -> {
+         var1.get("Sections").asStreamOpt().ifPresent((var1x) -> {
             var1x.forEach((var1) -> {
                ChunkPalettedStorageFix.Section var2 = new ChunkPalettedStorageFix.Section(var1);
                this.sides = var2.upgrade(this.sides);
@@ -813,14 +810,14 @@ public class ChunkPalettedStorageFix extends DataFix {
          }
 
          Dynamic var2 = var1.emptyMap();
-         ArrayList var3 = Lists.newArrayList();
+         Dynamic var3 = var1.emptyList();
          ChunkPalettedStorageFix.Section[] var4 = this.sections;
          int var5 = var4.length;
 
          for(int var6 = 0; var6 < var5; ++var6) {
             ChunkPalettedStorageFix.Section var7 = var4[var6];
             if (var7 != null) {
-               var3.add(var7.write());
+               var3 = var3.merge(var7.write());
                var2 = var2.set(String.valueOf(var7.y), var2.createIntList(Arrays.stream(var7.update.toIntArray())));
             }
          }
@@ -828,13 +825,13 @@ public class ChunkPalettedStorageFix extends DataFix {
          Dynamic var8 = var1.emptyMap();
          var8 = var8.set("Sides", var8.createByte((byte)this.sides));
          var8 = var8.set("Indices", var2);
-         return var1.set("UpgradeData", var8).set("Sections", var8.createList(var3.stream()));
+         return var1.set("UpgradeData", var8).set("Sections", var3);
       }
    }
 
    static class Section {
       private final CrudeIncrementalIntIdentityHashBiMap<Dynamic<?>> palette = new CrudeIncrementalIntIdentityHashBiMap(32);
-      private final List<Dynamic<?>> listTag = Lists.newArrayList();
+      private Dynamic<?> listTag;
       private final Dynamic<?> section;
       private final boolean hasData;
       private final Int2ObjectMap<IntList> toFix = new Int2ObjectLinkedOpenHashMap();
@@ -845,9 +842,10 @@ public class ChunkPalettedStorageFix extends DataFix {
 
       public Section(Dynamic<?> var1) {
          super();
+         this.listTag = var1.emptyList();
          this.section = var1;
          this.y = var1.get("Y").asInt(0);
-         this.hasData = var1.get("Blocks").result().isPresent();
+         this.hasData = var1.get("Blocks").get().isPresent();
       }
 
       public Dynamic<?> getBlock(int var1) {
@@ -861,7 +859,7 @@ public class ChunkPalettedStorageFix extends DataFix {
 
       public void setBlock(int var1, Dynamic<?> var2) {
          if (this.seen.add(var2)) {
-            this.listTag.add("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.AIR : var2);
+            this.listTag = this.listTag.merge("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.AIR : var2);
          }
 
          this.buffer[var1] = ChunkPalettedStorageFix.idFor(this.palette, var2);
@@ -871,16 +869,16 @@ public class ChunkPalettedStorageFix extends DataFix {
          if (!this.hasData) {
             return var1;
          } else {
-            ByteBuffer var2 = (ByteBuffer)this.section.get("Blocks").asByteBufferOpt().result().get();
+            ByteBuffer var2 = (ByteBuffer)this.section.get("Blocks").asByteBufferOpt().get();
             ChunkPalettedStorageFix.DataLayer var3 = (ChunkPalettedStorageFix.DataLayer)this.section.get("Data").asByteBufferOpt().map((var0) -> {
                return new ChunkPalettedStorageFix.DataLayer(DataFixUtils.toArray(var0));
-            }).result().orElseGet(ChunkPalettedStorageFix.DataLayer::new);
+            }).orElseGet(ChunkPalettedStorageFix.DataLayer::new);
             ChunkPalettedStorageFix.DataLayer var4 = (ChunkPalettedStorageFix.DataLayer)this.section.get("Add").asByteBufferOpt().map((var0) -> {
                return new ChunkPalettedStorageFix.DataLayer(DataFixUtils.toArray(var0));
-            }).result().orElseGet(ChunkPalettedStorageFix.DataLayer::new);
+            }).orElseGet(ChunkPalettedStorageFix.DataLayer::new);
             this.seen.add(ChunkPalettedStorageFix.AIR);
             ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.AIR);
-            this.listTag.add(ChunkPalettedStorageFix.AIR);
+            this.listTag = this.listTag.merge(ChunkPalettedStorageFix.AIR);
 
             for(int var5 = 0; var5 < 4096; ++var5) {
                int var6 = var5 & 15;
@@ -922,9 +920,9 @@ public class ChunkPalettedStorageFix extends DataFix {
          if (!this.hasData) {
             return var1;
          } else {
-            var1 = var1.set("Palette", var1.createList(this.listTag.stream()));
+            var1 = var1.set("Palette", this.listTag);
             int var2 = Math.max(4, DataFixUtils.ceillog2(this.seen.size()));
-            PackedBitStorage var3 = new PackedBitStorage(var2, 4096);
+            BitStorage var3 = new BitStorage(var2, 4096);
 
             for(int var4 = 0; var4 < this.buffer.length; ++var4) {
                var3.set(var4, this.buffer[var4]);

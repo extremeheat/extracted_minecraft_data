@@ -2,7 +2,6 @@ package net.minecraft.world.entity.raid;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -22,7 +22,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -58,9 +57,9 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public class Raid {
-   private static final Component RAID_NAME_COMPONENT = new TranslatableComponent("event.minecraft.raid");
-   private static final Component VICTORY = new TranslatableComponent("event.minecraft.raid.victory");
-   private static final Component DEFEAT = new TranslatableComponent("event.minecraft.raid.defeat");
+   private static final TranslatableComponent RAID_NAME_COMPONENT = new TranslatableComponent("event.minecraft.raid", new Object[0]);
+   private static final TranslatableComponent VICTORY = new TranslatableComponent("event.minecraft.raid.victory", new Object[0]);
+   private static final TranslatableComponent DEFEAT = new TranslatableComponent("event.minecraft.raid.defeat", new Object[0]);
    private static final Component RAID_BAR_VICTORY_COMPONENT;
    private static final Component RAID_BAR_DEFEAT_COMPONENT;
    private final Map<Integer, Raider> groupToLeaderMap = Maps.newHashMap();
@@ -119,10 +118,12 @@ public class Raid {
       this.status = Raid.RaidStatus.getByName(var2.getString("Status"));
       this.heroesOfTheVillage.clear();
       if (var2.contains("HeroesOfTheVillage", 9)) {
-         ListTag var3 = var2.getList("HeroesOfTheVillage", 11);
+         ListTag var3 = var2.getList("HeroesOfTheVillage", 10);
 
          for(int var4 = 0; var4 < var3.size(); ++var4) {
-            this.heroesOfTheVillage.add(NbtUtils.loadUUID(var3.get(var4)));
+            CompoundTag var5 = var3.getCompound(var4);
+            UUID var6 = var5.getUUID("UUID");
+            this.heroesOfTheVillage.add(var6);
          }
       }
 
@@ -166,7 +167,7 @@ public class Raid {
 
    private Predicate<ServerPlayer> validPlayer() {
       return (var1) -> {
-         BlockPos var2 = var1.blockPosition();
+         BlockPos var2 = new BlockPos(var1);
          return var1.isAlive() && this.level.getRaidAt(var2) == this;
       };
    }
@@ -432,8 +433,8 @@ public class Raid {
                }
 
                Raider var5 = (Raider)var4.next();
-               BlockPos var6 = var5.blockPosition();
-               if (!var5.isRemoved() && var5.level.dimension() == this.level.dimension() && this.center.distSqr(var6) < 12544.0D) {
+               BlockPos var6 = new BlockPos(var5);
+               if (!var5.removed && var5.dimension == this.level.getDimension().getType() && this.center.distSqr(var6) < 12544.0D) {
                   if (var5.tickCount > 600) {
                      if (this.level.getEntity(var5.getUUID()) == null) {
                         var2.add(var5);
@@ -466,28 +467,27 @@ public class Raid {
    private void playSound(BlockPos var1) {
       float var2 = 13.0F;
       boolean var3 = true;
-      Collection var4 = this.raidEvent.getPlayers();
-      Iterator var5 = this.level.players().iterator();
+      Iterator var4 = this.level.players().iterator();
 
       while(true) {
-         ServerPlayer var6;
-         float var9;
-         double var10;
-         double var12;
+         Player var5;
+         float var8;
+         double var9;
+         double var11;
          do {
-            if (!var5.hasNext()) {
+            if (!var4.hasNext()) {
                return;
             }
 
-            var6 = (ServerPlayer)var5.next();
-            Vec3 var7 = var6.position();
-            Vec3 var8 = Vec3.atCenterOf(var1);
-            var9 = Mth.sqrt((var8.x - var7.x) * (var8.x - var7.x) + (var8.z - var7.z) * (var8.z - var7.z));
-            var10 = var7.x + (double)(13.0F / var9) * (var8.x - var7.x);
-            var12 = var7.z + (double)(13.0F / var9) * (var8.z - var7.z);
-         } while(var9 > 64.0F && !var4.contains(var6));
+            var5 = (Player)var4.next();
+            Vec3 var6 = new Vec3(var5.x, var5.y, var5.z);
+            Vec3 var7 = new Vec3((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+            var8 = Mth.sqrt((var7.x - var6.x) * (var7.x - var6.x) + (var7.z - var6.z) * (var7.z - var6.z));
+            var9 = var6.x + (double)(13.0F / var8) * (var7.x - var6.x);
+            var11 = var6.z + (double)(13.0F / var8) * (var7.z - var6.z);
+         } while(var8 > 64.0F && !this.level.isVillage(new BlockPos(var5)));
 
-         var6.connection.send(new ClientboundSoundPacket(SoundEvents.RAID_HORN, SoundSource.NEUTRAL, var10, var6.getY(), var12, 64.0F, 1.0F));
+         ((ServerPlayer)var5).connection.send(new ClientboundSoundPacket(SoundEvents.RAID_HORN, SoundSource.NEUTRAL, var9, var5.y, var11, 64.0F, 1.0F));
       }
    }
 
@@ -553,8 +553,8 @@ public class Raid {
             var2.setPos((double)var3.getX() + 0.5D, (double)var3.getY() + 1.0D, (double)var3.getZ() + 0.5D);
             var2.finalizeSpawn(this.level, this.level.getCurrentDifficultyAt(var3), MobSpawnType.EVENT, (SpawnGroupData)null, (CompoundTag)null);
             var2.applyRaidBuffs(var1, false);
-            var2.setOnGround(true);
-            this.level.addFreshEntityWithPassengers(var2);
+            var2.onGround = true;
+            this.level.addFreshEntity(var2);
          }
       }
 
@@ -588,7 +588,7 @@ public class Raid {
       return this.groupRaiderMap.values().stream().mapToInt(Set::size).sum();
    }
 
-   public void removeFromRaid(Raider var1, boolean var2) {
+   public void removeFromRaid(@Nonnull Raider var1, boolean var2) {
       Set var3 = (Set)this.groupRaiderMap.get(var1.getWave());
       if (var3 != null) {
          boolean var4 = var3.remove(var1);
@@ -614,8 +614,7 @@ public class Raid {
       CompoundTag var1 = var0.getOrCreateTagElement("BlockEntityTag");
       ListTag var2 = (new BannerPattern.Builder()).addPattern(BannerPattern.RHOMBUS_MIDDLE, DyeColor.CYAN).addPattern(BannerPattern.STRIPE_BOTTOM, DyeColor.LIGHT_GRAY).addPattern(BannerPattern.STRIPE_CENTER, DyeColor.GRAY).addPattern(BannerPattern.BORDER, DyeColor.LIGHT_GRAY).addPattern(BannerPattern.STRIPE_MIDDLE, DyeColor.BLACK).addPattern(BannerPattern.HALF_HORIZONTAL, DyeColor.LIGHT_GRAY).addPattern(BannerPattern.CIRCLE_MIDDLE, DyeColor.LIGHT_GRAY).addPattern(BannerPattern.BORDER, DyeColor.BLACK).toListTag();
       var1.put("Patterns", var2);
-      var0.hideTooltipPart(ItemStack.TooltipPart.ADDITIONAL);
-      var0.setHoverName((new TranslatableComponent("block.minecraft.ominous_banner")).withStyle(ChatFormatting.GOLD));
+      var0.setHoverName((new TranslatableComponent("block.minecraft.ominous_banner", new Object[0])).withStyle(ChatFormatting.GOLD));
       return var0;
    }
 
@@ -635,7 +634,7 @@ public class Raid {
          int var6 = this.center.getZ() + Mth.floor(Mth.sin(var9) * 32.0F * (float)var3) + this.level.random.nextInt(5);
          int var5 = this.level.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
          var7.set(var4, var5, var6);
-         if ((!this.level.isVillage((BlockPos)var7) || var1 >= 2) && this.level.hasChunksAt(var7.getX() - 10, var7.getY() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getY() + 10, var7.getZ() + 10) && this.level.getChunkSource().isEntityTickingChunk(new ChunkPos(var7)) && (NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, this.level, var7, EntityType.RAVAGER) || this.level.getBlockState(var7.below()).is(Blocks.SNOW) && this.level.getBlockState(var7).isAir())) {
+         if ((!this.level.isVillage((BlockPos)var7) || var1 >= 2) && this.level.hasChunksAt(var7.getX() - 10, var7.getY() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getY() + 10, var7.getZ() + 10) && this.level.getChunkSource().isEntityTickingChunk(new ChunkPos(var7)) && (NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, this.level, var7, EntityType.RAVAGER) || this.level.getBlockState(var7.below()).getBlock() == Blocks.SNOW && this.level.getBlockState(var7).isAir())) {
             return var7;
          }
       }
@@ -761,7 +760,9 @@ public class Raid {
 
       while(var3.hasNext()) {
          UUID var4 = (UUID)var3.next();
-         var2.add(NbtUtils.createUUID(var4));
+         CompoundTag var5 = new CompoundTag();
+         var5.putUUID("UUID", var4);
+         var2.add(var5);
       }
 
       var1.put("HeroesOfTheVillage", var2);
@@ -799,8 +800,8 @@ public class Raid {
    }
 
    static {
-      RAID_BAR_VICTORY_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append(VICTORY);
-      RAID_BAR_DEFEAT_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append(DEFEAT);
+      RAID_BAR_VICTORY_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append((Component)VICTORY);
+      RAID_BAR_DEFEAT_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append((Component)DEFEAT);
    }
 
    static enum RaiderType {

@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.SimpleContainer;
@@ -9,7 +8,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 
 public class PlayerEnderChestContainer extends SimpleContainer {
-   @Nullable
    private EnderChestBlockEntity activeChest;
 
    public PlayerEnderChestContainer() {
@@ -18,10 +16,6 @@ public class PlayerEnderChestContainer extends SimpleContainer {
 
    public void setActiveChest(EnderChestBlockEntity var1) {
       this.activeChest = var1;
-   }
-
-   public boolean isActiveChest(EnderChestBlockEntity var1) {
-      return this.activeChest == var1;
    }
 
    public void fromTag(ListTag var1) {
@@ -62,7 +56,7 @@ public class PlayerEnderChestContainer extends SimpleContainer {
 
    public void startOpen(Player var1) {
       if (this.activeChest != null) {
-         this.activeChest.startOpen(var1);
+         this.activeChest.startOpen();
       }
 
       super.startOpen(var1);
@@ -70,7 +64,7 @@ public class PlayerEnderChestContainer extends SimpleContainer {
 
    public void stopOpen(Player var1) {
       if (this.activeChest != null) {
-         this.activeChest.stopOpen(var1);
+         this.activeChest.stopOpen();
       }
 
       super.stopOpen(var1);

@@ -40,8 +40,7 @@ public abstract class AbstractIllager extends Raider {
       BOW_AND_ARROW,
       CROSSBOW_HOLD,
       CROSSBOW_CHARGE,
-      CELEBRATING,
-      NEUTRAL;
+      CELEBRATING;
 
       private IllagerArmPose() {
       }

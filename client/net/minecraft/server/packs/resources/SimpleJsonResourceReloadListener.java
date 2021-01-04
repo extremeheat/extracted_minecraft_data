@@ -2,7 +2,7 @@ package net.minecraft.server.packs.resources;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class SimpleJsonResourceReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, JsonElement>> {
+public abstract class SimpleJsonResourceReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, JsonObject>> {
    private static final Logger LOGGER = LogManager.getLogger();
    private static final int PATH_SUFFIX_LENGTH = ".json".length();
    private final Gson gson;
@@ -31,7 +31,7 @@ public abstract class SimpleJsonResourceReloadListener extends SimplePreparableR
       this.directory = var2;
    }
 
-   protected Map<ResourceLocation, JsonElement> prepare(ResourceManager var1, ProfilerFiller var2) {
+   protected Map<ResourceLocation, JsonObject> prepare(ResourceManager var1, ProfilerFiller var2) {
       HashMap var3 = Maps.newHashMap();
       int var4 = this.directory.length() + 1;
       Iterator var5 = var1.listResources(this.directory, (var0) -> {
@@ -56,9 +56,9 @@ public abstract class SimpleJsonResourceReloadListener extends SimplePreparableR
                   Throwable var14 = null;
 
                   try {
-                     JsonElement var15 = (JsonElement)GsonHelper.fromJson(this.gson, (Reader)var13, (Class)JsonElement.class);
+                     JsonObject var15 = (JsonObject)GsonHelper.fromJson(this.gson, (Reader)var13, (Class)JsonObject.class);
                      if (var15 != null) {
-                        JsonElement var16 = (JsonElement)var3.put(var8, var15);
+                        JsonObject var16 = (JsonObject)var3.put(var8, var15);
                         if (var16 != null) {
                            throw new IllegalStateException("Duplicate data file ignored with ID " + var8);
                         }

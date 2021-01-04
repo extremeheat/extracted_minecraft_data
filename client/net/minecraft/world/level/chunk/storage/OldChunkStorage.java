@@ -1,12 +1,10 @@
 package net.minecraft.world.level.chunk.storage;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.chunk.ChunkBiomeContainer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.OldDataLayer;
 
@@ -34,74 +32,86 @@ public class OldChunkStorage {
       return var3;
    }
 
-   public static void convertToAnvilFormat(RegistryAccess.RegistryHolder var0, OldChunkStorage.OldLevelChunk var1, CompoundTag var2, BiomeSource var3) {
-      var2.putInt("xPos", var1.x);
-      var2.putInt("zPos", var1.z);
-      var2.putLong("LastUpdate", var1.lastUpdated);
-      int[] var4 = new int[var1.heightmap.length];
+   public static void convertToAnvilFormat(OldChunkStorage.OldLevelChunk var0, CompoundTag var1, BiomeSource var2) {
+      var1.putInt("xPos", var0.x);
+      var1.putInt("zPos", var0.z);
+      var1.putLong("LastUpdate", var0.lastUpdated);
+      int[] var3 = new int[var0.heightmap.length];
 
-      for(int var5 = 0; var5 < var1.heightmap.length; ++var5) {
-         var4[var5] = var1.heightmap[var5];
+      for(int var4 = 0; var4 < var0.heightmap.length; ++var4) {
+         var3[var4] = var0.heightmap[var4];
       }
 
-      var2.putIntArray("HeightMap", var4);
-      var2.putBoolean("TerrainPopulated", var1.terrainPopulated);
-      ListTag var17 = new ListTag();
+      var1.putIntArray("HeightMap", var3);
+      var1.putBoolean("TerrainPopulated", var0.terrainPopulated);
+      ListTag var16 = new ListTag();
 
-      for(int var6 = 0; var6 < 8; ++var6) {
-         boolean var7 = true;
+      int var7;
+      int var8;
+      for(int var5 = 0; var5 < 8; ++var5) {
+         boolean var6 = true;
 
-         for(int var8 = 0; var8 < 16 && var7; ++var8) {
-            for(int var9 = 0; var9 < 16 && var7; ++var9) {
-               for(int var10 = 0; var10 < 16; ++var10) {
-                  int var11 = var8 << 11 | var10 << 7 | var9 + (var6 << 4);
-                  byte var12 = var1.blocks[var11];
-                  if (var12 != 0) {
-                     var7 = false;
+         for(var7 = 0; var7 < 16 && var6; ++var7) {
+            for(var8 = 0; var8 < 16 && var6; ++var8) {
+               for(int var9 = 0; var9 < 16; ++var9) {
+                  int var10 = var7 << 11 | var9 << 7 | var8 + (var5 << 4);
+                  byte var11 = var0.blocks[var10];
+                  if (var11 != 0) {
+                     var6 = false;
                      break;
                   }
                }
             }
          }
 
-         if (!var7) {
-            byte[] var18 = new byte[4096];
-            DataLayer var19 = new DataLayer();
+         if (!var6) {
+            byte[] var19 = new byte[4096];
             DataLayer var20 = new DataLayer();
             DataLayer var21 = new DataLayer();
+            DataLayer var22 = new DataLayer();
 
-            for(int var22 = 0; var22 < 16; ++var22) {
-               for(int var13 = 0; var13 < 16; ++var13) {
-                  for(int var14 = 0; var14 < 16; ++var14) {
-                     int var15 = var22 << 11 | var14 << 7 | var13 + (var6 << 4);
-                     byte var16 = var1.blocks[var15];
-                     var18[var13 << 8 | var14 << 4 | var22] = (byte)(var16 & 255);
-                     var19.set(var22, var13, var14, var1.data.get(var22, var13 + (var6 << 4), var14));
-                     var20.set(var22, var13, var14, var1.skyLight.get(var22, var13 + (var6 << 4), var14));
-                     var21.set(var22, var13, var14, var1.blockLight.get(var22, var13 + (var6 << 4), var14));
+            for(int var23 = 0; var23 < 16; ++var23) {
+               for(int var12 = 0; var12 < 16; ++var12) {
+                  for(int var13 = 0; var13 < 16; ++var13) {
+                     int var14 = var23 << 11 | var13 << 7 | var12 + (var5 << 4);
+                     byte var15 = var0.blocks[var14];
+                     var19[var12 << 8 | var13 << 4 | var23] = (byte)(var15 & 255);
+                     var20.set(var23, var12, var13, var0.data.get(var23, var12 + (var5 << 4), var13));
+                     var21.set(var23, var12, var13, var0.skyLight.get(var23, var12 + (var5 << 4), var13));
+                     var22.set(var23, var12, var13, var0.blockLight.get(var23, var12 + (var5 << 4), var13));
                   }
                }
             }
 
-            CompoundTag var23 = new CompoundTag();
-            var23.putByte("Y", (byte)(var6 & 255));
-            var23.putByteArray("Blocks", var18);
-            var23.putByteArray("Data", var19.getData());
-            var23.putByteArray("SkyLight", var20.getData());
-            var23.putByteArray("BlockLight", var21.getData());
-            var17.add(var23);
+            CompoundTag var24 = new CompoundTag();
+            var24.putByte("Y", (byte)(var5 & 255));
+            var24.putByteArray("Blocks", var19);
+            var24.putByteArray("Data", var20.getData());
+            var24.putByteArray("SkyLight", var21.getData());
+            var24.putByteArray("BlockLight", var22.getData());
+            var16.add(var24);
          }
       }
 
-      var2.put("Sections", var17);
-      var2.putIntArray("Biomes", (new ChunkBiomeContainer(var0.registryOrThrow(Registry.BIOME_REGISTRY), new ChunkPos(var1.x, var1.z), var3)).writeBiomes());
-      var2.put("Entities", var1.entities);
-      var2.put("TileEntities", var1.blockEntities);
-      if (var1.blockTicks != null) {
-         var2.put("TileTicks", var1.blockTicks);
+      var1.put("Sections", var16);
+      byte[] var17 = new byte[256];
+      BlockPos.MutableBlockPos var18 = new BlockPos.MutableBlockPos();
+
+      for(var7 = 0; var7 < 16; ++var7) {
+         for(var8 = 0; var8 < 16; ++var8) {
+            var18.set(var0.x << 4 | var7, 0, var0.z << 4 | var8);
+            var17[var8 << 4 | var7] = (byte)(Registry.BIOME.getId(var2.getBiome(var18)) & 255);
+         }
       }
 
-      var2.putBoolean("convertedFromAlphaFormat", true);
+      var1.putByteArray("Biomes", var17);
+      var1.put("Entities", var0.entities);
+      var1.put("TileEntities", var0.blockEntities);
+      if (var0.blockTicks != null) {
+         var1.put("TileTicks", var0.blockTicks);
+      }
+
+      var1.putBoolean("convertedFromAlphaFormat", true);
    }
 
    public static class OldLevelChunk {

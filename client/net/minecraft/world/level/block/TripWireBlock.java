@@ -6,15 +6,14 @@ import java.util.Map;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -36,7 +35,7 @@ public class TripWireBlock extends Block {
    protected static final VoxelShape NOT_ATTACHED_AABB;
    private final TripWireHookBlock hook;
 
-   public TripWireBlock(TripWireHookBlock var1, BlockBehaviour.Properties var2) {
+   public TripWireBlock(TripWireHookBlock var1, Block.Properties var2) {
       super(var2);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false)).setValue(ATTACHED, false)).setValue(DISARMED, false)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false));
       this.hook = var1;
@@ -56,20 +55,24 @@ public class TripWireBlock extends Block {
       return var2.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), this.shouldConnectTo(var3, var2)) : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.TRANSLUCENT;
+   }
+
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
+      if (var4.getBlock() != var1.getBlock()) {
          this.updateSource(var2, var3, var1);
       }
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          this.updateSource(var2, var3, (BlockState)var1.setValue(POWERED, true));
       }
    }
 
    public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
+      if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().getItem() == Items.SHEARS) {
          var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 4);
       }
 
@@ -86,14 +89,14 @@ public class TripWireBlock extends Block {
          for(int var8 = 1; var8 < 42; ++var8) {
             BlockPos var9 = var2.relative(var7, var8);
             BlockState var10 = var1.getBlockState(var9);
-            if (var10.is(this.hook)) {
+            if (var10.getBlock() == this.hook) {
                if (var10.getValue(TripWireHookBlock.FACING) == var7.getOpposite()) {
                   this.hook.calculateState(var1, var9, var10, false, true, var8, var3);
                }
                break;
             }
 
-            if (!var10.is(this)) {
+            if (var10.getBlock() != this) {
                break;
             }
          }
@@ -109,9 +112,11 @@ public class TripWireBlock extends Block {
       }
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      if ((Boolean)var2.getBlockState(var3).getValue(POWERED)) {
-         this.checkPressed(var2, var3);
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide) {
+         if ((Boolean)var2.getBlockState(var3).getValue(POWERED)) {
+            this.checkPressed(var2, var3);
+         }
       }
    }
 
@@ -139,16 +144,17 @@ public class TripWireBlock extends Block {
       }
 
       if (var5) {
-         var1.getBlockTicks().scheduleTick(new BlockPos(var2), this, 10);
+         var1.getBlockTicks().scheduleTick(new BlockPos(var2), this, this.getTickDelay(var1));
       }
 
    }
 
    public boolean shouldConnectTo(BlockState var1, Direction var2) {
-      if (var1.is(this.hook)) {
+      Block var3 = var1.getBlock();
+      if (var3 == this.hook) {
          return var1.getValue(TripWireHookBlock.FACING) == var2.getOpposite();
       } else {
-         return var1.is(this);
+         return var3 == this;
       }
    }
 

@@ -1,51 +1,86 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.VillagerHeadModel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Zombie;
 
 public class ZombieVillagerModel<T extends Zombie> extends HumanoidModel<T> implements VillagerHeadModel {
-   private final ModelPart hatRim;
+   private ModelPart hatRim;
 
-   public ZombieVillagerModel(ModelPart var1) {
-      super(var1);
-      this.hatRim = this.hat.getChild("hat_rim");
+   public ZombieVillagerModel() {
+      this(0.0F, false);
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("head", (new CubeListBuilder()).texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F).texOffs(24, 0).addBox(-1.0F, -3.0F, -6.0F, 2.0F, 4.0F, 2.0F), PartPose.ZERO);
-      PartDefinition var2 = var1.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.ZERO);
-      var2.addOrReplaceChild("hat_rim", CubeListBuilder.create().texOffs(30, 47).addBox(-8.0F, -8.0F, -6.0F, 16.0F, 16.0F, 1.0F), PartPose.rotation(-1.5707964F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 20).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 12.0F, 6.0F).texOffs(0, 38).addBox(-4.0F, 0.0F, -3.0F, 8.0F, 18.0F, 6.0F, new CubeDeformation(0.05F)), PartPose.ZERO);
-      var1.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(44, 22).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(-5.0F, 2.0F, 0.0F));
-      var1.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(44, 22).mirror().addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(5.0F, 2.0F, 0.0F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 22).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(-2.0F, 12.0F, 0.0F));
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 22).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F), PartPose.offset(2.0F, 12.0F, 0.0F));
-      return LayerDefinition.create(var0, 64, 64);
+   public ZombieVillagerModel(float var1, boolean var2) {
+      super(var1, 0.0F, 64, var2 ? 32 : 64);
+      if (var2) {
+         this.head = new ModelPart(this, 0, 0);
+         this.head.addBox(-4.0F, -10.0F, -4.0F, 8, 8, 8, var1);
+         this.body = new ModelPart(this, 16, 16);
+         this.body.addBox(-4.0F, 0.0F, -2.0F, 8, 12, 4, var1 + 0.1F);
+         this.rightLeg = new ModelPart(this, 0, 16);
+         this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
+         this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1 + 0.1F);
+         this.leftLeg = new ModelPart(this, 0, 16);
+         this.leftLeg.mirror = true;
+         this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
+         this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1 + 0.1F);
+      } else {
+         this.head = new ModelPart(this, 0, 0);
+         this.head.texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, var1);
+         this.head.texOffs(24, 0).addBox(-1.0F, -3.0F, -6.0F, 2, 4, 2, var1);
+         this.hat = new ModelPart(this, 32, 0);
+         this.hat.addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, var1 + 0.5F);
+         this.hatRim = new ModelPart(this);
+         this.hatRim.texOffs(30, 47).addBox(-8.0F, -8.0F, -6.0F, 16, 16, 1, var1);
+         this.hatRim.xRot = -1.5707964F;
+         this.hat.addChild(this.hatRim);
+         this.body = new ModelPart(this, 16, 20);
+         this.body.addBox(-4.0F, 0.0F, -3.0F, 8, 12, 6, var1);
+         this.body.texOffs(0, 38).addBox(-4.0F, 0.0F, -3.0F, 8, 18, 6, var1 + 0.05F);
+         this.rightArm = new ModelPart(this, 44, 22);
+         this.rightArm.addBox(-3.0F, -2.0F, -2.0F, 4, 12, 4, var1);
+         this.rightArm.setPos(-5.0F, 2.0F, 0.0F);
+         this.leftArm = new ModelPart(this, 44, 22);
+         this.leftArm.mirror = true;
+         this.leftArm.addBox(-1.0F, -2.0F, -2.0F, 4, 12, 4, var1);
+         this.leftArm.setPos(5.0F, 2.0F, 0.0F);
+         this.rightLeg = new ModelPart(this, 0, 22);
+         this.rightLeg.setPos(-2.0F, 12.0F, 0.0F);
+         this.rightLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1);
+         this.leftLeg = new ModelPart(this, 0, 22);
+         this.leftLeg.mirror = true;
+         this.leftLeg.setPos(2.0F, 12.0F, 0.0F);
+         this.leftLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, var1);
+      }
+
    }
 
-   public static LayerDefinition createArmorLayer(CubeDeformation var0) {
-      MeshDefinition var1 = HumanoidModel.createMesh(var0, 0.0F);
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.ZERO);
-      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0.extend(0.1F)), PartPose.ZERO);
-      var2.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.1F)), PartPose.offset(-2.0F, 12.0F, 0.0F));
-      var2.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.1F)), PartPose.offset(2.0F, 12.0F, 0.0F));
-      var2.getChild("hat").addOrReplaceChild("hat_rim", CubeListBuilder.create(), PartPose.ZERO);
-      return LayerDefinition.create(var1, 64, 32);
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim((LivingEntity)var1, var2, var3, var4, var5, var6);
-      AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive(), this.attackTime, var4);
+   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      super.setupAnim((LivingEntity)var1, var2, var3, var4, var5, var6, var7);
+      float var8 = Mth.sin(this.attackTime * 3.1415927F);
+      float var9 = Mth.sin((1.0F - (1.0F - this.attackTime) * (1.0F - this.attackTime)) * 3.1415927F);
+      this.rightArm.zRot = 0.0F;
+      this.leftArm.zRot = 0.0F;
+      this.rightArm.yRot = -(0.1F - var8 * 0.6F);
+      this.leftArm.yRot = 0.1F - var8 * 0.6F;
+      float var10 = -3.1415927F / (var1.isAggressive() ? 1.5F : 2.25F);
+      this.rightArm.xRot = var10;
+      this.leftArm.xRot = var10;
+      ModelPart var10000 = this.rightArm;
+      var10000.xRot += var8 * 1.2F - var9 * 0.4F;
+      var10000 = this.leftArm;
+      var10000.xRot += var8 * 1.2F - var9 * 0.4F;
+      var10000 = this.rightArm;
+      var10000.zRot += Mth.cos(var4 * 0.09F) * 0.05F + 0.05F;
+      var10000 = this.leftArm;
+      var10000.zRot -= Mth.cos(var4 * 0.09F) * 0.05F + 0.05F;
+      var10000 = this.rightArm;
+      var10000.xRot += Mth.sin(var4 * 0.067F) * 0.05F;
+      var10000 = this.leftArm;
+      var10000.xRot -= Mth.sin(var4 * 0.067F) * 0.05F;
    }
 
    public void hatVisible(boolean var1) {

@@ -3,11 +3,12 @@ package net.minecraft.client.sounds;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,7 +23,6 @@ import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundEventRegistration;
 import net.minecraft.client.resources.sounds.SoundEventRegistrationSerializer;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.client.resources.sounds.TickableSoundInstance;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -33,6 +33,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,7 +41,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
    public static final Sound EMPTY_SOUND;
    private static final Logger LOGGER;
    private static final Gson GSON;
-   private static final TypeToken<Map<String, SoundEventRegistration>> SOUND_EVENT_REGISTRATION_TYPE;
+   private static final ParameterizedType SOUND_EVENT_REGISTRATION_TYPE;
    private final Map<ResourceLocation, WeighedSoundEvents> registry = Maps.newHashMap();
    private final SoundEngine soundEngine;
 
@@ -65,64 +66,22 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
                var2.push(var8.getSourceName());
 
                try {
-                  InputStream var9 = var8.getInputStream();
-                  Throwable var10 = null;
+                  var2.push("parse");
+                  Map var9 = getEventFromJson(var8.getInputStream());
+                  var2.popPush("register");
+                  Iterator var10 = var9.entrySet().iterator();
 
-                  try {
-                     InputStreamReader var11 = new InputStreamReader(var9, StandardCharsets.UTF_8);
-                     Throwable var12 = null;
-
-                     try {
-                        var2.push("parse");
-                        Map var13 = (Map)GsonHelper.fromJson(GSON, (Reader)var11, (TypeToken)SOUND_EVENT_REGISTRATION_TYPE);
-                        var2.popPush("register");
-                        Iterator var14 = var13.entrySet().iterator();
-
-                        while(var14.hasNext()) {
-                           Entry var15 = (Entry)var14.next();
-                           var3.handleRegistration(new ResourceLocation(var5, (String)var15.getKey()), (SoundEventRegistration)var15.getValue(), var1);
-                        }
-
-                        var2.pop();
-                     } catch (Throwable var41) {
-                        var12 = var41;
-                        throw var41;
-                     } finally {
-                        if (var11 != null) {
-                           if (var12 != null) {
-                              try {
-                                 var11.close();
-                              } catch (Throwable var40) {
-                                 var12.addSuppressed(var40);
-                              }
-                           } else {
-                              var11.close();
-                           }
-                        }
-
-                     }
-                  } catch (Throwable var43) {
-                     var10 = var43;
-                     throw var43;
-                  } finally {
-                     if (var9 != null) {
-                        if (var10 != null) {
-                           try {
-                              var9.close();
-                           } catch (Throwable var39) {
-                              var10.addSuppressed(var39);
-                           }
-                        } else {
-                           var9.close();
-                        }
-                     }
-
+                  while(var10.hasNext()) {
+                     Entry var11 = (Entry)var10.next();
+                     var3.handleRegistration(new ResourceLocation(var5, (String)var11.getKey()), (SoundEventRegistration)var11.getValue(), var1);
                   }
-               } catch (RuntimeException var45) {
-                  LOGGER.warn("Invalid {} in resourcepack: '{}'", "sounds.json", var8.getSourceName(), var45);
+
+                  var2.pop();
+               } catch (RuntimeException var12) {
+                  LOGGER.warn("Invalid sounds.json in resourcepack: '{}'", var8.getSourceName(), var12);
                }
             }
-         } catch (IOException var46) {
+         } catch (IOException var13) {
          }
       }
 
@@ -160,6 +119,18 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
       this.soundEngine.reload();
    }
 
+   @Nullable
+   protected static Map<String, SoundEventRegistration> getEventFromJson(InputStream var0) {
+      Map var1;
+      try {
+         var1 = (Map)GsonHelper.fromJson(GSON, (Reader)(new InputStreamReader(var0, StandardCharsets.UTF_8)), (Type)SOUND_EVENT_REGISTRATION_TYPE);
+      } finally {
+         IOUtils.closeQuietly(var0);
+      }
+
+      return var1;
+   }
+
    private static boolean validateSoundResource(Sound var0, ResourceLocation var1, ResourceManager var2) {
       ResourceLocation var3 = var0.getPath();
       if (!var2.hasResource(var3)) {
@@ -177,10 +148,6 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
 
    public Collection<ResourceLocation> getAvailableSounds() {
       return this.registry.keySet();
-   }
-
-   public void queueTickingSound(TickableSoundInstance var1) {
-      this.soundEngine.queueTickingSound(var1);
    }
 
    public void play(SoundInstance var1) {
@@ -256,7 +223,18 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
       EMPTY_SOUND = new Sound("meta:missing_sound", 1.0F, 1.0F, 1, Sound.Type.FILE, false, false, 16);
       LOGGER = LogManager.getLogger();
       GSON = (new GsonBuilder()).registerTypeHierarchyAdapter(Component.class, new Component.Serializer()).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
-      SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
+      SOUND_EVENT_REGISTRATION_TYPE = new ParameterizedType() {
+         public Type[] getActualTypeArguments() {
+            return new Type[]{String.class, SoundEventRegistration.class};
+         }
+
+         public Type getRawType() {
+            return Map.class;
+         }
+
+         public Type getOwnerType() {
+            return null;
+         }
       };
    }
 

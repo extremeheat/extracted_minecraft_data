@@ -59,8 +59,8 @@ public class EvokerFangs extends Entity {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       this.warmupDelayTicks = var1.getInt("Warmup");
-      if (var1.hasUUID("Owner")) {
-         this.ownerUUID = var1.getUUID("Owner");
+      if (var1.hasUUID("OwnerUUID")) {
+         this.ownerUUID = var1.getUUID("OwnerUUID");
       }
 
    }
@@ -68,7 +68,7 @@ public class EvokerFangs extends Entity {
    protected void addAdditionalSaveData(CompoundTag var1) {
       var1.putInt("Warmup", this.warmupDelayTicks);
       if (this.ownerUUID != null) {
-         var1.putUUID("Owner", this.ownerUUID);
+         var1.putUUID("OwnerUUID", this.ownerUUID);
       }
 
    }
@@ -80,9 +80,9 @@ public class EvokerFangs extends Entity {
             --this.lifeTicks;
             if (this.lifeTicks == 14) {
                for(int var1 = 0; var1 < 12; ++var1) {
-                  double var2 = this.getX() + (this.random.nextDouble() * 2.0D - 1.0D) * (double)this.getBbWidth() * 0.5D;
-                  double var4 = this.getY() + 0.05D + this.random.nextDouble();
-                  double var6 = this.getZ() + (this.random.nextDouble() * 2.0D - 1.0D) * (double)this.getBbWidth() * 0.5D;
+                  double var2 = this.x + (this.random.nextDouble() * 2.0D - 1.0D) * (double)this.getBbWidth() * 0.5D;
+                  double var4 = this.y + 0.05D + this.random.nextDouble();
+                  double var6 = this.z + (this.random.nextDouble() * 2.0D - 1.0D) * (double)this.getBbWidth() * 0.5D;
                   double var8 = (this.random.nextDouble() * 2.0D - 1.0D) * 0.3D;
                   double var10 = 0.3D + this.random.nextDouble() * 0.3D;
                   double var12 = (this.random.nextDouble() * 2.0D - 1.0D) * 0.3D;
@@ -107,7 +107,7 @@ public class EvokerFangs extends Entity {
          }
 
          if (--this.lifeTicks < 0) {
-            this.discard();
+            this.remove();
          }
       }
 
@@ -134,7 +134,7 @@ public class EvokerFangs extends Entity {
       if (var1 == 4) {
          this.clientSideAttackStarted = true;
          if (!this.isSilent()) {
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.EVOKER_FANGS_ATTACK, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.2F + 0.85F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.EVOKER_FANGS_ATTACK, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.2F + 0.85F, false);
          }
       }
 

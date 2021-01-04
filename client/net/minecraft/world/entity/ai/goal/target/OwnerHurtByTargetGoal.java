@@ -18,7 +18,7 @@ public class OwnerHurtByTargetGoal extends TargetGoal {
    }
 
    public boolean canUse() {
-      if (this.tameAnimal.isTame() && !this.tameAnimal.isOrderedToSit()) {
+      if (this.tameAnimal.isTame() && !this.tameAnimal.isSitting()) {
          LivingEntity var1 = this.tameAnimal.getOwner();
          if (var1 == null) {
             return false;

@@ -106,7 +106,7 @@ public class EntityDataSerializers {
       }
 
       public Component copy(Component var1) {
-         return var1;
+         return var1.deepCopy();
       }
 
       // $FF: synthetic method
@@ -130,7 +130,7 @@ public class EntityDataSerializers {
       }
 
       public Optional<Component> copy(Optional<Component> var1) {
-         return var1;
+         return var1.isPresent() ? Optional.of(((Component)var1.get()).deepCopy()) : Optional.empty();
       }
 
       // $FF: synthetic method

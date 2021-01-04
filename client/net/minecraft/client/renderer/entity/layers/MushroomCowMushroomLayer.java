@@ -1,13 +1,11 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.CowModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -16,35 +14,42 @@ public class MushroomCowMushroomLayer<T extends MushroomCow> extends RenderLayer
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (!var4.isBaby() && !var4.isInvisible()) {
-         BlockRenderDispatcher var11 = Minecraft.getInstance().getBlockRenderer();
-         BlockState var12 = var4.getMushroomType().getBlockState();
-         int var13 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-         var1.pushPose();
-         var1.translate(0.20000000298023224D, -0.3499999940395355D, 0.5D);
-         var1.mulPose(Vector3f.YP.rotationDegrees(-48.0F));
-         var1.scale(-1.0F, -1.0F, 1.0F);
-         var1.translate(-0.5D, -0.5D, -0.5D);
-         var11.renderSingleBlock(var12, var1, var2, var3, var13);
-         var1.popPose();
-         var1.pushPose();
-         var1.translate(0.20000000298023224D, -0.3499999940395355D, 0.5D);
-         var1.mulPose(Vector3f.YP.rotationDegrees(42.0F));
-         var1.translate(0.10000000149011612D, 0.0D, -0.6000000238418579D);
-         var1.mulPose(Vector3f.YP.rotationDegrees(-48.0F));
-         var1.scale(-1.0F, -1.0F, 1.0F);
-         var1.translate(-0.5D, -0.5D, -0.5D);
-         var11.renderSingleBlock(var12, var1, var2, var3, var13);
-         var1.popPose();
-         var1.pushPose();
-         ((CowModel)this.getParentModel()).getHead().translateAndRotate(var1);
-         var1.translate(0.0D, -0.699999988079071D, -0.20000000298023224D);
-         var1.mulPose(Vector3f.YP.rotationDegrees(-78.0F));
-         var1.scale(-1.0F, -1.0F, 1.0F);
-         var1.translate(-0.5D, -0.5D, -0.5D);
-         var11.renderSingleBlock(var12, var1, var2, var3, var13);
-         var1.popPose();
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      if (!var1.isBaby() && !var1.isInvisible()) {
+         BlockState var9 = var1.getMushroomType().getBlockState();
+         this.bindTexture(TextureAtlas.LOCATION_BLOCKS);
+         GlStateManager.enableCull();
+         GlStateManager.cullFace(GlStateManager.CullFace.FRONT);
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(1.0F, -1.0F, 1.0F);
+         GlStateManager.translatef(0.2F, 0.35F, 0.5F);
+         GlStateManager.rotatef(42.0F, 0.0F, 1.0F, 0.0F);
+         BlockRenderDispatcher var10 = Minecraft.getInstance().getBlockRenderer();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(-0.5F, -0.5F, 0.5F);
+         var10.renderSingleBlock(var9, 1.0F);
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.1F, 0.0F, -0.6F);
+         GlStateManager.rotatef(42.0F, 0.0F, 1.0F, 0.0F);
+         GlStateManager.translatef(-0.5F, -0.5F, 0.5F);
+         var10.renderSingleBlock(var9, 1.0F);
+         GlStateManager.popMatrix();
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
+         ((CowModel)this.getParentModel()).getHead().translateTo(0.0625F);
+         GlStateManager.scalef(1.0F, -1.0F, 1.0F);
+         GlStateManager.translatef(0.0F, 0.7F, -0.2F);
+         GlStateManager.rotatef(12.0F, 0.0F, 1.0F, 0.0F);
+         GlStateManager.translatef(-0.5F, -0.5F, 0.5F);
+         var10.renderSingleBlock(var9, 1.0F);
+         GlStateManager.popMatrix();
+         GlStateManager.cullFace(GlStateManager.CullFace.BACK);
+         GlStateManager.disableCull();
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return true;
    }
 }

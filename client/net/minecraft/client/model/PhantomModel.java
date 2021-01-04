@@ -1,61 +1,75 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 
-public class PhantomModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class PhantomModel<T extends Entity> extends EntityModel<T> {
+   private final ModelPart body;
    private final ModelPart leftWingBase;
    private final ModelPart leftWingTip;
    private final ModelPart rightWingBase;
    private final ModelPart rightWingTip;
+   private final ModelPart head;
    private final ModelPart tailBase;
    private final ModelPart tailTip;
 
-   public PhantomModel(ModelPart var1) {
+   public PhantomModel() {
       super();
-      this.root = var1;
-      ModelPart var2 = var1.getChild("body");
-      this.tailBase = var2.getChild("tail_base");
-      this.tailTip = this.tailBase.getChild("tail_tip");
-      this.leftWingBase = var2.getChild("left_wing_base");
-      this.leftWingTip = this.leftWingBase.getChild("left_wing_tip");
-      this.rightWingBase = var2.getChild("right_wing_base");
-      this.rightWingTip = this.rightWingBase.getChild("right_wing_tip");
+      this.texWidth = 64;
+      this.texHeight = 64;
+      this.body = new ModelPart(this, 0, 8);
+      this.body.addBox(-3.0F, -2.0F, -8.0F, 5, 3, 9);
+      this.tailBase = new ModelPart(this, 3, 20);
+      this.tailBase.addBox(-2.0F, 0.0F, 0.0F, 3, 2, 6);
+      this.tailBase.setPos(0.0F, -2.0F, 1.0F);
+      this.body.addChild(this.tailBase);
+      this.tailTip = new ModelPart(this, 4, 29);
+      this.tailTip.addBox(-1.0F, 0.0F, 0.0F, 1, 1, 6);
+      this.tailTip.setPos(0.0F, 0.5F, 6.0F);
+      this.tailBase.addChild(this.tailTip);
+      this.leftWingBase = new ModelPart(this, 23, 12);
+      this.leftWingBase.addBox(0.0F, 0.0F, 0.0F, 6, 2, 9);
+      this.leftWingBase.setPos(2.0F, -2.0F, -8.0F);
+      this.leftWingTip = new ModelPart(this, 16, 24);
+      this.leftWingTip.addBox(0.0F, 0.0F, 0.0F, 13, 1, 9);
+      this.leftWingTip.setPos(6.0F, 0.0F, 0.0F);
+      this.leftWingBase.addChild(this.leftWingTip);
+      this.rightWingBase = new ModelPart(this, 23, 12);
+      this.rightWingBase.mirror = true;
+      this.rightWingBase.addBox(-6.0F, 0.0F, 0.0F, 6, 2, 9);
+      this.rightWingBase.setPos(-3.0F, -2.0F, -8.0F);
+      this.rightWingTip = new ModelPart(this, 16, 24);
+      this.rightWingTip.mirror = true;
+      this.rightWingTip.addBox(-13.0F, 0.0F, 0.0F, 13, 1, 9);
+      this.rightWingTip.setPos(-6.0F, 0.0F, 0.0F);
+      this.rightWingBase.addChild(this.rightWingTip);
+      this.leftWingBase.zRot = 0.1F;
+      this.leftWingTip.zRot = 0.1F;
+      this.rightWingBase.zRot = -0.1F;
+      this.rightWingTip.zRot = -0.1F;
+      this.body.xRot = -0.1F;
+      this.head = new ModelPart(this, 0, 0);
+      this.head.addBox(-4.0F, -2.0F, -5.0F, 7, 3, 5);
+      this.head.setPos(0.0F, 1.0F, -7.0F);
+      this.head.xRot = 0.2F;
+      this.body.addChild(this.head);
+      this.body.addChild(this.leftWingBase);
+      this.body.addChild(this.rightWingBase);
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 8).addBox(-3.0F, -2.0F, -8.0F, 5.0F, 3.0F, 9.0F), PartPose.rotation(-0.1F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("tail_base", CubeListBuilder.create().texOffs(3, 20).addBox(-2.0F, 0.0F, 0.0F, 3.0F, 2.0F, 6.0F), PartPose.offset(0.0F, -2.0F, 1.0F));
-      var3.addOrReplaceChild("tail_tip", CubeListBuilder.create().texOffs(4, 29).addBox(-1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 6.0F), PartPose.offset(0.0F, 0.5F, 6.0F));
-      PartDefinition var4 = var2.addOrReplaceChild("left_wing_base", CubeListBuilder.create().texOffs(23, 12).addBox(0.0F, 0.0F, 0.0F, 6.0F, 2.0F, 9.0F), PartPose.offsetAndRotation(2.0F, -2.0F, -8.0F, 0.0F, 0.0F, 0.1F));
-      var4.addOrReplaceChild("left_wing_tip", CubeListBuilder.create().texOffs(16, 24).addBox(0.0F, 0.0F, 0.0F, 13.0F, 1.0F, 9.0F), PartPose.offsetAndRotation(6.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.1F));
-      PartDefinition var5 = var2.addOrReplaceChild("right_wing_base", CubeListBuilder.create().texOffs(23, 12).mirror().addBox(-6.0F, 0.0F, 0.0F, 6.0F, 2.0F, 9.0F), PartPose.offsetAndRotation(-3.0F, -2.0F, -8.0F, 0.0F, 0.0F, -0.1F));
-      var5.addOrReplaceChild("right_wing_tip", CubeListBuilder.create().texOffs(16, 24).mirror().addBox(-13.0F, 0.0F, 0.0F, 13.0F, 1.0F, 9.0F), PartPose.offsetAndRotation(-6.0F, 0.0F, 0.0F, 0.0F, 0.0F, -0.1F));
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -2.0F, -5.0F, 7.0F, 3.0F, 5.0F), PartPose.offsetAndRotation(0.0F, 1.0F, -7.0F, 0.2F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0, 64, 64);
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.body.render(var7);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = ((float)(var1.getId() * 3) + var4) * 0.13F;
-      float var8 = 16.0F;
-      this.leftWingBase.zRot = Mth.cos(var7) * 16.0F * 0.017453292F;
-      this.leftWingTip.zRot = Mth.cos(var7) * 16.0F * 0.017453292F;
+   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      float var8 = ((float)(var1.getId() * 3) + var4) * 0.13F;
+      float var9 = 16.0F;
+      this.leftWingBase.zRot = Mth.cos(var8) * 16.0F * 0.017453292F;
+      this.leftWingTip.zRot = Mth.cos(var8) * 16.0F * 0.017453292F;
       this.rightWingBase.zRot = -this.leftWingBase.zRot;
       this.rightWingTip.zRot = -this.leftWingTip.zRot;
-      this.tailBase.xRot = -(5.0F + Mth.cos(var7 * 2.0F) * 5.0F) * 0.017453292F;
-      this.tailTip.xRot = -(5.0F + Mth.cos(var7 * 2.0F) * 5.0F) * 0.017453292F;
+      this.tailBase.xRot = -(5.0F + Mth.cos(var8 * 2.0F) * 5.0F) * 0.017453292F;
+      this.tailTip.xRot = -(5.0F + Mth.cos(var8 * 2.0F) * 5.0F) * 0.017453292F;
    }
 }

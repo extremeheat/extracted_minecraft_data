@@ -15,7 +15,6 @@ import net.minecraft.data.info.BlockListReport;
 import net.minecraft.data.info.CommandsReport;
 import net.minecraft.data.info.RegistryDumpReport;
 import net.minecraft.data.loot.LootTableProvider;
-import net.minecraft.data.models.ModelProvider;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.data.structures.SnbtToNbt;
@@ -24,7 +23,6 @@ import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.data.tags.FluidTagsProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.data.worldgen.biome.BiomeReport;
 
 public class Main {
    public Main() {
@@ -66,15 +64,10 @@ public class Main {
          var7.addProvider((new SnbtToNbt(var7)).addFilter(new StructureUpdater()));
       }
 
-      if (var2) {
-         var7.addProvider(new ModelProvider(var7));
-      }
-
       if (var3) {
          var7.addProvider(new FluidTagsProvider(var7));
-         BlockTagsProvider var8 = new BlockTagsProvider(var7);
-         var7.addProvider(var8);
-         var7.addProvider(new ItemTagsProvider(var7, var8));
+         var7.addProvider(new BlockTagsProvider(var7));
+         var7.addProvider(new ItemTagsProvider(var7));
          var7.addProvider(new EntityTypeTagsProvider(var7));
          var7.addProvider(new RecipeProvider(var7));
          var7.addProvider(new AdvancementProvider(var7));
@@ -89,7 +82,6 @@ public class Main {
          var7.addProvider(new BlockListReport(var7));
          var7.addProvider(new RegistryDumpReport(var7));
          var7.addProvider(new CommandsReport(var7));
-         var7.addProvider(new BiomeReport(var7));
       }
 
       return var7;

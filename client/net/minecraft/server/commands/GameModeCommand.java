@@ -6,7 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -38,12 +37,12 @@ public class GameModeCommand {
    }
 
    private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
-      TranslatableComponent var3 = new TranslatableComponent("gameMode." + var2.getName());
+      TranslatableComponent var3 = new TranslatableComponent("gameMode." + var2.getName(), new Object[0]);
       if (var0.getEntity() == var1) {
          var0.sendSuccess(new TranslatableComponent("commands.gamemode.success.self", new Object[]{var3}), true);
       } else {
          if (var0.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
-            var1.sendMessage(new TranslatableComponent("gameMode.changed", new Object[]{var3}), Util.NIL_UUID);
+            var1.sendMessage(new TranslatableComponent("gameMode.changed", new Object[]{var3}));
          }
 
          var0.sendSuccess(new TranslatableComponent("commands.gamemode.success.other", new Object[]{var1.getDisplayName(), var3}), true);

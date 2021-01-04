@@ -13,12 +13,12 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.players.IpBanList;
 
 public class PardonIpCommand {
-   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardonip.invalid"));
-   private static final SimpleCommandExceptionType ERROR_NOT_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardonip.failed"));
+   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardonip.invalid", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NOT_BANNED = new SimpleCommandExceptionType(new TranslatableComponent("commands.pardonip.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires((var0x) -> {
-         return var0x.hasPermission(3);
+         return var0x.getServer().getPlayerList().getIpBans().isEnabled() && var0x.hasPermission(3);
       })).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> {
          return SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1);
       }).executes((var0x) -> {

@@ -1,57 +1,103 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.ShulkerModel;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.entity.ShulkerRenderer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity> {
+public class ShulkerBoxRenderer extends BlockEntityRenderer<ShulkerBoxBlockEntity> {
    private final ShulkerModel<?> model;
 
-   public ShulkerBoxRenderer(BlockEntityRendererProvider.Context var1) {
+   public ShulkerBoxRenderer(ShulkerModel<?> var1) {
       super();
-      this.model = new ShulkerModel(var1.getLayer(ModelLayers.SHULKER));
+      this.model = var1;
    }
 
-   public void render(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Direction var7 = Direction.UP;
+   public void render(ShulkerBoxBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      Direction var10 = Direction.UP;
       if (var1.hasLevel()) {
-         BlockState var8 = var1.getLevel().getBlockState(var1.getBlockPos());
-         if (var8.getBlock() instanceof ShulkerBoxBlock) {
-            var7 = (Direction)var8.getValue(ShulkerBoxBlock.FACING);
+         BlockState var11 = this.getLevel().getBlockState(var1.getBlockPos());
+         if (var11.getBlock() instanceof ShulkerBoxBlock) {
+            var10 = (Direction)var11.getValue(ShulkerBoxBlock.FACING);
          }
       }
 
-      DyeColor var9 = var1.getColor();
-      Material var12;
-      if (var9 == null) {
-         var12 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+      GlStateManager.enableDepthTest();
+      GlStateManager.depthFunc(515);
+      GlStateManager.depthMask(true);
+      GlStateManager.disableCull();
+      if (var9 >= 0) {
+         this.bindTexture(BREAKING_LOCATIONS[var9]);
+         GlStateManager.matrixMode(5890);
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(4.0F, 4.0F, 1.0F);
+         GlStateManager.translatef(0.0625F, 0.0625F, 0.0625F);
+         GlStateManager.matrixMode(5888);
       } else {
-         var12 = (Material)Sheets.SHULKER_TEXTURE_LOCATION.get(var9.getId());
+         DyeColor var12 = var1.getColor();
+         if (var12 == null) {
+            this.bindTexture(ShulkerRenderer.DEFAULT_TEXTURE_LOCATION);
+         } else {
+            this.bindTexture(ShulkerRenderer.TEXTURE_LOCATION[var12.getId()]);
+         }
       }
 
-      var3.pushPose();
-      var3.translate(0.5D, 0.5D, 0.5D);
-      float var10 = 0.9995F;
-      var3.scale(0.9995F, 0.9995F, 0.9995F);
-      var3.mulPose(var7.getRotation());
-      var3.scale(1.0F, -1.0F, -1.0F);
-      var3.translate(0.0D, -1.0D, 0.0D);
-      VertexConsumer var11 = var12.buffer(var4, RenderType::entityCutoutNoCull);
-      this.model.getBase().render(var3, var11, var5, var6);
-      var3.translate(0.0D, (double)(-var1.getProgress(var2) * 0.5F), 0.0D);
-      var3.mulPose(Vector3f.YP.rotationDegrees(270.0F * var1.getProgress(var2)));
-      this.model.getLid().render(var3, var11, var5, var6);
-      var3.popPose();
+      GlStateManager.pushMatrix();
+      GlStateManager.enableRescaleNormal();
+      if (var9 < 0) {
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      }
+
+      GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 1.5F, (float)var6 + 0.5F);
+      GlStateManager.scalef(1.0F, -1.0F, -1.0F);
+      GlStateManager.translatef(0.0F, 1.0F, 0.0F);
+      float var13 = 0.9995F;
+      GlStateManager.scalef(0.9995F, 0.9995F, 0.9995F);
+      GlStateManager.translatef(0.0F, -1.0F, 0.0F);
+      switch(var10) {
+      case DOWN:
+         GlStateManager.translatef(0.0F, 2.0F, 0.0F);
+         GlStateManager.rotatef(180.0F, 1.0F, 0.0F, 0.0F);
+      case UP:
+      default:
+         break;
+      case NORTH:
+         GlStateManager.translatef(0.0F, 1.0F, 1.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+         break;
+      case SOUTH:
+         GlStateManager.translatef(0.0F, 1.0F, -1.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         break;
+      case WEST:
+         GlStateManager.translatef(-1.0F, 1.0F, 0.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.rotatef(-90.0F, 0.0F, 0.0F, 1.0F);
+         break;
+      case EAST:
+         GlStateManager.translatef(1.0F, 1.0F, 0.0F);
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
+      }
+
+      this.model.getBase().render(0.0625F);
+      GlStateManager.translatef(0.0F, -var1.getProgress(var8) * 0.5F, 0.0F);
+      GlStateManager.rotatef(270.0F * var1.getProgress(var8), 0.0F, 1.0F, 0.0F);
+      this.model.getLid().render(0.0625F);
+      GlStateManager.enableCull();
+      GlStateManager.disableRescaleNormal();
+      GlStateManager.popMatrix();
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      if (var9 >= 0) {
+         GlStateManager.matrixMode(5890);
+         GlStateManager.popMatrix();
+         GlStateManager.matrixMode(5888);
+      }
+
    }
 }

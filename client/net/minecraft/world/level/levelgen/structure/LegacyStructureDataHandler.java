@@ -14,9 +14,9 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
@@ -99,15 +99,15 @@ public class LegacyStructureDataHandler {
                }
 
                var7 = (String)var6.next();
-               var8 = (StructureFeature)StructureFeature.STRUCTURES_REGISTRY.get(var7.toLowerCase(Locale.ROOT));
+               var8 = (StructureFeature)Feature.STRUCTURES_REGISTRY.get(var7.toLowerCase(Locale.ROOT));
             } while(var5.contains(var7, 12));
          } while(var8 == null);
 
-         boolean var9 = true;
+         int var9 = var8.getLookupRange();
          LongArrayList var10 = new LongArrayList();
 
-         for(int var11 = var3.x - 8; var11 <= var3.x + 8; ++var11) {
-            for(int var12 = var3.z - 8; var12 <= var3.z + 8; ++var12) {
+         for(int var11 = var3.x - var9; var11 <= var3.x + var9; ++var11) {
+            for(int var12 = var3.z - var9; var12 <= var3.z + var9; ++var12) {
                if (this.hasLegacyStart(var11, var12, var7)) {
                   var10.add(ChunkPos.asLong(var11, var12));
                }
@@ -233,15 +233,15 @@ public class LegacyStructureDataHandler {
       }
    }
 
-   public static LegacyStructureDataHandler getLegacyStructureHandler(ResourceKey<Level> var0, @Nullable DimensionDataStorage var1) {
-      if (var0 == Level.OVERWORLD) {
+   public static LegacyStructureDataHandler getLegacyStructureHandler(DimensionType var0, @Nullable DimensionDataStorage var1) {
+      if (var0 == DimensionType.OVERWORLD) {
          return new LegacyStructureDataHandler(var1, ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"));
       } else {
          ImmutableList var2;
-         if (var0 == Level.NETHER) {
+         if (var0 == DimensionType.NETHER) {
             var2 = ImmutableList.of("Fortress");
             return new LegacyStructureDataHandler(var1, var2, var2);
-         } else if (var0 == Level.END) {
+         } else if (var0 == DimensionType.THE_END) {
             var2 = ImmutableList.of("EndCity");
             return new LegacyStructureDataHandler(var1, var2, var2);
          } else {

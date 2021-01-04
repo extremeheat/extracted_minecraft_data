@@ -2,7 +2,6 @@ package net.minecraft.world.level.newbiome.context;
 
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import java.util.Random;
-import net.minecraft.util.LinearCongruentialGenerator;
 import net.minecraft.world.level.levelgen.synth.ImprovedNoise;
 import net.minecraft.world.level.newbiome.area.Area;
 import net.minecraft.world.level.newbiome.area.LazyArea;
@@ -11,17 +10,24 @@ import net.minecraft.world.level.newbiome.layer.traits.PixelTransformer;
 public class LazyAreaContext implements BigContext<LazyArea> {
    private final Long2IntLinkedOpenHashMap cache;
    private final int maxCache;
-   private final ImprovedNoise biomeNoise;
-   private final long seed;
+   protected long seedMixup;
+   protected ImprovedNoise biomeNoise;
+   private long seed;
    private long rval;
 
    public LazyAreaContext(int var1, long var2, long var4) {
       super();
-      this.seed = mixSeed(var2, var4);
-      this.biomeNoise = new ImprovedNoise(new Random(var2));
+      this.seedMixup = var4;
+      this.seedMixup *= this.seedMixup * 6364136223846793005L + 1442695040888963407L;
+      this.seedMixup += var4;
+      this.seedMixup *= this.seedMixup * 6364136223846793005L + 1442695040888963407L;
+      this.seedMixup += var4;
+      this.seedMixup *= this.seedMixup * 6364136223846793005L + 1442695040888963407L;
+      this.seedMixup += var4;
       this.cache = new Long2IntLinkedOpenHashMap(16, 0.25F);
       this.cache.defaultReturnValue(-2147483648);
       this.maxCache = var1;
+      this.init(var2);
    }
 
    public LazyArea createResult(PixelTransformer var1) {
@@ -36,33 +42,42 @@ public class LazyAreaContext implements BigContext<LazyArea> {
       return new LazyArea(this.cache, Math.min(1024, Math.max(var2.getMaxCache(), var3.getMaxCache()) * 4), var1);
    }
 
+   public void init(long var1) {
+      this.seed = var1;
+      this.seed *= this.seed * 6364136223846793005L + 1442695040888963407L;
+      this.seed += this.seedMixup;
+      this.seed *= this.seed * 6364136223846793005L + 1442695040888963407L;
+      this.seed += this.seedMixup;
+      this.seed *= this.seed * 6364136223846793005L + 1442695040888963407L;
+      this.seed += this.seedMixup;
+      this.biomeNoise = new ImprovedNoise(new Random(var1));
+   }
+
    public void initRandom(long var1, long var3) {
-      long var5 = this.seed;
-      var5 = LinearCongruentialGenerator.next(var5, var1);
-      var5 = LinearCongruentialGenerator.next(var5, var3);
-      var5 = LinearCongruentialGenerator.next(var5, var1);
-      var5 = LinearCongruentialGenerator.next(var5, var3);
-      this.rval = var5;
+      this.rval = this.seed;
+      this.rval *= this.rval * 6364136223846793005L + 1442695040888963407L;
+      this.rval += var1;
+      this.rval *= this.rval * 6364136223846793005L + 1442695040888963407L;
+      this.rval += var3;
+      this.rval *= this.rval * 6364136223846793005L + 1442695040888963407L;
+      this.rval += var1;
+      this.rval *= this.rval * 6364136223846793005L + 1442695040888963407L;
+      this.rval += var3;
    }
 
    public int nextRandom(int var1) {
-      int var2 = (int)Math.floorMod(this.rval >> 24, (long)var1);
-      this.rval = LinearCongruentialGenerator.next(this.rval, this.seed);
+      int var2 = (int)((this.rval >> 24) % (long)var1);
+      if (var2 < 0) {
+         var2 += var1;
+      }
+
+      this.rval *= this.rval * 6364136223846793005L + 1442695040888963407L;
+      this.rval += this.seed;
       return var2;
    }
 
    public ImprovedNoise getBiomeNoise() {
       return this.biomeNoise;
-   }
-
-   private static long mixSeed(long var0, long var2) {
-      long var4 = LinearCongruentialGenerator.next(var2, var2);
-      var4 = LinearCongruentialGenerator.next(var4, var2);
-      var4 = LinearCongruentialGenerator.next(var4, var2);
-      long var6 = LinearCongruentialGenerator.next(var0, var4);
-      var6 = LinearCongruentialGenerator.next(var6, var4);
-      var6 = LinearCongruentialGenerator.next(var6, var4);
-      return var6;
    }
 
    // $FF: synthetic method

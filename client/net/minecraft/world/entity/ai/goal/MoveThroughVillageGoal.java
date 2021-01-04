@@ -11,12 +11,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
-import net.minecraft.world.entity.ai.util.GoalUtils;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
-import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
@@ -39,70 +36,66 @@ public class MoveThroughVillageGoal extends Goal {
       this.distanceToPoi = var5;
       this.canDealWithDoors = var6;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      if (!GoalUtils.hasGroundPathNavigation(var1)) {
+      if (!(var1.getNavigation() instanceof GroundPathNavigation)) {
          throw new IllegalArgumentException("Unsupported mob for MoveThroughVillageGoal");
       }
    }
 
    public boolean canUse() {
-      if (!GoalUtils.hasGroundPathNavigation(this.mob)) {
+      this.updateVisited();
+      if (this.onlyAtNight && this.mob.level.isDay()) {
          return false;
       } else {
-         this.updateVisited();
-         if (this.onlyAtNight && this.mob.level.isDay()) {
+         ServerLevel var1 = (ServerLevel)this.mob.level;
+         BlockPos var2 = new BlockPos(this.mob);
+         if (!var1.closeToVillage(var2, 6)) {
             return false;
          } else {
-            ServerLevel var1 = (ServerLevel)this.mob.level;
-            BlockPos var2 = this.mob.blockPosition();
-            if (!var1.isCloseToVillage(var2, 6)) {
+            Vec3 var3 = RandomPos.getLandPos(this.mob, 15, 7, (var3x) -> {
+               if (!var1.isVillage(var3x)) {
+                  return -1.0D / 0.0;
+               } else {
+                  Optional var4 = var1.getPoiManager().find(PoiType.ALL, this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
+                  return !var4.isPresent() ? -1.0D / 0.0 : -((BlockPos)var4.get()).distSqr(var2);
+               }
+            });
+            if (var3 == null) {
                return false;
             } else {
-               Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var3x) -> {
-                  if (!var1.isVillage(var3x)) {
-                     return -1.0D / 0.0;
-                  } else {
-                     Optional var4 = var1.getPoiManager().find(PoiType.ALL, this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                     return !var4.isPresent() ? -1.0D / 0.0 : -((BlockPos)var4.get()).distSqr(var2);
-                  }
-               });
-               if (var3 == null) {
+               Optional var4 = var1.getPoiManager().find(PoiType.ALL, this::hasNotVisited, new BlockPos(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
+               if (!var4.isPresent()) {
                   return false;
                } else {
-                  Optional var4 = var1.getPoiManager().find(PoiType.ALL, this::hasNotVisited, new BlockPos(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
-                  if (!var4.isPresent()) {
-                     return false;
-                  } else {
-                     this.poiPos = ((BlockPos)var4.get()).immutable();
-                     GroundPathNavigation var5 = (GroundPathNavigation)this.mob.getNavigation();
-                     boolean var6 = var5.canOpenDoors();
+                  this.poiPos = ((BlockPos)var4.get()).immutable();
+                  GroundPathNavigation var5 = (GroundPathNavigation)this.mob.getNavigation();
+                  boolean var6 = var5.canOpenDoors();
+                  var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
+                  this.path = var5.createPath((BlockPos)this.poiPos, 0);
+                  var5.setCanOpenDoors(var6);
+                  if (this.path == null) {
+                     Vec3 var7 = RandomPos.getPosTowards(this.mob, 10, 7, new Vec3((double)this.poiPos.getX(), (double)this.poiPos.getY(), (double)this.poiPos.getZ()));
+                     if (var7 == null) {
+                        return false;
+                     }
+
                      var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                     this.path = var5.createPath((BlockPos)this.poiPos, 0);
+                     this.path = this.mob.getNavigation().createPath(var7.x, var7.y, var7.z, 0);
                      var5.setCanOpenDoors(var6);
                      if (this.path == null) {
-                        Vec3 var7 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866D);
-                        if (var7 == null) {
-                           return false;
-                        }
-
-                        var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                        this.path = this.mob.getNavigation().createPath(var7.x, var7.y, var7.z, 0);
-                        var5.setCanOpenDoors(var6);
-                        if (this.path == null) {
-                           return false;
-                        }
+                        return false;
                      }
-
-                     for(int var10 = 0; var10 < this.path.getNodeCount(); ++var10) {
-                        Node var8 = this.path.getNode(var10);
-                        BlockPos var9 = new BlockPos(var8.x, var8.y + 1, var8.z);
-                        if (DoorBlock.isWoodenDoor(this.mob.level, var9)) {
-                           this.path = this.mob.getNavigation().createPath((double)var8.x, (double)var8.y, (double)var8.z, 0);
-                           break;
-                        }
-                     }
-
-                     return this.path != null;
                   }
+
+                  for(int var10 = 0; var10 < this.path.getSize(); ++var10) {
+                     Node var8 = this.path.get(var10);
+                     BlockPos var9 = new BlockPos(var8.x, var8.y + 1, var8.z);
+                     if (DoorInteractGoal.isDoor(this.mob.level, var9)) {
+                        this.path = this.mob.getNavigation().createPath((double)var8.x, (double)var8.y, (double)var8.z, 0);
+                        break;
+                     }
+                  }
+
+                  return this.path != null;
                }
             }
          }

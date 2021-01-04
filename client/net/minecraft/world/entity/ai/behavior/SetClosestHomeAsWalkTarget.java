@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,14 +20,14 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.pathfinder.Path;
 
 public class SetClosestHomeAsWalkTarget extends Behavior<LivingEntity> {
-   private final float speedModifier;
+   private final float speed;
    private final Long2LongMap batchCache = new Long2LongOpenHashMap();
    private int triedCount;
    private long lastUpdate;
 
    public SetClosestHomeAsWalkTarget(float var1) {
       super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.HOME, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
+      this.speed = var1;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
@@ -35,8 +36,10 @@ public class SetClosestHomeAsWalkTarget extends Behavior<LivingEntity> {
       } else {
          PathfinderMob var3 = (PathfinderMob)var2;
          PoiManager var4 = var1.getPoiManager();
-         Optional var5 = var4.findClosest(PoiType.HOME.getPredicate(), var2.blockPosition(), 48, PoiManager.Occupancy.ANY);
-         return var5.isPresent() && ((BlockPos)var5.get()).distSqr(var3.blockPosition()) > 4.0D;
+         Optional var5 = var4.findClosest(PoiType.HOME.getPredicate(), (var0) -> {
+            return true;
+         }, new BlockPos(var2), 48, PoiManager.Occupancy.ANY);
+         return var5.isPresent() && ((BlockPos)var5.get()).distSqr(new Vec3i(var3.x, var3.y, var3.z)) > 4.0D;
       }
    }
 
@@ -56,13 +59,13 @@ public class SetClosestHomeAsWalkTarget extends Behavior<LivingEntity> {
             return true;
          }
       };
-      Stream var8 = var6.findAll(PoiType.HOME.getPredicate(), var7, var2.blockPosition(), 48, PoiManager.Occupancy.ANY);
+      Stream var8 = var6.findAll(PoiType.HOME.getPredicate(), var7, new BlockPos(var2), 48, PoiManager.Occupancy.ANY);
       Path var9 = var5.getNavigation().createPath(var8, PoiType.HOME.getValidRange());
       if (var9 != null && var9.canReach()) {
          BlockPos var10 = var9.getTarget();
          Optional var11 = var6.getType(var10);
          if (var11.isPresent()) {
-            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var10, this.speedModifier, 1)));
+            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var10, this.speed, 1)));
             DebugPackets.sendPoiTicketCountPacket(var1, var10);
          }
       } else if (this.triedCount < 5) {

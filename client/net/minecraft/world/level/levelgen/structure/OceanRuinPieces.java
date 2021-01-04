@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -18,9 +17,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.Drowned;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.StructureFeatureManager;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -28,10 +25,9 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.feature.OceanRuinConfiguration;
 import net.minecraft.world.level.levelgen.feature.StructurePieceType;
-import net.minecraft.world.level.levelgen.feature.configurations.OceanRuinConfiguration;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
@@ -51,11 +47,11 @@ public class OceanRuinPieces {
    private static final ResourceLocation[] BIG_WARM_RUINS = new ResourceLocation[]{new ResourceLocation("underwater_ruin/big_warm_4"), new ResourceLocation("underwater_ruin/big_warm_5"), new ResourceLocation("underwater_ruin/big_warm_6"), new ResourceLocation("underwater_ruin/big_warm_7")};
 
    private static ResourceLocation getSmallWarmRuin(Random var0) {
-      return (ResourceLocation)Util.getRandom((Object[])WARM_RUINS, var0);
+      return WARM_RUINS[var0.nextInt(WARM_RUINS.length)];
    }
 
    private static ResourceLocation getBigWarmRuin(Random var0) {
-      return (ResourceLocation)Util.getRandom((Object[])BIG_WARM_RUINS, var0);
+      return BIG_WARM_RUINS[var0.nextInt(BIG_WARM_RUINS.length)];
    }
 
    public static void addPieces(StructureManager var0, BlockPos var1, Rotation var2, List<StructurePiece> var3, Random var4, OceanRuinConfiguration var5) {
@@ -83,7 +79,7 @@ public class OceanRuinPieces {
             BlockPos var15 = (BlockPos)var11.remove(var14);
             int var16 = var15.getX();
             int var17 = var15.getZ();
-            Rotation var18 = Rotation.getRandom(var1);
+            Rotation var18 = Rotation.values()[var1.nextInt(Rotation.values().length)];
             BlockPos var19 = StructureTemplate.transform(new BlockPos(5, 0, 6), Mirror.NONE, var18, BlockPos.ZERO).offset(var16, 0, var17);
             BoundingBox var20 = BoundingBox.createProper(var16, 0, var17, var19.getX(), 0, var19.getZ());
             if (!var20.intersects(var9)) {
@@ -166,7 +162,7 @@ public class OceanRuinPieces {
          var1.putBoolean("IsLarge", this.isLarge);
       }
 
-      protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, Random var4, BoundingBox var5) {
+      protected void handleDataMarker(String var1, BlockPos var2, LevelAccessor var3, Random var4, BoundingBox var5) {
          if ("chest".equals(var1)) {
             var3.setBlock(var2, (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.WATERLOGGED, var3.getFluidState(var2).is(FluidTags.WATER)), 2);
             BlockEntity var6 = var3.getBlockEntity(var2);
@@ -178,7 +174,7 @@ public class OceanRuinPieces {
             var7.setPersistenceRequired();
             var7.moveTo(var2, 0.0F, 0.0F);
             var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, (SpawnGroupData)null, (CompoundTag)null);
-            var3.addFreshEntityWithPassengers(var7);
+            var3.addFreshEntity(var7);
             if (var2.getY() > var3.getSeaLevel()) {
                var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
             } else {
@@ -188,13 +184,13 @@ public class OceanRuinPieces {
 
       }
 
-      public boolean postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
+      public boolean postProcess(LevelAccessor var1, Random var2, BoundingBox var3, ChunkPos var4) {
          this.placeSettings.clearProcessors().addProcessor(new BlockRotProcessor(this.integrity)).addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
-         int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
-         this.templatePosition = new BlockPos(this.templatePosition.getX(), var8, this.templatePosition.getZ());
-         BlockPos var9 = StructureTemplate.transform(new BlockPos(this.template.getSize().getX() - 1, 0, this.template.getSize().getZ() - 1), Mirror.NONE, this.rotation, BlockPos.ZERO).offset(this.templatePosition);
-         this.templatePosition = new BlockPos(this.templatePosition.getX(), this.getHeight(this.templatePosition, var1, var9), this.templatePosition.getZ());
-         return super.postProcess(var1, var2, var3, var4, var5, var6, var7);
+         int var5 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
+         this.templatePosition = new BlockPos(this.templatePosition.getX(), var5, this.templatePosition.getZ());
+         BlockPos var6 = StructureTemplate.transform(new BlockPos(this.template.getSize().getX() - 1, 0, this.template.getSize().getZ() - 1), Mirror.NONE, this.rotation, BlockPos.ZERO).offset(this.templatePosition);
+         this.templatePosition = new BlockPos(this.templatePosition.getX(), this.getHeight(this.templatePosition, var1, var6), this.templatePosition.getZ());
+         return super.postProcess(var1, var2, var3, var4);
       }
 
       private int getHeight(BlockPos var1, BlockGetter var2, BlockPos var3) {
@@ -212,7 +208,7 @@ public class OceanRuinPieces {
             BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos(var10, var12, var11);
             BlockState var14 = var2.getBlockState(var13);
 
-            for(FluidState var15 = var2.getFluidState(var13); (var14.isAir() || var15.is(FluidTags.WATER) || var14.is(BlockTags.ICE)) && var12 > var2.getMinBuildHeight() + 1; var15 = var2.getFluidState(var13)) {
+            for(FluidState var15 = var2.getFluidState(var13); (var14.isAir() || var15.is(FluidTags.WATER) || var14.getBlock().is(BlockTags.ICE)) && var12 > 1; var15 = var2.getFluidState(var13)) {
                --var12;
                var13.set(var10, var12, var11);
                var14 = var2.getBlockState(var13);

@@ -12,11 +12,11 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +35,10 @@ public abstract class LavaFluid extends FlowingFluid {
       return Fluids.LAVA;
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.SOLID;
+   }
+
    public Item getBucket() {
       return Items.LAVA_BUCKET;
    }
@@ -43,9 +47,9 @@ public abstract class LavaFluid extends FlowingFluid {
       BlockPos var5 = var2.above();
       if (var1.getBlockState(var5).isAir() && !var1.getBlockState(var5).isSolidRender(var1, var5)) {
          if (var4.nextInt(100) == 0) {
-            double var6 = (double)var2.getX() + var4.nextDouble();
-            double var8 = (double)var2.getY() + 1.0D;
-            double var10 = (double)var2.getZ() + var4.nextDouble();
+            double var6 = (double)((float)var2.getX() + var4.nextFloat());
+            double var8 = (double)(var2.getY() + 1);
+            double var10 = (double)((float)var2.getZ() + var4.nextFloat());
             var1.addParticle(ParticleTypes.LAVA, var6, var8, var10, 0.0D, 0.0D, 0.0D);
             var1.playLocalSound(var6, var8, var10, SoundEvents.LAVA_POP, SoundSource.BLOCKS, 0.2F + var4.nextFloat() * 0.2F, 0.9F + var4.nextFloat() * 0.15F, false);
          }
@@ -72,7 +76,7 @@ public abstract class LavaFluid extends FlowingFluid {
                BlockState var8 = var1.getBlockState(var6);
                if (var8.isAir()) {
                   if (this.hasFlammableNeighbours(var1, var6)) {
-                     var1.setBlockAndUpdate(var6, BaseFireBlock.getState(var1, var6));
+                     var1.setBlockAndUpdate(var6, Blocks.FIRE.defaultBlockState());
                      return;
                   }
                } else if (var8.getMaterial().blocksMotion()) {
@@ -87,7 +91,7 @@ public abstract class LavaFluid extends FlowingFluid {
                }
 
                if (var1.isEmptyBlock(var10.above()) && this.isFlammable(var1, var10)) {
-                  var1.setBlockAndUpdate(var10.above(), BaseFireBlock.getState(var1, var10));
+                  var1.setBlockAndUpdate(var10.above(), Blocks.FIRE.defaultBlockState());
                }
             }
          }
@@ -110,7 +114,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    private boolean isFlammable(LevelReader var1, BlockPos var2) {
-      return var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && !var1.hasChunkAt(var2) ? false : var1.getBlockState(var2).getMaterial().isFlammable();
+      return var2.getY() >= 0 && var2.getY() < 256 && !var1.hasChunkAt(var2) ? false : var1.getBlockState(var2).getMaterial().isFlammable();
    }
 
    @Nullable
@@ -123,7 +127,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getSlopeFindDistance(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 4 : 2;
+      return var1.getDimension().isUltraWarm() ? 4 : 2;
    }
 
    public BlockState createLegacyBlock(FluidState var1) {
@@ -135,7 +139,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getDropOff(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 1 : 2;
+      return var1.getDimension().isUltraWarm() ? 1 : 2;
    }
 
    public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
@@ -143,7 +147,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    public int getTickDelay(LevelReader var1) {
-      return var1.dimensionType().ultraWarm() ? 10 : 30;
+      return var1.getDimension().isHasCeiling() ? 10 : 30;
    }
 
    public int getSpreadDelay(Level var1, BlockPos var2, FluidState var3, FluidState var4) {

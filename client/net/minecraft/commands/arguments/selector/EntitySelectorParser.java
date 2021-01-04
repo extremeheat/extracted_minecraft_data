@@ -30,13 +30,13 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class EntitySelectorParser {
-   public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.invalid"));
+   public static final SimpleCommandExceptionType ERROR_INVALID_NAME_OR_UUID = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.invalid", new Object[0]));
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("argument.entity.selector.unknown", new Object[]{var0});
    });
-   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.selector.not_allowed"));
-   public static final SimpleCommandExceptionType ERROR_MISSING_SELECTOR_TYPE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.selector.missing"));
-   public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_OPTIONS = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.unterminated"));
+   public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.selector.not_allowed", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_MISSING_SELECTOR_TYPE = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.selector.missing", new Object[0]));
+   public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_OPTIONS = new SimpleCommandExceptionType(new TranslatableComponent("argument.entity.options.unterminated", new Object[0]));
    public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("argument.entity.options.valueless", new Object[]{var0});
    });
@@ -465,11 +465,11 @@ public class EntitySelectorParser {
    }
 
    private static void fillSelectorSuggestions(SuggestionsBuilder var0) {
-      var0.suggest("@p", new TranslatableComponent("argument.entity.selector.nearestPlayer"));
-      var0.suggest("@a", new TranslatableComponent("argument.entity.selector.allPlayers"));
-      var0.suggest("@r", new TranslatableComponent("argument.entity.selector.randomPlayer"));
-      var0.suggest("@s", new TranslatableComponent("argument.entity.selector.self"));
-      var0.suggest("@e", new TranslatableComponent("argument.entity.selector.allEntities"));
+      var0.suggest("@p", new TranslatableComponent("argument.entity.selector.nearestPlayer", new Object[0]));
+      var0.suggest("@a", new TranslatableComponent("argument.entity.selector.allPlayers", new Object[0]));
+      var0.suggest("@r", new TranslatableComponent("argument.entity.selector.randomPlayer", new Object[0]));
+      var0.suggest("@s", new TranslatableComponent("argument.entity.selector.self", new Object[0]));
+      var0.suggest("@e", new TranslatableComponent("argument.entity.selector.allEntities", new Object[0]));
    }
 
    private CompletableFuture<Suggestions> suggestNameOrSelector(SuggestionsBuilder var1, Consumer<SuggestionsBuilder> var2) {

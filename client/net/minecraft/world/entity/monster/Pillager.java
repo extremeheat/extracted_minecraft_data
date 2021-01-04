@@ -1,8 +1,9 @@
 package net.minecraft.world.entity.monster;
 
 import com.google.common.collect.Maps;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -12,8 +13,10 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -24,8 +27,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
@@ -37,21 +38,24 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
-public class Pillager extends AbstractIllager implements CrossbowAttackMob {
+public class Pillager extends AbstractIllager implements CrossbowAttackMob, RangedAttackMob {
    private static final EntityDataAccessor<Boolean> IS_CHARGING_CROSSBOW;
    private final SimpleContainer inventory = new SimpleContainer(5);
 
@@ -73,17 +77,17 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.3499999940395355D).add(Attributes.MAX_HEALTH, 24.0D).add(Attributes.ATTACK_DAMAGE, 5.0D).add(Attributes.FOLLOW_RANGE, 32.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3499999940395355D);
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(24.0D);
+      this.getAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(5.0D);
+      this.getAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(32.0D);
    }
 
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.entityData.define(IS_CHARGING_CROSSBOW, false);
-   }
-
-   public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
-      return var1 == Items.CROSSBOW;
    }
 
    public boolean isChargingCrossbow() {
@@ -92,10 +96,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
 
    public void setChargingCrossbow(boolean var1) {
       this.entityData.set(IS_CHARGING_CROSSBOW, var1);
-   }
-
-   public void onCrossbowAttackPerformed() {
-      this.noActionTime = 0;
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -118,7 +118,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
       } else if (this.isHolding(Items.CROSSBOW)) {
          return AbstractIllager.IllagerArmPose.CROSSBOW_HOLD;
       } else {
-         return this.isAggressive() ? AbstractIllager.IllagerArmPose.ATTACKING : AbstractIllager.IllagerArmPose.NEUTRAL;
+         return this.isAggressive() ? AbstractIllager.IllagerArmPose.ATTACKING : AbstractIllager.IllagerArmPose.CROSSED;
       }
    }
 
@@ -137,8 +137,8 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      BlockState var3 = var2.getBlockState(var1.below());
-      return !var3.is(Blocks.GRASS_BLOCK) && !var3.is(Blocks.SAND) ? 0.5F - var2.getBrightness(var1) : 10.0F;
+      Block var3 = var2.getBlockState(var1.below()).getBlock();
+      return var3 != Blocks.GRASS_BLOCK && var3 != Blocks.SAND ? 0.5F - var2.getBrightness(var1) : 10.0F;
    }
 
    public int getMaxSpawnClusterSize() {
@@ -146,28 +146,21 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       this.populateDefaultEquipmentSlots(var2);
       this.populateDefaultEquipmentEnchantments(var2);
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 
    protected void populateDefaultEquipmentSlots(DifficultyInstance var1) {
-      this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
-   }
-
-   protected void enchantSpawnedWeapon(float var1) {
-      super.enchantSpawnedWeapon(var1);
+      ItemStack var2 = new ItemStack(Items.CROSSBOW);
       if (this.random.nextInt(300) == 0) {
-         ItemStack var2 = this.getMainHandItem();
-         if (var2.is(Items.CROSSBOW)) {
-            Map var3 = EnchantmentHelper.getEnchantments(var2);
-            var3.putIfAbsent(Enchantments.PIERCING, 1);
-            EnchantmentHelper.setEnchantments(var3, var2);
-            this.setItemSlot(EquipmentSlot.MAINHAND, var2);
-         }
+         HashMap var3 = Maps.newHashMap();
+         var3.put(Enchantments.PIERCING, 1);
+         EnchantmentHelper.setEnchantments(var3, var2);
       }
 
+      this.setItemSlot(EquipmentSlot.MAINHAND, var2);
    }
 
    public boolean isAlliedTo(Entity var1) {
@@ -193,31 +186,66 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
    }
 
    public void performRangedAttack(LivingEntity var1, float var2) {
-      this.performCrossbowAttack(this, 1.6F);
+      InteractionHand var3 = ProjectileUtil.getWeaponHoldingHand(this, Items.CROSSBOW);
+      ItemStack var4 = this.getItemInHand(var3);
+      if (this.isHolding(Items.CROSSBOW)) {
+         CrossbowItem.performShooting(this.level, this, var3, var4, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
+      }
+
+      this.noActionTime = 0;
    }
 
-   public void shootCrossbowProjectile(LivingEntity var1, ItemStack var2, Projectile var3, float var4) {
-      this.shootCrossbowProjectile(this, var1, var3, var4, 1.6F);
+   public void shootProjectile(LivingEntity var1, ItemStack var2, Projectile var3, float var4) {
+      Entity var5 = (Entity)var3;
+      double var6 = var1.x - this.x;
+      double var8 = var1.z - this.z;
+      double var10 = (double)Mth.sqrt(var6 * var6 + var8 * var8);
+      double var12 = var1.getBoundingBox().minY + (double)(var1.getBbHeight() / 3.0F) - var5.y + var10 * 0.20000000298023224D;
+      Vector3f var14 = this.getProjectileShotVector(new Vec3(var6, var12, var8), var4);
+      var3.shoot((double)var14.x(), (double)var14.y(), (double)var14.z(), 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
+      this.playSound(SoundEvents.CROSSBOW_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+   }
+
+   private Vector3f getProjectileShotVector(Vec3 var1, float var2) {
+      Vec3 var3 = var1.normalize();
+      Vec3 var4 = var3.cross(new Vec3(0.0D, 1.0D, 0.0D));
+      if (var4.lengthSqr() <= 1.0E-7D) {
+         var4 = var3.cross(this.getUpVector(1.0F));
+      }
+
+      Quaternion var5 = new Quaternion(new Vector3f(var4), 90.0F, true);
+      Vector3f var6 = new Vector3f(var3);
+      var6.transform(var5);
+      Quaternion var7 = new Quaternion(var6, var2, true);
+      Vector3f var8 = new Vector3f(var3);
+      var8.transform(var7);
+      return var8;
+   }
+
+   public SimpleContainer getInventory() {
+      return this.inventory;
    }
 
    protected void pickUpItem(ItemEntity var1) {
       ItemStack var2 = var1.getItem();
       if (var2.getItem() instanceof BannerItem) {
          super.pickUpItem(var1);
-      } else if (this.wantsItem(var2)) {
-         this.onItemPickup(var1);
-         ItemStack var3 = this.inventory.addItem(var2);
-         if (var3.isEmpty()) {
-            var1.discard();
-         } else {
-            var2.setCount(var3.getCount());
+      } else {
+         Item var3 = var2.getItem();
+         if (this.wantsItem(var3)) {
+            ItemStack var4 = this.inventory.addItem(var2);
+            if (var4.isEmpty()) {
+               var1.remove();
+            } else {
+               var2.setCount(var4.getCount());
+            }
          }
       }
 
    }
 
-   private boolean wantsItem(ItemStack var1) {
-      return this.hasActiveRaid() && var1.is(Items.WHITE_BANNER);
+   private boolean wantsItem(Item var1) {
+      return this.hasActiveRaid() && var1 == Items.WHITE_BANNER;
    }
 
    public boolean setSlot(int var1, ItemStack var2) {
@@ -253,8 +281,16 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob {
 
    }
 
+   public boolean requiresCustomPersistence() {
+      return super.requiresCustomPersistence() && this.getInventory().isEmpty();
+   }
+
    public SoundEvent getCelebrateSound() {
       return SoundEvents.PILLAGER_CELEBRATE;
+   }
+
+   public boolean removeWhenFarAway(double var1) {
+      return super.removeWhenFarAway(var1) && this.getInventory().isEmpty();
    }
 
    static {

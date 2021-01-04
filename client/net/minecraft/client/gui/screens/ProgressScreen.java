@@ -1,18 +1,14 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import javax.annotation.Nullable;
+import java.util.Objects;
 import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.ProgressListener;
 
 public class ProgressScreen extends Screen implements ProgressListener {
-   @Nullable
-   private Component header;
-   @Nullable
-   private Component stage;
+   private String title = "";
+   private String stage = "";
    private int progress;
    private boolean stop;
 
@@ -29,12 +25,12 @@ public class ProgressScreen extends Screen implements ProgressListener {
    }
 
    public void progressStart(Component var1) {
-      this.header = var1;
-      this.progressStage(new TranslatableComponent("progress.working"));
+      this.title = var1.getColoredString();
+      this.progressStage(new TranslatableComponent("progress.working", new Object[0]));
    }
 
    public void progressStage(Component var1) {
-      this.stage = var1;
+      this.stage = var1.getColoredString();
       this.progressStagePercentage(0);
    }
 
@@ -46,23 +42,20 @@ public class ProgressScreen extends Screen implements ProgressListener {
       this.stop = true;
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(int var1, int var2, float var3) {
       if (this.stop) {
          if (!this.minecraft.isConnectedToRealms()) {
             this.minecraft.setScreen((Screen)null);
          }
 
       } else {
-         this.renderBackground(var1);
-         if (this.header != null) {
-            drawCenteredString(var1, this.font, this.header, this.width / 2, 70, 16777215);
+         this.renderBackground();
+         this.drawCenteredString(this.font, this.title, this.width / 2, 70, 16777215);
+         if (!Objects.equals(this.stage, "") && this.progress != 0) {
+            this.drawCenteredString(this.font, this.stage + " " + this.progress + "%", this.width / 2, 90, 16777215);
          }
 
-         if (this.stage != null && this.progress != 0) {
-            drawCenteredString(var1, this.font, (new TextComponent("")).append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, 16777215);
-         }
-
-         super.render(var1, var2, var3, var4);
+         super.render(var1, var2, var3);
       }
    }
 }

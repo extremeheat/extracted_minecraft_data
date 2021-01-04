@@ -59,7 +59,7 @@ public class StopSoundCommand {
       } else if (var3 != null) {
          var0.sendSuccess(new TranslatableComponent("commands.stopsound.success.sourceless.sound", new Object[]{var3}), true);
       } else {
-         var0.sendSuccess(new TranslatableComponent("commands.stopsound.success.sourceless.any"), true);
+         var0.sendSuccess(new TranslatableComponent("commands.stopsound.success.sourceless.any", new Object[0]), true);
       }
 
       return var1.size();

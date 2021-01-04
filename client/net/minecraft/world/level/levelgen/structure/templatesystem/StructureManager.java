@@ -2,12 +2,12 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixer;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
@@ -20,26 +20,27 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.storage.LevelResource;
-import net.minecraft.world.level.storage.LevelStorageSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class StructureManager {
+public class StructureManager implements ResourceManagerReloadListener {
    private static final Logger LOGGER = LogManager.getLogger();
    private final Map<ResourceLocation, StructureTemplate> structureRepository = Maps.newHashMap();
    private final DataFixer fixerUpper;
-   private ResourceManager resourceManager;
+   private final MinecraftServer server;
    private final Path generatedDir;
 
-   public StructureManager(ResourceManager var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3) {
+   public StructureManager(MinecraftServer var1, File var2, DataFixer var3) {
       super();
-      this.resourceManager = var1;
+      this.server = var1;
       this.fixerUpper = var3;
-      this.generatedDir = var2.getLevelPath(LevelResource.GENERATED_DIR).normalize();
+      this.generatedDir = var2.toPath().resolve("generated").normalize();
+      var1.getResources().registerReloadListener(this);
    }
 
    public StructureTemplate getOrCreate(ResourceLocation var1) {
@@ -61,7 +62,6 @@ public class StructureManager {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      this.resourceManager = var1;
       this.structureRepository.clear();
    }
 
@@ -70,7 +70,7 @@ public class StructureManager {
       ResourceLocation var2 = new ResourceLocation(var1.getNamespace(), "structures/" + var1.getPath() + ".nbt");
 
       try {
-         Resource var3 = this.resourceManager.getResource(var2);
+         Resource var3 = this.server.getResources().getResource(var2);
          Throwable var4 = null;
 
          StructureTemplate var5;
@@ -116,7 +116,7 @@ public class StructureManager {
 
             StructureTemplate var5;
             try {
-               var5 = this.readStructure((InputStream)var3);
+               var5 = this.readStructure(var3);
             } catch (Throwable var16) {
                var4 = var16;
                throw var16;
@@ -147,17 +147,13 @@ public class StructureManager {
 
    private StructureTemplate readStructure(InputStream var1) throws IOException {
       CompoundTag var2 = NbtIo.readCompressed(var1);
-      return this.readStructure(var2);
-   }
-
-   public StructureTemplate readStructure(CompoundTag var1) {
-      if (!var1.contains("DataVersion", 99)) {
-         var1.putInt("DataVersion", 500);
+      if (!var2.contains("DataVersion", 99)) {
+         var2.putInt("DataVersion", 500);
       }
 
-      StructureTemplate var2 = new StructureTemplate();
-      var2.load(NbtUtils.update(this.fixerUpper, DataFixTypes.STRUCTURE, var1, var1.getInt("DataVersion")));
-      return var2;
+      StructureTemplate var3 = new StructureTemplate();
+      var3.load(NbtUtils.update(this.fixerUpper, DataFixTypes.STRUCTURE, var2, var2.getInt("DataVersion")));
+      return var3;
    }
 
    public boolean save(ResourceLocation var1) {
@@ -184,7 +180,7 @@ public class StructureManager {
                Throwable var7 = null;
 
                try {
-                  NbtIo.writeCompressed(var5, (OutputStream)var6);
+                  NbtIo.writeCompressed(var5, var6);
                } catch (Throwable var18) {
                   var7 = var18;
                   throw var18;
@@ -211,7 +207,7 @@ public class StructureManager {
       }
    }
 
-   public Path createPathToStructure(ResourceLocation var1, String var2) {
+   private Path createPathToStructure(ResourceLocation var1, String var2) {
       try {
          Path var3 = this.generatedDir.resolve(var1.getNamespace());
          Path var4 = var3.resolve("structures");

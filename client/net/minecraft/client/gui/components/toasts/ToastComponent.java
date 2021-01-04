@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components.toasts;
 
 import com.google.common.collect.Queues;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
@@ -22,16 +22,18 @@ public class ToastComponent extends GuiComponent {
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1) {
+   public void render() {
       if (!this.minecraft.options.hideGui) {
-         for(int var2 = 0; var2 < this.visible.length; ++var2) {
-            ToastComponent.ToastInstance var3 = this.visible[var2];
-            if (var3 != null && var3.render(this.minecraft.getWindow().getGuiScaledWidth(), var2, var1)) {
-               this.visible[var2] = null;
+         Lighting.turnOff();
+
+         for(int var1 = 0; var1 < this.visible.length; ++var1) {
+            ToastComponent.ToastInstance var2 = this.visible[var1];
+            if (var2 != null && var2.render(this.minecraft.window.getGuiScaledWidth(), var1)) {
+               this.visible[var1] = null;
             }
 
-            if (this.visible[var2] == null && !this.queued.isEmpty()) {
-               this.visible[var2] = new ToastComponent.ToastInstance((Toast)this.queued.removeFirst());
+            if (this.visible[var1] == null && !this.queued.isEmpty()) {
+               this.visible[var1] = new ToastComponent.ToastInstance((Toast)this.queued.removeFirst());
             }
          }
 
@@ -101,28 +103,28 @@ public class ToastComponent extends GuiComponent {
          return this.visibility == Toast.Visibility.HIDE ? 1.0F - var3 : var3;
       }
 
-      public boolean render(int var1, int var2, PoseStack var3) {
-         long var4 = Util.getMillis();
+      public boolean render(int var1, int var2) {
+         long var3 = Util.getMillis();
          if (this.animationTime == -1L) {
-            this.animationTime = var4;
+            this.animationTime = var3;
             this.visibility.playSound(ToastComponent.this.minecraft.getSoundManager());
          }
 
-         if (this.visibility == Toast.Visibility.SHOW && var4 - this.animationTime <= 600L) {
-            this.visibleTime = var4;
+         if (this.visibility == Toast.Visibility.SHOW && var3 - this.animationTime <= 600L) {
+            this.visibleTime = var3;
          }
 
-         RenderSystem.pushMatrix();
-         RenderSystem.translatef((float)var1 - (float)this.toast.width() * this.getVisibility(var4), (float)(var2 * this.toast.height()), (float)(800 + var2));
-         Toast.Visibility var6 = this.toast.render(var3, ToastComponent.this, var4 - this.visibleTime);
-         RenderSystem.popMatrix();
-         if (var6 != this.visibility) {
-            this.animationTime = var4 - (long)((int)((1.0F - this.getVisibility(var4)) * 600.0F));
-            this.visibility = var6;
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)var1 - 160.0F * this.getVisibility(var3), (float)(var2 * 32), (float)(500 + var2));
+         Toast.Visibility var5 = this.toast.render(ToastComponent.this, var3 - this.visibleTime);
+         GlStateManager.popMatrix();
+         if (var5 != this.visibility) {
+            this.animationTime = var3 - (long)((int)((1.0F - this.getVisibility(var3)) * 600.0F));
+            this.visibility = var5;
             this.visibility.playSound(ToastComponent.this.minecraft.getSoundManager());
          }
 
-         return this.visibility == Toast.Visibility.HIDE && var4 - this.animationTime > 600L;
+         return this.visibility == Toast.Visibility.HIDE && var3 - this.animationTime > 600L;
       }
 
       // $FF: synthetic method

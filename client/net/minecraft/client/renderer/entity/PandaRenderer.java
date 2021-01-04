@@ -1,12 +1,11 @@
 package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.PandaModel;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PandaHoldsItemLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -23,79 +22,82 @@ public class PandaRenderer extends MobRenderer<Panda, PandaModel<Panda>> {
       var0.put(Panda.Gene.AGGRESSIVE, new ResourceLocation("textures/entity/panda/aggressive_panda.png"));
    });
 
-   public PandaRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new PandaModel(var1.getLayer(ModelLayers.PANDA)), 0.9F);
+   public PandaRenderer(EntityRenderDispatcher var1) {
+      super(var1, new PandaModel(9, 0.0F), 0.9F);
       this.addLayer(new PandaHoldsItemLayer(this));
    }
 
-   public ResourceLocation getTextureLocation(Panda var1) {
+   @Nullable
+   protected ResourceLocation getTextureLocation(Panda var1) {
       return (ResourceLocation)TEXTURES.getOrDefault(var1.getVariant(), TEXTURES.get(Panda.Gene.NORMAL));
    }
 
-   protected void setupRotations(Panda var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
-      float var8;
+   protected void setupRotations(Panda var1, float var2, float var3, float var4) {
+      super.setupRotations(var1, var2, var3, var4);
+      float var7;
       if (var1.rollCounter > 0) {
-         int var6 = var1.rollCounter;
-         int var7 = var6 + 1;
-         var8 = 7.0F;
-         float var9 = var1.isBaby() ? 0.3F : 0.8F;
+         int var5 = var1.rollCounter;
+         int var6 = var5 + 1;
+         var7 = 7.0F;
+         float var8 = var1.isBaby() ? 0.3F : 0.8F;
+         float var9;
          float var10;
          float var11;
-         float var12;
-         if (var6 < 8) {
+         if (var5 < 8) {
+            var10 = (float)(90 * var5) / 7.0F;
             var11 = (float)(90 * var6) / 7.0F;
-            var12 = (float)(90 * var7) / 7.0F;
-            var10 = this.getAngle(var11, var12, var7, var5, 8.0F);
-            var2.translate(0.0D, (double)((var9 + 0.2F) * (var10 / 90.0F)), 0.0D);
-            var2.mulPose(Vector3f.XP.rotationDegrees(-var10));
+            var9 = this.getAngle(var10, var11, var6, var4, 8.0F);
+            GlStateManager.translatef(0.0F, (var8 + 0.2F) * (var9 / 90.0F), 0.0F);
+            GlStateManager.rotatef(-var9, 1.0F, 0.0F, 0.0F);
          } else {
-            float var13;
-            if (var6 < 16) {
-               var11 = ((float)var6 - 8.0F) / 7.0F;
-               var12 = 90.0F + 90.0F * var11;
-               var13 = 90.0F + 90.0F * ((float)var7 - 8.0F) / 7.0F;
-               var10 = this.getAngle(var12, var13, var7, var5, 16.0F);
-               var2.translate(0.0D, (double)(var9 + 0.2F + (var9 - 0.2F) * (var10 - 90.0F) / 90.0F), 0.0D);
-               var2.mulPose(Vector3f.XP.rotationDegrees(-var10));
-            } else if ((float)var6 < 24.0F) {
-               var11 = ((float)var6 - 16.0F) / 7.0F;
-               var12 = 180.0F + 90.0F * var11;
-               var13 = 180.0F + 90.0F * ((float)var7 - 16.0F) / 7.0F;
-               var10 = this.getAngle(var12, var13, var7, var5, 24.0F);
-               var2.translate(0.0D, (double)(var9 + var9 * (270.0F - var10) / 90.0F), 0.0D);
-               var2.mulPose(Vector3f.XP.rotationDegrees(-var10));
-            } else if (var6 < 32) {
-               var11 = ((float)var6 - 24.0F) / 7.0F;
-               var12 = 270.0F + 90.0F * var11;
-               var13 = 270.0F + 90.0F * ((float)var7 - 24.0F) / 7.0F;
-               var10 = this.getAngle(var12, var13, var7, var5, 32.0F);
-               var2.translate(0.0D, (double)(var9 * ((360.0F - var10) / 90.0F)), 0.0D);
-               var2.mulPose(Vector3f.XP.rotationDegrees(-var10));
+            float var12;
+            if (var5 < 16) {
+               var10 = ((float)var5 - 8.0F) / 7.0F;
+               var11 = 90.0F + 90.0F * var10;
+               var12 = 90.0F + 90.0F * ((float)var6 - 8.0F) / 7.0F;
+               var9 = this.getAngle(var11, var12, var6, var4, 16.0F);
+               GlStateManager.translatef(0.0F, var8 + 0.2F + (var8 - 0.2F) * (var9 - 90.0F) / 90.0F, 0.0F);
+               GlStateManager.rotatef(-var9, 1.0F, 0.0F, 0.0F);
+            } else if ((float)var5 < 24.0F) {
+               var10 = ((float)var5 - 16.0F) / 7.0F;
+               var11 = 180.0F + 90.0F * var10;
+               var12 = 180.0F + 90.0F * ((float)var6 - 16.0F) / 7.0F;
+               var9 = this.getAngle(var11, var12, var6, var4, 24.0F);
+               GlStateManager.translatef(0.0F, var8 + var8 * (270.0F - var9) / 90.0F, 0.0F);
+               GlStateManager.rotatef(-var9, 1.0F, 0.0F, 0.0F);
+            } else if (var5 < 32) {
+               var10 = ((float)var5 - 24.0F) / 7.0F;
+               var11 = 270.0F + 90.0F * var10;
+               var12 = 270.0F + 90.0F * ((float)var6 - 24.0F) / 7.0F;
+               var9 = this.getAngle(var11, var12, var6, var4, 32.0F);
+               GlStateManager.translatef(0.0F, var8 * ((360.0F - var9) / 90.0F), 0.0F);
+               GlStateManager.rotatef(-var9, 1.0F, 0.0F, 0.0F);
             }
          }
+      } else {
+         GlStateManager.rotatef(0.0F, 1.0F, 0.0F, 0.0F);
       }
 
-      float var14 = var1.getSitAmount(var5);
-      float var15;
-      if (var14 > 0.0F) {
-         var2.translate(0.0D, (double)(0.8F * var14), 0.0D);
-         var2.mulPose(Vector3f.XP.rotationDegrees(Mth.lerp(var14, var1.xRot, var1.xRot + 90.0F)));
-         var2.translate(0.0D, (double)(-1.0F * var14), 0.0D);
+      float var13 = var1.getSitAmount(var4);
+      float var14;
+      if (var13 > 0.0F) {
+         GlStateManager.translatef(0.0F, 0.8F * var13, 0.0F);
+         GlStateManager.rotatef(Mth.lerp(var13, var1.xRot, var1.xRot + 90.0F), 1.0F, 0.0F, 0.0F);
+         GlStateManager.translatef(0.0F, -1.0F * var13, 0.0F);
          if (var1.isScared()) {
-            var15 = (float)(Math.cos((double)var1.tickCount * 1.25D) * 3.141592653589793D * 0.05000000074505806D);
-            var2.mulPose(Vector3f.YP.rotationDegrees(var15));
+            var14 = (float)(Math.cos((double)var1.tickCount * 1.25D) * 3.141592653589793D * 0.05000000074505806D);
+            GlStateManager.rotatef(var14, 0.0F, 1.0F, 0.0F);
             if (var1.isBaby()) {
-               var2.translate(0.0D, 0.800000011920929D, 0.550000011920929D);
+               GlStateManager.translatef(0.0F, 0.8F, 0.55F);
             }
          }
       }
 
-      var15 = var1.getLieOnBackAmount(var5);
-      if (var15 > 0.0F) {
-         var8 = var1.isBaby() ? 0.5F : 1.3F;
-         var2.translate(0.0D, (double)(var8 * var15), 0.0D);
-         var2.mulPose(Vector3f.XP.rotationDegrees(Mth.lerp(var15, var1.xRot, var1.xRot + 180.0F)));
+      var14 = var1.getLieOnBackAmount(var4);
+      if (var14 > 0.0F) {
+         var7 = var1.isBaby() ? 0.5F : 1.3F;
+         GlStateManager.translatef(0.0F, var7 * var14, 0.0F);
+         GlStateManager.rotatef(Mth.lerp(var14, var1.xRot, var1.xRot + 180.0F), 1.0F, 0.0F, 0.0F);
       }
 
    }

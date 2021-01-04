@@ -12,9 +12,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.mojang.datafixers.DataFixer;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.JsonOps;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -42,13 +40,11 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.GameRules;
 import org.apache.logging.log4j.LogManager;
@@ -59,8 +55,7 @@ public class PlayerAdvancements {
    private static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(AdvancementProgress.class, new AdvancementProgress.Serializer()).registerTypeAdapter(ResourceLocation.class, new ResourceLocation.Serializer()).setPrettyPrinting().create();
    private static final TypeToken<Map<ResourceLocation, AdvancementProgress>> TYPE_TOKEN = new TypeToken<Map<ResourceLocation, AdvancementProgress>>() {
    };
-   private final DataFixer dataFixer;
-   private final PlayerList playerList;
+   private final MinecraftServer server;
    private final File file;
    private final Map<Advancement, AdvancementProgress> advancements = Maps.newLinkedHashMap();
    private final Set<Advancement> visible = Sets.newLinkedHashSet();
@@ -71,13 +66,12 @@ public class PlayerAdvancements {
    private Advancement lastSelectedTab;
    private boolean isFirstPacket = true;
 
-   public PlayerAdvancements(DataFixer var1, PlayerList var2, ServerAdvancementManager var3, File var4, ServerPlayer var5) {
+   public PlayerAdvancements(MinecraftServer var1, File var2, ServerPlayer var3) {
       super();
-      this.dataFixer = var1;
-      this.playerList = var2;
-      this.file = var4;
-      this.player = var5;
-      this.load(var3);
+      this.server = var1;
+      this.file = var2;
+      this.player = var3;
+      this.load();
    }
 
    public void setPlayer(ServerPlayer var1) {
@@ -94,7 +88,7 @@ public class PlayerAdvancements {
 
    }
 
-   public void reload(ServerAdvancementManager var1) {
+   public void reload() {
       this.stopListening();
       this.advancements.clear();
       this.visible.clear();
@@ -102,15 +96,15 @@ public class PlayerAdvancements {
       this.progressChanged.clear();
       this.isFirstPacket = true;
       this.lastSelectedTab = null;
-      this.load(var1);
+      this.load();
    }
 
-   private void registerListeners(ServerAdvancementManager var1) {
-      Iterator var2 = var1.getAllAdvancements().iterator();
+   private void registerListeners() {
+      Iterator var1 = this.server.getAdvancements().getAllAdvancements().iterator();
 
-      while(var2.hasNext()) {
-         Advancement var3 = (Advancement)var2.next();
-         this.registerListeners(var3);
+      while(var1.hasNext()) {
+         Advancement var2 = (Advancement)var1.next();
+         this.registerListeners(var2);
       }
 
    }
@@ -136,78 +130,78 @@ public class PlayerAdvancements {
 
    }
 
-   private void checkForAutomaticTriggers(ServerAdvancementManager var1) {
-      Iterator var2 = var1.getAllAdvancements().iterator();
+   private void checkForAutomaticTriggers() {
+      Iterator var1 = this.server.getAdvancements().getAllAdvancements().iterator();
 
-      while(var2.hasNext()) {
-         Advancement var3 = (Advancement)var2.next();
-         if (var3.getCriteria().isEmpty()) {
-            this.award(var3, "");
-            var3.getRewards().grant(this.player);
+      while(var1.hasNext()) {
+         Advancement var2 = (Advancement)var1.next();
+         if (var2.getCriteria().isEmpty()) {
+            this.award(var2, "");
+            var2.getRewards().grant(this.player);
          }
       }
 
    }
 
-   private void load(ServerAdvancementManager var1) {
+   private void load() {
       if (this.file.isFile()) {
          try {
-            JsonReader var2 = new JsonReader(new StringReader(Files.toString(this.file, StandardCharsets.UTF_8)));
-            Throwable var3 = null;
+            JsonReader var1 = new JsonReader(new StringReader(Files.toString(this.file, StandardCharsets.UTF_8)));
+            Throwable var2 = null;
 
             try {
-               var2.setLenient(false);
-               Dynamic var4 = new Dynamic(JsonOps.INSTANCE, Streams.parse(var2));
-               if (!var4.get("DataVersion").asNumber().result().isPresent()) {
-                  var4 = var4.set("DataVersion", var4.createInt(1343));
+               var1.setLenient(false);
+               Dynamic var3 = new Dynamic(JsonOps.INSTANCE, Streams.parse(var1));
+               if (!var3.get("DataVersion").asNumber().isPresent()) {
+                  var3 = var3.set("DataVersion", var3.createInt(1343));
                }
 
-               var4 = this.dataFixer.update(DataFixTypes.ADVANCEMENTS.getType(), var4, var4.get("DataVersion").asInt(0), SharedConstants.getCurrentVersion().getWorldVersion());
-               var4 = var4.remove("DataVersion");
-               Map var5 = (Map)GSON.getAdapter(TYPE_TOKEN).fromJsonTree((JsonElement)var4.getValue());
-               if (var5 == null) {
+               var3 = this.server.getFixerUpper().update(DataFixTypes.ADVANCEMENTS.getType(), var3, var3.get("DataVersion").asInt(0), SharedConstants.getCurrentVersion().getWorldVersion());
+               var3 = var3.remove("DataVersion");
+               Map var4 = (Map)GSON.getAdapter(TYPE_TOKEN).fromJsonTree((JsonElement)var3.getValue());
+               if (var4 == null) {
                   throw new JsonParseException("Found null for advancements");
                }
 
-               Stream var6 = var5.entrySet().stream().sorted(Comparator.comparing(Entry::getValue));
-               Iterator var7 = ((List)var6.collect(Collectors.toList())).iterator();
+               Stream var5 = var4.entrySet().stream().sorted(Comparator.comparing(Entry::getValue));
+               Iterator var6 = ((List)var5.collect(Collectors.toList())).iterator();
 
-               while(var7.hasNext()) {
-                  Entry var8 = (Entry)var7.next();
-                  Advancement var9 = var1.getAdvancement((ResourceLocation)var8.getKey());
-                  if (var9 == null) {
-                     LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", var8.getKey(), this.file);
+               while(var6.hasNext()) {
+                  Entry var7 = (Entry)var6.next();
+                  Advancement var8 = this.server.getAdvancements().getAdvancement((ResourceLocation)var7.getKey());
+                  if (var8 == null) {
+                     LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", var7.getKey(), this.file);
                   } else {
-                     this.startProgress(var9, (AdvancementProgress)var8.getValue());
+                     this.startProgress(var8, (AdvancementProgress)var7.getValue());
                   }
                }
-            } catch (Throwable var19) {
-               var3 = var19;
-               throw var19;
+            } catch (Throwable var18) {
+               var2 = var18;
+               throw var18;
             } finally {
-               if (var2 != null) {
-                  if (var3 != null) {
+               if (var1 != null) {
+                  if (var2 != null) {
                      try {
-                        var2.close();
-                     } catch (Throwable var18) {
-                        var3.addSuppressed(var18);
+                        var1.close();
+                     } catch (Throwable var17) {
+                        var2.addSuppressed(var17);
                      }
                   } else {
-                     var2.close();
+                     var1.close();
                   }
                }
 
             }
-         } catch (JsonParseException var21) {
-            LOGGER.error("Couldn't parse player advancements in {}", this.file, var21);
-         } catch (IOException var22) {
-            LOGGER.error("Couldn't access player advancements in {}", this.file, var22);
+         } catch (JsonParseException var20) {
+            LOGGER.error("Couldn't parse player advancements in {}", this.file, var20);
+         } catch (IOException var21) {
+            LOGGER.error("Couldn't access player advancements in {}", this.file, var21);
          }
       }
 
-      this.checkForAutomaticTriggers(var1);
+      this.checkForAutomaticTriggers();
       this.ensureAllVisible();
-      this.registerListeners(var1);
+      this.registerListeners();
    }
 
    public void save() {
@@ -290,7 +284,7 @@ public class PlayerAdvancements {
          if (!var5 && var4.isDone()) {
             var1.getRewards().grant(this.player);
             if (var1.getDisplay() != null && var1.getDisplay().shouldAnnounceChat() && this.player.level.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
-               this.playerList.broadcastMessage(new TranslatableComponent("chat.type.advancement." + var1.getDisplay().getFrame().getName(), new Object[]{this.player.getDisplayName(), var1.getChatComponent()}), ChatType.SYSTEM, Util.NIL_UUID);
+               this.server.getPlayerList().broadcastMessage(new TranslatableComponent("chat.type.advancement." + var1.getDisplay().getFrame().getName(), new Object[]{this.player.getDisplayName(), var1.getChatComponent()}));
             }
          }
       }

@@ -1,27 +1,40 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
+import com.mojang.realmsclient.gui.RealmsConstants;
+import net.minecraft.realms.Realms;
+import net.minecraft.realms.RealmsButton;
+import net.minecraft.realms.RealmsEditBox;
 import net.minecraft.realms.RealmsLabel;
 import net.minecraft.realms.RealmsScreen;
 
 public class RealmsResetNormalWorldScreen extends RealmsScreen {
-   private static final Component SEED_LABEL = new TranslatableComponent("mco.reset.world.seed");
-   private static final Component[] LEVEL_TYPES = new Component[]{new TranslatableComponent("generator.default"), new TranslatableComponent("generator.flat"), new TranslatableComponent("generator.large_biomes"), new TranslatableComponent("generator.amplified")};
    private final RealmsResetWorldScreen lastScreen;
    private RealmsLabel titleLabel;
-   private EditBox seedEdit;
-   private Boolean generateStructures = true;
-   private Integer levelTypeIndex = 0;
-   private final Component buttonTitle;
+   private RealmsEditBox seedEdit;
+   private Boolean generateStructures;
+   private Integer levelTypeIndex;
+   String[] levelTypes;
+   private final int BUTTON_CANCEL_ID;
+   private final int BUTTON_RESET_ID;
+   private final int SEED_EDIT_BOX;
+   private RealmsButton resetButton;
+   private RealmsButton levelTypeButton;
+   private RealmsButton generateStructuresButton;
+   private String buttonTitle;
 
-   public RealmsResetNormalWorldScreen(RealmsResetWorldScreen var1, Component var2) {
+   public RealmsResetNormalWorldScreen(RealmsResetWorldScreen var1) {
       super();
+      this.generateStructures = true;
+      this.levelTypeIndex = 0;
+      this.BUTTON_CANCEL_ID = 0;
+      this.BUTTON_RESET_ID = 1;
+      this.SEED_EDIT_BOX = 4;
+      this.buttonTitle = getLocalizedString("mco.backup.button.reset");
       this.lastScreen = var1;
+   }
+
+   public RealmsResetNormalWorldScreen(RealmsResetWorldScreen var1, String var2) {
+      this(var1);
       this.buttonTitle = var2;
    }
 
@@ -31,56 +44,71 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
    }
 
    public void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.titleLabel = new RealmsLabel(new TranslatableComponent("mco.reset.world.generate"), this.width / 2, 17, 16777215);
-      this.addWidget(this.titleLabel);
-      this.seedEdit = new EditBox(this.minecraft.font, this.width / 2 - 100, row(2), 200, 20, (EditBox)null, new TranslatableComponent("mco.reset.world.seed"));
+      this.levelTypes = new String[]{getLocalizedString("generator.default"), getLocalizedString("generator.flat"), getLocalizedString("generator.largeBiomes"), getLocalizedString("generator.amplified")};
+      this.setKeyboardHandlerSendRepeatsToGui(true);
+      this.buttonsAdd(new RealmsButton(0, this.width() / 2 + 8, RealmsConstants.row(12), 97, 20, getLocalizedString("gui.back")) {
+         public void onPress() {
+            Realms.setScreen(RealmsResetNormalWorldScreen.this.lastScreen);
+         }
+      });
+      this.buttonsAdd(this.resetButton = new RealmsButton(1, this.width() / 2 - 102, RealmsConstants.row(12), 97, 20, this.buttonTitle) {
+         public void onPress() {
+            RealmsResetNormalWorldScreen.this.onReset();
+         }
+      });
+      this.seedEdit = this.newEditBox(4, this.width() / 2 - 100, RealmsConstants.row(2), 200, 20, getLocalizedString("mco.reset.world.seed"));
       this.seedEdit.setMaxLength(32);
+      this.seedEdit.setValue("");
       this.addWidget(this.seedEdit);
-      this.setInitialFocus(this.seedEdit);
-      this.addButton(new Button(this.width / 2 - 102, row(4), 205, 20, this.levelTypeTitle(), (var1) -> {
-         this.levelTypeIndex = (this.levelTypeIndex + 1) % LEVEL_TYPES.length;
-         var1.setMessage(this.levelTypeTitle());
-      }));
-      this.addButton(new Button(this.width / 2 - 102, row(6) - 2, 205, 20, this.generateStructuresTitle(), (var1) -> {
-         this.generateStructures = !this.generateStructures;
-         var1.setMessage(this.generateStructuresTitle());
-      }));
-      this.addButton(new Button(this.width / 2 - 102, row(12), 97, 20, this.buttonTitle, (var1) -> {
-         this.lastScreen.resetWorld(new RealmsResetWorldScreen.ResetWorldInfo(this.seedEdit.getValue(), this.levelTypeIndex, this.generateStructures));
-      }));
-      this.addButton(new Button(this.width / 2 + 8, row(12), 97, 20, CommonComponents.GUI_BACK, (var1) -> {
-         this.minecraft.setScreen(this.lastScreen);
-      }));
+      this.focusOn(this.seedEdit);
+      this.buttonsAdd(this.levelTypeButton = new RealmsButton(2, this.width() / 2 - 102, RealmsConstants.row(4), 205, 20, this.levelTypeTitle()) {
+         public void onPress() {
+            RealmsResetNormalWorldScreen.this.levelTypeIndex = (RealmsResetNormalWorldScreen.this.levelTypeIndex + 1) % RealmsResetNormalWorldScreen.this.levelTypes.length;
+            this.setMessage(RealmsResetNormalWorldScreen.this.levelTypeTitle());
+         }
+      });
+      this.buttonsAdd(this.generateStructuresButton = new RealmsButton(3, this.width() / 2 - 102, RealmsConstants.row(6) - 2, 205, 20, this.generateStructuresTitle()) {
+         public void onPress() {
+            RealmsResetNormalWorldScreen.this.generateStructures = !RealmsResetNormalWorldScreen.this.generateStructures;
+            this.setMessage(RealmsResetNormalWorldScreen.this.generateStructuresTitle());
+         }
+      });
+      this.titleLabel = new RealmsLabel(getLocalizedString("mco.reset.world.generate"), this.width() / 2, 17, 16777215);
+      this.addWidget(this.titleLabel);
       this.narrateLabels();
    }
 
    public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+      this.setKeyboardHandlerSendRepeatsToGui(false);
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
-         this.minecraft.setScreen(this.lastScreen);
+         Realms.setScreen(this.lastScreen);
          return true;
       } else {
          return super.keyPressed(var1, var2, var3);
       }
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.titleLabel.render(this, var1);
-      this.font.draw(var1, SEED_LABEL, (float)(this.width / 2 - 100), (float)row(1), 10526880);
-      this.seedEdit.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
+   private void onReset() {
+      this.lastScreen.resetWorld(new RealmsResetWorldScreen.ResetWorldInfo(this.seedEdit.getValue(), this.levelTypeIndex, this.generateStructures));
    }
 
-   private Component levelTypeTitle() {
-      return (new TranslatableComponent("selectWorld.mapType")).append(" ").append(LEVEL_TYPES[this.levelTypeIndex]);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.titleLabel.render(this);
+      this.drawString(getLocalizedString("mco.reset.world.seed"), this.width() / 2 - 100, RealmsConstants.row(1), 10526880);
+      this.seedEdit.render(var1, var2, var3);
+      super.render(var1, var2, var3);
    }
 
-   private Component generateStructuresTitle() {
-      return CommonComponents.optionStatus(new TranslatableComponent("selectWorld.mapFeatures"), this.generateStructures);
+   private String levelTypeTitle() {
+      String var1 = getLocalizedString("selectWorld.mapType");
+      return var1 + " " + this.levelTypes[this.levelTypeIndex];
+   }
+
+   private String generateStructuresTitle() {
+      return getLocalizedString("selectWorld.mapFeatures") + " " + getLocalizedString(this.generateStructures ? "mco.configure.world.on" : "mco.configure.world.off");
    }
 }

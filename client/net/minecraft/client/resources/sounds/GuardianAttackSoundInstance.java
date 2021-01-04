@@ -15,20 +15,16 @@ public class GuardianAttackSoundInstance extends AbstractTickableSoundInstance {
       this.delay = 0;
    }
 
-   public boolean canPlaySound() {
-      return !this.guardian.isSilent();
-   }
-
    public void tick() {
-      if (!this.guardian.isRemoved() && this.guardian.getTarget() == null) {
-         this.x = (double)((float)this.guardian.getX());
-         this.y = (double)((float)this.guardian.getY());
-         this.z = (double)((float)this.guardian.getZ());
+      if (!this.guardian.removed && this.guardian.getTarget() == null) {
+         this.x = (float)this.guardian.x;
+         this.y = (float)this.guardian.y;
+         this.z = (float)this.guardian.z;
          float var1 = this.guardian.getAttackAnimationScale(0.0F);
          this.volume = 0.0F + 1.0F * var1 * var1;
          this.pitch = 0.7F + 0.5F * var1;
       } else {
-         this.stop();
+         this.stopped = true;
       }
    }
 }

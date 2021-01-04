@@ -23,7 +23,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 public class PlaySoundCommand {
-   private static final SimpleCommandExceptionType ERROR_TOO_FAR = new SimpleCommandExceptionType(new TranslatableComponent("commands.playsound.failed"));
+   private static final SimpleCommandExceptionType ERROR_TOO_FAR = new SimpleCommandExceptionType(new TranslatableComponent("commands.playsound.failed", new Object[0]));
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       RequiredArgumentBuilder var1 = Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.AVAILABLE_SOUNDS);
@@ -72,16 +72,16 @@ public class PlaySoundCommand {
                if (var1.size() == 1) {
                   var0.sendSuccess(new TranslatableComponent("commands.playsound.success.single", new Object[]{var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()}), true);
                } else {
-                  var0.sendSuccess(new TranslatableComponent("commands.playsound.success.multiple", new Object[]{var2, var1.size()}), true);
+                  var0.sendSuccess(new TranslatableComponent("commands.playsound.success.single", new Object[]{var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()}), true);
                }
 
                return var10;
             }
 
             var12 = (ServerPlayer)var11.next();
-            double var13 = var4.x - var12.getX();
-            double var15 = var4.y - var12.getY();
-            double var17 = var4.z - var12.getZ();
+            double var13 = var4.x - var12.x;
+            double var15 = var4.y - var12.y;
+            double var17 = var4.z - var12.z;
             double var19 = var13 * var13 + var15 * var15 + var17 * var17;
             var21 = var4;
             var22 = var5;
@@ -91,7 +91,7 @@ public class PlaySoundCommand {
 
             if (var7 > 0.0F) {
                double var23 = (double)Mth.sqrt(var19);
-               var21 = new Vec3(var12.getX() + var13 / var23 * 2.0D, var12.getY() + var15 / var23 * 2.0D, var12.getZ() + var17 / var23 * 2.0D);
+               var21 = new Vec3(var12.x + var13 / var23 * 2.0D, var12.y + var15 / var23 * 2.0D, var12.z + var17 / var23 * 2.0D);
                var22 = var7;
                break;
             }

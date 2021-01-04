@@ -13,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +27,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
@@ -105,18 +109,18 @@ public class LootPool {
       }
    }
 
-   public void validate(ValidationContext var1) {
-      int var2;
-      for(var2 = 0; var2 < this.conditions.length; ++var2) {
-         this.conditions[var2].validate(var1.forChild(".condition[" + var2 + "]"));
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      int var5;
+      for(var5 = 0; var5 < this.conditions.length; ++var5) {
+         this.conditions[var5].validate(var1.forChild(".condition[" + var5 + "]"), var2, var3, var4);
       }
 
-      for(var2 = 0; var2 < this.functions.length; ++var2) {
-         this.functions[var2].validate(var1.forChild(".functions[" + var2 + "]"));
+      for(var5 = 0; var5 < this.functions.length; ++var5) {
+         this.functions[var5].validate(var1.forChild(".functions[" + var5 + "]"), var2, var3, var4);
       }
 
-      for(var2 = 0; var2 < this.entries.length; ++var2) {
-         this.entries[var2].validate(var1.forChild(".entries[" + var2 + "]"));
+      for(var5 = 0; var5 < this.entries.length; ++var5) {
+         this.entries[var5].validate(var1.forChild(".entries[" + var5 + "]"), var2, var3, var4);
       }
 
    }

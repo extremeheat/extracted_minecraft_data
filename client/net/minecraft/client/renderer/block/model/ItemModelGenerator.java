@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.block.model;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.util.Either;
 import com.mojang.math.Vector3f;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 
@@ -21,7 +19,7 @@ public class ItemModelGenerator {
       super();
    }
 
-   public BlockModel generateBlockModel(Function<Material, TextureAtlasSprite> var1, BlockModel var2) {
+   public BlockModel generateBlockModel(Function<ResourceLocation, TextureAtlasSprite> var1, BlockModel var2) {
       HashMap var3 = Maps.newHashMap();
       ArrayList var4 = Lists.newArrayList();
 
@@ -31,14 +29,14 @@ public class ItemModelGenerator {
             break;
          }
 
-         Material var7 = var2.getMaterial(var6);
-         var3.put(var6, Either.left(var7));
-         TextureAtlasSprite var8 = (TextureAtlasSprite)var1.apply(var7);
+         String var7 = var2.getTexture(var6);
+         var3.put(var6, var7);
+         TextureAtlasSprite var8 = (TextureAtlasSprite)var1.apply(new ResourceLocation(var7));
          var4.addAll(this.processFrames(var5, var6, var8));
       }
 
-      var3.put("particle", var2.hasTexture("particle") ? Either.left(var2.getMaterial("particle")) : (Either)var3.get("layer0"));
-      BlockModel var9 = new BlockModel((ResourceLocation)null, var4, var3, false, var2.getGuiLight(), var2.getTransforms(), var2.getOverrides());
+      var3.put("particle", var2.hasTexture("particle") ? var2.getTexture("particle") : (String)var3.get("layer0"));
+      BlockModel var9 = new BlockModel((ResourceLocation)null, var4, var3, false, false, var2.getTransforms(), var2.getOverrides());
       var9.name = var2.name;
       return var9;
    }

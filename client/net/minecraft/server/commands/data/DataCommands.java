@@ -32,14 +32,14 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 
 public class DataCommands {
-   private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.merge.failed"));
+   private static final SimpleCommandExceptionType ERROR_MERGE_UNCHANGED = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.merge.failed", new Object[0]));
    private static final DynamicCommandExceptionType ERROR_GET_NOT_NUMBER = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.data.get.invalid", new Object[]{var0});
    });
    private static final DynamicCommandExceptionType ERROR_GET_NON_EXISTENT = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.data.get.unknown", new Object[]{var0});
    });
-   private static final SimpleCommandExceptionType ERROR_MULTIPLE_TAGS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.get.multiple"));
+   private static final SimpleCommandExceptionType ERROR_MULTIPLE_TAGS = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.get.multiple", new Object[0]));
    private static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.data.modify.expected_list", new Object[]{var0});
    });
@@ -283,7 +283,7 @@ public class DataCommands {
    }
 
    static {
-      ALL_PROVIDERS = ImmutableList.of(EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER);
+      ALL_PROVIDERS = ImmutableList.of(EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER);
       TARGET_PROVIDERS = (List)ALL_PROVIDERS.stream().map((var0) -> {
          return (DataCommands.DataProvider)var0.apply("target");
       }).collect(ImmutableList.toImmutableList());

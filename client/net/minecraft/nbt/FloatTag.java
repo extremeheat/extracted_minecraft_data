@@ -3,58 +3,41 @@ package net.minecraft.nbt;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.Mth;
 
 public class FloatTag extends NumericTag {
-   public static final FloatTag ZERO = new FloatTag(0.0F);
-   public static final TagType<FloatTag> TYPE = new TagType<FloatTag>() {
-      public FloatTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(96L);
-         return FloatTag.valueOf(var1.readFloat());
-      }
+   private float data;
 
-      public String getName() {
-         return "FLOAT";
-      }
-
-      public String getPrettyName() {
-         return "TAG_Float";
-      }
-
-      public boolean isValue() {
-         return true;
-      }
-
-      // $FF: synthetic method
-      public Tag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         return this.load(var1, var2, var3);
-      }
-   };
-   private final float data;
-
-   private FloatTag(float var1) {
+   FloatTag() {
       super();
-      this.data = var1;
    }
 
-   public static FloatTag valueOf(float var0) {
-      return var0 == 0.0F ? ZERO : new FloatTag(var0);
+   public FloatTag(float var1) {
+      super();
+      this.data = var1;
    }
 
    public void write(DataOutput var1) throws IOException {
       var1.writeFloat(this.data);
    }
 
+   public void load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+      var3.accountBits(96L);
+      this.data = var1.readFloat();
+   }
+
    public byte getId() {
       return 5;
    }
 
-   public TagType<FloatTag> getType() {
-      return TYPE;
+   public String toString() {
+      return this.data + "f";
    }
 
    public FloatTag copy() {
-      return this;
+      return new FloatTag(this.data);
    }
 
    public boolean equals(Object var1) {
@@ -69,8 +52,9 @@ public class FloatTag extends NumericTag {
       return Float.floatToIntBits(this.data);
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitFloat(this);
+   public Component getPrettyDisplay(String var1, int var2) {
+      Component var3 = (new TextComponent("f")).withStyle(SYNTAX_HIGHLIGHTING_NUMBER_TYPE);
+      return (new TextComponent(String.valueOf(this.data))).append(var3).withStyle(SYNTAX_HIGHLIGHTING_NUMBER);
    }
 
    public long getAsLong() {

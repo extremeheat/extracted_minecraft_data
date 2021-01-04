@@ -1,25 +1,31 @@
 package net.minecraft.client.gui.font;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.font.GlyphProvider;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.Util;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.providers.GlyphProviderBuilderType;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -29,17 +35,17 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.util.profiling.InactiveProfiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FontManager implements AutoCloseable {
    private static final Logger LOGGER = LogManager.getLogger();
-   public static final ResourceLocation MISSING_FONT = new ResourceLocation("minecraft", "missing");
-   private final FontSet missingFontSet;
-   private final Map<ResourceLocation, FontSet> fontSets = Maps.newHashMap();
+   private final Map<ResourceLocation, Font> fonts = Maps.newHashMap();
+   private final Set<GlyphProvider> providers = Sets.newHashSet();
    private final TextureManager textureManager;
-   private Map<ResourceLocation, ResourceLocation> renames = ImmutableMap.of();
+   private boolean forceUnicode;
    private final PreparableReloadListener reloadListener = new SimplePreparableReloadListener<Map<ResourceLocation, List<GlyphProvider>>>() {
       protected Map<ResourceLocation, List<GlyphProvider>> prepare(ResourceManager var1, ProfilerFiller var2) {
          var2.startTick();
@@ -82,29 +88,27 @@ public class FontManager implements AutoCloseable {
                               try {
                                  String var19 = GsonHelper.getAsString(var18, "type");
                                  GlyphProviderBuilderType var20 = GlyphProviderBuilderType.byName(var19);
-                                 var2.push(var19);
-                                 GlyphProvider var21 = var20.create(var18).create(var1);
-                                 if (var21 != null) {
-                                    var9.add(var21);
+                                 if (!FontManager.this.forceUnicode || var20 == GlyphProviderBuilderType.LEGACY_UNICODE || !var8.equals(Minecraft.DEFAULT_FONT)) {
+                                    var2.push(var19);
+                                    var9.add(var20.create(var18).create(var1));
+                                    var2.pop();
                                  }
-
-                                 var2.pop();
-                              } catch (RuntimeException var49) {
-                                 FontManager.LOGGER.warn("Unable to read definition '{}' in {} in resourcepack: '{}': {}", var8, "fonts.json", var11.getSourceName(), var49.getMessage());
+                              } catch (RuntimeException var48) {
+                                 FontManager.LOGGER.warn("Unable to read definition '{}' in fonts.json in resourcepack: '{}': {}", var8, var11.getSourceName(), var48.getMessage());
                               }
                            }
 
                            var2.pop();
-                        } catch (Throwable var50) {
-                           var15 = var50;
-                           throw var50;
+                        } catch (Throwable var49) {
+                           var15 = var49;
+                           throw var49;
                         } finally {
                            if (var14 != null) {
                               if (var15 != null) {
                                  try {
                                     var14.close();
-                                 } catch (Throwable var48) {
-                                    var15.addSuppressed(var48);
+                                 } catch (Throwable var47) {
+                                    var15.addSuppressed(var47);
                                  }
                               } else {
                                  var14.close();
@@ -112,16 +116,16 @@ public class FontManager implements AutoCloseable {
                            }
 
                         }
-                     } catch (Throwable var52) {
-                        var13 = var52;
-                        throw var52;
+                     } catch (Throwable var51) {
+                        var13 = var51;
+                        throw var51;
                      } finally {
                         if (var12 != null) {
                            if (var13 != null) {
                               try {
                                  var12.close();
-                              } catch (Throwable var47) {
-                                 var13.addSuppressed(var47);
+                              } catch (Throwable var46) {
+                                 var13.addSuppressed(var46);
                               }
                            } else {
                               var12.close();
@@ -129,36 +133,29 @@ public class FontManager implements AutoCloseable {
                         }
 
                      }
-                  } catch (RuntimeException var54) {
-                     FontManager.LOGGER.warn("Unable to load font '{}' in {} in resourcepack: '{}': {}", var8, "fonts.json", var11.getSourceName(), var54.getMessage());
+                  } catch (RuntimeException var53) {
+                     FontManager.LOGGER.warn("Unable to load font '{}' in fonts.json in resourcepack: '{}': {}", var8, var11.getSourceName(), var53.getMessage());
                   }
                }
-            } catch (IOException var55) {
-               FontManager.LOGGER.warn("Unable to load font '{}' in {}: {}", var8, "fonts.json", var55.getMessage());
+            } catch (IOException var54) {
+               FontManager.LOGGER.warn("Unable to load font '{}' in fonts.json: {}", var8, var54.getMessage());
             }
 
             var2.push("caching");
-            IntOpenHashSet var56 = new IntOpenHashSet();
-            Iterator var57 = var9.iterator();
 
-            while(var57.hasNext()) {
-               GlyphProvider var58 = (GlyphProvider)var57.next();
-               var56.addAll(var58.getSupportedGlyphs());
-            }
+            for(char var55 = 0; var55 < '\uffff'; ++var55) {
+               if (var55 != ' ') {
+                  Iterator var56 = Lists.reverse(var9).iterator();
 
-            var56.forEach((var1x) -> {
-               if (var1x != 32) {
-                  Iterator var2 = Lists.reverse(var9).iterator();
-
-                  while(var2.hasNext()) {
-                     GlyphProvider var3 = (GlyphProvider)var2.next();
-                     if (var3.getGlyph(var1x) != null) {
+                  while(var56.hasNext()) {
+                     GlyphProvider var57 = (GlyphProvider)var56.next();
+                     if (var57.getGlyph(var55) != null) {
                         break;
                      }
                   }
-
                }
-            });
+            }
+
             var2.pop();
             var2.pop();
          }
@@ -169,21 +166,19 @@ public class FontManager implements AutoCloseable {
 
       protected void apply(Map<ResourceLocation, List<GlyphProvider>> var1, ResourceManager var2, ProfilerFiller var3) {
          var3.startTick();
-         var3.push("closing");
-         FontManager.this.fontSets.values().forEach(FontSet::close);
-         FontManager.this.fontSets.clear();
-         var3.popPush("reloading");
-         var1.forEach((var1x, var2x) -> {
-            FontSet var3 = new FontSet(FontManager.this.textureManager, var1x);
-            var3.reload(Lists.reverse(var2x));
-            FontManager.this.fontSets.put(var1x, var3);
+         var3.push("reloading");
+         Stream.concat(FontManager.this.fonts.keySet().stream(), var1.keySet().stream()).distinct().forEach((var2x) -> {
+            List var3 = (List)var1.getOrDefault(var2x, Collections.emptyList());
+            Collections.reverse(var3);
+            ((Font)FontManager.this.fonts.computeIfAbsent(var2x, (var1x) -> {
+               return new Font(FontManager.this.textureManager, new FontSet(FontManager.this.textureManager, var1x));
+            })).reload(var3);
          });
+         Collection var10000 = var1.values();
+         Set var10001 = FontManager.this.providers;
+         var10000.forEach(var10001::addAll);
          var3.pop();
          var3.endTick();
-      }
-
-      public String getName() {
-         return "FontManager";
       }
 
       // $FF: synthetic method
@@ -192,22 +187,32 @@ public class FontManager implements AutoCloseable {
       }
    };
 
-   public FontManager(TextureManager var1) {
+   public FontManager(TextureManager var1, boolean var2) {
       super();
       this.textureManager = var1;
-      this.missingFontSet = (FontSet)Util.make(new FontSet(var1, MISSING_FONT), (var0) -> {
-         var0.reload(Lists.newArrayList(new GlyphProvider[]{new AllMissingGlyphProvider()}));
+      this.forceUnicode = var2;
+   }
+
+   @Nullable
+   public Font get(ResourceLocation var1) {
+      return (Font)this.fonts.computeIfAbsent(var1, (var1x) -> {
+         Font var2 = new Font(this.textureManager, new FontSet(this.textureManager, var1x));
+         var2.reload(Lists.newArrayList(new GlyphProvider[]{new AllMissingGlyphProvider()}));
+         return var2;
       });
    }
 
-   public void setRenames(Map<ResourceLocation, ResourceLocation> var1) {
-      this.renames = var1;
-   }
-
-   public Font createFont() {
-      return new Font((var1) -> {
-         return (FontSet)this.fontSets.getOrDefault(this.renames.getOrDefault(var1, var1), this.missingFontSet);
-      });
+   public void setForceUnicode(boolean var1, Executor var2, Executor var3) {
+      if (var1 != this.forceUnicode) {
+         this.forceUnicode = var1;
+         ResourceManager var4 = Minecraft.getInstance().getResourceManager();
+         PreparableReloadListener.PreparationBarrier var5 = new PreparableReloadListener.PreparationBarrier() {
+            public <T> CompletableFuture<T> wait(T var1) {
+               return CompletableFuture.completedFuture(var1);
+            }
+         };
+         this.reloadListener.reload(var5, var4, InactiveProfiler.INACTIVE, InactiveProfiler.INACTIVE, var2, var3);
+      }
    }
 
    public PreparableReloadListener getReloadListener() {
@@ -215,7 +220,7 @@ public class FontManager implements AutoCloseable {
    }
 
    public void close() {
-      this.fontSets.values().forEach(FontSet::close);
-      this.missingFontSet.close();
+      this.fonts.values().forEach(Font::close);
+      this.providers.forEach(GlyphProvider::close);
    }
 }

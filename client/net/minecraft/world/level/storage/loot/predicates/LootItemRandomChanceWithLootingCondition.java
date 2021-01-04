@@ -5,6 +5,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,10 +22,6 @@ public class LootItemRandomChanceWithLootingCondition implements LootItemConditi
       super();
       this.percent = var1;
       this.lootingMultiplier = var2;
-   }
-
-   public LootItemConditionType getType() {
-      return LootItemConditions.RANDOM_CHANCE_WITH_LOOTING;
    }
 
    public Set<LootContextParam<?>> getReferencedContextParams() {
@@ -57,9 +54,9 @@ public class LootItemRandomChanceWithLootingCondition implements LootItemConditi
       this(var1, var2);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<LootItemRandomChanceWithLootingCondition> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<LootItemRandomChanceWithLootingCondition> {
+      protected Serializer() {
+         super(new ResourceLocation("random_chance_with_looting"), LootItemRandomChanceWithLootingCondition.class);
       }
 
       public void serialize(JsonObject var1, LootItemRandomChanceWithLootingCondition var2, JsonSerializationContext var3) {
@@ -72,7 +69,7 @@ public class LootItemRandomChanceWithLootingCondition implements LootItemConditi
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

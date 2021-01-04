@@ -3,7 +3,6 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.Iterator;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
@@ -20,7 +19,7 @@ public class TellRawCommand {
 
          for(Iterator var2 = EntityArgument.getPlayers(var0x, "targets").iterator(); var2.hasNext(); ++var1) {
             ServerPlayer var3 = (ServerPlayer)var2.next();
-            var3.sendMessage(ComponentUtils.updateForEntity((CommandSourceStack)var0x.getSource(), ComponentArgument.getComponent(var0x, "message"), var3, 0), Util.NIL_UUID);
+            var3.sendMessage(ComponentUtils.updateForEntity((CommandSourceStack)var0x.getSource(), ComponentArgument.getComponent(var0x, "message"), var3, 0));
          }
 
          return var1;

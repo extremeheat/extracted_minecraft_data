@@ -1,21 +1,21 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.SimpleRandomFeatureConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 
-public class SimpleRandomSelectorFeature extends Feature<SimpleRandomFeatureConfiguration> {
-   public SimpleRandomSelectorFeature(Codec<SimpleRandomFeatureConfiguration> var1) {
+public class SimpleRandomSelectorFeature extends Feature<SimpleRandomFeatureConfig> {
+   public SimpleRandomSelectorFeature(Function<Dynamic<?>, ? extends SimpleRandomFeatureConfig> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, SimpleRandomFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, SimpleRandomFeatureConfig var5) {
       int var6 = var3.nextInt(var5.features.size());
-      ConfiguredFeature var7 = (ConfiguredFeature)((Supplier)var5.features.get(var6)).get();
+      ConfiguredFeature var7 = (ConfiguredFeature)var5.features.get(var6);
       return var7.place(var1, var2, var3, var4);
    }
 }

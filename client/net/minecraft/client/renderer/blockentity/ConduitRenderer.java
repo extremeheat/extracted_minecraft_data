@@ -1,138 +1,191 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Camera;
-import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 
-public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> {
-   public static final Material SHELL_TEXTURE;
-   public static final Material ACTIVE_SHELL_TEXTURE;
-   public static final Material WIND_TEXTURE;
-   public static final Material VERTICAL_WIND_TEXTURE;
-   public static final Material OPEN_EYE_TEXTURE;
-   public static final Material CLOSED_EYE_TEXTURE;
-   private final ModelPart eye;
-   private final ModelPart wind;
-   private final ModelPart shell;
-   private final ModelPart cage;
-   private final BlockEntityRenderDispatcher renderer;
+public class ConduitRenderer extends BlockEntityRenderer<ConduitBlockEntity> {
+   private static final ResourceLocation SHELL_TEXTURE = new ResourceLocation("textures/entity/conduit/base.png");
+   private static final ResourceLocation ACTIVE_SHELL_TEXTURE = new ResourceLocation("textures/entity/conduit/cage.png");
+   private static final ResourceLocation WIND_TEXTURE = new ResourceLocation("textures/entity/conduit/wind.png");
+   private static final ResourceLocation VERTICAL_WIND_TEXTURE = new ResourceLocation("textures/entity/conduit/wind_vertical.png");
+   private static final ResourceLocation OPEN_EYE_TEXTURE = new ResourceLocation("textures/entity/conduit/open_eye.png");
+   private static final ResourceLocation CLOSED_EYE_TEXTURE = new ResourceLocation("textures/entity/conduit/closed_eye.png");
+   private final ConduitRenderer.ShellModel shellModel = new ConduitRenderer.ShellModel();
+   private final ConduitRenderer.CageModel cageModel = new ConduitRenderer.CageModel();
+   private final ConduitRenderer.WindModel windModel = new ConduitRenderer.WindModel();
+   private final ConduitRenderer.EyeModel eyeModel = new ConduitRenderer.EyeModel();
 
-   public ConduitRenderer(BlockEntityRendererProvider.Context var1) {
+   public ConduitRenderer() {
       super();
-      this.renderer = var1.getBlockEntityRenderDispatcher();
-      this.eye = var1.getLayer(ModelLayers.CONDUIT_EYE);
-      this.wind = var1.getLayer(ModelLayers.CONDUIT_WIND);
-      this.shell = var1.getLayer(ModelLayers.CONDUIT_SHELL);
-      this.cage = var1.getLayer(ModelLayers.CONDUIT_CAGE);
    }
 
-   public static LayerDefinition createEyeLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, 0.0F, 8.0F, 8.0F, 0.0F, new CubeDeformation(0.01F)), PartPose.ZERO);
-      return LayerDefinition.create(var0, 16, 16);
-   }
-
-   public static LayerDefinition createWindLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("wind", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 32);
-   }
-
-   public static LayerDefinition createShellLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 32, 16);
-   }
-
-   public static LayerDefinition createCageLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 32, 16);
-   }
-
-   public void render(ConduitBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      float var7 = (float)var1.tickCount + var2;
-      float var8;
+   public void render(ConduitBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      float var10 = (float)var1.tickCount + var8;
+      float var11;
       if (!var1.isActive()) {
-         var8 = var1.getActiveRotation(0.0F);
-         VertexConsumer var16 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
-         var3.pushPose();
-         var3.translate(0.5D, 0.5D, 0.5D);
-         var3.mulPose(Vector3f.YP.rotationDegrees(var8));
-         this.shell.render(var3, var16, var5, var6);
-         var3.popPose();
-      } else {
-         var8 = var1.getActiveRotation(var2) * 57.295776F;
-         float var9 = Mth.sin(var7 * 0.1F) / 2.0F + 0.5F;
-         var9 += var9 * var9;
-         var3.pushPose();
-         var3.translate(0.5D, (double)(0.3F + var9 * 0.2F), 0.5D);
-         Vector3f var10 = new Vector3f(0.5F, 1.0F, 0.5F);
-         var10.normalize();
-         var3.mulPose(new Quaternion(var10, var8, true));
-         this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
-         var3.popPose();
-         int var11 = var1.tickCount / 66 % 3;
-         var3.pushPose();
-         var3.translate(0.5D, 0.5D, 0.5D);
-         if (var11 == 1) {
-            var3.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-         } else if (var11 == 2) {
-            var3.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+         var11 = var1.getActiveRotation(0.0F);
+         this.bindTexture(SHELL_TEXTURE);
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+         GlStateManager.rotatef(var11, 0.0F, 1.0F, 0.0F);
+         this.shellModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+         GlStateManager.popMatrix();
+      } else if (var1.isActive()) {
+         var11 = var1.getActiveRotation(var8) * 57.295776F;
+         float var12 = Mth.sin(var10 * 0.1F) / 2.0F + 0.5F;
+         var12 += var12 * var12;
+         this.bindTexture(ACTIVE_SHELL_TEXTURE);
+         GlStateManager.disableCull();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.3F + var12 * 0.2F, (float)var6 + 0.5F);
+         GlStateManager.rotatef(var11, 0.5F, 1.0F, 0.5F);
+         this.cageModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+         GlStateManager.popMatrix();
+         boolean var13 = true;
+         int var14 = var1.tickCount / 3 % 22;
+         this.windModel.setActiveAnim(var14);
+         int var15 = var1.tickCount / 66 % 3;
+         switch(var15) {
+         case 0:
+            this.bindTexture(WIND_TEXTURE);
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            GlStateManager.scalef(0.875F, 0.875F, 0.875F);
+            GlStateManager.rotatef(180.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
+            break;
+         case 1:
+            this.bindTexture(VERTICAL_WIND_TEXTURE);
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            GlStateManager.scalef(0.875F, 0.875F, 0.875F);
+            GlStateManager.rotatef(180.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
+            break;
+         case 2:
+            this.bindTexture(WIND_TEXTURE);
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
+            GlStateManager.pushMatrix();
+            GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.5F, (float)var6 + 0.5F);
+            GlStateManager.scalef(0.875F, 0.875F, 0.875F);
+            GlStateManager.rotatef(180.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+            this.windModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0625F);
+            GlStateManager.popMatrix();
          }
 
-         VertexConsumer var12 = (var11 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull);
-         this.wind.render(var3, var12, var5, var6);
-         var3.popPose();
-         var3.pushPose();
-         var3.translate(0.5D, 0.5D, 0.5D);
-         var3.scale(0.875F, 0.875F, 0.875F);
-         var3.mulPose(Vector3f.XP.rotationDegrees(180.0F));
-         var3.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-         this.wind.render(var3, var12, var5, var6);
-         var3.popPose();
-         Camera var13 = this.renderer.camera;
-         var3.pushPose();
-         var3.translate(0.5D, (double)(0.3F + var9 * 0.2F), 0.5D);
-         var3.scale(0.5F, 0.5F, 0.5F);
-         float var14 = -var13.getYRot();
-         var3.mulPose(Vector3f.YP.rotationDegrees(var14));
-         var3.mulPose(Vector3f.XP.rotationDegrees(var13.getXRot()));
-         var3.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-         float var15 = 1.3333334F;
-         var3.scale(1.3333334F, 1.3333334F, 1.3333334F);
-         this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
-         var3.popPose();
+         Camera var16 = this.blockEntityRenderDispatcher.camera;
+         if (var1.isHunting()) {
+            this.bindTexture(OPEN_EYE_TEXTURE);
+         } else {
+            this.bindTexture(CLOSED_EYE_TEXTURE);
+         }
+
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)var2 + 0.5F, (float)var4 + 0.3F + var12 * 0.2F, (float)var6 + 0.5F);
+         GlStateManager.scalef(0.5F, 0.5F, 0.5F);
+         GlStateManager.rotatef(-var16.getYRot(), 0.0F, 1.0F, 0.0F);
+         GlStateManager.rotatef(var16.getXRot(), 1.0F, 0.0F, 0.0F);
+         GlStateManager.rotatef(180.0F, 0.0F, 0.0F, 1.0F);
+         this.eyeModel.render(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.083333336F);
+         GlStateManager.popMatrix();
+      }
+
+      super.render(var1, var2, var4, var6, var8, var9);
+   }
+
+   static class EyeModel extends Model {
+      private final ModelPart eye;
+
+      public EyeModel() {
+         super();
+         this.texWidth = 8;
+         this.texHeight = 8;
+         this.eye = new ModelPart(this, 0, 0);
+         this.eye.addBox(-4.0F, -4.0F, 0.0F, 8, 8, 0, 0.01F);
+      }
+
+      public void render(float var1, float var2, float var3, float var4, float var5, float var6) {
+         this.eye.render(var6);
       }
    }
 
-   static {
-      SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/base"));
-      ACTIVE_SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/cage"));
-      WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind"));
-      VERTICAL_WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/wind_vertical"));
-      OPEN_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/open_eye"));
-      CLOSED_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/closed_eye"));
+   static class WindModel extends Model {
+      private final ModelPart[] box = new ModelPart[22];
+      private int activeAnim;
+
+      public WindModel() {
+         super();
+         this.texWidth = 64;
+         this.texHeight = 1024;
+
+         for(int var1 = 0; var1 < 22; ++var1) {
+            this.box[var1] = new ModelPart(this, 0, 32 * var1);
+            this.box[var1].addBox(-8.0F, -8.0F, -8.0F, 16, 16, 16);
+         }
+
+      }
+
+      public void render(float var1, float var2, float var3, float var4, float var5, float var6) {
+         this.box[this.activeAnim].render(var6);
+      }
+
+      public void setActiveAnim(int var1) {
+         this.activeAnim = var1;
+      }
+   }
+
+   static class CageModel extends Model {
+      private final ModelPart box;
+
+      public CageModel() {
+         super();
+         this.texWidth = 32;
+         this.texHeight = 16;
+         this.box = new ModelPart(this, 0, 0);
+         this.box.addBox(-4.0F, -4.0F, -4.0F, 8, 8, 8);
+      }
+
+      public void render(float var1, float var2, float var3, float var4, float var5, float var6) {
+         this.box.render(var6);
+      }
+   }
+
+   static class ShellModel extends Model {
+      private final ModelPart box;
+
+      public ShellModel() {
+         super();
+         this.texWidth = 32;
+         this.texHeight = 16;
+         this.box = new ModelPart(this, 0, 0);
+         this.box.addBox(-3.0F, -3.0F, -3.0F, 6, 6, 6);
+      }
+
+      public void render(float var1, float var2, float var3, float var4, float var5, float var6) {
+         this.box.render(var6);
+      }
    }
 }

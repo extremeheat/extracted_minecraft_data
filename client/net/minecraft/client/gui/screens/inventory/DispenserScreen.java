@@ -1,9 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.DispenserMenu;
@@ -15,22 +13,23 @@ public class DispenserScreen extends AbstractContainerScreen<DispenserMenu> {
       super(var1, var2, var3);
    }
 
-   protected void init() {
-      super.init();
-      this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   protected void renderLabels(int var1, int var2) {
+      String var3 = this.title.getColoredString();
+      this.font.draw(var3, (float)(this.imageWidth / 2 - this.font.width(var3) / 2), 6.0F, 4210752);
+      this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 96 + 2), 4210752);
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(CONTAINER_LOCATION);
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      int var4 = (this.width - this.imageWidth) / 2;
+      int var5 = (this.height - this.imageHeight) / 2;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
    }
 }

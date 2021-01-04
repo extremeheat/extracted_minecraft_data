@@ -2,11 +2,11 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class HeightmapRenamingFix extends DataFix {
@@ -25,31 +25,31 @@ public class HeightmapRenamingFix extends DataFix {
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {
-      Optional var2 = var1.get("Heightmaps").result();
+      Optional var2 = var1.get("Heightmaps").get();
       if (!var2.isPresent()) {
          return var1;
       } else {
          Dynamic var3 = (Dynamic)var2.get();
-         Optional var4 = var3.get("LIQUID").result();
+         Optional var4 = var3.get("LIQUID").get();
          if (var4.isPresent()) {
             var3 = var3.remove("LIQUID");
             var3 = var3.set("WORLD_SURFACE_WG", (Dynamic)var4.get());
          }
 
-         Optional var5 = var3.get("SOLID").result();
+         Optional var5 = var3.get("SOLID").get();
          if (var5.isPresent()) {
             var3 = var3.remove("SOLID");
             var3 = var3.set("OCEAN_FLOOR_WG", (Dynamic)var5.get());
             var3 = var3.set("OCEAN_FLOOR", (Dynamic)var5.get());
          }
 
-         Optional var6 = var3.get("LIGHT").result();
+         Optional var6 = var3.get("LIGHT").get();
          if (var6.isPresent()) {
             var3 = var3.remove("LIGHT");
             var3 = var3.set("LIGHT_BLOCKING", (Dynamic)var6.get());
          }
 
-         Optional var7 = var3.get("RAIN").result();
+         Optional var7 = var3.get("RAIN").get();
          if (var7.isPresent()) {
             var3 = var3.remove("RAIN");
             var3 = var3.set("MOTION_BLOCKING", (Dynamic)var7.get());

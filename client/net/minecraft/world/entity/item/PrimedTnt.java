@@ -45,15 +45,18 @@ public class PrimedTnt extends Entity {
       this.entityData.define(DATA_FUSE_ID, 80);
    }
 
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
    public boolean isPickable() {
-      return !this.isRemoved();
+      return !this.removed;
    }
 
    public void tick() {
+      this.xo = this.x;
+      this.yo = this.y;
+      this.zo = this.z;
       if (!this.isNoGravity()) {
          this.setDeltaMovement(this.getDeltaMovement().add(0.0D, -0.04D, 0.0D));
       }
@@ -66,22 +69,20 @@ public class PrimedTnt extends Entity {
 
       --this.life;
       if (this.life <= 0) {
-         this.discard();
+         this.remove();
          if (!this.level.isClientSide) {
             this.explode();
          }
       } else {
-         this.updateInWaterStateAndDoFluidPushing();
-         if (this.level.isClientSide) {
-            this.level.addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5D, this.getZ(), 0.0D, 0.0D, 0.0D);
-         }
+         this.updateInWaterState();
+         this.level.addParticle(ParticleTypes.SMOKE, this.x, this.y + 0.5D, this.z, 0.0D, 0.0D, 0.0D);
       }
 
    }
 
    private void explode() {
       float var1 = 4.0F;
-      this.level.explode(this, this.getX(), this.getY(0.0625D), this.getZ(), 4.0F, Explosion.BlockInteraction.BREAK);
+      this.level.explode(this, this.x, this.y + (double)(this.getBbHeight() / 16.0F), this.z, 4.0F, Explosion.BlockInteraction.BREAK);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
@@ -98,7 +99,7 @@ public class PrimedTnt extends Entity {
    }
 
    protected float getEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.15F;
+      return 0.0F;
    }
 
    public void setFuse(int var1) {

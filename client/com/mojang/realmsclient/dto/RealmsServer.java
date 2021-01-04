@@ -1,9 +1,6 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -11,17 +8,17 @@ import com.google.gson.JsonParser;
 import com.mojang.realmsclient.util.JsonUtils;
 import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.realms.Realms;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -71,7 +68,7 @@ public class RealmsServer extends ValueObject {
    }
 
    public void updateServerPing(RealmsServerPlayerList var1) {
-      ArrayList var2 = Lists.newArrayList();
+      StringBuilder var2 = new StringBuilder();
       int var3 = 0;
       Iterator var4 = var1.players.iterator();
 
@@ -80,23 +77,27 @@ public class RealmsServer extends ValueObject {
          do {
             if (!var4.hasNext()) {
                this.serverPing.nrOfPlayers = String.valueOf(var3);
-               this.serverPing.playerList = Joiner.on('\n').join(var2);
+               this.serverPing.playerList = var2.toString();
                return;
             }
 
             var5 = (String)var4.next();
-         } while(var5.equals(Minecraft.getInstance().getUser().getUuid()));
+         } while(var5.equals(Realms.getUUID()));
 
          String var6 = "";
 
          try {
             var6 = RealmsUtil.uuidToName(var5);
          } catch (Exception var8) {
-            LOGGER.error("Could not get name for {}", var5, var8);
+            LOGGER.error("Could not get name for " + var5, var8);
             continue;
          }
 
-         var2.add(var6);
+         if (var2.length() > 0) {
+            var2.append("\n");
+         }
+
+         var2.append(var6);
          ++var3;
       }
    }
@@ -115,7 +116,7 @@ public class RealmsServer extends ValueObject {
             var1.players = parseInvited(var0.get("players").getAsJsonArray());
             sortInvited(var1);
          } else {
-            var1.players = Lists.newArrayList();
+            var1.players = new ArrayList();
          }
 
          var1.daysLeft = JsonUtils.getIntOr("daysLeft", var0, 0);
@@ -126,7 +127,7 @@ public class RealmsServer extends ValueObject {
          if (var0.get("slots") != null && var0.get("slots").isJsonArray()) {
             var1.slots = parseSlots(var0.get("slots").getAsJsonArray());
          } else {
-            var1.slots = createEmptySlots();
+            var1.slots = getEmptySlots();
          }
 
          var1.minigameName = JsonUtils.getStringOr("minigameName", var0, (String)null);
@@ -134,20 +135,27 @@ public class RealmsServer extends ValueObject {
          var1.minigameId = JsonUtils.getIntOr("minigameId", var0, -1);
          var1.minigameImage = JsonUtils.getStringOr("minigameImage", var0, (String)null);
       } catch (Exception var3) {
-         LOGGER.error("Could not parse McoServer: {}", var3.getMessage());
+         LOGGER.error("Could not parse McoServer: " + var3.getMessage());
       }
 
       return var1;
    }
 
    private static void sortInvited(RealmsServer var0) {
-      var0.players.sort((var0x, var1) -> {
-         return ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result();
+      Collections.sort(var0.players, new Comparator<PlayerInfo>() {
+         public int compare(PlayerInfo var1, PlayerInfo var2) {
+            return ComparisonChain.start().compare(var2.getAccepted(), var1.getAccepted()).compare(var1.getName().toLowerCase(Locale.ROOT), var2.getName().toLowerCase(Locale.ROOT)).result();
+         }
+
+         // $FF: synthetic method
+         public int compare(Object var1, Object var2) {
+            return this.compare((PlayerInfo)var1, (PlayerInfo)var2);
+         }
       });
    }
 
    private static List<PlayerInfo> parseInvited(JsonArray var0) {
-      ArrayList var1 = Lists.newArrayList();
+      ArrayList var1 = new ArrayList();
       Iterator var2 = var0.iterator();
 
       while(var2.hasNext()) {
@@ -170,7 +178,7 @@ public class RealmsServer extends ValueObject {
    }
 
    private static Map<Integer, RealmsWorldOptions> parseSlots(JsonArray var0) {
-      HashMap var1 = Maps.newHashMap();
+      HashMap var1 = new HashMap();
       Iterator var2 = var0.iterator();
 
       while(var2.hasNext()) {
@@ -182,7 +190,7 @@ public class RealmsServer extends ValueObject {
             JsonElement var7 = var6.parse(var5.get("options").getAsString());
             RealmsWorldOptions var4;
             if (var7 == null) {
-               var4 = RealmsWorldOptions.createDefaults();
+               var4 = RealmsWorldOptions.getDefaults();
             } else {
                var4 = RealmsWorldOptions.parse(var7.getAsJsonObject());
             }
@@ -195,28 +203,33 @@ public class RealmsServer extends ValueObject {
 
       for(int var10 = 1; var10 <= 3; ++var10) {
          if (!var1.containsKey(var10)) {
-            var1.put(var10, RealmsWorldOptions.createEmptyDefaults());
+            var1.put(var10, RealmsWorldOptions.getEmptyDefaults());
          }
       }
 
       return var1;
    }
 
-   private static Map<Integer, RealmsWorldOptions> createEmptySlots() {
-      HashMap var0 = Maps.newHashMap();
-      var0.put(1, RealmsWorldOptions.createEmptyDefaults());
-      var0.put(2, RealmsWorldOptions.createEmptyDefaults());
-      var0.put(3, RealmsWorldOptions.createEmptyDefaults());
+   private static Map<Integer, RealmsWorldOptions> getEmptySlots() {
+      HashMap var0 = new HashMap();
+      var0.put(1, RealmsWorldOptions.getEmptyDefaults());
+      var0.put(2, RealmsWorldOptions.getEmptyDefaults());
+      var0.put(3, RealmsWorldOptions.getEmptyDefaults());
       return var0;
    }
 
    public static RealmsServer parse(String var0) {
+      RealmsServer var1 = new RealmsServer();
+
       try {
-         return parse((new JsonParser()).parse(var0).getAsJsonObject());
-      } catch (Exception var2) {
-         LOGGER.error("Could not parse McoServer: {}", var2.getMessage());
-         return new RealmsServer();
+         JsonParser var2 = new JsonParser();
+         JsonObject var3 = var2.parse(var0).getAsJsonObject();
+         var1 = parse(var3);
+      } catch (Exception var4) {
+         LOGGER.error("Could not parse McoServer: " + var4.getMessage());
       }
+
+      return var1;
    }
 
    private static RealmsServer.State getState(String var0) {
@@ -236,7 +249,7 @@ public class RealmsServer extends ValueObject {
    }
 
    public int hashCode() {
-      return Objects.hash(new Object[]{this.id, this.name, this.motd, this.state, this.owner, this.expired});
+      return (new HashCodeBuilder(17, 37)).append(this.id).append(this.name).append(this.motd).append(this.state).append(this.owner).append(this.expired).toHashCode();
    }
 
    public boolean equals(Object var1) {
@@ -278,7 +291,7 @@ public class RealmsServer extends ValueObject {
    }
 
    public Map<Integer, RealmsWorldOptions> cloneSlots(Map<Integer, RealmsWorldOptions> var1) {
-      HashMap var2 = Maps.newHashMap();
+      HashMap var2 = new HashMap();
       Iterator var3 = var1.entrySet().iterator();
 
       while(var3.hasNext()) {
@@ -287,19 +300,6 @@ public class RealmsServer extends ValueObject {
       }
 
       return var2;
-   }
-
-   public String getWorldName(int var1) {
-      return this.name + " (" + ((RealmsWorldOptions)this.slots.get(var1)).getSlotName(var1) + ")";
-   }
-
-   public ServerData toServerData(String var1) {
-      return new ServerData(this.name, var1, false);
-   }
-
-   // $FF: synthetic method
-   public Object clone() throws CloneNotSupportedException {
-      return this.clone();
    }
 
    public static enum WorldType {
@@ -331,7 +331,7 @@ public class RealmsServer extends ValueObject {
       }
 
       public int compare(RealmsServer var1, RealmsServer var2) {
-         return ComparisonChain.start().compareTrueFirst(var1.state == RealmsServer.State.UNINITIALIZED, var2.state == RealmsServer.State.UNINITIALIZED).compareTrueFirst(var1.expiredTrial, var2.expiredTrial).compareTrueFirst(var1.owner.equals(this.refOwner), var2.owner.equals(this.refOwner)).compareFalseFirst(var1.expired, var2.expired).compareTrueFirst(var1.state == RealmsServer.State.OPEN, var2.state == RealmsServer.State.OPEN).compare(var1.id, var2.id).result();
+         return ComparisonChain.start().compareTrueFirst(var1.state.equals(RealmsServer.State.UNINITIALIZED), var2.state.equals(RealmsServer.State.UNINITIALIZED)).compareTrueFirst(var1.expiredTrial, var2.expiredTrial).compareTrueFirst(var1.owner.equals(this.refOwner), var2.owner.equals(this.refOwner)).compareFalseFirst(var1.expired, var2.expired).compareTrueFirst(var1.state.equals(RealmsServer.State.OPEN), var2.state.equals(RealmsServer.State.OPEN)).compare(var1.id, var2.id).result();
       }
 
       // $FF: synthetic method

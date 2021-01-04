@@ -1,18 +1,13 @@
 package net.minecraft.util.profiling;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import javax.annotation.Nullable;
 import net.minecraft.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,24 +18,19 @@ public class ActiveProfiler implements ProfileCollector {
    private static final Logger LOGGER = LogManager.getLogger();
    private final List<String> paths = Lists.newArrayList();
    private final LongList startTimes = new LongArrayList();
-   private final Map<String, ActiveProfiler.PathEntry> entries = Maps.newHashMap();
+   private final Object2LongMap<String> times = new Object2LongOpenHashMap();
+   private final Object2LongMap<String> counts = new Object2LongOpenHashMap();
    private final IntSupplier getTickTime;
-   private final LongSupplier getRealTime;
    private final long startTimeNano;
    private final int startTimeTicks;
    private String path = "";
    private boolean started;
-   @Nullable
-   private ActiveProfiler.PathEntry currentEntry;
-   private final boolean warn;
 
-   public ActiveProfiler(LongSupplier var1, IntSupplier var2, boolean var3) {
+   public ActiveProfiler(long var1, IntSupplier var3) {
       super();
-      this.startTimeNano = var1.getAsLong();
-      this.getRealTime = var1;
-      this.startTimeTicks = var2.getAsInt();
-      this.getTickTime = var2;
-      this.warn = var3;
+      this.startTimeNano = var1;
+      this.startTimeTicks = var3.getAsInt();
+      this.getTickTime = var3;
    }
 
    public void startTick() {
@@ -80,7 +70,6 @@ public class ActiveProfiler implements ProfileCollector {
          this.path = this.path + var1;
          this.paths.add(this.path);
          this.startTimes.add(Util.getNanos());
-         this.currentEntry = null;
       }
    }
 
@@ -98,10 +87,9 @@ public class ActiveProfiler implements ProfileCollector {
          long var3 = this.startTimes.removeLong(this.startTimes.size() - 1);
          this.paths.remove(this.paths.size() - 1);
          long var5 = var1 - var3;
-         ActiveProfiler.PathEntry var7 = this.getCurrentEntry();
-         var7.duration = var7.duration + var5;
-         var7.count = var7.count + 1L;
-         if (this.warn && var5 > WARNING_TIME_NANOS) {
+         this.times.put(this.path, this.times.getLong(this.path) + var5);
+         this.counts.put(this.path, this.counts.getLong(this.path) + 1L);
+         if (var5 > WARNING_TIME_NANOS) {
             LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", new Supplier[]{() -> {
                return ProfileResults.demanglePath(this.path);
             }, () -> {
@@ -110,7 +98,6 @@ public class ActiveProfiler implements ProfileCollector {
          }
 
          this.path = this.paths.isEmpty() ? "" : (String)this.paths.get(this.paths.size() - 1);
-         this.currentEntry = null;
       }
    }
 
@@ -124,53 +111,7 @@ public class ActiveProfiler implements ProfileCollector {
       this.push(var1);
    }
 
-   private ActiveProfiler.PathEntry getCurrentEntry() {
-      if (this.currentEntry == null) {
-         this.currentEntry = (ActiveProfiler.PathEntry)this.entries.computeIfAbsent(this.path, (var0) -> {
-            return new ActiveProfiler.PathEntry();
-         });
-      }
-
-      return this.currentEntry;
-   }
-
-   public void incrementCounter(String var1) {
-      this.getCurrentEntry().counters.addTo(var1, 1L);
-   }
-
-   public void incrementCounter(java.util.function.Supplier<String> var1) {
-      this.getCurrentEntry().counters.addTo(var1.get(), 1L);
-   }
-
    public ProfileResults getResults() {
-      return new FilledProfileResults(this.entries, this.startTimeNano, this.startTimeTicks, this.getRealTime.getAsLong(), this.getTickTime.getAsInt());
-   }
-
-   static class PathEntry implements ProfilerPathEntry {
-      private long duration;
-      private long count;
-      private final Object2LongOpenHashMap<String> counters;
-
-      private PathEntry() {
-         super();
-         this.counters = new Object2LongOpenHashMap();
-      }
-
-      public long getDuration() {
-         return this.duration;
-      }
-
-      public long getCount() {
-         return this.count;
-      }
-
-      public Object2LongMap<String> getCounters() {
-         return Object2LongMaps.unmodifiable(this.counters);
-      }
-
-      // $FF: synthetic method
-      PathEntry(Object var1) {
-         this();
-      }
+      return new FilledProfileResults(this.times, this.counts, this.startTimeNano, this.startTimeTicks, Util.getNanos(), this.getTickTime.getAsInt());
    }
 }

@@ -38,7 +38,7 @@ public class BreathAirGoal extends Goal {
    }
 
    private void findAirPosition() {
-      Iterable var1 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 1.0D), this.mob.getBlockY(), Mth.floor(this.mob.getZ() - 1.0D), Mth.floor(this.mob.getX() + 1.0D), Mth.floor(this.mob.getY() + 8.0D), Mth.floor(this.mob.getZ() + 1.0D));
+      Iterable var1 = BlockPos.betweenClosed(Mth.floor(this.mob.x - 1.0D), Mth.floor(this.mob.y), Mth.floor(this.mob.z - 1.0D), Mth.floor(this.mob.x + 1.0D), Mth.floor(this.mob.y + 8.0D), Mth.floor(this.mob.z + 1.0D));
       BlockPos var2 = null;
       Iterator var3 = var1.iterator();
 
@@ -51,7 +51,7 @@ public class BreathAirGoal extends Goal {
       }
 
       if (var2 == null) {
-         var2 = new BlockPos(this.mob.getX(), this.mob.getY() + 8.0D, this.mob.getZ());
+         var2 = new BlockPos(this.mob.x, this.mob.y + 8.0D, this.mob.z);
       }
 
       this.mob.getNavigation().moveTo((double)var2.getX(), (double)(var2.getY() + 1), (double)var2.getZ(), 1.0D);
@@ -65,6 +65,6 @@ public class BreathAirGoal extends Goal {
 
    private boolean givesAir(LevelReader var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      return (var1.getFluidState(var2).isEmpty() || var3.is(Blocks.BUBBLE_COLUMN)) && var3.isPathfindable(var1, var2, PathComputationType.LAND);
+      return (var1.getFluidState(var2).isEmpty() || var3.getBlock() == Blocks.BUBBLE_COLUMN) && var3.isPathfindable(var1, var2, PathComputationType.LAND);
    }
 }

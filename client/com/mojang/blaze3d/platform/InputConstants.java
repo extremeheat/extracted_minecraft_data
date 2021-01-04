@@ -9,25 +9,17 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalInt;
-import java.util.function.BiFunction;
 import javax.annotation.Nullable;
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.util.LazyLoadedValue;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharModsCallbackI;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
-import org.lwjgl.glfw.GLFWDropCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWScrollCallbackI;
 
 public class InputConstants {
    @Nullable
-   private static final MethodHandle GLFW_RAW_MOUSE_MOTION_SUPPORTED;
+   private static final MethodHandle glfwRawMouseMotionSupported;
    private static final int GLFW_RAW_MOUSE_MOTION;
    public static final InputConstants.Key UNKNOWN;
 
@@ -63,11 +55,10 @@ public class InputConstants {
       GLFW.glfwSetCharModsCallback(var0, var3);
    }
 
-   public static void setupMouseCallbacks(long var0, GLFWCursorPosCallbackI var2, GLFWMouseButtonCallbackI var3, GLFWScrollCallbackI var4, GLFWDropCallbackI var5) {
+   public static void setupMouseCallbacks(long var0, GLFWCursorPosCallbackI var2, GLFWMouseButtonCallbackI var3, GLFWScrollCallbackI var4) {
       GLFW.glfwSetCursorPosCallback(var0, var2);
       GLFW.glfwSetMouseButtonCallback(var0, var3);
       GLFW.glfwSetScrollCallback(var0, var4);
-      GLFW.glfwSetDropCallback(var0, var5);
    }
 
    public static void grabOrReleaseMouse(long var0, int var2, double var3, double var5) {
@@ -77,7 +68,7 @@ public class InputConstants {
 
    public static boolean isRawMouseInputSupported() {
       try {
-         return GLFW_RAW_MOUSE_MOTION_SUPPORTED != null && GLFW_RAW_MOUSE_MOTION_SUPPORTED.invokeExact();
+         return glfwRawMouseMotionSupported != null && glfwRawMouseMotionSupported.invokeExact();
       } catch (Throwable var1) {
          throw new RuntimeException(var1);
       }
@@ -88,6 +79,16 @@ public class InputConstants {
          GLFW.glfwSetInputMode(var0, GLFW_RAW_MOUSE_MOTION, var2 ? 1 : 0);
       }
 
+   }
+
+   @Nullable
+   public static String translateKeyCode(int var0) {
+      return GLFW.glfwGetKeyName(var0, -1);
+   }
+
+   @Nullable
+   public static String translateScanCode(int var0) {
+      return GLFW.glfwGetKeyName(-1, var0);
    }
 
    static {
@@ -105,7 +106,7 @@ public class InputConstants {
          throw new RuntimeException(var6);
       }
 
-      GLFW_RAW_MOUSE_MOTION_SUPPORTED = var2;
+      glfwRawMouseMotionSupported = var2;
       GLFW_RAW_MOUSE_MOTION = var3;
       UNKNOWN = InputConstants.Type.KEYSYM.getOrCreate(-1);
    }
@@ -114,7 +115,6 @@ public class InputConstants {
       private final String name;
       private final InputConstants.Type type;
       private final int value;
-      private final LazyLoadedValue<Component> displayName;
       private static final Map<String, InputConstants.Key> NAME_MAP = Maps.newHashMap();
 
       private Key(String var1, InputConstants.Type var2, int var3) {
@@ -122,9 +122,6 @@ public class InputConstants {
          this.name = var1;
          this.type = var2;
          this.value = var3;
-         this.displayName = new LazyLoadedValue(() -> {
-            return (Component)var2.displayTextSupplier.apply(var3, var1);
-         });
          NAME_MAP.put(var1, this);
       }
 
@@ -138,18 +135,6 @@ public class InputConstants {
 
       public String getName() {
          return this.name;
-      }
-
-      public Component getDisplayName() {
-         return (Component)this.displayName.get();
-      }
-
-      public OptionalInt getNumericKeyValue() {
-         if (this.value >= 48 && this.value <= 57) {
-            return OptionalInt.of(this.value - 48);
-         } else {
-            return this.value >= 320 && this.value <= 329 ? OptionalInt.of(this.value - 320) : OptionalInt.empty();
-         }
       }
 
       public boolean equals(Object var1) {
@@ -178,42 +163,46 @@ public class InputConstants {
    }
 
    public static enum Type {
-      KEYSYM("key.keyboard", (var0, var1) -> {
-         String var2 = GLFW.glfwGetKeyName(var0, -1);
-         return (Component)(var2 != null ? new TextComponent(var2) : new TranslatableComponent(var1));
-      }),
-      SCANCODE("scancode", (var0, var1) -> {
-         String var2 = GLFW.glfwGetKeyName(-1, var0);
-         return (Component)(var2 != null ? new TextComponent(var2) : new TranslatableComponent(var1));
-      }),
-      MOUSE("key.mouse", (var0, var1) -> {
-         return Language.getInstance().has(var1) ? new TranslatableComponent(var1) : new TranslatableComponent("key.mouse", new Object[]{var0 + 1});
-      });
+      KEYSYM("key.keyboard"),
+      SCANCODE("scancode"),
+      MOUSE("key.mouse");
 
+      private static final String[] MOUSE_BUTTON_NAMES;
       private final Int2ObjectMap<InputConstants.Key> map = new Int2ObjectOpenHashMap();
       private final String defaultPrefix;
-      private final BiFunction<Integer, String, Component> displayTextSupplier;
 
       private static void addKey(InputConstants.Type var0, String var1, int var2) {
          InputConstants.Key var3 = new InputConstants.Key(var1, var0, var2);
          var0.map.put(var2, var3);
       }
 
-      private Type(String var3, BiFunction<Integer, String, Component> var4) {
+      private Type(String var3) {
          this.defaultPrefix = var3;
-         this.displayTextSupplier = var4;
       }
 
       public InputConstants.Key getOrCreate(int var1) {
-         return (InputConstants.Key)this.map.computeIfAbsent(var1, (var1x) -> {
-            int var2 = var1x;
+         if (this.map.containsKey(var1)) {
+            return (InputConstants.Key)this.map.get(var1);
+         } else {
+            String var2;
             if (this == MOUSE) {
-               var2 = var1x + 1;
+               if (var1 <= 2) {
+                  var2 = "." + MOUSE_BUTTON_NAMES[var1];
+               } else {
+                  var2 = "." + (var1 + 1);
+               }
+            } else {
+               var2 = "." + var1;
             }
 
-            String var3 = this.defaultPrefix + "." + var2;
-            return new InputConstants.Key(var3, this, var1x);
-         });
+            InputConstants.Key var3 = new InputConstants.Key(this.defaultPrefix + var2, this, var1);
+            this.map.put(var1, var3);
+            return var3;
+         }
+      }
+
+      public String getDefaultPrefix() {
+         return this.defaultPrefix;
       }
 
       static {
@@ -346,6 +335,7 @@ public class InputConstants {
          addKey(KEYSYM, "key.keyboard.print.screen", 283);
          addKey(KEYSYM, "key.keyboard.world.1", 161);
          addKey(KEYSYM, "key.keyboard.world.2", 162);
+         MOUSE_BUTTON_NAMES = new String[]{"left", "middle", "right"};
       }
    }
 }

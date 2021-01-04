@@ -29,18 +29,17 @@ import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.util.Queue;
 import javax.annotation.Nullable;
-import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
-import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+import net.minecraft.util.Crypt;
 import net.minecraft.util.LazyLoadedValue;
-import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,8 +93,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       LOGGER.debug("Enabled auto read");
    }
 
-   public void channelInactive(ChannelHandlerContext var1) {
-      this.disconnect(new TranslatableComponent("disconnect.endOfStream"));
+   public void channelInactive(ChannelHandlerContext var1) throws Exception {
+      this.disconnect(new TranslatableComponent("disconnect.endOfStream", new Object[0]));
    }
 
    public void exceptionCaught(ChannelHandlerContext var1, Throwable var2) {
@@ -107,14 +106,12 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          if (this.channel.isOpen()) {
             if (var2 instanceof TimeoutException) {
                LOGGER.debug("Timeout", var2);
-               this.disconnect(new TranslatableComponent("disconnect.timeout"));
+               this.disconnect(new TranslatableComponent("disconnect.timeout", new Object[0]));
             } else {
                TranslatableComponent var4 = new TranslatableComponent("disconnect.genericReason", new Object[]{"Internal Exception: " + var2});
                if (var3) {
                   LOGGER.debug("Failed to sent packet", var2);
-                  ConnectionProtocol var5 = this.getCurrentProtocol();
-                  Object var6 = var5 == ConnectionProtocol.LOGIN ? new ClientboundLoginDisconnectPacket(var4) : new ClientboundDisconnectPacket(var4);
-                  this.send((Packet)var6, (var2x) -> {
+                  this.send(new ClientboundDisconnectPacket(var4), (var2x) -> {
                      this.disconnect(var4);
                   });
                   this.setReadOnly();
@@ -128,7 +125,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   protected void channelRead0(ChannelHandlerContext var1, Packet<?> var2) {
+   protected void channelRead0(ChannelHandlerContext var1, Packet<?> var2) throws Exception {
       if (this.channel.isOpen()) {
          try {
             genericsFtw(var2, this.packetListener);
@@ -146,6 +143,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public void setListener(PacketListener var1) {
       Validate.notNull(var1, "packetListener", new Object[0]);
+      LOGGER.debug("Set listener of {} to {}", this, var1);
       this.packetListener = var1;
    }
 
@@ -165,7 +163,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    private void sendPacket(Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2) {
       ConnectionProtocol var3 = ConnectionProtocol.getProtocolForPacket(var1);
-      ConnectionProtocol var4 = this.getCurrentProtocol();
+      ConnectionProtocol var4 = (ConnectionProtocol)this.channel.attr(ATTRIBUTE_PROTOCOL).get();
       ++this.sentPackets;
       if (var4 != var3) {
          LOGGER.debug("Disabled auto read");
@@ -200,10 +198,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    }
 
-   private ConnectionProtocol getCurrentProtocol() {
-      return (ConnectionProtocol)this.channel.attr(ATTRIBUTE_PROTOCOL).get();
-   }
-
    private void flushQueue() {
       if (this.channel != null && this.channel.isOpen()) {
          synchronized(this.queue) {
@@ -231,16 +225,12 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
 
       if (this.tickCount++ % 20 == 0) {
-         this.tickSecond();
+         this.averageSentPackets = this.averageSentPackets * 0.75F + (float)this.sentPackets * 0.25F;
+         this.averageReceivedPackets = this.averageReceivedPackets * 0.75F + (float)this.receivedPackets * 0.25F;
+         this.sentPackets = 0;
+         this.receivedPackets = 0;
       }
 
-   }
-
-   protected void tickSecond() {
-      this.averageSentPackets = Mth.lerp(0.75F, (float)this.sentPackets, this.averageSentPackets);
-      this.averageReceivedPackets = Mth.lerp(0.75F, (float)this.receivedPackets, this.averageReceivedPackets);
-      this.sentPackets = 0;
-      this.receivedPackets = 0;
    }
 
    public SocketAddress getRemoteAddress() {
@@ -272,7 +262,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
 
       ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)var5.get())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1) {
+         protected void initChannel(Channel var1) throws Exception {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);
             } catch (ChannelException var3x) {
@@ -287,17 +277,17 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static Connection connectToLocalServer(SocketAddress var0) {
       final Connection var1 = new Connection(PacketFlow.CLIENTBOUND);
       ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)LOCAL_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1x) {
+         protected void initChannel(Channel var1x) throws Exception {
             var1x.pipeline().addLast("packet_handler", var1);
          }
       })).channel(LocalChannel.class)).connect(var0).syncUninterruptibly();
       return var1;
    }
 
-   public void setEncryptionKey(Cipher var1, Cipher var2) {
+   public void setEncryptionKey(SecretKey var1) {
       this.encrypted = true;
-      this.channel.pipeline().addBefore("splitter", "decrypt", new CipherDecoder(var1));
-      this.channel.pipeline().addBefore("prepender", "encrypt", new CipherEncoder(var2));
+      this.channel.pipeline().addBefore("splitter", "decrypt", new CipherDecoder(Crypt.getCipher(2, var1)));
+      this.channel.pipeline().addBefore("prepender", "encrypt", new CipherEncoder(Crypt.getCipher(1, var1)));
    }
 
    public boolean isEncrypted() {
@@ -359,7 +349,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (this.getDisconnectedReason() != null) {
                this.getPacketListener().onDisconnect(this.getDisconnectedReason());
             } else if (this.getPacketListener() != null) {
-               this.getPacketListener().onDisconnect(new TranslatableComponent("multiplayer.disconnect.generic"));
+               this.getPacketListener().onDisconnect(new TranslatableComponent("multiplayer.disconnect.generic", new Object[0]));
             }
          }
 

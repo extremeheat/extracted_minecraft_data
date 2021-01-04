@@ -4,12 +4,12 @@ import com.google.gson.JsonParseException;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.GsonHelper;
@@ -22,9 +22,9 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
       return var1.update("pages", (var1x) -> {
-         DataResult var10000 = var1x.asStreamOpt().map((var0) -> {
+         Optional var10000 = var1x.asStreamOpt().map((var0) -> {
             return var0.map((var0x) -> {
-               if (!var0x.asString().result().isPresent()) {
+               if (!var0x.asString().isPresent()) {
                   return var0x;
                } else {
                   String var1 = var0x.asString("");
@@ -34,7 +34,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
                         try {
                            var2 = (Component)GsonHelper.fromJson(BlockEntitySignTextStrictJsonFix.GSON, var1, Component.class, true);
                            if (var2 == null) {
-                              var2 = TextComponent.EMPTY;
+                              var2 = new TextComponent("");
                            }
                         } catch (JsonParseException var6) {
                         }
@@ -60,7 +60,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
                         var2 = new TextComponent(var1);
                      }
                   } else {
-                     var2 = TextComponent.EMPTY;
+                     var2 = new TextComponent("");
                   }
 
                   return var0x.createString(Component.Serializer.toJson((Component)var2));
@@ -68,7 +68,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
             });
          });
          var1.getClass();
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList).result(), var1.emptyList());
+         return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var1.emptyList());
       });
    }
 

@@ -1,77 +1,99 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.vehicle.Boat;
 
-public class BoatModel extends ListModel<Boat> {
-   private final ModelPart leftPaddle;
-   private final ModelPart rightPaddle;
+public class BoatModel extends EntityModel<Boat> {
+   private final ModelPart[] cubes = new ModelPart[5];
+   private final ModelPart[] paddles = new ModelPart[2];
    private final ModelPart waterPatch;
-   private final ImmutableList<ModelPart> parts;
 
-   public BoatModel(ModelPart var1) {
+   public BoatModel() {
       super();
-      this.leftPaddle = var1.getChild("left_paddle");
-      this.rightPaddle = var1.getChild("right_paddle");
-      this.waterPatch = var1.getChild("water_patch");
-      this.parts = ImmutableList.of(var1.getChild("bottom"), var1.getChild("back"), var1.getChild("front"), var1.getChild("right"), var1.getChild("left"), this.leftPaddle, this.rightPaddle);
-   }
-
-   public static LayerDefinition createBodyModel() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
+      this.cubes[0] = (new ModelPart(this, 0, 0)).setTexSize(128, 64);
+      this.cubes[1] = (new ModelPart(this, 0, 19)).setTexSize(128, 64);
+      this.cubes[2] = (new ModelPart(this, 0, 27)).setTexSize(128, 64);
+      this.cubes[3] = (new ModelPart(this, 0, 35)).setTexSize(128, 64);
+      this.cubes[4] = (new ModelPart(this, 0, 43)).setTexSize(128, 64);
+      boolean var1 = true;
       boolean var2 = true;
       boolean var3 = true;
       boolean var4 = true;
       boolean var5 = true;
-      boolean var6 = true;
-      var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 0).addBox(-14.0F, -9.0F, -3.0F, 28.0F, 16.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 3.0F, 1.0F, 1.5707964F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("back", CubeListBuilder.create().texOffs(0, 19).addBox(-13.0F, -7.0F, -1.0F, 18.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(-15.0F, 4.0F, 4.0F, 0.0F, 4.712389F, 0.0F));
-      var1.addOrReplaceChild("front", CubeListBuilder.create().texOffs(0, 27).addBox(-8.0F, -7.0F, -1.0F, 16.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(15.0F, 4.0F, 0.0F, 0.0F, 1.5707964F, 0.0F));
-      var1.addOrReplaceChild("right", CubeListBuilder.create().texOffs(0, 35).addBox(-14.0F, -7.0F, -1.0F, 28.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 4.0F, -9.0F, 0.0F, 3.1415927F, 0.0F));
-      var1.addOrReplaceChild("left", CubeListBuilder.create().texOffs(0, 43).addBox(-14.0F, -7.0F, -1.0F, 28.0F, 6.0F, 2.0F), PartPose.offset(0.0F, 4.0F, 9.0F));
-      boolean var7 = true;
-      boolean var8 = true;
-      boolean var9 = true;
-      float var10 = -5.0F;
-      var1.addOrReplaceChild("left_paddle", CubeListBuilder.create().texOffs(62, 0).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(-1.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F), PartPose.offsetAndRotation(3.0F, -5.0F, 9.0F, 0.0F, 0.0F, 0.19634955F));
-      var1.addOrReplaceChild("right_paddle", CubeListBuilder.create().texOffs(62, 20).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(0.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F), PartPose.offsetAndRotation(3.0F, -5.0F, -9.0F, 0.0F, 3.1415927F, 0.19634955F));
-      var1.addOrReplaceChild("water_patch", CubeListBuilder.create().texOffs(0, 0).addBox(-14.0F, -9.0F, -3.0F, 28.0F, 16.0F, 3.0F), PartPose.offsetAndRotation(0.0F, -3.0F, 1.0F, 1.5707964F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0, 128, 64);
+      this.cubes[0].addBox(-14.0F, -9.0F, -3.0F, 28, 16, 3, 0.0F);
+      this.cubes[0].setPos(0.0F, 3.0F, 1.0F);
+      this.cubes[1].addBox(-13.0F, -7.0F, -1.0F, 18, 6, 2, 0.0F);
+      this.cubes[1].setPos(-15.0F, 4.0F, 4.0F);
+      this.cubes[2].addBox(-8.0F, -7.0F, -1.0F, 16, 6, 2, 0.0F);
+      this.cubes[2].setPos(15.0F, 4.0F, 0.0F);
+      this.cubes[3].addBox(-14.0F, -7.0F, -1.0F, 28, 6, 2, 0.0F);
+      this.cubes[3].setPos(0.0F, 4.0F, -9.0F);
+      this.cubes[4].addBox(-14.0F, -7.0F, -1.0F, 28, 6, 2, 0.0F);
+      this.cubes[4].setPos(0.0F, 4.0F, 9.0F);
+      this.cubes[0].xRot = 1.5707964F;
+      this.cubes[1].yRot = 4.712389F;
+      this.cubes[2].yRot = 1.5707964F;
+      this.cubes[3].yRot = 3.1415927F;
+      this.paddles[0] = this.makePaddle(true);
+      this.paddles[0].setPos(3.0F, -5.0F, 9.0F);
+      this.paddles[1] = this.makePaddle(false);
+      this.paddles[1].setPos(3.0F, -5.0F, -9.0F);
+      this.paddles[1].yRot = 3.1415927F;
+      this.paddles[0].zRot = 0.19634955F;
+      this.paddles[1].zRot = 0.19634955F;
+      this.waterPatch = (new ModelPart(this, 0, 0)).setTexSize(128, 64);
+      this.waterPatch.addBox(-14.0F, -9.0F, -3.0F, 28, 16, 3, 0.0F);
+      this.waterPatch.setPos(0.0F, -3.0F, 1.0F);
+      this.waterPatch.xRot = 1.5707964F;
    }
 
-   public void setupAnim(Boat var1, float var2, float var3, float var4, float var5, float var6) {
-      animatePaddle(var1, 0, this.leftPaddle, var2);
-      animatePaddle(var1, 1, this.rightPaddle, var2);
-   }
+   public void render(Boat var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      GlStateManager.rotatef(90.0F, 0.0F, 1.0F, 0.0F);
+      this.setupAnim(var1, var2, var3, var4, var5, var6, var7);
 
-   public ImmutableList<ModelPart> parts() {
-      return this.parts;
-   }
-
-   public ModelPart waterPatch() {
-      return this.waterPatch;
-   }
-
-   private static void animatePaddle(Boat var0, int var1, ModelPart var2, float var3) {
-      float var4 = var0.getRowingTime(var1, var3);
-      var2.xRot = (float)Mth.clampedLerp(-1.0471975803375244D, -0.2617993950843811D, (double)((Mth.sin(-var4) + 1.0F) / 2.0F));
-      var2.yRot = (float)Mth.clampedLerp(-0.7853981852531433D, 0.7853981852531433D, (double)((Mth.sin(-var4 + 1.0F) + 1.0F) / 2.0F));
-      if (var1 == 1) {
-         var2.yRot = 3.1415927F - var2.yRot;
+      for(int var8 = 0; var8 < 5; ++var8) {
+         this.cubes[var8].render(var7);
       }
 
+      this.animatePaddle(var1, 0, var7, var2);
+      this.animatePaddle(var1, 1, var7, var2);
+   }
+
+   public void renderSecondPass(Entity var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      GlStateManager.rotatef(90.0F, 0.0F, 1.0F, 0.0F);
+      GlStateManager.colorMask(false, false, false, false);
+      this.waterPatch.render(var7);
+      GlStateManager.colorMask(true, true, true, true);
+   }
+
+   protected ModelPart makePaddle(boolean var1) {
+      ModelPart var2 = (new ModelPart(this, 62, var1 ? 0 : 20)).setTexSize(128, 64);
+      boolean var3 = true;
+      boolean var4 = true;
+      boolean var5 = true;
+      float var6 = -5.0F;
+      var2.addBox(-1.0F, 0.0F, -5.0F, 2, 2, 18);
+      var2.addBox(var1 ? -1.001F : 0.001F, -3.0F, 8.0F, 1, 6, 7);
+      return var2;
+   }
+
+   protected void animatePaddle(Boat var1, int var2, float var3, float var4) {
+      float var5 = var1.getRowingTime(var2, var4);
+      ModelPart var6 = this.paddles[var2];
+      var6.xRot = (float)Mth.clampedLerp(-1.0471975803375244D, -0.2617993950843811D, (double)((Mth.sin(-var5) + 1.0F) / 2.0F));
+      var6.yRot = (float)Mth.clampedLerp(-0.7853981852531433D, 0.7853981852531433D, (double)((Mth.sin(-var5 + 1.0F) + 1.0F) / 2.0F));
+      if (var2 == 1) {
+         var6.yRot = 3.1415927F - var6.yRot;
+      }
+
+      var6.render(var3);
    }
 
    // $FF: synthetic method
-   public Iterable parts() {
-      return this.parts();
+   public void render(Entity var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.render((Boat)var1, var2, var3, var4, var5, var6, var7);
    }
 }

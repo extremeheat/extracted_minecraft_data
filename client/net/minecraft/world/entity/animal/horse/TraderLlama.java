@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,7 +16,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public class TraderLlama extends Llama {
    private int despawnDelay = 47999;
@@ -73,14 +72,14 @@ public class TraderLlama extends Llama {
          this.despawnDelay = this.isLeashedToWanderingTrader() ? ((WanderingTrader)this.getLeashHolder()).getDespawnDelay() - 1 : this.despawnDelay - 1;
          if (this.despawnDelay <= 0) {
             this.dropLeash(true, false);
-            this.discard();
+            this.remove();
          }
 
       }
    }
 
    private boolean canDespawn() {
-      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasExactlyOnePlayerPassenger();
+      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasOnePlayerPassenger();
    }
 
    private boolean isLeashedToWanderingTrader() {
@@ -92,16 +91,13 @@ public class TraderLlama extends Llama {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      SpawnGroupData var6 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       if (var3 == MobSpawnType.EVENT) {
          this.setAge(0);
       }
 
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(false);
-      }
-
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return var6;
    }
 
    public class TraderLlamaDefendWanderingTraderGoal extends TargetGoal {

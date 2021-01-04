@@ -4,19 +4,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.data.worldgen.Features;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -24,23 +18,24 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.end.TheEndDimension;
+import net.minecraft.world.level.levelgen.feature.EndGatewayConfiguration;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
+import net.minecraft.world.level.levelgen.feature.FeatureConfiguration;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
+public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity implements TickableBlockEntity {
    private static final Logger LOGGER = LogManager.getLogger();
    private long age;
    private int teleportCooldown;
-   @Nullable
    private BlockPos exitPortal;
    private boolean exactTeleport;
 
-   public TheEndGatewayBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.END_GATEWAY, var1, var2);
+   public TheEndGatewayBlockEntity() {
+      super(BlockEntityType.END_GATEWAY);
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -68,42 +63,30 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    public double getViewDistance() {
-      return 256.0D;
+      return 65536.0D;
    }
 
-   public static void beamAnimationTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
-      ++var3.age;
-      if (var3.isCoolingDown()) {
-         --var3.teleportCooldown;
-      }
-
-   }
-
-   public static void teleportTick(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
-      boolean var4 = var3.isSpawning();
-      boolean var5 = var3.isCoolingDown();
-      ++var3.age;
-      if (var5) {
-         --var3.teleportCooldown;
-      } else {
-         List var6 = var0.getEntitiesOfClass(Entity.class, new AABB(var1), TheEndGatewayBlockEntity::canEntityTeleport);
-         if (!var6.isEmpty()) {
-            teleportEntity(var0, var1, var2, (Entity)var6.get(var0.random.nextInt(var6.size())), var3);
+   public void tick() {
+      boolean var1 = this.isSpawning();
+      boolean var2 = this.isCoolingDown();
+      ++this.age;
+      if (var2) {
+         --this.teleportCooldown;
+      } else if (!this.level.isClientSide) {
+         List var3 = this.level.getEntitiesOfClass(Entity.class, new AABB(this.getBlockPos()));
+         if (!var3.isEmpty()) {
+            this.teleportEntity((Entity)var3.get(0));
          }
 
-         if (var3.age % 2400L == 0L) {
-            triggerCooldown(var0, var1, var2, var3);
+         if (this.age % 2400L == 0L) {
+            this.triggerCooldown();
          }
       }
 
-      if (var4 != var3.isSpawning() || var5 != var3.isCoolingDown()) {
-         setChanged(var0, var1, var2);
+      if (var1 != this.isSpawning() || var2 != this.isCoolingDown()) {
+         this.setChanged();
       }
 
-   }
-
-   public static boolean canEntityTeleport(Entity var0) {
-      return EntitySelector.NO_SPECTATORS.test(var0) && !var0.getRootVehicle().isOnPortalCooldown();
    }
 
    public boolean isSpawning() {
@@ -131,11 +114,11 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       return this.save(new CompoundTag());
    }
 
-   private static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
-      if (!var0.isClientSide) {
-         var3.teleportCooldown = 40;
-         var0.blockEvent(var1, var2.getBlock(), 1, 0);
-         setChanged(var0, var1, var2);
+   public void triggerCooldown() {
+      if (!this.level.isClientSide) {
+         this.teleportCooldown = 40;
+         this.level.blockEvent(this.getBlockPos(), this.getBlockState().getBlock(), 1, 0);
+         this.setChanged();
       }
 
    }
@@ -149,88 +132,57 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       }
    }
 
-   public static void teleportEntity(Level var0, BlockPos var1, BlockState var2, Entity var3, TheEndGatewayBlockEntity var4) {
-      if (var0 instanceof ServerLevel && !var4.isCoolingDown()) {
-         ServerLevel var5 = (ServerLevel)var0;
-         var4.teleportCooldown = 100;
-         BlockPos var6;
-         if (var4.exitPortal == null && var0.dimension() == Level.END) {
-            var6 = findOrCreateValidTeleportPos(var5, var1);
-            var6 = var6.above(10);
-            LOGGER.debug("Creating portal at {}", var6);
-            spawnGatewayPortal(var5, var6, EndGatewayConfiguration.knownExit(var1, false));
-            var4.exitPortal = var6;
+   public void teleportEntity(Entity var1) {
+      if (!this.level.isClientSide && !this.isCoolingDown()) {
+         this.teleportCooldown = 100;
+         if (this.exitPortal == null && this.level.dimension instanceof TheEndDimension) {
+            this.findExitPortal();
          }
 
-         if (var4.exitPortal != null) {
-            var6 = var4.exactTeleport ? var4.exitPortal : findExitPosition(var0, var4.exitPortal);
-            Entity var7;
-            if (var3 instanceof ThrownEnderpearl) {
-               Entity var8 = ((ThrownEnderpearl)var3).getOwner();
-               if (var8 instanceof ServerPlayer) {
-                  CriteriaTriggers.ENTER_BLOCK.trigger((ServerPlayer)var8, var2);
-               }
-
-               if (var8 != null) {
-                  var7 = var8;
-                  var3.discard();
-               } else {
-                  var7 = var3;
-               }
-            } else {
-               var7 = var3.getRootVehicle();
-            }
-
-            var7.setPortalCooldown();
-            var7.teleportToWithTicket((double)var6.getX() + 0.5D, (double)var6.getY(), (double)var6.getZ() + 0.5D);
+         if (this.exitPortal != null) {
+            BlockPos var2 = this.exactTeleport ? this.exitPortal : this.findExitPosition();
+            var1.teleportToWithTicket((double)var2.getX() + 0.5D, (double)var2.getY() + 0.5D, (double)var2.getZ() + 0.5D);
          }
 
-         triggerCooldown(var0, var1, var2, var4);
+         this.triggerCooldown();
       }
    }
 
-   private static BlockPos findExitPosition(Level var0, BlockPos var1) {
-      BlockPos var2 = findTallestBlock(var0, var1.offset(0, 2, 0), 5, false);
-      LOGGER.debug("Best exit position for portal at {} is {}", var1, var2);
-      return var2.above();
+   private BlockPos findExitPosition() {
+      BlockPos var1 = findTallestBlock(this.level, this.exitPortal, 5, false);
+      LOGGER.debug("Best exit position for portal at {} is {}", this.exitPortal, var1);
+      return var1.above();
    }
 
-   private static BlockPos findOrCreateValidTeleportPos(ServerLevel var0, BlockPos var1) {
-      Vec3 var2 = findExitPortalXZPosTentative(var0, var1);
-      LevelChunk var3 = getChunk(var0, var2);
-      BlockPos var4 = findValidSpawnInChunk(var3);
-      if (var4 == null) {
-         var4 = new BlockPos(var2.x + 0.5D, 75.0D, var2.z + 0.5D);
-         LOGGER.debug("Failed to find a suitable block to teleport to, spawning an island on {}", var4);
-         Features.END_ISLAND.place(var0, var0.getChunkSource().getGenerator(), new Random(var4.asLong()), var4);
+   private void findExitPortal() {
+      Vec3 var1 = (new Vec3((double)this.getBlockPos().getX(), 0.0D, (double)this.getBlockPos().getZ())).normalize();
+      Vec3 var2 = var1.scale(1024.0D);
+
+      int var3;
+      for(var3 = 16; getChunk(this.level, var2).getHighestSectionPosition() > 0 && var3-- > 0; var2 = var2.add(var1.scale(-16.0D))) {
+         LOGGER.debug("Skipping backwards past nonempty chunk at {}", var2);
+      }
+
+      for(var3 = 16; getChunk(this.level, var2).getHighestSectionPosition() == 0 && var3-- > 0; var2 = var2.add(var1.scale(16.0D))) {
+         LOGGER.debug("Skipping forward past empty chunk at {}", var2);
+      }
+
+      LOGGER.debug("Found chunk at {}", var2);
+      LevelChunk var4 = getChunk(this.level, var2);
+      this.exitPortal = findValidSpawnInChunk(var4);
+      if (this.exitPortal == null) {
+         this.exitPortal = new BlockPos(var2.x + 0.5D, 75.0D, var2.z + 0.5D);
+         LOGGER.debug("Failed to find suitable block, settling on {}", this.exitPortal);
+         Feature.END_ISLAND.place(this.level, this.level.getChunkSource().getGenerator(), new Random(this.exitPortal.asLong()), this.exitPortal, FeatureConfiguration.NONE);
       } else {
-         LOGGER.debug("Found suitable block to teleport to: {}", var4);
+         LOGGER.debug("Found block at {}", this.exitPortal);
       }
 
-      var4 = findTallestBlock(var0, var4, 16, true);
-      return var4;
-   }
-
-   private static Vec3 findExitPortalXZPosTentative(ServerLevel var0, BlockPos var1) {
-      Vec3 var2 = (new Vec3((double)var1.getX(), 0.0D, (double)var1.getZ())).normalize();
-      boolean var3 = true;
-      Vec3 var4 = var2.scale(1024.0D);
-
-      int var5;
-      for(var5 = 16; !isChunkEmpty(var0, var4) && var5-- > 0; var4 = var4.add(var2.scale(-16.0D))) {
-         LOGGER.debug("Skipping backwards past nonempty chunk at {}", var4);
-      }
-
-      for(var5 = 16; isChunkEmpty(var0, var4) && var5-- > 0; var4 = var4.add(var2.scale(16.0D))) {
-         LOGGER.debug("Skipping forward past empty chunk at {}", var4);
-      }
-
-      LOGGER.debug("Found chunk at {}", var4);
-      return var4;
-   }
-
-   private static boolean isChunkEmpty(ServerLevel var0, Vec3 var1) {
-      return getChunk(var0, var1).getHighestSectionPosition() <= var0.getMinBuildHeight();
+      this.exitPortal = findTallestBlock(this.level, this.exitPortal, 16, true);
+      LOGGER.debug("Creating portal at {}", this.exitPortal);
+      this.exitPortal = this.exitPortal.above(10);
+      this.createExitPortal(this.exitPortal);
+      this.setChanged();
    }
 
    private static BlockPos findTallestBlock(BlockGetter var0, BlockPos var1, int var2, boolean var3) {
@@ -239,10 +191,10 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       for(int var5 = -var2; var5 <= var2; ++var5) {
          for(int var6 = -var2; var6 <= var2; ++var6) {
             if (var5 != 0 || var6 != 0 || var3) {
-               for(int var7 = var0.getMaxBuildHeight() - 1; var7 > (var4 == null ? var0.getMinBuildHeight() : var4.getY()); --var7) {
+               for(int var7 = 255; var7 > (var4 == null ? 0 : var4.getY()); --var7) {
                   BlockPos var8 = new BlockPos(var1.getX() + var5, var7, var1.getZ() + var6);
                   BlockState var9 = var0.getBlockState(var8);
-                  if (var9.isCollisionShapeFullBlock(var0, var8) && (var3 || !var9.is(Blocks.BEDROCK))) {
+                  if (var9.isCollisionShapeFullBlock(var0, var8) && (var3 || var9.getBlock() != Blocks.BEDROCK)) {
                      var4 = var8;
                      break;
                   }
@@ -286,7 +238,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
                      var10 = var0.getBlockState(var9);
                      var11 = var9.above();
                      var12 = var9.above(2);
-                  } while(!var10.is(Blocks.END_STONE));
+                  } while(var10.getBlock() != Blocks.END_STONE);
                } while(var0.getBlockState(var11).isCollisionShapeFullBlock(var0, var11));
             } while(var0.getBlockState(var12).isCollisionShapeFullBlock(var0, var12));
 
@@ -298,12 +250,12 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       }
    }
 
-   private static void spawnGatewayPortal(ServerLevel var0, BlockPos var1, EndGatewayConfiguration var2) {
-      Feature.END_GATEWAY.configured(var2).place(var0, var0.getChunkSource().getGenerator(), new Random(), var1);
+   private void createExitPortal(BlockPos var1) {
+      Feature.END_GATEWAY.place(this.level, this.level.getChunkSource().getGenerator(), new Random(), var1, EndGatewayConfiguration.knownExit(this.getBlockPos(), false));
    }
 
    public boolean shouldRenderFace(Direction var1) {
-      return Block.shouldRenderFace(this.getBlockState(), this.level, this.getBlockPos(), var1, this.getBlockPos().relative(var1));
+      return Block.shouldRenderFace(this.getBlockState(), this.level, this.getBlockPos(), var1);
    }
 
    public int getParticleAmount() {

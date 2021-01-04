@@ -1,30 +1,30 @@
 package net.minecraft.core;
 
 import com.google.common.collect.AbstractIterator;
-import com.mojang.serialization.Codec;
-import java.util.Optional;
-import java.util.Random;
-import java.util.function.Predicate;
+import com.google.common.collect.Lists;
+import com.mojang.datafixers.Dynamic;
+import com.mojang.datafixers.types.DynamicOps;
+import java.util.List;
+import java.util.Spliterator.OfInt;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.concurrent.Immutable;
-import net.minecraft.Util;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Serializable;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Immutable
-public class BlockPos extends Vec3i {
-   public static final Codec<BlockPos> CODEC;
-   private static final Logger LOGGER;
-   public static final BlockPos ZERO;
-   private static final int PACKED_X_LENGTH;
+public class BlockPos extends Vec3i implements Serializable {
+   private static final Logger LOGGER = LogManager.getLogger();
+   public static final BlockPos ZERO = new BlockPos(0, 0, 0);
+   private static final int PACKED_X_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
    private static final int PACKED_Z_LENGTH;
    private static final int PACKED_Y_LENGTH;
    private static final long PACKED_X_MASK;
@@ -41,6 +41,10 @@ public class BlockPos extends Vec3i {
       super(var1, var3, var5);
    }
 
+   public BlockPos(Entity var1) {
+      this(var1.x, var1.y, var1.z);
+   }
+
    public BlockPos(Vec3 var1) {
       this(var1.x, var1.y, var1.z);
    }
@@ -51,6 +55,26 @@ public class BlockPos extends Vec3i {
 
    public BlockPos(Vec3i var1) {
       this(var1.getX(), var1.getY(), var1.getZ());
+   }
+
+   public static <T> BlockPos deserialize(Dynamic<T> var0) {
+      OfInt var1 = var0.asIntStream().spliterator();
+      int[] var2 = new int[3];
+      if (var1.tryAdvance((var1x) -> {
+         var2[0] = var1x;
+      }) && var1.tryAdvance((var1x) -> {
+         var2[1] = var1x;
+      })) {
+         var1.tryAdvance((var1x) -> {
+            var2[2] = var1x;
+         });
+      }
+
+      return new BlockPos(var2[0], var2[1], var2[2]);
+   }
+
+   public <T> T serialize(DynamicOps<T> var1) {
+      return var1.createIntList(IntStream.of(new int[]{this.getX(), this.getY(), this.getZ()}));
    }
 
    public static long offset(long var0, Direction var2) {
@@ -77,10 +101,6 @@ public class BlockPos extends Vec3i {
       return new BlockPos(getX(var0), getY(var0), getZ(var0));
    }
 
-   public long asLong() {
-      return asLong(this.getX(), this.getY(), this.getZ());
-   }
-
    public static long asLong(int var0, int var1, int var2) {
       long var3 = 0L;
       var3 |= ((long)var0 & PACKED_X_MASK) << X_OFFSET;
@@ -91,6 +111,10 @@ public class BlockPos extends Vec3i {
 
    public static long getFlatIndex(long var0) {
       return var0 & -16L;
+   }
+
+   public long asLong() {
+      return asLong(this.getX(), this.getY(), this.getZ());
    }
 
    public BlockPos offset(double var1, double var3, double var5) {
@@ -110,7 +134,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos above() {
-      return this.relative(Direction.UP);
+      return this.above(1);
    }
 
    public BlockPos above(int var1) {
@@ -118,7 +142,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos below() {
-      return this.relative(Direction.DOWN);
+      return this.below(1);
    }
 
    public BlockPos below(int var1) {
@@ -126,7 +150,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos north() {
-      return this.relative(Direction.NORTH);
+      return this.north(1);
    }
 
    public BlockPos north(int var1) {
@@ -134,7 +158,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos south() {
-      return this.relative(Direction.SOUTH);
+      return this.south(1);
    }
 
    public BlockPos south(int var1) {
@@ -142,7 +166,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos west() {
-      return this.relative(Direction.WEST);
+      return this.west(1);
    }
 
    public BlockPos west(int var1) {
@@ -150,7 +174,7 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos east() {
-      return this.relative(Direction.EAST);
+      return this.east(1);
    }
 
    public BlockPos east(int var1) {
@@ -158,22 +182,11 @@ public class BlockPos extends Vec3i {
    }
 
    public BlockPos relative(Direction var1) {
-      return new BlockPos(this.getX() + var1.getStepX(), this.getY() + var1.getStepY(), this.getZ() + var1.getStepZ());
+      return this.relative(var1, 1);
    }
 
    public BlockPos relative(Direction var1, int var2) {
       return var2 == 0 ? this : new BlockPos(this.getX() + var1.getStepX() * var2, this.getY() + var1.getStepY() * var2, this.getZ() + var1.getStepZ() * var2);
-   }
-
-   public BlockPos relative(Direction.Axis var1, int var2) {
-      if (var2 == 0) {
-         return this;
-      } else {
-         int var3 = var1 == Direction.Axis.X ? var2 : 0;
-         int var4 = var1 == Direction.Axis.Y ? var2 : 0;
-         int var5 = var1 == Direction.Axis.Z ? var2 : 0;
-         return new BlockPos(this.getX() + var3, this.getY() + var4, this.getZ() + var5);
-      }
    }
 
    public BlockPos rotate(Rotation var1) {
@@ -198,193 +211,38 @@ public class BlockPos extends Vec3i {
       return this;
    }
 
-   public BlockPos.MutableBlockPos mutable() {
-      return new BlockPos.MutableBlockPos(this.getX(), this.getY(), this.getZ());
-   }
-
-   public static Iterable<BlockPos> randomBetweenClosed(Random var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      int var8 = var5 - var2 + 1;
-      int var9 = var6 - var3 + 1;
-      int var10 = var7 - var4 + 1;
-      return () -> {
-         return new AbstractIterator<BlockPos>() {
-            final BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos();
-            int counter = var0;
-
-            protected BlockPos computeNext() {
-               if (this.counter <= 0) {
-                  return (BlockPos)this.endOfData();
-               } else {
-                  BlockPos.MutableBlockPos var1x = this.nextPos.set(var1 + var2.nextInt(var3), var4 + var2.nextInt(var5), var6 + var2.nextInt(var7));
-                  --this.counter;
-                  return var1x;
-               }
-            }
-
-            // $FF: synthetic method
-            protected Object computeNext() {
-               return this.computeNext();
-            }
-         };
-      };
-   }
-
-   public static Iterable<BlockPos> withinManhattan(BlockPos var0, int var1, int var2, int var3) {
-      int var4 = var1 + var2 + var3;
-      int var5 = var0.getX();
-      int var6 = var0.getY();
-      int var7 = var0.getZ();
-      return () -> {
-         return new AbstractIterator<BlockPos>() {
-            private final BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-            private int currentDepth;
-            private int maxX;
-            private int maxY;
-            private int x;
-            private int y;
-            private boolean zMirror;
-
-            protected BlockPos computeNext() {
-               if (this.zMirror) {
-                  this.zMirror = false;
-                  this.cursor.setZ(var0 - (this.cursor.getZ() - var0));
-                  return this.cursor;
-               } else {
-                  BlockPos.MutableBlockPos var1x;
-                  for(var1x = null; var1x == null; ++this.y) {
-                     if (this.y > this.maxY) {
-                        ++this.x;
-                        if (this.x > this.maxX) {
-                           ++this.currentDepth;
-                           if (this.currentDepth > var1) {
-                              return (BlockPos)this.endOfData();
-                           }
-
-                           this.maxX = Math.min(var2, this.currentDepth);
-                           this.x = -this.maxX;
-                        }
-
-                        this.maxY = Math.min(var3, this.currentDepth - Math.abs(this.x));
-                        this.y = -this.maxY;
-                     }
-
-                     int var2x = this.x;
-                     int var3x = this.y;
-                     int var4x = this.currentDepth - Math.abs(var2x) - Math.abs(var3x);
-                     if (var4x <= var4) {
-                        this.zMirror = var4x != 0;
-                        var1x = this.cursor.set(var5 + var2x, var6 + var3x, var0 + var4x);
-                     }
-                  }
-
-                  return var1x;
-               }
-            }
-
-            // $FF: synthetic method
-            protected Object computeNext() {
-               return this.computeNext();
-            }
-         };
-      };
-   }
-
-   public static Optional<BlockPos> findClosestMatch(BlockPos var0, int var1, int var2, Predicate<BlockPos> var3) {
-      return withinManhattanStream(var0, var1, var2, var1).filter(var3).findFirst();
-   }
-
-   public static Stream<BlockPos> withinManhattanStream(BlockPos var0, int var1, int var2, int var3) {
-      return StreamSupport.stream(withinManhattan(var0, var1, var2, var3).spliterator(), false);
-   }
-
    public static Iterable<BlockPos> betweenClosed(BlockPos var0, BlockPos var1) {
       return betweenClosed(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()), Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
    }
 
    public static Stream<BlockPos> betweenClosedStream(BlockPos var0, BlockPos var1) {
-      return StreamSupport.stream(betweenClosed(var0, var1).spliterator(), false);
+      return betweenClosedStream(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()), Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
    }
 
-   public static Stream<BlockPos> betweenClosedStream(BoundingBox var0) {
-      return betweenClosedStream(Math.min(var0.x0, var0.x1), Math.min(var0.y0, var0.y1), Math.min(var0.z0, var0.z1), Math.max(var0.x0, var0.x1), Math.max(var0.y0, var0.y1), Math.max(var0.z0, var0.z1));
-   }
+   public static Stream<BlockPos> betweenClosedStream(final int var0, final int var1, final int var2, final int var3, final int var4, final int var5) {
+      return StreamSupport.stream(new AbstractSpliterator<BlockPos>((long)((var3 - var0 + 1) * (var4 - var1 + 1) * (var5 - var2 + 1)), 64) {
+         final Cursor3D cursor = new Cursor3D(var0, var1, var2, var3, var4, var5);
+         final BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos();
 
-   public static Stream<BlockPos> betweenClosedStream(AABB var0) {
-      return betweenClosedStream(Mth.floor(var0.minX), Mth.floor(var0.minY), Mth.floor(var0.minZ), Mth.floor(var0.maxX), Mth.floor(var0.maxY), Mth.floor(var0.maxZ));
-   }
-
-   public static Stream<BlockPos> betweenClosedStream(int var0, int var1, int var2, int var3, int var4, int var5) {
-      return StreamSupport.stream(betweenClosed(var0, var1, var2, var3, var4, var5).spliterator(), false);
+         public boolean tryAdvance(Consumer<? super BlockPos> var1x) {
+            if (this.cursor.advance()) {
+               var1x.accept(this.nextPos.set(this.cursor.nextX(), this.cursor.nextY(), this.cursor.nextZ()));
+               return true;
+            } else {
+               return false;
+            }
+         }
+      }, false);
    }
 
    public static Iterable<BlockPos> betweenClosed(int var0, int var1, int var2, int var3, int var4, int var5) {
-      int var6 = var3 - var0 + 1;
-      int var7 = var4 - var1 + 1;
-      int var8 = var5 - var2 + 1;
-      int var9 = var6 * var7 * var8;
       return () -> {
          return new AbstractIterator<BlockPos>() {
-            private final BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-            private int index;
+            final Cursor3D cursor = new Cursor3D(var0, var1, var2, var3, var4, var5);
+            final BlockPos.MutableBlockPos nextPos = new BlockPos.MutableBlockPos();
 
             protected BlockPos computeNext() {
-               if (this.index == var0) {
-                  return (BlockPos)this.endOfData();
-               } else {
-                  int var1x = this.index % var1;
-                  int var2x = this.index / var1;
-                  int var3x = var2x % var2;
-                  int var4x = var2x / var2;
-                  ++this.index;
-                  return this.cursor.set(var3 + var1x, var4 + var3x, var5 + var4x);
-               }
-            }
-
-            // $FF: synthetic method
-            protected Object computeNext() {
-               return this.computeNext();
-            }
-         };
-      };
-   }
-
-   public static Iterable<BlockPos.MutableBlockPos> spiralAround(BlockPos var0, int var1, Direction var2, Direction var3) {
-      Validate.validState(var2.getAxis() != var3.getAxis(), "The two directions cannot be on the same axis", new Object[0]);
-      return () -> {
-         return new AbstractIterator<BlockPos.MutableBlockPos>() {
-            private final Direction[] directions = new Direction[]{var0, var1, var0.getOpposite(), var1.getOpposite()};
-            private final BlockPos.MutableBlockPos cursor = var2.mutable().move(var1);
-            private final int legs = 4 * var3;
-            private int leg = -1;
-            private int legSize;
-            private int legIndex;
-            private int lastX;
-            private int lastY;
-            private int lastZ;
-
-            {
-               this.lastX = this.cursor.getX();
-               this.lastY = this.cursor.getY();
-               this.lastZ = this.cursor.getZ();
-            }
-
-            protected BlockPos.MutableBlockPos computeNext() {
-               this.cursor.set(this.lastX, this.lastY, this.lastZ).move(this.directions[(this.leg + 4) % 4]);
-               this.lastX = this.cursor.getX();
-               this.lastY = this.cursor.getY();
-               this.lastZ = this.cursor.getZ();
-               if (this.legIndex >= this.legSize) {
-                  if (this.leg >= this.legs) {
-                     return (BlockPos.MutableBlockPos)this.endOfData();
-                  }
-
-                  ++this.leg;
-                  this.legIndex = 0;
-                  this.legSize = this.leg / 2 + 1;
-               }
-
-               ++this.legIndex;
-               return this.cursor;
+               return (BlockPos)(this.cursor.advance() ? this.nextPos.set(this.cursor.nextX(), this.cursor.nextY(), this.cursor.nextZ()) : (BlockPos)this.endOfData());
             }
 
             // $FF: synthetic method
@@ -400,42 +258,7 @@ public class BlockPos extends Vec3i {
       return this.cross(var1);
    }
 
-   // $FF: synthetic method
-   public Vec3i relative(Direction var1, int var2) {
-      return this.relative(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Vec3i below(int var1) {
-      return this.below(var1);
-   }
-
-   // $FF: synthetic method
-   public Vec3i below() {
-      return this.below();
-   }
-
-   // $FF: synthetic method
-   public Vec3i above(int var1) {
-      return this.above(var1);
-   }
-
-   // $FF: synthetic method
-   public Vec3i above() {
-      return this.above();
-   }
-
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize(var0, 3).map((var0x) -> {
-            return new BlockPos(var0x[0], var0x[1], var0x[2]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()});
-      }).stable();
-      LOGGER = LogManager.getLogger();
-      ZERO = new BlockPos(0, 0, 0);
-      PACKED_X_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
       PACKED_Z_LENGTH = PACKED_X_LENGTH;
       PACKED_Y_LENGTH = 64 - PACKED_X_LENGTH - PACKED_Z_LENGTH;
       PACKED_X_MASK = (1L << PACKED_X_LENGTH) - 1L;
@@ -445,13 +268,133 @@ public class BlockPos extends Vec3i {
       X_OFFSET = PACKED_Y_LENGTH + PACKED_Z_LENGTH;
    }
 
+   public static final class PooledMutableBlockPos extends BlockPos.MutableBlockPos implements AutoCloseable {
+      private boolean free;
+      private static final List<BlockPos.PooledMutableBlockPos> POOL = Lists.newArrayList();
+
+      private PooledMutableBlockPos(int var1, int var2, int var3) {
+         super(var1, var2, var3);
+      }
+
+      public static BlockPos.PooledMutableBlockPos acquire() {
+         return acquire(0, 0, 0);
+      }
+
+      public static BlockPos.PooledMutableBlockPos acquire(Entity var0) {
+         return acquire(var0.x, var0.y, var0.z);
+      }
+
+      public static BlockPos.PooledMutableBlockPos acquire(double var0, double var2, double var4) {
+         return acquire(Mth.floor(var0), Mth.floor(var2), Mth.floor(var4));
+      }
+
+      public static BlockPos.PooledMutableBlockPos acquire(int var0, int var1, int var2) {
+         synchronized(POOL) {
+            if (!POOL.isEmpty()) {
+               BlockPos.PooledMutableBlockPos var4 = (BlockPos.PooledMutableBlockPos)POOL.remove(POOL.size() - 1);
+               if (var4 != null && var4.free) {
+                  var4.free = false;
+                  var4.set(var0, var1, var2);
+                  return var4;
+               }
+            }
+         }
+
+         return new BlockPos.PooledMutableBlockPos(var0, var1, var2);
+      }
+
+      public BlockPos.PooledMutableBlockPos set(int var1, int var2, int var3) {
+         return (BlockPos.PooledMutableBlockPos)super.set(var1, var2, var3);
+      }
+
+      public BlockPos.PooledMutableBlockPos set(Entity var1) {
+         return (BlockPos.PooledMutableBlockPos)super.set(var1);
+      }
+
+      public BlockPos.PooledMutableBlockPos set(double var1, double var3, double var5) {
+         return (BlockPos.PooledMutableBlockPos)super.set(var1, var3, var5);
+      }
+
+      public BlockPos.PooledMutableBlockPos set(Vec3i var1) {
+         return (BlockPos.PooledMutableBlockPos)super.set(var1);
+      }
+
+      public BlockPos.PooledMutableBlockPos move(Direction var1) {
+         return (BlockPos.PooledMutableBlockPos)super.move(var1);
+      }
+
+      public BlockPos.PooledMutableBlockPos move(Direction var1, int var2) {
+         return (BlockPos.PooledMutableBlockPos)super.move(var1, var2);
+      }
+
+      public BlockPos.PooledMutableBlockPos move(int var1, int var2, int var3) {
+         return (BlockPos.PooledMutableBlockPos)super.move(var1, var2, var3);
+      }
+
+      public void close() {
+         synchronized(POOL) {
+            if (POOL.size() < 100) {
+               POOL.add(this);
+            }
+
+            this.free = true;
+         }
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos move(int var1, int var2, int var3) {
+         return this.move(var1, var2, var3);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos move(Direction var1, int var2) {
+         return this.move(var1, var2);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos move(Direction var1) {
+         return this.move(var1);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos set(Vec3i var1) {
+         return this.set(var1);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos set(double var1, double var3, double var5) {
+         return this.set(var1, var3, var5);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos set(Entity var1) {
+         return this.set(var1);
+      }
+
+      // $FF: synthetic method
+      public BlockPos.MutableBlockPos set(int var1, int var2, int var3) {
+         return this.set(var1, var2, var3);
+      }
+   }
+
    public static class MutableBlockPos extends BlockPos {
+      protected int x;
+      protected int y;
+      protected int z;
+
       public MutableBlockPos() {
          this(0, 0, 0);
       }
 
+      public MutableBlockPos(BlockPos var1) {
+         this(var1.getX(), var1.getY(), var1.getZ());
+      }
+
       public MutableBlockPos(int var1, int var2, int var3) {
-         super(var1, var2, var3);
+         super(0, 0, 0);
+         this.x = var1;
+         this.y = var2;
+         this.z = var3;
       }
 
       public MutableBlockPos(double var1, double var3, double var5) {
@@ -470,19 +413,31 @@ public class BlockPos extends Vec3i {
          return super.relative(var1, var2).immutable();
       }
 
-      public BlockPos relative(Direction.Axis var1, int var2) {
-         return super.relative(var1, var2).immutable();
-      }
-
       public BlockPos rotate(Rotation var1) {
          return super.rotate(var1).immutable();
       }
 
+      public int getX() {
+         return this.x;
+      }
+
+      public int getY() {
+         return this.y;
+      }
+
+      public int getZ() {
+         return this.z;
+      }
+
       public BlockPos.MutableBlockPos set(int var1, int var2, int var3) {
-         this.setX(var1);
-         this.setY(var2);
-         this.setZ(var3);
+         this.x = var1;
+         this.y = var2;
+         this.z = var3;
          return this;
+      }
+
+      public BlockPos.MutableBlockPos set(Entity var1) {
+         return this.set(var1.x, var1.y, var1.z);
       }
 
       public BlockPos.MutableBlockPos set(double var1, double var3, double var5) {
@@ -501,53 +456,28 @@ public class BlockPos extends Vec3i {
          return this.set(var1.cycle(var2, var3, var4, Direction.Axis.X), var1.cycle(var2, var3, var4, Direction.Axis.Y), var1.cycle(var2, var3, var4, Direction.Axis.Z));
       }
 
-      public BlockPos.MutableBlockPos setWithOffset(Vec3i var1, Direction var2) {
-         return this.set(var1.getX() + var2.getStepX(), var1.getY() + var2.getStepY(), var1.getZ() + var2.getStepZ());
-      }
-
-      public BlockPos.MutableBlockPos setWithOffset(Vec3i var1, int var2, int var3, int var4) {
-         return this.set(var1.getX() + var2, var1.getY() + var3, var1.getZ() + var4);
-      }
-
       public BlockPos.MutableBlockPos move(Direction var1) {
          return this.move(var1, 1);
       }
 
       public BlockPos.MutableBlockPos move(Direction var1, int var2) {
-         return this.set(this.getX() + var1.getStepX() * var2, this.getY() + var1.getStepY() * var2, this.getZ() + var1.getStepZ() * var2);
+         return this.set(this.x + var1.getStepX() * var2, this.y + var1.getStepY() * var2, this.z + var1.getStepZ() * var2);
       }
 
       public BlockPos.MutableBlockPos move(int var1, int var2, int var3) {
-         return this.set(this.getX() + var1, this.getY() + var2, this.getZ() + var3);
-      }
-
-      public BlockPos.MutableBlockPos move(Vec3i var1) {
-         return this.set(this.getX() + var1.getX(), this.getY() + var1.getY(), this.getZ() + var1.getZ());
-      }
-
-      public BlockPos.MutableBlockPos clamp(Direction.Axis var1, int var2, int var3) {
-         switch(var1) {
-         case X:
-            return this.set(Mth.clamp(this.getX(), var2, var3), this.getY(), this.getZ());
-         case Y:
-            return this.set(this.getX(), Mth.clamp(this.getY(), var2, var3), this.getZ());
-         case Z:
-            return this.set(this.getX(), this.getY(), Mth.clamp(this.getZ(), var2, var3));
-         default:
-            throw new IllegalStateException("Unable to clamp axis " + var1);
-         }
+         return this.set(this.x + var1, this.y + var2, this.z + var3);
       }
 
       public void setX(int var1) {
-         super.setX(var1);
+         this.x = var1;
       }
 
       public void setY(int var1) {
-         super.setY(var1);
+         this.y = var1;
       }
 
       public void setZ(int var1) {
-         super.setZ(var1);
+         this.z = var1;
       }
 
       public BlockPos immutable() {
@@ -557,31 +487,6 @@ public class BlockPos extends Vec3i {
       // $FF: synthetic method
       public Vec3i cross(Vec3i var1) {
          return super.cross(var1);
-      }
-
-      // $FF: synthetic method
-      public Vec3i relative(Direction var1, int var2) {
-         return this.relative(var1, var2);
-      }
-
-      // $FF: synthetic method
-      public Vec3i below(int var1) {
-         return super.below(var1);
-      }
-
-      // $FF: synthetic method
-      public Vec3i below() {
-         return super.below();
-      }
-
-      // $FF: synthetic method
-      public Vec3i above(int var1) {
-         return super.above(var1);
-      }
-
-      // $FF: synthetic method
-      public Vec3i above() {
-         return super.above();
       }
    }
 }

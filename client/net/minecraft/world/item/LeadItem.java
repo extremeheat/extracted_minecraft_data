@@ -8,9 +8,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 
 public class LeadItem extends Item {
@@ -21,20 +20,20 @@ public class LeadItem extends Item {
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
+      Block var4 = var2.getBlockState(var3).getBlock();
       if (var4.is(BlockTags.FENCES)) {
          Player var5 = var1.getPlayer();
          if (!var2.isClientSide && var5 != null) {
             bindPlayerMobs(var5, var2, var3);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   public static InteractionResult bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
+   public static boolean bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
       LeashFenceKnotEntity var3 = null;
       boolean var4 = false;
       double var5 = 7.0D;
@@ -56,6 +55,6 @@ public class LeadItem extends Item {
          }
       }
 
-      return var4 ? InteractionResult.SUCCESS : InteractionResult.PASS;
+      return var4;
    }
 }

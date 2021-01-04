@@ -17,7 +17,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.Tag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -70,7 +69,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       } catch (CommandSyntaxException var6) {
       }
 
-      return var4.fillSuggestions(var2, ItemTags.getAllTags());
+      return var4.fillSuggestions(var2);
    }
 
    public Collection<String> getExamples() {
@@ -94,7 +93,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       }
 
       public boolean test(ItemStack var1) {
-         return var1.is(this.tag) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
+         return this.tag.contains(var1.getItem()) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
       }
 
       // $FF: synthetic method
@@ -115,7 +114,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
       }
 
       public boolean test(ItemStack var1) {
-         return var1.is(this.item) && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
+         return var1.getItem() == this.item && NbtUtils.compareNbt(this.nbt, var1.getTag(), true);
       }
 
       // $FF: synthetic method

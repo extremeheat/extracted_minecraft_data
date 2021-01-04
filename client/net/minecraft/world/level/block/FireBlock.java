@@ -1,33 +1,36 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.dimension.end.TheEndDimension;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FireBlock extends BaseFireBlock {
+public class FireBlock extends Block {
    public static final IntegerProperty AGE;
    public static final BooleanProperty NORTH;
    public static final BooleanProperty EAST;
@@ -35,61 +38,28 @@ public class FireBlock extends BaseFireBlock {
    public static final BooleanProperty WEST;
    public static final BooleanProperty UP;
    private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   private static final VoxelShape UP_AABB;
-   private static final VoxelShape WEST_AABB;
-   private static final VoxelShape EAST_AABB;
-   private static final VoxelShape NORTH_AABB;
-   private static final VoxelShape SOUTH_AABB;
-   private final Map<BlockState, VoxelShape> shapesCache;
    private final Object2IntMap<Block> flameOdds = new Object2IntOpenHashMap();
    private final Object2IntMap<Block> burnOdds = new Object2IntOpenHashMap();
 
-   public FireBlock(BlockBehaviour.Properties var1) {
-      super(var1, 1.0F);
+   protected FireBlock(Block.Properties var1) {
+      super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false));
-      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().filter((var0) -> {
-         return (Integer)var0.getValue(AGE) == 0;
-      }).collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape)));
-   }
-
-   private static VoxelShape calculateShape(BlockState var0) {
-      VoxelShape var1 = Shapes.empty();
-      if ((Boolean)var0.getValue(UP)) {
-         var1 = UP_AABB;
-      }
-
-      if ((Boolean)var0.getValue(NORTH)) {
-         var1 = Shapes.or(var1, NORTH_AABB);
-      }
-
-      if ((Boolean)var0.getValue(SOUTH)) {
-         var1 = Shapes.or(var1, SOUTH_AABB);
-      }
-
-      if ((Boolean)var0.getValue(EAST)) {
-         var1 = Shapes.or(var1, EAST_AABB);
-      }
-
-      if ((Boolean)var0.getValue(WEST)) {
-         var1 = Shapes.or(var1, WEST_AABB);
-      }
-
-      return var1.isEmpty() ? DOWN_AABB : var1;
-   }
-
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, (Integer)var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1.setValue(AGE, 0));
+      return Shapes.empty();
    }
 
+   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+      return this.canSurvive(var1, var4, var5) ? (BlockState)this.getStateForPlacement(var4, var5).setValue(AGE, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
+   }
+
+   @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       return this.getStateForPlacement(var1.getLevel(), var1.getClickedPos());
    }
 
-   protected BlockState getStateForPlacement(BlockGetter var1, BlockPos var2) {
+   public BlockState getStateForPlacement(BlockGetter var1, BlockPos var2) {
       BlockPos var3 = var2.below();
       BlockState var4 = var1.getBlockState(var3);
       if (!this.canBurn(var4) && !var4.isFaceSturdy(var1, var3, Direction.UP)) {
@@ -116,15 +86,18 @@ public class FireBlock extends BaseFireBlock {
       return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP) || this.isValidFireLocation(var2, var3);
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      var2.getBlockTicks().scheduleTick(var3, this, getFireTickDelay(var2.random));
+   public int getTickDelay(LevelReader var1) {
+      return 30;
+   }
+
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
          if (!var1.canSurvive(var2, var3)) {
             var2.removeBlock(var3, false);
          }
 
-         BlockState var5 = var2.getBlockState(var3.below());
-         boolean var6 = var5.is(var2.dimensionType().infiniburn());
+         Block var5 = var2.getBlockState(var3.below()).getBlock();
+         boolean var6 = var2.dimension instanceof TheEndDimension && var5 == Blocks.BEDROCK || var5 == Blocks.NETHERRACK || var5 == Blocks.MAGMA_BLOCK;
          int var7 = (Integer)var1.getValue(AGE);
          if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
             var2.removeBlock(var3, false);
@@ -136,6 +109,7 @@ public class FireBlock extends BaseFireBlock {
             }
 
             if (!var6) {
+               var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2) + var4.nextInt(10));
                if (!this.isValidFireLocation(var2, var3)) {
                   BlockPos var19 = var3.below();
                   if (!var2.getBlockState(var19).isFaceSturdy(var2, var19, Direction.UP) || var7 > 3) {
@@ -170,7 +144,7 @@ public class FireBlock extends BaseFireBlock {
                            var15 += (var14 - 1) * 100;
                         }
 
-                        var11.setWithOffset(var3, var12, var14, var13);
+                        var11.set((Vec3i)var3).move(var12, var14, var13);
                         int var16 = this.getFireOdds(var2, var11);
                         if (var16 > 0) {
                            int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
@@ -180,7 +154,7 @@ public class FireBlock extends BaseFireBlock {
 
                            if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
                               int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
-                              var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                              var2.setBlock(var11, (BlockState)this.getStateForPlacement(var2, var11).setValue(AGE, var18), 3);
                            }
                         }
                      }
@@ -210,7 +184,7 @@ public class FireBlock extends BaseFireBlock {
          BlockState var7 = var1.getBlockState(var2);
          if (var4.nextInt(var5 + 10) < 5 && !var1.isRainingAt(var2)) {
             int var8 = Math.min(var5 + var4.nextInt(5) / 4, 15);
-            var1.setBlock(var2, this.getStateWithAge(var1, var2, var8), 3);
+            var1.setBlock(var2, (BlockState)this.getStateForPlacement(var1, var2).setValue(AGE, var8), 3);
          } else {
             var1.removeBlock(var2, false);
          }
@@ -222,11 +196,6 @@ public class FireBlock extends BaseFireBlock {
          }
       }
 
-   }
-
-   private BlockState getStateWithAge(LevelAccessor var1, BlockPos var2, int var3) {
-      BlockState var4 = getState(var1, var2);
-      return var4.is(Blocks.FIRE) ? (BlockState)var4.setValue(AGE, var3) : var4;
    }
 
    private boolean isValidFireLocation(BlockGetter var1, BlockPos var2) {
@@ -261,24 +230,98 @@ public class FireBlock extends BaseFireBlock {
       }
    }
 
-   protected boolean canBurn(BlockState var1) {
+   public boolean canBurn(BlockState var1) {
       return this.getFlameOdds(var1) > 0;
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      super.onPlace(var1, var2, var3, var4, var5);
-      var2.getBlockTicks().scheduleTick(var3, this, getFireTickDelay(var2.random));
+      if (var4.getBlock() != var1.getBlock()) {
+         if (var2.dimension.getType() != DimensionType.OVERWORLD && var2.dimension.getType() != DimensionType.NETHER || !((NetherPortalBlock)Blocks.NETHER_PORTAL).trySpawnPortal(var2, var3)) {
+            if (!var1.canSurvive(var2, var3)) {
+               var2.removeBlock(var3, false);
+            } else {
+               var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2) + var2.random.nextInt(10));
+            }
+         }
+      }
    }
 
-   private static int getFireTickDelay(Random var0) {
-      return 30 + var0.nextInt(10);
+   public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (var4.nextInt(24) == 0) {
+         var2.playLocalSound((double)((float)var3.getX() + 0.5F), (double)((float)var3.getY() + 0.5F), (double)((float)var3.getZ() + 0.5F), SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1.0F + var4.nextFloat(), var4.nextFloat() * 0.7F + 0.3F, false);
+      }
+
+      BlockPos var5 = var3.below();
+      BlockState var6 = var2.getBlockState(var5);
+      int var7;
+      double var8;
+      double var10;
+      double var12;
+      if (!this.canBurn(var6) && !var6.isFaceSturdy(var2, var5, Direction.UP)) {
+         if (this.canBurn(var2.getBlockState(var3.west()))) {
+            for(var7 = 0; var7 < 2; ++var7) {
+               var8 = (double)var3.getX() + var4.nextDouble() * 0.10000000149011612D;
+               var10 = (double)var3.getY() + var4.nextDouble();
+               var12 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+            }
+         }
+
+         if (this.canBurn(var2.getBlockState(var3.east()))) {
+            for(var7 = 0; var7 < 2; ++var7) {
+               var8 = (double)(var3.getX() + 1) - var4.nextDouble() * 0.10000000149011612D;
+               var10 = (double)var3.getY() + var4.nextDouble();
+               var12 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+            }
+         }
+
+         if (this.canBurn(var2.getBlockState(var3.north()))) {
+            for(var7 = 0; var7 < 2; ++var7) {
+               var8 = (double)var3.getX() + var4.nextDouble();
+               var10 = (double)var3.getY() + var4.nextDouble();
+               var12 = (double)var3.getZ() + var4.nextDouble() * 0.10000000149011612D;
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+            }
+         }
+
+         if (this.canBurn(var2.getBlockState(var3.south()))) {
+            for(var7 = 0; var7 < 2; ++var7) {
+               var8 = (double)var3.getX() + var4.nextDouble();
+               var10 = (double)var3.getY() + var4.nextDouble();
+               var12 = (double)(var3.getZ() + 1) - var4.nextDouble() * 0.10000000149011612D;
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+            }
+         }
+
+         if (this.canBurn(var2.getBlockState(var3.above()))) {
+            for(var7 = 0; var7 < 2; ++var7) {
+               var8 = (double)var3.getX() + var4.nextDouble();
+               var10 = (double)(var3.getY() + 1) - var4.nextDouble() * 0.10000000149011612D;
+               var12 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+            }
+         }
+      } else {
+         for(var7 = 0; var7 < 3; ++var7) {
+            var8 = (double)var3.getX() + var4.nextDouble();
+            var10 = (double)var3.getY() + var4.nextDouble() * 0.5D + 0.5D;
+            var12 = (double)var3.getZ() + var4.nextDouble();
+            var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0D, 0.0D, 0.0D);
+         }
+      }
+
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(AGE, NORTH, EAST, SOUTH, WEST, UP);
    }
 
-   private void setFlammable(Block var1, int var2, int var3) {
+   public void setFlammable(Block var1, int var2, int var3) {
       this.flameOdds.put(var1, var2);
       this.burnOdds.put(var1, var3);
    }
@@ -388,7 +431,6 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.VINE, 15, 100);
       var0.setFlammable(Blocks.COAL_BLOCK, 5, 5);
       var0.setFlammable(Blocks.HAY_BLOCK, 60, 20);
-      var0.setFlammable(Blocks.TARGET, 15, 20);
       var0.setFlammable(Blocks.WHITE_CARPET, 60, 20);
       var0.setFlammable(Blocks.ORANGE_CARPET, 60, 20);
       var0.setFlammable(Blocks.MAGENTA_CARPET, 60, 20);
@@ -411,8 +453,6 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.LECTERN, 30, 20);
       var0.setFlammable(Blocks.COMPOSTER, 5, 20);
       var0.setFlammable(Blocks.SWEET_BERRY_BUSH, 60, 100);
-      var0.setFlammable(Blocks.BEEHIVE, 5, 20);
-      var0.setFlammable(Blocks.BEE_NEST, 30, 20);
    }
 
    static {
@@ -425,10 +465,5 @@ public class FireBlock extends BaseFireBlock {
       PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> {
          return var0.getKey() != Direction.DOWN;
       }).collect(Util.toMap());
-      UP_AABB = Block.box(0.0D, 15.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-      WEST_AABB = Block.box(0.0D, 0.0D, 0.0D, 1.0D, 16.0D, 16.0D);
-      EAST_AABB = Block.box(15.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
-      NORTH_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 1.0D);
-      SOUTH_AABB = Block.box(0.0D, 0.0D, 15.0D, 16.0D, 16.0D, 16.0D);
    }
 }

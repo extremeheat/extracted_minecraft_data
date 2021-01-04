@@ -1,65 +1,43 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.model.BellModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 
-public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
-   public static final Material BELL_RESOURCE_LOCATION;
-   private final ModelPart bellBody;
+public class BellRenderer extends BlockEntityRenderer<BellBlockEntity> {
+   private static final ResourceLocation BELL_RESOURCE_LOCATION = new ResourceLocation("textures/entity/bell/bell_body.png");
+   private final BellModel bellModel = new BellModel();
 
-   public BellRenderer(BlockEntityRendererProvider.Context var1) {
+   public BellRenderer() {
       super();
-      ModelPart var2 = var1.getLayer(ModelLayers.BELL);
-      this.bellBody = var2.getChild("bell_body");
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("bell_body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -6.0F, -3.0F, 6.0F, 7.0F, 6.0F), PartPose.offset(8.0F, 12.0F, 8.0F));
-      var2.addOrReplaceChild("bell_base", CubeListBuilder.create().texOffs(0, 13).addBox(4.0F, 4.0F, 4.0F, 8.0F, 2.0F, 8.0F), PartPose.offset(-8.0F, -12.0F, -8.0F));
-      return LayerDefinition.create(var0, 32, 32);
-   }
-
-   public void render(BellBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      float var7 = (float)var1.ticks + var2;
-      float var8 = 0.0F;
-      float var9 = 0.0F;
+   public void render(BellBlockEntity var1, double var2, double var4, double var6, float var8, int var9) {
+      GlStateManager.pushMatrix();
+      GlStateManager.enableRescaleNormal();
+      this.bindTexture(BELL_RESOURCE_LOCATION);
+      GlStateManager.translatef((float)var2, (float)var4, (float)var6);
+      float var10 = (float)var1.ticks + var8;
+      float var11 = 0.0F;
+      float var12 = 0.0F;
       if (var1.shaking) {
-         float var10 = Mth.sin(var7 / 3.1415927F) / (4.0F + var7 / 3.0F);
+         float var13 = Mth.sin(var10 / 3.1415927F) / (4.0F + var10 / 3.0F);
          if (var1.clickDirection == Direction.NORTH) {
-            var8 = -var10;
+            var11 = -var13;
          } else if (var1.clickDirection == Direction.SOUTH) {
-            var8 = var10;
+            var11 = var13;
          } else if (var1.clickDirection == Direction.EAST) {
-            var9 = -var10;
+            var12 = -var13;
          } else if (var1.clickDirection == Direction.WEST) {
-            var9 = var10;
+            var12 = var13;
          }
       }
 
-      this.bellBody.xRot = var8;
-      this.bellBody.zRot = var9;
-      VertexConsumer var11 = BELL_RESOURCE_LOCATION.buffer(var4, RenderType::entitySolid);
-      this.bellBody.render(var3, var11, var5, var6);
-   }
-
-   static {
-      BELL_RESOURCE_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/bell/bell_body"));
+      this.bellModel.render(var11, var12, 0.0625F);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.popMatrix();
    }
 }

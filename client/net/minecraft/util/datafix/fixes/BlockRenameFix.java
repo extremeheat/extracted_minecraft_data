@@ -8,7 +8,6 @@ import com.mojang.datafixers.types.Type;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public abstract class BlockRenameFix extends DataFix {
    private final String name;
@@ -20,7 +19,7 @@ public abstract class BlockRenameFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.BLOCK_NAME);
-      Type var2 = DSL.named(References.BLOCK_NAME.typeName(), NamespacedSchema.namespacedString());
+      Type var2 = DSL.named(References.BLOCK_NAME.typeName(), DSL.namespacedString());
       if (!Objects.equals(var1, var2)) {
          throw new IllegalStateException("block type is not what was expected.");
       } else {
@@ -31,7 +30,7 @@ public abstract class BlockRenameFix extends DataFix {
          });
          TypeRewriteRule var4 = this.fixTypeEverywhereTyped(this.name + " for block_state", this.getInputSchema().getType(References.BLOCK_STATE), (var1x) -> {
             return var1x.update(DSL.remainderFinder(), (var1) -> {
-               Optional var2 = var1.get("Name").asString().result();
+               Optional var2 = var1.get("Name").asString();
                return var2.isPresent() ? var1.set("Name", var1.createString(this.fixBlock((String)var2.get()))) : var1;
             });
          });

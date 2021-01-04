@@ -1,25 +1,26 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 import net.minecraft.world.level.material.Material;
 
-public class IcebergFeature extends Feature<BlockStateConfiguration> {
-   public IcebergFeature(Codec<BlockStateConfiguration> var1) {
+public class IcebergFeature extends Feature<IcebergConfiguration> {
+   public IcebergFeature(Function<Dynamic<?>, ? extends IcebergConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, BlockStateConfiguration var5) {
-      var4 = new BlockPos(var4.getX(), var2.getSeaLevel(), var4.getZ());
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, IcebergConfiguration var5) {
+      var4 = new BlockPos(var4.getX(), var1.getSeaLevel(), var4.getZ());
       boolean var6 = var3.nextDouble() > 0.7D;
       BlockState var7 = var5.state;
       double var8 = var3.nextDouble() * 2.0D * 3.141592653589793D;
@@ -116,8 +117,8 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
             double var15 = this.signedDistanceEllipse(var13, var14, var8, var11, var12, var6);
             if (var15 < 0.0D) {
                BlockPos var17 = var3.offset(var13, var2, var14);
-               BlockState var18 = var4.getBlockState(var17);
-               if (isIcebergState(var18) || var18.is(Blocks.SNOW_BLOCK)) {
+               Block var18 = var4.getBlockState(var17).getBlock();
+               if (this.isIcebergBlock(var18) || var18 == Blocks.SNOW_BLOCK) {
                   if (var5) {
                      this.setBlock(var4, var17, Blocks.WATER.defaultBlockState());
                   } else {
@@ -132,7 +133,7 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
    }
 
    private void removeFloatingSnowLayer(LevelAccessor var1, BlockPos var2) {
-      if (var1.getBlockState(var2.above()).is(Blocks.SNOW)) {
+      if (var1.getBlockState(var2.above()).getBlock() == Blocks.SNOW) {
          this.setBlock(var1, var2.above(), Blocks.AIR.defaultBlockState());
       }
 
@@ -154,10 +155,11 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
 
    private void setIcebergBlock(BlockPos var1, LevelAccessor var2, Random var3, int var4, int var5, boolean var6, boolean var7, BlockState var8) {
       BlockState var9 = var2.getBlockState(var1);
-      if (var9.getMaterial() == Material.AIR || var9.is(Blocks.SNOW_BLOCK) || var9.is(Blocks.ICE) || var9.is(Blocks.WATER)) {
-         boolean var10 = !var6 || var3.nextDouble() > 0.05D;
-         int var11 = var6 ? 3 : 2;
-         if (var7 && !var9.is(Blocks.WATER) && (double)var4 <= (double)var3.nextInt(Math.max(1, var5 / var11)) + (double)var5 * 0.6D && var10) {
+      Block var10 = var9.getBlock();
+      if (var9.getMaterial() == Material.AIR || var10 == Blocks.SNOW_BLOCK || var10 == Blocks.ICE || var10 == Blocks.WATER) {
+         boolean var11 = !var6 || var3.nextDouble() > 0.05D;
+         int var12 = var6 ? 3 : 2;
+         if (var7 && var10 != Blocks.WATER && (double)var4 <= (double)var3.nextInt(Math.max(1, var5 / var12)) + (double)var5 * 0.6D && var11) {
             this.setBlock(var2, var1, Blocks.SNOW_BLOCK.defaultBlockState());
          } else {
             this.setBlock(var2, var1, var8);
@@ -207,8 +209,8 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
       return Mth.ceil(var6 / 2.0F);
    }
 
-   private static boolean isIcebergState(BlockState var0) {
-      return var0.is(Blocks.PACKED_ICE) || var0.is(Blocks.SNOW_BLOCK) || var0.is(Blocks.BLUE_ICE);
+   private boolean isIcebergBlock(Block var1) {
+      return var1 == Blocks.PACKED_ICE || var1 == Blocks.SNOW_BLOCK || var1 == Blocks.BLUE_ICE;
    }
 
    private boolean belowIsAir(BlockGetter var1, BlockPos var2) {
@@ -222,20 +224,20 @@ public class IcebergFeature extends Feature<BlockStateConfiguration> {
          for(int var9 = -var7; var9 <= var7; ++var9) {
             for(int var10 = 0; var10 <= var4; ++var10) {
                BlockPos var11 = var2.offset(var8, var10, var9);
-               BlockState var12 = var1.getBlockState(var11);
-               if (isIcebergState(var12) || var12.is(Blocks.SNOW)) {
+               Block var12 = var1.getBlockState(var11).getBlock();
+               if (this.isIcebergBlock(var12) || var12 == Blocks.SNOW) {
                   if (this.belowIsAir(var1, var11)) {
                      this.setBlock(var1, var11, Blocks.AIR.defaultBlockState());
                      this.setBlock(var1, var11.above(), Blocks.AIR.defaultBlockState());
-                  } else if (isIcebergState(var12)) {
-                     BlockState[] var13 = new BlockState[]{var1.getBlockState(var11.west()), var1.getBlockState(var11.east()), var1.getBlockState(var11.north()), var1.getBlockState(var11.south())};
+                  } else if (this.isIcebergBlock(var12)) {
+                     Block[] var13 = new Block[]{var1.getBlockState(var11.west()).getBlock(), var1.getBlockState(var11.east()).getBlock(), var1.getBlockState(var11.north()).getBlock(), var1.getBlockState(var11.south()).getBlock()};
                      int var14 = 0;
-                     BlockState[] var15 = var13;
+                     Block[] var15 = var13;
                      int var16 = var13.length;
 
                      for(int var17 = 0; var17 < var16; ++var17) {
-                        BlockState var18 = var15[var17];
-                        if (!isIcebergState(var18)) {
+                        Block var18 = var15[var17];
+                        if (!this.isIcebergBlock(var18)) {
                            ++var14;
                         }
                      }

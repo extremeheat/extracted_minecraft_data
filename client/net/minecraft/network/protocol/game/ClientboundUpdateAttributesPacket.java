@@ -7,11 +7,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
@@ -30,7 +27,7 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
 
       while(var3.hasNext()) {
          AttributeInstance var4 = (AttributeInstance)var3.next();
-         this.attributes.add(new ClientboundUpdateAttributesPacket.AttributeSnapshot(var4.getAttribute(), var4.getBaseValue(), var4.getModifiers()));
+         this.attributes.add(new ClientboundUpdateAttributesPacket.AttributeSnapshot(var4.getAttribute().getName(), var4.getBaseValue(), var4.getModifiers()));
       }
 
    }
@@ -40,18 +37,17 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       int var2 = var1.readInt();
 
       for(int var3 = 0; var3 < var2; ++var3) {
-         ResourceLocation var4 = var1.readResourceLocation();
-         Attribute var5 = (Attribute)Registry.ATTRIBUTE.get(var4);
-         double var6 = var1.readDouble();
-         ArrayList var8 = Lists.newArrayList();
-         int var9 = var1.readVarInt();
+         String var4 = var1.readUtf(64);
+         double var5 = var1.readDouble();
+         ArrayList var7 = Lists.newArrayList();
+         int var8 = var1.readVarInt();
 
-         for(int var10 = 0; var10 < var9; ++var10) {
-            UUID var11 = var1.readUUID();
-            var8.add(new AttributeModifier(var11, "Unknown synced attribute modifier", var1.readDouble(), AttributeModifier.Operation.fromValue(var1.readByte())));
+         for(int var9 = 0; var9 < var8; ++var9) {
+            UUID var10 = var1.readUUID();
+            var7.add(new AttributeModifier(var10, "Unknown synced attribute modifier", var1.readDouble(), AttributeModifier.Operation.fromValue(var1.readByte())));
          }
 
-         this.attributes.add(new ClientboundUpdateAttributesPacket.AttributeSnapshot(var5, var6, var8));
+         this.attributes.add(new ClientboundUpdateAttributesPacket.AttributeSnapshot(var4, var5, var7));
       }
 
    }
@@ -63,7 +59,7 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
 
       while(var2.hasNext()) {
          ClientboundUpdateAttributesPacket.AttributeSnapshot var3 = (ClientboundUpdateAttributesPacket.AttributeSnapshot)var2.next();
-         var1.writeResourceLocation(Registry.ATTRIBUTE.getKey(var3.getAttribute()));
+         var1.writeUtf(var3.getName());
          var1.writeDouble(var3.getBase());
          var1.writeVarInt(var3.getModifiers().size());
          Iterator var4 = var3.getModifiers().iterator();
@@ -91,19 +87,19 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
    }
 
    public class AttributeSnapshot {
-      private final Attribute attribute;
+      private final String name;
       private final double base;
       private final Collection<AttributeModifier> modifiers;
 
-      public AttributeSnapshot(Attribute var2, double var3, Collection<AttributeModifier> var5) {
+      public AttributeSnapshot(String var2, double var3, Collection<AttributeModifier> var5) {
          super();
-         this.attribute = var2;
+         this.name = var2;
          this.base = var3;
          this.modifiers = var5;
       }
 
-      public Attribute getAttribute() {
-         return this.attribute;
+      public String getName() {
+         return this.name;
       }
 
       public double getBase() {

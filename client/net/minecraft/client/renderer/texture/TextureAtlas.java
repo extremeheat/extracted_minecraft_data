@@ -3,14 +3,12 @@ package net.minecraft.client.renderer.texture;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.PngInfo;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.datafixers.util.Pair;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,48 +16,49 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.inventory.InventoryMenu;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TextureAtlas extends AbstractTexture implements Tickable {
+public class TextureAtlas extends AbstractTexture implements TickableTextureObject {
    private static final Logger LOGGER = LogManager.getLogger();
-   @Deprecated
-   public static final ResourceLocation LOCATION_BLOCKS;
-   @Deprecated
-   public static final ResourceLocation LOCATION_PARTICLES;
+   public static final ResourceLocation LOCATION_BLOCKS = new ResourceLocation("textures/atlas/blocks.png");
+   public static final ResourceLocation LOCATION_PARTICLES = new ResourceLocation("textures/atlas/particles.png");
+   public static final ResourceLocation LOCATION_PAINTINGS = new ResourceLocation("textures/atlas/paintings.png");
+   public static final ResourceLocation LOCATION_MOB_EFFECTS = new ResourceLocation("textures/atlas/mob_effects.png");
    private final List<TextureAtlasSprite> animatedTextures = Lists.newArrayList();
    private final Set<ResourceLocation> sprites = Sets.newHashSet();
    private final Map<ResourceLocation, TextureAtlasSprite> texturesByName = Maps.newHashMap();
-   private final ResourceLocation location;
+   private final String path;
    private final int maxSupportedTextureSize;
+   private int maxMipLevel;
+   private final TextureAtlasSprite missingTextureSprite = MissingTextureAtlasSprite.newInstance();
 
-   public TextureAtlas(ResourceLocation var1) {
+   public TextureAtlas(String var1) {
       super();
-      this.location = var1;
-      this.maxSupportedTextureSize = RenderSystem.maxSupportedTextureSize();
+      this.path = var1;
+      this.maxSupportedTextureSize = Minecraft.maxSupportedTextureSize();
    }
 
-   public void load(ResourceManager var1) {
+   public void load(ResourceManager var1) throws IOException {
    }
 
    public void reload(TextureAtlas.Preparations var1) {
       this.sprites.clear();
       this.sprites.addAll(var1.sprites);
-      LOGGER.info("Created: {}x{}x{} {}-atlas", var1.width, var1.height, var1.mipLevel, this.location);
-      TextureUtil.prepareImage(this.getId(), var1.mipLevel, var1.width, var1.height);
+      LOGGER.info("Created: {}x{} {}-atlas", var1.width, var1.height, this.path);
+      TextureUtil.prepareImage(this.getId(), this.maxMipLevel, var1.width, var1.height);
       this.clearTextureData();
       Iterator var2 = var1.regions.iterator();
 
@@ -72,7 +71,7 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
          } catch (Throwable var7) {
             CrashReport var5 = CrashReport.forThrowable(var7, "Stitching texture atlas");
             CrashReportCategory var6 = var5.addCategory("Texture being stitched together");
-            var6.setDetail("Atlas path", (Object)this.location);
+            var6.setDetail("Atlas path", (Object)this.path);
             var6.setDetail("Sprite", (Object)var3);
             throw new ReportedException(var5);
          }
@@ -84,74 +83,76 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
 
    }
 
-   public TextureAtlas.Preparations prepareToStitch(ResourceManager var1, Stream<ResourceLocation> var2, ProfilerFiller var3, int var4) {
+   public TextureAtlas.Preparations prepareToStitch(ResourceManager var1, Iterable<ResourceLocation> var2, ProfilerFiller var3) {
+      HashSet var4 = Sets.newHashSet();
       var3.push("preparing");
-      Set var5 = (Set)var2.peek((var0) -> {
-         if (var0 == null) {
+      var2.forEach((var1x) -> {
+         if (var1x == null) {
             throw new IllegalArgumentException("Location cannot be null!");
+         } else {
+            var4.add(var1x);
          }
-      }).collect(Collectors.toSet());
-      int var6 = this.maxSupportedTextureSize;
-      Stitcher var7 = new Stitcher(var6, var6, var4);
-      int var8 = 2147483647;
-      int var9 = 1 << var4;
+      });
+      int var5 = this.maxSupportedTextureSize;
+      Stitcher var6 = new Stitcher(var5, var5, this.maxMipLevel);
+      int var7 = 2147483647;
+      int var8 = 1 << this.maxMipLevel;
       var3.popPush("extracting_frames");
 
-      TextureAtlasSprite.Info var11;
-      int var12;
-      for(Iterator var10 = this.getBasicSpriteInfos(var1, var5).iterator(); var10.hasNext(); var7.registerSprite(var11)) {
-         var11 = (TextureAtlasSprite.Info)var10.next();
-         var8 = Math.min(var8, Math.min(var11.width(), var11.height()));
-         var12 = Math.min(Integer.lowestOneBit(var11.width()), Integer.lowestOneBit(var11.height()));
-         if (var12 < var9) {
-            LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", var11.name(), var11.width(), var11.height(), Mth.log2(var9), Mth.log2(var12));
-            var9 = var12;
+      TextureAtlasSprite var10;
+      for(Iterator var9 = this.getBasicSpriteInfos(var1, var4).iterator(); var9.hasNext(); var6.registerSprite(var10)) {
+         var10 = (TextureAtlasSprite)var9.next();
+         var7 = Math.min(var7, Math.min(var10.getWidth(), var10.getHeight()));
+         int var11 = Math.min(Integer.lowestOneBit(var10.getWidth()), Integer.lowestOneBit(var10.getHeight()));
+         if (var11 < var8) {
+            LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", var10.getName(), var10.getWidth(), var10.getHeight(), Mth.log2(var8), Mth.log2(var11));
+            var8 = var11;
          }
       }
 
-      int var17 = Math.min(var8, var9);
-      int var18 = Mth.log2(var17);
-      if (var18 < var4) {
-         LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", this.location, var4, var18, var17);
-         var12 = var18;
-      } else {
-         var12 = var4;
+      int var17 = Math.min(var7, var8);
+      int var15 = Mth.log2(var17);
+      if (var15 < this.maxMipLevel) {
+         LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", this.path, this.maxMipLevel, var15, var17);
+         this.maxMipLevel = var15;
       }
 
+      var3.popPush("mipmapping");
+      this.missingTextureSprite.applyMipmapping(this.maxMipLevel);
       var3.popPush("register");
-      var7.registerSprite(MissingTextureAtlasSprite.info());
+      var6.registerSprite(this.missingTextureSprite);
       var3.popPush("stitching");
 
       try {
-         var7.stitch();
-      } catch (StitcherException var16) {
-         CrashReport var14 = CrashReport.forThrowable(var16, "Stitching");
-         CrashReportCategory var15 = var14.addCategory("Stitcher");
-         var15.setDetail("Sprites", var16.getAllSprites().stream().map((var0) -> {
-            return String.format("%s[%dx%d]", var0.name(), var0.width(), var0.height());
+         var6.stitch();
+      } catch (StitcherException var14) {
+         CrashReport var12 = CrashReport.forThrowable(var14, "Stitching");
+         CrashReportCategory var13 = var12.addCategory("Stitcher");
+         var13.setDetail("Sprites", var14.getAllSprites().stream().map((var0) -> {
+            return String.format("%s[%dx%d]", var0.getName(), var0.getWidth(), var0.getHeight());
          }).collect(Collectors.joining(",")));
-         var15.setDetail("Max Texture Size", (Object)var6);
-         throw new ReportedException(var14);
+         var13.setDetail("Max Texture Size", (Object)var5);
+         throw new ReportedException(var12);
       }
 
       var3.popPush("loading");
-      List var13 = this.getLoadedSprites(var1, var7, var12);
+      List var16 = this.getLoadedSprites(var1, var6);
       var3.pop();
-      return new TextureAtlas.Preparations(var5, var7.getWidth(), var7.getHeight(), var12, var13);
+      return new TextureAtlas.Preparations(var4, var6.getWidth(), var6.getHeight(), var16);
    }
 
-   private Collection<TextureAtlasSprite.Info> getBasicSpriteInfos(ResourceManager var1, Set<ResourceLocation> var2) {
-      ArrayList var3 = Lists.newArrayList();
+   private Collection<TextureAtlasSprite> getBasicSpriteInfos(ResourceManager var1, Set<ResourceLocation> var2) {
+      ArrayList var3 = new ArrayList();
       ConcurrentLinkedQueue var4 = new ConcurrentLinkedQueue();
       Iterator var5 = var2.iterator();
 
       while(var5.hasNext()) {
          ResourceLocation var6 = (ResourceLocation)var5.next();
-         if (!MissingTextureAtlasSprite.getLocation().equals(var6)) {
+         if (!this.missingTextureSprite.getName().equals(var6)) {
             var3.add(CompletableFuture.runAsync(() -> {
                ResourceLocation var4x = this.getResourceLocation(var6);
 
-               TextureAtlasSprite.Info var5;
+               TextureAtlasSprite var5;
                try {
                   Resource var6x = var1.getResource(var4x);
                   Throwable var7 = null;
@@ -159,22 +160,17 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
                   try {
                      PngInfo var8 = new PngInfo(var6x.toString(), var6x.getInputStream());
                      AnimationMetadataSection var9 = (AnimationMetadataSection)var6x.getMetadata(AnimationMetadataSection.SERIALIZER);
-                     if (var9 == null) {
-                        var9 = AnimationMetadataSection.EMPTY;
-                     }
-
-                     Pair var10 = var9.getFrameSize(var8.width, var8.height);
-                     var5 = new TextureAtlasSprite.Info(var6, (Integer)var10.getFirst(), (Integer)var10.getSecond(), var9);
-                  } catch (Throwable var20) {
-                     var7 = var20;
-                     throw var20;
+                     var5 = new TextureAtlasSprite(var6, var8, var9);
+                  } catch (Throwable var19) {
+                     var7 = var19;
+                     throw var19;
                   } finally {
                      if (var6x != null) {
                         if (var7 != null) {
                            try {
                               var6x.close();
-                           } catch (Throwable var19) {
-                              var7.addSuppressed(var19);
+                           } catch (Throwable var18) {
+                              var7.addSuppressed(var18);
                            }
                         } else {
                            var6x.close();
@@ -182,11 +178,11 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
                      }
 
                   }
-               } catch (RuntimeException var22) {
-                  LOGGER.error("Unable to parse metadata from {} : {}", var4x, var22);
+               } catch (RuntimeException var21) {
+                  LOGGER.error("Unable to parse metadata from {} : {}", var4x, var21);
                   return;
-               } catch (IOException var23) {
-                  LOGGER.error("Using missing texture, unable to load {} : {}", var4x, var23);
+               } catch (IOException var22) {
+                  LOGGER.error("Using missing texture, unable to load {} : {}", var4x, var22);
                   return;
                }
 
@@ -199,70 +195,79 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
       return var4;
    }
 
-   private List<TextureAtlasSprite> getLoadedSprites(ResourceManager var1, Stitcher var2, int var3) {
-      ConcurrentLinkedQueue var4 = new ConcurrentLinkedQueue();
-      ArrayList var5 = Lists.newArrayList();
-      var2.gatherSprites((var5x, var6, var7, var8, var9) -> {
-         if (var5x == MissingTextureAtlasSprite.info()) {
-            MissingTextureAtlasSprite var10 = MissingTextureAtlasSprite.newInstance(this, var3, var6, var7, var8, var9);
-            var4.add(var10);
+   private List<TextureAtlasSprite> getLoadedSprites(ResourceManager var1, Stitcher var2) {
+      ConcurrentLinkedQueue var3 = new ConcurrentLinkedQueue();
+      ArrayList var4 = new ArrayList();
+      Iterator var5 = var2.gatherSprites().iterator();
+
+      while(var5.hasNext()) {
+         TextureAtlasSprite var6 = (TextureAtlasSprite)var5.next();
+         if (var6 == this.missingTextureSprite) {
+            var3.add(var6);
          } else {
-            var5.add(CompletableFuture.runAsync(() -> {
-               TextureAtlasSprite var9x = this.load(var1, var5x, var6, var7, var3, var8, var9);
-               if (var9x != null) {
-                  var4.add(var9x);
+            var4.add(CompletableFuture.runAsync(() -> {
+               if (this.load(var1, var6)) {
+                  var3.add(var6);
                }
 
             }, Util.backgroundExecutor()));
          }
+      }
 
-      });
-      CompletableFuture.allOf((CompletableFuture[])var5.toArray(new CompletableFuture[0])).join();
-      return Lists.newArrayList(var4);
+      CompletableFuture.allOf((CompletableFuture[])var4.toArray(new CompletableFuture[0])).join();
+      return new ArrayList(var3);
    }
 
-   @Nullable
-   private TextureAtlasSprite load(ResourceManager var1, TextureAtlasSprite.Info var2, int var3, int var4, int var5, int var6, int var7) {
-      ResourceLocation var8 = this.getResourceLocation(var2.name());
+   private boolean load(ResourceManager var1, TextureAtlasSprite var2) {
+      ResourceLocation var3 = this.getResourceLocation(var2.getName());
+      Resource var4 = null;
 
-      try {
-         Resource var9 = var1.getResource(var8);
-         Throwable var10 = null;
-
-         TextureAtlasSprite var12;
+      label62: {
+         boolean var6;
          try {
-            NativeImage var11 = NativeImage.read(var9.getInputStream());
-            var12 = new TextureAtlasSprite(this, var2, var5, var3, var4, var6, var7, var11);
-         } catch (Throwable var23) {
-            var10 = var23;
-            throw var23;
+            var4 = var1.getResource(var3);
+            var2.loadData(var4, this.maxMipLevel + 1);
+            break label62;
+         } catch (RuntimeException var13) {
+            LOGGER.error("Unable to parse metadata from {}", var3, var13);
+            var6 = false;
+            return var6;
+         } catch (IOException var14) {
+            LOGGER.error("Using missing texture, unable to load {}", var3, var14);
+            var6 = false;
          } finally {
-            if (var9 != null) {
-               if (var10 != null) {
-                  try {
-                     var9.close();
-                  } catch (Throwable var22) {
-                     var10.addSuppressed(var22);
-                  }
-               } else {
-                  var9.close();
-               }
-            }
-
+            IOUtils.closeQuietly(var4);
          }
 
-         return var12;
-      } catch (RuntimeException var25) {
-         LOGGER.error("Unable to parse metadata from {}", var8, var25);
-         return null;
-      } catch (IOException var26) {
-         LOGGER.error("Using missing texture, unable to load {}", var8, var26);
-         return null;
+         return var6;
+      }
+
+      try {
+         var2.applyMipmapping(this.maxMipLevel);
+         return true;
+      } catch (Throwable var12) {
+         CrashReport var16 = CrashReport.forThrowable(var12, "Applying mipmap");
+         CrashReportCategory var7 = var16.addCategory("Sprite being mipmapped");
+         var7.setDetail("Sprite name", () -> {
+            return var2.getName().toString();
+         });
+         var7.setDetail("Sprite size", () -> {
+            return var2.getWidth() + " x " + var2.getHeight();
+         });
+         var7.setDetail("Sprite frames", () -> {
+            return var2.getFrameCount() + " frames";
+         });
+         var7.setDetail("Mipmap levels", (Object)this.maxMipLevel);
+         throw new ReportedException(var16);
       }
    }
 
    private ResourceLocation getResourceLocation(ResourceLocation var1) {
-      return new ResourceLocation(var1.getNamespace(), String.format("textures/%s%s", var1.getPath(), ".png"));
+      return new ResourceLocation(var1.getNamespace(), String.format("%s/%s%s", this.path, var1.getPath(), ".png"));
+   }
+
+   public TextureAtlasSprite getTexture(String var1) {
+      return this.getSprite(new ResourceLocation(var1));
    }
 
    public void cycleAnimationFrames() {
@@ -277,17 +282,16 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
    }
 
    public void tick() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::cycleAnimationFrames);
-      } else {
-         this.cycleAnimationFrames();
-      }
+      this.cycleAnimationFrames();
+   }
 
+   public void setMaxMipLevel(int var1) {
+      this.maxMipLevel = var1;
    }
 
    public TextureAtlasSprite getSprite(ResourceLocation var1) {
       TextureAtlasSprite var2 = (TextureAtlasSprite)this.texturesByName.get(var1);
-      return var2 == null ? (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation()) : var2;
+      return var2 == null ? this.missingTextureSprite : var2;
    }
 
    public void clearTextureData() {
@@ -295,40 +299,25 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
 
       while(var1.hasNext()) {
          TextureAtlasSprite var2 = (TextureAtlasSprite)var1.next();
-         var2.close();
+         var2.wipeFrameData();
       }
 
       this.texturesByName.clear();
       this.animatedTextures.clear();
    }
 
-   public ResourceLocation location() {
-      return this.location;
-   }
-
-   public void updateFilter(TextureAtlas.Preparations var1) {
-      this.setFilter(false, var1.mipLevel > 0);
-   }
-
-   static {
-      LOCATION_BLOCKS = InventoryMenu.BLOCK_ATLAS;
-      LOCATION_PARTICLES = new ResourceLocation("textures/atlas/particles.png");
-   }
-
    public static class Preparations {
       final Set<ResourceLocation> sprites;
       final int width;
       final int height;
-      final int mipLevel;
       final List<TextureAtlasSprite> regions;
 
-      public Preparations(Set<ResourceLocation> var1, int var2, int var3, int var4, List<TextureAtlasSprite> var5) {
+      public Preparations(Set<ResourceLocation> var1, int var2, int var3, List<TextureAtlasSprite> var4) {
          super();
          this.sprites = var1;
          this.width = var2;
          this.height = var3;
-         this.mipLevel = var4;
-         this.regions = var5;
+         this.regions = var4;
       }
    }
 }

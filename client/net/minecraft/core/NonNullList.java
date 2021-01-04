@@ -1,7 +1,7 @@
 package net.minecraft.core;
 
-import com.google.common.collect.Lists;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -29,7 +29,7 @@ public class NonNullList<E> extends AbstractList<E> {
    }
 
    protected NonNullList() {
-      this(Lists.newArrayList(), (Object)null);
+      this(new ArrayList(), (Object)null);
    }
 
    protected NonNullList(List<E> var1, @Nullable E var2) {

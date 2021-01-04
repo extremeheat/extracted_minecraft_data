@@ -44,7 +44,7 @@ public class ResultSlot extends Slot {
       }
 
       if (this.container instanceof RecipeHolder) {
-         ((RecipeHolder)this.container).awardUsedRecipes(this.player);
+         ((RecipeHolder)this.container).awardAndReset(this.player);
       }
 
       this.removeCount = 0;
@@ -68,7 +68,7 @@ public class ResultSlot extends Slot {
             } else if (ItemStack.isSame(var5, var6) && ItemStack.tagMatches(var5, var6)) {
                var6.grow(var5.getCount());
                this.craftSlots.setItem(var4, var6);
-            } else if (!this.player.getInventory().add(var6)) {
+            } else if (!this.player.inventory.add(var6)) {
                this.player.drop(var6, false);
             }
          }

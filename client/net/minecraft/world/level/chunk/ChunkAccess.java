@@ -2,6 +2,7 @@ package net.minecraft.world.level.chunk;
 
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -11,23 +12,25 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.TickList;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
 import org.apache.logging.log4j.LogManager;
 
-public interface ChunkAccess extends BlockGetter, FeatureAccess {
+public interface ChunkAccess extends FeatureAccess {
    @Nullable
    BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3);
 
-   void setBlockEntity(BlockEntity var1);
+   void setBlockEntity(BlockPos var1, BlockEntity var2);
 
    void addEntity(Entity var1);
 
@@ -47,12 +50,26 @@ public interface ChunkAccess extends BlockGetter, FeatureAccess {
 
    default int getHighestSectionPosition() {
       LevelChunkSection var1 = this.getHighestSection();
-      return var1 == null ? this.getMinBuildHeight() : var1.bottomBlockY();
+      return var1 == null ? 0 : var1.bottomBlockY();
    }
 
    Set<BlockPos> getBlockEntitiesPos();
 
    LevelChunkSection[] getSections();
+
+   @Nullable
+   LevelLightEngine getLightEngine();
+
+   default int getRawBrightness(BlockPos var1, int var2, boolean var3) {
+      LevelLightEngine var4 = this.getLightEngine();
+      if (var4 != null && this.getStatus().isOrAfter(ChunkStatus.LIGHT)) {
+         int var5 = var3 ? var4.getLayerListener(LightLayer.SKY).getLightValue(var1) - var2 : 0;
+         int var6 = var4.getLayerListener(LightLayer.BLOCK).getLightValue(var1);
+         return Math.max(var6, var5);
+      } else {
+         return 0;
+      }
+   }
 
    Collection<Entry<Heightmap.Types, Heightmap>> getHeightmaps();
 
@@ -64,21 +81,29 @@ public interface ChunkAccess extends BlockGetter, FeatureAccess {
 
    ChunkPos getPos();
 
-   Map<StructureFeature<?>, StructureStart<?>> getAllStarts();
+   void setLastSaveTime(long var1);
 
-   void setAllStarts(Map<StructureFeature<?>, StructureStart<?>> var1);
+   Map<String, StructureStart> getAllStarts();
+
+   void setAllStarts(Map<String, StructureStart> var1);
+
+   default Biome getBiome(BlockPos var1) {
+      int var2 = var1.getX() & 15;
+      int var3 = var1.getZ() & 15;
+      return this.getBiomes()[var3 << 4 | var2];
+   }
 
    default boolean isYSpaceEmpty(int var1, int var2) {
-      if (var1 < this.getMinBuildHeight()) {
-         var1 = this.getMinBuildHeight();
+      if (var1 < 0) {
+         var1 = 0;
       }
 
-      if (var2 >= this.getMaxBuildHeight()) {
-         var2 = this.getMaxBuildHeight() - 1;
+      if (var2 >= 256) {
+         var2 = 255;
       }
 
       for(int var3 = var1; var3 <= var2; var3 += 16) {
-         if (!LevelChunkSection.isEmpty(this.getSections()[this.getSectionIndex(var3)])) {
+         if (!LevelChunkSection.isEmpty(this.getSections()[var3 >> 4])) {
             return false;
          }
       }
@@ -86,8 +111,7 @@ public interface ChunkAccess extends BlockGetter, FeatureAccess {
       return true;
    }
 
-   @Nullable
-   ChunkBiomeContainer getBiomes();
+   Biome[] getBiomes();
 
    void setUnsaved(boolean var1);
 
@@ -96,6 +120,8 @@ public interface ChunkAccess extends BlockGetter, FeatureAccess {
    ChunkStatus getStatus();
 
    void removeBlockEntity(BlockPos var1);
+
+   void setLightEngine(LevelLightEngine var1);
 
    default void markPosForPostprocessing(BlockPos var1) {
       LogManager.getLogger().warn("Trying to mark a block for PostProcessing @ {}, but this operation is not supported.", var1);
@@ -117,11 +143,19 @@ public interface ChunkAccess extends BlockGetter, FeatureAccess {
    @Nullable
    CompoundTag getBlockEntityNbtForSaving(BlockPos var1);
 
+   default void setBiomes(Biome[] var1) {
+      throw new UnsupportedOperationException();
+   }
+
    Stream<BlockPos> getLights();
 
    TickList<Block> getBlockTicks();
 
    TickList<Fluid> getLiquidTicks();
+
+   default BitSet getCarvingMask(GenerationStep.Carving var1) {
+      throw new RuntimeException("Meaningless in this context");
+   }
 
    UpgradeData getUpgradeData();
 

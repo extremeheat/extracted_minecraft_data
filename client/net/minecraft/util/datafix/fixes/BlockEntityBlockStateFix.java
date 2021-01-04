@@ -1,12 +1,12 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
+import java.util.Optional;
 
 public class BlockEntityBlockStateFix extends NamedEntityFix {
    public BlockEntityBlockStateFix(Schema var1, boolean var2) {
@@ -26,8 +26,8 @@ public class BlockEntityBlockStateFix extends NamedEntityFix {
       Typed var9 = (Typed)var2.pointTyped(var1.getOps()).orElseThrow(() -> {
          return new IllegalStateException("Could not create new piston block entity.");
       });
-      return var9.set(DSL.remainderFinder(), var5).set(var4, (Typed)((Pair)var3.readTyped(var8).result().orElseThrow(() -> {
+      return var9.set(DSL.remainderFinder(), var5).set(var4, (Typed)((Optional)var3.readTyped(var8).getSecond()).orElseThrow(() -> {
          return new IllegalStateException("Could not parse newly created block state tag.");
-      })).getFirst());
+      }));
    }
 }

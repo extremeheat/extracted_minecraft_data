@@ -3,24 +3,21 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -34,7 +31,7 @@ public class TurtleEggBlock extends Block {
    public static final IntegerProperty HATCH;
    public static final IntegerProperty EGGS;
 
-   public TurtleEggBlock(BlockBehaviour.Properties var1) {
+   public TurtleEggBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HATCH, 0)).setValue(EGGS, 1));
    }
@@ -53,12 +50,11 @@ public class TurtleEggBlock extends Block {
    }
 
    private void destroyEgg(Level var1, BlockPos var2, Entity var3, int var4) {
-      if (this.canDestroyEgg(var1, var3)) {
+      if (!this.canDestroyEgg(var1, var3)) {
+         super.stepOn(var1, var2, var3);
+      } else {
          if (!var1.isClientSide && var1.random.nextInt(var4) == 0) {
-            BlockState var5 = var1.getBlockState(var2);
-            if (var5.is(Blocks.TURTLE_EGG)) {
-               this.decreaseEggs(var1, var2, var5);
-            }
+            this.decreaseEggs(var1, var2, var1.getBlockState(var2));
          }
 
       }
@@ -76,39 +72,36 @@ public class TurtleEggBlock extends Block {
 
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      if (this.shouldUpdateHatchLevel(var2) && onSand(var2, var3)) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (this.shouldUpdateHatchLevel(var2) && this.onSand(var2, var3)) {
          int var5 = (Integer)var1.getValue(HATCH);
          if (var5 < 2) {
-            var2.playSound((Player)null, var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+            var2.playSound((Player)null, (BlockPos)var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
             var2.setBlock(var3, (BlockState)var1.setValue(HATCH, var5 + 1), 2);
          } else {
-            var2.playSound((Player)null, var3, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
+            var2.playSound((Player)null, (BlockPos)var3, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
             var2.removeBlock(var3, false);
-
-            for(int var6 = 0; var6 < (Integer)var1.getValue(EGGS); ++var6) {
-               var2.levelEvent(2001, var3, Block.getId(var1));
-               Turtle var7 = (Turtle)EntityType.TURTLE.create(var2);
-               var7.setAge(-24000);
-               var7.setHomePos(var3);
-               var7.moveTo((double)var3.getX() + 0.3D + (double)var6 * 0.2D, (double)var3.getY(), (double)var3.getZ() + 0.3D, 0.0F, 0.0F);
-               var2.addFreshEntity(var7);
+            if (!var2.isClientSide) {
+               for(int var6 = 0; var6 < (Integer)var1.getValue(EGGS); ++var6) {
+                  var2.levelEvent(2001, var3, Block.getId(var1));
+                  Turtle var7 = (Turtle)EntityType.TURTLE.create(var2);
+                  var7.setAge(-24000);
+                  var7.setHomePos(var3);
+                  var7.moveTo((double)var3.getX() + 0.3D + (double)var6 * 0.2D, (double)var3.getY(), (double)var3.getZ() + 0.3D, 0.0F, 0.0F);
+                  var2.addFreshEntity(var7);
+               }
             }
          }
       }
 
    }
 
-   public static boolean onSand(BlockGetter var0, BlockPos var1) {
-      return isSand(var0, var1.below());
-   }
-
-   public static boolean isSand(BlockGetter var0, BlockPos var1) {
-      return var0.getBlockState(var1).is(BlockTags.SAND);
+   private boolean onSand(BlockGetter var1, BlockPos var2) {
+      return var1.getBlockState(var2.below()).getBlock() == Blocks.SAND;
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (onSand(var2, var3) && !var2.isClientSide) {
+      if (this.onSand(var2, var3) && !var2.isClientSide) {
          var2.levelEvent(2005, var3, 0);
       }
 
@@ -129,13 +122,17 @@ public class TurtleEggBlock extends Block {
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
+      return var2.getItemInHand().getItem() == this.asItem() && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      return var2.is(this) ? (BlockState)var2.setValue(EGGS, Math.min(4, (Integer)var2.getValue(EGGS) + 1)) : super.getStateForPlacement(var1);
+      return var2.getBlock() == this ? (BlockState)var2.setValue(EGGS, Math.min(4, (Integer)var2.getValue(EGGS) + 1)) : super.getStateForPlacement(var1);
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -147,14 +144,10 @@ public class TurtleEggBlock extends Block {
    }
 
    private boolean canDestroyEgg(Level var1, Entity var2) {
-      if (!(var2 instanceof Turtle) && !(var2 instanceof Bat)) {
-         if (!(var2 instanceof LivingEntity)) {
-            return false;
-         } else {
-            return var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-         }
-      } else {
+      if (var2 instanceof Turtle) {
          return false;
+      } else {
+         return var2 instanceof LivingEntity && !(var2 instanceof Player) ? var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) : true;
       }
    }
 

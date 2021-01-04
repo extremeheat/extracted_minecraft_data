@@ -17,8 +17,6 @@ public abstract class CollectionTag<T extends Tag> extends AbstractList<T> imple
 
    public abstract boolean addTag(int var1, Tag var2);
 
-   public abstract byte getElementType();
-
    // $FF: synthetic method
    public Object remove(int var1) {
       return this.remove(var1);

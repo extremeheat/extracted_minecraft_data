@@ -42,14 +42,6 @@ public class BlockEventData {
       }
    }
 
-   public int hashCode() {
-      int var1 = this.pos.hashCode();
-      var1 = 31 * var1 + this.block.hashCode();
-      var1 = 31 * var1 + this.paramA;
-      var1 = 31 * var1 + this.paramB;
-      return var1;
-   }
-
    public String toString() {
       return "TE(" + this.pos + ")," + this.paramA + "," + this.paramB + "," + this.block;
    }

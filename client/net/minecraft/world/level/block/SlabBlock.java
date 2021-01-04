@@ -4,11 +4,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -29,7 +28,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    protected static final VoxelShape BOTTOM_AABB;
    protected static final VoxelShape TOP_AABB;
 
-   public SlabBlock(BlockBehaviour.Properties var1) {
+   public SlabBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, false));
    }
@@ -58,7 +57,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockPos var2 = var1.getClickedPos();
       BlockState var3 = var1.getLevel().getBlockState(var2);
-      if (var3.is(this)) {
+      if (var3.getBlock() == this) {
          return (BlockState)((BlockState)var3.setValue(TYPE, SlabType.DOUBLE)).setValue(WATERLOGGED, false);
       } else {
          FluidState var4 = var1.getLevel().getFluidState(var2);
@@ -71,7 +70,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       ItemStack var3 = var2.getItemInHand();
       SlabType var4 = (SlabType)var1.getValue(TYPE);
-      if (var4 != SlabType.DOUBLE && var3.is(this.asItem())) {
+      if (var4 != SlabType.DOUBLE && var3.getItem() == this.asItem()) {
          if (var2.replacingClickedOnBlock()) {
             boolean var5 = var2.getClickLocation().y - (double)var2.getClickedPos().getY() > 0.5D;
             Direction var6 = var2.getClickedFace();

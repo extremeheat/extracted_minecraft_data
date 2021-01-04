@@ -12,14 +12,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemPropertyFunction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class ItemOverride {
    private final ResourceLocation model;
@@ -35,7 +34,7 @@ public class ItemOverride {
       return this.model;
    }
 
-   boolean test(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+   boolean test(ItemStack var1, @Nullable Level var2, @Nullable LivingEntity var3) {
       Item var4 = var1.getItem();
       Iterator var5 = this.predicates.entrySet().iterator();
 
@@ -47,7 +46,7 @@ public class ItemOverride {
          }
 
          var6 = (Entry)var5.next();
-         var7 = ItemProperties.getProperty(var4, (ResourceLocation)var6.getKey());
+         var7 = var4.getProperty((ResourceLocation)var6.getKey());
       } while(var7 != null && var7.call(var1, var2, var3) >= (Float)var6.getValue());
 
       return false;

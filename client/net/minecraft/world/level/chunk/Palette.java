@@ -1,6 +1,5 @@
 package net.minecraft.world.level.chunk;
 
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -8,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 public interface Palette<T> {
    int idFor(T var1);
 
-   boolean maybeHas(Predicate<T> var1);
+   boolean maybeHas(T var1);
 
    @Nullable
    T valueFor(int var1);

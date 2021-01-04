@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
@@ -24,11 +23,11 @@ public class GoalSelector {
    };
    private final Map<Goal.Flag, WrappedGoal> lockedFlags = new EnumMap(Goal.Flag.class);
    private final Set<WrappedGoal> availableGoals = Sets.newLinkedHashSet();
-   private final Supplier<ProfilerFiller> profiler;
+   private final ProfilerFiller profiler;
    private final EnumSet<Goal.Flag> disabledFlags = EnumSet.noneOf(Goal.Flag.class);
    private int newGoalRate = 3;
 
-   public GoalSelector(Supplier<ProfilerFiller> var1) {
+   public GoalSelector(ProfilerFiller var1) {
       super();
       this.profiler = var1;
    }
@@ -47,15 +46,14 @@ public class GoalSelector {
    }
 
    public void tick() {
-      ProfilerFiller var1 = (ProfilerFiller)this.profiler.get();
-      var1.push("goalCleanup");
-      this.getRunningGoals().filter((var1x) -> {
+      this.profiler.push("goalCleanup");
+      this.getRunningGoals().filter((var1) -> {
          boolean var2;
-         if (var1x.isRunning()) {
-            Stream var10000 = var1x.getFlags().stream();
+         if (var1.isRunning()) {
+            Stream var10000 = var1.getFlags().stream();
             EnumSet var10001 = this.disabledFlags;
             var10001.getClass();
-            if (!var10000.anyMatch(var10001::contains) && var1x.canContinueToUse()) {
+            if (!var10000.anyMatch(var10001::contains) && var1.canContinueToUse()) {
                var2 = false;
                return var2;
             }
@@ -64,37 +62,37 @@ public class GoalSelector {
          var2 = true;
          return var2;
       }).forEach(Goal::stop);
-      this.lockedFlags.forEach((var1x, var2) -> {
+      this.lockedFlags.forEach((var1, var2) -> {
          if (!var2.isRunning()) {
-            this.lockedFlags.remove(var1x);
+            this.lockedFlags.remove(var1);
          }
 
       });
-      var1.pop();
-      var1.push("goalUpdate");
+      this.profiler.pop();
+      this.profiler.push("goalUpdate");
       this.availableGoals.stream().filter((var0) -> {
          return !var0.isRunning();
-      }).filter((var1x) -> {
-         Stream var10000 = var1x.getFlags().stream();
+      }).filter((var1) -> {
+         Stream var10000 = var1.getFlags().stream();
          EnumSet var10001 = this.disabledFlags;
          var10001.getClass();
          return var10000.noneMatch(var10001::contains);
-      }).filter((var1x) -> {
-         return var1x.getFlags().stream().allMatch((var2) -> {
-            return ((WrappedGoal)this.lockedFlags.getOrDefault(var2, NO_GOAL)).canBeReplacedBy(var1x);
+      }).filter((var1) -> {
+         return var1.getFlags().stream().allMatch((var2) -> {
+            return ((WrappedGoal)this.lockedFlags.getOrDefault(var2, NO_GOAL)).canBeReplacedBy(var1);
          });
-      }).filter(WrappedGoal::canUse).forEach((var1x) -> {
-         var1x.getFlags().forEach((var2) -> {
+      }).filter(WrappedGoal::canUse).forEach((var1) -> {
+         var1.getFlags().forEach((var2) -> {
             WrappedGoal var3 = (WrappedGoal)this.lockedFlags.getOrDefault(var2, NO_GOAL);
             var3.stop();
-            this.lockedFlags.put(var2, var1x);
+            this.lockedFlags.put(var2, var1);
          });
-         var1x.start();
+         var1.start();
       });
-      var1.pop();
-      var1.push("goalTick");
+      this.profiler.pop();
+      this.profiler.push("goalTick");
       this.getRunningGoals().forEach(WrappedGoal::tick);
-      var1.pop();
+      this.profiler.pop();
    }
 
    public Stream<WrappedGoal> getRunningGoals() {

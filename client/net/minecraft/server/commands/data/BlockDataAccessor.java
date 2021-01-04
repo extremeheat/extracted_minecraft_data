@@ -12,7 +12,6 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -20,7 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockDataAccessor implements DataAccessor {
-   private static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.block.invalid"));
+   private static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(new TranslatableComponent("commands.data.block.invalid", new Object[0]));
    public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
       return new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
@@ -51,9 +50,9 @@ public class BlockDataAccessor implements DataAccessor {
       var1.putInt("x", this.pos.getX());
       var1.putInt("y", this.pos.getY());
       var1.putInt("z", this.pos.getZ());
-      BlockState var2 = this.entity.getLevel().getBlockState(this.pos);
       this.entity.load(var1);
       this.entity.setChanged();
+      BlockState var2 = this.entity.getLevel().getBlockState(this.pos);
       this.entity.getLevel().sendBlockUpdated(this.pos, var2, var2, 3);
    }
 
@@ -66,7 +65,7 @@ public class BlockDataAccessor implements DataAccessor {
    }
 
    public Component getPrintSuccess(Tag var1) {
-      return new TranslatableComponent("commands.data.block.query", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ(), NbtUtils.toPrettyComponent(var1)});
+      return new TranslatableComponent("commands.data.block.query", new Object[]{this.pos.getX(), this.pos.getY(), this.pos.getZ(), var1.getPrettyDisplay()});
    }
 
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {

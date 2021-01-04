@@ -7,6 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -18,10 +19,6 @@ public class SetNbtFunction extends LootItemConditionalFunction {
    private SetNbtFunction(LootItemCondition[] var1, CompoundTag var2) {
       super(var1);
       this.tag = var2;
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_NBT;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -42,7 +39,7 @@ public class SetNbtFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetNbtFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("set_nbt"), SetNbtFunction.class);
       }
 
       public void serialize(JsonObject var1, SetNbtFunction var2, JsonSerializationContext var3) {

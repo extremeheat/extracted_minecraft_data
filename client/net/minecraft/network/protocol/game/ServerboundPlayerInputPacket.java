@@ -8,7 +8,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
    private float xxa;
    private float zza;
    private boolean isJumping;
-   private boolean isShiftKeyDown;
+   private boolean isSneaking;
 
    public ServerboundPlayerInputPacket() {
       super();
@@ -19,7 +19,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       this.xxa = var1;
       this.zza = var2;
       this.isJumping = var3;
-      this.isShiftKeyDown = var4;
+      this.isSneaking = var4;
    }
 
    public void read(FriendlyByteBuf var1) throws IOException {
@@ -27,7 +27,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       this.zza = var1.readFloat();
       byte var2 = var1.readByte();
       this.isJumping = (var2 & 1) > 0;
-      this.isShiftKeyDown = (var2 & 2) > 0;
+      this.isSneaking = (var2 & 2) > 0;
    }
 
    public void write(FriendlyByteBuf var1) throws IOException {
@@ -38,7 +38,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
          var2 = (byte)(var2 | 1);
       }
 
-      if (this.isShiftKeyDown) {
+      if (this.isSneaking) {
          var2 = (byte)(var2 | 2);
       }
 
@@ -61,7 +61,7 @@ public class ServerboundPlayerInputPacket implements Packet<ServerGamePacketList
       return this.isJumping;
    }
 
-   public boolean isShiftKeyDown() {
-      return this.isShiftKeyDown;
+   public boolean isSneaking() {
+      return this.isSneaking;
    }
 }

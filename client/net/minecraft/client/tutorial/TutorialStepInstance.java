@@ -1,6 +1,6 @@
 package net.minecraft.client.tutorial;
 
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.player.Input;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
@@ -20,10 +20,10 @@ public interface TutorialStepInstance {
    default void onMouse(double var1, double var3) {
    }
 
-   default void onLookAt(ClientLevel var1, HitResult var2) {
+   default void onLookAt(MultiPlayerLevel var1, HitResult var2) {
    }
 
-   default void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
+   default void onDestroyBlock(MultiPlayerLevel var1, BlockPos var2, BlockState var3, float var4) {
    }
 
    default void onOpenInventory() {

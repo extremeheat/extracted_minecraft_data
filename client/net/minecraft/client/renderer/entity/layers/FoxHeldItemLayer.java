@@ -1,10 +1,8 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.FoxModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,41 +14,47 @@ public class FoxHeldItemLayer extends RenderLayer<Fox, FoxModel<Fox>> {
       super(var1);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, Fox var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      boolean var11 = var4.isSleeping();
-      boolean var12 = var4.isBaby();
-      var1.pushPose();
-      float var13;
-      if (var12) {
-         var13 = 0.75F;
-         var1.scale(0.75F, 0.75F, 0.75F);
-         var1.translate(0.0D, 0.5D, 0.20937499403953552D);
-      }
-
-      var1.translate((double)(((FoxModel)this.getParentModel()).head.x / 16.0F), (double)(((FoxModel)this.getParentModel()).head.y / 16.0F), (double)(((FoxModel)this.getParentModel()).head.z / 16.0F));
-      var13 = var4.getHeadRollAngle(var7);
-      var1.mulPose(Vector3f.ZP.rotation(var13));
-      var1.mulPose(Vector3f.YP.rotationDegrees(var9));
-      var1.mulPose(Vector3f.XP.rotationDegrees(var10));
-      if (var4.isBaby()) {
+   public void render(Fox var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.MAINHAND);
+      if (!var9.isEmpty()) {
+         boolean var10 = var1.isSleeping();
+         boolean var11 = var1.isBaby();
+         GlStateManager.pushMatrix();
+         float var12;
          if (var11) {
-            var1.translate(0.4000000059604645D, 0.25999999046325684D, 0.15000000596046448D);
-         } else {
-            var1.translate(0.05999999865889549D, 0.25999999046325684D, -0.5D);
+            var12 = 0.75F;
+            GlStateManager.scalef(0.75F, 0.75F, 0.75F);
+            GlStateManager.translatef(0.0F, 8.0F * var8, 3.35F * var8);
          }
-      } else if (var11) {
-         var1.translate(0.46000000834465027D, 0.25999999046325684D, 0.2199999988079071D);
-      } else {
-         var1.translate(0.05999999865889549D, 0.27000001072883606D, -0.5D);
-      }
 
-      var1.mulPose(Vector3f.XP.rotationDegrees(90.0F));
-      if (var11) {
-         var1.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
-      }
+         GlStateManager.translatef(((FoxModel)this.getParentModel()).head.x / 16.0F, ((FoxModel)this.getParentModel()).head.y / 16.0F, ((FoxModel)this.getParentModel()).head.z / 16.0F);
+         var12 = var1.getHeadRollAngle(var4) * 57.295776F;
+         GlStateManager.rotatef(var12, 0.0F, 0.0F, 1.0F);
+         GlStateManager.rotatef(var6, 0.0F, 1.0F, 0.0F);
+         GlStateManager.rotatef(var7, 1.0F, 0.0F, 0.0F);
+         if (var1.isBaby()) {
+            if (var10) {
+               GlStateManager.translatef(0.4F, 0.26F, 0.15F);
+            } else {
+               GlStateManager.translatef(0.06F, 0.26F, -0.5F);
+            }
+         } else if (var10) {
+            GlStateManager.translatef(0.46F, 0.26F, 0.22F);
+         } else {
+            GlStateManager.translatef(0.06F, 0.27F, -0.5F);
+         }
 
-      ItemStack var14 = var4.getItemBySlot(EquipmentSlot.MAINHAND);
-      Minecraft.getInstance().getItemInHandRenderer().renderItem(var4, var14, ItemTransforms.TransformType.GROUND, false, var1, var2, var3);
-      var1.popPose();
+         GlStateManager.rotatef(90.0F, 1.0F, 0.0F, 0.0F);
+         if (var10) {
+            GlStateManager.rotatef(90.0F, 0.0F, 0.0F, 1.0F);
+         }
+
+         Minecraft.getInstance().getItemRenderer().renderWithMobState(var9, var1, ItemTransforms.TransformType.GROUND, false);
+         GlStateManager.popMatrix();
+      }
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

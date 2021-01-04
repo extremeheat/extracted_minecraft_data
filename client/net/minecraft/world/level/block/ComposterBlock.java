@@ -8,11 +8,9 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -24,7 +22,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -39,7 +36,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ComposterBlock extends Block implements WorldlyContainerHolder {
    public static final IntegerProperty LEVEL;
    public static final Object2FloatMap<ItemLike> COMPOSTABLES;
-   private static final VoxelShape OUTER_SHAPE;
+   public static final VoxelShape OUTER_SHAPE;
    private static final VoxelShape[] SHAPES;
 
    public static void bootStrap() {
@@ -75,9 +72,6 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.5F, Items.CACTUS);
       add(0.5F, Items.SUGAR_CANE);
       add(0.5F, Items.VINE);
-      add(0.5F, Items.NETHER_SPROUTS);
-      add(0.5F, Items.WEEPING_VINES);
-      add(0.5F, Items.TWISTING_VINES);
       add(0.5F, Items.MELON_SLICE);
       add(0.65F, Items.SEA_PICKLE);
       add(0.65F, Items.LILY_PAD);
@@ -93,12 +87,6 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.65F, Items.BROWN_MUSHROOM);
       add(0.65F, Items.RED_MUSHROOM);
       add(0.65F, Items.MUSHROOM_STEM);
-      add(0.65F, Items.CRIMSON_FUNGUS);
-      add(0.65F, Items.WARPED_FUNGUS);
-      add(0.65F, Items.NETHER_WART);
-      add(0.65F, Items.CRIMSON_ROOTS);
-      add(0.65F, Items.WARPED_ROOTS);
-      add(0.65F, Items.SHROOMLIGHT);
       add(0.65F, Items.DANDELION);
       add(0.65F, Items.POPPY);
       add(0.65F, Items.BLUE_ORCHID);
@@ -121,8 +109,6 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.85F, Items.HAY_BLOCK);
       add(0.85F, Items.BROWN_MUSHROOM_BLOCK);
       add(0.85F, Items.RED_MUSHROOM_BLOCK);
-      add(0.85F, Items.NETHER_WART_BLOCK);
-      add(0.85F, Items.WARPED_WART_BLOCK);
       add(0.85F, Items.BREAD);
       add(0.85F, Items.BAKED_POTATO);
       add(0.85F, Items.COOKIE);
@@ -134,7 +120,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       COMPOSTABLES.put(var1.asItem(), var0);
    }
 
-   public ComposterBlock(BlockBehaviour.Properties var1) {
+   public ComposterBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 0));
    }
@@ -175,83 +161,65 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       int var7 = (Integer)var1.getValue(LEVEL);
       ItemStack var8 = var4.getItemInHand(var5);
       if (var7 < 8 && COMPOSTABLES.containsKey(var8.getItem())) {
          if (var7 < 7 && !var2.isClientSide) {
-            BlockState var9 = addItem(var1, var2, var3, var8);
-            var2.levelEvent(1500, var3, var1 != var9 ? 1 : 0);
-            if (!var4.getAbilities().instabuild) {
+            boolean var17 = addItem(var1, var2, var3, var8);
+            var2.levelEvent(1500, var3, var17 ? 1 : 0);
+            if (!var4.abilities.instabuild) {
                var8.shrink(1);
             }
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return true;
       } else if (var7 == 8) {
-         extractProduce(var1, var2, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         if (!var2.isClientSide) {
+            float var9 = 0.7F;
+            double var10 = (double)(var2.random.nextFloat() * 0.7F) + 0.15000000596046448D;
+            double var12 = (double)(var2.random.nextFloat() * 0.7F) + 0.06000000238418579D + 0.6D;
+            double var14 = (double)(var2.random.nextFloat() * 0.7F) + 0.15000000596046448D;
+            ItemEntity var16 = new ItemEntity(var2, (double)var3.getX() + var10, (double)var3.getY() + var12, (double)var3.getZ() + var14, new ItemStack(Items.BONE_MEAL));
+            var16.setDefaultPickUpDelay();
+            var2.addFreshEntity(var16);
+         }
+
+         empty(var1, var2, var3);
+         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         return true;
       } else {
-         return InteractionResult.PASS;
+         return false;
       }
    }
 
-   public static BlockState insertItem(BlockState var0, ServerLevel var1, ItemStack var2, BlockPos var3) {
-      int var4 = (Integer)var0.getValue(LEVEL);
-      if (var4 < 7 && COMPOSTABLES.containsKey(var2.getItem())) {
-         BlockState var5 = addItem(var0, var1, var3, var2);
-         var2.shrink(1);
-         return var5;
-      } else {
-         return var0;
-      }
+   private static void empty(BlockState var0, LevelAccessor var1, BlockPos var2) {
+      var1.setBlock(var2, (BlockState)var0.setValue(LEVEL, 0), 3);
    }
 
-   public static BlockState extractProduce(BlockState var0, Level var1, BlockPos var2) {
-      if (!var1.isClientSide) {
-         float var3 = 0.7F;
-         double var4 = (double)(var1.random.nextFloat() * 0.7F) + 0.15000000596046448D;
-         double var6 = (double)(var1.random.nextFloat() * 0.7F) + 0.06000000238418579D + 0.6D;
-         double var8 = (double)(var1.random.nextFloat() * 0.7F) + 0.15000000596046448D;
-         ItemEntity var10 = new ItemEntity(var1, (double)var2.getX() + var4, (double)var2.getY() + var6, (double)var2.getZ() + var8, new ItemStack(Items.BONE_MEAL));
-         var10.setDefaultPickUpDelay();
-         var1.addFreshEntity(var10);
-      }
-
-      BlockState var11 = empty(var0, var1, var2);
-      var1.playSound((Player)null, (BlockPos)var2, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-      return var11;
-   }
-
-   private static BlockState empty(BlockState var0, LevelAccessor var1, BlockPos var2) {
-      BlockState var3 = (BlockState)var0.setValue(LEVEL, 0);
-      var1.setBlock(var2, var3, 3);
-      return var3;
-   }
-
-   private static BlockState addItem(BlockState var0, LevelAccessor var1, BlockPos var2, ItemStack var3) {
+   private static boolean addItem(BlockState var0, LevelAccessor var1, BlockPos var2, ItemStack var3) {
       int var4 = (Integer)var0.getValue(LEVEL);
       float var5 = COMPOSTABLES.getFloat(var3.getItem());
       if ((var4 != 0 || var5 <= 0.0F) && var1.getRandom().nextDouble() >= (double)var5) {
-         return var0;
+         return false;
       } else {
          int var6 = var4 + 1;
-         BlockState var7 = (BlockState)var0.setValue(LEVEL, var6);
-         var1.setBlock(var2, var7, 3);
+         var1.setBlock(var2, (BlockState)var0.setValue(LEVEL, var6), 3);
          if (var6 == 7) {
             var1.getBlockTicks().scheduleTick(var2, var0.getBlock(), 20);
          }
 
-         return var7;
+         return true;
       }
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if ((Integer)var1.getValue(LEVEL) == 7) {
          var2.setBlock(var3, (BlockState)var1.cycle(LEVEL), 3);
-         var2.playSound((Player)null, var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
+      super.tick(var1, var2, var3, var4);
    }
 
    public boolean hasAnalogOutputSignal(BlockState var1) {
@@ -325,8 +293,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
          ItemStack var1 = this.getItem(0);
          if (!var1.isEmpty()) {
             this.changed = true;
-            BlockState var2 = ComposterBlock.addItem(this.state, this.level, this.pos, var1);
-            this.level.levelEvent(1500, this.pos, var2 != this.state ? 1 : 0);
+            ComposterBlock.addItem(this.state, this.level, this.pos, var1);
             this.removeItemNoUpdate(0);
          }
 
@@ -359,7 +326,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       }
 
       public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
-         return !this.changed && var3 == Direction.DOWN && var2.is(Items.BONE_MEAL);
+         return !this.changed && var3 == Direction.DOWN && var2.getItem() == Items.BONE_MEAL;
       }
 
       public void setChanged() {

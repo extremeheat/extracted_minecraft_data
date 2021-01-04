@@ -5,6 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -15,6 +16,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class EmptyFluid extends Fluid {
    public EmptyFluid() {
       super();
+   }
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.SOLID;
    }
 
    public Item getBucket() {

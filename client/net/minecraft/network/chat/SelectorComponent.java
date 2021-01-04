@@ -25,7 +25,7 @@ public class SelectorComponent extends BaseComponent implements ContextAwareComp
          EntitySelectorParser var3 = new EntitySelectorParser(new StringReader(var1));
          var2 = var3.parse();
       } catch (CommandSyntaxException var4) {
-         LOGGER.warn("Invalid selector component: {}: {}", var1, var4.getMessage());
+         LOGGER.warn("Invalid selector component: {}", var1, var4.getMessage());
       }
 
       this.selector = var2;
@@ -35,15 +35,15 @@ public class SelectorComponent extends BaseComponent implements ContextAwareComp
       return this.pattern;
    }
 
-   public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      return (MutableComponent)(var1 != null && this.selector != null ? EntitySelector.joinNames(this.selector.findEntities(var1)) : new TextComponent(""));
+   public Component resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
+      return (Component)(var1 != null && this.selector != null ? EntitySelector.joinNames(this.selector.findEntities(var1)) : new TextComponent(""));
    }
 
    public String getContents() {
       return this.pattern;
    }
 
-   public SelectorComponent plainCopy() {
+   public SelectorComponent copy() {
       return new SelectorComponent(this.pattern);
    }
 
@@ -63,12 +63,7 @@ public class SelectorComponent extends BaseComponent implements ContextAwareComp
    }
 
    // $FF: synthetic method
-   public BaseComponent plainCopy() {
-      return this.plainCopy();
-   }
-
-   // $FF: synthetic method
-   public MutableComponent plainCopy() {
-      return this.plainCopy();
+   public Component copy() {
+      return this.copy();
    }
 }

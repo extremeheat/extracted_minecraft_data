@@ -9,21 +9,20 @@ import java.util.Random;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -32,8 +31,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
@@ -50,13 +47,16 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -68,7 +68,6 @@ public class Panda extends Animal {
    private static final EntityDataAccessor<Byte> MAIN_GENE_ID;
    private static final EntityDataAccessor<Byte> HIDDEN_GENE_ID;
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
-   private static final TargetingConditions BREED_TARGETING;
    private boolean gotBamboo;
    private boolean didBite;
    public int rollCounter;
@@ -79,7 +78,6 @@ public class Panda extends Animal {
    private float onBackAmountO;
    private float rollAmount;
    private float rollAmountO;
-   private Panda.PandaLookAtPlayerGoal lookAtPlayerGoal;
    private static final Predicate<ItemEntity> PANDA_ITEMS;
 
    public Panda(EntityType<? extends Panda> var1, Level var2) {
@@ -229,14 +227,14 @@ public class Panda extends Animal {
    }
 
    @Nullable
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Panda var3 = (Panda)EntityType.PANDA.create(var1);
-      if (var2 instanceof Panda) {
-         var3.setGeneFromParents(this, (Panda)var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      Panda var2 = (Panda)EntityType.PANDA.create(this.level);
+      if (var1 instanceof Panda) {
+         var2.setGeneFromParents(this, (Panda)var1);
       }
 
-      var3.setAttributes();
-      return var3;
+      var2.setAttributes();
+      return var2;
    }
 
    protected void registerGoals() {
@@ -250,8 +248,7 @@ public class Panda extends Animal {
       this.goalSelector.addGoal(7, new Panda.PandaSitGoal());
       this.goalSelector.addGoal(8, new Panda.PandaLieOnBackGoal(this));
       this.goalSelector.addGoal(8, new Panda.PandaSneezeGoal(this));
-      this.lookAtPlayerGoal = new Panda.PandaLookAtPlayerGoal(this, Player.class, 6.0F);
-      this.goalSelector.addGoal(9, this.lookAtPlayerGoal);
+      this.goalSelector.addGoal(9, new Panda.PandaLookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(10, new RandomLookAroundGoal(this));
       this.goalSelector.addGoal(12, new Panda.PandaRollGoal(this));
       this.goalSelector.addGoal(13, new FollowParentGoal(this, 1.25D));
@@ -259,8 +256,10 @@ public class Panda extends Animal {
       this.targetSelector.addGoal(1, (new Panda.PandaHurtByTargetGoal(this, new Class[0])).setAlertOthers(new Class[0]));
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.15000000596046448D).add(Attributes.ATTACK_DAMAGE, 6.0D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.15000000596046448D);
+      this.getAttributes().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(6.0D);
    }
 
    public Panda.Gene getVariant() {
@@ -396,7 +395,7 @@ public class Panda extends Animal {
             double var3 = (double)(-this.random.nextFloat()) * 0.6D - 0.3D;
             Vec3 var5 = new Vec3(((double)this.random.nextFloat() - 0.5D) * 0.8D, var3, 1.0D + ((double)this.random.nextFloat() - 0.5D) * 0.4D);
             var5 = var5.yRot(-this.yBodyRot * 0.017453292F);
-            var5 = var5.add(this.getX(), this.getEyeY() + 1.0D, this.getZ());
+            var5 = var5.add(this.x, this.y + (double)this.getEyeHeight() + 1.0D, this.z);
             this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, this.getItemBySlot(EquipmentSlot.MAINHAND)), var5.x, var5.y, var5.z, var2.x, var2.y + 0.05D, var2.z);
          }
       }
@@ -469,7 +468,7 @@ public class Panda extends Animal {
 
    private void afterSneeze() {
       Vec3 var1 = this.getDeltaMovement();
-      this.level.addParticle(ParticleTypes.SNEEZE, this.getX() - (double)(this.getBbWidth() + 1.0F) * 0.5D * (double)Mth.sin(this.yBodyRot * 0.017453292F), this.getEyeY() - 0.10000000149011612D, this.getZ() + (double)(this.getBbWidth() + 1.0F) * 0.5D * (double)Mth.cos(this.yBodyRot * 0.017453292F), var1.x, 0.0D, var1.z);
+      this.level.addParticle(ParticleTypes.SNEEZE, this.x - (double)(this.getBbWidth() + 1.0F) * 0.5D * (double)Mth.sin(this.yBodyRot * 0.017453292F), this.y + (double)this.getEyeHeight() - 0.10000000149011612D, this.z + (double)(this.getBbWidth() + 1.0F) * 0.5D * (double)Mth.cos(this.yBodyRot * 0.017453292F), var1.x, 0.0D, var1.z);
       this.playSound(SoundEvents.PANDA_SNEEZE, 1.0F, 1.0F);
       List var2 = this.level.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0D));
       Iterator var3 = var2.iterator();
@@ -489,12 +488,11 @@ public class Panda extends Animal {
 
    protected void pickUpItem(ItemEntity var1) {
       if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && PANDA_ITEMS.test(var1)) {
-         this.onItemPickup(var1);
          ItemStack var2 = var1.getItem();
          this.setItemSlot(EquipmentSlot.MAINHAND, var2);
          this.handDropChances[EquipmentSlot.MAINHAND.getIndex()] = 2.0F;
          this.take(var1, var2.getCount());
-         var1.discard();
+         var1.remove();
       }
 
    }
@@ -505,15 +503,20 @@ public class Panda extends Animal {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+      Object var6 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       this.setMainGene(Panda.Gene.getRandom(this.random));
       this.setHiddenGene(Panda.Gene.getRandom(this.random));
       this.setAttributes();
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(0.2F);
+      if (var6 instanceof Panda.PandaGroupData) {
+         if (this.random.nextInt(5) == 0) {
+            this.setAge(-24000);
+         }
+      } else {
+         var6 = new Panda.PandaGroupData();
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return (SpawnGroupData)var6;
    }
 
    public void setGeneFromParents(Panda var1, @Nullable Panda var2) {
@@ -549,11 +552,11 @@ public class Panda extends Animal {
 
    public void setAttributes() {
       if (this.isWeak()) {
-         this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(10.0D);
+         this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
       }
 
       if (this.isLazy()) {
-         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.07000000029802322D);
+         this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.07000000029802322D);
       }
 
    }
@@ -567,13 +570,15 @@ public class Panda extends Animal {
 
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public boolean mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (this.isScared()) {
-         return InteractionResult.PASS;
+      if (var3.getItem() instanceof SpawnEggItem) {
+         return super.mobInteract(var1, var2);
+      } else if (this.isScared()) {
+         return false;
       } else if (this.isOnBack()) {
          this.setOnBack(false);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return true;
       } else if (this.isFood(var3)) {
          if (this.getTarget() != null) {
             this.gotBamboo = true;
@@ -587,13 +592,13 @@ public class Panda extends Animal {
             this.setInLove(var1);
          } else {
             if (this.level.isClientSide || this.isSitting() || this.isInWater()) {
-               return InteractionResult.PASS;
+               return false;
             }
 
             this.tryToSit();
             this.eat(true);
             ItemStack var4 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (!var4.isEmpty() && !var1.getAbilities().instabuild) {
+            if (!var4.isEmpty() && !var1.abilities.instabuild) {
                this.spawnAtLocation(var4);
             }
 
@@ -601,9 +606,9 @@ public class Panda extends Animal {
             this.usePlayerItem(var1, var3);
          }
 
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
-         return InteractionResult.PASS;
+         return false;
       }
    }
 
@@ -621,11 +626,11 @@ public class Panda extends Animal {
    }
 
    public boolean isFood(ItemStack var1) {
-      return var1.is(Blocks.BAMBOO.asItem());
+      return var1.getItem() == Blocks.BAMBOO.asItem();
    }
 
    private boolean isFoodOrCake(ItemStack var1) {
-      return this.isFood(var1) || var1.is(Blocks.CAKE.asItem());
+      return this.isFood(var1) || var1.getItem() == Blocks.CAKE.asItem();
    }
 
    @Nullable
@@ -649,10 +654,9 @@ public class Panda extends Animal {
       MAIN_GENE_ID = SynchedEntityData.defineId(Panda.class, EntityDataSerializers.BYTE);
       HIDDEN_GENE_ID = SynchedEntityData.defineId(Panda.class, EntityDataSerializers.BYTE);
       DATA_ID_FLAGS = SynchedEntityData.defineId(Panda.class, EntityDataSerializers.BYTE);
-      BREED_TARGETING = (new TargetingConditions()).range(8.0D).allowSameTeam().allowInvulnerable();
       PANDA_ITEMS = (var0) -> {
-         ItemStack var1 = var0.getItem();
-         return (var1.is(Blocks.BAMBOO.asItem()) || var1.is(Blocks.CAKE.asItem())) && var0.isAlive() && !var0.hasPickUpDelay();
+         Item var1 = var0.getItem().getItem();
+         return (var1 == Blocks.BAMBOO.asItem() || var1 == Blocks.CAKE.asItem()) && var0.isAlive() && !var0.hasPickUpDelay();
       };
    }
 
@@ -817,13 +821,14 @@ public class Panda extends Animal {
       }
    }
 
-   class PandaBreedGoal extends BreedGoal {
+   static class PandaBreedGoal extends BreedGoal {
+      private static final TargetingConditions BREED_TARGETING = (new TargetingConditions()).range(8.0D).allowSameTeam().allowInvulnerable();
       private final Panda panda;
       private int unhappyCooldown;
 
-      public PandaBreedGoal(Panda var2, double var3) {
-         super(var2, var3);
-         this.panda = var2;
+      public PandaBreedGoal(Panda var1, double var2) {
+         super(var1, var2);
+         this.panda = var1;
       }
 
       public boolean canUse() {
@@ -833,8 +838,8 @@ public class Panda extends Animal {
                   this.panda.setUnhappyCounter(32);
                   this.unhappyCooldown = this.panda.tickCount + 600;
                   if (this.panda.isEffectiveAi()) {
-                     Player var1 = this.level.getNearestPlayer(Panda.BREED_TARGETING, this.panda);
-                     this.panda.lookAtPlayerGoal.setTarget(var1);
+                     Player var1 = this.level.getNearestPlayer(BREED_TARGETING, this.panda);
+                     this.panda.setTarget(var1);
                   }
                }
 
@@ -848,15 +853,15 @@ public class Panda extends Animal {
       }
 
       private boolean canFindBamboo() {
-         BlockPos var1 = this.panda.blockPosition();
+         BlockPos var1 = new BlockPos(this.panda);
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
 
          for(int var3 = 0; var3 < 3; ++var3) {
             for(int var4 = 0; var4 < 8; ++var4) {
                for(int var5 = 0; var5 <= var4; var5 = var5 > 0 ? -var5 : 1 - var5) {
                   for(int var6 = var5 < var4 && var5 > -var4 ? var4 : 0; var6 <= var4; var6 = var6 > 0 ? -var6 : 1 - var6) {
-                     var2.setWithOffset(var1, var5, var3, var6);
-                     if (this.level.getBlockState(var2).is(Blocks.BAMBOO)) {
+                     var2.set((Vec3i)var1).move(var5, var3, var6);
+                     if (this.level.getBlockState(var2).getBlock() == Blocks.BAMBOO) {
                         return true;
                      }
                   }
@@ -924,7 +929,7 @@ public class Panda extends Animal {
                   var3 = (int)((float)var3 + var5 / Math.abs(var5));
                }
 
-               if (this.panda.level.getBlockState(this.panda.blockPosition().offset(var2, -1, var3)).isAir()) {
+               if (this.panda.level.getBlockState((new BlockPos(this.panda)).offset(var2, -1, var3)).isAir()) {
                   return true;
                } else if (this.panda.isPlayful() && this.panda.random.nextInt(60) == 1) {
                   return true;
@@ -958,37 +963,8 @@ public class Panda extends Animal {
          this.panda = var1;
       }
 
-      public void setTarget(LivingEntity var1) {
-         this.lookAt = var1;
-      }
-
-      public boolean canContinueToUse() {
-         return this.lookAt != null && super.canContinueToUse();
-      }
-
       public boolean canUse() {
-         if (this.mob.getRandom().nextFloat() >= this.probability) {
-            return false;
-         } else {
-            if (this.lookAt == null) {
-               if (this.lookAtType == Player.class) {
-                  this.lookAt = this.mob.level.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
-               } else {
-                  this.lookAt = this.mob.level.getNearestEntity(this.mob.level.getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0D, (double)this.lookDistance), (var0) -> {
-                     return true;
-                  }), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
-               }
-            }
-
-            return this.panda.canPerformAction() && this.lookAt != null;
-         }
-      }
-
-      public void tick() {
-         if (this.lookAt != null) {
-            super.tick();
-         }
-
+         return this.panda.canPerformAction() && super.canUse();
       }
    }
 
@@ -1002,6 +978,17 @@ public class Panda extends Animal {
 
       public boolean canUse() {
          return this.panda.canPerformAction() && super.canUse();
+      }
+   }
+
+   static class PandaGroupData implements SpawnGroupData {
+      private PandaGroupData() {
+         super();
+      }
+
+      // $FF: synthetic method
+      PandaGroupData(Object var1) {
+         this();
       }
    }
 

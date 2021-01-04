@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
@@ -45,7 +44,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       super(GSON, "recipes");
    }
 
-   protected void apply(Map<ResourceLocation, JsonElement> var1, ResourceManager var2, ProfilerFiller var3) {
+   protected void apply(Map<ResourceLocation, JsonObject> var1, ResourceManager var2, ProfilerFiller var3) {
       this.hasErrors = false;
       HashMap var4 = Maps.newHashMap();
       Iterator var5 = var1.entrySet().iterator();
@@ -55,7 +54,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
          ResourceLocation var7 = (ResourceLocation)var6.getKey();
 
          try {
-            Recipe var8 = fromJson(var7, GsonHelper.convertToJsonObject((JsonElement)var6.getValue(), "top element"));
+            Recipe var8 = fromJson(var7, (JsonObject)var6.getValue());
             ((Builder)var4.computeIfAbsent(var8.getType(), (var0) -> {
                return ImmutableMap.builder();
             })).put(var7, var8);
@@ -74,12 +73,6 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       return this.byType(var1).values().stream().flatMap((var3x) -> {
          return Util.toStream(var1.tryMatch(var3x, var3, var2));
       }).findFirst();
-   }
-
-   public <C extends Container, T extends Recipe<C>> List<T> getAllRecipesFor(RecipeType<T> var1) {
-      return (List)this.byType(var1).values().stream().map((var0) -> {
-         return var0;
-      }).collect(Collectors.toList());
    }
 
    public <C extends Container, T extends Recipe<C>> List<T> getRecipesFor(RecipeType<T> var1, C var2, Level var3) {

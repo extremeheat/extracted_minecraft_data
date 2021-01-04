@@ -1,16 +1,12 @@
 package net.minecraft.world.level.timers;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.UnsignedLong;
-import com.mojang.serialization.Dynamic;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Set;
-import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -20,37 +16,21 @@ import org.apache.logging.log4j.Logger;
 public class TimerQueue<T> {
    private static final Logger LOGGER = LogManager.getLogger();
    private final TimerCallbacks<T> callbacksRegistry;
-   private final Queue<TimerQueue.Event<T>> queue;
+   private final Queue<TimerQueue.Event<T>> queue = new PriorityQueue(createComparator());
    private UnsignedLong sequentialId;
-   private final Table<String, Long, TimerQueue.Event<T>> events;
+   private final Map<String, TimerQueue.Event<T>> events;
 
    private static <T> Comparator<TimerQueue.Event<T>> createComparator() {
-      return Comparator.comparingLong((var0) -> {
-         return var0.triggerTime;
-      }).thenComparing((var0) -> {
-         return var0.sequentialId;
-      });
-   }
-
-   public TimerQueue(TimerCallbacks<T> var1, Stream<Dynamic<Tag>> var2) {
-      this(var1);
-      this.queue.clear();
-      this.events.clear();
-      this.sequentialId = UnsignedLong.ZERO;
-      var2.forEach((var1x) -> {
-         if (!(var1x.getValue() instanceof CompoundTag)) {
-            LOGGER.warn("Invalid format of events: {}", var1x);
-         } else {
-            this.loadEvent((CompoundTag)var1x.getValue());
-         }
-      });
+      return (var0, var1) -> {
+         int var2 = Long.compare(var0.triggerTime, var1.triggerTime);
+         return var2 != 0 ? var2 : var0.sequentialId.compareTo(var1.sequentialId);
+      };
    }
 
    public TimerQueue(TimerCallbacks<T> var1) {
       super();
-      this.queue = new PriorityQueue(createComparator());
       this.sequentialId = UnsignedLong.ZERO;
-      this.events = HashBasedTable.create();
+      this.events = Maps.newHashMap();
       this.callbacksRegistry = var1;
    }
 
@@ -62,31 +42,34 @@ public class TimerQueue<T> {
          }
 
          this.queue.remove();
-         this.events.remove(var4.id, var2);
+         this.events.remove(var4.id);
          var4.callback.handle(var1, this, var2);
       }
    }
 
-   public void schedule(String var1, long var2, TimerCallback<T> var4) {
-      if (!this.events.contains(var1, var2)) {
-         this.sequentialId = this.sequentialId.plus(UnsignedLong.ONE);
-         TimerQueue.Event var5 = new TimerQueue.Event(var2, this.sequentialId, var1, var4);
-         this.events.put(var1, var2, var5);
-         this.queue.add(var5);
+   private void addEvent(String var1, long var2, TimerCallback<T> var4) {
+      this.sequentialId = this.sequentialId.plus(UnsignedLong.ONE);
+      TimerQueue.Event var5 = new TimerQueue.Event(var2, this.sequentialId, var1, var4);
+      this.events.put(var1, var5);
+      this.queue.add(var5);
+   }
+
+   public boolean schedule(String var1, long var2, TimerCallback<T> var4) {
+      if (this.events.containsKey(var1)) {
+         return false;
+      } else {
+         this.addEvent(var1, var2, var4);
+         return true;
       }
    }
 
-   public int remove(String var1) {
-      Collection var2 = this.events.row(var1).values();
-      Queue var10001 = this.queue;
-      var2.forEach(var10001::remove);
-      int var3 = var2.size();
-      var2.clear();
-      return var3;
-   }
+   public void reschedule(String var1, long var2, TimerCallback<T> var4) {
+      TimerQueue.Event var5 = (TimerQueue.Event)this.events.remove(var1);
+      if (var5 != null) {
+         this.queue.remove(var5);
+      }
 
-   public Set<String> getEventsIds() {
-      return Collections.unmodifiableSet(this.events.rowKeySet());
+      this.addEvent(var1, var2, var4);
    }
 
    private void loadEvent(CompoundTag var1) {
@@ -98,6 +81,25 @@ public class TimerQueue<T> {
          this.schedule(var4, var5, var3);
       }
 
+   }
+
+   public void load(ListTag var1) {
+      this.queue.clear();
+      this.events.clear();
+      this.sequentialId = UnsignedLong.ZERO;
+      if (!var1.isEmpty()) {
+         if (var1.getElementType() != 10) {
+            LOGGER.warn("Invalid format of events: " + var1);
+         } else {
+            Iterator var2 = var1.iterator();
+
+            while(var2.hasNext()) {
+               Tag var3 = (Tag)var2.next();
+               this.loadEvent((CompoundTag)var3);
+            }
+
+         }
+      }
    }
 
    private CompoundTag storeEvent(TimerQueue.Event<T> var1) {

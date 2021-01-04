@@ -44,7 +44,7 @@ public class SetLookAndInteract extends Behavior<LivingEntity> {
             return var2x.distanceToSqr(var2) <= (double)this.interactionRangeSqr;
          }).filter(this::isMatchingTarget).findFirst().ifPresent((var1) -> {
             var5.setMemory(MemoryModuleType.INTERACTION_TARGET, (Object)var1);
-            var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1, true)));
+            var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityPosWrapper(var1)));
          });
       });
    }

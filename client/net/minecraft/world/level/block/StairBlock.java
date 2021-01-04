@@ -4,17 +4,16 @@ import java.util.Random;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -81,7 +80,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
       return var6;
    }
 
-   protected StairBlock(BlockState var1, BlockBehaviour.Properties var2) {
+   protected StairBlock(BlockState var1, Block.Properties var2) {
       super(var2);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(HALF, Half.BOTTOM)).setValue(SHAPE, StairsShape.STRAIGHT)).setValue(WATERLOGGED, false));
       this.base = var1.getBlock();
@@ -116,15 +115,23 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
       return this.base.getExplosionResistance();
    }
 
+   public BlockLayer getRenderLayer() {
+      return this.base.getRenderLayer();
+   }
+
+   public int getTickDelay(LevelReader var1) {
+      return this.base.getTickDelay(var1);
+   }
+
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var1.getBlock())) {
+      if (var1.getBlock() != var1.getBlock()) {
          this.baseState.neighborChanged(var2, var3, Blocks.AIR, var3, false);
          this.base.onPlace(this.baseState, var2, var3, var4, false);
       }
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          this.baseState.onRemove(var2, var3, var4, var5);
       }
    }
@@ -133,19 +140,11 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
       this.base.stepOn(var1, var2, var3);
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return this.base.isRandomlyTicking(var1);
-   }
-
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      this.base.randomTick(var1, var2, var3, var4);
-   }
-
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       this.base.tick(var1, var2, var3, var4);
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       return this.baseState.use(var2, var4, var5, var6);
    }
 

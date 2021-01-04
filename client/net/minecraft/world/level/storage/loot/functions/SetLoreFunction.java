@@ -16,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -35,10 +36,6 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       this.resolutionContext = var4;
    }
 
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_LORE;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return this.resolutionContext != null ? ImmutableSet.of(this.resolutionContext.getParam()) : ImmutableSet.of();
    }
@@ -51,7 +48,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
          }
 
          UnaryOperator var4 = SetNameFunction.createResolver(var2, this.resolutionContext);
-         this.lore.stream().map(var4).map(Component.Serializer::toJson).map(StringTag::valueOf).forEach(var3::add);
+         this.lore.stream().map(var4).map(Component.Serializer::toJson).map(StringTag::new).forEach(var3::add);
       }
 
       return var1;
@@ -96,7 +93,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetLoreFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("set_lore"), SetLoreFunction.class);
       }
 
       public void serialize(JsonObject var1, SetLoreFunction var2, JsonSerializationContext var3) {

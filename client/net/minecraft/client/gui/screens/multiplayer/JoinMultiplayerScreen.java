@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import java.util.List;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -14,8 +15,6 @@ import net.minecraft.client.multiplayer.ServerStatusPinger;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.client.server.LanServerDetection;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,14 +28,14 @@ public class JoinMultiplayerScreen extends Screen {
    private Button editButton;
    private Button selectButton;
    private Button deleteButton;
-   private List<Component> toolTip;
+   private String toolTip;
    private ServerData editingServer;
    private LanServerDetection.LanServerList lanServerList;
    private LanServerDetection.LanServerDetector lanServerDetector;
    private boolean initedOnce;
 
    public JoinMultiplayerScreen(Screen var1) {
-      super(new TranslatableComponent("multiplayer.title"));
+      super(new TranslatableComponent("multiplayer.title", new Object[0]));
       this.lastScreen = var1;
    }
 
@@ -63,45 +62,45 @@ public class JoinMultiplayerScreen extends Screen {
       }
 
       this.children.add(this.serverSelectionList);
-      this.selectButton = (Button)this.addButton(new Button(this.width / 2 - 154, this.height - 52, 100, 20, new TranslatableComponent("selectServer.select"), (var1) -> {
+      this.selectButton = (Button)this.addButton(new Button(this.width / 2 - 154, this.height - 52, 100, 20, I18n.get("selectServer.select"), (var1) -> {
          this.joinSelectedServer();
       }));
-      this.addButton(new Button(this.width / 2 - 50, this.height - 52, 100, 20, new TranslatableComponent("selectServer.direct"), (var1) -> {
+      this.addButton(new Button(this.width / 2 - 50, this.height - 52, 100, 20, I18n.get("selectServer.direct"), (var1) -> {
          this.editingServer = new ServerData(I18n.get("selectServer.defaultName"), "", false);
-         this.minecraft.setScreen(new DirectJoinServerScreen(this, this::directJoinCallback, this.editingServer));
+         this.minecraft.setScreen(new DirectJoinServerScreen(this::directJoinCallback, this.editingServer));
       }));
-      this.addButton(new Button(this.width / 2 + 4 + 50, this.height - 52, 100, 20, new TranslatableComponent("selectServer.add"), (var1) -> {
+      this.addButton(new Button(this.width / 2 + 4 + 50, this.height - 52, 100, 20, I18n.get("selectServer.add"), (var1) -> {
          this.editingServer = new ServerData(I18n.get("selectServer.defaultName"), "", false);
-         this.minecraft.setScreen(new EditServerScreen(this, this::addServerCallback, this.editingServer));
+         this.minecraft.setScreen(new EditServerScreen(this::addServerCallback, this.editingServer));
       }));
-      this.editButton = (Button)this.addButton(new Button(this.width / 2 - 154, this.height - 28, 70, 20, new TranslatableComponent("selectServer.edit"), (var1) -> {
+      this.editButton = (Button)this.addButton(new Button(this.width / 2 - 154, this.height - 28, 70, 20, I18n.get("selectServer.edit"), (var1) -> {
          ServerSelectionList.Entry var2 = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
          if (var2 instanceof ServerSelectionList.OnlineServerEntry) {
             ServerData var3 = ((ServerSelectionList.OnlineServerEntry)var2).getServerData();
             this.editingServer = new ServerData(var3.name, var3.ip, false);
             this.editingServer.copyFrom(var3);
-            this.minecraft.setScreen(new EditServerScreen(this, this::editServerCallback, this.editingServer));
+            this.minecraft.setScreen(new EditServerScreen(this::editServerCallback, this.editingServer));
          }
 
       }));
-      this.deleteButton = (Button)this.addButton(new Button(this.width / 2 - 74, this.height - 28, 70, 20, new TranslatableComponent("selectServer.delete"), (var1) -> {
+      this.deleteButton = (Button)this.addButton(new Button(this.width / 2 - 74, this.height - 28, 70, 20, I18n.get("selectServer.delete"), (var1) -> {
          ServerSelectionList.Entry var2 = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
          if (var2 instanceof ServerSelectionList.OnlineServerEntry) {
             String var3 = ((ServerSelectionList.OnlineServerEntry)var2).getServerData().name;
             if (var3 != null) {
-               TranslatableComponent var4 = new TranslatableComponent("selectServer.deleteQuestion");
+               TranslatableComponent var4 = new TranslatableComponent("selectServer.deleteQuestion", new Object[0]);
                TranslatableComponent var5 = new TranslatableComponent("selectServer.deleteWarning", new Object[]{var3});
-               TranslatableComponent var6 = new TranslatableComponent("selectServer.deleteButton");
-               Component var7 = CommonComponents.GUI_CANCEL;
+               String var6 = I18n.get("selectServer.deleteButton");
+               String var7 = I18n.get("gui.cancel");
                this.minecraft.setScreen(new ConfirmScreen(this::deleteCallback, var4, var5, var6, var7));
             }
          }
 
       }));
-      this.addButton(new Button(this.width / 2 + 4, this.height - 28, 70, 20, new TranslatableComponent("selectServer.refresh"), (var1) -> {
+      this.addButton(new Button(this.width / 2 + 4, this.height - 28, 70, 20, I18n.get("selectServer.refresh"), (var1) -> {
          this.refreshServerList();
       }));
-      this.addButton(new Button(this.width / 2 + 4 + 76, this.height - 28, 75, 20, CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addButton(new Button(this.width / 2 + 4 + 76, this.height - 28, 75, 20, I18n.get("gui.cancel"), (var1) -> {
          this.minecraft.setScreen(this.lastScreen);
       }));
       this.onSelectedChange();
@@ -184,26 +183,22 @@ public class JoinMultiplayerScreen extends Screen {
       } else if (var1 == 294) {
          this.refreshServerList();
          return true;
-      } else if (this.serverSelectionList.getSelected() != null) {
-         if (var1 != 257 && var1 != 335) {
-            return this.serverSelectionList.keyPressed(var1, var2, var3);
-         } else {
-            this.joinSelectedServer();
-            return true;
-         }
-      } else {
+      } else if (this.serverSelectionList.getSelected() == null || var1 != 257 && var1 != 335) {
          return false;
+      } else {
+         this.joinSelectedServer();
+         return true;
       }
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(int var1, int var2, float var3) {
       this.toolTip = null;
-      this.renderBackground(var1);
-      this.serverSelectionList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
-      super.render(var1, var2, var3, var4);
+      this.renderBackground();
+      this.serverSelectionList.render(var1, var2, var3);
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 20, 16777215);
+      super.render(var1, var2, var3);
       if (this.toolTip != null) {
-         this.renderComponentTooltip(var1, this.toolTip, var2, var3);
+         this.renderTooltip(Lists.newArrayList(Splitter.on("\n").split(this.toolTip)), var1, var2);
       }
 
    }
@@ -247,7 +242,7 @@ public class JoinMultiplayerScreen extends Screen {
       return this.pinger;
    }
 
-   public void setToolTip(List<Component> var1) {
+   public void setToolTip(String var1) {
       this.toolTip = var1;
    }
 

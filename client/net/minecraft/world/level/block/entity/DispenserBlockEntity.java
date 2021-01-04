@@ -1,7 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Iterator;
 import java.util.Random;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -12,23 +12,37 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DispenserMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    private static final Random RANDOM = new Random();
    private NonNullList<ItemStack> items;
 
-   protected DispenserBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
-      super(var1, var2, var3);
+   protected DispenserBlockEntity(BlockEntityType<?> var1) {
+      super(var1);
       this.items = NonNullList.withSize(9, ItemStack.EMPTY);
    }
 
-   public DispenserBlockEntity(BlockPos var1, BlockState var2) {
-      this(BlockEntityType.DISPENSER, var1, var2);
+   public DispenserBlockEntity() {
+      this(BlockEntityType.DISPENSER);
    }
 
    public int getContainerSize() {
       return 9;
+   }
+
+   public boolean isEmpty() {
+      Iterator var1 = this.items.iterator();
+
+      ItemStack var2;
+      do {
+         if (!var1.hasNext()) {
+            return true;
+         }
+
+         var2 = (ItemStack)var1.next();
+      } while(var2.isEmpty());
+
+      return false;
    }
 
    public int getRandomSlot() {
@@ -57,7 +71,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    protected Component getDefaultName() {
-      return new TranslatableComponent("container.dispenser");
+      return new TranslatableComponent("container.dispenser", new Object[0]);
    }
 
    public void load(CompoundTag var1) {

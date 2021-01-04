@@ -49,8 +49,8 @@ public class StructureBlockEntity extends BlockEntity {
    private float integrity;
    private long seed;
 
-   public StructureBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.STRUCTURE_BLOCK, var1, var2);
+   public StructureBlockEntity() {
+      super(BlockEntityType.STRUCTURE_BLOCK);
       this.structureSize = BlockPos.ZERO;
       this.mirror = Mirror.NONE;
       this.rotation = Rotation.NONE;
@@ -58,10 +58,6 @@ public class StructureBlockEntity extends BlockEntity {
       this.ignoreEntities = true;
       this.showBoundingBox = true;
       this.integrity = 1.0F;
-   }
-
-   public double getViewDistance() {
-      return 96.0D;
    }
 
    public CompoundTag save(CompoundTag var1) {
@@ -92,13 +88,13 @@ public class StructureBlockEntity extends BlockEntity {
       this.setStructureName(var1.getString("name"));
       this.author = var1.getString("author");
       this.metaData = var1.getString("metadata");
-      int var2 = Mth.clamp(var1.getInt("posX"), -48, 48);
-      int var3 = Mth.clamp(var1.getInt("posY"), -48, 48);
-      int var4 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      int var2 = Mth.clamp(var1.getInt("posX"), -32, 32);
+      int var3 = Mth.clamp(var1.getInt("posY"), -32, 32);
+      int var4 = Mth.clamp(var1.getInt("posZ"), -32, 32);
       this.structurePos = new BlockPos(var2, var3, var4);
-      int var5 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
-      int var6 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
-      int var7 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      int var5 = Mth.clamp(var1.getInt("sizeX"), 0, 32);
+      int var6 = Mth.clamp(var1.getInt("sizeY"), 0, 32);
+      int var7 = Mth.clamp(var1.getInt("sizeZ"), 0, 32);
       this.structureSize = new BlockPos(var5, var6, var7);
 
       try {
@@ -137,7 +133,7 @@ public class StructureBlockEntity extends BlockEntity {
       if (this.level != null) {
          BlockPos var1 = this.getBlockPos();
          BlockState var2 = this.level.getBlockState(var1);
-         if (var2.is(Blocks.STRUCTURE_BLOCK)) {
+         if (var2.getBlock() == Blocks.STRUCTURE_BLOCK) {
             this.level.setBlock(var1, (BlockState)var2.setValue(StructureBlock.MODE, this.mode), 2);
          }
 
@@ -167,10 +163,6 @@ public class StructureBlockEntity extends BlockEntity {
 
    public String getStructureName() {
       return this.structureName == null ? "" : this.structureName.toString();
-   }
-
-   public String getStructurePath() {
-      return this.structureName == null ? "" : this.structureName.getPath();
    }
 
    public boolean hasStructureName() {
@@ -236,7 +228,7 @@ public class StructureBlockEntity extends BlockEntity {
    public void setMode(StructureMode var1) {
       this.mode = var1;
       BlockState var2 = this.level.getBlockState(this.getBlockPos());
-      if (var2.is(Blocks.STRUCTURE_BLOCK)) {
+      if (var2.getBlock() == Blocks.STRUCTURE_BLOCK) {
          this.level.setBlock(this.getBlockPos(), (BlockState)var2.setValue(StructureBlock.MODE, var1), 2);
       }
 
@@ -290,7 +282,7 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var1 = this.getBlockPos();
          boolean var2 = true;
          BlockPos var3 = new BlockPos(var1.getX() - 80, 0, var1.getZ() - 80);
-         BlockPos var4 = new BlockPos(var1.getX() + 80, this.level.getMaxBuildHeight() - 1, var1.getZ() + 80);
+         BlockPos var4 = new BlockPos(var1.getX() + 80, 255, var1.getZ() + 80);
          List var5 = this.getNearbyCornerBlocks(var3, var4);
          List var6 = this.filterRelatedCornerBlocks(var5);
          if (var6.size() < 1) {
@@ -325,7 +317,7 @@ public class StructureBlockEntity extends BlockEntity {
       while(var4.hasNext()) {
          BlockPos var5 = (BlockPos)var4.next();
          BlockState var6 = this.level.getBlockState(var5);
-         if (var6.is(Blocks.STRUCTURE_BLOCK)) {
+         if (var6.getBlock() == Blocks.STRUCTURE_BLOCK) {
             BlockEntity var7 = this.level.getBlockEntity(var5);
             if (var7 != null && var7 instanceof StructureBlockEntity) {
                var3.add((StructureBlockEntity)var7);
@@ -405,57 +397,58 @@ public class StructureBlockEntity extends BlockEntity {
       }
    }
 
-   public boolean loadStructure(ServerLevel var1) {
-      return this.loadStructure(var1, true);
+   public boolean loadStructure() {
+      return this.loadStructure(true);
    }
 
    private static Random createRandom(long var0) {
       return var0 == 0L ? new Random(Util.getMillis()) : new Random(var0);
    }
 
-   public boolean loadStructure(ServerLevel var1, boolean var2) {
-      if (this.mode == StructureMode.LOAD && this.structureName != null) {
-         StructureManager var3 = var1.getStructureManager();
+   public boolean loadStructure(boolean var1) {
+      if (this.mode == StructureMode.LOAD && !this.level.isClientSide && this.structureName != null) {
+         BlockPos var2 = this.getBlockPos();
+         BlockPos var3 = var2.offset(this.structurePos);
+         ServerLevel var4 = (ServerLevel)this.level;
+         StructureManager var5 = var4.getStructureManager();
 
-         StructureTemplate var4;
+         StructureTemplate var6;
          try {
-            var4 = var3.get(this.structureName);
-         } catch (ResourceLocationException var6) {
+            var6 = var5.get(this.structureName);
+         } catch (ResourceLocationException var10) {
             return false;
          }
 
-         return var4 == null ? false : this.loadStructure(var1, var2, var4);
-      } else {
-         return false;
-      }
-   }
+         if (var6 == null) {
+            return false;
+         } else {
+            if (!StringUtil.isNullOrEmpty(var6.getAuthor())) {
+               this.author = var6.getAuthor();
+            }
 
-   public boolean loadStructure(ServerLevel var1, boolean var2, StructureTemplate var3) {
-      BlockPos var4 = this.getBlockPos();
-      if (!StringUtil.isNullOrEmpty(var3.getAuthor())) {
-         this.author = var3.getAuthor();
-      }
+            BlockPos var7 = var6.getSize();
+            boolean var8 = this.structureSize.equals(var7);
+            if (!var8) {
+               this.structureSize = var7;
+               this.setChanged();
+               BlockState var9 = this.level.getBlockState(var2);
+               this.level.sendBlockUpdated(var2, var9, var9, 3);
+            }
 
-      BlockPos var5 = var3.getSize();
-      boolean var6 = this.structureSize.equals(var5);
-      if (!var6) {
-         this.structureSize = var5;
-         this.setChanged();
-         BlockState var7 = var1.getBlockState(var4);
-         var1.sendBlockUpdated(var4, var7, var7, 3);
-      }
+            if (var1 && !var8) {
+               return false;
+            } else {
+               StructurePlaceSettings var11 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities).setChunkPos((ChunkPos)null);
+               if (this.integrity < 1.0F) {
+                  var11.clearProcessors().addProcessor(new BlockRotProcessor(Mth.clamp(this.integrity, 0.0F, 1.0F))).setRandom(createRandom(this.seed));
+               }
 
-      if (var2 && !var6) {
-         return false;
-      } else {
-         StructurePlaceSettings var9 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities).setChunkPos((ChunkPos)null);
-         if (this.integrity < 1.0F) {
-            var9.clearProcessors().addProcessor(new BlockRotProcessor(Mth.clamp(this.integrity, 0.0F, 1.0F))).setRandom(createRandom(this.seed));
+               var6.placeInWorldChunk(this.level, var3, var11);
+               return true;
+            }
          }
-
-         BlockPos var8 = var4.offset(this.structurePos);
-         var3.placeInWorldChunk(var1, var8, var9, createRandom(this.seed));
-         return true;
+      } else {
+         return false;
       }
    }
 

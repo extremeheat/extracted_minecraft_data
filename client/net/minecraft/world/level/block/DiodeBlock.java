@@ -3,16 +3,15 @@ package net.minecraft.world.level.block;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.TickPriority;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -23,7 +22,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    protected static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
    public static final BooleanProperty POWERED;
 
-   protected DiodeBlock(BlockBehaviour.Properties var1) {
+   protected DiodeBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -35,7 +34,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       return canSupportRigidBlock(var2, var3.below());
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (!this.isLocked(var2, var3, var1)) {
          boolean var5 = (Boolean)var1.getValue(POWERED);
          boolean var6 = this.shouldTurnOn(var2, var3, var1);
@@ -44,7 +43,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
          } else if (!var5) {
             var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 2);
             if (!var6) {
-               var2.getBlockTicks().scheduleTick(var3, this, this.getDelay(var1), TickPriority.VERY_HIGH);
+               var2.getBlockTicks().scheduleTick(var3, this, this.getDelay(var1), TickPriority.HIGH);
             }
          }
 
@@ -67,7 +66,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       if (var1.canSurvive(var2, var3)) {
          this.checkTickOnNeighbor(var2, var3, var1);
       } else {
-         BlockEntity var7 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
+         BlockEntity var7 = this.isEntityBlock() ? var2.getBlockEntity(var3) : null;
          dropResources(var1, var2, var3, var7);
          var2.removeBlock(var3, false);
          Direction[] var8 = Direction.values();
@@ -115,7 +114,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
          return var6;
       } else {
          BlockState var7 = var1.getBlockState(var5);
-         return Math.max(var6, var7.is(Blocks.REDSTONE_WIRE) ? (Integer)var7.getValue(RedStoneWireBlock.POWER) : 0);
+         return Math.max(var6, var7.getBlock() == Blocks.REDSTONE_WIRE ? (Integer)var7.getValue(RedStoneWireBlock.POWER) : 0);
       }
    }
 
@@ -128,11 +127,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
 
    protected int getAlternateSignalAt(LevelReader var1, BlockPos var2, Direction var3) {
       BlockState var4 = var1.getBlockState(var2);
+      Block var5 = var4.getBlock();
       if (this.isAlternateInput(var4)) {
-         if (var4.is(Blocks.REDSTONE_BLOCK)) {
+         if (var5 == Blocks.REDSTONE_BLOCK) {
             return 15;
          } else {
-            return var4.is(Blocks.REDSTONE_WIRE) ? (Integer)var4.getValue(RedStoneWireBlock.POWER) : var1.getDirectSignal(var2, var3);
+            return var5 == Blocks.REDSTONE_WIRE ? (Integer)var4.getValue(RedStoneWireBlock.POWER) : var1.getDirectSignal(var2, var3);
          }
       } else {
          return 0;
@@ -159,7 +159,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          super.onRemove(var1, var2, var3, var4, var5);
          this.updateNeighborsInFront(var2, var3, var1);
       }
@@ -191,6 +191,14 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    protected abstract int getDelay(BlockState var1);
+
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT;
+   }
+
+   public boolean canOcclude(BlockState var1) {
+      return true;
+   }
 
    static {
       POWERED = BlockStateProperties.POWERED;

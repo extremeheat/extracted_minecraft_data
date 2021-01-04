@@ -1,21 +1,18 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.client.resources.language.I18n;
 
 public class LockIconButton extends Button {
    private boolean locked;
 
    public LockIconButton(int var1, int var2, Button.OnPress var3) {
-      super(var1, var2, 20, 20, new TranslatableComponent("narrator.button.difficulty_lock"), var3);
+      super(var1, var2, 20, 20, I18n.get("narrator.button.difficulty_lock"), var3);
    }
 
-   protected MutableComponent createNarrationMessage() {
-      return super.createNarrationMessage().append(". ").append((Component)(this.isLocked() ? new TranslatableComponent("narrator.button.difficulty_lock.locked") : new TranslatableComponent("narrator.button.difficulty_lock.unlocked")));
+   protected String getNarrationMessage() {
+      return super.getNarrationMessage() + ". " + (this.isLocked() ? I18n.get("narrator.button.difficulty_lock.locked") : I18n.get("narrator.button.difficulty_lock.unlocked"));
    }
 
    public boolean isLocked() {
@@ -26,19 +23,19 @@ public class LockIconButton extends Button {
       this.locked = var1;
    }
 
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderButton(int var1, int var2, float var3) {
       Minecraft.getInstance().getTextureManager().bind(Button.WIDGETS_LOCATION);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      LockIconButton.Icon var5;
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      LockIconButton.Icon var4;
       if (!this.active) {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
+         var4 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
       } else if (this.isHovered()) {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED_HOVER : LockIconButton.Icon.UNLOCKED_HOVER;
+         var4 = this.locked ? LockIconButton.Icon.LOCKED_HOVER : LockIconButton.Icon.UNLOCKED_HOVER;
       } else {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
+         var4 = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
       }
 
-      this.blit(var1, this.x, this.y, var5.getX(), var5.getY(), this.width, this.height);
+      this.blit(this.x, this.y, var4.getX(), var4.getY(), this.width, this.height);
    }
 
    static enum Icon {

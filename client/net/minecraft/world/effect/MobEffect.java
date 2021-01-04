@@ -15,8 +15,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.BaseAttributeMap;
 import net.minecraft.world.entity.player.Player;
 
 public class MobEffect {
@@ -133,7 +133,7 @@ public class MobEffect {
    }
 
    public Component getDisplayName() {
-      return new TranslatableComponent(this.getDescriptionId());
+      return new TranslatableComponent(this.getDescriptionId(), new Object[0]);
    }
 
    public MobEffectCategory getCategory() {
@@ -154,7 +154,7 @@ public class MobEffect {
       return this.attributeModifiers;
    }
 
-   public void removeAttributeModifiers(LivingEntity var1, AttributeMap var2, int var3) {
+   public void removeAttributeModifiers(LivingEntity var1, BaseAttributeMap var2, int var3) {
       Iterator var4 = this.attributeModifiers.entrySet().iterator();
 
       while(var4.hasNext()) {
@@ -167,7 +167,7 @@ public class MobEffect {
 
    }
 
-   public void addAttributeModifiers(LivingEntity var1, AttributeMap var2, int var3) {
+   public void addAttributeModifiers(LivingEntity var1, BaseAttributeMap var2, int var3) {
       Iterator var4 = this.attributeModifiers.entrySet().iterator();
 
       while(var4.hasNext()) {
@@ -176,7 +176,7 @@ public class MobEffect {
          if (var6 != null) {
             AttributeModifier var7 = (AttributeModifier)var5.getValue();
             var6.removeModifier(var7);
-            var6.addPermanentModifier(new AttributeModifier(var7.getId(), this.getDescriptionId() + " " + var3, this.getAttributeModifierValue(var3, var7), var7.getOperation()));
+            var6.addModifier(new AttributeModifier(var7.getId(), this.getDescriptionId() + " " + var3, this.getAttributeModifierValue(var3, var7), var7.getOperation()));
          }
       }
 

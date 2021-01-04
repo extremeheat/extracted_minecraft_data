@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.recipebook.PlaceRecipe;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -44,7 +43,7 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
          this.isFurnaceMenu = true;
       }
 
-      boolean var8 = var1.player.getRecipeBook().isFiltering((RecipeBookMenu)var1.player.containerMenu);
+      boolean var8 = var1.player.getRecipeBook().isFilteringCraftable((RecipeBookMenu)var1.player.containerMenu);
       List var9 = var2.getDisplayRecipes(true);
       List var10 = var8 ? Collections.emptyList() : var2.getDisplayRecipes(false);
       int var11 = var9.size();
@@ -126,62 +125,64 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
       return false;
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(int var1, int var2, float var3) {
       if (this.isVisible) {
-         this.time += var4;
-         RenderSystem.enableBlend();
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         this.time += var3;
+         Lighting.turnOnGui();
+         GlStateManager.enableBlend();
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
          this.minecraft.getTextureManager().bind(RECIPE_BOOK_LOCATION);
-         RenderSystem.pushMatrix();
-         RenderSystem.translatef(0.0F, 0.0F, 170.0F);
-         int var5 = this.recipeButtons.size() <= 16 ? 4 : 5;
-         int var6 = Math.min(this.recipeButtons.size(), var5);
-         int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.0F, 0.0F, 170.0F);
+         int var4 = this.recipeButtons.size() <= 16 ? 4 : 5;
+         int var5 = Math.min(this.recipeButtons.size(), var4);
+         int var6 = Mth.ceil((float)this.recipeButtons.size() / (float)var4);
+         boolean var7 = true;
          boolean var8 = true;
          boolean var9 = true;
          boolean var10 = true;
-         boolean var11 = true;
-         this.nineInchSprite(var1, var6, var7, 24, 4, 82, 208);
-         RenderSystem.disableBlend();
-         Iterator var12 = this.recipeButtons.iterator();
+         this.nineInchSprite(var5, var6, 24, 4, 82, 208);
+         GlStateManager.disableBlend();
+         Lighting.turnOff();
+         Iterator var11 = this.recipeButtons.iterator();
 
-         while(var12.hasNext()) {
-            OverlayRecipeComponent.OverlayRecipeButton var13 = (OverlayRecipeComponent.OverlayRecipeButton)var12.next();
-            var13.render(var1, var2, var3, var4);
+         while(var11.hasNext()) {
+            OverlayRecipeComponent.OverlayRecipeButton var12 = (OverlayRecipeComponent.OverlayRecipeButton)var11.next();
+            var12.render(var1, var2, var3);
          }
 
-         RenderSystem.popMatrix();
+         GlStateManager.popMatrix();
       }
    }
 
-   private void nineInchSprite(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      this.blit(var1, this.x, this.y, var6, var7, var5, var5);
-      this.blit(var1, this.x + var5 * 2 + var2 * var4, this.y, var6 + var4 + var5, var7, var5, var5);
-      this.blit(var1, this.x, this.y + var5 * 2 + var3 * var4, var6, var7 + var4 + var5, var5, var5);
-      this.blit(var1, this.x + var5 * 2 + var2 * var4, this.y + var5 * 2 + var3 * var4, var6 + var4 + var5, var7 + var4 + var5, var5, var5);
+   private void nineInchSprite(int var1, int var2, int var3, int var4, int var5, int var6) {
+      this.blit(this.x, this.y, var5, var6, var4, var4);
+      this.blit(this.x + var4 * 2 + var1 * var3, this.y, var5 + var3 + var4, var6, var4, var4);
+      this.blit(this.x, this.y + var4 * 2 + var2 * var3, var5, var6 + var3 + var4, var4, var4);
+      this.blit(this.x + var4 * 2 + var1 * var3, this.y + var4 * 2 + var2 * var3, var5 + var3 + var4, var6 + var3 + var4, var4, var4);
 
-      for(int var8 = 0; var8 < var2; ++var8) {
-         this.blit(var1, this.x + var5 + var8 * var4, this.y, var6 + var5, var7, var4, var5);
-         this.blit(var1, this.x + var5 + (var8 + 1) * var4, this.y, var6 + var5, var7, var5, var5);
+      for(int var7 = 0; var7 < var1; ++var7) {
+         this.blit(this.x + var4 + var7 * var3, this.y, var5 + var4, var6, var3, var4);
+         this.blit(this.x + var4 + (var7 + 1) * var3, this.y, var5 + var4, var6, var4, var4);
 
-         for(int var9 = 0; var9 < var3; ++var9) {
-            if (var8 == 0) {
-               this.blit(var1, this.x, this.y + var5 + var9 * var4, var6, var7 + var5, var5, var4);
-               this.blit(var1, this.x, this.y + var5 + (var9 + 1) * var4, var6, var7 + var5, var5, var5);
+         for(int var8 = 0; var8 < var2; ++var8) {
+            if (var7 == 0) {
+               this.blit(this.x, this.y + var4 + var8 * var3, var5, var6 + var4, var4, var3);
+               this.blit(this.x, this.y + var4 + (var8 + 1) * var3, var5, var6 + var4, var4, var4);
             }
 
-            this.blit(var1, this.x + var5 + var8 * var4, this.y + var5 + var9 * var4, var6 + var5, var7 + var5, var4, var4);
-            this.blit(var1, this.x + var5 + (var8 + 1) * var4, this.y + var5 + var9 * var4, var6 + var5, var7 + var5, var5, var4);
-            this.blit(var1, this.x + var5 + var8 * var4, this.y + var5 + (var9 + 1) * var4, var6 + var5, var7 + var5, var4, var5);
-            this.blit(var1, this.x + var5 + (var8 + 1) * var4 - 1, this.y + var5 + (var9 + 1) * var4 - 1, var6 + var5, var7 + var5, var5 + 1, var5 + 1);
-            if (var8 == var2 - 1) {
-               this.blit(var1, this.x + var5 * 2 + var2 * var4, this.y + var5 + var9 * var4, var6 + var4 + var5, var7 + var5, var5, var4);
-               this.blit(var1, this.x + var5 * 2 + var2 * var4, this.y + var5 + (var9 + 1) * var4, var6 + var4 + var5, var7 + var5, var5, var5);
+            this.blit(this.x + var4 + var7 * var3, this.y + var4 + var8 * var3, var5 + var4, var6 + var4, var3, var3);
+            this.blit(this.x + var4 + (var7 + 1) * var3, this.y + var4 + var8 * var3, var5 + var4, var6 + var4, var4, var3);
+            this.blit(this.x + var4 + var7 * var3, this.y + var4 + (var8 + 1) * var3, var5 + var4, var6 + var4, var3, var4);
+            this.blit(this.x + var4 + (var7 + 1) * var3 - 1, this.y + var4 + (var8 + 1) * var3 - 1, var5 + var4, var6 + var4, var4 + 1, var4 + 1);
+            if (var7 == var1 - 1) {
+               this.blit(this.x + var4 * 2 + var1 * var3, this.y + var4 + var8 * var3, var5 + var3 + var4, var6 + var4, var4, var3);
+               this.blit(this.x + var4 * 2 + var1 * var3, this.y + var4 + (var8 + 1) * var3, var5 + var3 + var4, var6 + var4, var4, var4);
             }
          }
 
-         this.blit(var1, this.x + var5 + var8 * var4, this.y + var5 * 2 + var3 * var4, var6 + var5, var7 + var4 + var5, var4, var5);
-         this.blit(var1, this.x + var5 + (var8 + 1) * var4, this.y + var5 * 2 + var3 * var4, var6 + var5, var7 + var4 + var5, var5, var5);
+         this.blit(this.x + var4 + var7 * var3, this.y + var4 * 2 + var2 * var3, var5 + var4, var6 + var3 + var4, var3, var4);
+         this.blit(this.x + var4 + (var7 + 1) * var3, this.y + var4 * 2 + var2 * var3, var5 + var4, var6 + var3 + var4, var4, var4);
       }
 
    }
@@ -200,7 +201,7 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
       protected final List<OverlayRecipeComponent.OverlayRecipeButton.Pos> ingredientPos = Lists.newArrayList();
 
       public OverlayRecipeButton(int var2, int var3, Recipe<?> var4, boolean var5) {
-         super(var2, var3, 200, 20, TextComponent.EMPTY);
+         super(var2, var3, 200, 20, "");
          this.width = 24;
          this.height = 24;
          this.recipe = var4;
@@ -220,34 +221,38 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
 
       }
 
-      public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-         RenderSystem.enableAlphaTest();
+      public void renderButton(int var1, int var2, float var3) {
+         Lighting.turnOnGui();
+         GlStateManager.enableAlphaTest();
          OverlayRecipeComponent.this.minecraft.getTextureManager().bind(OverlayRecipeComponent.RECIPE_BOOK_LOCATION);
-         int var5 = 152;
+         int var4 = 152;
          if (!this.isCraftable) {
+            var4 += 26;
+         }
+
+         int var5 = OverlayRecipeComponent.this.isFurnaceMenu ? 130 : 78;
+         if (this.isHovered()) {
             var5 += 26;
          }
 
-         int var6 = OverlayRecipeComponent.this.isFurnaceMenu ? 130 : 78;
-         if (this.isHovered()) {
-            var6 += 26;
+         this.blit(this.x, this.y, var4, var5, this.width, this.height);
+         Iterator var6 = this.ingredientPos.iterator();
+
+         while(var6.hasNext()) {
+            OverlayRecipeComponent.OverlayRecipeButton.Pos var7 = (OverlayRecipeComponent.OverlayRecipeButton.Pos)var6.next();
+            GlStateManager.pushMatrix();
+            float var8 = 0.42F;
+            int var9 = (int)((float)(this.x + var7.x) / 0.42F - 3.0F);
+            int var10 = (int)((float)(this.y + var7.y) / 0.42F - 3.0F);
+            GlStateManager.scalef(0.42F, 0.42F, 1.0F);
+            GlStateManager.enableLighting();
+            OverlayRecipeComponent.this.minecraft.getItemRenderer().renderAndDecorateItem(var7.ingredients[Mth.floor(OverlayRecipeComponent.this.time / 30.0F) % var7.ingredients.length], var9, var10);
+            GlStateManager.disableLighting();
+            GlStateManager.popMatrix();
          }
 
-         this.blit(var1, this.x, this.y, var5, var6, this.width, this.height);
-         Iterator var7 = this.ingredientPos.iterator();
-
-         while(var7.hasNext()) {
-            OverlayRecipeComponent.OverlayRecipeButton.Pos var8 = (OverlayRecipeComponent.OverlayRecipeButton.Pos)var7.next();
-            RenderSystem.pushMatrix();
-            float var9 = 0.42F;
-            int var10 = (int)((float)(this.x + var8.x) / 0.42F - 3.0F);
-            int var11 = (int)((float)(this.y + var8.y) / 0.42F - 3.0F);
-            RenderSystem.scalef(0.42F, 0.42F, 1.0F);
-            OverlayRecipeComponent.this.minecraft.getItemRenderer().renderAndDecorateItem(var8.ingredients[Mth.floor(OverlayRecipeComponent.this.time / 30.0F) % var8.ingredients.length], var10, var11);
-            RenderSystem.popMatrix();
-         }
-
-         RenderSystem.disableAlphaTest();
+         GlStateManager.disableAlphaTest();
+         Lighting.turnOff();
       }
 
       public class Pos {

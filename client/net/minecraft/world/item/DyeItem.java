@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.entity.player.Player;
@@ -18,20 +17,18 @@ public class DyeItem extends Item {
       ITEM_BY_COLOR.put(var1, this);
    }
 
-   public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
+   public boolean interactEnemy(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
       if (var3 instanceof Sheep) {
          Sheep var5 = (Sheep)var3;
          if (var5.isAlive() && !var5.isSheared() && var5.getColor() != this.dyeColor) {
-            if (!var2.level.isClientSide) {
-               var5.setColor(this.dyeColor);
-               var1.shrink(1);
-            }
-
-            return InteractionResult.sidedSuccess(var2.level.isClientSide);
+            var5.setColor(this.dyeColor);
+            var1.shrink(1);
          }
-      }
 
-      return InteractionResult.PASS;
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public DyeColor getDyeColor() {

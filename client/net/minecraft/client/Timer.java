@@ -1,6 +1,7 @@
 package net.minecraft.client;
 
 public class Timer {
+   public int ticks;
    public float partialTick;
    public float tickDelta;
    private long lastMs;
@@ -12,12 +13,11 @@ public class Timer {
       this.lastMs = var2;
    }
 
-   public int advanceTime(long var1) {
+   public void advanceTime(long var1) {
       this.tickDelta = (float)(var1 - this.lastMs) / this.msPerTick;
       this.lastMs = var1;
       this.partialTick += this.tickDelta;
-      int var3 = (int)this.partialTick;
-      this.partialTick -= (float)var3;
-      return var3;
+      this.ticks = (int)this.partialTick;
+      this.partialTick -= (float)this.ticks;
    }
 }

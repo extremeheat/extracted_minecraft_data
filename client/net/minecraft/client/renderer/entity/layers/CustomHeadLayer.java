@@ -1,19 +1,13 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
-import java.util.Map;
+import com.mojang.blaze3d.platform.GlStateManager;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HeadedModel;
-import net.minecraft.client.model.SkullModelBase;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
+import net.minecraft.client.renderer.entity.HeadedModel;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -27,84 +21,74 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.apache.commons.lang3.StringUtils;
 
 public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & HeadedModel> extends RenderLayer<T, M> {
-   private final float scaleX;
-   private final float scaleY;
-   private final float scaleZ;
-   private final Map<SkullBlock.Type, SkullModelBase> skullModels;
-
-   public CustomHeadLayer(RenderLayerParent<T, M> var1, EntityModelSet var2) {
-      this(var1, var2, 1.0F, 1.0F, 1.0F);
-   }
-
-   public CustomHeadLayer(RenderLayerParent<T, M> var1, EntityModelSet var2, float var3, float var4, float var5) {
+   public CustomHeadLayer(RenderLayerParent<T, M> var1) {
       super(var1);
-      this.scaleX = var3;
-      this.scaleY = var4;
-      this.scaleZ = var5;
-      this.skullModels = SkullBlockRenderer.createSkullRenderers(var2);
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      ItemStack var11 = var4.getItemBySlot(EquipmentSlot.HEAD);
-      if (!var11.isEmpty()) {
-         Item var12 = var11.getItem();
-         var1.pushPose();
-         var1.scale(this.scaleX, this.scaleY, this.scaleZ);
-         boolean var13 = var4 instanceof Villager || var4 instanceof ZombieVillager;
-         float var14;
-         if (var4.isBaby() && !(var4 instanceof Villager)) {
-            var14 = 2.0F;
-            float var15 = 1.4F;
-            var1.translate(0.0D, 0.03125D, 0.0D);
-            var1.scale(0.7F, 0.7F, 0.7F);
-            var1.translate(0.0D, 1.0D, 0.0D);
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
+      if (!var9.isEmpty()) {
+         Item var10 = var9.getItem();
+         GlStateManager.pushMatrix();
+         if (var1.isVisuallySneaking()) {
+            GlStateManager.translatef(0.0F, 0.2F, 0.0F);
          }
 
-         ((HeadedModel)this.getParentModel()).getHead().translateAndRotate(var1);
-         if (var12 instanceof BlockItem && ((BlockItem)var12).getBlock() instanceof AbstractSkullBlock) {
-            var14 = 1.1875F;
-            var1.scale(1.1875F, -1.1875F, -1.1875F);
-            if (var13) {
-               var1.translate(0.0D, 0.0625D, 0.0D);
+         boolean var11 = var1 instanceof Villager || var1 instanceof ZombieVillager;
+         float var12;
+         if (var1.isBaby() && !(var1 instanceof Villager)) {
+            var12 = 2.0F;
+            float var13 = 1.4F;
+            GlStateManager.translatef(0.0F, 0.5F * var8, 0.0F);
+            GlStateManager.scalef(0.7F, 0.7F, 0.7F);
+            GlStateManager.translatef(0.0F, 16.0F * var8, 0.0F);
+         }
+
+         ((HeadedModel)this.getParentModel()).translateToHead(0.0625F);
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         if (var10 instanceof BlockItem && ((BlockItem)var10).getBlock() instanceof AbstractSkullBlock) {
+            var12 = 1.1875F;
+            GlStateManager.scalef(1.1875F, -1.1875F, -1.1875F);
+            if (var11) {
+               GlStateManager.translatef(0.0F, 0.0625F, 0.0F);
             }
 
-            GameProfile var19 = null;
-            if (var11.hasTag()) {
-               CompoundTag var16 = var11.getTag();
-               if (var16.contains("SkullOwner", 10)) {
-                  var19 = NbtUtils.readGameProfile(var16.getCompound("SkullOwner"));
-               } else if (var16.contains("SkullOwner", 8)) {
-                  String var17 = var16.getString("SkullOwner");
-                  if (!StringUtils.isBlank(var17)) {
-                     var19 = SkullBlockEntity.updateGameprofile(new GameProfile((UUID)null, var17));
-                     var16.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var19));
+            GameProfile var16 = null;
+            if (var9.hasTag()) {
+               CompoundTag var14 = var9.getTag();
+               if (var14.contains("SkullOwner", 10)) {
+                  var16 = NbtUtils.readGameProfile(var14.getCompound("SkullOwner"));
+               } else if (var14.contains("SkullOwner", 8)) {
+                  String var15 = var14.getString("SkullOwner");
+                  if (!StringUtils.isBlank(var15)) {
+                     var16 = SkullBlockEntity.updateGameprofile(new GameProfile((UUID)null, var15));
+                     var14.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var16));
                   }
                }
             }
 
-            var1.translate(-0.5D, 0.0D, -0.5D);
-            SkullBlock.Type var20 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
-            SkullModelBase var21 = (SkullModelBase)this.skullModels.get(var20);
-            RenderType var18 = SkullBlockRenderer.getRenderType(var20, var19);
-            SkullBlockRenderer.renderSkull((Direction)null, 180.0F, var5, var1, var2, var3, var21, var18);
-         } else if (!(var12 instanceof ArmorItem) || ((ArmorItem)var12).getSlot() != EquipmentSlot.HEAD) {
-            var14 = 0.625F;
-            var1.translate(0.0D, -0.25D, 0.0D);
-            var1.mulPose(Vector3f.YP.rotationDegrees(180.0F));
-            var1.scale(0.625F, -0.625F, -0.625F);
-            if (var13) {
-               var1.translate(0.0D, 0.1875D, 0.0D);
+            SkullBlockRenderer.instance.renderSkull(-0.5F, 0.0F, -0.5F, (Direction)null, 180.0F, ((AbstractSkullBlock)((BlockItem)var10).getBlock()).getType(), var16, -1, var2);
+         } else if (!(var10 instanceof ArmorItem) || ((ArmorItem)var10).getSlot() != EquipmentSlot.HEAD) {
+            var12 = 0.625F;
+            GlStateManager.translatef(0.0F, -0.25F, 0.0F);
+            GlStateManager.rotatef(180.0F, 0.0F, 1.0F, 0.0F);
+            GlStateManager.scalef(0.625F, -0.625F, -0.625F);
+            if (var11) {
+               GlStateManager.translatef(0.0F, 0.1875F, 0.0F);
             }
 
-            Minecraft.getInstance().getItemInHandRenderer().renderItem(var4, var11, ItemTransforms.TransformType.HEAD, false, var1, var2, var3);
+            Minecraft.getInstance().getItemInHandRenderer().renderItem(var1, var9, ItemTransforms.TransformType.HEAD);
          }
 
-         var1.popPose();
+         GlStateManager.popMatrix();
       }
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
    }
 }

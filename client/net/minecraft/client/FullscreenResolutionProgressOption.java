@@ -4,8 +4,7 @@ import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.client.resources.language.I18n;
 
 public class FullscreenResolutionProgressOption extends ProgressOption {
    public FullscreenResolutionProgressOption(Window var1) {
@@ -33,10 +32,11 @@ public class FullscreenResolutionProgressOption extends ProgressOption {
          }
       }, (var1x, var2x) -> {
          if (var2 == null) {
-            return new TranslatableComponent("options.fullscreen.unavailable");
+            return I18n.get("options.fullscreen.unavailable");
          } else {
             double var3 = var2x.get(var1x);
-            return var3 == -1.0D ? var2x.genericValueLabel(new TranslatableComponent("options.fullscreen.current")) : var2x.genericValueLabel(new TextComponent(var2.getMode((int)var3).toString()));
+            String var5 = var2x.getCaption();
+            return var3 == -1.0D ? var5 + I18n.get("options.fullscreen.current") : var2.getMode((int)var3).toString();
          }
       });
    }

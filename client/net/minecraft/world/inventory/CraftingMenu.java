@@ -91,7 +91,7 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
    public void removed(Player var1) {
       super.removed(var1);
       this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.craftSlots);
+         this.clearContainer(var1, var2, this.craftSlots);
       });
    }
 
@@ -114,15 +114,13 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
             }
 
             var4.onQuickCraft(var5, var3);
-         } else if (var2 >= 10 && var2 < 46) {
-            if (!this.moveItemStackTo(var5, 1, 10, false)) {
-               if (var2 < 37) {
-                  if (!this.moveItemStackTo(var5, 37, 46, false)) {
-                     return ItemStack.EMPTY;
-                  }
-               } else if (!this.moveItemStackTo(var5, 10, 37, false)) {
-                  return ItemStack.EMPTY;
-               }
+         } else if (var2 >= 10 && var2 < 37) {
+            if (!this.moveItemStackTo(var5, 37, 46, false)) {
+               return ItemStack.EMPTY;
+            }
+         } else if (var2 >= 37 && var2 < 46) {
+            if (!this.moveItemStackTo(var5, 10, 37, false)) {
+               return ItemStack.EMPTY;
             }
          } else if (!this.moveItemStackTo(var5, 10, 46, false)) {
             return ItemStack.EMPTY;
@@ -165,9 +163,5 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
 
    public int getSize() {
       return 10;
-   }
-
-   public RecipeBookType getRecipeBookType() {
-      return RecipeBookType.CRAFTING;
    }
 }

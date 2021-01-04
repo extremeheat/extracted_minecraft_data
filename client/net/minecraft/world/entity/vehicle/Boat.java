@@ -1,9 +1,7 @@
 package net.minecraft.world.entity.vehicle;
 
-import com.google.common.collect.UnmodifiableIterator;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -19,20 +17,17 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.IndirectEntityDamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -89,16 +84,13 @@ public class Boat extends Entity {
    public Boat(Level var1, double var2, double var4, double var6) {
       this(EntityType.BOAT, var1);
       this.setPos(var2, var4, var6);
+      this.setDeltaMovement(Vec3.ZERO);
       this.xo = var2;
       this.yo = var4;
       this.zo = var6;
    }
 
-   protected float getEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height;
-   }
-
-   protected boolean isMovementNoisy() {
+   protected boolean makeStepSound() {
       return false;
    }
 
@@ -112,48 +104,46 @@ public class Boat extends Entity {
       this.entityData.define(DATA_ID_BUBBLE_TIME, 0);
    }
 
-   public boolean canCollideWith(Entity var1) {
-      return canVehicleCollide(this, var1);
+   @Nullable
+   public AABB getCollideAgainstBox(Entity var1) {
+      return var1.isPushable() ? var1.getBoundingBox() : null;
    }
 
-   public static boolean canVehicleCollide(Entity var0, Entity var1) {
-      return (var1.canBeCollidedWith() || var1.isPushable()) && !var0.isPassengerOfSameVehicle(var1);
-   }
-
-   public boolean canBeCollidedWith() {
-      return true;
+   @Nullable
+   public AABB getCollideBox() {
+      return this.getBoundingBox();
    }
 
    public boolean isPushable() {
       return true;
    }
 
-   protected Vec3 getRelativePortalPosition(Direction.Axis var1, BlockUtil.FoundRectangle var2) {
-      return LivingEntity.resetForwardDirectionOfRelativePortalPosition(super.getRelativePortalPosition(var1, var2));
-   }
-
-   public double getPassengersRidingOffset() {
+   public double getRideHeight() {
       return -0.1D;
    }
 
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.level.isClientSide && !this.isRemoved()) {
-         this.setHurtDir(-this.getHurtDir());
-         this.setHurtTime(10);
-         this.setDamage(this.getDamage() + var2 * 10.0F);
-         this.markHurt();
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
-         if (var3 || this.getDamage() > 40.0F) {
-            if (!var3 && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-               this.spawnAtLocation(this.getDropItem());
+      } else if (!this.level.isClientSide && !this.removed) {
+         if (var1 instanceof IndirectEntityDamageSource && var1.getEntity() != null && this.hasPassenger(var1.getEntity())) {
+            return false;
+         } else {
+            this.setHurtDir(-this.getHurtDir());
+            this.setHurtTime(10);
+            this.setDamage(this.getDamage() + var2 * 10.0F);
+            this.markHurt();
+            boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).abilities.instabuild;
+            if (var3 || this.getDamage() > 40.0F) {
+               if (!var3 && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                  this.spawnAtLocation(this.getDropItem());
+               }
+
+               this.remove();
             }
 
-            this.discard();
+            return true;
          }
-
-         return true;
       } else {
          return true;
       }
@@ -168,9 +158,9 @@ public class Boat extends Entity {
          }
       }
 
-      this.level.addParticle(ParticleTypes.SPLASH, this.getX() + (double)this.random.nextFloat(), this.getY() + 0.7D, this.getZ() + (double)this.random.nextFloat(), 0.0D, 0.0D, 0.0D);
+      this.level.addParticle(ParticleTypes.SPLASH, this.x + (double)this.random.nextFloat(), this.y + 0.7D, this.z + (double)this.random.nextFloat(), 0.0D, 0.0D, 0.0D);
       if (this.random.nextInt(20) == 0) {
-         this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false);
+         this.level.playLocalSound(this.x, this.y, this.z, this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false);
       }
 
    }
@@ -211,7 +201,7 @@ public class Boat extends Entity {
    }
 
    public boolean isPickable() {
-      return !this.isRemoved();
+      return !this.removed;
    }
 
    public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
@@ -248,10 +238,13 @@ public class Boat extends Entity {
          this.setDamage(this.getDamage() - 1.0F);
       }
 
+      this.xo = this.x;
+      this.yo = this.y;
+      this.zo = this.z;
       super.tick();
       this.tickLerp();
       if (this.isControlledByLocalInstance()) {
-         if (!(this.getFirstPassenger() instanceof Player)) {
+         if (this.getPassengers().isEmpty() || !(this.getPassengers().get(0) instanceof Player)) {
             this.setPaddleState(false, false);
          }
 
@@ -276,7 +269,7 @@ public class Boat extends Entity {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level.playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
+                  this.level.playSound((Player)null, this.x + var4, this.y, this.z + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
                }
             }
 
@@ -336,9 +329,7 @@ public class Boat extends Entity {
                   this.setDeltaMovement(var3.add(0.0D, -0.7D, 0.0D));
                   this.ejectPassengers();
                } else {
-                  this.setDeltaMovement(var3.x, this.hasPassenger((var0) -> {
-                     return var0 instanceof Player;
-                  }) ? 2.7D : 0.6D, var3.z);
+                  this.setDeltaMovement(var3.x, this.hasPassenger(Player.class) ? 2.7D : 0.6D, var3.z);
                }
             }
 
@@ -364,15 +355,10 @@ public class Boat extends Entity {
    }
 
    private void tickLerp() {
-      if (this.isControlledByLocalInstance()) {
-         this.lerpSteps = 0;
-         this.setPacketCoordinates(this.getX(), this.getY(), this.getZ());
-      }
-
-      if (this.lerpSteps > 0) {
-         double var1 = this.getX() + (this.lerpX - this.getX()) / (double)this.lerpSteps;
-         double var3 = this.getY() + (this.lerpY - this.getY()) / (double)this.lerpSteps;
-         double var5 = this.getZ() + (this.lerpZ - this.getZ()) / (double)this.lerpSteps;
+      if (this.lerpSteps > 0 && !this.isControlledByLocalInstance()) {
+         double var1 = this.x + (this.lerpX - this.x) / (double)this.lerpSteps;
+         double var3 = this.y + (this.lerpY - this.y) / (double)this.lerpSteps;
+         double var5 = this.z + (this.lerpZ - this.z) / (double)this.lerpSteps;
          double var7 = Mth.wrapDegrees(this.lerpYRot - (double)this.yRot);
          this.yRot = (float)((double)this.yRot + var7 / (double)this.lerpSteps);
          this.xRot = (float)((double)this.xRot + (this.lerpXRot - (double)this.xRot) / (double)this.lerpSteps);
@@ -417,32 +403,53 @@ public class Boat extends Entity {
       int var5 = Mth.ceil(var1.maxY - this.lastYd);
       int var6 = Mth.floor(var1.minZ);
       int var7 = Mth.ceil(var1.maxZ);
-      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
+      BlockPos.PooledMutableBlockPos var8 = BlockPos.PooledMutableBlockPos.acquire();
+      Throwable var9 = null;
 
-      label39:
-      for(int var9 = var4; var9 < var5; ++var9) {
-         float var10 = 0.0F;
+      try {
+         label160:
+         for(int var10 = var4; var10 < var5; ++var10) {
+            float var11 = 0.0F;
 
-         for(int var11 = var2; var11 < var3; ++var11) {
-            for(int var12 = var6; var12 < var7; ++var12) {
-               var8.set(var11, var9, var12);
-               FluidState var13 = this.level.getFluidState(var8);
-               if (var13.is(FluidTags.WATER)) {
-                  var10 = Math.max(var10, var13.getHeight(this.level, var8));
+            for(int var12 = var2; var12 < var3; ++var12) {
+               for(int var13 = var6; var13 < var7; ++var13) {
+                  var8.set(var12, var10, var13);
+                  FluidState var14 = this.level.getFluidState(var8);
+                  if (var14.is(FluidTags.WATER)) {
+                     var11 = Math.max(var11, var14.getHeight(this.level, var8));
+                  }
+
+                  if (var11 >= 1.0F) {
+                     continue label160;
+                  }
                }
+            }
 
-               if (var10 >= 1.0F) {
-                  continue label39;
-               }
+            if (var11 < 1.0F) {
+               float var26 = (float)var8.getY() + var11;
+               return var26;
             }
          }
 
-         if (var10 < 1.0F) {
-            return (float)var8.getY() + var10;
+         float var25 = (float)(var5 + 1);
+         return var25;
+      } catch (Throwable var23) {
+         var9 = var23;
+         throw var23;
+      } finally {
+         if (var8 != null) {
+            if (var9 != null) {
+               try {
+                  var8.close();
+               } catch (Throwable var22) {
+                  var9.addSuppressed(var22);
+               }
+            } else {
+               var8.close();
+            }
          }
-      }
 
-      return (float)(var5 + 1);
+      }
    }
 
    public float getGroundFriction() {
@@ -457,24 +464,43 @@ public class Boat extends Entity {
       VoxelShape var9 = Shapes.create(var2);
       float var10 = 0.0F;
       int var11 = 0;
-      BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
+      BlockPos.PooledMutableBlockPos var12 = BlockPos.PooledMutableBlockPos.acquire();
+      Throwable var13 = null;
 
-      for(int var13 = var3; var13 < var4; ++var13) {
-         for(int var14 = var7; var14 < var8; ++var14) {
-            int var15 = (var13 != var3 && var13 != var4 - 1 ? 0 : 1) + (var14 != var7 && var14 != var8 - 1 ? 0 : 1);
-            if (var15 != 2) {
-               for(int var16 = var5; var16 < var6; ++var16) {
-                  if (var15 <= 0 || var16 != var5 && var16 != var6 - 1) {
-                     var12.set(var13, var16, var14);
-                     BlockState var17 = this.level.getBlockState(var12);
-                     if (!(var17.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var17.getCollisionShape(this.level, var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND)) {
-                        var10 += var17.getBlock().getFriction();
-                        ++var11;
+      try {
+         for(int var14 = var3; var14 < var4; ++var14) {
+            for(int var15 = var7; var15 < var8; ++var15) {
+               int var16 = (var14 != var3 && var14 != var4 - 1 ? 0 : 1) + (var15 != var7 && var15 != var8 - 1 ? 0 : 1);
+               if (var16 != 2) {
+                  for(int var17 = var5; var17 < var6; ++var17) {
+                     if (var16 <= 0 || var17 != var5 && var17 != var6 - 1) {
+                        var12.set(var14, var17, var15);
+                        BlockState var18 = this.level.getBlockState(var12);
+                        if (!(var18.getBlock() instanceof WaterlilyBlock) && Shapes.joinIsNotEmpty(var18.getCollisionShape(this.level, var12).move((double)var14, (double)var17, (double)var15), var9, BooleanOp.AND)) {
+                           var10 += var18.getBlock().getFriction();
+                           ++var11;
+                        }
                      }
                   }
                }
             }
          }
+      } catch (Throwable var26) {
+         var13 = var26;
+         throw var26;
+      } finally {
+         if (var12 != null) {
+            if (var13 != null) {
+               try {
+                  var12.close();
+               } catch (Throwable var25) {
+                  var13.addSuppressed(var25);
+               }
+            } else {
+               var12.close();
+            }
+         }
+
       }
 
       return var10 / (float)var11;
@@ -490,20 +516,39 @@ public class Boat extends Entity {
       int var7 = Mth.ceil(var1.maxZ);
       boolean var8 = false;
       this.waterLevel = 4.9E-324D;
-      BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
+      BlockPos.PooledMutableBlockPos var9 = BlockPos.PooledMutableBlockPos.acquire();
+      Throwable var10 = null;
 
-      for(int var10 = var2; var10 < var3; ++var10) {
-         for(int var11 = var4; var11 < var5; ++var11) {
-            for(int var12 = var6; var12 < var7; ++var12) {
-               var9.set(var10, var11, var12);
-               FluidState var13 = this.level.getFluidState(var9);
-               if (var13.is(FluidTags.WATER)) {
-                  float var14 = (float)var11 + var13.getHeight(this.level, var9);
-                  this.waterLevel = Math.max((double)var14, this.waterLevel);
-                  var8 |= var1.minY < (double)var14;
+      try {
+         for(int var11 = var2; var11 < var3; ++var11) {
+            for(int var12 = var4; var12 < var5; ++var12) {
+               for(int var13 = var6; var13 < var7; ++var13) {
+                  var9.set(var11, var12, var13);
+                  FluidState var14 = this.level.getFluidState(var9);
+                  if (var14.is(FluidTags.WATER)) {
+                     float var15 = (float)var12 + var14.getHeight(this.level, var9);
+                     this.waterLevel = Math.max((double)var15, this.waterLevel);
+                     var8 |= var1.minY < (double)var15;
+                  }
                }
             }
          }
+      } catch (Throwable var23) {
+         var10 = var23;
+         throw var23;
+      } finally {
+         if (var9 != null) {
+            if (var10 != null) {
+               try {
+                  var9.close();
+               } catch (Throwable var22) {
+                  var10.addSuppressed(var22);
+               }
+            } else {
+               var9.close();
+            }
+         }
+
       }
 
       return var8;
@@ -520,22 +565,42 @@ public class Boat extends Entity {
       int var8 = Mth.floor(var1.minZ);
       int var9 = Mth.ceil(var1.maxZ);
       boolean var10 = false;
-      BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+      BlockPos.PooledMutableBlockPos var11 = BlockPos.PooledMutableBlockPos.acquire();
+      Throwable var12 = null;
 
-      for(int var12 = var4; var12 < var5; ++var12) {
-         for(int var13 = var6; var13 < var7; ++var13) {
-            for(int var14 = var8; var14 < var9; ++var14) {
-               var11.set(var12, var13, var14);
-               FluidState var15 = this.level.getFluidState(var11);
-               if (var15.is(FluidTags.WATER) && var2 < (double)((float)var11.getY() + var15.getHeight(this.level, var11))) {
-                  if (!var15.isSource()) {
-                     return Boat.Status.UNDER_FLOWING_WATER;
+      try {
+         for(int var13 = var4; var13 < var5; ++var13) {
+            for(int var14 = var6; var14 < var7; ++var14) {
+               for(int var15 = var8; var15 < var9; ++var15) {
+                  var11.set(var13, var14, var15);
+                  FluidState var16 = this.level.getFluidState(var11);
+                  if (var16.is(FluidTags.WATER) && var2 < (double)((float)var11.getY() + var16.getHeight(this.level, var11))) {
+                     if (!var16.isSource()) {
+                        Boat.Status var17 = Boat.Status.UNDER_FLOWING_WATER;
+                        return var17;
+                     }
+
+                     var10 = true;
                   }
-
-                  var10 = true;
                }
             }
          }
+      } catch (Throwable var27) {
+         var12 = var27;
+         throw var27;
+      } finally {
+         if (var11 != null) {
+            if (var12 != null) {
+               try {
+                  var11.close();
+               } catch (Throwable var26) {
+                  var12.addSuppressed(var26);
+               }
+            } else {
+               var11.close();
+            }
+         }
+
       }
 
       return var10 ? Boat.Status.UNDER_WATER : null;
@@ -547,14 +612,14 @@ public class Boat extends Entity {
       double var5 = 0.0D;
       this.invFriction = 0.05F;
       if (this.oldStatus == Boat.Status.IN_AIR && this.status != Boat.Status.IN_AIR && this.status != Boat.Status.ON_LAND) {
-         this.waterLevel = this.getY(1.0D);
-         this.setPos(this.getX(), (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101D, this.getZ());
+         this.waterLevel = this.getBoundingBox().minY + (double)this.getBbHeight();
+         this.setPos(this.x, (double)(this.getWaterLevelAbove() - this.getBbHeight()) + 0.101D, this.z);
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
          this.lastYd = 0.0D;
          this.status = Boat.Status.IN_WATER;
       } else {
          if (this.status == Boat.Status.IN_WATER) {
-            var5 = (this.waterLevel - this.getY()) / (double)this.getBbHeight();
+            var5 = (this.waterLevel - this.getBoundingBox().minY) / (double)this.getBbHeight();
             this.invFriction = 0.9F;
          } else if (this.status == Boat.Status.UNDER_FLOWING_WATER) {
             var3 = -7.0E-4D;
@@ -614,7 +679,7 @@ public class Boat extends Entity {
    public void positionRider(Entity var1) {
       if (this.hasPassenger(var1)) {
          float var2 = 0.0F;
-         float var3 = (float)((this.isRemoved() ? 0.009999999776482582D : this.getPassengersRidingOffset()) + var1.getMyRidingOffset());
+         float var3 = (float)((this.removed ? 0.009999999776482582D : this.getRideHeight()) + var1.getRidingHeight());
          if (this.getPassengers().size() > 1) {
             int var4 = this.getPassengers().indexOf(var1);
             if (var4 == 0) {
@@ -629,7 +694,7 @@ public class Boat extends Entity {
          }
 
          Vec3 var6 = (new Vec3((double)var2, 0.0D, 0.0D)).yRot(-this.yRot * 0.017453292F - 1.5707964F);
-         var1.setPos(this.getX() + var6.x, this.getY() + (double)var3, this.getZ() + var6.z);
+         var1.setPos(this.x + var6.x, this.y + (double)var3, this.z + var6.z);
          var1.yRot += this.deltaRotation;
          var1.setYHeadRot(var1.getYHeadRot() + this.deltaRotation);
          this.clampRotation(var1);
@@ -640,36 +705,6 @@ public class Boat extends Entity {
          }
 
       }
-   }
-
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
-      Vec3 var2 = getCollisionHorizontalEscapeVector((double)(this.getBbWidth() * Mth.SQRT_OF_TWO), (double)var1.getBbWidth(), this.yRot);
-      double var3 = this.getX() + var2.x;
-      double var5 = this.getZ() + var2.z;
-      BlockPos var7 = new BlockPos(var3, this.getBoundingBox().maxY, var5);
-      BlockPos var8 = var7.below();
-      if (!this.level.isWaterAt(var8)) {
-         double var9 = (double)var7.getY() + this.level.getBlockFloorHeight(var7);
-         double var11 = (double)var7.getY() + this.level.getBlockFloorHeight(var8);
-         UnmodifiableIterator var13 = var1.getDismountPoses().iterator();
-
-         while(var13.hasNext()) {
-            Pose var14 = (Pose)var13.next();
-            Vec3 var15 = DismountHelper.findDismountLocation(this.level, var3, var9, var5, var1, var14);
-            if (var15 != null) {
-               var1.setPose(var14);
-               return var15;
-            }
-
-            Vec3 var16 = DismountHelper.findDismountLocation(this.level, var3, var11, var5, var1, var14);
-            if (var16 != null) {
-               var1.setPose(var14);
-               return var16;
-            }
-         }
-      }
-
-      return super.getDismountLocationForPassenger(var1);
    }
 
    protected void clampRotation(Entity var1) {
@@ -696,17 +731,15 @@ public class Boat extends Entity {
 
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (var1.isSecondaryUseActive()) {
-         return InteractionResult.PASS;
-      } else if (this.outOfControlTicks < 60.0F) {
-         if (!this.level.isClientSide) {
-            return var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
-         } else {
-            return InteractionResult.SUCCESS;
-         }
+   public boolean interact(Player var1, InteractionHand var2) {
+      if (var1.isSneaking()) {
+         return false;
       } else {
-         return InteractionResult.PASS;
+         if (!this.level.isClientSide && this.outOfControlTicks < 60.0F) {
+            var1.startRiding(this);
+         }
+
+         return true;
       }
    }
 
@@ -721,8 +754,8 @@ public class Boat extends Entity {
                }
 
                this.causeFallDamage(this.fallDistance, 1.0F);
-               if (!this.level.isClientSide && !this.isRemoved()) {
-                  this.kill();
+               if (!this.level.isClientSide && !this.removed) {
+                  this.remove();
                   if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                      int var6;
                      for(var6 = 0; var6 < 3; ++var6) {
@@ -737,7 +770,7 @@ public class Boat extends Entity {
             }
 
             this.fallDistance = 0.0F;
-         } else if (!this.level.getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && var1 < 0.0D) {
+         } else if (!this.level.getFluidState((new BlockPos(this)).below()).is(FluidTags.WATER) && var1 < 0.0D) {
             this.fallDistance = (float)((double)this.fallDistance - var1);
          }
 
@@ -793,12 +826,13 @@ public class Boat extends Entity {
    }
 
    protected boolean canAddPassenger(Entity var1) {
-      return this.getPassengers().size() < 2 && !this.isEyeInFluid(FluidTags.WATER);
+      return this.getPassengers().size() < 2 && !this.isUnderLiquid(FluidTags.WATER);
    }
 
    @Nullable
    public Entity getControllingPassenger() {
-      return this.getFirstPassenger();
+      List var1 = this.getPassengers();
+      return var1.isEmpty() ? null : (Entity)var1.get(0);
    }
 
    public void setInput(boolean var1, boolean var2, boolean var3, boolean var4) {
@@ -810,14 +844,6 @@ public class Boat extends Entity {
 
    public Packet<?> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this);
-   }
-
-   public boolean isUnderWater() {
-      return this.status == Boat.Status.UNDER_WATER || this.status == Boat.Status.UNDER_FLOWING_WATER;
-   }
-
-   public ItemStack getPickResult() {
-      return new ItemStack(this.getDropItem());
    }
 
    static {

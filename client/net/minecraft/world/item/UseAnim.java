@@ -7,8 +7,7 @@ public enum UseAnim {
    BLOCK,
    BOW,
    SPEAR,
-   CROSSBOW,
-   SPYGLASS;
+   CROSSBOW;
 
    private UseAnim() {
    }

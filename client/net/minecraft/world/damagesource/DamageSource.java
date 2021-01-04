@@ -7,14 +7,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.entity.projectile.Fireball;
-import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.Vec3;
 
 public class DamageSource {
-   public static final DamageSource IN_FIRE = (new DamageSource("inFire")).bypassArmor().setIsFire();
+   public static final DamageSource IN_FIRE = (new DamageSource("inFire")).setIsFire();
    public static final DamageSource LIGHTNING_BOLT = new DamageSource("lightningBolt");
    public static final DamageSource ON_FIRE = (new DamageSource("onFire")).bypassArmor().setIsFire();
    public static final DamageSource LAVA = (new DamageSource("lava")).setIsFire();
@@ -33,6 +31,7 @@ public class DamageSource {
    public static final DamageSource ANVIL = new DamageSource("anvil");
    public static final DamageSource FALLING_BLOCK = new DamageSource("fallingBlock");
    public static final DamageSource DRAGON_BREATH = (new DamageSource("dragonBreath")).bypassArmor();
+   public static final DamageSource FIREWORKS = (new DamageSource("fireworks")).setExplosion();
    public static final DamageSource DRY_OUT = new DamageSource("dryout");
    public static final DamageSource SWEET_BERRY_BUSH = new DamageSource("sweetBerryBush");
    private boolean bypassArmor;
@@ -45,10 +44,6 @@ public class DamageSource {
    private boolean isMagic;
    private boolean isExplosion;
    public final String msgId;
-
-   public static DamageSource sting(LivingEntity var0) {
-      return new EntityDamageSource("sting", var0);
-   }
 
    public static DamageSource mobAttack(LivingEntity var0) {
       return new EntityDamageSource("mob", var0);
@@ -70,16 +65,8 @@ public class DamageSource {
       return (new IndirectEntityDamageSource("trident", var0, var1)).setProjectile();
    }
 
-   public static DamageSource fireworks(FireworkRocketEntity var0, @Nullable Entity var1) {
-      return (new IndirectEntityDamageSource("fireworks", var0, var1)).setExplosion();
-   }
-
-   public static DamageSource fireball(Fireball var0, @Nullable Entity var1) {
+   public static DamageSource fireball(AbstractHurtingProjectile var0, @Nullable Entity var1) {
       return var1 == null ? (new IndirectEntityDamageSource("onFire", var0, var0)).setIsFire().setProjectile() : (new IndirectEntityDamageSource("fireball", var0, var1)).setIsFire().setProjectile();
-   }
-
-   public static DamageSource witherSkull(WitherSkull var0, Entity var1) {
-      return (new IndirectEntityDamageSource("witherSkull", var0, var1)).setProjectile();
    }
 
    public static DamageSource thrown(Entity var0, @Nullable Entity var1) {
@@ -95,19 +82,15 @@ public class DamageSource {
    }
 
    public static DamageSource explosion(@Nullable Explosion var0) {
-      return explosion(var0 != null ? var0.getSourceMob() : null);
+      return var0 != null && var0.getSourceMob() != null ? (new EntityDamageSource("explosion.player", var0.getSourceMob())).setScalesWithDifficulty().setExplosion() : (new DamageSource("explosion")).setScalesWithDifficulty().setExplosion();
    }
 
    public static DamageSource explosion(@Nullable LivingEntity var0) {
       return var0 != null ? (new EntityDamageSource("explosion.player", var0)).setScalesWithDifficulty().setExplosion() : (new DamageSource("explosion")).setScalesWithDifficulty().setExplosion();
    }
 
-   public static DamageSource badRespawnPointExplosion() {
-      return new BadRespawnPointDamage();
-   }
-
-   public String toString() {
-      return "DamageSource (" + this.msgId + ")";
+   public static DamageSource netherBedExplosion() {
+      return new NetherBedDamage();
    }
 
    public boolean isProjectile() {
@@ -216,7 +199,7 @@ public class DamageSource {
 
    public boolean isCreativePlayer() {
       Entity var1 = this.getEntity();
-      return var1 instanceof Player && ((Player)var1).getAbilities().instabuild;
+      return var1 instanceof Player && ((Player)var1).abilities.instabuild;
    }
 
    @Nullable

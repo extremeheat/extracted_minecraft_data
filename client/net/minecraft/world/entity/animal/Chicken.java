@@ -2,20 +2,16 @@ package net.minecraft.world.entity.animal;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.AgableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.FollowParentGoal;
@@ -24,6 +20,7 @@ import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.monster.SharedMonsterAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -64,8 +61,10 @@ public class Chicken extends Animal {
       return this.isBaby() ? var2.height * 0.85F : var2.height * 0.92F;
    }
 
-   public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 4.0D).add(Attributes.MOVEMENT_SPEED, 0.25D);
+   protected void registerAttributes() {
+      super.registerAttributes();
+      this.getAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+      this.getAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
    }
 
    public void aiStep() {
@@ -93,8 +92,7 @@ public class Chicken extends Animal {
 
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    protected SoundEvent getAmbientSound() {
@@ -113,8 +111,8 @@ public class Chicken extends Animal {
       this.playSound(SoundEvents.CHICKEN_STEP, 0.15F, 1.0F);
    }
 
-   public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Chicken)EntityType.CHICKEN.create(var1);
+   public Chicken getBreedOffspring(AgableMob var1) {
+      return (Chicken)EntityType.CHICKEN.create(this.level);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -141,7 +139,7 @@ public class Chicken extends Animal {
    }
 
    public boolean removeWhenFarAway(double var1) {
-      return this.isChickenJockey();
+      return this.isChickenJockey() && !this.isVehicle();
    }
 
    public void positionRider(Entity var1) {
@@ -150,7 +148,7 @@ public class Chicken extends Animal {
       float var3 = Mth.cos(this.yBodyRot * 0.017453292F);
       float var4 = 0.1F;
       float var5 = 0.0F;
-      var1.setPos(this.getX() + (double)(0.1F * var2), this.getY(0.5D) + var1.getMyRidingOffset() + 0.0D, this.getZ() - (double)(0.1F * var3));
+      var1.setPos(this.x + (double)(0.1F * var2), this.y + (double)(this.getBbHeight() * 0.5F) + var1.getRidingHeight() + 0.0D, this.z - (double)(0.1F * var3));
       if (var1 instanceof LivingEntity) {
          ((LivingEntity)var1).yBodyRot = this.yBodyRot;
       }
@@ -166,8 +164,8 @@ public class Chicken extends Animal {
    }
 
    // $FF: synthetic method
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   public AgableMob getBreedOffspring(AgableMob var1) {
+      return this.getBreedOffspring(var1);
    }
 
    static {

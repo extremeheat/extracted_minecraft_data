@@ -14,7 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndBiomeGetter;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
@@ -41,30 +41,28 @@ public class ItemColors {
          } else {
             CompoundTag var2 = var0x.getTagElement("Explosion");
             int[] var3 = var2 != null && var2.contains("Colors", 11) ? var2.getIntArray("Colors") : null;
-            if (var3 != null && var3.length != 0) {
-               if (var3.length == 1) {
-                  return var3[0];
-               } else {
-                  int var4 = 0;
-                  int var5 = 0;
-                  int var6 = 0;
-                  int[] var7 = var3;
-                  int var8 = var3.length;
-
-                  for(int var9 = 0; var9 < var8; ++var9) {
-                     int var10 = var7[var9];
-                     var4 += (var10 & 16711680) >> 16;
-                     var5 += (var10 & '\uff00') >> 8;
-                     var6 += (var10 & 255) >> 0;
-                  }
-
-                  var4 /= var3.length;
-                  var5 /= var3.length;
-                  var6 /= var3.length;
-                  return var4 << 16 | var5 << 8 | var6;
-               }
-            } else {
+            if (var3 == null) {
                return 9079434;
+            } else if (var3.length == 1) {
+               return var3[0];
+            } else {
+               int var4 = 0;
+               int var5 = 0;
+               int var6 = 0;
+               int[] var7 = var3;
+               int var8 = var3.length;
+
+               for(int var9 = 0; var9 < var8; ++var9) {
+                  int var10 = var7[var9];
+                  var4 += (var10 & 16711680) >> 16;
+                  var5 += (var10 & '\uff00') >> 8;
+                  var6 += (var10 & 255) >> 0;
+               }
+
+               var4 /= var3.length;
+               var5 /= var3.length;
+               var6 /= var3.length;
+               return var4 << 16 | var5 << 8 | var6;
             }
          }
       }, Items.FIREWORK_STAR);
@@ -82,7 +80,7 @@ public class ItemColors {
 
       var1.register((var1x, var2x) -> {
          BlockState var3 = ((BlockItem)var1x.getItem()).getBlock().defaultBlockState();
-         return var0.getColor(var3, (BlockAndTintGetter)null, (BlockPos)null, var2x);
+         return var0.getColor(var3, (BlockAndBiomeGetter)null, (BlockPos)null, var2x);
       }, Blocks.GRASS_BLOCK, Blocks.GRASS, Blocks.FERN, Blocks.VINE, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.BIRCH_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.LILY_PAD);
       var1.register((var0x, var1x) -> {
          return var1x == 0 ? PotionUtils.getColor(var0x) : -1;

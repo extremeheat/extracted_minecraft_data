@@ -4,14 +4,13 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -19,7 +18,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -31,29 +29,33 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    protected static final VoxelShape THREE_AABB;
    protected static final VoxelShape FOUR_AABB;
 
-   protected SeaPickleBlock(BlockBehaviour.Properties var1) {
+   protected SeaPickleBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(PICKLES, 1)).setValue(WATERLOGGED, true));
+   }
+
+   public int getLightEmission(BlockState var1) {
+      return this.isDead(var1) ? 0 : super.getLightEmission(var1) + 3 * (Integer)var1.getValue(PICKLES);
    }
 
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      if (var2.is(this)) {
+      if (var2.getBlock() == this) {
          return (BlockState)var2.setValue(PICKLES, Math.min(4, (Integer)var2.getValue(PICKLES) + 1));
       } else {
          FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos());
-         boolean var4 = var3.getType() == Fluids.WATER;
+         boolean var4 = var3.is(FluidTags.WATER) && var3.getAmount() == 8;
          return (BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var4);
       }
    }
 
-   public static boolean isDead(BlockState var0) {
-      return !(Boolean)var0.getValue(WATERLOGGED);
+   private boolean isDead(BlockState var1) {
+      return !(Boolean)var1.getValue(WATERLOGGED);
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return !var1.getCollisionShape(var2, var3).getFaceShape(Direction.UP).isEmpty() || var1.isFaceSturdy(var2, var3, Direction.UP);
+      return !var1.getCollisionShape(var2, var3).getFaceShape(Direction.UP).isEmpty();
    }
 
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -74,7 +76,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
+      return var2.getItemInHand().getItem() == this.asItem() && (Integer)var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -107,8 +109,8 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, Random var2, BlockPos var3, BlockState var4) {
-      if (!isDead(var4) && var1.getBlockState(var3.below()).is(BlockTags.CORAL_BLOCKS)) {
+   public void performBonemeal(Level var1, Random var2, BlockPos var3, BlockState var4) {
+      if (!this.isDead(var4) && var1.getBlockState(var3.below()).is(BlockTags.CORAL_BLOCKS)) {
          boolean var5 = true;
          int var6 = 1;
          boolean var7 = true;
@@ -122,7 +124,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
 
                for(int var14 = var13 - 2; var14 < var13; ++var14) {
                   BlockPos var15 = new BlockPos(var9 + var11, var14, var3.getZ() - var10 + var12);
-                  if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).is(Blocks.WATER)) {
+                  if (var15 != var3 && var2.nextInt(6) == 0 && var1.getBlockState(var15).getBlock() == Blocks.WATER) {
                      BlockState var16 = var1.getBlockState(var15.below());
                      if (var16.is(BlockTags.CORAL_BLOCKS)) {
                         var1.setBlock(var15, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(PICKLES, var2.nextInt(4) + 1), 3);
@@ -145,10 +147,6 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
          var1.setBlock(var3, (BlockState)var4.setValue(PICKLES, 4), 2);
       }
 
-   }
-
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      return false;
    }
 
    static {

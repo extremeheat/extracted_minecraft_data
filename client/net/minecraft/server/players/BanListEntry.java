@@ -23,7 +23,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    }
 
    protected BanListEntry(T var1, JsonObject var2) {
-      super(var1);
+      super(var1, var2);
 
       Date var3;
       try {

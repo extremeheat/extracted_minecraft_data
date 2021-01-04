@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -14,7 +13,7 @@ public class FlowerBlock extends BushBlock {
    private final MobEffect suspiciousStewEffect;
    private final int effectDuration;
 
-   public FlowerBlock(MobEffect var1, int var2, BlockBehaviour.Properties var3) {
+   public FlowerBlock(MobEffect var1, int var2, Block.Properties var3) {
       super(var3);
       this.suspiciousStewEffect = var1;
       if (var1.isInstantenous()) {
@@ -30,8 +29,8 @@ public class FlowerBlock extends BushBlock {
       return SHAPE.move(var5.x, var5.y, var5.z);
    }
 
-   public BlockBehaviour.OffsetType getOffsetType() {
-      return BlockBehaviour.OffsetType.XZ;
+   public Block.OffsetType getOffsetType() {
+      return Block.OffsetType.XZ;
    }
 
    public MobEffect getSuspiciousStewEffect() {

@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.annotation.Nullable;
@@ -24,32 +23,39 @@ public class SimpleTexture extends AbstractTexture {
 
    public void load(ResourceManager var1) throws IOException {
       SimpleTexture.TextureImage var2 = this.getTextureImage(var1);
-      var2.throwIfError();
-      TextureMetadataSection var5 = var2.getTextureMetadata();
-      boolean var3;
-      boolean var4;
-      if (var5 != null) {
-         var3 = var5.isBlur();
-         var4 = var5.isClamp();
-      } else {
-         var3 = false;
-         var4 = false;
+      Throwable var3 = null;
+
+      try {
+         boolean var4 = false;
+         boolean var5 = false;
+         var2.throwIfError();
+         TextureMetadataSection var6 = var2.getTextureMetadata();
+         if (var6 != null) {
+            var4 = var6.isBlur();
+            var5 = var6.isClamp();
+         }
+
+         this.bind();
+         TextureUtil.prepareImage(this.getId(), 0, var2.getImage().getWidth(), var2.getImage().getHeight());
+         var2.getImage().upload(0, 0, 0, 0, 0, var2.getImage().getWidth(), var2.getImage().getHeight(), var4, var5, false);
+      } catch (Throwable var14) {
+         var3 = var14;
+         throw var14;
+      } finally {
+         if (var2 != null) {
+            if (var3 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var13) {
+                  var3.addSuppressed(var13);
+               }
+            } else {
+               var2.close();
+            }
+         }
+
       }
 
-      NativeImage var6 = var2.getImage();
-      if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> {
-            this.doLoad(var6, var3, var4);
-         });
-      } else {
-         this.doLoad(var6, var3, var4);
-      }
-
-   }
-
-   private void doLoad(NativeImage var1, boolean var2, boolean var3) {
-      TextureUtil.prepareImage(this.getId(), 0, var1.getWidth(), var1.getHeight());
-      var1.upload(0, 0, 0, 0, 0, var1.getWidth(), var1.getHeight(), var2, var3, false, true);
    }
 
    protected SimpleTexture.TextureImage getTextureImage(ResourceManager var1) {
@@ -57,11 +63,8 @@ public class SimpleTexture extends AbstractTexture {
    }
 
    public static class TextureImage implements Closeable {
-      @Nullable
       private final TextureMetadataSection metadata;
-      @Nullable
       private final NativeImage image;
-      @Nullable
       private final IOException exception;
 
       public TextureImage(IOException var1) {

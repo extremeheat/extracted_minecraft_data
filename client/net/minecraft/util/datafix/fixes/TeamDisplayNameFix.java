@@ -3,12 +3,12 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 
@@ -26,11 +26,11 @@ public class TeamDisplayNameFix extends DataFix {
             return (var0x) -> {
                return var0x.mapSecond((var0) -> {
                   return var0.update("DisplayName", (var1) -> {
-                     DataResult var10000 = var1.asString().map((var0x) -> {
+                     Optional var10000 = var1.asString().map((var0x) -> {
                         return Component.Serializer.toJson(new TextComponent(var0x));
                      });
                      var0.getClass();
-                     return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString).result(), var1);
+                     return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString), var1);
                   });
                });
             };

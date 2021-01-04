@@ -1,22 +1,19 @@
 package net.minecraft.world.level.block.entity;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BedBlock;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class BedBlockEntity extends BlockEntity {
    private DyeColor color;
 
-   public BedBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BED, var1, var2);
-      this.color = ((BedBlock)var2.getBlock()).getColor();
+   public BedBlockEntity() {
+      super(BlockEntityType.BED);
    }
 
-   public BedBlockEntity(BlockPos var1, BlockState var2, DyeColor var3) {
-      super(BlockEntityType.BED, var1, var2);
-      this.color = var3;
+   public BedBlockEntity(DyeColor var1) {
+      this();
+      this.setColor(var1);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -24,6 +21,10 @@ public class BedBlockEntity extends BlockEntity {
    }
 
    public DyeColor getColor() {
+      if (this.color == null) {
+         this.color = ((BedBlock)this.getBlockState().getBlock()).getColor();
+      }
+
       return this.color;
    }
 

@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
@@ -23,11 +23,11 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !((ServerLevel)this.mob.level).isVillage(this.mob.blockPosition());
+      return this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && !((ServerLevel)this.mob.level).isVillage(new BlockPos(this.mob));
    }
 
    public boolean canContinueToUse() {
-      return this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && this.mob.level instanceof ServerLevel && !((ServerLevel)this.mob.level).isVillage(this.mob.blockPosition());
+      return this.mob.hasActiveRaid() && !this.mob.getCurrentRaid().isOver() && this.mob.level instanceof ServerLevel && !((ServerLevel)this.mob.level).isVillage(new BlockPos(this.mob));
    }
 
    public void tick() {
@@ -38,7 +38,7 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
          }
 
          if (!this.mob.isPathFinding()) {
-            Vec3 var2 = DefaultRandomPos.getPosTowards(this.mob, 15, 4, Vec3.atBottomCenterOf(var1.getCenter()), 1.5707963705062866D);
+            Vec3 var2 = RandomPos.getPosTowards(this.mob, 15, 4, new Vec3(var1.getCenter()));
             if (var2 != null) {
                this.mob.getNavigation().moveTo(var2.x, var2.y, var2.z, 1.0D);
             }

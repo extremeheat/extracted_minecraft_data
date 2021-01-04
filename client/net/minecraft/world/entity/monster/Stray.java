@@ -13,14 +13,14 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 
 public class Stray extends AbstractSkeleton {
    public Stray(EntityType<? extends Stray> var1, Level var2) {
       super(var1, var2);
    }
 
-   public static boolean checkStraySpawnRules(EntityType<Stray> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
+   public static boolean checkStraySpawnRules(EntityType<Stray> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, Random var4) {
       return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (var2 == MobSpawnType.SPAWNER || var1.canSeeSky(var3));
    }
 

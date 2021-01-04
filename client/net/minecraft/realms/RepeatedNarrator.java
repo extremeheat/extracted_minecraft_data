@@ -3,18 +3,21 @@ package net.minecraft.realms;
 import com.google.common.util.concurrent.RateLimiter;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
-import net.minecraft.Util;
 import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.TextComponent;
 
-public class RepeatedNarrator {
+class RepeatedNarrator {
+   final Duration repeatDelay;
    private final float permitsPerSecond;
-   private final AtomicReference<RepeatedNarrator.Params> params = new AtomicReference();
+   final AtomicReference<RepeatedNarrator.Params> params;
 
    public RepeatedNarrator(Duration var1) {
       super();
-      this.permitsPerSecond = 1000.0F / (float)var1.toMillis();
+      this.repeatDelay = var1;
+      this.params = new AtomicReference();
+      float var2 = (float)var1.toMillis() / 1000.0F;
+      this.permitsPerSecond = 1.0F / var2;
    }
 
    public void narrate(String var1) {
@@ -22,14 +25,15 @@ public class RepeatedNarrator {
          return var2x != null && var1.equals(var2x.narration) ? var2x : new RepeatedNarrator.Params(var1, RateLimiter.create((double)this.permitsPerSecond));
       });
       if (var2.rateLimiter.tryAcquire(1)) {
-         NarratorChatListener.INSTANCE.handle(ChatType.SYSTEM, new TextComponent(var1), Util.NIL_UUID);
+         NarratorChatListener var3 = NarratorChatListener.INSTANCE;
+         var3.handle(ChatType.SYSTEM, new TextComponent(var1));
       }
 
    }
 
    static class Params {
-      private final String narration;
-      private final RateLimiter rateLimiter;
+      String narration;
+      RateLimiter rateLimiter;
 
       Params(String var1, RateLimiter var2) {
          super();

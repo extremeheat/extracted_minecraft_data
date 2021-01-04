@@ -1,7 +1,6 @@
 package net.minecraft.world.effect;
 
 import com.google.common.collect.ComparisonChain;
-import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import org.apache.logging.log4j.LogManager;
@@ -17,8 +16,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private boolean noCounter;
    private boolean visible;
    private boolean showIcon;
-   @Nullable
-   private MobEffectInstance hiddenEffect;
 
    public MobEffectInstance(MobEffect var1) {
       this(var1, 0, 0);
@@ -37,10 +34,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public MobEffectInstance(MobEffect var1, int var2, int var3, boolean var4, boolean var5, boolean var6) {
-      this(var1, var2, var3, var4, var5, var6, (MobEffectInstance)null);
-   }
-
-   public MobEffectInstance(MobEffect var1, int var2, int var3, boolean var4, boolean var5, boolean var6, @Nullable MobEffectInstance var7) {
       super();
       this.effect = var1;
       this.duration = var2;
@@ -48,16 +41,11 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       this.ambient = var4;
       this.visible = var5;
       this.showIcon = var6;
-      this.hiddenEffect = var7;
    }
 
    public MobEffectInstance(MobEffectInstance var1) {
       super();
       this.effect = var1.effect;
-      this.setDetailsFrom(var1);
-   }
-
-   void setDetailsFrom(MobEffectInstance var1) {
       this.duration = var1.duration;
       this.amplifier = var1.amplifier;
       this.ambient = var1.ambient;
@@ -72,24 +60,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
 
       boolean var2 = false;
       if (var1.amplifier > this.amplifier) {
-         if (var1.duration < this.duration) {
-            MobEffectInstance var3 = this.hiddenEffect;
-            this.hiddenEffect = new MobEffectInstance(this);
-            this.hiddenEffect.hiddenEffect = var3;
-         }
-
          this.amplifier = var1.amplifier;
          this.duration = var1.duration;
          var2 = true;
-      } else if (var1.duration > this.duration) {
-         if (var1.amplifier == this.amplifier) {
-            this.duration = var1.duration;
-            var2 = true;
-         } else if (this.hiddenEffect == null) {
-            this.hiddenEffect = new MobEffectInstance(var1);
-         } else {
-            this.hiddenEffect.update(var1);
-         }
+      } else if (var1.amplifier == this.amplifier && this.duration < var1.duration) {
+         this.duration = var1.duration;
+         var2 = true;
       }
 
       if (!var1.ambient && this.ambient || var2) {
@@ -134,28 +110,19 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return this.showIcon;
    }
 
-   public boolean tick(LivingEntity var1, Runnable var2) {
+   public boolean tick(LivingEntity var1) {
       if (this.duration > 0) {
          if (this.effect.isDurationEffectTick(this.duration, this.amplifier)) {
             this.applyEffect(var1);
          }
 
          this.tickDownDuration();
-         if (this.duration == 0 && this.hiddenEffect != null) {
-            this.setDetailsFrom(this.hiddenEffect);
-            this.hiddenEffect = this.hiddenEffect.hiddenEffect;
-            var2.run();
-         }
       }
 
       return this.duration > 0;
    }
 
    private int tickDownDuration() {
-      if (this.hiddenEffect != null) {
-         this.hiddenEffect.tickDownDuration();
-      }
-
       return --this.duration;
    }
 
@@ -215,50 +182,35 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
 
    public CompoundTag save(CompoundTag var1) {
       var1.putByte("Id", (byte)MobEffect.getId(this.getEffect()));
-      this.writeDetailsTo(var1);
-      return var1;
-   }
-
-   private void writeDetailsTo(CompoundTag var1) {
       var1.putByte("Amplifier", (byte)this.getAmplifier());
       var1.putInt("Duration", this.getDuration());
       var1.putBoolean("Ambient", this.isAmbient());
       var1.putBoolean("ShowParticles", this.isVisible());
       var1.putBoolean("ShowIcon", this.showIcon());
-      if (this.hiddenEffect != null) {
-         CompoundTag var2 = new CompoundTag();
-         this.hiddenEffect.save(var2);
-         var1.put("HiddenEffect", var2);
-      }
-
+      return var1;
    }
 
    public static MobEffectInstance load(CompoundTag var0) {
       byte var1 = var0.getByte("Id");
       MobEffect var2 = MobEffect.byId(var1);
-      return var2 == null ? null : loadSpecifiedEffect(var2, var0);
-   }
+      if (var2 == null) {
+         return null;
+      } else {
+         byte var3 = var0.getByte("Amplifier");
+         int var4 = var0.getInt("Duration");
+         boolean var5 = var0.getBoolean("Ambient");
+         boolean var6 = true;
+         if (var0.contains("ShowParticles", 1)) {
+            var6 = var0.getBoolean("ShowParticles");
+         }
 
-   private static MobEffectInstance loadSpecifiedEffect(MobEffect var0, CompoundTag var1) {
-      byte var2 = var1.getByte("Amplifier");
-      int var3 = var1.getInt("Duration");
-      boolean var4 = var1.getBoolean("Ambient");
-      boolean var5 = true;
-      if (var1.contains("ShowParticles", 1)) {
-         var5 = var1.getBoolean("ShowParticles");
+         boolean var7 = var6;
+         if (var0.contains("ShowIcon", 1)) {
+            var7 = var0.getBoolean("ShowIcon");
+         }
+
+         return new MobEffectInstance(var2, var4, var3 < 0 ? 0 : var3, var5, var6, var7);
       }
-
-      boolean var6 = var5;
-      if (var1.contains("ShowIcon", 1)) {
-         var6 = var1.getBoolean("ShowIcon");
-      }
-
-      MobEffectInstance var7 = null;
-      if (var1.contains("HiddenEffect", 10)) {
-         var7 = loadSpecifiedEffect(var0, var1.getCompound("HiddenEffect"));
-      }
-
-      return new MobEffectInstance(var0, var3, var2 < 0 ? 0 : var2, var4, var5, var6, var7);
    }
 
    public void setNoCounter(boolean var1) {

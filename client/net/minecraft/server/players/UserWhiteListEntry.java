@@ -10,13 +10,14 @@ public class UserWhiteListEntry extends StoredUserEntry<GameProfile> {
    }
 
    public UserWhiteListEntry(JsonObject var1) {
-      super(createGameProfile(var1));
+      super(createGameProfile(var1), var1);
    }
 
    protected void serialize(JsonObject var1) {
       if (this.getUser() != null) {
          var1.addProperty("uuid", ((GameProfile)this.getUser()).getId() == null ? "" : ((GameProfile)this.getUser()).getId().toString());
          var1.addProperty("name", ((GameProfile)this.getUser()).getName());
+         super.serialize(var1);
       }
    }
 

@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,15 +28,11 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class TeleportCommand {
-   private static final SimpleCommandExceptionType INVALID_POSITION = new SimpleCommandExceptionType(new TranslatableComponent("commands.teleport.invalidPosition"));
-
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralCommandNode var1 = var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("teleport").requires((var0x) -> {
          return var0x.hasPermission(2);
@@ -63,12 +58,12 @@ public class TeleportCommand {
       })).redirect(var1));
    }
 
-   private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) throws CommandSyntaxException {
+   private static int teleportToEntity(CommandSourceStack var0, Collection<? extends Entity> var1, Entity var2) {
       Iterator var3 = var1.iterator();
 
       while(var3.hasNext()) {
          Entity var4 = (Entity)var3.next();
-         performTeleport(var0, var4, (ServerLevel)var2.level, var2.getX(), var2.getY(), var2.getZ(), EnumSet.noneOf(ClientboundPlayerPositionPacket.RelativeArgument.class), var2.yRot, var2.xRot, (TeleportCommand.LookAt)null);
+         performTeleport(var0, var4, (ServerLevel)var2.level, var2.x, var2.y, var2.z, EnumSet.noneOf(ClientboundPlayerPositionPacket.RelativeArgument.class), var2.yRot, var2.xRot, (TeleportCommand.LookAt)null);
       }
 
       if (var1.size() == 1) {
@@ -129,63 +124,55 @@ public class TeleportCommand {
       return var1.size();
    }
 
-   private static void performTeleport(CommandSourceStack var0, Entity var1, ServerLevel var2, double var3, double var5, double var7, Set<ClientboundPlayerPositionPacket.RelativeArgument> var9, float var10, float var11, @Nullable TeleportCommand.LookAt var12) throws CommandSyntaxException {
-      BlockPos var13 = new BlockPos(var3, var5, var7);
-      if (!Level.isInSpawnableBounds(var13)) {
-         throw INVALID_POSITION.create();
-      } else {
-         float var14 = Mth.wrapDegrees(var10);
-         float var15 = Mth.wrapDegrees(var11);
-         if (var1 instanceof ServerPlayer) {
-            ChunkPos var16 = new ChunkPos(new BlockPos(var3, var5, var7));
-            var2.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var16, 1, var1.getId());
-            var1.stopRiding();
-            if (((ServerPlayer)var1).isSleeping()) {
-               ((ServerPlayer)var1).stopSleepInBed(true, true);
-            }
+   private static void performTeleport(CommandSourceStack var0, Entity var1, ServerLevel var2, double var3, double var5, double var7, Set<ClientboundPlayerPositionPacket.RelativeArgument> var9, float var10, float var11, @Nullable TeleportCommand.LookAt var12) {
+      if (var1 instanceof ServerPlayer) {
+         ChunkPos var13 = new ChunkPos(new BlockPos(var3, var5, var7));
+         var2.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var13, 1, var1.getId());
+         var1.stopRiding();
+         if (((ServerPlayer)var1).isSleeping()) {
+            ((ServerPlayer)var1).stopSleepInBed(true, true, false);
+         }
 
-            if (var2 == var1.level) {
-               ((ServerPlayer)var1).connection.teleport(var3, var5, var7, var14, var15, var9);
-            } else {
-               ((ServerPlayer)var1).teleportTo(var2, var3, var5, var7, var14, var15);
-            }
-
-            var1.setYHeadRot(var14);
+         if (var2 == var1.level) {
+            ((ServerPlayer)var1).connection.teleport(var3, var5, var7, var10, var11, var9);
          } else {
-            float var18 = Mth.clamp(var15, -90.0F, 90.0F);
-            if (var2 == var1.level) {
-               var1.moveTo(var3, var5, var7, var14, var18);
-               var1.setYHeadRot(var14);
-            } else {
-               var1.unRide();
-               Entity var17 = var1;
-               var1 = var1.getType().create(var2);
-               if (var1 == null) {
-                  return;
-               }
+            ((ServerPlayer)var1).teleportTo(var2, var3, var5, var7, var10, var11);
+         }
 
-               var1.restoreFrom(var17);
-               var1.moveTo(var3, var5, var7, var14, var18);
-               var1.setYHeadRot(var14);
-               var2.addAndForceLoad(var1);
-               var17.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
+         var1.setYHeadRot(var10);
+      } else {
+         float var16 = Mth.wrapDegrees(var10);
+         float var14 = Mth.wrapDegrees(var11);
+         var14 = Mth.clamp(var14, -90.0F, 90.0F);
+         if (var2 == var1.level) {
+            var1.moveTo(var3, var5, var7, var16, var14);
+            var1.setYHeadRot(var16);
+         } else {
+            var1.unRide();
+            var1.dimension = var2.dimension.getType();
+            Entity var15 = var1;
+            var1 = var1.getType().create(var2);
+            if (var1 == null) {
+               return;
             }
-         }
 
-         if (var12 != null) {
-            var12.perform(var0, var1);
+            var1.restoreFrom(var15);
+            var1.moveTo(var3, var5, var7, var16, var14);
+            var1.setYHeadRot(var16);
+            var2.addFromAnotherDimension(var1);
+            var15.removed = true;
          }
-
-         if (!(var1 instanceof LivingEntity) || !((LivingEntity)var1).isFallFlying()) {
-            var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
-            var1.setOnGround(true);
-         }
-
-         if (var1 instanceof PathfinderMob) {
-            ((PathfinderMob)var1).getNavigation().stop();
-         }
-
       }
+
+      if (var12 != null) {
+         var12.perform(var0, var1);
+      }
+
+      if (!(var1 instanceof LivingEntity) || !((LivingEntity)var1).isFallFlying()) {
+         var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+         var1.onGround = true;
+      }
+
    }
 
    static class LookAt {

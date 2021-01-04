@@ -1,11 +1,11 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.Level;
 
 public class SquidInkParticle extends SimpleAnimatedParticle {
-   private SquidInkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
+   private SquidInkParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6, var14, 0.0F);
       this.quadSize = 0.5F;
       this.setAlpha(1.0F);
@@ -48,7 +48,7 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
    }
 
    // $FF: synthetic method
-   SquidInkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
+   SquidInkParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14, Object var15) {
       this(var1, var2, var4, var6, var8, var10, var12, var14);
    }
 
@@ -60,7 +60,7 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
          this.sprites = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(SimpleParticleType var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
       }
    }

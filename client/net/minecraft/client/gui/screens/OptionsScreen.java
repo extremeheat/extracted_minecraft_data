@@ -1,23 +1,17 @@
 package net.minecraft.client.gui.screens;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Iterator;
 import net.minecraft.client.Option;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LockIconButton;
 import net.minecraft.client.gui.components.OptionButton;
 import net.minecraft.client.gui.screens.controls.ControlsScreen;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.resourcepacks.ResourcePackSelectScreen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundLockDifficultyPacket;
-import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.Difficulty;
 
 public class OptionsScreen extends Screen {
@@ -29,7 +23,7 @@ public class OptionsScreen extends Screen {
    private Difficulty currentDifficulty;
 
    public OptionsScreen(Screen var1, Options var2) {
-      super(new TranslatableComponent("options.title"));
+      super(new TranslatableComponent("options.title", new Object[0]));
       this.lastScreen = var1;
       this.options = var2;
    }
@@ -57,7 +51,7 @@ public class OptionsScreen extends Screen {
          if (this.minecraft.hasSingleplayerServer() && !this.minecraft.level.getLevelData().isHardcore()) {
             this.difficultyButton.setWidth(this.difficultyButton.getWidth() - 20);
             this.lockButton = (LockIconButton)this.addButton(new LockIconButton(this.difficultyButton.x + this.difficultyButton.getWidth(), this.difficultyButton.y, (var1x) -> {
-               this.minecraft.setScreen(new ConfirmScreen(this::lockCallback, new TranslatableComponent("difficulty.lock.title"), new TranslatableComponent("difficulty.lock.question", new Object[]{new TranslatableComponent("options.difficulty." + this.minecraft.level.getLevelData().getDifficulty().getKey())})));
+               this.minecraft.setScreen(new ConfirmScreen(this::lockCallback, new TranslatableComponent("difficulty.lock.title", new Object[0]), new TranslatableComponent("difficulty.lock.question", new Object[]{new TranslatableComponent("options.difficulty." + this.minecraft.level.getLevelData().getDifficulty().getKey(), new Object[0])})));
             }));
             this.lockButton.setLocked(this.minecraft.level.getLevelData().isDifficultyLocked());
             this.lockButton.active = !this.lockButton.isLocked();
@@ -73,61 +67,37 @@ public class OptionsScreen extends Screen {
          }));
       }
 
-      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 48 - 6, 150, 20, new TranslatableComponent("options.skinCustomisation"), (var1x) -> {
-         this.minecraft.setScreen(new SkinCustomizationScreen(this, this.options));
+      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 48 - 6, 150, 20, I18n.get("options.skinCustomisation"), (var1x) -> {
+         this.minecraft.setScreen(new SkinCustomizationScreen(this));
       }));
-      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 48 - 6, 150, 20, new TranslatableComponent("options.sounds"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 48 - 6, 150, 20, I18n.get("options.sounds"), (var1x) -> {
          this.minecraft.setScreen(new SoundOptionsScreen(this, this.options));
       }));
-      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 72 - 6, 150, 20, new TranslatableComponent("options.video"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 72 - 6, 150, 20, I18n.get("options.video"), (var1x) -> {
          this.minecraft.setScreen(new VideoSettingsScreen(this, this.options));
       }));
-      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 72 - 6, 150, 20, new TranslatableComponent("options.controls"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 72 - 6, 150, 20, I18n.get("options.controls"), (var1x) -> {
          this.minecraft.setScreen(new ControlsScreen(this, this.options));
       }));
-      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 96 - 6, 150, 20, new TranslatableComponent("options.language"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 96 - 6, 150, 20, I18n.get("options.language"), (var1x) -> {
          this.minecraft.setScreen(new LanguageSelectScreen(this, this.options, this.minecraft.getLanguageManager()));
       }));
-      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 96 - 6, 150, 20, new TranslatableComponent("options.chat.title"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 96 - 6, 150, 20, I18n.get("options.chat.title"), (var1x) -> {
          this.minecraft.setScreen(new ChatOptionsScreen(this, this.options));
       }));
-      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 120 - 6, 150, 20, new TranslatableComponent("options.resourcepack"), (var1x) -> {
-         this.minecraft.setScreen(new PackSelectionScreen(this, this.minecraft.getResourcePackRepository(), this::updatePackList, this.minecraft.getResourcePackDirectory(), new TranslatableComponent("resourcePack.title")));
+      this.addButton(new Button(this.width / 2 - 155, this.height / 6 + 120 - 6, 150, 20, I18n.get("options.resourcepack"), (var1x) -> {
+         this.minecraft.setScreen(new ResourcePackSelectScreen(this));
       }));
-      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 120 - 6, 150, 20, new TranslatableComponent("options.accessibility.title"), (var1x) -> {
+      this.addButton(new Button(this.width / 2 + 5, this.height / 6 + 120 - 6, 150, 20, I18n.get("options.accessibility.title"), (var1x) -> {
          this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.options));
       }));
-      this.addButton(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, (var1x) -> {
+      this.addButton(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, I18n.get("gui.done"), (var1x) -> {
          this.minecraft.setScreen(this.lastScreen);
       }));
    }
 
-   private void updatePackList(PackRepository var1) {
-      ImmutableList var2 = ImmutableList.copyOf(this.options.resourcePacks);
-      this.options.resourcePacks.clear();
-      this.options.incompatibleResourcePacks.clear();
-      Iterator var3 = var1.getSelectedPacks().iterator();
-
-      while(var3.hasNext()) {
-         Pack var4 = (Pack)var3.next();
-         if (!var4.isFixedPosition()) {
-            this.options.resourcePacks.add(var4.getId());
-            if (!var4.getCompatibility().isCompatible()) {
-               this.options.incompatibleResourcePacks.add(var4.getId());
-            }
-         }
-      }
-
-      this.options.save();
-      ImmutableList var5 = ImmutableList.copyOf(this.options.resourcePacks);
-      if (!var5.equals(var2)) {
-         this.minecraft.reloadResourcePacks();
-      }
-
-   }
-
-   private Component getDifficultyText(Difficulty var1) {
-      return (new TranslatableComponent("options.difficulty")).append(": ").append(var1.getDisplayName());
+   public String getDifficultyText(Difficulty var1) {
+      return (new TranslatableComponent("options.difficulty", new Object[0])).append(": ").append(var1.getDisplayName()).getColoredString();
    }
 
    private void lockCallback(boolean var1) {
@@ -145,10 +115,10 @@ public class OptionsScreen extends Screen {
       this.options.save();
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 15, 16777215);
-      super.render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      this.drawCenteredString(this.font, this.title.getColoredString(), this.width / 2, 15, 16777215);
+      super.render(var1, var2, var3);
    }
 
    static {

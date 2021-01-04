@@ -24,10 +24,10 @@ public class V1125 extends NamespacedSchema {
          return DSL.optionalFields("minecraft:adventure/adventuring_time", DSL.optionalFields("criteria", DSL.compoundList(References.BIOME.in(var1), DSL.constType(DSL.string()))), "minecraft:adventure/kill_a_mob", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))), "minecraft:adventure/kill_all_mobs", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))), "minecraft:husbandry/bred_all_animals", DSL.optionalFields("criteria", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.string()))));
       });
       var1.registerType(false, References.BIOME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.ENTITY_NAME, () -> {
-         return DSL.constType(namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
    }
 }

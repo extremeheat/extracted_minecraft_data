@@ -13,7 +13,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 
 public class JumpOnBed extends Behavior<Mob> {
-   private final float speedModifier;
+   private final float speed;
    @Nullable
    private BlockPos targetBed;
    private int remainingTimeToReachBed;
@@ -22,7 +22,7 @@ public class JumpOnBed extends Behavior<Mob> {
 
    public JumpOnBed(float var1) {
       super(ImmutableMap.of(MemoryModuleType.NEAREST_BED, MemoryStatus.VALUE_PRESENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
+      this.speed = var1;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
@@ -72,7 +72,7 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    private void startWalkingTowardsBed(Mob var1, BlockPos var2) {
-      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, this.speedModifier, 0)));
+      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, this.speed, 0)));
    }
 
    private boolean nearBed(ServerLevel var1, Mob var2) {
@@ -80,13 +80,13 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    private boolean onOrOverBed(ServerLevel var1, Mob var2) {
-      BlockPos var3 = var2.blockPosition();
+      BlockPos var3 = new BlockPos(var2);
       BlockPos var4 = var3.below();
       return this.isBed(var1, var3) || this.isBed(var1, var4);
    }
 
    private boolean onBedSurface(ServerLevel var1, Mob var2) {
-      return this.isBed(var1, var2.blockPosition());
+      return this.isBed(var1, new BlockPos(var2));
    }
 
    private boolean isBed(ServerLevel var1, BlockPos var2) {

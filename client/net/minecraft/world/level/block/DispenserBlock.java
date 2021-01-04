@@ -12,24 +12,23 @@ import net.minecraft.core.Position;
 import net.minecraft.core.PositionImpl;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -46,14 +45,18 @@ public class DispenserBlock extends BaseEntityBlock {
       DISPENSER_REGISTRY.put(var0.asItem(), var1);
    }
 
-   protected DispenserBlock(BlockBehaviour.Properties var1) {
+   protected DispenserBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TRIGGERED, false));
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public int getTickDelay(LevelReader var1) {
+      return 4;
+   }
+
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof DispenserBlockEntity) {
@@ -65,11 +68,11 @@ public class DispenserBlock extends BaseEntityBlock {
             }
          }
 
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 
-   protected void dispenseFrom(ServerLevel var1, BlockPos var2) {
+   protected void dispenseFrom(Level var1, BlockPos var2) {
       BlockSourceImpl var3 = new BlockSourceImpl(var1, var2);
       DispenserBlockEntity var4 = (DispenserBlockEntity)var3.getEntity();
       int var5 = var4.getRandomSlot();
@@ -93,7 +96,7 @@ public class DispenserBlock extends BaseEntityBlock {
       boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.above());
       boolean var8 = (Boolean)var1.getValue(TRIGGERED);
       if (var7 && !var8) {
-         var2.getBlockTicks().scheduleTick(var3, this, 4);
+         var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2));
          var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, true), 4);
       } else if (!var7 && var8) {
          var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, false), 4);
@@ -101,12 +104,15 @@ public class DispenserBlock extends BaseEntityBlock {
 
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      this.dispenseFrom(var2, var3);
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide) {
+         this.dispenseFrom(var2, var3);
+      }
+
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DispenserBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new DispenserBlockEntity();
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -124,7 +130,7 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof DispenserBlockEntity) {
             Containers.dropContents(var2, (BlockPos)var3, (Container)((DispenserBlockEntity)var6));

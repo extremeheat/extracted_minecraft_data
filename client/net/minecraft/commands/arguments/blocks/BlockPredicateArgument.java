@@ -21,9 +21,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.Tag;
-import net.minecraft.tags.TagContainer;
+import net.minecraft.tags.TagManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -78,7 +77,7 @@ public class BlockPredicateArgument implements ArgumentType<BlockPredicateArgume
       } catch (CommandSyntaxException var6) {
       }
 
-      return var4.fillSuggestions(var2, BlockTags.getAllTags());
+      return var4.fillSuggestions(var2);
    }
 
    public Collection<String> getExamples() {
@@ -162,7 +161,7 @@ public class BlockPredicateArgument implements ArgumentType<BlockPredicateArgume
 
       public boolean test(BlockInWorld var1) {
          BlockState var2 = var1.getState();
-         if (!var2.is(this.state.getBlock())) {
+         if (var2.getBlock() != this.state.getBlock()) {
             return false;
          } else {
             Iterator var3 = this.properties.iterator();
@@ -190,6 +189,6 @@ public class BlockPredicateArgument implements ArgumentType<BlockPredicateArgume
    }
 
    public interface Result {
-      Predicate<BlockInWorld> create(TagContainer var1) throws CommandSyntaxException;
+      Predicate<BlockInWorld> create(TagManager var1) throws CommandSyntaxException;
    }
 }

@@ -4,18 +4,14 @@ import io.netty.util.internal.ThreadLocalRandom;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class AttributeModifier {
-   private static final Logger LOGGER = LogManager.getLogger();
    private final double amount;
    private final AttributeModifier.Operation operation;
    private final Supplier<String> nameGetter;
    private final UUID id;
+   private boolean serialize;
 
    public AttributeModifier(String var1, double var2, AttributeModifier.Operation var4) {
       this(Mth.createInsecureUUID(ThreadLocalRandom.current()), () -> {
@@ -31,6 +27,7 @@ public class AttributeModifier {
 
    public AttributeModifier(UUID var1, Supplier<String> var2, double var3, AttributeModifier.Operation var5) {
       super();
+      this.serialize = true;
       this.id = var1;
       this.nameGetter = var2;
       this.amount = var3;
@@ -53,6 +50,15 @@ public class AttributeModifier {
       return this.amount;
    }
 
+   public boolean isSerializable() {
+      return this.serialize;
+   }
+
+   public AttributeModifier setSerialize(boolean var1) {
+      this.serialize = var1;
+      return this;
+   }
+
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -65,32 +71,11 @@ public class AttributeModifier {
    }
 
    public int hashCode() {
-      return this.id.hashCode();
+      return this.id != null ? this.id.hashCode() : 0;
    }
 
    public String toString() {
-      return "AttributeModifier{amount=" + this.amount + ", operation=" + this.operation + ", name='" + (String)this.nameGetter.get() + '\'' + ", id=" + this.id + '}';
-   }
-
-   public CompoundTag save() {
-      CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", this.getName());
-      var1.putDouble("Amount", this.amount);
-      var1.putInt("Operation", this.operation.toValue());
-      var1.putUUID("UUID", this.id);
-      return var1;
-   }
-
-   @Nullable
-   public static AttributeModifier load(CompoundTag var0) {
-      try {
-         UUID var1 = var0.getUUID("UUID");
-         AttributeModifier.Operation var2 = AttributeModifier.Operation.fromValue(var0.getInt("Operation"));
-         return new AttributeModifier(var1, var0.getString("Name"), var0.getDouble("Amount"), var2);
-      } catch (Exception var3) {
-         LOGGER.warn("Unable to create attribute: {}", var3.getMessage());
-         return null;
-      }
+      return "AttributeModifier{amount=" + this.amount + ", operation=" + this.operation + ", name='" + (String)this.nameGetter.get() + '\'' + ", id=" + this.id + ", serialize=" + this.serialize + '}';
    }
 
    public static enum Operation {

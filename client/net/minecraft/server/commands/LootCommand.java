@@ -178,7 +178,7 @@ public class LootCommand {
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      return var0.is(var1.getItem()) && var0.getDamageValue() == var1.getDamageValue() && var0.getCount() <= var0.getMaxStackSize() && Objects.equals(var0.getTag(), var1.getTag());
+      return var0.getItem() == var1.getItem() && var0.getDamageValue() == var1.getDamageValue() && var0.getCount() <= var0.getMaxStackSize() && Objects.equals(var0.getTag(), var1.getTag());
    }
 
    private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, LootCommand.Callback var2) throws CommandSyntaxException {
@@ -191,7 +191,7 @@ public class LootCommand {
 
          while(var6.hasNext()) {
             ServerPlayer var7 = (ServerPlayer)var6.next();
-            if (var7.getInventory().add(var5.copy())) {
+            if (var7.inventory.add(var5.copy())) {
                var3.add(var5);
             }
          }
@@ -276,7 +276,7 @@ public class LootCommand {
       ServerLevel var5 = var4.getLevel();
       BlockState var6 = var5.getBlockState(var1);
       BlockEntity var7 = var5.getBlockEntity(var1);
-      LootContext.Builder var8 = (new LootContext.Builder(var5)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).withParameter(LootContextParams.BLOCK_STATE, var6).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getEntity()).withParameter(LootContextParams.TOOL, var2);
+      LootContext.Builder var8 = (new LootContext.Builder(var5)).withParameter(LootContextParams.BLOCK_POS, var1).withParameter(LootContextParams.BLOCK_STATE, var6).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getEntity()).withParameter(LootContextParams.TOOL, var2);
       List var9 = var6.getDrops(var8);
       return var3.accept(var0, var9, (var2x) -> {
          callback(var4, var2x, var6.getBlock().getLootTable());
@@ -299,7 +299,7 @@ public class LootCommand {
          var5.withOptionalParameter(LootContextParams.DIRECT_KILLER_ENTITY, var6);
          var5.withOptionalParameter(LootContextParams.KILLER_ENTITY, var6);
          var5.withParameter(LootContextParams.THIS_ENTITY, var1);
-         var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
+         var5.withParameter(LootContextParams.BLOCK_POS, new BlockPos(var4.getPosition()));
          LootTable var7 = var4.getServer().getLootTables().get(var3);
          List var8 = var7.getRandomItems(var5.create(LootContextParamSets.ENTITY));
          return var2.accept(var0, var8, (var2x) -> {
@@ -310,13 +310,13 @@ public class LootCommand {
 
    private static int dropChestLoot(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootCommand.DropConsumer var2) throws CommandSyntaxException {
       CommandSourceStack var3 = (CommandSourceStack)var0.getSource();
-      LootContext.Builder var4 = (new LootContext.Builder(var3.getLevel())).withOptionalParameter(LootContextParams.THIS_ENTITY, var3.getEntity()).withParameter(LootContextParams.ORIGIN, var3.getPosition());
+      LootContext.Builder var4 = (new LootContext.Builder(var3.getLevel())).withOptionalParameter(LootContextParams.THIS_ENTITY, var3.getEntity()).withParameter(LootContextParams.BLOCK_POS, new BlockPos(var3.getPosition()));
       return drop(var0, var1, var4.create(LootContextParamSets.CHEST), var2);
    }
 
    private static int dropFishingLoot(CommandContext<CommandSourceStack> var0, ResourceLocation var1, BlockPos var2, ItemStack var3, LootCommand.DropConsumer var4) throws CommandSyntaxException {
       CommandSourceStack var5 = (CommandSourceStack)var0.getSource();
-      LootContext var6 = (new LootContext.Builder(var5.getLevel())).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2)).withParameter(LootContextParams.TOOL, var3).withOptionalParameter(LootContextParams.THIS_ENTITY, var5.getEntity()).create(LootContextParamSets.FISHING);
+      LootContext var6 = (new LootContext.Builder(var5.getLevel())).withParameter(LootContextParams.BLOCK_POS, var2).withParameter(LootContextParams.TOOL, var3).create(LootContextParamSets.FISHING);
       return drop(var0, var1, var6, var4);
    }
 

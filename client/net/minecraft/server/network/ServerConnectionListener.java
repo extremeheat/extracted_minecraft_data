@@ -6,7 +6,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -26,11 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketDecoder;
 import net.minecraft.network.PacketEncoder;
-import net.minecraft.network.RateKickingConnection;
 import net.minecraft.network.Varint21FrameDecoder;
 import net.minecraft.network.Varint21LengthFieldPrepender;
 import net.minecraft.network.chat.TextComponent;
@@ -75,18 +74,17 @@ public class ServerConnectionListener {
          }
 
          this.channels.add(((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(var4)).childHandler(new ChannelInitializer<Channel>() {
-            protected void initChannel(Channel var1) {
+            protected void initChannel(Channel var1) throws Exception {
                try {
                   var1.config().setOption(ChannelOption.TCP_NODELAY, true);
-               } catch (ChannelException var4) {
+               } catch (ChannelException var3) {
                }
 
                var1.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this)).addLast("splitter", new Varint21FrameDecoder()).addLast("decoder", new PacketDecoder(PacketFlow.SERVERBOUND)).addLast("prepender", new Varint21LengthFieldPrepender()).addLast("encoder", new PacketEncoder(PacketFlow.CLIENTBOUND));
-               int var2 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
-               Object var3 = var2 > 0 ? new RateKickingConnection(var2) : new Connection(PacketFlow.SERVERBOUND);
-               ServerConnectionListener.this.connections.add(var3);
-               var1.pipeline().addLast("packet_handler", (ChannelHandler)var3);
-               ((Connection)var3).setListener(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, (Connection)var3));
+               Connection var2 = new Connection(PacketFlow.SERVERBOUND);
+               ServerConnectionListener.this.connections.add(var2);
+               var1.pipeline().addLast("packet_handler", var2);
+               var2.setListener(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, var2));
             }
          }).group((EventLoopGroup)var5.get()).localAddress(var1, var2)).bind().syncUninterruptibly());
       }
@@ -96,7 +94,7 @@ public class ServerConnectionListener {
       ChannelFuture var1;
       synchronized(this.channels) {
          var1 = ((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).channel(LocalServerChannel.class)).childHandler(new ChannelInitializer<Channel>() {
-            protected void initChannel(Channel var1) {
+            protected void initChannel(Channel var1) throws Exception {
                Connection var2 = new Connection(PacketFlow.SERVERBOUND);
                var2.setListener(new MemoryServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, var2));
                ServerConnectionListener.this.connections.add(var2);
@@ -143,12 +141,15 @@ public class ServerConnectionListener {
                if (var3.isConnected()) {
                   try {
                      var3.tick();
-                  } catch (Exception var7) {
+                  } catch (Exception var8) {
                      if (var3.isMemoryConnection()) {
-                        throw new ReportedException(CrashReport.forThrowable(var7, "Ticking memory connection"));
+                        CrashReport var10 = CrashReport.forThrowable(var8, "Ticking memory connection");
+                        CrashReportCategory var6 = var10.addCategory("Ticking connection");
+                        var6.setDetail("Connection", var3::toString);
+                        throw new ReportedException(var10);
                      }
 
-                     LOGGER.warn("Failed to handle packet for {}", var3.getRemoteAddress(), var7);
+                     LOGGER.warn("Failed to handle packet for {}", var3.getRemoteAddress(), var8);
                      TextComponent var5 = new TextComponent("Internal server error");
                      var3.send(new ClientboundDisconnectPacket(var5), (var2x) -> {
                         var3.disconnect(var5);

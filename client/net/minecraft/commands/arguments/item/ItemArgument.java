@@ -9,7 +9,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.tags.ItemTags;
 
 public class ItemArgument implements ArgumentType<ItemInput> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
@@ -41,7 +40,7 @@ public class ItemArgument implements ArgumentType<ItemInput> {
       } catch (CommandSyntaxException var6) {
       }
 
-      return var4.fillSuggestions(var2, ItemTags.getAllTags());
+      return var4.fillSuggestions(var2);
    }
 
    public Collection<String> getExamples() {

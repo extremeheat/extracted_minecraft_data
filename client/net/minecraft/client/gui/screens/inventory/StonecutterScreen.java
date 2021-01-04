@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -23,69 +23,54 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    public StonecutterScreen(StonecutterMenu var1, Inventory var2, Component var3) {
       super(var1, var2, var3);
       var1.registerUpdateListener(this::containerChanged);
-      --this.titleLabelY;
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
+   public void render(int var1, int var2, float var3) {
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
    }
 
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      this.renderBackground(var1);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+   protected void renderLabels(int var1, int var2) {
+      this.font.draw(this.title.getColoredString(), 8.0F, 4.0F, 4210752);
+      this.font.draw(this.inventory.getDisplayName().getColoredString(), 8.0F, (float)(this.imageHeight - 94), 4210752);
+   }
+
+   protected void renderBg(float var1, int var2, int var3) {
+      this.renderBackground();
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       this.minecraft.getTextureManager().bind(BG_LOCATION);
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      int var7 = (int)(41.0F * this.scrollOffs);
-      this.blit(var1, var5 + 119, var6 + 15 + var7, 176 + (this.isScrollBarActive() ? 0 : 12), 0, 12, 15);
-      int var8 = this.leftPos + 52;
-      int var9 = this.topPos + 14;
-      int var10 = this.startIndex + 12;
-      this.renderButtons(var1, var3, var4, var8, var9, var10);
-      this.renderRecipes(var8, var9, var10);
+      int var4 = this.leftPos;
+      int var5 = this.topPos;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
+      int var6 = (int)(41.0F * this.scrollOffs);
+      this.blit(var4 + 119, var5 + 15 + var6, 176 + (this.isScrollBarActive() ? 0 : 12), 0, 12, 15);
+      int var7 = this.leftPos + 52;
+      int var8 = this.topPos + 14;
+      int var9 = this.startIndex + 12;
+      this.renderButtons(var2, var3, var7, var8, var9);
+      this.renderRecipes(var7, var8, var9);
    }
 
-   protected void renderTooltip(PoseStack var1, int var2, int var3) {
-      super.renderTooltip(var1, var2, var3);
-      if (this.displayRecipes) {
-         int var4 = this.leftPos + 52;
-         int var5 = this.topPos + 14;
-         int var6 = this.startIndex + 12;
-         List var7 = ((StonecutterMenu)this.menu).getRecipes();
-
-         for(int var8 = this.startIndex; var8 < var6 && var8 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var8) {
-            int var9 = var8 - this.startIndex;
-            int var10 = var4 + var9 % 4 * 16;
-            int var11 = var5 + var9 / 4 * 18 + 2;
-            if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               this.renderTooltip(var1, ((StonecutterRecipe)var7.get(var8)).getResultItem(), var2, var3);
-            }
-         }
-      }
-
-   }
-
-   private void renderButtons(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = this.startIndex; var7 < var6 && var7 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var7) {
-         int var8 = var7 - this.startIndex;
-         int var9 = var4 + var8 % 4 * 16;
-         int var10 = var8 / 4;
-         int var11 = var5 + var10 * 18 + 2;
-         int var12 = this.imageHeight;
-         if (var7 == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
-            var12 += 18;
-         } else if (var2 >= var9 && var3 >= var11 && var2 < var9 + 16 && var3 < var11 + 18) {
-            var12 += 36;
+   private void renderButtons(int var1, int var2, int var3, int var4, int var5) {
+      for(int var6 = this.startIndex; var6 < var5 && var6 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var6) {
+         int var7 = var6 - this.startIndex;
+         int var8 = var3 + var7 % 4 * 16;
+         int var9 = var7 / 4;
+         int var10 = var4 + var9 * 18 + 2;
+         int var11 = this.imageHeight;
+         if (var6 == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
+            var11 += 18;
+         } else if (var1 >= var8 && var2 >= var10 && var1 < var8 + 16 && var2 < var10 + 18) {
+            var11 += 36;
          }
 
-         this.blit(var1, var9, var11 - 1, 0, var12, 16, 18);
+         this.blit(var8, var10 - 1, 0, var11, 16, 18);
       }
 
    }
 
    private void renderRecipes(int var1, int var2, int var3) {
+      Lighting.turnOnGui();
       List var4 = ((StonecutterMenu)this.menu).getRecipes();
 
       for(int var5 = this.startIndex; var5 < var3 && var5 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var5) {
@@ -96,6 +81,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          this.minecraft.getItemRenderer().renderAndDecorateItem(((StonecutterRecipe)var4.get(var5)).getResultItem(), var7, var9);
       }
 
+      Lighting.turnOff();
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {

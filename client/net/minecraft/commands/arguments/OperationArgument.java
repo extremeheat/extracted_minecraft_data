@@ -18,8 +18,8 @@ import net.minecraft.world.scores.Score;
 
 public class OperationArgument implements ArgumentType<OperationArgument.Operation> {
    private static final Collection<String> EXAMPLES = Arrays.asList("=", ">", "<");
-   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(new TranslatableComponent("arguments.operation.invalid"));
-   private static final SimpleCommandExceptionType ERROR_DIVIDE_BY_ZERO = new SimpleCommandExceptionType(new TranslatableComponent("arguments.operation.div0"));
+   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(new TranslatableComponent("arguments.operation.invalid", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_DIVIDE_BY_ZERO = new SimpleCommandExceptionType(new TranslatableComponent("arguments.operation.div0", new Object[0]));
 
    public OperationArgument() {
       super();
@@ -29,7 +29,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
       return new OperationArgument();
    }
 
-   public static OperationArgument.Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) {
+   public static OperationArgument.Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return (OperationArgument.Operation)var0.getArgument(var1, OperationArgument.Operation.class);
    }
 

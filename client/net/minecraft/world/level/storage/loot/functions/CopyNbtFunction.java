@@ -22,6 +22,7 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -43,10 +44,6 @@ public class CopyNbtFunction extends LootItemConditionalFunction {
       super(var1);
       this.source = var2;
       this.operations = ImmutableList.copyOf(var3);
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.COPY_NBT;
    }
 
    private static NbtPathArgument.NbtPath compileNbtPath(String var0) {
@@ -83,7 +80,7 @@ public class CopyNbtFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<CopyNbtFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("copy_nbt"), CopyNbtFunction.class);
       }
 
       public void serialize(JsonObject var1, CopyNbtFunction var2, JsonSerializationContext var3) {

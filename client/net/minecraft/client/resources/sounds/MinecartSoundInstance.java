@@ -16,13 +16,9 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
       this.looping = true;
       this.delay = 0;
       this.volume = 0.0F;
-      this.x = (double)((float)var1.getX());
-      this.y = (double)((float)var1.getY());
-      this.z = (double)((float)var1.getZ());
-   }
-
-   public boolean canPlaySound() {
-      return !this.minecart.isSilent();
+      this.x = (float)var1.x;
+      this.y = (float)var1.y;
+      this.z = (float)var1.z;
    }
 
    public boolean canStartSilent() {
@@ -30,12 +26,12 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
    }
 
    public void tick() {
-      if (this.minecart.isRemoved()) {
-         this.stop();
+      if (this.minecart.removed) {
+         this.stopped = true;
       } else {
-         this.x = (double)((float)this.minecart.getX());
-         this.y = (double)((float)this.minecart.getY());
-         this.z = (double)((float)this.minecart.getZ());
+         this.x = (float)this.minecart.x;
+         this.y = (float)this.minecart.y;
+         this.z = (float)this.minecart.z;
          float var1 = Mth.sqrt(Entity.getHorizontalDistanceSqr(this.minecart.getDeltaMovement()));
          if ((double)var1 >= 0.01D) {
             this.pitch = Mth.clamp(this.pitch + 0.0025F, 0.0F, 1.0F);

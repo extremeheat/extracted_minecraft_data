@@ -1,13 +1,9 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Transformation;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -15,7 +11,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -24,7 +20,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class DebugRenderer {
-   public final PathfindingRenderer pathfindingRenderer = new PathfindingRenderer();
+   public final PathfindingRenderer pathfindingRenderer;
    public final DebugRenderer.SimpleDebugRenderer waterDebugRenderer;
    public final DebugRenderer.SimpleDebugRenderer chunkBorderRenderer;
    public final DebugRenderer.SimpleDebugRenderer heightMapRenderer;
@@ -36,33 +32,28 @@ public class DebugRenderer {
    public final DebugRenderer.SimpleDebugRenderer worldGenAttemptRenderer;
    public final DebugRenderer.SimpleDebugRenderer solidFaceRenderer;
    public final DebugRenderer.SimpleDebugRenderer chunkRenderer;
-   public final BrainDebugRenderer brainDebugRenderer;
-   public final VillageSectionsDebugRenderer villageSectionsDebugRenderer;
-   public final BeeDebugRenderer beeDebugRenderer;
+   public final VillageDebugRenderer villageDebugRenderer;
    public final RaidDebugRenderer raidDebugRenderer;
    public final GoalSelectorDebugRenderer goalSelectorRenderer;
-   public final GameTestDebugRenderer gameTestDebugRenderer;
    private boolean renderChunkborder;
 
    public DebugRenderer(Minecraft var1) {
       super();
+      this.pathfindingRenderer = new PathfindingRenderer(var1);
       this.waterDebugRenderer = new WaterDebugRenderer(var1);
       this.chunkBorderRenderer = new ChunkBorderRenderer(var1);
       this.heightMapRenderer = new HeightMapRenderer(var1);
       this.collisionBoxRenderer = new CollisionBoxRenderer(var1);
       this.neighborsUpdateRenderer = new NeighborsUpdateRenderer(var1);
-      this.caveRenderer = new CaveDebugRenderer();
+      this.caveRenderer = new CaveDebugRenderer(var1);
       this.structureRenderer = new StructureRenderer(var1);
       this.lightDebugRenderer = new LightDebugRenderer(var1);
-      this.worldGenAttemptRenderer = new WorldGenAttemptRenderer();
+      this.worldGenAttemptRenderer = new WorldGenAttemptRenderer(var1);
       this.solidFaceRenderer = new SolidFaceRenderer(var1);
       this.chunkRenderer = new ChunkDebugRenderer(var1);
-      this.brainDebugRenderer = new BrainDebugRenderer(var1);
-      this.villageSectionsDebugRenderer = new VillageSectionsDebugRenderer();
-      this.beeDebugRenderer = new BeeDebugRenderer(var1);
+      this.villageDebugRenderer = new VillageDebugRenderer(var1);
       this.raidDebugRenderer = new RaidDebugRenderer(var1);
       this.goalSelectorRenderer = new GoalSelectorDebugRenderer(var1);
-      this.gameTestDebugRenderer = new GameTestDebugRenderer();
    }
 
    public void clear() {
@@ -78,12 +69,13 @@ public class DebugRenderer {
       this.worldGenAttemptRenderer.clear();
       this.solidFaceRenderer.clear();
       this.chunkRenderer.clear();
-      this.brainDebugRenderer.clear();
-      this.villageSectionsDebugRenderer.clear();
-      this.beeDebugRenderer.clear();
+      this.villageDebugRenderer.clear();
       this.raidDebugRenderer.clear();
       this.goalSelectorRenderer.clear();
-      this.gameTestDebugRenderer.clear();
+   }
+
+   public boolean shouldRender() {
+      return this.renderChunkborder;
    }
 
    public boolean switchRenderChunkborder() {
@@ -91,12 +83,11 @@ public class DebugRenderer {
       return this.renderChunkborder;
    }
 
-   public void render(PoseStack var1, MultiBufferSource.BufferSource var2, double var3, double var5, double var7) {
+   public void render(long var1) {
       if (this.renderChunkborder && !Minecraft.getInstance().showOnlyReducedInfo()) {
-         this.chunkBorderRenderer.render(var1, var2, var3, var5, var7);
+         this.chunkBorderRenderer.render(var1);
       }
 
-      this.gameTestDebugRenderer.render(var1, var2, var3, var5, var7);
    }
 
    public static Optional<Entity> getTargetedEntity(@Nullable Entity var0, int var1) {
@@ -145,7 +136,7 @@ public class DebugRenderer {
    public static void renderFilledBox(double var0, double var2, double var4, double var6, double var8, double var10, float var12, float var13, float var14, float var15) {
       Tesselator var16 = Tesselator.getInstance();
       BufferBuilder var17 = var16.getBuilder();
-      var17.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+      var17.begin(5, DefaultVertexFormat.POSITION_COLOR);
       LevelRenderer.addChainedFilledBoxVertices(var17, var0, var2, var4, var6, var8, var10, var12, var13, var14, var15);
       var16.end();
    }
@@ -170,34 +161,33 @@ public class DebugRenderer {
          double var15 = var13.getPosition().x;
          double var17 = var13.getPosition().y;
          double var19 = var13.getPosition().z;
-         RenderSystem.pushMatrix();
-         RenderSystem.translatef((float)(var1 - var15), (float)(var3 - var17) + 0.07F, (float)(var5 - var19));
-         RenderSystem.normal3f(0.0F, 1.0F, 0.0F);
-         RenderSystem.multMatrix(new Matrix4f(var13.rotation()));
-         RenderSystem.scalef(var8, -var8, var8);
-         RenderSystem.enableTexture();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)(var1 - var15), (float)(var3 - var17) + 0.07F, (float)(var5 - var19));
+         GlStateManager.normal3f(0.0F, 1.0F, 0.0F);
+         GlStateManager.scalef(var8, -var8, var8);
+         EntityRenderDispatcher var21 = var12.getEntityRenderDispatcher();
+         GlStateManager.rotatef(-var21.playerRotY, 0.0F, 1.0F, 0.0F);
+         GlStateManager.rotatef(-var21.playerRotX, 1.0F, 0.0F, 0.0F);
+         GlStateManager.enableTexture();
          if (var11) {
-            RenderSystem.disableDepthTest();
+            GlStateManager.disableDepthTest();
          } else {
-            RenderSystem.enableDepthTest();
+            GlStateManager.enableDepthTest();
          }
 
-         RenderSystem.depthMask(true);
-         RenderSystem.scalef(-1.0F, 1.0F, 1.0F);
-         float var21 = var9 ? (float)(-var14.width(var0)) / 2.0F : 0.0F;
-         var21 -= var10 / var8;
-         RenderSystem.enableAlphaTest();
-         MultiBufferSource.BufferSource var22 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         var14.drawInBatch((String)var0, var21, 0.0F, var7, false, Transformation.identity().getMatrix(), var22, var11, 0, 15728880);
-         var22.endBatch();
-         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-         RenderSystem.enableDepthTest();
-         RenderSystem.popMatrix();
+         GlStateManager.depthMask(true);
+         GlStateManager.scalef(-1.0F, 1.0F, 1.0F);
+         float var22 = var9 ? (float)(-var14.width(var0)) / 2.0F : 0.0F;
+         var22 -= var10 / var8;
+         var14.draw(var0, var22, 0.0F, var7);
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         GlStateManager.enableDepthTest();
+         GlStateManager.popMatrix();
       }
    }
 
    public interface SimpleDebugRenderer {
-      void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7);
+      void render(long var1);
 
       default void clear() {
       }

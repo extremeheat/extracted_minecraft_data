@@ -1,27 +1,23 @@
 package net.minecraft.world.level.block;
 
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -52,7 +48,7 @@ public class HopperBlock extends BaseEntityBlock {
    private static final VoxelShape SOUTH_INTERACTION_SHAPE;
    private static final VoxelShape WEST_INTERACTION_SHAPE;
 
-   public HopperBlock(BlockBehaviour.Properties var1) {
+   public HopperBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.DOWN)).setValue(ENABLED, true));
    }
@@ -96,13 +92,8 @@ public class HopperBlock extends BaseEntityBlock {
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var2.getAxis() == Direction.Axis.Y ? Direction.DOWN : var2)).setValue(ENABLED, true);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new HopperBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.HOPPER, HopperBlockEntity::pushItemsTick);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new HopperBlockEntity();
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
@@ -116,14 +107,14 @@ public class HopperBlock extends BaseEntityBlock {
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
+      if (var4.getBlock() != var1.getBlock()) {
          this.checkPoweredState(var2, var3, var1);
       }
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
+         return true;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof HopperBlockEntity) {
@@ -131,7 +122,7 @@ public class HopperBlock extends BaseEntityBlock {
             var4.awardStat(Stats.INSPECT_HOPPER);
          }
 
-         return InteractionResult.CONSUME;
+         return true;
       }
    }
 
@@ -148,7 +139,7 @@ public class HopperBlock extends BaseEntityBlock {
    }
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
+      if (var1.getBlock() != var4.getBlock()) {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof HopperBlockEntity) {
             Containers.dropContents(var2, (BlockPos)var3, (Container)((HopperBlockEntity)var6));
@@ -171,6 +162,10 @@ public class HopperBlock extends BaseEntityBlock {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
+   public BlockLayer getRenderLayer() {
+      return BlockLayer.CUTOUT_MIPPED;
+   }
+
    public BlockState rotate(BlockState var1, Rotation var2) {
       return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
@@ -186,7 +181,7 @@ public class HopperBlock extends BaseEntityBlock {
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var5);
+         ((HopperBlockEntity)var5).entityInside(var4);
       }
 
    }

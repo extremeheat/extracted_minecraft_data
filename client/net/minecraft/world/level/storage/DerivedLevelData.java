@@ -1,24 +1,31 @@
 package net.minecraft.world.level.storage;
 
-import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.LevelType;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.timers.TimerQueue;
 
-public class DerivedLevelData implements ServerLevelData {
-   private final WorldData worldData;
-   private final ServerLevelData wrapped;
+public class DerivedLevelData extends LevelData {
+   private final LevelData wrapped;
 
-   public DerivedLevelData(WorldData var1, ServerLevelData var2) {
+   public DerivedLevelData(LevelData var1) {
       super();
-      this.worldData = var1;
-      this.wrapped = var2;
+      this.wrapped = var1;
+   }
+
+   public CompoundTag createTag(@Nullable CompoundTag var1) {
+      return this.wrapped.createTag(var1);
+   }
+
+   public long getSeed() {
+      return this.wrapped.getSeed();
    }
 
    public int getXSpawn() {
@@ -33,10 +40,6 @@ public class DerivedLevelData implements ServerLevelData {
       return this.wrapped.getZSpawn();
    }
 
-   public float getSpawnAngle() {
-      return this.wrapped.getSpawnAngle();
-   }
-
    public long getGameTime() {
       return this.wrapped.getGameTime();
    }
@@ -45,15 +48,20 @@ public class DerivedLevelData implements ServerLevelData {
       return this.wrapped.getDayTime();
    }
 
+   public CompoundTag getLoadedPlayerTag() {
+      return this.wrapped.getLoadedPlayerTag();
+   }
+
    public String getLevelName() {
-      return this.worldData.getLevelName();
+      return this.wrapped.getLevelName();
    }
 
-   public int getClearWeatherTime() {
-      return this.wrapped.getClearWeatherTime();
+   public int getVersion() {
+      return this.wrapped.getVersion();
    }
 
-   public void setClearWeatherTime(int var1) {
+   public long getLastPlayed() {
+      return this.wrapped.getLastPlayed();
    }
 
    public boolean isThundering() {
@@ -73,7 +81,7 @@ public class DerivedLevelData implements ServerLevelData {
    }
 
    public GameType getGameType() {
-      return this.worldData.getGameType();
+      return this.wrapped.getGameType();
    }
 
    public void setXSpawn(int var1) {
@@ -85,16 +93,19 @@ public class DerivedLevelData implements ServerLevelData {
    public void setZSpawn(int var1) {
    }
 
-   public void setSpawnAngle(float var1) {
-   }
-
    public void setGameTime(long var1) {
    }
 
    public void setDayTime(long var1) {
    }
 
-   public void setSpawn(BlockPos var1, float var2) {
+   public void setSpawn(BlockPos var1) {
+   }
+
+   public void setLevelName(String var1) {
+   }
+
+   public void setVersion(int var1) {
    }
 
    public void setThundering(boolean var1) {
@@ -109,15 +120,26 @@ public class DerivedLevelData implements ServerLevelData {
    public void setRainTime(int var1) {
    }
 
-   public void setGameType(GameType var1) {
+   public boolean isGenerateMapFeatures() {
+      return this.wrapped.isGenerateMapFeatures();
    }
 
    public boolean isHardcore() {
-      return this.worldData.isHardcore();
+      return this.wrapped.isHardcore();
+   }
+
+   public LevelType getGeneratorType() {
+      return this.wrapped.getGeneratorType();
+   }
+
+   public void setGenerator(LevelType var1) {
    }
 
    public boolean getAllowCommands() {
-      return this.worldData.getAllowCommands();
+      return this.wrapped.getAllowCommands();
+   }
+
+   public void setAllowCommands(boolean var1) {
    }
 
    public boolean isInitialized() {
@@ -128,47 +150,37 @@ public class DerivedLevelData implements ServerLevelData {
    }
 
    public GameRules getGameRules() {
-      return this.worldData.getGameRules();
-   }
-
-   public WorldBorder.Settings getWorldBorder() {
-      return this.wrapped.getWorldBorder();
-   }
-
-   public void setWorldBorder(WorldBorder.Settings var1) {
+      return this.wrapped.getGameRules();
    }
 
    public Difficulty getDifficulty() {
-      return this.worldData.getDifficulty();
+      return this.wrapped.getDifficulty();
+   }
+
+   public void setDifficulty(Difficulty var1) {
    }
 
    public boolean isDifficultyLocked() {
-      return this.worldData.isDifficultyLocked();
+      return this.wrapped.isDifficultyLocked();
+   }
+
+   public void setDifficultyLocked(boolean var1) {
    }
 
    public TimerQueue<MinecraftServer> getScheduledEvents() {
       return this.wrapped.getScheduledEvents();
    }
 
-   public int getWanderingTraderSpawnDelay() {
-      return 0;
+   public void setDimensionData(DimensionType var1, CompoundTag var2) {
+      this.wrapped.setDimensionData(var1, var2);
    }
 
-   public void setWanderingTraderSpawnDelay(int var1) {
+   public CompoundTag getDimensionData(DimensionType var1) {
+      return this.wrapped.getDimensionData(var1);
    }
 
-   public int getWanderingTraderSpawnChance() {
-      return 0;
-   }
-
-   public void setWanderingTraderSpawnChance(int var1) {
-   }
-
-   public void setWanderingTraderId(UUID var1) {
-   }
-
-   public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
+   public void fillCrashReportCategory(CrashReportCategory var1) {
       var1.setDetail("Derived", (Object)true);
-      this.wrapped.fillCrashReportCategory(var1, var2);
+      this.wrapped.fillCrashReportCategory(var1);
    }
 }

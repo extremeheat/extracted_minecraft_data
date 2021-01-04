@@ -1,44 +1,48 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.Entity;
 
-public class MinecartModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
-   private final ModelPart contents;
+public class MinecartModel<T extends Entity> extends EntityModel<T> {
+   private final ModelPart[] cubes = new ModelPart[7];
 
-   public MinecartModel(ModelPart var1) {
+   public MinecartModel() {
       super();
-      this.root = var1;
-      this.contents = var1.getChild("contents");
-   }
-
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
+      this.cubes[0] = new ModelPart(this, 0, 10);
+      this.cubes[1] = new ModelPart(this, 0, 0);
+      this.cubes[2] = new ModelPart(this, 0, 0);
+      this.cubes[3] = new ModelPart(this, 0, 0);
+      this.cubes[4] = new ModelPart(this, 0, 0);
+      this.cubes[5] = new ModelPart(this, 44, 10);
+      boolean var1 = true;
       boolean var2 = true;
       boolean var3 = true;
       boolean var4 = true;
-      boolean var5 = true;
-      var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 10).addBox(-10.0F, -8.0F, -1.0F, 20.0F, 16.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 4.0F, 0.0F, 1.5707964F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("front", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -9.0F, -1.0F, 16.0F, 8.0F, 2.0F), PartPose.offsetAndRotation(-9.0F, 4.0F, 0.0F, 0.0F, 4.712389F, 0.0F));
-      var1.addOrReplaceChild("back", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -9.0F, -1.0F, 16.0F, 8.0F, 2.0F), PartPose.offsetAndRotation(9.0F, 4.0F, 0.0F, 0.0F, 1.5707964F, 0.0F));
-      var1.addOrReplaceChild("left", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -9.0F, -1.0F, 16.0F, 8.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 4.0F, -7.0F, 0.0F, 3.1415927F, 0.0F));
-      var1.addOrReplaceChild("right", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -9.0F, -1.0F, 16.0F, 8.0F, 2.0F), PartPose.offset(0.0F, 4.0F, 7.0F));
-      var1.addOrReplaceChild("contents", CubeListBuilder.create().texOffs(44, 10).addBox(-9.0F, -7.0F, -1.0F, 18.0F, 14.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 4.0F, 0.0F, -1.5707964F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0, 64, 32);
+      this.cubes[0].addBox(-10.0F, -8.0F, -1.0F, 20, 16, 2, 0.0F);
+      this.cubes[0].setPos(0.0F, 4.0F, 0.0F);
+      this.cubes[5].addBox(-9.0F, -7.0F, -1.0F, 18, 14, 1, 0.0F);
+      this.cubes[5].setPos(0.0F, 4.0F, 0.0F);
+      this.cubes[1].addBox(-8.0F, -9.0F, -1.0F, 16, 8, 2, 0.0F);
+      this.cubes[1].setPos(-9.0F, 4.0F, 0.0F);
+      this.cubes[2].addBox(-8.0F, -9.0F, -1.0F, 16, 8, 2, 0.0F);
+      this.cubes[2].setPos(9.0F, 4.0F, 0.0F);
+      this.cubes[3].addBox(-8.0F, -9.0F, -1.0F, 16, 8, 2, 0.0F);
+      this.cubes[3].setPos(0.0F, 4.0F, -7.0F);
+      this.cubes[4].addBox(-8.0F, -9.0F, -1.0F, 16, 8, 2, 0.0F);
+      this.cubes[4].setPos(0.0F, 4.0F, 7.0F);
+      this.cubes[0].xRot = 1.5707964F;
+      this.cubes[1].yRot = 4.712389F;
+      this.cubes[2].yRot = 1.5707964F;
+      this.cubes[3].yRot = 3.1415927F;
+      this.cubes[5].xRot = -1.5707964F;
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.contents.y = 4.0F - var4;
-   }
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.cubes[5].y = 4.0F - var4;
 
-   public ModelPart root() {
-      return this.root;
+      for(int var8 = 0; var8 < 6; ++var8) {
+         this.cubes[var8].render(var7);
+      }
+
    }
 }

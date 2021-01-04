@@ -4,6 +4,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
@@ -43,38 +44,39 @@ public enum NoteBlockInstrument implements StringRepresentable {
    }
 
    public static NoteBlockInstrument byState(BlockState var0) {
-      if (var0.is(Blocks.CLAY)) {
+      Block var1 = var0.getBlock();
+      if (var1 == Blocks.CLAY) {
          return FLUTE;
-      } else if (var0.is(Blocks.GOLD_BLOCK)) {
+      } else if (var1 == Blocks.GOLD_BLOCK) {
          return BELL;
-      } else if (var0.is(BlockTags.WOOL)) {
+      } else if (var1.is(BlockTags.WOOL)) {
          return GUITAR;
-      } else if (var0.is(Blocks.PACKED_ICE)) {
+      } else if (var1 == Blocks.PACKED_ICE) {
          return CHIME;
-      } else if (var0.is(Blocks.BONE_BLOCK)) {
+      } else if (var1 == Blocks.BONE_BLOCK) {
          return XYLOPHONE;
-      } else if (var0.is(Blocks.IRON_BLOCK)) {
+      } else if (var1 == Blocks.IRON_BLOCK) {
          return IRON_XYLOPHONE;
-      } else if (var0.is(Blocks.SOUL_SAND)) {
+      } else if (var1 == Blocks.SOUL_SAND) {
          return COW_BELL;
-      } else if (var0.is(Blocks.PUMPKIN)) {
+      } else if (var1 == Blocks.PUMPKIN) {
          return DIDGERIDOO;
-      } else if (var0.is(Blocks.EMERALD_BLOCK)) {
+      } else if (var1 == Blocks.EMERALD_BLOCK) {
          return BIT;
-      } else if (var0.is(Blocks.HAY_BLOCK)) {
+      } else if (var1 == Blocks.HAY_BLOCK) {
          return BANJO;
-      } else if (var0.is(Blocks.GLOWSTONE)) {
+      } else if (var1 == Blocks.GLOWSTONE) {
          return PLING;
       } else {
-         Material var1 = var0.getMaterial();
-         if (var1 == Material.STONE) {
+         Material var2 = var0.getMaterial();
+         if (var2 == Material.STONE) {
             return BASEDRUM;
-         } else if (var1 == Material.SAND) {
+         } else if (var2 == Material.SAND) {
             return SNARE;
-         } else if (var1 == Material.GLASS) {
+         } else if (var2 == Material.GLASS) {
             return HAT;
          } else {
-            return var1 != Material.WOOD && var1 != Material.NETHER_WOOD ? HARP : BASS;
+            return var2 == Material.WOOD ? BASS : HARP;
          }
       }
    }

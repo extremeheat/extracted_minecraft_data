@@ -1,96 +1,108 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeDeformation;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 
-public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
-   private final ModelPart head;
-   private final ModelPart body;
-   private final ModelPart rightHindLeg;
-   private final ModelPart leftHindLeg;
-   private final ModelPart rightFrontLeg;
-   private final ModelPart leftFrontLeg;
-   private final ModelPart rightChest;
-   private final ModelPart leftChest;
+public class LlamaModel<T extends AbstractChestedHorse> extends QuadrupedModel<T> {
+   private final ModelPart chest1;
+   private final ModelPart chest2;
 
-   public LlamaModel(ModelPart var1) {
-      super();
-      this.head = var1.getChild("head");
-      this.body = var1.getChild("body");
-      this.rightChest = var1.getChild("right_chest");
-      this.leftChest = var1.getChild("left_chest");
-      this.rightHindLeg = var1.getChild("right_hind_leg");
-      this.leftHindLeg = var1.getChild("left_hind_leg");
-      this.rightFrontLeg = var1.getChild("right_front_leg");
-      this.leftFrontLeg = var1.getChild("left_front_leg");
-   }
-
-   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-2.0F, -14.0F, -10.0F, 4.0F, 4.0F, 9.0F, var0).texOffs(0, 14).addBox("neck", -4.0F, -16.0F, -6.0F, 8.0F, 18.0F, 6.0F, var0).texOffs(17, 0).addBox("ear", -4.0F, -19.0F, -4.0F, 3.0F, 3.0F, 2.0F, var0).texOffs(17, 0).addBox("ear", 1.0F, -19.0F, -4.0F, 3.0F, 3.0F, 2.0F, var0), PartPose.offset(0.0F, 7.0F, -6.0F));
-      var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(29, 0).addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F, var0), PartPose.offsetAndRotation(0.0F, 5.0F, 2.0F, 1.5707964F, 0.0F, 0.0F));
-      var2.addOrReplaceChild("right_chest", CubeListBuilder.create().texOffs(45, 28).addBox(-3.0F, 0.0F, 0.0F, 8.0F, 8.0F, 3.0F, var0), PartPose.offsetAndRotation(-8.5F, 3.0F, 3.0F, 0.0F, 1.5707964F, 0.0F));
-      var2.addOrReplaceChild("left_chest", CubeListBuilder.create().texOffs(45, 41).addBox(-3.0F, 0.0F, 0.0F, 8.0F, 8.0F, 3.0F, var0), PartPose.offsetAndRotation(5.5F, 3.0F, 3.0F, 0.0F, 1.5707964F, 0.0F));
+   public LlamaModel(float var1) {
+      super(15, var1);
+      this.texWidth = 128;
+      this.texHeight = 64;
+      this.head = new ModelPart(this, 0, 0);
+      this.head.addBox(-2.0F, -14.0F, -10.0F, 4, 4, 9, var1);
+      this.head.setPos(0.0F, 7.0F, -6.0F);
+      this.head.texOffs(0, 14).addBox(-4.0F, -16.0F, -6.0F, 8, 18, 6, var1);
+      this.head.texOffs(17, 0).addBox(-4.0F, -19.0F, -4.0F, 3, 3, 2, var1);
+      this.head.texOffs(17, 0).addBox(1.0F, -19.0F, -4.0F, 3, 3, 2, var1);
+      this.body = new ModelPart(this, 29, 0);
+      this.body.addBox(-6.0F, -10.0F, -7.0F, 12, 18, 10, var1);
+      this.body.setPos(0.0F, 5.0F, 2.0F);
+      this.chest1 = new ModelPart(this, 45, 28);
+      this.chest1.addBox(-3.0F, 0.0F, 0.0F, 8, 8, 3, var1);
+      this.chest1.setPos(-8.5F, 3.0F, 3.0F);
+      this.chest1.yRot = 1.5707964F;
+      this.chest2 = new ModelPart(this, 45, 41);
+      this.chest2.addBox(-3.0F, 0.0F, 0.0F, 8, 8, 3, var1);
+      this.chest2.setPos(5.5F, 3.0F, 3.0F);
+      this.chest2.yRot = 1.5707964F;
+      boolean var2 = true;
       boolean var3 = true;
-      boolean var4 = true;
-      CubeListBuilder var5 = CubeListBuilder.create().texOffs(29, 29).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 14.0F, 4.0F, var0);
-      var2.addOrReplaceChild("right_hind_leg", var5, PartPose.offset(-3.5F, 10.0F, 6.0F));
-      var2.addOrReplaceChild("left_hind_leg", var5, PartPose.offset(3.5F, 10.0F, 6.0F));
-      var2.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-3.5F, 10.0F, -5.0F));
-      var2.addOrReplaceChild("left_front_leg", var5, PartPose.offset(3.5F, 10.0F, -5.0F));
-      return LayerDefinition.create(var1, 128, 64);
+      this.leg0 = new ModelPart(this, 29, 29);
+      this.leg0.addBox(-2.0F, 0.0F, -2.0F, 4, 14, 4, var1);
+      this.leg0.setPos(-2.5F, 10.0F, 6.0F);
+      this.leg1 = new ModelPart(this, 29, 29);
+      this.leg1.addBox(-2.0F, 0.0F, -2.0F, 4, 14, 4, var1);
+      this.leg1.setPos(2.5F, 10.0F, 6.0F);
+      this.leg2 = new ModelPart(this, 29, 29);
+      this.leg2.addBox(-2.0F, 0.0F, -2.0F, 4, 14, 4, var1);
+      this.leg2.setPos(-2.5F, 10.0F, -4.0F);
+      this.leg3 = new ModelPart(this, 29, 29);
+      this.leg3.addBox(-2.0F, 0.0F, -2.0F, 4, 14, 4, var1);
+      this.leg3.setPos(2.5F, 10.0F, -4.0F);
+      --this.leg0.x;
+      ++this.leg1.x;
+      ModelPart var10000 = this.leg0;
+      var10000.z += 0.0F;
+      var10000 = this.leg1;
+      var10000.z += 0.0F;
+      --this.leg2.x;
+      ++this.leg3.x;
+      --this.leg2.z;
+      --this.leg3.z;
+      this.zHeadOffs += 2.0F;
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      boolean var7 = !var1.isBaby() && var1.hasChest();
-      this.rightChest.visible = var7;
-      this.leftChest.visible = var7;
-   }
-
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      boolean var8 = !var1.isBaby() && var1.hasChest();
+      this.setupAnim(var1, var2, var3, var4, var5, var6, var7);
       if (this.young) {
          float var9 = 2.0F;
-         var1.pushPose();
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef(0.0F, this.yHeadOffs * var7, this.zHeadOffs * var7);
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
          float var10 = 0.7F;
-         var1.scale(0.71428573F, 0.64935064F, 0.7936508F);
-         var1.translate(0.0D, 1.3125D, 0.2199999988079071D);
-         this.head.render(var1, var2, var3, var4, var5, var6, var7, var8);
-         var1.popPose();
-         var1.pushPose();
+         GlStateManager.scalef(0.71428573F, 0.64935064F, 0.7936508F);
+         GlStateManager.translatef(0.0F, 21.0F * var7, 0.22F);
+         this.head.render(var7);
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
          float var11 = 1.1F;
-         var1.scale(0.625F, 0.45454544F, 0.45454544F);
-         var1.translate(0.0D, 2.0625D, 0.0D);
-         this.body.render(var1, var2, var3, var4, var5, var6, var7, var8);
-         var1.popPose();
-         var1.pushPose();
-         var1.scale(0.45454544F, 0.41322312F, 0.45454544F);
-         var1.translate(0.0D, 2.0625D, 0.0D);
-         ImmutableList.of(this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightChest, this.leftChest).forEach((var8x) -> {
-            var8x.render(var1, var2, var3, var4, var5, var6, var7, var8);
-         });
-         var1.popPose();
+         GlStateManager.scalef(0.625F, 0.45454544F, 0.45454544F);
+         GlStateManager.translatef(0.0F, 33.0F * var7, 0.0F);
+         this.body.render(var7);
+         GlStateManager.popMatrix();
+         GlStateManager.pushMatrix();
+         GlStateManager.scalef(0.45454544F, 0.41322312F, 0.45454544F);
+         GlStateManager.translatef(0.0F, 33.0F * var7, 0.0F);
+         this.leg0.render(var7);
+         this.leg1.render(var7);
+         this.leg2.render(var7);
+         this.leg3.render(var7);
+         GlStateManager.popMatrix();
       } else {
-         ImmutableList.of(this.head, this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightChest, this.leftChest).forEach((var8x) -> {
-            var8x.render(var1, var2, var3, var4, var5, var6, var7, var8);
-         });
+         this.head.render(var7);
+         this.body.render(var7);
+         this.leg0.render(var7);
+         this.leg1.render(var7);
+         this.leg2.render(var7);
+         this.leg3.render(var7);
       }
 
+      if (var8) {
+         this.chest1.render(var7);
+         this.chest2.render(var7);
+      }
+
+   }
+
+   // $FF: synthetic method
+   public void render(Entity var1, float var2, float var3, float var4, float var5, float var6, float var7) {
+      this.render((AbstractChestedHorse)var1, var2, var3, var4, var5, var6, var7);
    }
 }

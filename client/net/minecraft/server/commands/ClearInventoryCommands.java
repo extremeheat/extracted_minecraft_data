@@ -50,15 +50,14 @@ public class ClearInventoryCommands {
 
       while(var5.hasNext()) {
          ServerPlayer var6 = (ServerPlayer)var5.next();
-         var4 += var6.getInventory().clearOrCountMatchingItems(var2, var3, var6.inventoryMenu.getCraftSlots());
+         var4 += var6.inventory.clearInventory(var2, var3);
          var6.containerMenu.broadcastChanges();
-         var6.inventoryMenu.slotsChanged(var6.getInventory());
          var6.broadcastCarriedItem();
       }
 
       if (var4 == 0) {
          if (var1.size() == 1) {
-            throw ERROR_SINGLE.create(((ServerPlayer)var1.iterator().next()).getName());
+            throw ERROR_SINGLE.create(((ServerPlayer)var1.iterator().next()).getName().getColoredString());
          } else {
             throw ERROR_MULTIPLE.create(var1.size());
          }

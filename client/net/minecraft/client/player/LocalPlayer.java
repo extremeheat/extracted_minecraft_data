@@ -1,9 +1,9 @@
 package net.minecraft.client.player;
 
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
@@ -15,10 +15,9 @@ import net.minecraft.client.gui.screens.inventory.JigsawBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.MinecartCommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import net.minecraft.client.gui.screens.inventory.StructureBlockEditScreen;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.MultiPlayerLevel;
 import net.minecraft.client.resources.sounds.AmbientSoundHandler;
-import net.minecraft.client.resources.sounds.BiomeAmbientSoundsHandler;
 import net.minecraft.client.resources.sounds.BubbleColumnAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.ElytraOnPlayerSoundInstance;
 import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
@@ -39,7 +38,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
+import net.minecraft.network.protocol.game.ServerboundRecipeBookUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.sounds.SoundEvent;
@@ -55,13 +54,14 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ElytraItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
@@ -71,6 +71,7 @@ import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -89,8 +90,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private float yRotLast;
    private float xRotLast;
    private boolean lastOnGround;
-   private boolean crouching;
-   private boolean wasShiftKeyDown;
+   private boolean wasTryingToSneak;
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
@@ -114,19 +114,16 @@ public class LocalPlayer extends AbstractClientPlayer {
    private int autoJumpTime;
    private boolean wasFallFlying;
    private int waterVisionTime;
-   private boolean showDeathScreen = true;
 
-   public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, boolean var6, boolean var7) {
+   public LocalPlayer(Minecraft var1, MultiPlayerLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5) {
       super(var2, var3.getLocalGameProfile());
-      this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
       this.recipeBook = var5;
-      this.wasShiftKeyDown = var6;
-      this.wasSprinting = var7;
+      this.minecraft = var1;
+      this.dimension = DimensionType.OVERWORLD;
       this.ambientSoundHandlers.add(new UnderwaterAmbientSoundHandler(this, var1.getSoundManager()));
       this.ambientSoundHandlers.add(new BubbleColumnAmbientSoundHandler(this));
-      this.ambientSoundHandlers.add(new BiomeAmbientSoundsHandler(this, var1.getSoundManager(), var2.getBiomeManager()));
    }
 
    public boolean hurt(DamageSource var1, float var2) {
@@ -141,8 +138,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          return false;
       } else {
          if (var1 instanceof AbstractMinecart) {
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, true));
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1, false));
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, (AbstractMinecart)var1));
          }
 
          if (var1 instanceof Boat) {
@@ -155,8 +151,8 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
-   public void removeVehicle() {
-      super.removeVehicle();
+   public void stopRiding() {
+      super.stopRiding();
       this.handsBusy = false;
    }
 
@@ -169,11 +165,11 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void tick() {
-      if (this.level.hasChunkAt(new BlockPos(this.getX(), 0.0D, this.getZ()))) {
+      if (this.level.hasChunkAt(new BlockPos(this.x, 0.0D, this.z))) {
          super.tick();
          if (this.isPassenger()) {
             this.connection.send((Packet)(new ServerboundMovePlayerPacket.Rot(this.yRot, this.xRot, this.onGround)));
-            this.connection.send((Packet)(new ServerboundPlayerInputPacket(this.xxa, this.zza, this.input.jumping, this.input.shiftKeyDown)));
+            this.connection.send((Packet)(new ServerboundPlayerInputPacket(this.xxa, this.zza, this.input.jumping, this.input.sneakKeyDown)));
             Entity var1 = this.getRootVehicle();
             if (var1 != this && var1.isControlledByLocalInstance()) {
                this.connection.send((Packet)(new ServerboundMoveVehiclePacket(var1)));
@@ -192,21 +188,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
-   public float getCurrentMood() {
-      Iterator var1 = this.ambientSoundHandlers.iterator();
-
-      AmbientSoundHandler var2;
-      do {
-         if (!var1.hasNext()) {
-            return 0.0F;
-         }
-
-         var2 = (AmbientSoundHandler)var1.next();
-      } while(!(var2 instanceof BiomeAmbientSoundsHandler));
-
-      return ((BiomeAmbientSoundsHandler)var2).getMoodiness();
-   }
-
    private void sendPosition() {
       boolean var1 = this.isSprinting();
       if (var1 != this.wasSprinting) {
@@ -215,44 +196,45 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.wasSprinting = var1;
       }
 
-      boolean var16 = this.isShiftKeyDown();
-      if (var16 != this.wasShiftKeyDown) {
-         ServerboundPlayerCommandPacket.Action var3 = var16 ? ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY : ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY;
+      boolean var17 = this.isTryingToSneak();
+      if (var17 != this.wasTryingToSneak) {
+         ServerboundPlayerCommandPacket.Action var3 = var17 ? ServerboundPlayerCommandPacket.Action.START_SNEAKING : ServerboundPlayerCommandPacket.Action.STOP_SNEAKING;
          this.connection.send((Packet)(new ServerboundPlayerCommandPacket(this, var3)));
-         this.wasShiftKeyDown = var16;
+         this.wasTryingToSneak = var17;
       }
 
       if (this.isControlledCamera()) {
-         double var17 = this.getX() - this.xLast;
-         double var5 = this.getY() - this.yLast1;
-         double var7 = this.getZ() - this.zLast;
-         double var9 = (double)(this.yRot - this.yRotLast);
-         double var11 = (double)(this.xRot - this.xRotLast);
+         AABB var18 = this.getBoundingBox();
+         double var4 = this.x - this.xLast;
+         double var6 = var18.minY - this.yLast1;
+         double var8 = this.z - this.zLast;
+         double var10 = (double)(this.yRot - this.yRotLast);
+         double var12 = (double)(this.xRot - this.xRotLast);
          ++this.positionReminder;
-         boolean var13 = var17 * var17 + var5 * var5 + var7 * var7 > 9.0E-4D || this.positionReminder >= 20;
-         boolean var14 = var9 != 0.0D || var11 != 0.0D;
+         boolean var14 = var4 * var4 + var6 * var6 + var8 * var8 > 9.0E-4D || this.positionReminder >= 20;
+         boolean var15 = var10 != 0.0D || var12 != 0.0D;
          if (this.isPassenger()) {
-            Vec3 var15 = this.getDeltaMovement();
-            this.connection.send((Packet)(new ServerboundMovePlayerPacket.PosRot(var15.x, -999.0D, var15.z, this.yRot, this.xRot, this.onGround)));
-            var13 = false;
-         } else if (var13 && var14) {
-            this.connection.send((Packet)(new ServerboundMovePlayerPacket.PosRot(this.getX(), this.getY(), this.getZ(), this.yRot, this.xRot, this.onGround)));
-         } else if (var13) {
-            this.connection.send((Packet)(new ServerboundMovePlayerPacket.Pos(this.getX(), this.getY(), this.getZ(), this.onGround)));
+            Vec3 var16 = this.getDeltaMovement();
+            this.connection.send((Packet)(new ServerboundMovePlayerPacket.PosRot(var16.x, -999.0D, var16.z, this.yRot, this.xRot, this.onGround)));
+            var14 = false;
+         } else if (var14 && var15) {
+            this.connection.send((Packet)(new ServerboundMovePlayerPacket.PosRot(this.x, var18.minY, this.z, this.yRot, this.xRot, this.onGround)));
          } else if (var14) {
+            this.connection.send((Packet)(new ServerboundMovePlayerPacket.Pos(this.x, var18.minY, this.z, this.onGround)));
+         } else if (var15) {
             this.connection.send((Packet)(new ServerboundMovePlayerPacket.Rot(this.yRot, this.xRot, this.onGround)));
          } else if (this.lastOnGround != this.onGround) {
             this.connection.send((Packet)(new ServerboundMovePlayerPacket(this.onGround)));
          }
 
-         if (var13) {
-            this.xLast = this.getX();
-            this.yLast1 = this.getY();
-            this.zLast = this.getZ();
+         if (var14) {
+            this.xLast = this.x;
+            this.yLast1 = var18.minY;
+            this.zLast = this.z;
             this.positionReminder = 0;
          }
 
-         if (var14) {
+         if (var15) {
             this.yRotLast = this.yRot;
             this.xRotLast = this.xRot;
          }
@@ -263,10 +245,12 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public boolean drop(boolean var1) {
+   @Nullable
+   public ItemEntity drop(boolean var1) {
       ServerboundPlayerActionPacket.Action var2 = var1 ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
       this.connection.send((Packet)(new ServerboundPlayerActionPacket(var2, BlockPos.ZERO, Direction.DOWN)));
-      return this.getInventory().removeItem(this.getInventory().selected, var1 && !this.getInventory().getSelected().isEmpty() ? this.getInventory().getSelected().getCount() : 1) != ItemStack.EMPTY;
+      this.inventory.removeItem(this.inventory.selected, var1 && !this.inventory.getSelected().isEmpty() ? this.inventory.getSelected().getCount() : 1);
+      return null;
    }
 
    public void chat(String var1) {
@@ -294,7 +278,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void clientSideCloseContainer() {
-      this.getInventory().setCarried(ItemStack.EMPTY);
+      this.inventory.setCarried(ItemStack.EMPTY);
       super.closeContainer();
       this.minecraft.setScreen((Screen)null);
    }
@@ -323,23 +307,11 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void onUpdateAbilities() {
-      this.connection.send((Packet)(new ServerboundPlayerAbilitiesPacket(this.getAbilities())));
+      this.connection.send((Packet)(new ServerboundPlayerAbilitiesPacket(this.abilities)));
    }
 
    public boolean isLocalPlayer() {
       return true;
-   }
-
-   public boolean isSuppressingSlidingDownLadder() {
-      return !this.getAbilities().flying && super.isSuppressingSlidingDownLadder();
-   }
-
-   public boolean canSpawnSprintParticle() {
-      return !this.getAbilities().flying && super.canSpawnSprintParticle();
-   }
-
-   public boolean canSpawnSoulSpeedParticle() {
-      return !this.getAbilities().flying && super.canSpawnSoulSpeedParticle();
    }
 
    protected void sendRidingJump() {
@@ -369,7 +341,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    public void removeRecipeHighlight(Recipe<?> var1) {
       if (this.recipeBook.willHighlight(var1)) {
          this.recipeBook.removeHighlight(var1);
-         this.connection.send((Packet)(new ServerboundRecipeBookSeenRecipePacket(var1)));
+         this.connection.send((Packet)(new ServerboundRecipeBookUpdatePacket(var1)));
       }
 
    }
@@ -391,45 +363,65 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   private void moveTowardsClosestSpace(double var1, double var3) {
-      BlockPos var5 = new BlockPos(var1, this.getY(), var3);
-      if (this.suffocatesAt(var5)) {
-         double var6 = var1 - (double)var5.getX();
-         double var8 = var3 - (double)var5.getZ();
-         Direction var10 = null;
-         double var11 = 1.7976931348623157E308D;
-         Direction[] var13 = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH};
-         Direction[] var14 = var13;
-         int var15 = var13.length;
-
-         for(int var16 = 0; var16 < var15; ++var16) {
-            Direction var17 = var14[var16];
-            double var18 = var17.getAxis().choose(var6, 0.0D, var8);
-            double var20 = var17.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0D - var18 : var18;
-            if (var20 < var11 && !this.suffocatesAt(var5.relative(var17))) {
-               var11 = var20;
-               var10 = var17;
-            }
+   protected void checkInBlock(double var1, double var3, double var5) {
+      BlockPos var7 = new BlockPos(var1, var3, var5);
+      if (this.blocked(var7)) {
+         double var8 = var1 - (double)var7.getX();
+         double var10 = var5 - (double)var7.getZ();
+         Direction var12 = null;
+         double var13 = 9999.0D;
+         if (!this.blocked(var7.west()) && var8 < var13) {
+            var13 = var8;
+            var12 = Direction.WEST;
          }
 
-         if (var10 != null) {
-            Vec3 var22 = this.getDeltaMovement();
-            if (var10.getAxis() == Direction.Axis.X) {
-               this.setDeltaMovement(0.1D * (double)var10.getStepX(), var22.y, var22.z);
-            } else {
-               this.setDeltaMovement(var22.x, var22.y, 0.1D * (double)var10.getStepZ());
-            }
+         if (!this.blocked(var7.east()) && 1.0D - var8 < var13) {
+            var13 = 1.0D - var8;
+            var12 = Direction.EAST;
          }
 
+         if (!this.blocked(var7.north()) && var10 < var13) {
+            var13 = var10;
+            var12 = Direction.NORTH;
+         }
+
+         if (!this.blocked(var7.south()) && 1.0D - var10 < var13) {
+            var13 = 1.0D - var10;
+            var12 = Direction.SOUTH;
+         }
+
+         if (var12 != null) {
+            Vec3 var15 = this.getDeltaMovement();
+            switch(var12) {
+            case WEST:
+               this.setDeltaMovement(-0.1D, var15.y, var15.z);
+               break;
+            case EAST:
+               this.setDeltaMovement(0.1D, var15.y, var15.z);
+               break;
+            case NORTH:
+               this.setDeltaMovement(var15.x, var15.y, -0.1D);
+               break;
+            case SOUTH:
+               this.setDeltaMovement(var15.x, var15.y, 0.1D);
+            }
+         }
       }
+
    }
 
-   private boolean suffocatesAt(BlockPos var1) {
+   private boolean blocked(BlockPos var1) {
       AABB var2 = this.getBoundingBox();
-      AABB var3 = (new AABB((double)var1.getX(), var2.minY, (double)var1.getZ(), (double)var1.getX() + 1.0D, var2.maxY, (double)var1.getZ() + 1.0D)).deflate(1.0E-7D);
-      return !this.level.noBlockCollision(this, var3, (var1x, var2x) -> {
-         return var1x.isSuffocating(this.level, var2x);
-      });
+      BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos(var1);
+
+      for(int var4 = Mth.floor(var2.minY); var4 < Mth.ceil(var2.maxY); ++var4) {
+         var3.setY(var4);
+         if (!this.freeAt(var3)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public void setSprinting(boolean var1) {
@@ -443,7 +435,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.experienceLevel = var3;
    }
 
-   public void sendMessage(Component var1, UUID var2) {
+   public void sendMessage(Component var1) {
       this.minecraft.gui.getChat().addMessage(var1);
    }
 
@@ -456,20 +448,12 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   public void setShowDeathScreen(boolean var1) {
-      this.showDeathScreen = var1;
-   }
-
-   public boolean shouldShowDeathScreen() {
-      return this.showDeathScreen;
-   }
-
    public void playSound(SoundEvent var1, float var2, float var3) {
-      this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3, false);
+      this.level.playLocalSound(this.x, this.y, this.z, var1, this.getSoundSource(), var2, var3, false);
    }
 
    public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
-      this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), var1, var2, var3, var4, false);
+      this.level.playLocalSound(this.x, this.y, this.z, var1, var2, var3, var4, false);
    }
 
    public boolean isEffectiveAi() {
@@ -546,7 +530,8 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {
-      if (var1.is(Items.WRITABLE_BOOK)) {
+      Item var3 = var1.getItem();
+      if (var3 == Items.WRITABLE_BOOK) {
          this.minecraft.setScreen(new BookEditScreen(this, var1, var2));
       }
 
@@ -560,16 +545,20 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.minecraft.particleEngine.createTrackingEmitter(var1, ParticleTypes.ENCHANTED_HIT);
    }
 
-   public boolean isShiftKeyDown() {
-      return this.input != null && this.input.shiftKeyDown;
+   public boolean isSneaking() {
+      return this.isTryingToSneak();
    }
 
-   public boolean isCrouching() {
-      return this.crouching;
+   public boolean isTryingToSneak() {
+      return this.input != null && this.input.sneakKeyDown;
    }
 
-   public boolean isMovingSlowly() {
-      return this.isCrouching() || this.isVisuallyCrawling();
+   public boolean isVisuallySneaking() {
+      if (!this.abilities.flying && !this.isSwimming() && this.canEnterPose(Pose.SNEAKING)) {
+         return this.isTryingToSneak() || !this.canEnterPose(Pose.STANDING);
+      } else {
+         return false;
+      }
    }
 
    public void serverAiStep() {
@@ -598,39 +587,37 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       this.handleNetherPortalClient();
       boolean var1 = this.input.jumping;
-      boolean var2 = this.input.shiftKeyDown;
+      boolean var2 = this.input.sneakKeyDown;
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
-      this.crouching = !this.getAbilities().flying && !this.isSwimming() && this.canEnterPose(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canEnterPose(Pose.STANDING));
-      this.input.tick(this.isMovingSlowly());
+      boolean var4 = this.isVisuallySneaking() || this.isVisuallyCrawling();
+      this.input.tick(var4, this.isSpectator());
       this.minecraft.getTutorial().onInput(this.input);
+      Input var10000;
       if (this.isUsingItem() && !this.isPassenger()) {
-         Input var10000 = this.input;
+         var10000 = this.input;
          var10000.leftImpulse *= 0.2F;
          var10000 = this.input;
          var10000.forwardImpulse *= 0.2F;
          this.sprintTriggerTime = 0;
       }
 
-      boolean var4 = false;
+      boolean var5 = false;
       if (this.autoJumpTime > 0) {
          --this.autoJumpTime;
-         var4 = true;
+         var5 = true;
          this.input.jumping = true;
       }
 
       if (!this.noPhysics) {
-         this.moveTowardsClosestSpace(this.getX() - (double)this.getBbWidth() * 0.35D, this.getZ() + (double)this.getBbWidth() * 0.35D);
-         this.moveTowardsClosestSpace(this.getX() - (double)this.getBbWidth() * 0.35D, this.getZ() - (double)this.getBbWidth() * 0.35D);
-         this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35D, this.getZ() - (double)this.getBbWidth() * 0.35D);
-         this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35D, this.getZ() + (double)this.getBbWidth() * 0.35D);
+         AABB var6 = this.getBoundingBox();
+         this.checkInBlock(this.x - (double)this.getBbWidth() * 0.35D, var6.minY + 0.5D, this.z + (double)this.getBbWidth() * 0.35D);
+         this.checkInBlock(this.x - (double)this.getBbWidth() * 0.35D, var6.minY + 0.5D, this.z - (double)this.getBbWidth() * 0.35D);
+         this.checkInBlock(this.x + (double)this.getBbWidth() * 0.35D, var6.minY + 0.5D, this.z - (double)this.getBbWidth() * 0.35D);
+         this.checkInBlock(this.x + (double)this.getBbWidth() * 0.35D, var6.minY + 0.5D, this.z + (double)this.getBbWidth() * 0.35D);
       }
 
-      if (var2) {
-         this.sprintTriggerTime = 0;
-      }
-
-      boolean var5 = (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
-      if ((this.onGround || this.isUnderWater()) && !var2 && !var3 && this.hasEnoughImpulseToStartSprinting() && !this.isSprinting() && var5 && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS)) {
+      boolean var9 = (float)this.getFoodData().getFoodLevel() > 6.0F || this.abilities.mayfly;
+      if ((this.onGround || this.isUnderWater()) && !var2 && !var3 && this.hasEnoughImpulseToStartSprinting() && !this.isSprinting() && var9 && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS)) {
          if (this.sprintTriggerTime <= 0 && !this.minecraft.options.keySprint.isDown()) {
             this.sprintTriggerTime = 7;
          } else {
@@ -638,81 +625,81 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if (!this.isSprinting() && (!this.isInWater() || this.isUnderWater()) && this.hasEnoughImpulseToStartSprinting() && var5 && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS) && this.minecraft.options.keySprint.isDown()) {
+      if (!this.isSprinting() && (!this.isInWater() || this.isUnderWater()) && this.hasEnoughImpulseToStartSprinting() && var9 && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS) && this.minecraft.options.keySprint.isDown()) {
          this.setSprinting(true);
       }
 
-      boolean var6;
       if (this.isSprinting()) {
-         var6 = !this.input.hasForwardImpulse() || !var5;
-         boolean var7 = var6 || this.horizontalCollision || this.isInWater() && !this.isUnderWater();
+         boolean var7 = !this.input.hasForwardImpulse() || !var9;
+         boolean var8 = var7 || this.horizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround && !this.input.shiftKeyDown && var6 || !this.isInWater()) {
+            if (!this.onGround && !this.input.sneakKeyDown && var7 || !this.isInWater()) {
                this.setSprinting(false);
             }
-         } else if (var7) {
+         } else if (var8) {
             this.setSprinting(false);
          }
       }
 
-      var6 = false;
-      if (this.getAbilities().mayfly) {
+      if (this.abilities.mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
-            if (!this.getAbilities().flying) {
-               this.getAbilities().flying = true;
-               var6 = true;
+            if (!this.abilities.flying) {
+               this.abilities.flying = true;
                this.onUpdateAbilities();
             }
-         } else if (!var1 && this.input.jumping && !var4) {
+         } else if (!var1 && this.input.jumping && !var5) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
-               this.getAbilities().flying = !this.getAbilities().flying;
-               var6 = true;
+               this.abilities.flying = !this.abilities.flying;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.jumping && !var6 && !var1 && !this.getAbilities().flying && !this.isPassenger() && !this.onClimbable()) {
-         ItemStack var8 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var8.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var8) && this.tryToStartFallFlying()) {
+      if (this.input.jumping && !var1 && !this.onGround && this.getDeltaMovement().y < 0.0D && !this.isFallFlying() && !this.abilities.flying) {
+         ItemStack var10 = this.getItemBySlot(EquipmentSlot.CHEST);
+         if (var10.getItem() == Items.ELYTRA && ElytraItem.isFlyEnabled(var10)) {
             this.connection.send((Packet)(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING)));
          }
       }
 
       this.wasFallFlying = this.isFallFlying();
-      if (this.isInWater() && this.input.shiftKeyDown && this.isAffectedByFluids()) {
+      if (this.isInWater() && this.input.sneakKeyDown) {
          this.goDownInWater();
       }
 
-      int var9;
-      if (this.isEyeInFluid(FluidTags.WATER)) {
-         var9 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var9, 0, 600);
+      int var11;
+      if (this.isUnderLiquid(FluidTags.WATER)) {
+         var11 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var11, 0, 600);
       } else if (this.waterVisionTime > 0) {
-         this.isEyeInFluid(FluidTags.WATER);
+         this.isUnderLiquid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
-      if (this.getAbilities().flying && this.isControlledCamera()) {
-         var9 = 0;
-         if (this.input.shiftKeyDown) {
-            --var9;
+      if (this.abilities.flying && this.isControlledCamera()) {
+         var11 = 0;
+         if (this.input.sneakKeyDown) {
+            var10000 = this.input;
+            var10000.leftImpulse = (float)((double)var10000.leftImpulse / 0.3D);
+            var10000 = this.input;
+            var10000.forwardImpulse = (float)((double)var10000.forwardImpulse / 0.3D);
+            --var11;
          }
 
          if (this.input.jumping) {
-            ++var9;
+            ++var11;
          }
 
-         if (var9 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, (double)((float)var9 * this.getAbilities().getFlyingSpeed() * 3.0F), 0.0D));
+         if (var11 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0D, (double)((float)var11 * this.abilities.getFlyingSpeed() * 3.0F), 0.0D));
          }
       }
 
       if (this.isRidingJumpable()) {
-         PlayerRideableJumping var10 = (PlayerRideableJumping)this.getVehicle();
+         PlayerRideableJumping var12 = (PlayerRideableJumping)this.getVehicle();
          if (this.jumpRidingTicks < 0) {
             ++this.jumpRidingTicks;
             if (this.jumpRidingTicks == 0) {
@@ -722,7 +709,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (var1 && !this.input.jumping) {
             this.jumpRidingTicks = -10;
-            var10.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var12.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
          } else if (!var1 && this.input.jumping) {
             this.jumpRidingTicks = 0;
@@ -740,8 +727,8 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       super.aiStep();
-      if (this.onGround && this.getAbilities().flying && !this.minecraft.gameMode.isAlwaysFlying()) {
-         this.getAbilities().flying = false;
+      if (this.onGround && this.abilities.flying && !this.minecraft.gameMode.isAlwaysFlying()) {
+         this.abilities.flying = false;
          this.onUpdateAbilities();
       }
 
@@ -759,7 +746,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
 
          if (this.portalTime == 0.0F) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRIGGER, this.random.nextFloat() * 0.4F + 0.8F, 0.25F));
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.PORTAL_TRIGGER, this.random.nextFloat() * 0.4F + 0.8F));
          }
 
          this.portalTime += 0.0125F;
@@ -783,7 +770,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      this.processPortalCooldown();
+      this.processDimensionDelay();
    }
 
    public void rideTick() {
@@ -812,10 +799,10 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void move(MoverType var1, Vec3 var2) {
-      double var3 = this.getX();
-      double var5 = this.getZ();
+      double var3 = this.x;
+      double var5 = this.z;
       super.move(var1, var2);
-      this.updateAutoJump((float)(this.getX() - var3), (float)(this.getZ() - var5));
+      this.updateAutoJump((float)(this.x - var3), (float)(this.z - var5));
    }
 
    public boolean isAutoJumpEnabled() {
@@ -823,105 +810,110 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    protected void updateAutoJump(float var1, float var2) {
-      if (this.canAutoJump()) {
-         Vec3 var3 = this.position();
-         Vec3 var4 = var3.add((double)var1, 0.0D, (double)var2);
-         Vec3 var5 = new Vec3((double)var1, 0.0D, (double)var2);
-         float var6 = this.getSpeed();
-         float var7 = (float)var5.lengthSqr();
-         float var11;
-         if (var7 <= 0.001F) {
-            Vec2 var8 = this.input.getMoveVector();
-            float var9 = var6 * var8.x;
-            float var10 = var6 * var8.y;
-            var11 = Mth.sin(this.yRot * 0.017453292F);
-            float var12 = Mth.cos(this.yRot * 0.017453292F);
-            var5 = new Vec3((double)(var9 * var12 - var10 * var11), var5.y, (double)(var10 * var12 + var9 * var11));
-            var7 = (float)var5.lengthSqr();
-            if (var7 <= 0.001F) {
-               return;
-            }
-         }
-
-         float var40 = Mth.fastInvSqrt(var7);
-         Vec3 var41 = var5.scale((double)var40);
-         Vec3 var42 = this.getForward();
-         var11 = (float)(var42.x * var41.x + var42.z * var41.z);
-         if (var11 >= -0.15F) {
-            CollisionContext var43 = CollisionContext.of(this);
-            BlockPos var13 = new BlockPos(this.getX(), this.getBoundingBox().maxY, this.getZ());
-            BlockState var14 = this.level.getBlockState(var13);
-            if (var14.getCollisionShape(this.level, var13, var43).isEmpty()) {
-               var13 = var13.above();
-               BlockState var15 = this.level.getBlockState(var13);
-               if (var15.getCollisionShape(this.level, var13, var43).isEmpty()) {
-                  float var16 = 7.0F;
-                  float var17 = 1.2F;
-                  if (this.hasEffect(MobEffects.JUMP)) {
-                     var17 += (float)(this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.75F;
+      if (this.isAutoJumpEnabled()) {
+         if (this.autoJumpTime <= 0 && this.onGround && !this.isSneaking() && !this.isPassenger()) {
+            Vec2 var3 = this.input.getMoveVector();
+            if (var3.x != 0.0F || var3.y != 0.0F) {
+               Vec3 var4 = new Vec3(this.x, this.getBoundingBox().minY, this.z);
+               double var10002 = this.x + (double)var1;
+               double var10004 = this.z + (double)var2;
+               Vec3 var5 = new Vec3(var10002, this.getBoundingBox().minY, var10004);
+               Vec3 var6 = new Vec3((double)var1, 0.0D, (double)var2);
+               float var7 = this.getSpeed();
+               float var8 = (float)var6.lengthSqr();
+               float var9;
+               float var12;
+               if (var8 <= 0.001F) {
+                  var9 = var7 * var3.x;
+                  float var10 = var7 * var3.y;
+                  float var11 = Mth.sin(this.yRot * 0.017453292F);
+                  var12 = Mth.cos(this.yRot * 0.017453292F);
+                  var6 = new Vec3((double)(var9 * var12 - var10 * var11), var6.y, (double)(var10 * var12 + var9 * var11));
+                  var8 = (float)var6.lengthSqr();
+                  if (var8 <= 0.001F) {
+                     return;
                   }
+               }
 
-                  float var18 = Math.max(var6 * 7.0F, 1.0F / var40);
-                  Vec3 var20 = var4.add(var41.scale((double)var18));
-                  float var21 = this.getBbWidth();
-                  float var22 = this.getBbHeight();
-                  AABB var23 = (new AABB(var3, var20.add(0.0D, (double)var22, 0.0D))).inflate((double)var21, 0.0D, (double)var21);
-                  Vec3 var19 = var3.add(0.0D, 0.5099999904632568D, 0.0D);
-                  var20 = var20.add(0.0D, 0.5099999904632568D, 0.0D);
-                  Vec3 var24 = var41.cross(new Vec3(0.0D, 1.0D, 0.0D));
-                  Vec3 var25 = var24.scale((double)(var21 * 0.5F));
-                  Vec3 var26 = var19.subtract(var25);
-                  Vec3 var27 = var20.subtract(var25);
-                  Vec3 var28 = var19.add(var25);
-                  Vec3 var29 = var20.add(var25);
-                  Iterator var30 = this.level.getCollisions(this, var23, (var0) -> {
-                     return true;
-                  }).flatMap((var0) -> {
-                     return var0.toAabbs().stream();
-                  }).iterator();
-                  float var32 = 1.4E-45F;
-
-                  label73:
-                  while(var30.hasNext()) {
-                     AABB var34 = (AABB)var30.next();
-                     if (var34.intersects(var26, var27) || var34.intersects(var28, var29)) {
-                        var32 = (float)var34.maxY;
-                        Vec3 var31 = var34.getCenter();
-                        BlockPos var35 = new BlockPos(var31);
-                        int var36 = 1;
-
-                        while(true) {
-                           if ((float)var36 >= var17) {
-                              break label73;
-                           }
-
-                           BlockPos var37 = var35.above(var36);
-                           BlockState var38 = this.level.getBlockState(var37);
-                           VoxelShape var33;
-                           if (!(var33 = var38.getCollisionShape(this.level, var37, var43)).isEmpty()) {
-                              var32 = (float)var33.max(Direction.Axis.Y) + (float)var37.getY();
-                              if ((double)var32 - this.getY() > (double)var17) {
-                                 return;
-                              }
-                           }
-
-                           if (var36 > 1) {
-                              var13 = var13.above();
-                              BlockState var39 = this.level.getBlockState(var13);
-                              if (!var39.getCollisionShape(this.level, var13, var43).isEmpty()) {
-                                 return;
-                              }
-                           }
-
-                           ++var36;
+               var9 = (float)Mth.fastInvSqrt((double)var8);
+               Vec3 var41 = var6.scale((double)var9);
+               Vec3 var42 = this.getForward();
+               var12 = (float)(var42.x * var41.x + var42.z * var41.z);
+               if (var12 >= -0.15F) {
+                  CollisionContext var13 = CollisionContext.of(this);
+                  BlockPos var14 = new BlockPos(this.x, this.getBoundingBox().maxY, this.z);
+                  BlockState var15 = this.level.getBlockState(var14);
+                  if (var15.getCollisionShape(this.level, var14, var13).isEmpty()) {
+                     var14 = var14.above();
+                     BlockState var16 = this.level.getBlockState(var14);
+                     if (var16.getCollisionShape(this.level, var14, var13).isEmpty()) {
+                        float var17 = 7.0F;
+                        float var18 = 1.2F;
+                        if (this.hasEffect(MobEffects.JUMP)) {
+                           var18 += (float)(this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.75F;
                         }
-                     }
-                  }
 
-                  if (var32 != 1.4E-45F) {
-                     float var44 = (float)((double)var32 - this.getY());
-                     if (var44 > 0.5F && var44 <= var17) {
-                        this.autoJumpTime = 1;
+                        float var19 = Math.max(var7 * 7.0F, 1.0F / var9);
+                        Vec3 var21 = var5.add(var41.scale((double)var19));
+                        float var22 = this.getBbWidth();
+                        float var23 = this.getBbHeight();
+                        AABB var24 = (new AABB(var4, var21.add(0.0D, (double)var23, 0.0D))).inflate((double)var22, 0.0D, (double)var22);
+                        Vec3 var20 = var4.add(0.0D, 0.5099999904632568D, 0.0D);
+                        var21 = var21.add(0.0D, 0.5099999904632568D, 0.0D);
+                        Vec3 var25 = var41.cross(new Vec3(0.0D, 1.0D, 0.0D));
+                        Vec3 var26 = var25.scale((double)(var22 * 0.5F));
+                        Vec3 var27 = var20.subtract(var26);
+                        Vec3 var28 = var21.subtract(var26);
+                        Vec3 var29 = var20.add(var26);
+                        Vec3 var30 = var21.add(var26);
+                        Iterator var31 = this.level.getCollisions(this, var24, Collections.emptySet()).flatMap((var0) -> {
+                           return var0.toAabbs().stream();
+                        }).iterator();
+                        float var33 = 1.4E-45F;
+
+                        label83:
+                        while(var31.hasNext()) {
+                           AABB var35 = (AABB)var31.next();
+                           if (var35.intersects(var27, var28) || var35.intersects(var29, var30)) {
+                              var33 = (float)var35.maxY;
+                              Vec3 var32 = var35.getCenter();
+                              BlockPos var36 = new BlockPos(var32);
+                              int var37 = 1;
+
+                              while(true) {
+                                 if ((float)var37 >= var18) {
+                                    break label83;
+                                 }
+
+                                 BlockPos var38 = var36.above(var37);
+                                 BlockState var39 = this.level.getBlockState(var38);
+                                 VoxelShape var34;
+                                 if (!(var34 = var39.getCollisionShape(this.level, var38, var13)).isEmpty()) {
+                                    var33 = (float)var34.max(Direction.Axis.Y) + (float)var38.getY();
+                                    if ((double)var33 - this.getBoundingBox().minY > (double)var18) {
+                                       return;
+                                    }
+                                 }
+
+                                 if (var37 > 1) {
+                                    var14 = var14.above();
+                                    BlockState var40 = this.level.getBlockState(var14);
+                                    if (!var40.getCollisionShape(this.level, var14, var13).isEmpty()) {
+                                       return;
+                                    }
+                                 }
+
+                                 ++var37;
+                              }
+                           }
+                        }
+
+                        if (var33 != 1.4E-45F) {
+                           float var43 = (float)((double)var33 - this.getBoundingBox().minY);
+                           if (var43 > 0.5F && var43 <= var18) {
+                              this.autoJumpTime = 1;
+                           }
+                        }
                      }
                   }
                }
@@ -930,22 +922,13 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
-   private boolean canAutoJump() {
-      return this.isAutoJumpEnabled() && this.autoJumpTime <= 0 && this.onGround && !this.isStayingOnGroundSurface() && !this.isPassenger() && this.isMoving() && (double)this.getBlockJumpFactor() >= 1.0D;
-   }
-
-   private boolean isMoving() {
-      Vec2 var1 = this.input.getMoveVector();
-      return var1.x != 0.0F || var1.y != 0.0F;
-   }
-
    private boolean hasEnoughImpulseToStartSprinting() {
       double var1 = 0.8D;
       return this.isUnderWater() ? this.input.hasForwardImpulse() : (double)this.input.forwardImpulse >= 0.8D;
    }
 
    public float getWaterVision() {
-      if (!this.isEyeInFluid(FluidTags.WATER)) {
+      if (!this.isUnderLiquid(FluidTags.WATER)) {
          return 0.0F;
       } else {
          float var1 = 600.0F;
@@ -971,27 +954,15 @@ public class LocalPlayer extends AbstractClientPlayer {
          return this.wasUnderwater;
       } else {
          if (!var1 && var2) {
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.AMBIENT_UNDERWATER_ENTER, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.AMBIENT_UNDERWATER_ENTER, SoundSource.AMBIENT, 1.0F, 1.0F, false);
             this.minecraft.getSoundManager().play(new UnderwaterAmbientSoundInstances.UnderwaterAmbientSoundInstance(this));
          }
 
          if (var1 && !var2) {
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.AMBIENT_UNDERWATER_EXIT, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+            this.level.playLocalSound(this.x, this.y, this.z, SoundEvents.AMBIENT_UNDERWATER_EXIT, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
 
          return this.wasUnderwater;
-      }
-   }
-
-   public Vec3 getRopeHoldPosition(float var1) {
-      if (this.minecraft.options.getCameraType().isFirstPerson()) {
-         float var2 = Mth.lerp(var1 * 0.5F, this.yRot, this.yRotO) * 0.017453292F;
-         float var3 = Mth.lerp(var1 * 0.5F, this.xRot, this.xRotO) * 0.017453292F;
-         double var4 = this.getMainArm() == HumanoidArm.RIGHT ? -1.0D : 1.0D;
-         Vec3 var6 = new Vec3(0.39D * var4, -0.6D, 0.3D);
-         return var6.xRot(-var3).yRot(-var2).add(this.getEyePosition(var1));
-      } else {
-         return super.getRopeHoldPosition(var1);
       }
    }
 }

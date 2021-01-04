@@ -5,18 +5,17 @@ import java.util.BitSet;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.TickList;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.StructureFeature;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
@@ -27,7 +26,7 @@ public class ImposterProtoChunk extends ProtoChunk {
    private final LevelChunk wrapped;
 
    public ImposterProtoChunk(LevelChunk var1) {
-      super(var1.getPos(), UpgradeData.EMPTY, var1);
+      super(var1.getPos(), UpgradeData.EMPTY);
       this.wrapped = var1;
    }
 
@@ -54,7 +53,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return null;
    }
 
-   public void setBlockEntity(BlockEntity var1) {
+   public void setBlockEntity(BlockPos var1, BlockEntity var2) {
    }
 
    public void addEntity(Entity var1) {
@@ -91,36 +90,39 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getPos();
    }
 
+   public void setLastSaveTime(long var1) {
+   }
+
    @Nullable
-   public StructureStart<?> getStartForFeature(StructureFeature<?> var1) {
+   public StructureStart getStartForFeature(String var1) {
       return this.wrapped.getStartForFeature(var1);
    }
 
-   public void setStartForFeature(StructureFeature<?> var1, StructureStart<?> var2) {
+   public void setStartForFeature(String var1, StructureStart var2) {
    }
 
-   public Map<StructureFeature<?>, StructureStart<?>> getAllStarts() {
+   public Map<String, StructureStart> getAllStarts() {
       return this.wrapped.getAllStarts();
    }
 
-   public void setAllStarts(Map<StructureFeature<?>, StructureStart<?>> var1) {
+   public void setAllStarts(Map<String, StructureStart> var1) {
    }
 
-   public LongSet getReferencesForFeature(StructureFeature<?> var1) {
+   public LongSet getReferencesForFeature(String var1) {
       return this.wrapped.getReferencesForFeature(var1);
    }
 
-   public void addReferenceForFeature(StructureFeature<?> var1, long var2) {
+   public void addReferenceForFeature(String var1, long var2) {
    }
 
-   public Map<StructureFeature<?>, LongSet> getAllReferences() {
+   public Map<String, LongSet> getAllReferences() {
       return this.wrapped.getAllReferences();
    }
 
-   public void setAllReferences(Map<StructureFeature<?>, LongSet> var1) {
+   public void setAllReferences(Map<String, LongSet> var1) {
    }
 
-   public ChunkBiomeContainer getBiomes() {
+   public Biome[] getBiomes() {
       return this.wrapped.getBiomes();
    }
 
@@ -154,7 +156,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getBlockEntityNbtForSaving(var1);
    }
 
-   public void setBiomes(ChunkBiomeContainer var1) {
+   public void setBiomes(Biome[] var1) {
    }
 
    public Stream<BlockPos> getLights() {
@@ -164,21 +166,17 @@ public class ImposterProtoChunk extends ProtoChunk {
    public ProtoTickList<Block> getBlockTicks() {
       return new ProtoTickList((var0) -> {
          return var0.defaultBlockState().isAir();
-      }, this.getPos(), this);
+      }, this.getPos());
    }
 
    public ProtoTickList<Fluid> getLiquidTicks() {
       return new ProtoTickList((var0) -> {
          return var0 == Fluids.EMPTY;
-      }, this.getPos(), this);
+      }, this.getPos());
    }
 
    public BitSet getCarvingMask(GenerationStep.Carving var1) {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
-   }
-
-   public BitSet getOrCreateCarvingMask(GenerationStep.Carving var1) {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Meaningless in this context"));
+      return this.wrapped.getCarvingMask(var1);
    }
 
    public LevelChunk getWrapped() {

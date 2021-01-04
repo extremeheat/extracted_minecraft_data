@@ -1,7 +1,8 @@
 package net.minecraft.world.level.levelgen.surfacebuilders;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Random;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
@@ -9,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
 public class DefaultSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseConfiguration> {
-   public DefaultSurfaceBuilder(Codec<SurfaceBuilderBaseConfiguration> var1) {
+   public DefaultSurfaceBuilder(Function<Dynamic<?>, ? extends SurfaceBuilderBaseConfiguration> var1) {
       super(var1);
    }
 
@@ -31,7 +32,7 @@ public class DefaultSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseConf
          BlockState var23 = var2.getBlockState(var17);
          if (var23.isAir()) {
             var18 = -1;
-         } else if (var23.is(var9.getBlock())) {
+         } else if (var23.getBlock() == var9.getBlock()) {
             if (var18 == -1) {
                if (var19 <= 0) {
                   var15 = Blocks.AIR.defaultBlockState();
@@ -64,9 +65,9 @@ public class DefaultSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderBaseConf
             } else if (var18 > 0) {
                --var18;
                var2.setBlockState(var17, var16, false);
-               if (var18 == 0 && var16.is(Blocks.SAND) && var19 > 1) {
+               if (var18 == 0 && var16.getBlock() == Blocks.SAND && var19 > 1) {
                   var18 = var1.nextInt(4) + Math.max(0, var22 - 63);
-                  var16 = var16.is(Blocks.RED_SAND) ? Blocks.RED_SANDSTONE.defaultBlockState() : Blocks.SANDSTONE.defaultBlockState();
+                  var16 = var16.getBlock() == Blocks.RED_SAND ? Blocks.RED_SANDSTONE.defaultBlockState() : Blocks.SANDSTONE.defaultBlockState();
                }
             }
          }

@@ -5,14 +5,17 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
-import org.apache.commons.lang3.ArrayUtils;
 
 public abstract class LootPoolEntryContainer implements ComposableEntryContainer {
    protected final LootItemCondition[] conditions;
@@ -24,9 +27,9 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
       this.compositeCondition = LootItemConditions.andConditions(var1);
    }
 
-   public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.length; ++var2) {
-         this.conditions[var2].validate(var1.forChild(".condition[" + var2 + "]"));
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      for(int var5 = 0; var5 < this.conditions.length; ++var5) {
+         this.conditions[var5].validate(var1.forChild(".condition[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -35,39 +38,27 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
       return this.compositeCondition.test(var1);
    }
 
-   public abstract LootPoolEntryType getType();
+   public abstract static class Serializer<T extends LootPoolEntryContainer> {
+      private final ResourceLocation name;
+      private final Class<T> clazz;
 
-   public abstract static class Serializer<T extends LootPoolEntryContainer> implements net.minecraft.world.level.storage.loot.Serializer<T> {
-      public Serializer() {
+      protected Serializer(ResourceLocation var1, Class<T> var2) {
          super();
+         this.name = var1;
+         this.clazz = var2;
       }
 
-      public final void serialize(JsonObject var1, T var2, JsonSerializationContext var3) {
-         if (!ArrayUtils.isEmpty(var2.conditions)) {
-            var1.add("conditions", var3.serialize(var2.conditions));
-         }
-
-         this.serializeCustom(var1, var2, var3);
+      public ResourceLocation getName() {
+         return this.name;
       }
 
-      public final T deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         LootItemCondition[] var3 = (LootItemCondition[])GsonHelper.getAsObject(var1, "conditions", new LootItemCondition[0], var2, LootItemCondition[].class);
-         return this.deserializeCustom(var1, var2, var3);
+      public Class<T> getContainerClass() {
+         return this.clazz;
       }
 
-      public abstract void serializeCustom(JsonObject var1, T var2, JsonSerializationContext var3);
+      public abstract void serialize(JsonObject var1, T var2, JsonSerializationContext var3);
 
-      public abstract T deserializeCustom(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3);
-
-      // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         return this.deserialize(var1, var2);
-      }
-
-      // $FF: synthetic method
-      public void serialize(JsonObject var1, Object var2, JsonSerializationContext var3) {
-         this.serialize(var1, (LootPoolEntryContainer)var2, var3);
-      }
+      public abstract T deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3);
    }
 
    public abstract static class Builder<T extends LootPoolEntryContainer.Builder<T>> implements ConditionUserBuilder<T> {

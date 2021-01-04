@@ -1,13 +1,11 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-
 public class Tesselator {
    private final BufferBuilder builder;
-   private static final Tesselator INSTANCE = new Tesselator();
+   private final BufferUploader uploader = new BufferUploader();
+   private static final Tesselator INSTANCE = new Tesselator(2097152);
 
    public static Tesselator getInstance() {
-      RenderSystem.assertThread(RenderSystem::isOnGameThreadOrInit);
       return INSTANCE;
    }
 
@@ -16,13 +14,9 @@ public class Tesselator {
       this.builder = new BufferBuilder(var1);
    }
 
-   public Tesselator() {
-      this(2097152);
-   }
-
    public void end() {
       this.builder.end();
-      BufferUploader.end(this.builder);
+      this.uploader.end(this.builder);
    }
 
    public BufferBuilder getBuilder() {

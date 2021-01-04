@@ -1,6 +1,5 @@
 package net.minecraft.world.phys;
 
-import com.mojang.math.Vector3f;
 import java.util.EnumSet;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
@@ -13,29 +12,6 @@ public class Vec3 implements Position {
    public final double y;
    public final double z;
 
-   public static Vec3 fromRGB24(int var0) {
-      double var1 = (double)(var0 >> 16 & 255) / 255.0D;
-      double var3 = (double)(var0 >> 8 & 255) / 255.0D;
-      double var5 = (double)(var0 & 255) / 255.0D;
-      return new Vec3(var1, var3, var5);
-   }
-
-   public static Vec3 atCenterOf(Vec3i var0) {
-      return new Vec3((double)var0.getX() + 0.5D, (double)var0.getY() + 0.5D, (double)var0.getZ() + 0.5D);
-   }
-
-   public static Vec3 atLowerCornerOf(Vec3i var0) {
-      return new Vec3((double)var0.getX(), (double)var0.getY(), (double)var0.getZ());
-   }
-
-   public static Vec3 atBottomCenterOf(Vec3i var0) {
-      return new Vec3((double)var0.getX() + 0.5D, (double)var0.getY(), (double)var0.getZ() + 0.5D);
-   }
-
-   public static Vec3 upFromBottomCenterOf(Vec3i var0, double var1) {
-      return new Vec3((double)var0.getX() + 0.5D, (double)var0.getY() + var1, (double)var0.getZ() + 0.5D);
-   }
-
    public Vec3(double var1, double var3, double var5) {
       super();
       this.x = var1;
@@ -43,8 +19,8 @@ public class Vec3 implements Position {
       this.z = var5;
    }
 
-   public Vec3(Vector3f var1) {
-      this((double)var1.x(), (double)var1.y(), (double)var1.z());
+   public Vec3(Vec3i var1) {
+      this((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
    }
 
    public Vec3 vectorTo(Vec3 var1) {
@@ -78,10 +54,6 @@ public class Vec3 implements Position {
 
    public Vec3 add(double var1, double var3, double var5) {
       return new Vec3(this.x + var1, this.y + var3, this.z + var5);
-   }
-
-   public boolean closerThan(Position var1, double var2) {
-      return this.distanceToSqr(var1.x(), var1.y(), var1.z()) < var2 * var2;
    }
 
    public double distanceTo(Vec3 var1) {
@@ -175,15 +147,6 @@ public class Vec3 implements Position {
       double var4 = this.x * (double)var2 + this.z * (double)var3;
       double var6 = this.y;
       double var8 = this.z * (double)var2 - this.x * (double)var3;
-      return new Vec3(var4, var6, var8);
-   }
-
-   public Vec3 zRot(float var1) {
-      float var2 = Mth.cos(var1);
-      float var3 = Mth.sin(var1);
-      double var4 = this.x * (double)var2 + this.y * (double)var3;
-      double var6 = this.y * (double)var2 - this.x * (double)var3;
-      double var8 = this.z;
       return new Vec3(var4, var6, var8);
    }
 

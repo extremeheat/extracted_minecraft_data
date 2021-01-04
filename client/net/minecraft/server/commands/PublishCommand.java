@@ -12,14 +12,14 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.HttpUtil;
 
 public class PublishCommand {
-   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.publish.failed"));
+   private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.publish.failed", new Object[0]));
    private static final DynamicCommandExceptionType ERROR_ALREADY_PUBLISHED = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.publish.alreadyPublished", new Object[]{var0});
    });
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("publish").requires((var0x) -> {
-         return var0x.hasPermission(4);
+         return var0x.getServer().isSingleplayer() && var0x.hasPermission(4);
       })).executes((var0x) -> {
          return publish((CommandSourceStack)var0x.getSource(), HttpUtil.getAvailablePort());
       })).then(Commands.argument("port", IntegerArgumentType.integer(0, 65535)).executes((var0x) -> {

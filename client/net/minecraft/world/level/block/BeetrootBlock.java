@@ -2,12 +2,10 @@ package net.minecraft.world.level.block;
 
 import java.util.Random;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -19,7 +17,7 @@ public class BeetrootBlock extends CropBlock {
    public static final IntegerProperty AGE;
    private static final VoxelShape[] SHAPE_BY_AGE;
 
-   public BeetrootBlock(BlockBehaviour.Properties var1) {
+   public BeetrootBlock(Block.Properties var1) {
       super(var1);
    }
 
@@ -35,9 +33,9 @@ public class BeetrootBlock extends CropBlock {
       return Items.BEETROOT_SEEDS;
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
       if (var4.nextInt(3) != 0) {
-         super.randomTick(var1, var2, var3, var4);
+         super.tick(var1, var2, var3, var4);
       }
 
    }

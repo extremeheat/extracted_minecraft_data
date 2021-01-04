@@ -30,7 +30,7 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
    }
 
    public void doServerTick() {
-      double var1 = this.targetLocation == null ? 0.0D : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      double var1 = this.targetLocation == null ? 0.0D : this.targetLocation.distanceToSqr(this.dragon.x, this.dragon.y, this.dragon.z);
       if (var1 < 100.0D || var1 > 22500.0D || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
          this.findNewTarget();
       }
@@ -49,7 +49,7 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
          Player var3 = this.dragon.level.getNearestPlayer(NEAR_EGG_TARGETING, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
          int var4;
          if (var3 != null) {
-            Vec3 var5 = (new Vec3(var3.getX(), 0.0D, var3.getZ())).normalize();
+            Vec3 var5 = (new Vec3(var3.x, 0.0D, var3.z)).normalize();
             var4 = this.dragon.findClosestNode(-var5.x * 40.0D, 105.0D, -var5.z * 40.0D);
          } else {
             var4 = this.dragon.findClosestNode(40.0D, (double)var2.getY(), 0.0D);
@@ -58,7 +58,7 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
          Node var6 = new Node(var2.getX(), var2.getY(), var2.getZ());
          this.currentPath = this.dragon.findPath(var1, var4, var6);
          if (this.currentPath != null) {
-            this.currentPath.advance();
+            this.currentPath.next();
          }
       }
 
@@ -71,15 +71,15 @@ public class DragonLandingApproachPhase extends AbstractDragonPhaseInstance {
 
    private void navigateToNextPathNode() {
       if (this.currentPath != null && !this.currentPath.isDone()) {
-         BlockPos var1 = this.currentPath.getNextNodePos();
-         this.currentPath.advance();
-         double var2 = (double)var1.getX();
-         double var4 = (double)var1.getZ();
+         Vec3 var1 = this.currentPath.currentPos();
+         this.currentPath.next();
+         double var2 = var1.x;
+         double var4 = var1.z;
 
          double var6;
          do {
-            var6 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-         } while(var6 < (double)var1.getY());
+            var6 = var1.y + (double)(this.dragon.getRandom().nextFloat() * 20.0F);
+         } while(var6 < var1.y);
 
          this.targetLocation = new Vec3(var2, var6, var4);
       }

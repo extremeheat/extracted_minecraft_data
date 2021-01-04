@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,7 +36,7 @@ public abstract class VoxelShape {
 
    public AABB bounds() {
       if (this.isEmpty()) {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("No bounds for empty shape."));
+         throw new UnsupportedOperationException("No bounds for empty shape.");
       } else {
          return new AABB(this.min(Direction.Axis.X), this.min(Direction.Axis.Y), this.min(Direction.Axis.Z), this.max(Direction.Axis.X), this.max(Direction.Axis.Y), this.max(Direction.Axis.Z));
       }
@@ -88,6 +87,15 @@ public abstract class VoxelShape {
       return var1;
    }
 
+   public double min(Direction.Axis var1, double var2, double var4) {
+      Direction.Axis var6 = AxisCycle.FORWARD.cycle(var1);
+      Direction.Axis var7 = AxisCycle.BACKWARD.cycle(var1);
+      int var8 = this.findIndex(var6, var2);
+      int var9 = this.findIndex(var7, var4);
+      int var10 = this.shape.firstFull(var1, var8, var9);
+      return var10 >= this.shape.getSize(var1) ? 1.0D / 0.0 : this.get(var1, var10);
+   }
+
    public double max(Direction.Axis var1, double var2, double var4) {
       Direction.Axis var6 = AxisCycle.FORWARD.cycle(var1);
       Direction.Axis var7 = AxisCycle.BACKWARD.cycle(var1);
@@ -99,8 +107,18 @@ public abstract class VoxelShape {
 
    protected int findIndex(Direction.Axis var1, double var2) {
       return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> {
-         return var2 < this.get(var1, var4);
+         if (var4 < 0) {
+            return false;
+         } else if (var4 > this.shape.getSize(var1)) {
+            return true;
+         } else {
+            return var2 < this.get(var1, var4);
+         }
       }) - 1;
+   }
+
+   protected boolean isFullWide(double var1, double var3, double var5) {
+      return this.shape.isFullWide(this.findIndex(Direction.Axis.X, var1), this.findIndex(Direction.Axis.Y, var3), this.findIndex(Direction.Axis.Z, var5));
    }
 
    @Nullable
@@ -113,7 +131,7 @@ public abstract class VoxelShape {
             return null;
          } else {
             Vec3 var5 = var1.add(var4.scale(0.001D));
-            return this.shape.isFullWide(this.findIndex(Direction.Axis.X, var5.x - (double)var3.getX()), this.findIndex(Direction.Axis.Y, var5.y - (double)var3.getY()), this.findIndex(Direction.Axis.Z, var5.z - (double)var3.getZ())) ? new BlockHitResult(var5, Direction.getNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true) : AABB.clip(this.toAabbs(), var1, var2, var3);
+            return this.isFullWide(var5.x - (double)var3.getX(), var5.y - (double)var3.getY(), var5.z - (double)var3.getZ()) ? new BlockHitResult(var5, Direction.getNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true) : AABB.clip(this.toAabbs(), var1, var2, var3);
          }
       }
    }
@@ -140,12 +158,12 @@ public abstract class VoxelShape {
 
    private VoxelShape calculateFace(Direction var1) {
       Direction.Axis var2 = var1.getAxis();
-      DoubleList var3 = this.getCoords(var2);
-      if (var3.size() == 2 && DoubleMath.fuzzyEquals(var3.getDouble(0), 0.0D, 1.0E-7D) && DoubleMath.fuzzyEquals(var3.getDouble(1), 1.0D, 1.0E-7D)) {
+      Direction.AxisDirection var3 = var1.getAxisDirection();
+      DoubleList var4 = this.getCoords(var2);
+      if (var4.size() == 2 && DoubleMath.fuzzyEquals(var4.getDouble(0), 0.0D, 1.0E-7D) && DoubleMath.fuzzyEquals(var4.getDouble(1), 1.0D, 1.0E-7D)) {
          return this;
       } else {
-         Direction.AxisDirection var4 = var1.getAxisDirection();
-         int var5 = this.findIndex(var2, var4 == Direction.AxisDirection.POSITIVE ? 0.9999999D : 1.0E-7D);
+         int var5 = this.findIndex(var2, var3 == Direction.AxisDirection.POSITIVE ? 0.9999999D : 1.0E-7D);
          return new SliceShape(this, var2, var5);
       }
    }

@@ -1,7 +1,6 @@
 package net.minecraft.commands.synchronization;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,17 +10,13 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
-import net.minecraft.commands.arguments.AngleArgument;
 import net.minecraft.commands.arguments.ColorArgument;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.commands.arguments.CompoundTagArgument;
-import net.minecraft.commands.arguments.DimensionArgument;
+import net.minecraft.commands.arguments.DimensionTypeArgument;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.EntitySummonArgument;
@@ -42,7 +37,6 @@ import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.commands.arguments.SlotArgument;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.commands.arguments.TimeArgument;
-import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -55,8 +49,6 @@ import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemPredicateArgument;
 import net.minecraft.commands.synchronization.brigadier.BrigadierArgumentSerializers;
-import net.minecraft.gametest.framework.TestClassNameArgument;
-import net.minecraft.gametest.framework.TestFunctionArgument;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -102,7 +94,6 @@ public class ArgumentTypes {
       register("objective_criteria", ObjectiveCriteriaArgument.class, new EmptyArgumentSerializer(ObjectiveCriteriaArgument::criteria));
       register("operation", OperationArgument.class, new EmptyArgumentSerializer(OperationArgument::operation));
       register("particle", ParticleArgument.class, new EmptyArgumentSerializer(ParticleArgument::particle));
-      register("angle", AngleArgument.class, new EmptyArgumentSerializer(AngleArgument::angle));
       register("rotation", RotationArgument.class, new EmptyArgumentSerializer(RotationArgument::rotation));
       register("scoreboard_slot", ScoreboardSlotArgument.class, new EmptyArgumentSerializer(ScoreboardSlotArgument::displaySlot));
       register("score_holder", ScoreHolderArgument.class, new ScoreHolderArgument.Serializer());
@@ -113,18 +104,12 @@ public class ArgumentTypes {
       register("mob_effect", MobEffectArgument.class, new EmptyArgumentSerializer(MobEffectArgument::effect));
       register("function", FunctionArgument.class, new EmptyArgumentSerializer(FunctionArgument::functions));
       register("entity_anchor", EntityAnchorArgument.class, new EmptyArgumentSerializer(EntityAnchorArgument::anchor));
-      register("int_range", RangeArgument.Ints.class, new EmptyArgumentSerializer(RangeArgument::intRange));
-      register("float_range", RangeArgument.Floats.class, new EmptyArgumentSerializer(RangeArgument::floatRange));
+      register("int_range", RangeArgument.Ints.class, new RangeArgument.Ints.Serializer());
+      register("float_range", RangeArgument.Floats.class, new RangeArgument.Floats.Serializer());
       register("item_enchantment", ItemEnchantmentArgument.class, new EmptyArgumentSerializer(ItemEnchantmentArgument::enchantment));
       register("entity_summon", EntitySummonArgument.class, new EmptyArgumentSerializer(EntitySummonArgument::id));
-      register("dimension", DimensionArgument.class, new EmptyArgumentSerializer(DimensionArgument::dimension));
+      register("dimension", DimensionTypeArgument.class, new EmptyArgumentSerializer(DimensionTypeArgument::dimension));
       register("time", TimeArgument.class, new EmptyArgumentSerializer(TimeArgument::time));
-      register("uuid", UuidArgument.class, new EmptyArgumentSerializer(UuidArgument::uuid));
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         register("test_argument", TestFunctionArgument.class, new EmptyArgumentSerializer(TestFunctionArgument::testFunctionArgument));
-         register("test_class", TestClassNameArgument.class, new EmptyArgumentSerializer(TestClassNameArgument::testClassName));
-      }
-
    }
 
    @Nullable
@@ -222,34 +207,6 @@ public class ArgumentTypes {
       }
 
       return var2;
-   }
-
-   public static boolean isTypeRegistered(ArgumentType<?> var0) {
-      return get(var0) != null;
-   }
-
-   public static <T> Set<ArgumentType<?>> findUsedArgumentTypes(CommandNode<T> var0) {
-      Set var1 = Sets.newIdentityHashSet();
-      HashSet var2 = Sets.newHashSet();
-      findUsedArgumentTypes(var0, var2, var1);
-      return var2;
-   }
-
-   private static <T> void findUsedArgumentTypes(CommandNode<T> var0, Set<ArgumentType<?>> var1, Set<CommandNode<T>> var2) {
-      if (var2.add(var0)) {
-         if (var0 instanceof ArgumentCommandNode) {
-            var1.add(((ArgumentCommandNode)var0).getType());
-         }
-
-         var0.getChildren().forEach((var2x) -> {
-            findUsedArgumentTypes(var2x, var1, var2);
-         });
-         CommandNode var3 = var0.getRedirect();
-         if (var3 != null) {
-            findUsedArgumentTypes(var3, var1, var2);
-         }
-
-      }
    }
 
    static class Entry<T extends ArgumentType<?>> {

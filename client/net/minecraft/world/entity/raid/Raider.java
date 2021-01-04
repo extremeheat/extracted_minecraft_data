@@ -29,7 +29,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PathfindToRaidGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.ai.util.RandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.animal.Wolf;
@@ -40,7 +40,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Raider extends PatrollingMonster {
@@ -85,7 +85,7 @@ public abstract class Raider extends PatrollingMonster {
          if (this.canJoinRaid()) {
             if (var1 == null) {
                if (this.level.getGameTime() % 20L == 0L) {
-                  Raid var2 = ((ServerLevel)this.level).getRaidAt(this.blockPosition());
+                  Raid var2 = ((ServerLevel)this.level).getRaidAt(new BlockPos(this));
                   if (var2 != null && Raids.canJoinRaid(this, var2)) {
                      var2.joinRaid(var2.getGroupsSpawned(), this, (BlockPos)null, true);
                   }
@@ -122,7 +122,7 @@ public abstract class Raider extends PatrollingMonster {
             var3.removeFromRaid(this, false);
          }
 
-         if (this.isPatrolLeader() && var3 == null && ((ServerLevel)this.level).getRaidAt(this.blockPosition()) == null) {
+         if (this.isPatrolLeader() && var3 == null && ((ServerLevel)this.level).getRaidAt(new BlockPos(this)) == null) {
             ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
             Player var5 = null;
             if (var2 instanceof Player) {
@@ -146,7 +146,7 @@ public abstract class Raider extends PatrollingMonster {
                   var12 = var11 - 1;
                }
 
-               var12 = Mth.clamp(var12, 0, 4);
+               var12 = Mth.clamp(var12, 0, 5);
                MobEffectInstance var9 = new MobEffectInstance(MobEffects.BAD_OMEN, 120000, var12, false, false, true);
                if (!this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
                   var5.addEffect(var9);
@@ -227,14 +227,13 @@ public abstract class Raider extends PatrollingMonster {
          EquipmentSlot var4 = EquipmentSlot.HEAD;
          ItemStack var5 = this.getItemBySlot(var4);
          double var6 = (double)this.getEquipmentDropChance(var4);
-         if (!var5.isEmpty() && (double)Math.max(this.random.nextFloat() - 0.1F, 0.0F) < var6) {
+         if (!var5.isEmpty() && (double)(this.random.nextFloat() - 0.1F) < var6) {
             this.spawnAtLocation(var5);
          }
 
-         this.onItemPickup(var1);
          this.setItemSlot(var4, var2);
          this.take(var1, var2.getCount());
-         var1.discard();
+         var1.remove();
          this.getCurrentRaid().setLeader(this.getWave(), this);
          this.setPatrolLeader(true);
       } else {
@@ -248,7 +247,7 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    public boolean requiresCustomPersistence() {
-      return super.requiresCustomPersistence() || this.getCurrentRaid() != null;
+      return this.getCurrentRaid() != null;
    }
 
    public int getTicksOutsideRaid() {
@@ -268,7 +267,7 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
+   public SpawnGroupData finalizeSpawn(LevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5) {
       this.setCanJoinRaid(this.getType() != EntityType.WITCH || var3 != MobSpawnType.NATURAL);
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
@@ -309,7 +308,7 @@ public abstract class Raider extends PatrollingMonster {
 
       private boolean hasSuitablePoi() {
          ServerLevel var1 = (ServerLevel)this.raider.level;
-         BlockPos var2 = this.raider.blockPosition();
+         BlockPos var2 = new BlockPos(this.raider);
          Optional var3 = var1.getPoiManager().getRandom((var0) -> {
             return var0 == PoiType.HOME;
          }, this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);
@@ -345,18 +344,20 @@ public abstract class Raider extends PatrollingMonster {
 
       public void tick() {
          if (this.raider.getNavigation().isDone()) {
-            Vec3 var1 = Vec3.atBottomCenterOf(this.poiPos);
-            Vec3 var2 = DefaultRandomPos.getPosTowards(this.raider, 16, 7, var1, 0.3141592741012573D);
-            if (var2 == null) {
-               var2 = DefaultRandomPos.getPosTowards(this.raider, 8, 7, var1, 1.5707963705062866D);
+            int var1 = this.poiPos.getX();
+            int var2 = this.poiPos.getY();
+            int var3 = this.poiPos.getZ();
+            Vec3 var4 = RandomPos.getPosTowards(this.raider, 16, 7, new Vec3((double)var1, (double)var2, (double)var3), 0.3141592741012573D);
+            if (var4 == null) {
+               var4 = RandomPos.getPosTowards(this.raider, 8, 7, new Vec3((double)var1, (double)var2, (double)var3));
             }
 
-            if (var2 == null) {
+            if (var4 == null) {
                this.stuck = true;
                return;
             }
 
-            this.raider.getNavigation().moveTo(var2.x, var2.y, var2.z, this.speedModifier);
+            this.raider.getNavigation().moveTo(var4.x, var4.y, var4.z, this.speedModifier);
          }
 
       }

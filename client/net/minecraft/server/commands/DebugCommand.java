@@ -21,14 +21,15 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.GameProfiler;
 import net.minecraft.util.profiling.ProfileResults;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DebugCommand {
    private static final Logger LOGGER = LogManager.getLogger();
-   private static final SimpleCommandExceptionType ERROR_NOT_RUNNING = new SimpleCommandExceptionType(new TranslatableComponent("commands.debug.notRunning"));
-   private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(new TranslatableComponent("commands.debug.alreadyRunning"));
+   private static final SimpleCommandExceptionType ERROR_NOT_RUNNING = new SimpleCommandExceptionType(new TranslatableComponent("commands.debug.notRunning", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(new TranslatableComponent("commands.debug.alreadyRunning", new Object[0]));
    @Nullable
    private static final FileSystemProvider ZIP_FS_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> {
       return var0.getScheme().equalsIgnoreCase("jar");
@@ -48,10 +49,11 @@ public class DebugCommand {
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
       MinecraftServer var1 = var0.getServer();
-      if (var1.isProfiling()) {
+      GameProfiler var2 = var1.getProfiler();
+      if (var2.continuous().isEnabled()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
-         var1.startProfiling();
+         var1.delayStartProfiler();
          var0.sendSuccess(new TranslatableComponent("commands.debug.started", new Object[]{"Started the debug profiler. Type '/debug stop' to stop it."}), true);
          return 0;
       }
@@ -59,16 +61,17 @@ public class DebugCommand {
 
    private static int stop(CommandSourceStack var0) throws CommandSyntaxException {
       MinecraftServer var1 = var0.getServer();
-      if (!var1.isProfiling()) {
+      GameProfiler var2 = var1.getProfiler();
+      if (!var2.continuous().isEnabled()) {
          throw ERROR_NOT_RUNNING.create();
       } else {
-         ProfileResults var2 = var1.finishProfiling();
-         File var3 = new File(var1.getFile("debug"), "profile-results-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + ".txt");
-         var2.saveResults(var3);
-         float var4 = (float)var2.getNanoDuration() / 1.0E9F;
-         float var5 = (float)var2.getTickDuration() / var4;
-         var0.sendSuccess(new TranslatableComponent("commands.debug.stopped", new Object[]{String.format(Locale.ROOT, "%.2f", var4), var2.getTickDuration(), String.format("%.2f", var5)}), true);
-         return Mth.floor(var5);
+         ProfileResults var3 = var2.continuous().disable();
+         File var4 = new File(var1.getFile("debug"), "profile-results-" + (new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss")).format(new Date()) + ".txt");
+         var3.saveResults(var4);
+         float var5 = (float)var3.getNanoDuration() / 1.0E9F;
+         float var6 = (float)var3.getTickDuration() / var5;
+         var0.sendSuccess(new TranslatableComponent("commands.debug.stopped", new Object[]{String.format(Locale.ROOT, "%.2f", var5), var3.getTickDuration(), String.format("%.2f", var6)}), true);
+         return Mth.floor(var6);
       }
    }
 
@@ -113,7 +116,7 @@ public class DebugCommand {
          return 1;
       } catch (IOException var18) {
          LOGGER.error("Failed to save debug dump", var18);
-         var0.sendFailure(new TranslatableComponent("commands.debug.reportFailed"));
+         var0.sendFailure(new TranslatableComponent("commands.debug.reportFailed", new Object[0]));
          return 0;
       }
    }

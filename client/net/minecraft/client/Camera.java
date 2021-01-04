@@ -1,7 +1,6 @@
 package net.minecraft.client;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -21,12 +20,11 @@ public class Camera {
    private Entity entity;
    private Vec3 position;
    private final BlockPos.MutableBlockPos blockPosition;
-   private final Vector3f forwards;
-   private final Vector3f up;
-   private final Vector3f left;
+   private Vec3 forwards;
+   private Vec3 up;
+   private Vec3 left;
    private float xRot;
    private float yRot;
-   private final Quaternion rotation;
    private boolean detached;
    private boolean mirror;
    private float eyeHeight;
@@ -36,10 +34,6 @@ public class Camera {
       super();
       this.position = Vec3.ZERO;
       this.blockPosition = new BlockPos.MutableBlockPos();
-      this.forwards = new Vector3f(0.0F, 0.0F, 1.0F);
-      this.up = new Vector3f(0.0F, 1.0F, 0.0F);
-      this.left = new Vector3f(1.0F, 0.0F, 0.0F);
-      this.rotation = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
    }
 
    public void setup(BlockGetter var1, Entity var2, boolean var3, boolean var4, float var5) {
@@ -49,10 +43,12 @@ public class Camera {
       this.detached = var3;
       this.mirror = var4;
       this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
-      this.setPosition(Mth.lerp((double)var5, var2.xo, var2.getX()), Mth.lerp((double)var5, var2.yo, var2.getY()) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), Mth.lerp((double)var5, var2.zo, var2.getZ()));
+      this.setPosition(Mth.lerp((double)var5, var2.xo, var2.x), Mth.lerp((double)var5, var2.yo, var2.y) + (double)Mth.lerp(var5, this.eyeHeightOld, this.eyeHeight), Mth.lerp((double)var5, var2.zo, var2.z));
       if (var3) {
          if (var4) {
-            this.setRotation(this.yRot + 180.0F, -this.xRot);
+            this.yRot += 180.0F;
+            this.xRot += -this.xRot * 2.0F;
+            this.recalculateViewVector();
          }
 
          this.move(-this.getMaxZoom(4.0D), 0.0D, 0.0D);
@@ -62,6 +58,8 @@ public class Camera {
          this.move(0.0D, 0.3D, 0.0D);
       }
 
+      GlStateManager.rotatef(this.xRot, 1.0F, 0.0F, 0.0F);
+      GlStateManager.rotatef(this.yRot + 180.0F, 0.0F, 1.0F, 0.0F);
    }
 
    public void tick() {
@@ -81,8 +79,8 @@ public class Camera {
          var5 *= 0.1F;
          var6 *= 0.1F;
          Vec3 var7 = this.position.add((double)var4, (double)var5, (double)var6);
-         Vec3 var8 = new Vec3(this.position.x - (double)this.forwards.x() * var1 + (double)var4 + (double)var6, this.position.y - (double)this.forwards.y() * var1 + (double)var5, this.position.z - (double)this.forwards.z() * var1 + (double)var6);
-         BlockHitResult var9 = this.level.clip(new ClipContext(var7, var8, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, this.entity));
+         Vec3 var8 = new Vec3(this.position.x - this.forwards.x * var1 + (double)var4 + (double)var6, this.position.y - this.forwards.y * var1 + (double)var5, this.position.z - this.forwards.z * var1 + (double)var6);
+         BlockHitResult var9 = this.level.clip(new ClipContext(var7, var8, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.entity));
          if (var9.getType() != HitResult.Type.MISS) {
             double var10 = var9.getLocation().distanceTo(this.position);
             if (var10 < var1) {
@@ -95,24 +93,28 @@ public class Camera {
    }
 
    protected void move(double var1, double var3, double var5) {
-      double var7 = (double)this.forwards.x() * var1 + (double)this.up.x() * var3 + (double)this.left.x() * var5;
-      double var9 = (double)this.forwards.y() * var1 + (double)this.up.y() * var3 + (double)this.left.y() * var5;
-      double var11 = (double)this.forwards.z() * var1 + (double)this.up.z() * var3 + (double)this.left.z() * var5;
+      double var7 = this.forwards.x * var1 + this.up.x * var3 + this.left.x * var5;
+      double var9 = this.forwards.y * var1 + this.up.y * var3 + this.left.y * var5;
+      double var11 = this.forwards.z * var1 + this.up.z * var3 + this.left.z * var5;
       this.setPosition(new Vec3(this.position.x + var7, this.position.y + var9, this.position.z + var11));
+   }
+
+   protected void recalculateViewVector() {
+      float var1 = Mth.cos((this.yRot + 90.0F) * 0.017453292F);
+      float var2 = Mth.sin((this.yRot + 90.0F) * 0.017453292F);
+      float var3 = Mth.cos(-this.xRot * 0.017453292F);
+      float var4 = Mth.sin(-this.xRot * 0.017453292F);
+      float var5 = Mth.cos((-this.xRot + 90.0F) * 0.017453292F);
+      float var6 = Mth.sin((-this.xRot + 90.0F) * 0.017453292F);
+      this.forwards = new Vec3((double)(var1 * var3), (double)var4, (double)(var2 * var3));
+      this.up = new Vec3((double)(var1 * var5), (double)var6, (double)(var2 * var5));
+      this.left = this.forwards.cross(this.up).scale(-1.0D);
    }
 
    protected void setRotation(float var1, float var2) {
       this.xRot = var2;
       this.yRot = var1;
-      this.rotation.set(0.0F, 0.0F, 0.0F, 1.0F);
-      this.rotation.mul(Vector3f.YP.rotationDegrees(-var1));
-      this.rotation.mul(Vector3f.XP.rotationDegrees(var2));
-      this.forwards.set(0.0F, 0.0F, 1.0F);
-      this.forwards.transform(this.rotation);
-      this.up.set(0.0F, 1.0F, 0.0F);
-      this.up.transform(this.rotation);
-      this.left.set(1.0F, 0.0F, 0.0F);
-      this.left.transform(this.rotation);
+      this.recalculateViewVector();
    }
 
    protected void setPosition(double var1, double var3, double var5) {
@@ -140,10 +142,6 @@ public class Camera {
       return this.yRot;
    }
 
-   public Quaternion rotation() {
-      return this.rotation;
-   }
-
    public Entity getEntity() {
       return this.entity;
    }
@@ -165,11 +163,11 @@ public class Camera {
       }
    }
 
-   public final Vector3f getLookVector() {
+   public final Vec3 getLookVector() {
       return this.forwards;
    }
 
-   public final Vector3f getUpVector() {
+   public final Vec3 getUpVector() {
       return this.up;
    }
 

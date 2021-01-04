@@ -1,20 +1,20 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.Iterator;
 import java.util.Random;
-import net.minecraft.Util;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.ChunkGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -26,11 +26,11 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
    private static final EntityType<?>[] MOBS;
    private static final BlockState AIR;
 
-   public MonsterRoomFeature(Codec<NoneFeatureConfiguration> var1) {
+   public MonsterRoomFeature(Function<Dynamic<?>, ? extends NoneFeatureConfiguration> var1) {
       super(var1);
    }
 
-   public boolean place(WorldGenLevel var1, ChunkGenerator var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
+   public boolean place(LevelAccessor var1, ChunkGenerator<? extends ChunkGeneratorSettings> var2, Random var3, BlockPos var4, NoneFeatureConfiguration var5) {
       boolean var6 = true;
       int var7 = var3.nextInt(2) + 2;
       int var8 = -var7 - 1;
@@ -72,14 +72,13 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
             for(var17 = 3; var17 >= -1; --var17) {
                for(var18 = var13; var18 <= var14; ++var18) {
                   var19 = var4.offset(var16, var17, var18);
-                  BlockState var27 = var1.getBlockState(var19);
                   if (var16 != var8 && var17 != -1 && var18 != var13 && var16 != var9 && var17 != 4 && var18 != var14) {
-                     if (!var27.is(Blocks.CHEST) && !var27.is(Blocks.SPAWNER)) {
+                     if (var1.getBlockState(var19).getBlock() != Blocks.CHEST) {
                         var1.setBlock(var19, AIR, 2);
                      }
-                  } else if (var19.getY() >= var1.getMinBuildHeight() && !var1.getBlockState(var19.below()).getMaterial().isSolid()) {
+                  } else if (var19.getY() >= 0 && !var1.getBlockState(var19.below()).getMaterial().isSolid()) {
                      var1.setBlock(var19, AIR, 2);
-                  } else if (var27.getMaterial().isSolid() && !var27.is(Blocks.CHEST)) {
+                  } else if (var1.getBlockState(var19).getMaterial().isSolid() && var1.getBlockState(var19).getBlock() != Blocks.CHEST) {
                      if (var17 == -1 && var3.nextInt(4) != 0) {
                         var1.setBlock(var19, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), 2);
                      } else {
@@ -94,22 +93,22 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
             for(var17 = 0; var17 < 3; ++var17) {
                var18 = var4.getX() + var3.nextInt(var7 * 2 + 1) - var7;
                int var26 = var4.getY();
-               int var28 = var4.getZ() + var3.nextInt(var12 * 2 + 1) - var12;
-               BlockPos var29 = new BlockPos(var18, var26, var28);
-               if (var1.isEmptyBlock(var29)) {
+               int var27 = var4.getZ() + var3.nextInt(var12 * 2 + 1) - var12;
+               BlockPos var28 = new BlockPos(var18, var26, var27);
+               if (var1.isEmptyBlock(var28)) {
                   int var22 = 0;
                   Iterator var23 = Direction.Plane.HORIZONTAL.iterator();
 
                   while(var23.hasNext()) {
                      Direction var24 = (Direction)var23.next();
-                     if (var1.getBlockState(var29.relative(var24)).getMaterial().isSolid()) {
+                     if (var1.getBlockState(var28.relative(var24)).getMaterial().isSolid()) {
                         ++var22;
                      }
                   }
 
                   if (var22 == 1) {
-                     var1.setBlock(var29, StructurePiece.reorient(var1, var29, Blocks.CHEST.defaultBlockState()), 2);
-                     RandomizableContainerBlockEntity.setLootTable(var1, var3, var29, BuiltInLootTables.SIMPLE_DUNGEON);
+                     var1.setBlock(var28, StructurePiece.reorient(var1, var28, Blocks.CHEST.defaultBlockState()), 2);
+                     RandomizableContainerBlockEntity.setLootTable(var1, var3, var28, BuiltInLootTables.SIMPLE_DUNGEON);
                      break;
                   }
                }
@@ -131,7 +130,7 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
    }
 
    private EntityType<?> randomEntityId(Random var1) {
-      return (EntityType)Util.getRandom((Object[])MOBS, var1);
+      return MOBS[var1.nextInt(MOBS.length)];
    }
 
    static {

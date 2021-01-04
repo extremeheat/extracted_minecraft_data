@@ -10,16 +10,16 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.UnopenedPack;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.LevelData;
 
 public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_PACK = new DynamicCommandExceptionType((var0) -> {
@@ -32,20 +32,16 @@ public class DataPackCommand {
       return new TranslatableComponent("commands.datapack.disable.failed", new Object[]{var0});
    });
    private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (var0, var1) -> {
-      return SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), var1);
+      return SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getSelected().stream().map(UnopenedPack::getId).map(StringArgumentType::escapeIfRequired), var1);
    };
-   private static final SuggestionProvider<CommandSourceStack> UNSELECTED_PACKS = (var0, var1) -> {
-      PackRepository var2 = ((CommandSourceStack)var0.getSource()).getServer().getPackRepository();
-      Collection var3 = var2.getSelectedIds();
-      return SharedSuggestionProvider.suggest(var2.getAvailableIds().stream().filter((var1x) -> {
-         return !var3.contains(var1x);
-      }).map(StringArgumentType::escapeIfRequired), var1);
+   private static final SuggestionProvider<CommandSourceStack> AVAILABLE_PACKS = (var0, var1) -> {
+      return SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getUnselected().stream().map(UnopenedPack::getId).map(StringArgumentType::escapeIfRequired), var1);
    };
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("datapack").requires((var0x) -> {
          return var0x.hasPermission(2);
-      })).then(Commands.literal("enable").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", StringArgumentType.string()).suggests(UNSELECTED_PACKS).executes((var0x) -> {
+      })).then(Commands.literal("enable").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", StringArgumentType.string()).suggests(AVAILABLE_PACKS).executes((var0x) -> {
          return enablePack((CommandSourceStack)var0x.getSource(), getPack(var0x, "name", true), (var0, var1) -> {
             var1.getDefaultPosition().insert(var0, var1, (var0x) -> {
                return var0x;
@@ -76,22 +72,36 @@ public class DataPackCommand {
       }))));
    }
 
-   private static int enablePack(CommandSourceStack var0, Pack var1, DataPackCommand.Inserter var2) throws CommandSyntaxException {
+   private static int enablePack(CommandSourceStack var0, UnopenedPack var1, DataPackCommand.Inserter var2) throws CommandSyntaxException {
       PackRepository var3 = var0.getServer().getPackRepository();
-      ArrayList var4 = Lists.newArrayList(var3.getSelectedPacks());
+      ArrayList var4 = Lists.newArrayList(var3.getSelected());
       var2.apply(var4, var1);
-      var0.sendSuccess(new TranslatableComponent("commands.datapack.modify.enable", new Object[]{var1.getChatLink(true)}), true);
-      ReloadCommand.reloadPacks((Collection)var4.stream().map(Pack::getId).collect(Collectors.toList()), var0);
-      return var4.size();
+      var3.setSelected(var4);
+      LevelData var5 = var0.getServer().getLevel(DimensionType.OVERWORLD).getLevelData();
+      var5.getEnabledDataPacks().clear();
+      var3.getSelected().forEach((var1x) -> {
+         var5.getEnabledDataPacks().add(var1x.getId());
+      });
+      var5.getDisabledDataPacks().remove(var1.getId());
+      var0.sendSuccess(new TranslatableComponent("commands.datapack.enable.success", new Object[]{var1.getChatLink(true)}), true);
+      var0.getServer().reloadResources();
+      return var3.getSelected().size();
    }
 
-   private static int disablePack(CommandSourceStack var0, Pack var1) {
+   private static int disablePack(CommandSourceStack var0, UnopenedPack var1) {
       PackRepository var2 = var0.getServer().getPackRepository();
-      ArrayList var3 = Lists.newArrayList(var2.getSelectedPacks());
+      ArrayList var3 = Lists.newArrayList(var2.getSelected());
       var3.remove(var1);
-      var0.sendSuccess(new TranslatableComponent("commands.datapack.modify.disable", new Object[]{var1.getChatLink(true)}), true);
-      ReloadCommand.reloadPacks((Collection)var3.stream().map(Pack::getId).collect(Collectors.toList()), var0);
-      return var3.size();
+      var2.setSelected(var3);
+      LevelData var4 = var0.getServer().getLevel(DimensionType.OVERWORLD).getLevelData();
+      var4.getEnabledDataPacks().clear();
+      var2.getSelected().forEach((var1x) -> {
+         var4.getEnabledDataPacks().add(var1x.getId());
+      });
+      var4.getDisabledDataPacks().add(var1.getId());
+      var0.sendSuccess(new TranslatableComponent("commands.datapack.disable.success", new Object[]{var1.getChatLink(true)}), true);
+      var0.getServer().reloadResources();
+      return var2.getSelected().size();
    }
 
    private static int listPacks(CommandSourceStack var0) {
@@ -100,46 +110,38 @@ public class DataPackCommand {
 
    private static int listAvailablePacks(CommandSourceStack var0) {
       PackRepository var1 = var0.getServer().getPackRepository();
-      var1.reload();
-      Collection var2 = var1.getSelectedPacks();
-      Collection var3 = var1.getAvailablePacks();
-      List var4 = (List)var3.stream().filter((var1x) -> {
-         return !var2.contains(var1x);
-      }).collect(Collectors.toList());
-      if (var4.isEmpty()) {
-         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.available.none"), false);
+      if (var1.getUnselected().isEmpty()) {
+         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.available.none", new Object[0]), false);
       } else {
-         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.available.success", new Object[]{var4.size(), ComponentUtils.formatList(var4, (var0x) -> {
+         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.available.success", new Object[]{var1.getUnselected().size(), ComponentUtils.formatList(var1.getUnselected(), (var0x) -> {
             return var0x.getChatLink(false);
          })}), false);
       }
 
-      return var4.size();
+      return var1.getUnselected().size();
    }
 
    private static int listEnabledPacks(CommandSourceStack var0) {
       PackRepository var1 = var0.getServer().getPackRepository();
-      var1.reload();
-      Collection var2 = var1.getSelectedPacks();
-      if (var2.isEmpty()) {
-         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.enabled.none"), false);
+      if (var1.getSelected().isEmpty()) {
+         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.enabled.none", new Object[0]), false);
       } else {
-         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.enabled.success", new Object[]{var2.size(), ComponentUtils.formatList(var2, (var0x) -> {
+         var0.sendSuccess(new TranslatableComponent("commands.datapack.list.enabled.success", new Object[]{var1.getSelected().size(), ComponentUtils.formatList(var1.getSelected(), (var0x) -> {
             return var0x.getChatLink(true);
          })}), false);
       }
 
-      return var2.size();
+      return var1.getSelected().size();
    }
 
-   private static Pack getPack(CommandContext<CommandSourceStack> var0, String var1, boolean var2) throws CommandSyntaxException {
+   private static UnopenedPack getPack(CommandContext<CommandSourceStack> var0, String var1, boolean var2) throws CommandSyntaxException {
       String var3 = StringArgumentType.getString(var0, var1);
       PackRepository var4 = ((CommandSourceStack)var0.getSource()).getServer().getPackRepository();
-      Pack var5 = var4.getPack(var3);
+      UnopenedPack var5 = var4.getPack(var3);
       if (var5 == null) {
          throw ERROR_UNKNOWN_PACK.create(var3);
       } else {
-         boolean var6 = var4.getSelectedPacks().contains(var5);
+         boolean var6 = var4.getSelected().contains(var5);
          if (var2 && var6) {
             throw ERROR_PACK_ALREADY_ENABLED.create(var3);
          } else if (!var2 && !var6) {
@@ -151,6 +153,6 @@ public class DataPackCommand {
    }
 
    interface Inserter {
-      void apply(List<Pack> var1, Pack var2) throws CommandSyntaxException;
+      void apply(List<UnopenedPack> var1, UnopenedPack var2) throws CommandSyntaxException;
    }
 }

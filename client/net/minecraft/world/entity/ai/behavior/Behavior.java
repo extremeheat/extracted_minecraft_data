@@ -1,15 +1,13 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public abstract class Behavior<E extends LivingEntity> {
-   protected final Map<MemoryModuleType<?>, MemoryStatus> entryCondition;
+   private final Map<MemoryModuleType<?>, MemoryStatus> entryCondition;
    private Behavior.Status status;
    private long endTimestamp;
    private final int minDuration;
@@ -87,21 +85,11 @@ public abstract class Behavior<E extends LivingEntity> {
    }
 
    private boolean hasRequiredMemories(E var1) {
-      Iterator var2 = this.entryCondition.entrySet().iterator();
-
-      MemoryModuleType var4;
-      MemoryStatus var5;
-      do {
-         if (!var2.hasNext()) {
-            return true;
-         }
-
-         Entry var3 = (Entry)var2.next();
-         var4 = (MemoryModuleType)var3.getKey();
-         var5 = (MemoryStatus)var3.getValue();
-      } while(var1.getBrain().checkMemory(var4, var5));
-
-      return false;
+      return this.entryCondition.entrySet().stream().allMatch((var1x) -> {
+         MemoryModuleType var2 = (MemoryModuleType)var1x.getKey();
+         MemoryStatus var3 = (MemoryStatus)var1x.getValue();
+         return var1.getBrain().checkMemory(var2, var3);
+      });
    }
 
    public static enum Status {

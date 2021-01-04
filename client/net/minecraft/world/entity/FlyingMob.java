@@ -1,6 +1,7 @@
 package net.minecraft.world.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -10,8 +11,7 @@ public abstract class FlyingMob extends Mob {
       super(var1, var2);
    }
 
-   public boolean causeFallDamage(float var1, float var2) {
-      return false;
+   public void causeFallDamage(float var1, float var2) {
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
@@ -29,13 +29,13 @@ public abstract class FlyingMob extends Mob {
       } else {
          float var2 = 0.91F;
          if (this.onGround) {
-            var2 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getBlock().getFriction() * 0.91F;
+            var2 = this.level.getBlockState(new BlockPos(this.x, this.getBoundingBox().minY - 1.0D, this.z)).getBlock().getFriction() * 0.91F;
          }
 
          float var3 = 0.16277137F / (var2 * var2 * var2);
          var2 = 0.91F;
          if (this.onGround) {
-            var2 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getBlock().getFriction() * 0.91F;
+            var2 = this.level.getBlockState(new BlockPos(this.x, this.getBoundingBox().minY - 1.0D, this.z)).getBlock().getFriction() * 0.91F;
          }
 
          this.moveRelative(this.onGround ? 0.1F * var3 : 0.02F, var1);
@@ -43,10 +43,19 @@ public abstract class FlyingMob extends Mob {
          this.setDeltaMovement(this.getDeltaMovement().scale((double)var2));
       }
 
-      this.calculateEntityAnimation(this, false);
+      this.animationSpeedOld = this.animationSpeed;
+      double var7 = this.x - this.xo;
+      double var4 = this.z - this.zo;
+      float var6 = Mth.sqrt(var7 * var7 + var4 * var4) * 4.0F;
+      if (var6 > 1.0F) {
+         var6 = 1.0F;
+      }
+
+      this.animationSpeed += (var6 - this.animationSpeed) * 0.4F;
+      this.animationPosition += this.animationSpeed;
    }
 
-   public boolean onClimbable() {
+   public boolean onLadder() {
       return false;
    }
 }

@@ -3,14 +3,14 @@ package net.minecraft.client.renderer.texture;
 import java.util.Collection;
 
 public class StitcherException extends RuntimeException {
-   private final Collection<TextureAtlasSprite.Info> allSprites;
+   private final Collection<TextureAtlasSprite> allSprites;
 
-   public StitcherException(TextureAtlasSprite.Info var1, Collection<TextureAtlasSprite.Info> var2) {
-      super(String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", var1.name(), var1.width(), var1.height()));
+   public StitcherException(TextureAtlasSprite var1, Collection<TextureAtlasSprite> var2) {
+      super(String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", var1.getName(), var1.getWidth(), var1.getHeight()));
       this.allSprites = var2;
    }
 
-   public Collection<TextureAtlasSprite.Info> getAllSprites() {
+   public Collection<TextureAtlasSprite> getAllSprites() {
       return this.allSprites;
    }
 }

@@ -1,8 +1,8 @@
 package net.minecraft.world.level.newbiome.layer;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import net.minecraft.Util;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.newbiome.area.Area;
 import net.minecraft.world.level.newbiome.context.Context;
 import net.minecraft.world.level.newbiome.layer.traits.AreaTransformer2;
@@ -14,29 +14,32 @@ public enum RegionHillsLayer implements AreaTransformer2, DimensionOffset1Transf
    INSTANCE;
 
    private static final Logger LOGGER = LogManager.getLogger();
-   private static final Int2IntMap MUTATIONS = (Int2IntMap)Util.make(new Int2IntOpenHashMap(), (var0) -> {
-      var0.put(1, 129);
-      var0.put(2, 130);
-      var0.put(3, 131);
-      var0.put(4, 132);
-      var0.put(5, 133);
-      var0.put(6, 134);
-      var0.put(12, 140);
-      var0.put(21, 149);
-      var0.put(23, 151);
-      var0.put(27, 155);
-      var0.put(28, 156);
-      var0.put(29, 157);
-      var0.put(30, 158);
-      var0.put(32, 160);
-      var0.put(33, 161);
-      var0.put(34, 162);
-      var0.put(35, 163);
-      var0.put(36, 164);
-      var0.put(37, 165);
-      var0.put(38, 166);
-      var0.put(39, 167);
-   });
+   private static final int BIRCH_FOREST = Registry.BIOME.getId(Biomes.BIRCH_FOREST);
+   private static final int BIRCH_FOREST_HILLS = Registry.BIOME.getId(Biomes.BIRCH_FOREST_HILLS);
+   private static final int DESERT = Registry.BIOME.getId(Biomes.DESERT);
+   private static final int DESERT_HILLS = Registry.BIOME.getId(Biomes.DESERT_HILLS);
+   private static final int MOUNTAINS = Registry.BIOME.getId(Biomes.MOUNTAINS);
+   private static final int WOODED_MOUNTAINS = Registry.BIOME.getId(Biomes.WOODED_MOUNTAINS);
+   private static final int FOREST = Registry.BIOME.getId(Biomes.FOREST);
+   private static final int WOODED_HILLS = Registry.BIOME.getId(Biomes.WOODED_HILLS);
+   private static final int SNOWY_TUNDRA = Registry.BIOME.getId(Biomes.SNOWY_TUNDRA);
+   private static final int SNOWY_MOUNTAIN = Registry.BIOME.getId(Biomes.SNOWY_MOUNTAINS);
+   private static final int JUNGLE = Registry.BIOME.getId(Biomes.JUNGLE);
+   private static final int JUNGLE_HILLS = Registry.BIOME.getId(Biomes.JUNGLE_HILLS);
+   private static final int BAMBOO_JUNGLE = Registry.BIOME.getId(Biomes.BAMBOO_JUNGLE);
+   private static final int BAMBOO_JUNGLE_HILLS = Registry.BIOME.getId(Biomes.BAMBOO_JUNGLE_HILLS);
+   private static final int BADLANDS = Registry.BIOME.getId(Biomes.BADLANDS);
+   private static final int WOODED_BADLANDS_PLATEAU = Registry.BIOME.getId(Biomes.WOODED_BADLANDS_PLATEAU);
+   private static final int PLAINS = Registry.BIOME.getId(Biomes.PLAINS);
+   private static final int GIANT_TREE_TAIGA = Registry.BIOME.getId(Biomes.GIANT_TREE_TAIGA);
+   private static final int GIANT_TREE_TAIGA_HILLS = Registry.BIOME.getId(Biomes.GIANT_TREE_TAIGA_HILLS);
+   private static final int DARK_FOREST = Registry.BIOME.getId(Biomes.DARK_FOREST);
+   private static final int SAVANNA = Registry.BIOME.getId(Biomes.SAVANNA);
+   private static final int SAVANNA_PLATEAU = Registry.BIOME.getId(Biomes.SAVANNA_PLATEAU);
+   private static final int TAIGA = Registry.BIOME.getId(Biomes.TAIGA);
+   private static final int SNOWY_TAIGA = Registry.BIOME.getId(Biomes.SNOWY_TAIGA);
+   private static final int SNOWY_TAIGA_HILLS = Registry.BIOME.getId(Biomes.SNOWY_TAIGA_HILLS);
+   private static final int TAIGA_HILLS = Registry.BIOME.getId(Biomes.TAIGA_HILLS);
 
    private RegionHillsLayer() {
    }
@@ -49,80 +52,86 @@ public enum RegionHillsLayer implements AreaTransformer2, DimensionOffset1Transf
       }
 
       int var8 = (var7 - 2) % 29;
+      Biome var10;
       if (!Layers.isShallowOcean(var6) && var7 >= 2 && var8 == 1) {
-         return MUTATIONS.getOrDefault(var6, var6);
-      } else {
-         if (var1.nextRandom(3) == 0 || var8 == 0) {
-            int var9 = var6;
-            if (var6 == 2) {
-               var9 = 17;
-            } else if (var6 == 4) {
-               var9 = 18;
-            } else if (var6 == 27) {
-               var9 = 28;
-            } else if (var6 == 29) {
-               var9 = 1;
-            } else if (var6 == 5) {
-               var9 = 19;
-            } else if (var6 == 32) {
-               var9 = 33;
-            } else if (var6 == 30) {
-               var9 = 31;
-            } else if (var6 == 1) {
-               var9 = var1.nextRandom(3) == 0 ? 18 : 4;
-            } else if (var6 == 12) {
-               var9 = 13;
-            } else if (var6 == 21) {
-               var9 = 22;
-            } else if (var6 == 168) {
-               var9 = 169;
-            } else if (var6 == 0) {
-               var9 = 24;
-            } else if (var6 == 45) {
-               var9 = 48;
-            } else if (var6 == 46) {
-               var9 = 49;
-            } else if (var6 == 10) {
-               var9 = 50;
-            } else if (var6 == 3) {
-               var9 = 34;
-            } else if (var6 == 35) {
-               var9 = 36;
-            } else if (Layers.isSame(var6, 38)) {
-               var9 = 37;
-            } else if ((var6 == 24 || var6 == 48 || var6 == 49 || var6 == 50) && var1.nextRandom(3) == 0) {
-               var9 = var1.nextRandom(2) == 0 ? 1 : 4;
-            }
+         Biome var9 = (Biome)Registry.BIOME.byId(var6);
+         if (var9 == null || !var9.isMutated()) {
+            var10 = Biome.getMutatedVariant(var9);
+            return var10 == null ? var6 : Registry.BIOME.getId(var10);
+         }
+      }
 
-            if (var8 == 0 && var9 != var6) {
-               var9 = MUTATIONS.getOrDefault(var9, var6);
-            }
-
-            if (var9 != var6) {
-               int var10 = 0;
-               if (Layers.isSame(var2.get(this.getParentX(var4 + 1), this.getParentY(var5 + 0)), var6)) {
-                  ++var10;
-               }
-
-               if (Layers.isSame(var2.get(this.getParentX(var4 + 2), this.getParentY(var5 + 1)), var6)) {
-                  ++var10;
-               }
-
-               if (Layers.isSame(var2.get(this.getParentX(var4 + 0), this.getParentY(var5 + 1)), var6)) {
-                  ++var10;
-               }
-
-               if (Layers.isSame(var2.get(this.getParentX(var4 + 1), this.getParentY(var5 + 2)), var6)) {
-                  ++var10;
-               }
-
-               if (var10 >= 3) {
-                  return var9;
-               }
-            }
+      if (var1.nextRandom(3) == 0 || var8 == 0) {
+         int var11 = var6;
+         if (var6 == DESERT) {
+            var11 = DESERT_HILLS;
+         } else if (var6 == FOREST) {
+            var11 = WOODED_HILLS;
+         } else if (var6 == BIRCH_FOREST) {
+            var11 = BIRCH_FOREST_HILLS;
+         } else if (var6 == DARK_FOREST) {
+            var11 = PLAINS;
+         } else if (var6 == TAIGA) {
+            var11 = TAIGA_HILLS;
+         } else if (var6 == GIANT_TREE_TAIGA) {
+            var11 = GIANT_TREE_TAIGA_HILLS;
+         } else if (var6 == SNOWY_TAIGA) {
+            var11 = SNOWY_TAIGA_HILLS;
+         } else if (var6 == PLAINS) {
+            var11 = var1.nextRandom(3) == 0 ? WOODED_HILLS : FOREST;
+         } else if (var6 == SNOWY_TUNDRA) {
+            var11 = SNOWY_MOUNTAIN;
+         } else if (var6 == JUNGLE) {
+            var11 = JUNGLE_HILLS;
+         } else if (var6 == BAMBOO_JUNGLE) {
+            var11 = BAMBOO_JUNGLE_HILLS;
+         } else if (var6 == Layers.OCEAN) {
+            var11 = Layers.DEEP_OCEAN;
+         } else if (var6 == Layers.LUKEWARM_OCEAN) {
+            var11 = Layers.DEEP_LUKEWARM_OCEAN;
+         } else if (var6 == Layers.COLD_OCEAN) {
+            var11 = Layers.DEEP_COLD_OCEAN;
+         } else if (var6 == Layers.FROZEN_OCEAN) {
+            var11 = Layers.DEEP_FROZEN_OCEAN;
+         } else if (var6 == MOUNTAINS) {
+            var11 = WOODED_MOUNTAINS;
+         } else if (var6 == SAVANNA) {
+            var11 = SAVANNA_PLATEAU;
+         } else if (Layers.isSame(var6, WOODED_BADLANDS_PLATEAU)) {
+            var11 = BADLANDS;
+         } else if ((var6 == Layers.DEEP_OCEAN || var6 == Layers.DEEP_LUKEWARM_OCEAN || var6 == Layers.DEEP_COLD_OCEAN || var6 == Layers.DEEP_FROZEN_OCEAN) && var1.nextRandom(3) == 0) {
+            var11 = var1.nextRandom(2) == 0 ? PLAINS : FOREST;
          }
 
-         return var6;
+         if (var8 == 0 && var11 != var6) {
+            var10 = Biome.getMutatedVariant((Biome)Registry.BIOME.byId(var11));
+            var11 = var10 == null ? var6 : Registry.BIOME.getId(var10);
+         }
+
+         if (var11 != var6) {
+            int var12 = 0;
+            if (Layers.isSame(var2.get(this.getParentX(var4 + 1), this.getParentY(var5 + 0)), var6)) {
+               ++var12;
+            }
+
+            if (Layers.isSame(var2.get(this.getParentX(var4 + 2), this.getParentY(var5 + 1)), var6)) {
+               ++var12;
+            }
+
+            if (Layers.isSame(var2.get(this.getParentX(var4 + 0), this.getParentY(var5 + 1)), var6)) {
+               ++var12;
+            }
+
+            if (Layers.isSame(var2.get(this.getParentX(var4 + 1), this.getParentY(var5 + 2)), var6)) {
+               ++var12;
+            }
+
+            if (var12 >= 3) {
+               return var11;
+            }
+         }
       }
+
+      return var6;
    }
 }

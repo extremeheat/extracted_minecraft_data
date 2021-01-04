@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.HashCache;
@@ -26,13 +27,13 @@ public class RegistryDumpReport implements DataProvider {
    public void run(HashCache var1) throws IOException {
       JsonObject var2 = new JsonObject();
       Registry.REGISTRY.keySet().forEach((var1x) -> {
-         var2.add(var1x.toString(), dumpRegistry((Registry)Registry.REGISTRY.get(var1x)));
+         var2.add(var1x.toString(), dumpRegistry((WritableRegistry)Registry.REGISTRY.get(var1x)));
       });
       Path var3 = this.generator.getOutputFolder().resolve("reports/registries.json");
       DataProvider.save(GSON, var1, var2, var3);
    }
 
-   private static <T> JsonElement dumpRegistry(Registry<T> var0) {
+   private static <T> JsonElement dumpRegistry(WritableRegistry<T> var0) {
       JsonObject var1 = new JsonObject();
       if (var0 instanceof DefaultedRegistry) {
          ResourceLocation var2 = ((DefaultedRegistry)var0).getDefaultKey();

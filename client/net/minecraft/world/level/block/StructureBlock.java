@@ -2,17 +2,15 @@ package net.minecraft.world.level.block;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -20,24 +18,20 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
+public class StructureBlock extends BaseEntityBlock {
    public static final EnumProperty<StructureMode> MODE;
 
-   protected StructureBlock(BlockBehaviour.Properties var1) {
+   protected StructureBlock(Block.Properties var1) {
       super(var1);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new StructureBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(BlockGetter var1) {
+      return new StructureBlockEntity();
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof StructureBlockEntity) {
-         return ((StructureBlockEntity)var7).usedBy(var4) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
-      } else {
-         return InteractionResult.PASS;
-      }
+      return var7 instanceof StructureBlockEntity ? ((StructureBlockEntity)var7).usedBy(var4) : false;
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
@@ -65,7 +59,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
-      if (var2 instanceof ServerLevel) {
+      if (!var2.isClientSide) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof StructureBlockEntity) {
             StructureBlockEntity var8 = (StructureBlockEntity)var7;
@@ -73,7 +67,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
             boolean var10 = var8.isPowered();
             if (var9 && !var10) {
                var8.setPowered(true);
-               this.trigger((ServerLevel)var2, var8);
+               this.trigger(var8);
             } else if (!var9 && var10) {
                var8.setPowered(false);
             }
@@ -82,16 +76,16 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   private void trigger(ServerLevel var1, StructureBlockEntity var2) {
-      switch(var2.getMode()) {
+   private void trigger(StructureBlockEntity var1) {
+      switch(var1.getMode()) {
       case SAVE:
-         var2.saveStructure(false);
+         var1.saveStructure(false);
          break;
       case LOAD:
-         var2.loadStructure(var1, false);
+         var1.loadStructure(false);
          break;
       case CORNER:
-         var2.unloadStructure();
+         var1.unloadStructure();
       case DATA:
       }
 

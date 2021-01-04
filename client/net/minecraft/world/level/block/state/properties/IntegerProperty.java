@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 
-public class IntegerProperty extends Property<Integer> {
+public class IntegerProperty extends AbstractProperty<Integer> {
    private final ImmutableSet<Integer> values;
 
    protected IntegerProperty(String var1, int var2, int var3) {

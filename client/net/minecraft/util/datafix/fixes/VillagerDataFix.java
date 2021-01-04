@@ -3,9 +3,9 @@ package net.minecraft.util.datafix.fixes;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import com.mojang.serialization.Dynamic;
 
 public class VillagerDataFix extends NamedEntityFix {
    public VillagerDataFix(Schema var1, String var2) {
@@ -14,7 +14,7 @@ public class VillagerDataFix extends NamedEntityFix {
 
    protected Typed<?> fix(Typed<?> var1) {
       Dynamic var2 = (Dynamic)var1.get(DSL.remainderFinder());
-      return var1.set(DSL.remainderFinder(), var2.remove("Profession").remove("Career").remove("CareerLevel").set("VillagerData", var2.createMap(ImmutableMap.of(var2.createString("type"), var2.createString("minecraft:plains"), var2.createString("profession"), var2.createString(upgradeData(var2.get("Profession").asInt(0), var2.get("Career").asInt(0))), var2.createString("level"), DataFixUtils.orElse(var2.get("CareerLevel").result(), var2.createInt(1))))));
+      return var1.set(DSL.remainderFinder(), var2.remove("Profession").remove("Career").remove("CareerLevel").set("VillagerData", var2.createMap(ImmutableMap.of(var2.createString("type"), var2.createString("minecraft:plains"), var2.createString("profession"), var2.createString(upgradeData(var2.get("Profession").asInt(0), var2.get("Career").asInt(0))), var2.createString("level"), DataFixUtils.orElse(var2.get("CareerLevel").get(), var2.createInt(1))))));
    }
 
    private static String upgradeData(int var0, int var1) {

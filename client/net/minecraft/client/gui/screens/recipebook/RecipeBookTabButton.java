@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Lighting;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
@@ -31,7 +31,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
 
          while(var4.hasNext()) {
             RecipeCollection var5 = (RecipeCollection)var4.next();
-            Iterator var6 = var5.getRecipes(var2.isFiltering((RecipeBookMenu)var1.player.containerMenu)).iterator();
+            Iterator var6 = var5.getRecipes(var2.isFilteringCraftable((RecipeBookMenu)var1.player.containerMenu)).iterator();
 
             while(var6.hasNext()) {
                Recipe var7 = (Recipe)var6.next();
@@ -45,40 +45,44 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       }
    }
 
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderButton(int var1, int var2, float var3) {
       if (this.animationTime > 0.0F) {
-         float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         RenderSystem.pushMatrix();
-         RenderSystem.translatef((float)(this.x + 8), (float)(this.y + 12), 0.0F);
-         RenderSystem.scalef(1.0F, var5, 1.0F);
-         RenderSystem.translatef((float)(-(this.x + 8)), (float)(-(this.y + 12)), 0.0F);
+         float var4 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
+         GlStateManager.pushMatrix();
+         GlStateManager.translatef((float)(this.x + 8), (float)(this.y + 12), 0.0F);
+         GlStateManager.scalef(1.0F, var4, 1.0F);
+         GlStateManager.translatef((float)(-(this.x + 8)), (float)(-(this.y + 12)), 0.0F);
       }
 
-      Minecraft var9 = Minecraft.getInstance();
-      var9.getTextureManager().bind(this.resourceLocation);
-      RenderSystem.disableDepthTest();
-      int var6 = this.xTexStart;
-      int var7 = this.yTexStart;
+      Minecraft var8 = Minecraft.getInstance();
+      var8.getTextureManager().bind(this.resourceLocation);
+      GlStateManager.disableDepthTest();
+      int var5 = this.xTexStart;
+      int var6 = this.yTexStart;
       if (this.isStateTriggered) {
-         var6 += this.xDiffTex;
+         var5 += this.xDiffTex;
       }
 
       if (this.isHovered()) {
-         var7 += this.yDiffTex;
+         var6 += this.yDiffTex;
       }
 
-      int var8 = this.x;
+      int var7 = this.x;
       if (this.isStateTriggered) {
-         var8 -= 2;
+         var7 -= 2;
       }
 
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-      this.blit(var1, var8, this.y, var6, var7, this.width, this.height);
-      RenderSystem.enableDepthTest();
-      this.renderIcon(var9.getItemRenderer());
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      this.blit(var7, this.y, var5, var6, this.width, this.height);
+      GlStateManager.enableDepthTest();
+      Lighting.turnOnGui();
+      GlStateManager.disableLighting();
+      this.renderIcon(var8.getItemRenderer());
+      GlStateManager.enableLighting();
+      Lighting.turnOff();
       if (this.animationTime > 0.0F) {
-         RenderSystem.popMatrix();
-         this.animationTime -= var4;
+         GlStateManager.popMatrix();
+         this.animationTime -= var3;
       }
 
    }
@@ -87,10 +91,10 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var2 = this.category.getIconItems();
       int var3 = this.isStateTriggered ? -2 : 0;
       if (var2.size() == 1) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.x + 9 + var3, this.y + 5);
+         var1.renderAndDecorateItem((ItemStack)var2.get(0), this.x + 9 + var3, this.y + 5);
       } else if (var2.size() == 2) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.x + 3 + var3, this.y + 5);
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(1), this.x + 14 + var3, this.y + 5);
+         var1.renderAndDecorateItem((ItemStack)var2.get(0), this.x + 3 + var3, this.y + 5);
+         var1.renderAndDecorateItem((ItemStack)var2.get(1), this.x + 14 + var3, this.y + 5);
       }
 
    }

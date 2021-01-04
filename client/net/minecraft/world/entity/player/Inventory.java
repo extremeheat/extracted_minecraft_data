@@ -18,11 +18,11 @@ import net.minecraft.tags.Tag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Inventory implements Container, Nameable {
@@ -54,7 +54,11 @@ public class Inventory implements Container, Nameable {
    }
 
    private boolean hasRemainingSpaceForItem(ItemStack var1, ItemStack var2) {
-      return !var1.isEmpty() && ItemStack.isSameItemSameTags(var1, var2) && var1.isStackable() && var1.getCount() < var1.getMaxStackSize() && var1.getCount() < this.getMaxStackSize();
+      return !var1.isEmpty() && this.isSameItem(var1, var2) && var1.isStackable() && var1.getCount() < var1.getMaxStackSize() && var1.getCount() < this.getMaxStackSize();
+   }
+
+   private boolean isSameItem(ItemStack var1, ItemStack var2) {
+      return var1.getItem() == var2.getItem() && ItemStack.tagMatches(var1, var2);
    }
 
    public int getFreeSlot() {
@@ -102,7 +106,7 @@ public class Inventory implements Container, Nameable {
 
    public int findSlotMatchingItem(ItemStack var1) {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         if (!((ItemStack)this.items.get(var2)).isEmpty() && ItemStack.isSameItemSameTags(var1, (ItemStack)this.items.get(var2))) {
+         if (!((ItemStack)this.items.get(var2)).isEmpty() && this.isSameItem(var1, (ItemStack)this.items.get(var2))) {
             return var2;
          }
       }
@@ -113,7 +117,7 @@ public class Inventory implements Container, Nameable {
    public int findSlotMatchingUnusedItem(ItemStack var1) {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
          ItemStack var3 = (ItemStack)this.items.get(var2);
-         if (!((ItemStack)this.items.get(var2)).isEmpty() && ItemStack.isSameItemSameTags(var1, (ItemStack)this.items.get(var2)) && !((ItemStack)this.items.get(var2)).isDamaged() && !var3.isEnchanted() && !var3.hasCustomHoverName()) {
+         if (!((ItemStack)this.items.get(var2)).isEmpty() && this.isSameItem(var1, (ItemStack)this.items.get(var2)) && !((ItemStack)this.items.get(var2)).isDamaged() && !var3.isEnchanted() && !var3.hasCustomHoverName()) {
             return var2;
          }
       }
@@ -159,17 +163,44 @@ public class Inventory implements Container, Nameable {
 
    }
 
-   public int clearOrCountMatchingItems(Predicate<ItemStack> var1, int var2, Container var3) {
-      byte var4 = 0;
-      boolean var5 = var2 == 0;
-      int var6 = var4 + ContainerHelper.clearOrCountMatchingItems((Container)this, var1, var2 - var4, var5);
-      var6 += ContainerHelper.clearOrCountMatchingItems(var3, var1, var2 - var6, var5);
-      var6 += ContainerHelper.clearOrCountMatchingItems(this.carried, var1, var2 - var6, var5);
-      if (this.carried.isEmpty()) {
-         this.carried = ItemStack.EMPTY;
+   public int clearInventory(Predicate<ItemStack> var1, int var2) {
+      int var3 = 0;
+
+      int var4;
+      for(var4 = 0; var4 < this.getContainerSize(); ++var4) {
+         ItemStack var5 = this.getItem(var4);
+         if (!var5.isEmpty() && var1.test(var5)) {
+            int var6 = var2 <= 0 ? var5.getCount() : Math.min(var2 - var3, var5.getCount());
+            var3 += var6;
+            if (var2 != 0) {
+               var5.shrink(var6);
+               if (var5.isEmpty()) {
+                  this.setItem(var4, ItemStack.EMPTY);
+               }
+
+               if (var2 > 0 && var3 >= var2) {
+                  return var3;
+               }
+            }
+         }
       }
 
-      return var6;
+      if (!this.carried.isEmpty() && var1.test(this.carried)) {
+         var4 = var2 <= 0 ? this.carried.getCount() : Math.min(var2 - var3, this.carried.getCount());
+         var3 += var4;
+         if (var2 != 0) {
+            this.carried.shrink(var4);
+            if (this.carried.isEmpty()) {
+               this.carried = ItemStack.EMPTY;
+            }
+
+            if (var2 > 0 && var3 >= var2) {
+               return var3;
+            }
+         }
+      }
+
+      return var3;
    }
 
    private int addResource(ItemStack var1) {
@@ -263,7 +294,7 @@ public class Inventory implements Container, Nameable {
                   ((ItemStack)this.items.get(var1)).setPopTime(5);
                   var2.setCount(0);
                   return true;
-               } else if (this.player.getAbilities().instabuild) {
+               } else if (this.player.abilities.instabuild) {
                   var2.setCount(0);
                   return true;
                } else {
@@ -280,7 +311,7 @@ public class Inventory implements Container, Nameable {
                   }
                } while(!var2.isEmpty() && var2.getCount() < var3);
 
-               if (var2.getCount() == var3 && this.player.getAbilities().instabuild) {
+               if (var2.getCount() == var3 && this.player.abilities.instabuild) {
                   var2.setCount(0);
                   return true;
                } else {
@@ -300,26 +331,25 @@ public class Inventory implements Container, Nameable {
       }
    }
 
-   public void placeItemBackInInventory(ItemStack var1) {
-      while(true) {
-         if (!var1.isEmpty()) {
-            int var2 = this.getSlotWithRemainingSpace(var1);
-            if (var2 == -1) {
-               var2 = this.getFreeSlot();
+   public void placeItemBackInInventory(Level var1, ItemStack var2) {
+      if (!var1.isClientSide) {
+         while(!var2.isEmpty()) {
+            int var3 = this.getSlotWithRemainingSpace(var2);
+            if (var3 == -1) {
+               var3 = this.getFreeSlot();
             }
 
-            if (var2 != -1) {
-               int var3 = var1.getMaxStackSize() - this.getItem(var2).getCount();
-               if (this.add(var2, var1.split(var3)) && this.player instanceof ServerPlayer) {
-                  ((ServerPlayer)this.player).connection.send(new ClientboundContainerSetSlotPacket(-2, var2, this.getItem(var2)));
-               }
-               continue;
+            if (var3 == -1) {
+               this.player.drop(var2, false);
+               break;
             }
 
-            this.player.drop(var1, false);
+            int var4 = var2.getMaxStackSize() - this.getItem(var3).getCount();
+            if (this.add(var3, var2.split(var4))) {
+               ((ServerPlayer)this.player).connection.send(new ClientboundContainerSetSlotPacket(-2, var3, this.getItem(var3)));
+            }
          }
 
-         return;
       }
    }
 
@@ -510,25 +540,29 @@ public class Inventory implements Container, Nameable {
    }
 
    public Component getName() {
-      return new TranslatableComponent("container.inventory");
+      return new TranslatableComponent("container.inventory", new Object[0]);
+   }
+
+   public boolean canDestroy(BlockState var1) {
+      return this.getItem(this.selected).canDestroySpecial(var1);
    }
 
    public ItemStack getArmor(int var1) {
       return (ItemStack)this.armor.get(var1);
    }
 
-   public void hurtArmor(DamageSource var1, float var2) {
-      if (var2 > 0.0F) {
-         var2 /= 4.0F;
-         if (var2 < 1.0F) {
-            var2 = 1.0F;
+   public void hurtArmor(float var1) {
+      if (var1 > 0.0F) {
+         var1 /= 4.0F;
+         if (var1 < 1.0F) {
+            var1 = 1.0F;
          }
 
-         for(int var3 = 0; var3 < this.armor.size(); ++var3) {
-            ItemStack var4 = (ItemStack)this.armor.get(var3);
-            if ((!var1.isFire() || !var4.getItem().isFireResistant()) && var4.getItem() instanceof ArmorItem) {
-               var4.hurtAndBreak((int)var2, this.player, (var1x) -> {
-                  var1x.broadcastBreakEvent(EquipmentSlot.byTypeAndIndex(EquipmentSlot.Type.ARMOR, var3));
+         for(int var2 = 0; var2 < this.armor.size(); ++var2) {
+            ItemStack var3 = (ItemStack)this.armor.get(var2);
+            if (var3.getItem() instanceof ArmorItem) {
+               var3.hurtAndBreak((int)var1, this.player, (var1x) -> {
+                  var1x.broadcastBreakEvent(EquipmentSlot.byTypeAndIndex(EquipmentSlot.Type.ARMOR, var2));
                });
             }
          }
@@ -570,7 +604,7 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean stillValid(Player var1) {
-      if (this.player.isRemoved()) {
+      if (this.player.removed) {
          return false;
       } else {
          return var1.distanceToSqr(this.player) <= 64.0D;
@@ -604,7 +638,7 @@ public class Inventory implements Container, Nameable {
 
          while(var4.hasNext()) {
             ItemStack var5 = (ItemStack)var4.next();
-            if (!var5.isEmpty() && var5.is(var1)) {
+            if (!var5.isEmpty() && var1.contains(var5.getItem())) {
                return true;
             }
          }

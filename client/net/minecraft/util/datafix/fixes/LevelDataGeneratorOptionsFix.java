@@ -5,14 +5,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
+import com.mojang.datafixers.types.DynamicOps;
+import com.mojang.datafixers.types.JsonOps;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -110,21 +110,20 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.LEVEL);
       return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, (var1x) -> {
-         return (Typed)var1x.write().flatMap((var1xx) -> {
-            Optional var2 = var1xx.get("generatorOptions").asString().result();
-            Dynamic var3;
-            if ("flat".equalsIgnoreCase(var1xx.get("generatorName").asString(""))) {
-               String var4 = (String)var2.orElse("");
-               var3 = var1xx.set("generatorOptions", convert(var4, var1xx.getOps()));
-            } else if ("buffet".equalsIgnoreCase(var1xx.get("generatorName").asString("")) && var2.isPresent()) {
-               Dynamic var5 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var2.get(), true));
-               var3 = var1xx.set("generatorOptions", var5.convert(var1xx.getOps()));
-            } else {
-               var3 = var1xx;
-            }
+         Dynamic var2 = var1x.write();
+         Optional var3 = var2.get("generatorOptions").asString();
+         Dynamic var4;
+         if ("flat".equalsIgnoreCase(var2.get("generatorName").asString(""))) {
+            String var5 = (String)var3.orElse("");
+            var4 = var2.set("generatorOptions", convert(var5, var2.getOps()));
+         } else if ("buffet".equalsIgnoreCase(var2.get("generatorName").asString("")) && var3.isPresent()) {
+            Dynamic var6 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var3.get(), true));
+            var4 = var2.set("generatorOptions", var6.convert(var2.getOps()));
+         } else {
+            var4 = var2;
+         }
 
-            return var1.readTyped(var3);
-         }).map(Pair::getFirst).result().orElseThrow(() -> {
+         return (Typed)((Optional)var1.readTyped(var4).getSecond()).orElseThrow(() -> {
             return new IllegalStateException("Could not read new level type.");
          });
       });

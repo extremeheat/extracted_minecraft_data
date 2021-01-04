@@ -5,6 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.TagCollection;
 import net.minecraft.world.entity.EntityType;
 
 public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
@@ -15,9 +16,6 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
    protected void addTags() {
       this.tag(EntityTypeTags.SKELETONS).add((Object[])(EntityType.SKELETON, EntityType.STRAY, EntityType.WITHER_SKELETON));
       this.tag(EntityTypeTags.RAIDERS).add((Object[])(EntityType.EVOKER, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH));
-      this.tag(EntityTypeTags.BEEHIVE_INHABITORS).add((Object)EntityType.BEE);
-      this.tag(EntityTypeTags.ARROWS).add((Object[])(EntityType.ARROW, EntityType.SPECTRAL_ARROW));
-      this.tag(EntityTypeTags.IMPACT_PROJECTILES).addTag(EntityTypeTags.ARROWS).add((Object[])(EntityType.SNOWBALL, EntityType.FIREBALL, EntityType.SMALL_FIREBALL, EntityType.EGG, EntityType.TRIDENT, EntityType.DRAGON_FIREBALL, EntityType.WITHER_SKULL));
    }
 
    protected Path getPath(ResourceLocation var1) {
@@ -26,5 +24,9 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
 
    public String getName() {
       return "Entity Type Tags";
+   }
+
+   protected void useTags(TagCollection<EntityType<?>> var1) {
+      EntityTypeTags.reset(var1);
    }
 }

@@ -1,48 +1,44 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
+public class AnvilScreen extends AbstractContainerScreen<AnvilMenu> implements ContainerListener {
    private static final ResourceLocation ANVIL_LOCATION = new ResourceLocation("textures/gui/container/anvil.png");
-   private static final Component TOO_EXPENSIVE_TEXT = new TranslatableComponent("container.repair.expensive");
    private EditBox name;
 
    public AnvilScreen(AnvilMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, ANVIL_LOCATION);
-      this.titleLabelX = 60;
+      super(var1, var2, var3);
    }
 
-   public void tick() {
-      super.tick();
-      this.name.tick();
-   }
-
-   protected void subInit() {
+   protected void init() {
+      super.init();
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       int var1 = (this.width - this.imageWidth) / 2;
       int var2 = (this.height - this.imageHeight) / 2;
-      this.name = new EditBox(this.font, var1 + 62, var2 + 24, 103, 12, new TranslatableComponent("container.repair"));
+      this.name = new EditBox(this.font, var1 + 62, var2 + 24, 103, 12, I18n.get("container.repair"));
       this.name.setCanLoseFocus(false);
+      this.name.changeFocus(true);
       this.name.setTextColor(-1);
       this.name.setTextColorUneditable(-1);
       this.name.setBordered(false);
       this.name.setMaxLength(35);
       this.name.setResponder(this::onNameChanged);
       this.children.add(this.name);
+      ((AnvilMenu)this.menu).addSlotListener(this);
       this.setInitialFocus(this.name);
    }
 
@@ -55,6 +51,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    public void removed() {
       super.removed();
       this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+      ((AnvilMenu)this.menu).removeSlotListener(this);
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
@@ -63,6 +60,35 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       }
 
       return !this.name.keyPressed(var1, var2, var3) && !this.name.canConsumeInput() ? super.keyPressed(var1, var2, var3) : true;
+   }
+
+   protected void renderLabels(int var1, int var2) {
+      GlStateManager.disableLighting();
+      GlStateManager.disableBlend();
+      this.font.draw(this.title.getColoredString(), 60.0F, 6.0F, 4210752);
+      int var3 = ((AnvilMenu)this.menu).getCost();
+      if (var3 > 0) {
+         int var4 = 8453920;
+         boolean var5 = true;
+         String var6 = I18n.get("container.repair.cost", var3);
+         if (var3 >= 40 && !this.minecraft.player.abilities.instabuild) {
+            var6 = I18n.get("container.repair.expensive");
+            var4 = 16736352;
+         } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
+            var5 = false;
+         } else if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.inventory.player)) {
+            var4 = 16736352;
+         }
+
+         if (var5) {
+            int var7 = this.imageWidth - 8 - this.font.width(var6) - 2;
+            boolean var8 = true;
+            fill(var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
+            this.font.drawShadow(var6, (float)var7, 69.0F, var4);
+         }
+      }
+
+      GlStateManager.enableLighting();
    }
 
    private void onNameChanged(String var1) {
@@ -78,45 +104,40 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       }
    }
 
-   protected void renderLabels(PoseStack var1, int var2, int var3) {
-      RenderSystem.disableBlend();
-      super.renderLabels(var1, var2, var3);
-      int var4 = ((AnvilMenu)this.menu).getCost();
-      if (var4 > 0) {
-         int var5 = 8453920;
-         Object var6;
-         if (var4 >= 40 && !this.minecraft.player.getAbilities().instabuild) {
-            var6 = TOO_EXPENSIVE_TEXT;
-            var5 = 16736352;
-         } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
-            var6 = null;
-         } else {
-            var6 = new TranslatableComponent("container.repair.cost", new Object[]{var4});
-            if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.inventory.player)) {
-               var5 = 16736352;
-            }
-         }
+   public void render(int var1, int var2, float var3) {
+      this.renderBackground();
+      super.render(var1, var2, var3);
+      this.renderTooltip(var1, var2);
+      GlStateManager.disableLighting();
+      GlStateManager.disableBlend();
+      this.name.render(var1, var2, var3);
+   }
 
-         if (var6 != null) {
-            int var7 = this.imageWidth - 8 - this.font.width((FormattedText)var6) - 2;
-            boolean var8 = true;
-            fill(var1, var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
-            this.font.drawShadow(var1, (Component)var6, (float)var7, 69.0F, var5);
-         }
+   protected void renderBg(float var1, int var2, int var3) {
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      this.minecraft.getTextureManager().bind(ANVIL_LOCATION);
+      int var4 = (this.width - this.imageWidth) / 2;
+      int var5 = (this.height - this.imageHeight) / 2;
+      this.blit(var4, var5, 0, 0, this.imageWidth, this.imageHeight);
+      this.blit(var4 + 59, var5 + 20, 0, this.imageHeight + (((AnvilMenu)this.menu).getSlot(0).hasItem() ? 0 : 16), 110, 16);
+      if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(2).hasItem()) {
+         this.blit(var4 + 99, var5 + 45, this.imageWidth, 0, 28, 21);
       }
 
    }
 
-   public void renderFg(PoseStack var1, int var2, int var3, float var4) {
-      this.name.render(var1, var2, var3, var4);
+   public void refreshContainer(AbstractContainerMenu var1, NonNullList<ItemStack> var2) {
+      this.slotChanged(var1, 0, var1.getSlot(0).getItem());
    }
 
    public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
       if (var2 == 0) {
          this.name.setValue(var3.isEmpty() ? "" : var3.getHoverName().getString());
          this.name.setEditable(!var3.isEmpty());
-         this.setFocused(this.name);
       }
 
+   }
+
+   public void setContainerData(AbstractContainerMenu var1, int var2, int var3) {
    }
 }

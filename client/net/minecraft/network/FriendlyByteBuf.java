@@ -1,8 +1,5 @@
 package net.minecraft.network;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
@@ -30,7 +27,6 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -54,25 +50,6 @@ public class FriendlyByteBuf extends ByteBuf {
       }
 
       return 5;
-   }
-
-   public <T> T readWithCodec(Codec<T> var1) throws IOException {
-      CompoundTag var2 = this.readAnySizeNbt();
-      DataResult var3 = var1.parse(NbtOps.INSTANCE, var2);
-      if (var3.error().isPresent()) {
-         throw new IOException("Failed to decode: " + ((PartialResult)var3.error().get()).message() + " " + var2);
-      } else {
-         return var3.result().get();
-      }
-   }
-
-   public <T> void writeWithCodec(Codec<T> var1, T var2) throws IOException {
-      DataResult var3 = var1.encodeStart(NbtOps.INSTANCE, var2);
-      if (var3.error().isPresent()) {
-         throw new IOException("Failed to encode: " + ((PartialResult)var3.error().get()).message() + " " + var2);
-      } else {
-         this.writeNbt((CompoundTag)var3.result().get());
-      }
    }
 
    public FriendlyByteBuf writeByteArray(byte[] var1) {
@@ -269,27 +246,17 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public CompoundTag readNbt() {
-      return this.readNbt(new NbtAccounter(2097152L));
-   }
-
-   @Nullable
-   public CompoundTag readAnySizeNbt() {
-      return this.readNbt(NbtAccounter.UNLIMITED);
-   }
-
-   @Nullable
-   public CompoundTag readNbt(NbtAccounter var1) {
-      int var2 = this.readerIndex();
-      byte var3 = this.readByte();
-      if (var3 == 0) {
+      int var1 = this.readerIndex();
+      byte var2 = this.readByte();
+      if (var2 == 0) {
          return null;
       } else {
-         this.readerIndex(var2);
+         this.readerIndex(var1);
 
          try {
-            return NbtIo.read(new ByteBufInputStream(this), var1);
-         } catch (IOException var5) {
-            throw new EncoderException(var5);
+            return NbtIo.read(new ByteBufInputStream(this), new NbtAccounter(2097152L));
+         } catch (IOException var4) {
+            throw new EncoderException(var4);
          }
       }
    }
@@ -386,7 +353,7 @@ public class FriendlyByteBuf extends ByteBuf {
       float var4 = this.readFloat();
       float var5 = this.readFloat();
       boolean var6 = this.readBoolean();
-      return new BlockHitResult(new Vec3((double)var1.getX() + (double)var3, (double)var1.getY() + (double)var4, (double)var1.getZ() + (double)var5), var2, var1, var6);
+      return new BlockHitResult(new Vec3((double)((float)var1.getX() + var3), (double)((float)var1.getY() + var4), (double)((float)var1.getZ() + var5)), var2, var1, var6);
    }
 
    public void writeBlockHitResult(BlockHitResult var1) {

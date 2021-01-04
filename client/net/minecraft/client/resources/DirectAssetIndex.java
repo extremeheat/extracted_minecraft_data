@@ -26,50 +26,50 @@ public class DirectAssetIndex extends AssetIndex {
       return new File(this.assetsDirectory, var1.toString().replace(':', '/'));
    }
 
-   public File getRootFile(String var1) {
+   public File getFile(String var1) {
       return new File(this.assetsDirectory, var1);
    }
 
-   public Collection<ResourceLocation> getFiles(String var1, String var2, int var3, Predicate<String> var4) {
-      Path var5 = this.assetsDirectory.toPath().resolve(var2);
+   public Collection<String> getFiles(String var1, int var2, Predicate<String> var3) {
+      Path var4 = this.assetsDirectory.toPath().resolve("minecraft/");
 
       try {
-         Stream var6 = Files.walk(var5.resolve(var1), var3, new FileVisitOption[0]);
-         Throwable var7 = null;
+         Stream var5 = Files.walk(var4.resolve(var1), var2, new FileVisitOption[0]);
+         Throwable var6 = null;
 
-         Collection var8;
+         Collection var7;
          try {
-            var8 = (Collection)var6.filter((var0) -> {
+            Stream var10000 = var5.filter((var0) -> {
                return Files.isRegularFile(var0, new LinkOption[0]);
             }).filter((var0) -> {
                return !var0.endsWith(".mcmeta");
-            }).filter((var1x) -> {
-               return var4.test(var1x.getFileName().toString());
-            }).map((var2x) -> {
-               return new ResourceLocation(var2, var5.relativize(var2x).toString().replaceAll("\\\\", "/"));
-            }).collect(Collectors.toList());
-         } catch (Throwable var19) {
-            var7 = var19;
-            throw var19;
+            });
+            var4.getClass();
+            var7 = (Collection)var10000.map(var4::relativize).map(Object::toString).map((var0) -> {
+               return var0.replaceAll("\\\\", "/");
+            }).filter(var3).collect(Collectors.toList());
+         } catch (Throwable var18) {
+            var6 = var18;
+            throw var18;
          } finally {
-            if (var6 != null) {
-               if (var7 != null) {
+            if (var5 != null) {
+               if (var6 != null) {
                   try {
-                     var6.close();
-                  } catch (Throwable var18) {
-                     var7.addSuppressed(var18);
+                     var5.close();
+                  } catch (Throwable var17) {
+                     var6.addSuppressed(var17);
                   }
                } else {
-                  var6.close();
+                  var5.close();
                }
             }
 
          }
 
-         return var8;
-      } catch (NoSuchFileException var21) {
-      } catch (IOException var22) {
-         LOGGER.warn("Unable to getFiles on {}", var1, var22);
+         return var7;
+      } catch (NoSuchFileException var20) {
+      } catch (IOException var21) {
+         LOGGER.warn("Unable to getFiles on {}", var1, var21);
       }
 
       return Collections.emptyList();

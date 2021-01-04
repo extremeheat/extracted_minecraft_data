@@ -1,62 +1,60 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import com.google.common.collect.Sets;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.PathNavigationRegion;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class FlyNodeEvaluator extends WalkNodeEvaluator {
-   private final Long2ObjectMap<BlockPathTypes> pathTypeByPosCache = new Long2ObjectOpenHashMap();
-
    public FlyNodeEvaluator() {
       super();
    }
 
-   public void prepare(PathNavigationRegion var1, Mob var2) {
+   public void prepare(LevelReader var1, Mob var2) {
       super.prepare(var1, var2);
-      this.pathTypeByPosCache.clear();
       this.oldWaterCost = var2.getPathfindingMalus(BlockPathTypes.WATER);
    }
 
    public void done() {
       this.mob.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
-      this.pathTypeByPosCache.clear();
       super.done();
    }
 
    public Node getStart() {
       int var1;
       if (this.canFloat() && this.mob.isInWater()) {
-         var1 = this.mob.getBlockY();
-         BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos(this.mob.getX(), (double)var1, this.mob.getZ());
+         var1 = Mth.floor(this.mob.getBoundingBox().minY);
+         BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos(this.mob.x, (double)var1, this.mob.z);
 
-         for(BlockState var3 = this.level.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.level.getBlockState(var2)) {
+         for(Block var3 = this.level.getBlockState(var2).getBlock(); var3 == Blocks.WATER; var3 = this.level.getBlockState(var2).getBlock()) {
             ++var1;
-            var2.set(this.mob.getX(), (double)var1, this.mob.getZ());
+            var2.set(this.mob.x, (double)var1, this.mob.z);
          }
       } else {
-         var1 = Mth.floor(this.mob.getY() + 0.5D);
+         var1 = Mth.floor(this.mob.getBoundingBox().minY + 0.5D);
       }
 
-      BlockPos var8 = this.mob.blockPosition();
-      BlockPathTypes var9 = this.getCachedBlockPathType(var8.getX(), var1, var8.getZ());
+      BlockPos var8 = new BlockPos(this.mob);
+      BlockPathTypes var9 = this.getBlockPathType(this.mob, var8.getX(), var1, var8.getZ());
       if (this.mob.getPathfindingMalus(var9) < 0.0F) {
-         ImmutableSet var4 = ImmutableSet.of(new BlockPos(this.mob.getBoundingBox().minX, (double)var1, this.mob.getBoundingBox().minZ), new BlockPos(this.mob.getBoundingBox().minX, (double)var1, this.mob.getBoundingBox().maxZ), new BlockPos(this.mob.getBoundingBox().maxX, (double)var1, this.mob.getBoundingBox().minZ), new BlockPos(this.mob.getBoundingBox().maxX, (double)var1, this.mob.getBoundingBox().maxZ));
+         HashSet var4 = Sets.newHashSet();
+         var4.add(new BlockPos(this.mob.getBoundingBox().minX, (double)var1, this.mob.getBoundingBox().minZ));
+         var4.add(new BlockPos(this.mob.getBoundingBox().minX, (double)var1, this.mob.getBoundingBox().maxZ));
+         var4.add(new BlockPos(this.mob.getBoundingBox().maxX, (double)var1, this.mob.getBoundingBox().minZ));
+         var4.add(new BlockPos(this.mob.getBoundingBox().maxX, (double)var1, this.mob.getBoundingBox().maxZ));
          Iterator var5 = var4.iterator();
 
          while(var5.hasNext()) {
             BlockPos var6 = (BlockPos)var5.next();
-            BlockPathTypes var7 = this.getCachedBlockPathType(var8.getX(), var1, var8.getZ());
+            BlockPathTypes var7 = this.getBlockPathType(this.mob, var6);
             if (this.mob.getPathfindingMalus(var7) >= 0.0F) {
                return super.getNode(var6.getX(), var6.getY(), var6.getZ());
             }
@@ -73,150 +71,133 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = 0;
       Node var4 = this.getNode(var2.x, var2.y, var2.z + 1);
-      if (this.isOpen(var4)) {
+      Node var5 = this.getNode(var2.x - 1, var2.y, var2.z);
+      Node var6 = this.getNode(var2.x + 1, var2.y, var2.z);
+      Node var7 = this.getNode(var2.x, var2.y, var2.z - 1);
+      Node var8 = this.getNode(var2.x, var2.y + 1, var2.z);
+      Node var9 = this.getNode(var2.x, var2.y - 1, var2.z);
+      if (var4 != null && !var4.closed) {
          var1[var3++] = var4;
       }
 
-      Node var5 = this.getNode(var2.x - 1, var2.y, var2.z);
-      if (this.isOpen(var5)) {
+      if (var5 != null && !var5.closed) {
          var1[var3++] = var5;
       }
 
-      Node var6 = this.getNode(var2.x + 1, var2.y, var2.z);
-      if (this.isOpen(var6)) {
+      if (var6 != null && !var6.closed) {
          var1[var3++] = var6;
       }
 
-      Node var7 = this.getNode(var2.x, var2.y, var2.z - 1);
-      if (this.isOpen(var7)) {
+      if (var7 != null && !var7.closed) {
          var1[var3++] = var7;
       }
 
-      Node var8 = this.getNode(var2.x, var2.y + 1, var2.z);
-      if (this.isOpen(var8)) {
+      if (var8 != null && !var8.closed) {
          var1[var3++] = var8;
       }
 
-      Node var9 = this.getNode(var2.x, var2.y - 1, var2.z);
-      if (this.isOpen(var9)) {
+      if (var9 != null && !var9.closed) {
          var1[var3++] = var9;
       }
 
-      Node var10 = this.getNode(var2.x, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var10) && this.hasMalus(var4) && this.hasMalus(var8)) {
-         var1[var3++] = var10;
+      boolean var10 = var7 == null || var7.costMalus != 0.0F;
+      boolean var11 = var4 == null || var4.costMalus != 0.0F;
+      boolean var12 = var6 == null || var6.costMalus != 0.0F;
+      boolean var13 = var5 == null || var5.costMalus != 0.0F;
+      boolean var14 = var8 == null || var8.costMalus != 0.0F;
+      boolean var15 = var9 == null || var9.costMalus != 0.0F;
+      Node var16;
+      if (var10 && var13) {
+         var16 = this.getNode(var2.x - 1, var2.y, var2.z - 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var11 = this.getNode(var2.x - 1, var2.y + 1, var2.z);
-      if (this.isOpen(var11) && this.hasMalus(var5) && this.hasMalus(var8)) {
-         var1[var3++] = var11;
+      if (var10 && var12) {
+         var16 = this.getNode(var2.x + 1, var2.y, var2.z - 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var12 = this.getNode(var2.x + 1, var2.y + 1, var2.z);
-      if (this.isOpen(var12) && this.hasMalus(var6) && this.hasMalus(var8)) {
-         var1[var3++] = var12;
+      if (var11 && var13) {
+         var16 = this.getNode(var2.x - 1, var2.y, var2.z + 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var13 = this.getNode(var2.x, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var13) && this.hasMalus(var7) && this.hasMalus(var8)) {
-         var1[var3++] = var13;
+      if (var11 && var12) {
+         var16 = this.getNode(var2.x + 1, var2.y, var2.z + 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var14 = this.getNode(var2.x, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var14) && this.hasMalus(var4) && this.hasMalus(var9)) {
-         var1[var3++] = var14;
+      if (var10 && var14) {
+         var16 = this.getNode(var2.x, var2.y + 1, var2.z - 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var15 = this.getNode(var2.x - 1, var2.y - 1, var2.z);
-      if (this.isOpen(var15) && this.hasMalus(var5) && this.hasMalus(var9)) {
-         var1[var3++] = var15;
+      if (var11 && var14) {
+         var16 = this.getNode(var2.x, var2.y + 1, var2.z + 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var16 = this.getNode(var2.x + 1, var2.y - 1, var2.z);
-      if (this.isOpen(var16) && this.hasMalus(var6) && this.hasMalus(var9)) {
-         var1[var3++] = var16;
+      if (var12 && var14) {
+         var16 = this.getNode(var2.x + 1, var2.y + 1, var2.z);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var17 = this.getNode(var2.x, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var17) && this.hasMalus(var7) && this.hasMalus(var9)) {
-         var1[var3++] = var17;
+      if (var13 && var14) {
+         var16 = this.getNode(var2.x - 1, var2.y + 1, var2.z);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var18 = this.getNode(var2.x + 1, var2.y, var2.z - 1);
-      if (this.isOpen(var18) && this.hasMalus(var7) && this.hasMalus(var6)) {
-         var1[var3++] = var18;
+      if (var10 && var15) {
+         var16 = this.getNode(var2.x, var2.y - 1, var2.z - 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var19 = this.getNode(var2.x + 1, var2.y, var2.z + 1);
-      if (this.isOpen(var19) && this.hasMalus(var4) && this.hasMalus(var6)) {
-         var1[var3++] = var19;
+      if (var11 && var15) {
+         var16 = this.getNode(var2.x, var2.y - 1, var2.z + 1);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var20 = this.getNode(var2.x - 1, var2.y, var2.z - 1);
-      if (this.isOpen(var20) && this.hasMalus(var7) && this.hasMalus(var5)) {
-         var1[var3++] = var20;
+      if (var12 && var15) {
+         var16 = this.getNode(var2.x + 1, var2.y - 1, var2.z);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
-      Node var21 = this.getNode(var2.x - 1, var2.y, var2.z + 1);
-      if (this.isOpen(var21) && this.hasMalus(var4) && this.hasMalus(var5)) {
-         var1[var3++] = var21;
-      }
-
-      Node var22 = this.getNode(var2.x + 1, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var22) && this.hasMalus(var18) && this.hasMalus(var7) && this.hasMalus(var6) && this.hasMalus(var8) && this.hasMalus(var13) && this.hasMalus(var12)) {
-         var1[var3++] = var22;
-      }
-
-      Node var23 = this.getNode(var2.x + 1, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var23) && this.hasMalus(var19) && this.hasMalus(var4) && this.hasMalus(var6) && this.hasMalus(var8) && this.hasMalus(var10) && this.hasMalus(var12)) {
-         var1[var3++] = var23;
-      }
-
-      Node var24 = this.getNode(var2.x - 1, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var24) && this.hasMalus(var20) && this.hasMalus(var7) && this.hasMalus(var5) & this.hasMalus(var8) && this.hasMalus(var13) && this.hasMalus(var11)) {
-         var1[var3++] = var24;
-      }
-
-      Node var25 = this.getNode(var2.x - 1, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var25) && this.hasMalus(var21) && this.hasMalus(var4) && this.hasMalus(var5) & this.hasMalus(var8) && this.hasMalus(var10) && this.hasMalus(var11)) {
-         var1[var3++] = var25;
-      }
-
-      Node var26 = this.getNode(var2.x + 1, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var26) && this.hasMalus(var18) && this.hasMalus(var7) && this.hasMalus(var6) && this.hasMalus(var9) && this.hasMalus(var17) && this.hasMalus(var16)) {
-         var1[var3++] = var26;
-      }
-
-      Node var27 = this.getNode(var2.x + 1, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var27) && this.hasMalus(var19) && this.hasMalus(var4) && this.hasMalus(var6) && this.hasMalus(var9) && this.hasMalus(var14) && this.hasMalus(var16)) {
-         var1[var3++] = var27;
-      }
-
-      Node var28 = this.getNode(var2.x - 1, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var28) && this.hasMalus(var20) && this.hasMalus(var7) && this.hasMalus(var5) && this.hasMalus(var9) && this.hasMalus(var17) && this.hasMalus(var15)) {
-         var1[var3++] = var28;
-      }
-
-      Node var29 = this.getNode(var2.x - 1, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var29) && this.hasMalus(var21) && this.hasMalus(var4) && this.hasMalus(var5) && this.hasMalus(var9) && this.hasMalus(var14) && this.hasMalus(var15)) {
-         var1[var3++] = var29;
+      if (var13 && var15) {
+         var16 = this.getNode(var2.x - 1, var2.y - 1, var2.z);
+         if (var16 != null && !var16.closed) {
+            var1[var3++] = var16;
+         }
       }
 
       return var3;
    }
 
-   private boolean hasMalus(@Nullable Node var1) {
-      return var1 != null && var1.costMalus >= 0.0F;
-   }
-
-   private boolean isOpen(@Nullable Node var1) {
-      return var1 != null && !var1.closed;
-   }
-
    @Nullable
    protected Node getNode(int var1, int var2, int var3) {
       Node var4 = null;
-      BlockPathTypes var5 = this.getCachedBlockPathType(var1, var2, var3);
+      BlockPathTypes var5 = this.getBlockPathType(this.mob, var1, var2, var3);
       float var6 = this.mob.getPathfindingMalus(var5);
       if (var6 >= 0.0F) {
          var4 = super.getNode(var1, var2, var3);
@@ -227,20 +208,14 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          }
       }
 
-      return var4;
-   }
-
-   private BlockPathTypes getCachedBlockPathType(int var1, int var2, int var3) {
-      return (BlockPathTypes)this.pathTypeByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> {
-         return this.getBlockPathType(this.level, var1, var2, var3, this.mob, this.entityWidth, this.entityHeight, this.entityDepth, this.canOpenDoors(), this.canPassDoors());
-      });
+      return var5 != BlockPathTypes.OPEN && var5 != BlockPathTypes.WALKABLE ? var4 : var4;
    }
 
    public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5, int var6, int var7, int var8, boolean var9, boolean var10) {
       EnumSet var11 = EnumSet.noneOf(BlockPathTypes.class);
       BlockPathTypes var12 = BlockPathTypes.BLOCKED;
-      BlockPos var13 = var5.blockPosition();
-      var12 = super.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var8, var9, var10, var11, var12, var13);
+      BlockPos var13 = new BlockPos(var5);
+      var12 = this.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var8, var9, var10, var11, var12, var13);
       if (var11.contains(BlockPathTypes.FENCE)) {
          return BlockPathTypes.FENCE;
       } else {
@@ -267,32 +242,32 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    }
 
    public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4) {
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-      BlockPathTypes var6 = getBlockPathTypeRaw(var1, var5.set(var2, var3, var4));
-      if (var6 == BlockPathTypes.OPEN && var3 >= var1.getMinBuildHeight() + 1) {
-         BlockState var7 = var1.getBlockState(var5.set(var2, var3 - 1, var4));
-         BlockPathTypes var8 = getBlockPathTypeRaw(var1, var5.set(var2, var3 - 1, var4));
-         if (var8 != BlockPathTypes.DAMAGE_FIRE && !var7.is(Blocks.MAGMA_BLOCK) && var8 != BlockPathTypes.LAVA && !var7.is(BlockTags.CAMPFIRES)) {
-            if (var8 == BlockPathTypes.DAMAGE_CACTUS) {
-               var6 = BlockPathTypes.DAMAGE_CACTUS;
-            } else if (var8 == BlockPathTypes.DAMAGE_OTHER) {
-               var6 = BlockPathTypes.DAMAGE_OTHER;
-            } else if (var8 == BlockPathTypes.COCOA) {
-               var6 = BlockPathTypes.COCOA;
-            } else if (var8 == BlockPathTypes.FENCE) {
-               var6 = BlockPathTypes.FENCE;
+      BlockPathTypes var5 = this.getBlockPathTypeRaw(var1, var2, var3, var4);
+      if (var5 == BlockPathTypes.OPEN && var3 >= 1) {
+         Block var6 = var1.getBlockState(new BlockPos(var2, var3 - 1, var4)).getBlock();
+         BlockPathTypes var7 = this.getBlockPathTypeRaw(var1, var2, var3 - 1, var4);
+         if (var7 != BlockPathTypes.DAMAGE_FIRE && var6 != Blocks.MAGMA_BLOCK && var7 != BlockPathTypes.LAVA && var6 != Blocks.CAMPFIRE) {
+            if (var7 == BlockPathTypes.DAMAGE_CACTUS) {
+               var5 = BlockPathTypes.DAMAGE_CACTUS;
+            } else if (var7 == BlockPathTypes.DAMAGE_OTHER) {
+               var5 = BlockPathTypes.DAMAGE_OTHER;
             } else {
-               var6 = var8 != BlockPathTypes.WALKABLE && var8 != BlockPathTypes.OPEN && var8 != BlockPathTypes.WATER ? BlockPathTypes.WALKABLE : BlockPathTypes.OPEN;
+               var5 = var7 != BlockPathTypes.WALKABLE && var7 != BlockPathTypes.OPEN && var7 != BlockPathTypes.WATER ? BlockPathTypes.WALKABLE : BlockPathTypes.OPEN;
             }
          } else {
-            var6 = BlockPathTypes.DAMAGE_FIRE;
+            var5 = BlockPathTypes.DAMAGE_FIRE;
          }
       }
 
-      if (var6 == BlockPathTypes.WALKABLE || var6 == BlockPathTypes.OPEN) {
-         var6 = checkNeighbourBlocks(var1, var5.set(var2, var3, var4), var6);
-      }
+      var5 = this.checkNeighbourBlocks(var1, var2, var3, var4, var5);
+      return var5;
+   }
 
-      return var6;
+   private BlockPathTypes getBlockPathType(Mob var1, BlockPos var2) {
+      return this.getBlockPathType(var1, var2.getX(), var2.getY(), var2.getZ());
+   }
+
+   private BlockPathTypes getBlockPathType(Mob var1, int var2, int var3, int var4) {
+      return this.getBlockPathType(this.level, var2, var3, var4, var1, this.entityWidth, this.entityHeight, this.entityDepth, this.canOpenDoors(), this.canPassDoors());
    }
 }

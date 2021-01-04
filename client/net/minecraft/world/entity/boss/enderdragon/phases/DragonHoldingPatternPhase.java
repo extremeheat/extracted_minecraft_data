@@ -29,7 +29,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    }
 
    public void doServerTick() {
-      double var1 = this.targetLocation == null ? 0.0D : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      double var1 = this.targetLocation == null ? 0.0D : this.targetLocation.distanceToSqr(this.dragon.x, this.dragon.y, this.dragon.z);
       if (var1 < 100.0D || var1 > 22500.0D || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
          this.findNewTarget();
       }
@@ -62,7 +62,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
             var3 = var1.distSqr(var5.position(), true) / 512.0D;
          }
 
-         if (var5 != null && !var5.getAbilities().invulnerable && (this.dragon.getRandom().nextInt(Mth.abs((int)var3) + 2) == 0 || this.dragon.getRandom().nextInt(var2 + 2) == 0)) {
+         if (var5 != null && !var5.abilities.invulnerable && (this.dragon.getRandom().nextInt(Mth.abs((int)var3) + 2) == 0 || this.dragon.getRandom().nextInt(var2 + 2) == 0)) {
             this.strafePlayer(var5);
             return;
          }
@@ -95,7 +95,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
 
          this.currentPath = this.dragon.findPath(var6, var2, (Node)null);
          if (this.currentPath != null) {
-            this.currentPath.advance();
+            this.currentPath.next();
          }
       }
 
@@ -109,15 +109,15 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
 
    private void navigateToNextPathNode() {
       if (this.currentPath != null && !this.currentPath.isDone()) {
-         BlockPos var1 = this.currentPath.getNextNodePos();
-         this.currentPath.advance();
-         double var2 = (double)var1.getX();
-         double var4 = (double)var1.getZ();
+         Vec3 var1 = this.currentPath.currentPos();
+         this.currentPath.next();
+         double var2 = var1.x;
+         double var4 = var1.z;
 
          double var6;
          do {
-            var6 = (double)((float)var1.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-         } while(var6 < (double)var1.getY());
+            var6 = var1.y + (double)(this.dragon.getRandom().nextFloat() * 20.0F);
+         } while(var6 < var1.y);
 
          this.targetLocation = new Vec3(var2, var6, var4);
       }
@@ -125,7 +125,7 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    }
 
    public void onCrystalDestroyed(EndCrystal var1, BlockPos var2, DamageSource var3, @Nullable Player var4) {
-      if (var4 != null && !var4.getAbilities().invulnerable) {
+      if (var4 != null && !var4.abilities.invulnerable) {
          this.strafePlayer(var4);
       }
 

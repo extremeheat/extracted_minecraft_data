@@ -28,6 +28,4 @@ public abstract class RecipeBookMenu<C extends Container> extends AbstractContai
    public abstract int getGridHeight();
 
    public abstract int getSize();
-
-   public abstract RecipeBookType getRecipeBookType();
 }

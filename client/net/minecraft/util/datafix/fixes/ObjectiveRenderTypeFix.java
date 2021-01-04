@@ -26,7 +26,7 @@ public class ObjectiveRenderTypeFix extends DataFix {
          return this.fixTypeEverywhere("ObjectiveRenderTypeFix", var1, (var0) -> {
             return (var0x) -> {
                return var0x.mapSecond((var0) -> {
-                  Optional var1 = var0.get("RenderType").asString().result();
+                  Optional var1 = var0.get("RenderType").asString();
                   if (!var1.isPresent()) {
                      String var2 = var0.get("CriteriaName").asString("");
                      ObjectiveCriteria.RenderType var3 = getRenderType(var2);

@@ -25,10 +25,10 @@ public class StructurePlaceSettings {
    @Nullable
    private Random random;
    @Nullable
+   private Integer preferredPalette;
    private int palette;
    private final List<StructureProcessor> processors;
    private boolean knownShape;
-   private boolean finalizeEntities;
 
    public StructurePlaceSettings() {
       super();
@@ -49,10 +49,10 @@ public class StructurePlaceSettings {
       var1.boundingBox = this.boundingBox;
       var1.keepLiquids = this.keepLiquids;
       var1.random = this.random;
+      var1.preferredPalette = this.preferredPalette;
       var1.palette = this.palette;
       var1.processors.addAll(this.processors);
       var1.knownShape = this.knownShape;
-      var1.finalizeEntities = this.finalizeEntities;
       return var1;
    }
 
@@ -163,12 +163,13 @@ public class StructurePlaceSettings {
       return this.keepLiquids;
    }
 
-   public StructureTemplate.Palette getRandomPalette(List<StructureTemplate.Palette> var1, @Nullable BlockPos var2) {
-      int var3 = var1.size();
-      if (var3 == 0) {
-         throw new IllegalStateException("No palettes");
+   public List<StructureTemplate.StructureBlockInfo> getPalette(List<List<StructureTemplate.StructureBlockInfo>> var1, @Nullable BlockPos var2) {
+      this.preferredPalette = 8;
+      if (this.preferredPalette != null && this.preferredPalette >= 0 && this.preferredPalette < var1.size()) {
+         return (List)var1.get(this.preferredPalette);
       } else {
-         return (StructureTemplate.Palette)var1.get(this.getRandom(var2).nextInt(var3));
+         this.preferredPalette = this.getRandom(var2).nextInt(var1.size());
+         return (List)var1.get(this.preferredPalette);
       }
    }
 
@@ -181,14 +182,5 @@ public class StructurePlaceSettings {
          int var3 = var1.z * 16;
          return new BoundingBox(var2, 0, var3, var2 + 16 - 1, 255, var3 + 16 - 1);
       }
-   }
-
-   public StructurePlaceSettings setFinalizeEntities(boolean var1) {
-      this.finalizeEntities = var1;
-      return this;
-   }
-
-   public boolean shouldFinalizeEntities() {
-      return this.finalizeEntities;
    }
 }

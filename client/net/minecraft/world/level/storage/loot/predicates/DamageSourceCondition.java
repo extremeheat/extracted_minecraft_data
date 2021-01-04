@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
 import net.minecraft.advancements.critereon.DamageSourcePredicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -20,18 +22,14 @@ public class DamageSourceCondition implements LootItemCondition {
       this.predicate = var1;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.DAMAGE_SOURCE_PROPERTIES;
-   }
-
    public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(LootContextParams.ORIGIN, LootContextParams.DAMAGE_SOURCE);
+      return ImmutableSet.of(LootContextParams.BLOCK_POS, LootContextParams.DAMAGE_SOURCE);
    }
 
    public boolean test(LootContext var1) {
       DamageSource var2 = (DamageSource)var1.getParamOrNull(LootContextParams.DAMAGE_SOURCE);
-      Vec3 var3 = (Vec3)var1.getParamOrNull(LootContextParams.ORIGIN);
-      return var3 != null && var2 != null && this.predicate.matches(var1.getLevel(), var3, var2);
+      BlockPos var3 = (BlockPos)var1.getParamOrNull(LootContextParams.BLOCK_POS);
+      return var3 != null && var2 != null && this.predicate.matches(var1.getLevel(), new Vec3(var3), var2);
    }
 
    public static LootItemCondition.Builder hasDamageSource(DamageSourcePredicate.Builder var0) {
@@ -50,9 +48,9 @@ public class DamageSourceCondition implements LootItemCondition {
       this(var1);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<DamageSourceCondition> {
-      public Serializer() {
-         super();
+   public static class Serializer extends LootItemCondition.Serializer<DamageSourceCondition> {
+      protected Serializer() {
+         super(new ResourceLocation("damage_source_properties"), DamageSourceCondition.class);
       }
 
       public void serialize(JsonObject var1, DamageSourceCondition var2, JsonSerializationContext var3) {
@@ -65,7 +63,7 @@ public class DamageSourceCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

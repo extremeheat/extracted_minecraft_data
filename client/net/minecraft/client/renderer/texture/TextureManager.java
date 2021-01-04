@@ -1,18 +1,15 @@
 package net.minecraft.client.renderer.texture;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.TextureUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.realmsclient.RealmsMainScreen;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -26,11 +23,11 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TextureManager implements PreparableReloadListener, Tickable, AutoCloseable {
+public class TextureManager implements Tickable, PreparableReloadListener {
    private static final Logger LOGGER = LogManager.getLogger();
    public static final ResourceLocation INTENTIONAL_MISSING_TEXTURE = new ResourceLocation("");
-   private final Map<ResourceLocation, AbstractTexture> byPath = Maps.newHashMap();
-   private final Set<Tickable> tickableTextures = Sets.newHashSet();
+   private final Map<ResourceLocation, TextureObject> byPath = Maps.newHashMap();
+   private final List<Tickable> tickableTextures = Lists.newArrayList();
    private final Map<String, Integer> prefixRegister = Maps.newHashMap();
    private final ResourceManager resourceManager;
 
@@ -40,78 +37,53 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    }
 
    public void bind(ResourceLocation var1) {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            this._bind(var1);
-         });
-      } else {
-         this._bind(var1);
-      }
-
-   }
-
-   private void _bind(ResourceLocation var1) {
-      Object var2 = (AbstractTexture)this.byPath.get(var1);
+      Object var2 = (TextureObject)this.byPath.get(var1);
       if (var2 == null) {
          var2 = new SimpleTexture(var1);
-         this.register((ResourceLocation)var1, (AbstractTexture)var2);
+         this.register((ResourceLocation)var1, (TextureObject)var2);
       }
 
-      ((AbstractTexture)var2).bind();
+      ((TextureObject)var2).bind();
    }
 
-   public void register(ResourceLocation var1, AbstractTexture var2) {
-      var2 = this.loadTexture(var1, var2);
-      AbstractTexture var3 = (AbstractTexture)this.byPath.put(var1, var2);
-      if (var3 != var2) {
-         if (var3 != null && var3 != MissingTextureAtlasSprite.getTexture()) {
-            this.tickableTextures.remove(var3);
-            this.safeClose(var1, var3);
-         }
-
-         if (var2 instanceof Tickable) {
-            this.tickableTextures.add((Tickable)var2);
-         }
+   public boolean register(ResourceLocation var1, TickableTextureObject var2) {
+      if (this.register((ResourceLocation)var1, (TextureObject)var2)) {
+         this.tickableTextures.add(var2);
+         return true;
+      } else {
+         return false;
       }
-
    }
 
-   private void safeClose(ResourceLocation var1, AbstractTexture var2) {
-      if (var2 != MissingTextureAtlasSprite.getTexture()) {
-         try {
-            var2.close();
-         } catch (Exception var4) {
-            LOGGER.warn("Failed to close texture {}", var1, var4);
-         }
-      }
+   public boolean register(ResourceLocation var1, TextureObject var2) {
+      boolean var3 = true;
 
-      var2.releaseId();
-   }
-
-   private AbstractTexture loadTexture(ResourceLocation var1, AbstractTexture var2) {
       try {
-         var2.load(this.resourceManager);
-         return var2;
-      } catch (IOException var6) {
+         ((TextureObject)var2).load(this.resourceManager);
+      } catch (IOException var8) {
          if (var1 != INTENTIONAL_MISSING_TEXTURE) {
-            LOGGER.warn("Failed to load texture: {}", var1, var6);
+            LOGGER.warn("Failed to load texture: {}", var1, var8);
          }
 
-         return MissingTextureAtlasSprite.getTexture();
-      } catch (Throwable var7) {
-         CrashReport var4 = CrashReport.forThrowable(var7, "Registering texture");
-         CrashReportCategory var5 = var4.addCategory("Resource location being registered");
-         var5.setDetail("Resource location", (Object)var1);
-         var5.setDetail("Texture object class", () -> {
+         var2 = MissingTextureAtlasSprite.getTexture();
+         this.byPath.put(var1, var2);
+         var3 = false;
+      } catch (Throwable var9) {
+         CrashReport var5 = CrashReport.forThrowable(var9, "Registering texture");
+         CrashReportCategory var6 = var5.addCategory("Resource location being registered");
+         var6.setDetail("Resource location", (Object)var1);
+         var6.setDetail("Texture object class", () -> {
             return var2.getClass().getName();
          });
-         throw new ReportedException(var4);
+         throw new ReportedException(var5);
       }
+
+      this.byPath.put(var1, var2);
+      return var3;
    }
 
-   @Nullable
-   public AbstractTexture getTexture(ResourceLocation var1) {
-      return (AbstractTexture)this.byPath.get(var1);
+   public TextureObject getTexture(ResourceLocation var1) {
+      return (TextureObject)this.byPath.get(var1);
    }
 
    public ResourceLocation register(String var1, DynamicTexture var2) {
@@ -124,7 +96,7 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
       this.prefixRegister.put(var1, var3);
       ResourceLocation var4 = new ResourceLocation(String.format("dynamic/%s_%d", var1, var3));
-      this.register((ResourceLocation)var4, (AbstractTexture)var2);
+      this.register((ResourceLocation)var4, (TextureObject)var2);
       return var4;
    }
 
@@ -133,17 +105,11 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
          PreloadedTexture var3 = new PreloadedTexture(this.resourceManager, var1, var2);
          this.byPath.put(var1, var3);
          return var3.getFuture().thenRunAsync(() -> {
-            this.register((ResourceLocation)var1, (AbstractTexture)var3);
-         }, TextureManager::execute);
+            this.register((ResourceLocation)var1, (TextureObject)var3);
+         }, Minecraft.getInstance());
       } else {
          return CompletableFuture.completedFuture((Object)null);
       }
-   }
-
-   private static void execute(Runnable var0) {
-      Minecraft.getInstance().execute(() -> {
-         RenderSystem.recordRenderCall(var0::run);
-      });
    }
 
    public void tick() {
@@ -157,18 +123,11 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    }
 
    public void release(ResourceLocation var1) {
-      AbstractTexture var2 = this.getTexture(var1);
+      TextureObject var2 = this.getTexture(var1);
       if (var2 != null) {
          TextureUtil.releaseTextureId(var2.getId());
       }
 
-   }
-
-   public void close() {
-      this.byPath.forEach(this::safeClose);
-      this.byPath.clear();
-      this.tickableTextures.clear();
-      this.prefixRegister.clear();
    }
 
    public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
@@ -176,14 +135,13 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       var1.getClass();
       return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
          MissingTextureAtlasSprite.getTexture();
-         RealmsMainScreen.updateTeaserImages(this.resourceManager);
          Iterator var4 = this.byPath.entrySet().iterator();
 
          while(true) {
             while(var4.hasNext()) {
                Entry var5 = (Entry)var4.next();
                ResourceLocation var6x = (ResourceLocation)var5.getKey();
-               AbstractTexture var7 = (AbstractTexture)var5.getValue();
+               TextureObject var7 = (TextureObject)var5.getValue();
                if (var7 == MissingTextureAtlasSprite.getTexture() && !var6x.equals(MissingTextureAtlasSprite.getLocation())) {
                   var4.remove();
                } else {
@@ -193,8 +151,6 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
             return;
          }
-      }, (var0) -> {
-         RenderSystem.recordRenderCall(var0::run);
-      });
+      }, var6);
    }
 }

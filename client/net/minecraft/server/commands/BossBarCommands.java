@@ -20,7 +20,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -37,14 +36,14 @@ public class BossBarCommands {
    private static final DynamicCommandExceptionType ERROR_DOESNT_EXIST = new DynamicCommandExceptionType((var0) -> {
       return new TranslatableComponent("commands.bossbar.unknown", new Object[]{var0});
    });
-   private static final SimpleCommandExceptionType ERROR_NO_PLAYER_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.players.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_NO_NAME_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.name.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_NO_COLOR_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.color.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_NO_STYLE_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.style.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_NO_VALUE_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.value.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_NO_MAX_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.max.unchanged"));
-   private static final SimpleCommandExceptionType ERROR_ALREADY_HIDDEN = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.visibility.unchanged.hidden"));
-   private static final SimpleCommandExceptionType ERROR_ALREADY_VISIBLE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.visibility.unchanged.visible"));
+   private static final SimpleCommandExceptionType ERROR_NO_PLAYER_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.players.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NO_NAME_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.name.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NO_COLOR_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.color.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NO_STYLE_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.style.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NO_VALUE_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.value.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_NO_MAX_CHANGE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.max.unchanged", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_HIDDEN = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.visibility.unchanged.hidden", new Object[0]));
+   private static final SimpleCommandExceptionType ERROR_ALREADY_VISIBLE = new SimpleCommandExceptionType(new TranslatableComponent("commands.bossbar.set.visibility.unchanged.visible", new Object[0]));
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_BOSS_BAR = (var0, var1) -> {
       return SharedSuggestionProvider.suggestResource((Iterable)((CommandSourceStack)var0.getSource()).getServer().getCustomBossEvents().getIds(), var1);
    };
@@ -195,7 +194,7 @@ public class BossBarCommands {
    }
 
    private static int setName(CommandSourceStack var0, CustomBossEvent var1, Component var2) throws CommandSyntaxException {
-      MutableComponent var3 = ComponentUtils.updateForEntity(var0, var2, (Entity)null, 0);
+      Component var3 = ComponentUtils.updateForEntity(var0, var2, (Entity)null, 0);
       if (var1.getName().equals(var3)) {
          throw ERROR_NO_NAME_CHANGE.create();
       } else {
@@ -223,7 +222,7 @@ public class BossBarCommands {
    private static int listBars(CommandSourceStack var0) {
       Collection var1 = var0.getServer().getCustomBossEvents().getEvents();
       if (var1.isEmpty()) {
-         var0.sendSuccess(new TranslatableComponent("commands.bossbar.list.bars.none"), false);
+         var0.sendSuccess(new TranslatableComponent("commands.bossbar.list.bars.none", new Object[0]), false);
       } else {
          var0.sendSuccess(new TranslatableComponent("commands.bossbar.list.bars.some", new Object[]{var1.size(), ComponentUtils.formatList(var1, CustomBossEvent::getDisplayName)}), false);
       }

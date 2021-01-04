@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -19,10 +20,6 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
    private SetItemDamageFunction(LootItemCondition[] var1, RandomValueBounds var2) {
       super(var1);
       this.damage = var2;
-   }
-
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.SET_DAMAGE;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -48,8 +45,8 @@ public class SetItemDamageFunction extends LootItemConditionalFunction {
    }
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<SetItemDamageFunction> {
-      public Serializer() {
-         super();
+      protected Serializer() {
+         super(new ResourceLocation("set_damage"), SetItemDamageFunction.class);
       }
 
       public void serialize(JsonObject var1, SetItemDamageFunction var2, JsonSerializationContext var3) {

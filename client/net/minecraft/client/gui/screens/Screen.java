@@ -2,25 +2,25 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gson.JsonSyntaxException;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -28,23 +28,21 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.TickableWidget;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class Screen extends AbstractContainerEventHandler implements TickableWidget, Widget {
+public abstract class Screen extends AbstractContainerEventHandler implements Widget {
    private static final Logger LOGGER = LogManager.getLogger();
    private static final Set<String> ALLOWED_PROTOCOLS = Sets.newHashSet(new String[]{"http", "https"});
    protected final Component title;
@@ -72,9 +70,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
       return this.getTitle().getString();
    }
 
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      for(int var5 = 0; var5 < this.buttons.size(); ++var5) {
-         ((AbstractWidget)this.buttons.get(var5)).render(var1, var2, var3, var4);
+   public void render(int var1, int var2, float var3) {
+      for(int var4 = 0; var4 < this.buttons.size(); ++var4) {
+         ((AbstractWidget)this.buttons.get(var4)).render(var1, var2, var3);
       }
 
    }
@@ -89,7 +87,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
             this.changeFocus(var4);
          }
 
-         return false;
+         return true;
       } else {
          return super.keyPressed(var1, var2, var3);
       }
@@ -105,141 +103,156 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
 
    protected <T extends AbstractWidget> T addButton(T var1) {
       this.buttons.add(var1);
-      return (AbstractWidget)this.addWidget(var1);
-   }
-
-   protected <T extends GuiEventListener> T addWidget(T var1) {
       this.children.add(var1);
       return var1;
    }
 
-   protected void renderTooltip(PoseStack var1, ItemStack var2, int var3, int var4) {
-      this.renderComponentTooltip(var1, this.getTooltipFromItem(var2), var3, var4);
+   protected void renderTooltip(ItemStack var1, int var2, int var3) {
+      this.renderTooltip(this.getTooltipFromItem(var1), var2, var3);
    }
 
-   public List<Component> getTooltipFromItem(ItemStack var1) {
-      return var1.getTooltipLines(this.minecraft.player, this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+   public List<String> getTooltipFromItem(ItemStack var1) {
+      List var2 = var1.getTooltipLines(this.minecraft.player, this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+      ArrayList var3 = Lists.newArrayList();
+      Iterator var4 = var2.iterator();
+
+      while(var4.hasNext()) {
+         Component var5 = (Component)var4.next();
+         var3.add(var5.getColoredString());
+      }
+
+      return var3;
    }
 
-   public void renderTooltip(PoseStack var1, Component var2, int var3, int var4) {
-      this.renderTooltip(var1, Arrays.asList(var2.getVisualOrderText()), var3, var4);
+   public void renderTooltip(String var1, int var2, int var3) {
+      this.renderTooltip(Arrays.asList(var1), var2, var3);
    }
 
-   public void renderComponentTooltip(PoseStack var1, List<Component> var2, int var3, int var4) {
-      this.renderTooltip(var1, Lists.transform(var2, Component::getVisualOrderText), var3, var4);
-   }
+   public void renderTooltip(List<String> var1, int var2, int var3) {
+      if (!var1.isEmpty()) {
+         GlStateManager.disableRescaleNormal();
+         Lighting.turnOff();
+         GlStateManager.disableLighting();
+         GlStateManager.disableDepthTest();
+         int var4 = 0;
+         Iterator var5 = var1.iterator();
 
-   public void renderTooltip(PoseStack var1, List<? extends FormattedCharSequence> var2, int var3, int var4) {
-      if (!var2.isEmpty()) {
-         int var5 = 0;
-         Iterator var6 = var2.iterator();
-
-         while(var6.hasNext()) {
-            FormattedCharSequence var7 = (FormattedCharSequence)var6.next();
-            int var8 = this.font.width(var7);
-            if (var8 > var5) {
-               var5 = var8;
+         while(var5.hasNext()) {
+            String var6 = (String)var5.next();
+            int var7 = this.font.width(var6);
+            if (var7 > var4) {
+               var4 = var7;
             }
          }
 
-         int var20 = var3 + 12;
-         int var21 = var4 - 12;
-         int var9 = 8;
-         if (var2.size() > 1) {
-            var9 += 2 + (var2.size() - 1) * 10;
+         int var14 = var2 + 12;
+         int var15 = var3 - 12;
+         int var8 = 8;
+         if (var1.size() > 1) {
+            var8 += 2 + (var1.size() - 1) * 10;
          }
 
-         if (var20 + var5 > this.width) {
-            var20 -= 28 + var5;
+         if (var14 + var4 > this.width) {
+            var14 -= 28 + var4;
          }
 
-         if (var21 + var9 + 6 > this.height) {
-            var21 = this.height - var9 - 6;
+         if (var15 + var8 + 6 > this.height) {
+            var15 = this.height - var8 - 6;
          }
 
-         var1.pushPose();
-         int var10 = -267386864;
-         int var11 = 1347420415;
-         int var12 = 1344798847;
-         boolean var13 = true;
-         Tesselator var14 = Tesselator.getInstance();
-         BufferBuilder var15 = var14.getBuilder();
-         var15.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-         Matrix4f var16 = var1.last().pose();
-         fillGradient(var16, var15, var20 - 3, var21 - 4, var20 + var5 + 3, var21 - 3, 400, -267386864, -267386864);
-         fillGradient(var16, var15, var20 - 3, var21 + var9 + 3, var20 + var5 + 3, var21 + var9 + 4, 400, -267386864, -267386864);
-         fillGradient(var16, var15, var20 - 3, var21 - 3, var20 + var5 + 3, var21 + var9 + 3, 400, -267386864, -267386864);
-         fillGradient(var16, var15, var20 - 4, var21 - 3, var20 - 3, var21 + var9 + 3, 400, -267386864, -267386864);
-         fillGradient(var16, var15, var20 + var5 + 3, var21 - 3, var20 + var5 + 4, var21 + var9 + 3, 400, -267386864, -267386864);
-         fillGradient(var16, var15, var20 - 3, var21 - 3 + 1, var20 - 3 + 1, var21 + var9 + 3 - 1, 400, 1347420415, 1344798847);
-         fillGradient(var16, var15, var20 + var5 + 2, var21 - 3 + 1, var20 + var5 + 3, var21 + var9 + 3 - 1, 400, 1347420415, 1344798847);
-         fillGradient(var16, var15, var20 - 3, var21 - 3, var20 + var5 + 3, var21 - 3 + 1, 400, 1347420415, 1347420415);
-         fillGradient(var16, var15, var20 - 3, var21 + var9 + 2, var20 + var5 + 3, var21 + var9 + 3, 400, 1344798847, 1344798847);
-         RenderSystem.enableDepthTest();
-         RenderSystem.disableTexture();
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         RenderSystem.shadeModel(7425);
-         var15.end();
-         BufferUploader.end(var15);
-         RenderSystem.shadeModel(7424);
-         RenderSystem.disableBlend();
-         RenderSystem.enableTexture();
-         MultiBufferSource.BufferSource var17 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         var1.translate(0.0D, 0.0D, 400.0D);
+         this.blitOffset = 300;
+         this.itemRenderer.blitOffset = 300.0F;
+         int var9 = -267386864;
+         this.fillGradient(var14 - 3, var15 - 4, var14 + var4 + 3, var15 - 3, -267386864, -267386864);
+         this.fillGradient(var14 - 3, var15 + var8 + 3, var14 + var4 + 3, var15 + var8 + 4, -267386864, -267386864);
+         this.fillGradient(var14 - 3, var15 - 3, var14 + var4 + 3, var15 + var8 + 3, -267386864, -267386864);
+         this.fillGradient(var14 - 4, var15 - 3, var14 - 3, var15 + var8 + 3, -267386864, -267386864);
+         this.fillGradient(var14 + var4 + 3, var15 - 3, var14 + var4 + 4, var15 + var8 + 3, -267386864, -267386864);
+         int var10 = 1347420415;
+         int var11 = 1344798847;
+         this.fillGradient(var14 - 3, var15 - 3 + 1, var14 - 3 + 1, var15 + var8 + 3 - 1, 1347420415, 1344798847);
+         this.fillGradient(var14 + var4 + 2, var15 - 3 + 1, var14 + var4 + 3, var15 + var8 + 3 - 1, 1347420415, 1344798847);
+         this.fillGradient(var14 - 3, var15 - 3, var14 + var4 + 3, var15 - 3 + 1, 1347420415, 1347420415);
+         this.fillGradient(var14 - 3, var15 + var8 + 2, var14 + var4 + 3, var15 + var8 + 3, 1344798847, 1344798847);
 
-         for(int var18 = 0; var18 < var2.size(); ++var18) {
-            FormattedCharSequence var19 = (FormattedCharSequence)var2.get(var18);
-            if (var19 != null) {
-               this.font.drawInBatch((FormattedCharSequence)var19, (float)var20, (float)var21, -1, true, var16, var17, false, 0, 15728880);
+         for(int var12 = 0; var12 < var1.size(); ++var12) {
+            String var13 = (String)var1.get(var12);
+            this.font.drawShadow(var13, (float)var14, (float)var15, -1);
+            if (var12 == 0) {
+               var15 += 2;
             }
 
-            if (var18 == 0) {
-               var21 += 2;
-            }
-
-            var21 += 10;
+            var15 += 10;
          }
 
-         var17.endBatch();
-         var1.popPose();
+         this.blitOffset = 0;
+         this.itemRenderer.blitOffset = 0.0F;
+         GlStateManager.enableLighting();
+         GlStateManager.enableDepthTest();
+         Lighting.turnOn();
+         GlStateManager.enableRescaleNormal();
       }
    }
 
-   protected void renderComponentHoverEffect(PoseStack var1, @Nullable Style var2, int var3, int var4) {
-      if (var2 != null && var2.getHoverEvent() != null) {
-         HoverEvent var5 = var2.getHoverEvent();
-         HoverEvent.ItemStackInfo var6 = (HoverEvent.ItemStackInfo)var5.getValue(HoverEvent.Action.SHOW_ITEM);
-         if (var6 != null) {
-            this.renderTooltip(var1, var6.getItemStack(), var3, var4);
-         } else {
-            HoverEvent.EntityTooltipInfo var7 = (HoverEvent.EntityTooltipInfo)var5.getValue(HoverEvent.Action.SHOW_ENTITY);
-            if (var7 != null) {
-               if (this.minecraft.options.advancedItemTooltips) {
-                  this.renderComponentTooltip(var1, var7.getTooltipLines(), var3, var4);
+   protected void renderComponentHoverEffect(Component var1, int var2, int var3) {
+      if (var1 != null && var1.getStyle().getHoverEvent() != null) {
+         HoverEvent var4 = var1.getStyle().getHoverEvent();
+         if (var4.getAction() == HoverEvent.Action.SHOW_ITEM) {
+            ItemStack var5 = ItemStack.EMPTY;
+
+            try {
+               CompoundTag var6 = TagParser.parseTag(var4.getValue().getString());
+               if (var6 instanceof CompoundTag) {
+                  var5 = ItemStack.of((CompoundTag)var6);
                }
+            } catch (CommandSyntaxException var10) {
+            }
+
+            if (var5.isEmpty()) {
+               this.renderTooltip(ChatFormatting.RED + "Invalid Item!", var2, var3);
             } else {
-               Component var8 = (Component)var5.getValue(HoverEvent.Action.SHOW_TEXT);
-               if (var8 != null) {
-                  this.renderTooltip(var1, this.minecraft.font.split(var8, Math.max(this.width / 2, 200)), var3, var4);
+               this.renderTooltip(var5, var2, var3);
+            }
+         } else if (var4.getAction() == HoverEvent.Action.SHOW_ENTITY) {
+            if (this.minecraft.options.advancedItemTooltips) {
+               try {
+                  CompoundTag var11 = TagParser.parseTag(var4.getValue().getString());
+                  ArrayList var12 = Lists.newArrayList();
+                  Component var7 = Component.Serializer.fromJson(var11.getString("name"));
+                  if (var7 != null) {
+                     var12.add(var7.getColoredString());
+                  }
+
+                  if (var11.contains("type", 8)) {
+                     String var8 = var11.getString("type");
+                     var12.add("Type: " + var8);
+                  }
+
+                  var12.add(var11.getString("id"));
+                  this.renderTooltip((List)var12, var2, var3);
+               } catch (CommandSyntaxException | JsonSyntaxException var9) {
+                  this.renderTooltip(ChatFormatting.RED + "Invalid Entity!", var2, var3);
                }
             }
+         } else if (var4.getAction() == HoverEvent.Action.SHOW_TEXT) {
+            this.renderTooltip(this.minecraft.font.split(var4.getValue().getColoredString(), Math.max(this.width / 2, 200)), var2, var3);
          }
 
+         GlStateManager.disableLighting();
       }
    }
 
    protected void insertText(String var1, boolean var2) {
    }
 
-   public boolean handleComponentClicked(@Nullable Style var1) {
+   public boolean handleComponentClicked(Component var1) {
       if (var1 == null) {
          return false;
       } else {
-         ClickEvent var2 = var1.getClickEvent();
+         ClickEvent var2 = var1.getStyle().getClickEvent();
          if (hasShiftDown()) {
-            if (var1.getInsertion() != null) {
-               this.insertText(var1.getInsertion(), false);
+            if (var1.getStyle().getInsertion() != null) {
+               this.insertText(var1.getStyle().getInsertion(), false);
             }
          } else if (var2 != null) {
             URI var3;
@@ -275,8 +288,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
                this.insertText(var2.getValue(), true);
             } else if (var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
                this.sendMessage(var2.getValue(), false);
-            } else if (var2.getAction() == ClickEvent.Action.COPY_TO_CLIPBOARD) {
-               this.minecraft.keyboardHandler.setClipboard(var2.getValue());
             } else {
                LOGGER.error("Don't know how to handle {}", var2);
             }
@@ -312,6 +323,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
       this.init();
    }
 
+   public void setSize(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
+   }
+
    public List<? extends GuiEventListener> children() {
       return this.children;
    }
@@ -325,30 +341,32 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
    public void removed() {
    }
 
-   public void renderBackground(PoseStack var1) {
-      this.renderBackground(var1, 0);
+   public void renderBackground() {
+      this.renderBackground(0);
    }
 
-   public void renderBackground(PoseStack var1, int var2) {
+   public void renderBackground(int var1) {
       if (this.minecraft.level != null) {
-         this.fillGradient(var1, 0, 0, this.width, this.height, -1072689136, -804253680);
+         this.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
       } else {
-         this.renderDirtBackground(var2);
+         this.renderDirtBackground(var1);
       }
 
    }
 
    public void renderDirtBackground(int var1) {
+      GlStateManager.disableLighting();
+      GlStateManager.disableFog();
       Tesselator var2 = Tesselator.getInstance();
       BufferBuilder var3 = var2.getBuilder();
       this.minecraft.getTextureManager().bind(BACKGROUND_LOCATION);
-      RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+      GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
       float var4 = 32.0F;
-      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var3.vertex(0.0D, (double)this.height, 0.0D).uv(0.0F, (float)this.height / 32.0F + (float)var1).color(64, 64, 64, 255).endVertex();
-      var3.vertex((double)this.width, (double)this.height, 0.0D).uv((float)this.width / 32.0F, (float)this.height / 32.0F + (float)var1).color(64, 64, 64, 255).endVertex();
-      var3.vertex((double)this.width, 0.0D, 0.0D).uv((float)this.width / 32.0F, (float)var1).color(64, 64, 64, 255).endVertex();
-      var3.vertex(0.0D, 0.0D, 0.0D).uv(0.0F, (float)var1).color(64, 64, 64, 255).endVertex();
+      var3.begin(7, DefaultVertexFormat.POSITION_TEX_COLOR);
+      var3.vertex(0.0D, (double)this.height, 0.0D).uv(0.0D, (double)((float)this.height / 32.0F + (float)var1)).color(64, 64, 64, 255).endVertex();
+      var3.vertex((double)this.width, (double)this.height, 0.0D).uv((double)((float)this.width / 32.0F), (double)((float)this.height / 32.0F + (float)var1)).color(64, 64, 64, 255).endVertex();
+      var3.vertex((double)this.width, 0.0D, 0.0D).uv((double)((float)this.width / 32.0F), (double)var1).color(64, 64, 64, 255).endVertex();
+      var3.vertex(0.0D, 0.0D, 0.0D).uv(0.0D, (double)var1).color(64, 64, 64, 255).endVertex();
       var2.end();
    }
 
@@ -371,18 +389,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
 
    public static boolean hasControlDown() {
       if (Minecraft.ON_OSX) {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 343) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 347);
+         return InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 343) || InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 347);
       } else {
-         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 341) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 345);
+         return InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 341) || InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 345);
       }
    }
 
    public static boolean hasShiftDown() {
-      return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 344);
+      return InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 340) || InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 344);
    }
 
    public static boolean hasAltDown() {
-      return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 342) || InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 346);
+      return InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 342) || InputConstants.isKeyDown(Minecraft.getInstance().window.getWindow(), 346);
    }
 
    public static boolean isCut(int var0) {
@@ -432,8 +450,5 @@ public abstract class Screen extends AbstractContainerEventHandler implements Ti
 
    public boolean isMouseOver(double var1, double var3) {
       return true;
-   }
-
-   public void onFilesDrop(List<Path> var1) {
    }
 }

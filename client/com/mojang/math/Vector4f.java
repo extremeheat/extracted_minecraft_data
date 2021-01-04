@@ -1,27 +1,18 @@
 package com.mojang.math;
 
-import net.minecraft.util.Mth;
+import java.util.Arrays;
 
 public class Vector4f {
-   private float x;
-   private float y;
-   private float z;
-   private float w;
+   private final float[] values;
 
    public Vector4f() {
       super();
+      this.values = new float[4];
    }
 
    public Vector4f(float var1, float var2, float var3, float var4) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.w = var4;
-   }
-
-   public Vector4f(Vector3f var1) {
-      this(var1.x(), var1.y(), var1.z(), 1.0F);
+      this.values = new float[]{var1, var2, var3, var4};
    }
 
    public boolean equals(Object var1) {
@@ -29,84 +20,46 @@ public class Vector4f {
          return true;
       } else if (var1 != null && this.getClass() == var1.getClass()) {
          Vector4f var2 = (Vector4f)var1;
-         if (Float.compare(var2.x, this.x) != 0) {
-            return false;
-         } else if (Float.compare(var2.y, this.y) != 0) {
-            return false;
-         } else if (Float.compare(var2.z, this.z) != 0) {
-            return false;
-         } else {
-            return Float.compare(var2.w, this.w) == 0;
-         }
+         return Arrays.equals(this.values, var2.values);
       } else {
          return false;
       }
    }
 
    public int hashCode() {
-      int var1 = Float.floatToIntBits(this.x);
-      var1 = 31 * var1 + Float.floatToIntBits(this.y);
-      var1 = 31 * var1 + Float.floatToIntBits(this.z);
-      var1 = 31 * var1 + Float.floatToIntBits(this.w);
-      return var1;
+      return Arrays.hashCode(this.values);
    }
 
    public float x() {
-      return this.x;
+      return this.values[0];
    }
 
    public float y() {
-      return this.y;
+      return this.values[1];
    }
 
    public float z() {
-      return this.z;
+      return this.values[2];
    }
 
    public float w() {
-      return this.w;
+      return this.values[3];
    }
 
    public void mul(Vector3f var1) {
-      this.x *= var1.x();
-      this.y *= var1.y();
-      this.z *= var1.z();
+      float[] var10000 = this.values;
+      var10000[0] *= var1.x();
+      var10000 = this.values;
+      var10000[1] *= var1.y();
+      var10000 = this.values;
+      var10000[2] *= var1.z();
    }
 
    public void set(float var1, float var2, float var3, float var4) {
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.w = var4;
-   }
-
-   public float dot(Vector4f var1) {
-      return this.x * var1.x + this.y * var1.y + this.z * var1.z + this.w * var1.w;
-   }
-
-   public boolean normalize() {
-      float var1 = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
-      if ((double)var1 < 1.0E-5D) {
-         return false;
-      } else {
-         float var2 = Mth.fastInvSqrt(var1);
-         this.x *= var2;
-         this.y *= var2;
-         this.z *= var2;
-         this.w *= var2;
-         return true;
-      }
-   }
-
-   public void transform(Matrix4f var1) {
-      float var2 = this.x;
-      float var3 = this.y;
-      float var4 = this.z;
-      float var5 = this.w;
-      this.x = var1.m00 * var2 + var1.m01 * var3 + var1.m02 * var4 + var1.m03 * var5;
-      this.y = var1.m10 * var2 + var1.m11 * var3 + var1.m12 * var4 + var1.m13 * var5;
-      this.z = var1.m20 * var2 + var1.m21 * var3 + var1.m22 * var4 + var1.m23 * var5;
-      this.w = var1.m30 * var2 + var1.m31 * var3 + var1.m32 * var4 + var1.m33 * var5;
+      this.values[0] = var1;
+      this.values[1] = var2;
+      this.values[2] = var3;
+      this.values[3] = var4;
    }
 
    public void transform(Quaternion var1) {
@@ -116,16 +69,5 @@ public class Vector4f {
       var3.conj();
       var2.mul(var3);
       this.set(var2.i(), var2.j(), var2.k(), this.w());
-   }
-
-   public void perspectiveDivide() {
-      this.x /= this.w;
-      this.y /= this.w;
-      this.z /= this.w;
-      this.w = 1.0F;
-   }
-
-   public String toString() {
-      return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + "]";
    }
 }

@@ -15,12 +15,12 @@ public class TryFindWaterGoal extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.isOnGround() && !this.mob.level.getFluidState(this.mob.blockPosition()).is(FluidTags.WATER);
+      return this.mob.onGround && !this.mob.level.getFluidState(new BlockPos(this.mob)).is(FluidTags.WATER);
    }
 
    public void start() {
       BlockPos var1 = null;
-      Iterable var2 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0D), Mth.floor(this.mob.getY() - 2.0D), Mth.floor(this.mob.getZ() - 2.0D), Mth.floor(this.mob.getX() + 2.0D), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + 2.0D));
+      Iterable var2 = BlockPos.betweenClosed(Mth.floor(this.mob.x - 2.0D), Mth.floor(this.mob.y - 2.0D), Mth.floor(this.mob.z - 2.0D), Mth.floor(this.mob.x + 2.0D), Mth.floor(this.mob.y), Mth.floor(this.mob.z + 2.0D));
       Iterator var3 = var2.iterator();
 
       while(var3.hasNext()) {

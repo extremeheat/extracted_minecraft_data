@@ -13,8 +13,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 
 public class CraftPlanksTutorialStep implements TutorialStepInstance {
-   private static final Component CRAFT_TITLE = new TranslatableComponent("tutorial.craft_planks.title");
-   private static final Component CRAFT_DESCRIPTION = new TranslatableComponent("tutorial.craft_planks.description");
+   private static final Component CRAFT_TITLE = new TranslatableComponent("tutorial.craft_planks.title", new Object[0]);
+   private static final Component CRAFT_DESCRIPTION = new TranslatableComponent("tutorial.craft_planks.description", new Object[0]);
    private final Tutorial tutorial;
    private TutorialToast toast;
    private int timeWaiting;
@@ -32,7 +32,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
          if (this.timeWaiting == 1) {
             LocalPlayer var1 = this.tutorial.getMinecraft().player;
             if (var1 != null) {
-               if (var1.getInventory().contains((Tag)ItemTags.PLANKS)) {
+               if (var1.inventory.contains(ItemTags.PLANKS)) {
                   this.tutorial.setStep(TutorialSteps.NONE);
                   return;
                }
@@ -61,7 +61,8 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    }
 
    public void onGetItem(ItemStack var1) {
-      if (var1.is((Tag)ItemTags.PLANKS)) {
+      Item var2 = var1.getItem();
+      if (ItemTags.PLANKS.contains(var2)) {
          this.tutorial.setStep(TutorialSteps.NONE);
       }
 

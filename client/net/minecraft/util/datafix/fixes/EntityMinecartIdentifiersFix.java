@@ -3,15 +3,16 @@ package net.minecraft.util.datafix.fixes;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class EntityMinecartIdentifiersFix extends DataFix {
    private static final List<String> MINECART_BY_ID = Lists.newArrayList(new String[]{"MinecartRideable", "MinecartChest", "MinecartFurnace"});
@@ -38,9 +39,7 @@ public class EntityMinecartIdentifiersFix extends DataFix {
                   var6 = "MinecartRideable";
                }
 
-               return Pair.of(var6, var4.write().map((var2xx) -> {
-                  return ((Type)var2.types().get(var6)).read(var2xx);
-               }).result().orElseThrow(() -> {
+               return Pair.of(var6, ((Optional)((Type)var2.types().get(var6)).read(var4.write()).getSecond()).orElseThrow(() -> {
                   return new IllegalStateException("Could not read the new minecart.");
                }));
             }

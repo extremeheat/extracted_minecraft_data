@@ -1,17 +1,15 @@
 package net.minecraft.world.level.levelgen.carver;
 
-import com.mojang.serialization.Codec;
+import com.mojang.datafixers.Dynamic;
 import java.util.BitSet;
 import java.util.Random;
 import java.util.function.Function;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
+import net.minecraft.world.level.levelgen.feature.ProbabilityFeatureConfiguration;
 
 public class CaveWorldCarver extends WorldCarver<ProbabilityFeatureConfiguration> {
-   public CaveWorldCarver(Codec<ProbabilityFeatureConfiguration> var1, int var2) {
+   public CaveWorldCarver(Function<Dynamic<?>, ? extends ProbabilityFeatureConfiguration> var1, int var2) {
       super(var1, var2);
    }
 
@@ -19,30 +17,30 @@ public class CaveWorldCarver extends WorldCarver<ProbabilityFeatureConfiguration
       return var1.nextFloat() <= var4.probability;
    }
 
-   public boolean carve(ChunkAccess var1, Function<BlockPos, Biome> var2, Random var3, int var4, int var5, int var6, int var7, int var8, BitSet var9, ProbabilityFeatureConfiguration var10) {
-      int var11 = (this.getRange() * 2 - 1) * 16;
-      int var12 = var3.nextInt(var3.nextInt(var3.nextInt(this.getCaveBound()) + 1) + 1);
+   public boolean carve(ChunkAccess var1, Random var2, int var3, int var4, int var5, int var6, int var7, BitSet var8, ProbabilityFeatureConfiguration var9) {
+      int var10 = (this.getRange() * 2 - 1) * 16;
+      int var11 = var2.nextInt(var2.nextInt(var2.nextInt(this.getCaveBound()) + 1) + 1);
 
-      for(int var13 = 0; var13 < var12; ++var13) {
-         double var14 = (double)(var5 * 16 + var3.nextInt(16));
-         double var16 = (double)this.getCaveY(var3);
-         double var18 = (double)(var6 * 16 + var3.nextInt(16));
-         int var20 = 1;
-         float var23;
-         if (var3.nextInt(4) == 0) {
-            double var21 = 0.5D;
-            var23 = 1.0F + var3.nextFloat() * 6.0F;
-            this.genRoom(var1, var2, var3.nextLong(), var4, var7, var8, var14, var16, var18, var23, 0.5D, var9);
-            var20 += var3.nextInt(4);
+      for(int var12 = 0; var12 < var11; ++var12) {
+         double var13 = (double)(var4 * 16 + var2.nextInt(16));
+         double var15 = (double)this.getCaveY(var2);
+         double var17 = (double)(var5 * 16 + var2.nextInt(16));
+         int var19 = 1;
+         float var22;
+         if (var2.nextInt(4) == 0) {
+            double var20 = 0.5D;
+            var22 = 1.0F + var2.nextFloat() * 6.0F;
+            this.genRoom(var1, var2.nextLong(), var3, var6, var7, var13, var15, var17, var22, 0.5D, var8);
+            var19 += var2.nextInt(4);
          }
 
-         for(int var27 = 0; var27 < var20; ++var27) {
-            float var22 = var3.nextFloat() * 6.2831855F;
-            var23 = (var3.nextFloat() - 0.5F) / 4.0F;
-            float var24 = this.getThickness(var3);
-            int var25 = var11 - var3.nextInt(var11 / 4);
-            boolean var26 = false;
-            this.genTunnel(var1, var2, var3.nextLong(), var4, var7, var8, var14, var16, var18, var24, var22, var23, 0, var25, this.getYScale(), var9);
+         for(int var26 = 0; var26 < var19; ++var26) {
+            float var21 = var2.nextFloat() * 6.2831855F;
+            var22 = (var2.nextFloat() - 0.5F) / 4.0F;
+            float var23 = this.getThickness(var2);
+            int var24 = var10 - var2.nextInt(var10 / 4);
+            boolean var25 = false;
+            this.genTunnel(var1, var2.nextLong(), var3, var6, var7, var13, var15, var17, var23, var21, var22, 0, var24, this.getYScale(), var8);
          }
       }
 
@@ -70,45 +68,45 @@ public class CaveWorldCarver extends WorldCarver<ProbabilityFeatureConfiguration
       return var1.nextInt(var1.nextInt(120) + 8);
    }
 
-   protected void genRoom(ChunkAccess var1, Function<BlockPos, Biome> var2, long var3, int var5, int var6, int var7, double var8, double var10, double var12, float var14, double var15, BitSet var17) {
-      double var18 = 1.5D + (double)(Mth.sin(1.5707964F) * var14);
-      double var20 = var18 * var15;
-      this.carveSphere(var1, var2, var3, var5, var6, var7, var8 + 1.0D, var10, var12, var18, var20, var17);
+   protected void genRoom(ChunkAccess var1, long var2, int var4, int var5, int var6, double var7, double var9, double var11, float var13, double var14, BitSet var16) {
+      double var17 = 1.5D + (double)(Mth.sin(1.5707964F) * var13);
+      double var19 = var17 * var14;
+      this.carveSphere(var1, var2, var4, var5, var6, var7 + 1.0D, var9, var11, var17, var19, var16);
    }
 
-   protected void genTunnel(ChunkAccess var1, Function<BlockPos, Biome> var2, long var3, int var5, int var6, int var7, double var8, double var10, double var12, float var14, float var15, float var16, int var17, int var18, double var19, BitSet var21) {
-      Random var22 = new Random(var3);
-      int var23 = var22.nextInt(var18 / 2) + var18 / 4;
-      boolean var24 = var22.nextInt(6) == 0;
+   protected void genTunnel(ChunkAccess var1, long var2, int var4, int var5, int var6, double var7, double var9, double var11, float var13, float var14, float var15, int var16, int var17, double var18, BitSet var20) {
+      Random var21 = new Random(var2);
+      int var22 = var21.nextInt(var17 / 2) + var17 / 4;
+      boolean var23 = var21.nextInt(6) == 0;
+      float var24 = 0.0F;
       float var25 = 0.0F;
-      float var26 = 0.0F;
 
-      for(int var27 = var17; var27 < var18; ++var27) {
-         double var28 = 1.5D + (double)(Mth.sin(3.1415927F * (float)var27 / (float)var18) * var14);
-         double var30 = var28 * var19;
-         float var32 = Mth.cos(var16);
-         var8 += (double)(Mth.cos(var15) * var32);
-         var10 += (double)Mth.sin(var16);
-         var12 += (double)(Mth.sin(var15) * var32);
-         var16 *= var24 ? 0.92F : 0.7F;
-         var16 += var26 * 0.1F;
+      for(int var26 = var16; var26 < var17; ++var26) {
+         double var27 = 1.5D + (double)(Mth.sin(3.1415927F * (float)var26 / (float)var17) * var13);
+         double var29 = var27 * var18;
+         float var31 = Mth.cos(var15);
+         var7 += (double)(Mth.cos(var14) * var31);
+         var9 += (double)Mth.sin(var15);
+         var11 += (double)(Mth.sin(var14) * var31);
+         var15 *= var23 ? 0.92F : 0.7F;
          var15 += var25 * 0.1F;
-         var26 *= 0.9F;
-         var25 *= 0.75F;
-         var26 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 2.0F;
-         var25 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 4.0F;
-         if (var27 == var23 && var14 > 1.0F) {
-            this.genTunnel(var1, var2, var22.nextLong(), var5, var6, var7, var8, var10, var12, var22.nextFloat() * 0.5F + 0.5F, var15 - 1.5707964F, var16 / 3.0F, var27, var18, 1.0D, var21);
-            this.genTunnel(var1, var2, var22.nextLong(), var5, var6, var7, var8, var10, var12, var22.nextFloat() * 0.5F + 0.5F, var15 + 1.5707964F, var16 / 3.0F, var27, var18, 1.0D, var21);
+         var14 += var24 * 0.1F;
+         var25 *= 0.9F;
+         var24 *= 0.75F;
+         var25 += (var21.nextFloat() - var21.nextFloat()) * var21.nextFloat() * 2.0F;
+         var24 += (var21.nextFloat() - var21.nextFloat()) * var21.nextFloat() * 4.0F;
+         if (var26 == var22 && var13 > 1.0F) {
+            this.genTunnel(var1, var21.nextLong(), var4, var5, var6, var7, var9, var11, var21.nextFloat() * 0.5F + 0.5F, var14 - 1.5707964F, var15 / 3.0F, var26, var17, 1.0D, var20);
+            this.genTunnel(var1, var21.nextLong(), var4, var5, var6, var7, var9, var11, var21.nextFloat() * 0.5F + 0.5F, var14 + 1.5707964F, var15 / 3.0F, var26, var17, 1.0D, var20);
             return;
          }
 
-         if (var22.nextInt(4) != 0) {
-            if (!this.canReach(var6, var7, var8, var12, var27, var18, var14)) {
+         if (var21.nextInt(4) != 0) {
+            if (!this.canReach(var5, var6, var7, var11, var26, var17, var13)) {
                return;
             }
 
-            this.carveSphere(var1, var2, var3, var5, var6, var7, var8, var10, var12, var28, var30, var21);
+            this.carveSphere(var1, var2, var4, var5, var6, var7, var9, var11, var27, var29, var20);
          }
       }
 

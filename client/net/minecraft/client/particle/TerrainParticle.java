@@ -2,10 +2,10 @@ package net.minecraft.client.particle;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -15,7 +15,7 @@ public class TerrainParticle extends TextureSheetParticle {
    private final float uo;
    private final float vo;
 
-   public TerrainParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, BlockState var14) {
+   public TerrainParticle(Level var1, double var2, double var4, double var6, double var8, double var10, double var12, BlockState var14) {
       super(var1, var2, var4, var6, var8, var10, var12);
       this.blockState = var14;
       this.setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(var14));
@@ -34,7 +34,7 @@ public class TerrainParticle extends TextureSheetParticle {
 
    public TerrainParticle init(BlockPos var1) {
       this.pos = var1;
-      if (this.blockState.is(Blocks.GRASS_BLOCK)) {
+      if (this.blockState.getBlock() == Blocks.GRASS_BLOCK) {
          return this;
       } else {
          this.multiplyColor(var1);
@@ -44,7 +44,8 @@ public class TerrainParticle extends TextureSheetParticle {
 
    public TerrainParticle init() {
       this.pos = new BlockPos(this.x, this.y, this.z);
-      if (this.blockState.is(Blocks.GRASS_BLOCK)) {
+      Block var1 = this.blockState.getBlock();
+      if (var1 == Blocks.GRASS_BLOCK) {
          return this;
       } else {
          this.multiplyColor(this.pos);
@@ -79,7 +80,7 @@ public class TerrainParticle extends TextureSheetParticle {
       int var2 = super.getLightColor(var1);
       int var3 = 0;
       if (this.level.hasChunkAt(this.pos)) {
-         var3 = LevelRenderer.getLightColor(this.level, this.pos);
+         var3 = this.level.getLightColor(this.pos, 0);
       }
 
       return var2 == 0 ? var3 : var2;
@@ -90,9 +91,9 @@ public class TerrainParticle extends TextureSheetParticle {
          super();
       }
 
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(BlockParticleOption var1, Level var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          BlockState var15 = var1.getState();
-         return !var15.isAir() && !var15.is(Blocks.MOVING_PISTON) ? (new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15)).init() : null;
+         return !var15.isAir() && var15.getBlock() != Blocks.MOVING_PISTON ? (new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15)).init() : null;
       }
    }
 }

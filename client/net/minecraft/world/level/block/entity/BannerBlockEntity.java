@@ -1,11 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Pair;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -19,46 +17,41 @@ import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
-   @Nullable
    private Component name;
    private DyeColor baseColor;
-   @Nullable
    private ListTag itemPatterns;
    private boolean receivedData;
-   @Nullable
-   private List<Pair<BannerPattern, DyeColor>> patterns;
+   private List<BannerPattern> patterns;
+   private List<DyeColor> colors;
+   private String textureHashName;
 
-   public BannerBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BANNER, var1, var2);
-      this.baseColor = ((AbstractBannerBlock)var2.getBlock()).getColor();
+   public BannerBlockEntity() {
+      super(BlockEntityType.BANNER);
+      this.baseColor = DyeColor.WHITE;
    }
 
-   public BannerBlockEntity(BlockPos var1, BlockState var2, DyeColor var3) {
-      this(var1, var2);
-      this.baseColor = var3;
-   }
-
-   @Nullable
-   public static ListTag getItemPatterns(ItemStack var0) {
-      ListTag var1 = null;
-      CompoundTag var2 = var0.getTagElement("BlockEntityTag");
-      if (var2 != null && var2.contains("Patterns", 9)) {
-         var1 = var2.getList("Patterns", 10).copy();
-      }
-
-      return var1;
+   public BannerBlockEntity(DyeColor var1) {
+      this();
+      this.baseColor = var1;
    }
 
    public void fromItem(ItemStack var1, DyeColor var2) {
-      this.itemPatterns = getItemPatterns(var1);
+      this.itemPatterns = null;
+      CompoundTag var3 = var1.getTagElement("BlockEntityTag");
+      if (var3 != null && var3.contains("Patterns", 9)) {
+         this.itemPatterns = var3.getList("Patterns", 10).copy();
+      }
+
       this.baseColor = var2;
       this.patterns = null;
+      this.colors = null;
+      this.textureHashName = "";
       this.receivedData = true;
       this.name = var1.hasCustomHoverName() ? var1.getHoverName() : null;
    }
 
    public Component getName() {
-      return (Component)(this.name != null ? this.name : new TranslatableComponent("block.minecraft.banner"));
+      return (Component)(this.name != null ? this.name : new TranslatableComponent("block.minecraft.banner", new Object[0]));
    }
 
    @Nullable
@@ -89,8 +82,16 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"));
       }
 
+      if (this.hasLevel()) {
+         this.baseColor = ((AbstractBannerBlock)this.getBlockState().getBlock()).getColor();
+      } else {
+         this.baseColor = null;
+      }
+
       this.itemPatterns = var1.getList("Patterns", 10);
       this.patterns = null;
+      this.colors = null;
+      this.textureHashName = null;
       this.receivedData = true;
    }
 
@@ -108,29 +109,51 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return var1 != null && var1.contains("Patterns") ? var1.getList("Patterns", 10).size() : 0;
    }
 
-   public List<Pair<BannerPattern, DyeColor>> getPatterns() {
-      if (this.patterns == null && this.receivedData) {
-         this.patterns = createPatterns(this.baseColor, this.itemPatterns);
-      }
-
+   public List<BannerPattern> getPatterns() {
+      this.createPatternList();
       return this.patterns;
    }
 
-   public static List<Pair<BannerPattern, DyeColor>> createPatterns(DyeColor var0, @Nullable ListTag var1) {
-      ArrayList var2 = Lists.newArrayList();
-      var2.add(Pair.of(BannerPattern.BASE, var0));
-      if (var1 != null) {
-         for(int var3 = 0; var3 < var1.size(); ++var3) {
-            CompoundTag var4 = var1.getCompound(var3);
-            BannerPattern var5 = BannerPattern.byHash(var4.getString("Pattern"));
-            if (var5 != null) {
-               int var6 = var4.getInt("Color");
-               var2.add(Pair.of(var5, DyeColor.byId(var6)));
+   public List<DyeColor> getColors() {
+      this.createPatternList();
+      return this.colors;
+   }
+
+   public String getTextureHashName() {
+      this.createPatternList();
+      return this.textureHashName;
+   }
+
+   private void createPatternList() {
+      if (this.patterns == null || this.colors == null || this.textureHashName == null) {
+         if (!this.receivedData) {
+            this.textureHashName = "";
+         } else {
+            this.patterns = Lists.newArrayList();
+            this.colors = Lists.newArrayList();
+            DyeColor var1 = this.getBaseColor(this::getBlockState);
+            if (var1 == null) {
+               this.textureHashName = "banner_missing";
+            } else {
+               this.patterns.add(BannerPattern.BASE);
+               this.colors.add(var1);
+               this.textureHashName = "b" + var1.getId();
+               if (this.itemPatterns != null) {
+                  for(int var2 = 0; var2 < this.itemPatterns.size(); ++var2) {
+                     CompoundTag var3 = this.itemPatterns.getCompound(var2);
+                     BannerPattern var4 = BannerPattern.byHash(var3.getString("Pattern"));
+                     if (var4 != null) {
+                        this.patterns.add(var4);
+                        int var5 = var3.getInt("Color");
+                        this.colors.add(DyeColor.byId(var5));
+                        this.textureHashName = this.textureHashName + var4.getHashname() + var5;
+                     }
+                  }
+               }
             }
+
          }
       }
-
-      return var2;
    }
 
    public static void removeLastPattern(ItemStack var0) {
@@ -147,20 +170,26 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       }
    }
 
-   public ItemStack getItem() {
-      ItemStack var1 = new ItemStack(BannerBlock.byColor(this.baseColor));
+   public ItemStack getItem(BlockState var1) {
+      ItemStack var2 = new ItemStack(BannerBlock.byColor(this.getBaseColor(() -> {
+         return var1;
+      })));
       if (this.itemPatterns != null && !this.itemPatterns.isEmpty()) {
-         var1.getOrCreateTagElement("BlockEntityTag").put("Patterns", this.itemPatterns.copy());
+         var2.getOrCreateTagElement("BlockEntityTag").put("Patterns", this.itemPatterns.copy());
       }
 
       if (this.name != null) {
-         var1.setHoverName(this.name);
+         var2.setHoverName(this.name);
       }
 
-      return var1;
+      return var2;
    }
 
-   public DyeColor getBaseColor() {
+   public DyeColor getBaseColor(Supplier<BlockState> var1) {
+      if (this.baseColor == null) {
+         this.baseColor = ((AbstractBannerBlock)((BlockState)var1.get()).getBlock()).getColor();
+      }
+
       return this.baseColor;
    }
 }

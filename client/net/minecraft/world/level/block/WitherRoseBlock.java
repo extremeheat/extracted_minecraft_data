@@ -12,19 +12,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WitherRoseBlock extends FlowerBlock {
-   public WitherRoseBlock(MobEffect var1, BlockBehaviour.Properties var2) {
+   public WitherRoseBlock(MobEffect var1, Block.Properties var2) {
       super(var1, 8, var2);
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return super.mayPlaceOn(var1, var2, var3) || var1.is(Blocks.NETHERRACK) || var1.is(Blocks.SOUL_SAND) || var1.is(Blocks.SOUL_SOIL);
+      Block var4 = var1.getBlock();
+      return super.mayPlaceOn(var1, var2, var3) || var4 == Blocks.NETHERRACK || var4 == Blocks.SOUL_SAND;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, Random var4) {
@@ -35,7 +35,7 @@ public class WitherRoseBlock extends FlowerBlock {
 
       for(int var11 = 0; var11 < 3; ++var11) {
          if (var4.nextBoolean()) {
-            var2.addParticle(ParticleTypes.SMOKE, var7 + var4.nextDouble() / 5.0D, (double)var3.getY() + (0.5D - var4.nextDouble()), var9 + var4.nextDouble() / 5.0D, 0.0D, 0.0D, 0.0D);
+            var2.addParticle(ParticleTypes.SMOKE, var7 + (double)(var4.nextFloat() / 5.0F), (double)var3.getY() + (0.5D - (double)var4.nextFloat()), var9 + (double)(var4.nextFloat() / 5.0F), 0.0D, 0.0D, 0.0D);
          }
       }
 

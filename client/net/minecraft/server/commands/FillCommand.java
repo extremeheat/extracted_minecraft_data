@@ -106,7 +106,7 @@ public class FillCommand {
 
    static {
       HOLLOW_CORE = new BlockInput(Blocks.AIR.defaultBlockState(), Collections.emptySet(), (CompoundTag)null);
-      ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.fill.failed"));
+      ERROR_FAILED = new SimpleCommandExceptionType(new TranslatableComponent("commands.fill.failed", new Object[0]));
    }
 
    static enum Mode {

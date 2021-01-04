@@ -2,13 +2,13 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List.ListType;
-import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import net.minecraft.util.Mth;
 
@@ -34,7 +34,7 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
       return this.fixTypeEverywhereTyped("Villager level and xp rebuild", this.getInputSchema().getType(References.ENTITY), (var5x) -> {
          return var5x.updateTyped(var2, var1, (var3x) -> {
             Dynamic var4 = (Dynamic)var3x.get(DSL.remainderFinder());
-            int var5x = var4.get("VillagerData").get("level").asInt(0);
+            int var5x = ((Number)var4.get("VillagerData").get("level").asNumber().orElse(0)).intValue();
             Typed var6 = var3x;
             if (var5x == 0 || var5x == 1) {
                int var7x = (Integer)var3x.getOptionalTyped(var3).flatMap((var1) -> {
@@ -48,7 +48,7 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
                }
             }
 
-            Optional var8 = var4.get("Xp").asNumber().result();
+            Optional var8 = var4.get("Xp").asNumber();
             if (!var8.isPresent()) {
                var6 = addXpFromLevel(var6, var5x);
             }

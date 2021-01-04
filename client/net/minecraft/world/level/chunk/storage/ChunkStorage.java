@@ -8,26 +8,23 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
-public class ChunkStorage implements AutoCloseable {
-   private final IOWorker worker;
+public class ChunkStorage extends RegionFileStorage {
    protected final DataFixer fixerUpper;
    @Nullable
    private LegacyStructureDataHandler legacyStructureHandler;
 
-   public ChunkStorage(File var1, DataFixer var2, boolean var3) {
-      super();
+   public ChunkStorage(File var1, DataFixer var2) {
+      super(var1);
       this.fixerUpper = var2;
-      this.worker = new IOWorker(var1, var3, "chunk");
    }
 
-   public CompoundTag upgradeChunkTag(ResourceKey<Level> var1, Supplier<DimensionDataStorage> var2, CompoundTag var3) {
+   public CompoundTag upgradeChunkTag(DimensionType var1, Supplier<DimensionDataStorage> var2, CompoundTag var3) {
       int var4 = getVersion(var3);
       boolean var5 = true;
       if (var4 < 1493) {
@@ -53,24 +50,11 @@ public class ChunkStorage implements AutoCloseable {
       return var0.contains("DataVersion", 99) ? var0.getInt("DataVersion") : -1;
    }
 
-   @Nullable
-   public CompoundTag read(ChunkPos var1) throws IOException {
-      return this.worker.load(var1);
-   }
-
-   public void write(ChunkPos var1, CompoundTag var2) {
-      this.worker.store(var1, var2);
+   public void write(ChunkPos var1, CompoundTag var2) throws IOException {
+      super.write(var1, var2);
       if (this.legacyStructureHandler != null) {
          this.legacyStructureHandler.removeIndex(var1.toLong());
       }
 
-   }
-
-   public void flushWorker() {
-      this.worker.synchronize().join();
-   }
-
-   public void close() throws IOException {
-      this.worker.close();
    }
 }

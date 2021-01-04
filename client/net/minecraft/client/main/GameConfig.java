@@ -26,11 +26,10 @@ public class GameConfig {
    }
 
    public static class ServerData {
-      @Nullable
       public final String hostname;
       public final int port;
 
-      public ServerData(@Nullable String var1, int var2) {
+      public ServerData(String var1, int var2) {
          super();
          this.hostname = var1;
          this.port = var2;
@@ -41,7 +40,6 @@ public class GameConfig {
       public final File gameDirectory;
       public final File resourcePackDirectory;
       public final File assetDirectory;
-      @Nullable
       public final String assetIndex;
 
       public FolderData(File var1, File var2, File var3, @Nullable String var4) {
@@ -76,16 +74,12 @@ public class GameConfig {
       public final boolean demo;
       public final String launchVersion;
       public final String versionType;
-      public final boolean disableMultiplayer;
-      public final boolean disableChat;
 
-      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5) {
+      public GameData(boolean var1, String var2, String var3) {
          super();
          this.demo = var1;
          this.launchVersion = var2;
          this.versionType = var3;
-         this.disableMultiplayer = var4;
-         this.disableChat = var5;
       }
    }
 }

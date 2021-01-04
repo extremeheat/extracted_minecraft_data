@@ -72,7 +72,7 @@ public class ShapelessRecipeBuilder {
       return this;
    }
 
-   public ShapelessRecipeBuilder unlockedBy(String var1, CriterionTriggerInstance var2) {
+   public ShapelessRecipeBuilder unlocks(String var1, CriterionTriggerInstance var2) {
       this.advancement.addCriterion(var1, var2);
       return this;
    }
@@ -97,7 +97,7 @@ public class ShapelessRecipeBuilder {
 
    public void save(Consumer<FinishedRecipe> var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      this.advancement.parent(new ResourceLocation("recipes/root")).addCriterion("has_the_recipe", (CriterionTriggerInstance)RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(RequirementsStrategy.OR);
+      this.advancement.parent(new ResourceLocation("recipes/root")).addCriterion("has_the_recipe", (CriterionTriggerInstance)(new RecipeUnlockedTrigger.TriggerInstance(var2))).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(RequirementsStrategy.OR);
       var1.accept(new ShapelessRecipeBuilder.Result(var2, this.result, this.count, this.group == null ? "" : this.group, this.ingredients, this.advancement, new ResourceLocation(var2.getNamespace(), "recipes/" + this.result.getItemCategory().getRecipeFolderName() + "/" + var2.getPath())));
    }
 

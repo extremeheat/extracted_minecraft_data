@@ -5,10 +5,15 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.ValidationContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootTableProblemCollector;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 
 public class AlternativeLootItemCondition implements LootItemCondition {
    private final LootItemCondition[] terms;
@@ -20,19 +25,15 @@ public class AlternativeLootItemCondition implements LootItemCondition {
       this.composedPredicate = LootItemConditions.orConditions(var1);
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ALTERNATIVE;
-   }
-
    public final boolean test(LootContext var1) {
       return this.composedPredicate.test(var1);
    }
 
-   public void validate(ValidationContext var1) {
-      LootItemCondition.super.validate(var1);
+   public void validate(LootTableProblemCollector var1, Function<ResourceLocation, LootTable> var2, Set<ResourceLocation> var3, LootContextParamSet var4) {
+      LootItemCondition.super.validate(var1, var2, var3, var4);
 
-      for(int var2 = 0; var2 < this.terms.length; ++var2) {
-         this.terms[var2].validate(var1.forChild(".term[" + var2 + "]"));
+      for(int var5 = 0; var5 < this.terms.length; ++var5) {
+         this.terms[var5].validate(var1.forChild(".term[" + var5 + "]"), var2, var3, var4);
       }
 
    }
@@ -51,9 +52,9 @@ public class AlternativeLootItemCondition implements LootItemCondition {
       this(var1);
    }
 
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<AlternativeLootItemCondition> {
+   public static class Serializer extends LootItemCondition.Serializer<AlternativeLootItemCondition> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("alternative"), AlternativeLootItemCondition.class);
       }
 
       public void serialize(JsonObject var1, AlternativeLootItemCondition var2, JsonSerializationContext var3) {
@@ -66,7 +67,7 @@ public class AlternativeLootItemCondition implements LootItemCondition {
       }
 
       // $FF: synthetic method
-      public Object deserialize(JsonObject var1, JsonDeserializationContext var2) {
+      public LootItemCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          return this.deserialize(var1, var2);
       }
    }

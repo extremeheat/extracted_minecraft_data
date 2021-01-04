@@ -1,56 +1,56 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.model.Model;
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
 public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T, PlayerModel<T>> {
    public static final ResourceLocation TEXTURE = new ResourceLocation("textures/entity/trident_riptide.png");
-   private final ModelPart box;
+   private final SpinAttackEffectLayer.SpinAttackModel model = new SpinAttackEffectLayer.SpinAttackModel();
 
-   public SpinAttackEffectLayer(RenderLayerParent<T, PlayerModel<T>> var1, EntityModelSet var2) {
+   public SpinAttackEffectLayer(RenderLayerParent<T, PlayerModel<T>> var1) {
       super(var1);
-      ModelPart var3 = var2.getLayer(ModelLayers.PLAYER_SPIN_ATTACK);
-      this.box = var3.getChild("box");
    }
 
-   public static LayerDefinition createLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("box", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 32.0F, 16.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 64);
-   }
+   public void render(T var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8) {
+      if (var1.isAutoSpinAttack()) {
+         GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+         this.bindTexture(TEXTURE);
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-      if (var4.isAutoSpinAttack()) {
-         VertexConsumer var11 = var2.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-
-         for(int var12 = 0; var12 < 3; ++var12) {
-            var1.pushPose();
-            float var13 = var8 * (float)(-(45 + var12 * 5));
-            var1.mulPose(Vector3f.YP.rotationDegrees(var13));
-            float var14 = 0.75F * (float)var12;
-            var1.scale(var14, var14, var14);
-            var1.translate(0.0D, (double)(-0.2F + 0.6F * (float)var12), 0.0D);
-            this.box.render(var1, var11, var3, OverlayTexture.NO_OVERLAY);
-            var1.popPose();
+         for(int var9 = 0; var9 < 3; ++var9) {
+            GlStateManager.pushMatrix();
+            GlStateManager.rotatef(var5 * (float)(-(45 + var9 * 5)), 0.0F, 1.0F, 0.0F);
+            float var10 = 0.75F * (float)var9;
+            GlStateManager.scalef(var10, var10, var10);
+            GlStateManager.translatef(0.0F, -0.2F + 0.6F * (float)var9, 0.0F);
+            this.model.render(var2, var3, var5, var6, var7, var8);
+            GlStateManager.popMatrix();
          }
 
+      }
+   }
+
+   public boolean colorsOnDamage() {
+      return false;
+   }
+
+   static class SpinAttackModel extends Model {
+      private final ModelPart box;
+
+      public SpinAttackModel() {
+         super();
+         this.texWidth = 64;
+         this.texHeight = 64;
+         this.box = new ModelPart(this, 0, 0);
+         this.box.addBox(-8.0F, -16.0F, -8.0F, 16, 32, 16);
+      }
+
+      public void render(float var1, float var2, float var3, float var4, float var5, float var6) {
+         this.box.render(var6);
       }
    }
 }

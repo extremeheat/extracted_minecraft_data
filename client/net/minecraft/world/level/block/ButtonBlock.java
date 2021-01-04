@@ -5,18 +5,16 @@ import java.util.Random;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -46,13 +44,13 @@ public abstract class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock
    protected static final VoxelShape PRESSED_EAST_AABB;
    private final boolean sensitive;
 
-   protected ButtonBlock(boolean var1, BlockBehaviour.Properties var2) {
+   protected ButtonBlock(boolean var1, Block.Properties var2) {
       super(var2);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(FACE, AttachFace.WALL));
       this.sensitive = var1;
    }
 
-   private int getPressDuration() {
+   public int getTickDelay(LevelReader var1) {
       return this.sensitive ? 30 : 20;
    }
 
@@ -88,20 +86,16 @@ public abstract class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock
       }
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if ((Boolean)var1.getValue(POWERED)) {
-         return InteractionResult.CONSUME;
+         return true;
       } else {
-         this.press(var1, var2, var3);
+         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 3);
          this.playSound(var4, var2, var3, true);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         this.updateNeighbours(var1, var2, var3);
+         var2.getBlockTicks().scheduleTick(var3, this, this.getTickDelay(var2));
+         return true;
       }
-   }
-
-   public void press(BlockState var1, Level var2, BlockPos var3) {
-      var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 3);
-      this.updateNeighbours(var1, var2, var3);
-      var2.getBlockTicks().scheduleTick(var3, this, this.getPressDuration());
    }
 
    protected void playSound(@Nullable Player var1, LevelAccessor var2, BlockPos var3, boolean var4) {
@@ -111,7 +105,7 @@ public abstract class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock
    protected abstract SoundEvent getSound(boolean var1);
 
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+      if (!var5 && var1.getBlock() != var4.getBlock()) {
          if ((Boolean)var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
          }
@@ -132,8 +126,8 @@ public abstract class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock
       return true;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, Random var4) {
-      if ((Boolean)var1.getValue(POWERED)) {
+   public void tick(BlockState var1, Level var2, BlockPos var3, Random var4) {
+      if (!var2.isClientSide && (Boolean)var1.getValue(POWERED)) {
          if (this.sensitive) {
             this.checkPressed(var1, var2, var3);
          } else {
@@ -162,7 +156,7 @@ public abstract class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock
       }
 
       if (var5) {
-         var2.getBlockTicks().scheduleTick(new BlockPos(var3), this, this.getPressDuration());
+         var2.getBlockTicks().scheduleTick(new BlockPos(var3), this, this.getTickDelay(var2));
       }
 
    }

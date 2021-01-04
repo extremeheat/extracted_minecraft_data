@@ -39,10 +39,14 @@ public class ThornsEnchantment extends Enchantment {
          }
 
          if (var5 != null) {
-            ((ItemStack)var5.getValue()).hurtAndBreak(2, var1, (var1x) -> {
+            ((ItemStack)var5.getValue()).hurtAndBreak(3, var1, (var1x) -> {
                var1x.broadcastBreakEvent((EquipmentSlot)var5.getKey());
             });
          }
+      } else if (var5 != null) {
+         ((ItemStack)var5.getValue()).hurtAndBreak(1, var1, (var1x) -> {
+            var1x.broadcastBreakEvent((EquipmentSlot)var5.getKey());
+         });
       }
 
    }

@@ -28,7 +28,7 @@ public class Node {
       this.hash = createHash(var1, var2, var3);
    }
 
-   public Node cloneAndMove(int var1, int var2, int var3) {
+   public Node cloneMove(int var1, int var2, int var3) {
       Node var4 = new Node(var1, var2, var3);
       var4.heapIdx = this.heapIdx;
       var4.g = this.g;

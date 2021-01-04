@@ -17,5 +17,6 @@ public class PanoramaRenderer {
    public void render(float var1, float var2) {
       this.time += var1;
       this.cubeMap.render(this.minecraft, Mth.sin(this.time * 0.001F) * 5.0F + 25.0F, -this.time * 0.1F, var2);
+      this.minecraft.window.setupGuiState(Minecraft.ON_OSX);
    }
 }

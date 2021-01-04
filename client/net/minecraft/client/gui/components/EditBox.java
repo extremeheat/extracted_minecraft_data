@@ -1,13 +1,10 @@
 package net.minecraft.client.gui.components;
 
+import com.google.common.base.Predicates;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -19,11 +16,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.util.Mth;
 
 public class EditBox extends AbstractWidget implements Widget, GuiEventListener {
@@ -43,13 +36,13 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
    private String suggestion;
    private Consumer<String> responder;
    private Predicate<String> filter;
-   private BiFunction<String, Integer, FormattedCharSequence> formatter;
+   private BiFunction<String, Integer, String> formatter;
 
-   public EditBox(Font var1, int var2, int var3, int var4, int var5, Component var6) {
+   public EditBox(Font var1, int var2, int var3, int var4, int var5, String var6) {
       this(var1, var2, var3, var4, var5, (EditBox)null, var6);
    }
 
-   public EditBox(Font var1, int var2, int var3, int var4, int var5, @Nullable EditBox var6, Component var7) {
+   public EditBox(Font var1, int var2, int var3, int var4, int var5, @Nullable EditBox var6, String var7) {
       super(var2, var3, var4, var5, var7);
       this.value = "";
       this.maxLength = 32;
@@ -58,9 +51,9 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       this.isEditable = true;
       this.textColor = 14737632;
       this.textColorUneditable = 7368816;
-      this.filter = Objects::nonNull;
+      this.filter = Predicates.alwaysTrue();
       this.formatter = (var0, var1x) -> {
-         return FormattedCharSequence.forward(var0, Style.EMPTY);
+         return var0;
       };
       this.font = var1;
       if (var6 != null) {
@@ -73,7 +66,7 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       this.responder = var1;
    }
 
-   public void setFormatter(BiFunction<String, Integer, FormattedCharSequence> var1) {
+   public void setFormatter(BiFunction<String, Integer, String> var1) {
       this.formatter = var1;
    }
 
@@ -81,9 +74,9 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       ++this.frame;
    }
 
-   protected MutableComponent createNarrationMessage() {
-      Component var1 = this.getMessage();
-      return new TranslatableComponent("gui.narrate.editBox", new Object[]{var1, this.value});
+   protected String getNarrationMessage() {
+      String var1 = this.getMessage();
+      return var1.isEmpty() ? "" : I18n.get("gui.narrate.editBox", var1, this.value);
    }
 
    public void setValue(String var1) {
@@ -115,20 +108,31 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
    }
 
    public void insertText(String var1) {
-      int var2 = this.cursorPos < this.highlightPos ? this.cursorPos : this.highlightPos;
-      int var3 = this.cursorPos < this.highlightPos ? this.highlightPos : this.cursorPos;
-      int var4 = this.maxLength - this.value.length() - (var2 - var3);
-      String var5 = SharedConstants.filterText(var1);
-      int var6 = var5.length();
-      if (var4 < var6) {
-         var5 = var5.substring(0, var4);
-         var6 = var4;
+      String var2 = "";
+      String var3 = SharedConstants.filterText(var1);
+      int var4 = this.cursorPos < this.highlightPos ? this.cursorPos : this.highlightPos;
+      int var5 = this.cursorPos < this.highlightPos ? this.highlightPos : this.cursorPos;
+      int var6 = this.maxLength - this.value.length() - (var4 - var5);
+      if (!this.value.isEmpty()) {
+         var2 = var2 + this.value.substring(0, var4);
       }
 
-      String var7 = (new StringBuilder(this.value)).replace(var2, var3, var5).toString();
-      if (this.filter.test(var7)) {
-         this.value = var7;
-         this.setCursorPosition(var2 + var6);
+      int var7;
+      if (var6 < var3.length()) {
+         var2 = var2 + var3.substring(0, var6);
+         var7 = var6;
+      } else {
+         var2 = var2 + var3;
+         var7 = var3.length();
+      }
+
+      if (!this.value.isEmpty() && var5 < this.value.length()) {
+         var2 = var2 + this.value.substring(var5);
+      }
+
+      if (this.filter.test(var2)) {
+         this.value = var2;
+         this.setCursorPosition(var4 + var7);
          this.setHighlightPos(this.cursorPos);
          this.onValueChange(this.value);
       }
@@ -166,15 +170,25 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
          if (this.highlightPos != this.cursorPos) {
             this.insertText("");
          } else {
-            int var2 = this.getCursorPos(var1);
-            int var3 = Math.min(var2, this.cursorPos);
-            int var4 = Math.max(var2, this.cursorPos);
-            if (var3 != var4) {
-               String var5 = (new StringBuilder(this.value)).delete(var3, var4).toString();
-               if (this.filter.test(var5)) {
-                  this.value = var5;
-                  this.moveCursorTo(var3);
+            boolean var2 = var1 < 0;
+            int var3 = var2 ? this.cursorPos + var1 : this.cursorPos;
+            int var4 = var2 ? this.cursorPos : this.cursorPos + var1;
+            String var5 = "";
+            if (var3 >= 0) {
+               var5 = this.value.substring(0, var3);
+            }
+
+            if (var4 < this.value.length()) {
+               var5 = var5 + this.value.substring(var4);
+            }
+
+            if (this.filter.test(var5)) {
+               this.value = var5;
+               if (var2) {
+                  this.moveCursor(var1);
                }
+
+               this.onValueChange(this.value);
             }
          }
       }
@@ -219,11 +233,7 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
    }
 
    public void moveCursor(int var1) {
-      this.moveCursorTo(this.getCursorPos(var1));
-   }
-
-   private int getCursorPos(int var1) {
-      return Util.offsetByCodepoints(this.value, this.cursorPos, var1);
+      this.moveCursorTo(this.cursorPos + var1);
    }
 
    public void moveCursorTo(int var1) {
@@ -357,8 +367,8 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
                var7 -= 4;
             }
 
-            String var8 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-            this.moveCursorTo(this.font.plainSubstrByWidth(var8, var7).length() + this.displayPos);
+            String var8 = this.font.substrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+            this.moveCursorTo(this.font.substrByWidth(var8, var7).length() + this.displayPos);
             return true;
          } else {
             return false;
@@ -370,72 +380,69 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       super.setFocused(var1);
    }
 
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderButton(int var1, int var2, float var3) {
       if (this.isVisible()) {
-         int var5;
          if (this.isBordered()) {
-            var5 = this.isFocused() ? -1 : -6250336;
-            fill(var1, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, var5);
-            fill(var1, this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
+            fill(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, -6250336);
+            fill(this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
          }
 
-         var5 = this.isEditable ? this.textColor : this.textColorUneditable;
-         int var6 = this.cursorPos - this.displayPos;
-         int var7 = this.highlightPos - this.displayPos;
-         String var8 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-         boolean var9 = var6 >= 0 && var6 <= var8.length();
-         boolean var10 = this.isFocused() && this.frame / 6 % 2 == 0 && var9;
-         int var11 = this.bordered ? this.x + 4 : this.x;
-         int var12 = this.bordered ? this.y + (this.height - 8) / 2 : this.y;
-         int var13 = var11;
-         if (var7 > var8.length()) {
-            var7 = var8.length();
+         int var4 = this.isEditable ? this.textColor : this.textColorUneditable;
+         int var5 = this.cursorPos - this.displayPos;
+         int var6 = this.highlightPos - this.displayPos;
+         String var7 = this.font.substrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+         boolean var8 = var5 >= 0 && var5 <= var7.length();
+         boolean var9 = this.isFocused() && this.frame / 6 % 2 == 0 && var8;
+         int var10 = this.bordered ? this.x + 4 : this.x;
+         int var11 = this.bordered ? this.y + (this.height - 8) / 2 : this.y;
+         int var12 = var10;
+         if (var6 > var7.length()) {
+            var6 = var7.length();
          }
 
-         if (!var8.isEmpty()) {
-            String var14 = var9 ? var8.substring(0, var6) : var8;
-            var13 = this.font.drawShadow(var1, (FormattedCharSequence)this.formatter.apply(var14, this.displayPos), (float)var11, (float)var12, var5);
+         if (!var7.isEmpty()) {
+            String var13 = var8 ? var7.substring(0, var5) : var7;
+            var12 = this.font.drawShadow((String)this.formatter.apply(var13, this.displayPos), (float)var10, (float)var11, var4);
          }
 
-         boolean var17 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
-         int var15 = var13;
-         if (!var9) {
-            var15 = var6 > 0 ? var11 + this.width : var11;
-         } else if (var17) {
-            var15 = var13 - 1;
-            --var13;
+         boolean var16 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
+         int var14 = var12;
+         if (!var8) {
+            var14 = var5 > 0 ? var10 + this.width : var10;
+         } else if (var16) {
+            var14 = var12 - 1;
+            --var12;
          }
 
-         if (!var8.isEmpty() && var9 && var6 < var8.length()) {
-            this.font.drawShadow(var1, (FormattedCharSequence)this.formatter.apply(var8.substring(var6), this.cursorPos), (float)var13, (float)var12, var5);
+         if (!var7.isEmpty() && var8 && var5 < var7.length()) {
+            this.font.drawShadow((String)this.formatter.apply(var7.substring(var5), this.cursorPos), (float)var12, (float)var11, var4);
          }
 
-         if (!var17 && this.suggestion != null) {
-            this.font.drawShadow(var1, this.suggestion, (float)(var15 - 1), (float)var12, -8355712);
+         if (!var16 && this.suggestion != null) {
+            this.font.drawShadow(this.suggestion, (float)(var14 - 1), (float)var11, -8355712);
          }
 
          int var10002;
          int var10003;
-         int var10004;
-         if (var10) {
-            if (var17) {
-               var10002 = var12 - 1;
-               var10003 = var15 + 1;
-               var10004 = var12 + 1;
+         if (var9) {
+            if (var16) {
+               int var10001 = var11 - 1;
+               var10002 = var14 + 1;
+               var10003 = var11 + 1;
                this.font.getClass();
-               GuiComponent.fill(var1, var15, var10002, var10003, var10004 + 9, -3092272);
+               GuiComponent.fill(var14, var10001, var10002, var10003 + 9, -3092272);
             } else {
-               this.font.drawShadow(var1, "_", (float)var15, (float)var12, var5);
+               this.font.drawShadow("_", (float)var14, (float)var11, var4);
             }
          }
 
-         if (var7 != var6) {
-            int var16 = var11 + this.font.width(var8.substring(0, var7));
-            var10002 = var12 - 1;
-            var10003 = var16 - 1;
-            var10004 = var12 + 1;
+         if (var6 != var5) {
+            int var15 = var10 + this.font.width(var7.substring(0, var6));
+            var10002 = var11 - 1;
+            var10003 = var15 - 1;
+            int var10004 = var11 + 1;
             this.font.getClass();
-            this.renderHighlight(var15, var10002, var10003, var10004 + 9);
+            this.renderHighlight(var14, var10002, var10003, var10004 + 9);
          }
 
       }
@@ -465,18 +472,18 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
 
       Tesselator var7 = Tesselator.getInstance();
       BufferBuilder var6 = var7.getBuilder();
-      RenderSystem.color4f(0.0F, 0.0F, 255.0F, 255.0F);
-      RenderSystem.disableTexture();
-      RenderSystem.enableColorLogicOp();
-      RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+      GlStateManager.color4f(0.0F, 0.0F, 255.0F, 255.0F);
+      GlStateManager.disableTexture();
+      GlStateManager.enableColorLogicOp();
+      GlStateManager.logicOp(GlStateManager.LogicOp.OR_REVERSE);
+      var6.begin(7, DefaultVertexFormat.POSITION);
       var6.vertex((double)var1, (double)var4, 0.0D).endVertex();
       var6.vertex((double)var3, (double)var4, 0.0D).endVertex();
       var6.vertex((double)var3, (double)var2, 0.0D).endVertex();
       var6.vertex((double)var1, (double)var2, 0.0D).endVertex();
       var7.end();
-      RenderSystem.disableColorLogicOp();
-      RenderSystem.enableTexture();
+      GlStateManager.disableColorLogicOp();
+      GlStateManager.enableTexture();
    }
 
    public void setMaxLength(int var1) {
@@ -548,10 +555,10 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
          }
 
          int var3 = this.getInnerWidth();
-         String var4 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), var3);
+         String var4 = this.font.substrByWidth(this.value.substring(this.displayPos), var3);
          int var5 = var4.length() + this.displayPos;
          if (this.highlightPos == this.displayPos) {
-            this.displayPos -= this.font.plainSubstrByWidth(this.value, var3, true).length();
+            this.displayPos -= this.font.substrByWidth(this.value, var3, true).length();
          }
 
          if (this.highlightPos > var5) {

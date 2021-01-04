@@ -3,11 +3,11 @@ package net.minecraft.util.datafix.schemas;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Dynamic;
 import com.mojang.datafixers.schemas.Schema;
+import com.mojang.datafixers.types.DynamicOps;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -242,7 +242,7 @@ public class V99 extends Schema {
          return DSL.optionalFields("Riding", References.ENTITY_TREE.in(var1), References.ENTITY.in(var1));
       });
       var1.registerType(false, References.ENTITY_NAME, () -> {
-         return DSL.constType(NamespacedSchema.namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(true, References.ENTITY, () -> {
          return DSL.taggedChoiceLazy("id", DSL.string(), var2);
@@ -252,10 +252,10 @@ public class V99 extends Schema {
       });
       var1.registerType(false, References.OPTIONS, DSL::remainder);
       var1.registerType(false, References.BLOCK_NAME, () -> {
-         return DSL.or(DSL.constType(DSL.intType()), DSL.constType(NamespacedSchema.namespacedString()));
+         return DSL.or(DSL.constType(DSL.intType()), DSL.constType(DSL.namespacedString()));
       });
       var1.registerType(false, References.ITEM_NAME, () -> {
-         return DSL.constType(NamespacedSchema.namespacedString());
+         return DSL.constType(DSL.namespacedString());
       });
       var1.registerType(false, References.STATS, DSL::remainder);
       var1.registerType(false, References.SAVED_DATA, () -> {
@@ -266,10 +266,6 @@ public class V99 extends Schema {
       var1.registerType(false, References.TEAM, DSL::remainder);
       var1.registerType(true, References.UNTAGGED_SPAWNER, DSL::remainder);
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
-      var1.registerType(true, References.WORLD_GEN_SETTINGS, DSL::remainder);
-      var1.registerType(false, References.ENTITY_CHUNK, () -> {
-         return DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1)));
-      });
    }
 
    protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, String var2) {

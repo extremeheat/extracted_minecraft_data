@@ -1,25 +1,20 @@
 package net.minecraft.world.item;
 
+import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Rotations;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 public class ArmorStandItem extends Item {
    public ArmorStandItem(Item.Properties var1) {
@@ -34,28 +29,31 @@ public class ArmorStandItem extends Item {
          Level var3 = var1.getLevel();
          BlockPlaceContext var4 = new BlockPlaceContext(var1);
          BlockPos var5 = var4.getClickedPos();
-         ItemStack var6 = var1.getItemInHand();
-         Vec3 var7 = Vec3.atBottomCenterOf(var5);
-         AABB var8 = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(var7.x(), var7.y(), var7.z());
-         if (var3.noCollision((Entity)null, var8, (var0) -> {
-            return true;
-         }) && var3.getEntities((Entity)null, var8).isEmpty()) {
-            if (var3 instanceof ServerLevel) {
-               ServerLevel var9 = (ServerLevel)var3;
-               ArmorStand var10 = (ArmorStand)EntityType.ARMOR_STAND.create(var9, var6.getTag(), (Component)null, var1.getPlayer(), var5, MobSpawnType.SPAWN_EGG, true, true);
-               if (var10 == null) {
-                  return InteractionResult.FAIL;
+         BlockPos var6 = var5.above();
+         if (var4.canPlace() && var3.getBlockState(var6).canBeReplaced(var4)) {
+            double var7 = (double)var5.getX();
+            double var9 = (double)var5.getY();
+            double var11 = (double)var5.getZ();
+            List var13 = var3.getEntities((Entity)null, new AABB(var7, var9, var11, var7 + 1.0D, var9 + 2.0D, var11 + 1.0D));
+            if (!var13.isEmpty()) {
+               return InteractionResult.FAIL;
+            } else {
+               ItemStack var14 = var1.getItemInHand();
+               if (!var3.isClientSide) {
+                  var3.removeBlock(var5, false);
+                  var3.removeBlock(var6, false);
+                  ArmorStand var15 = new ArmorStand(var3, var7 + 0.5D, var9, var11 + 0.5D);
+                  float var16 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
+                  var15.moveTo(var7 + 0.5D, var9, var11 + 0.5D, var16, 0.0F);
+                  this.randomizePose(var15, var3.random);
+                  EntityType.updateCustomEntityTag(var3, var1.getPlayer(), var15, var14.getTag());
+                  var3.addFreshEntity(var15);
+                  var3.playSound((Player)null, var15.x, var15.y, var15.z, SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
                }
 
-               float var11 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
-               var10.moveTo(var10.getX(), var10.getY(), var10.getZ(), var11, 0.0F);
-               this.randomizePose(var10, var3.random);
-               var9.addFreshEntityWithPassengers(var10);
-               var3.playSound((Player)null, var10.getX(), var10.getY(), var10.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               var14.shrink(1);
+               return InteractionResult.SUCCESS;
             }
-
-            var6.shrink(1);
-            return InteractionResult.sidedSuccess(var3.isClientSide);
          } else {
             return InteractionResult.FAIL;
          }

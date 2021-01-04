@@ -1,6 +1,6 @@
 package net.minecraft.client.particle;
 
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.Level;
 
 public class SimpleAnimatedParticle extends TextureSheetParticle {
    protected final SpriteSet sprites;
@@ -11,7 +11,7 @@ public class SimpleAnimatedParticle extends TextureSheetParticle {
    private float fadeB;
    private boolean hasFade;
 
-   protected SimpleAnimatedParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8, float var9) {
+   protected SimpleAnimatedParticle(Level var1, double var2, double var4, double var6, SpriteSet var8, float var9) {
       super(var1, var2, var4, var6);
       this.sprites = var8;
       this.baseGravity = var9;

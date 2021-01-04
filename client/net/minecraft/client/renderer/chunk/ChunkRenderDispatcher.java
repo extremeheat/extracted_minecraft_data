@@ -2,144 +2,92 @@ package net.minecraft.client.renderer.chunk;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Doubles;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import com.mojang.blaze3d.vertex.VertexBufferUploader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-import net.minecraft.CrashReport;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.Util;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ChunkBufferBuilderPack;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
-import net.minecraft.util.thread.ProcessorMailbox;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.BlockLayer;
 import net.minecraft.world.phys.Vec3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ChunkRenderDispatcher {
    private static final Logger LOGGER = LogManager.getLogger();
-   private final PriorityQueue<ChunkRenderDispatcher.RenderChunk.ChunkCompileTask> toBatch = Queues.newPriorityQueue();
-   private final Queue<ChunkBufferBuilderPack> freeBuffers;
-   private final Queue<Runnable> toUpload = Queues.newConcurrentLinkedQueue();
-   private volatile int toBatchCount;
-   private volatile int freeBufferCount;
-   private final ChunkBufferBuilderPack fixedBuffers;
-   private final ProcessorMailbox<Runnable> mailbox;
-   private final Executor executor;
-   private Level level;
-   private final LevelRenderer renderer;
+   private static final ThreadFactory THREAD_FACTORY;
+   private final int bufferCount;
+   private final List<Thread> threads = Lists.newArrayList();
+   private final List<ChunkRenderWorker> workers = Lists.newArrayList();
+   private final PriorityBlockingQueue<ChunkCompileTask> chunksToBatch = Queues.newPriorityBlockingQueue();
+   private final BlockingQueue<ChunkBufferBuilderPack> availableChunkBuffers;
+   private final BufferUploader uploader = new BufferUploader();
+   private final VertexBufferUploader vboUploader = new VertexBufferUploader();
+   private final Queue<ChunkRenderDispatcher.PendingUpload> pendingUploads = Queues.newPriorityQueue();
+   private final ChunkRenderWorker localWorker;
    private Vec3 camera;
 
-   public ChunkRenderDispatcher(Level var1, LevelRenderer var2, Executor var3, boolean var4, ChunkBufferBuilderPack var5) {
+   public ChunkRenderDispatcher(boolean var1) {
       super();
       this.camera = Vec3.ZERO;
-      this.level = var1;
-      this.renderer = var2;
-      int var6 = Math.max(1, (int)((double)Runtime.getRuntime().maxMemory() * 0.3D) / (RenderType.chunkBufferLayers().stream().mapToInt(RenderType::bufferSize).sum() * 4) - 1);
-      int var7 = Runtime.getRuntime().availableProcessors();
-      int var8 = var4 ? var7 : Math.min(var7, 4);
-      int var9 = Math.max(1, Math.min(var8, var6));
-      this.fixedBuffers = var5;
-      ArrayList var10 = Lists.newArrayListWithExpectedSize(var9);
+      int var2 = Math.max(1, (int)((double)Runtime.getRuntime().maxMemory() * 0.3D) / 10485760 - 1);
+      int var3 = Runtime.getRuntime().availableProcessors();
+      int var4 = var1 ? var3 : Math.min(var3, 4);
+      int var5 = Math.max(1, Math.min(var4 * 2, var2));
+      this.localWorker = new ChunkRenderWorker(this, new ChunkBufferBuilderPack());
+      ArrayList var6 = Lists.newArrayListWithExpectedSize(var5);
 
+      int var7;
+      int var8;
       try {
-         for(int var11 = 0; var11 < var9; ++var11) {
-            var10.add(new ChunkBufferBuilderPack());
+         for(var7 = 0; var7 < var5; ++var7) {
+            var6.add(new ChunkBufferBuilderPack());
          }
-      } catch (OutOfMemoryError var14) {
-         LOGGER.warn("Allocated only {}/{} buffers", var10.size(), var9);
-         int var12 = Math.min(var10.size() * 2 / 3, var10.size() - 1);
+      } catch (OutOfMemoryError var11) {
+         LOGGER.warn("Allocated only {}/{} buffers", var6.size(), var5);
+         var8 = var6.size() * 2 / 3;
 
-         for(int var13 = 0; var13 < var12; ++var13) {
-            var10.remove(var10.size() - 1);
+         for(int var9 = 0; var9 < var8; ++var9) {
+            var6.remove(var6.size() - 1);
          }
 
          System.gc();
       }
 
-      this.freeBuffers = Queues.newArrayDeque(var10);
-      this.freeBufferCount = this.freeBuffers.size();
-      this.executor = var3;
-      this.mailbox = ProcessorMailbox.create(var3, "Chunk Renderer");
-      this.mailbox.tell(this::runTask);
-   }
-
-   public void setLevel(Level var1) {
-      this.level = var1;
-   }
-
-   private void runTask() {
-      if (!this.freeBuffers.isEmpty()) {
-         ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var1 = (ChunkRenderDispatcher.RenderChunk.ChunkCompileTask)this.toBatch.poll();
-         if (var1 != null) {
-            ChunkBufferBuilderPack var2 = (ChunkBufferBuilderPack)this.freeBuffers.poll();
-            this.toBatchCount = this.toBatch.size();
-            this.freeBufferCount = this.freeBuffers.size();
-            CompletableFuture.runAsync(() -> {
-            }, this.executor).thenCompose((var2x) -> {
-               return var1.doTask(var2);
-            }).whenComplete((var2x, var3) -> {
-               if (var3 != null) {
-                  CrashReport var4 = CrashReport.forThrowable(var3, "Batching chunks");
-                  Minecraft.getInstance().delayCrash(Minecraft.getInstance().fillReport(var4));
-               } else {
-                  this.mailbox.tell(() -> {
-                     if (var2x == ChunkRenderDispatcher.ChunkTaskResult.SUCCESSFUL) {
-                        var2.clearAll();
-                     } else {
-                        var2.discardAll();
-                     }
-
-                     this.freeBuffers.add(var2);
-                     this.freeBufferCount = this.freeBuffers.size();
-                     this.runTask();
-                  });
-               }
-            });
+      this.bufferCount = var6.size();
+      this.availableChunkBuffers = Queues.newArrayBlockingQueue(this.bufferCount);
+      this.availableChunkBuffers.addAll(var6);
+      var7 = Math.min(var4, this.bufferCount);
+      if (var7 > 1) {
+         for(var8 = 0; var8 < var7; ++var8) {
+            ChunkRenderWorker var12 = new ChunkRenderWorker(this);
+            Thread var10 = THREAD_FACTORY.newThread(var12);
+            var10.start();
+            this.workers.add(var12);
+            this.threads.add(var10);
          }
       }
+
    }
 
    public String getStats() {
-      return String.format("pC: %03d, pU: %02d, aB: %02d", this.toBatchCount, this.toUpload.size(), this.freeBufferCount);
+      return this.threads.isEmpty() ? String.format("pC: %03d, single-threaded", this.chunksToBatch.size()) : String.format("pC: %03d, pU: %02d, aB: %02d", this.chunksToBatch.size(), this.pendingUploads.size(), this.availableChunkBuffers.size());
    }
 
    public void setCamera(Vec3 var1) {
@@ -150,522 +98,229 @@ public class ChunkRenderDispatcher {
       return this.camera;
    }
 
-   public boolean uploadAllPendingUploads() {
-      boolean var1;
-      Runnable var2;
-      for(var1 = false; (var2 = (Runnable)this.toUpload.poll()) != null; var1 = true) {
-         var2.run();
-      }
+   public boolean uploadAllPendingUploadsUntil(long var1) {
+      boolean var3 = false;
 
-      return var1;
+      boolean var4;
+      do {
+         var4 = false;
+         if (this.threads.isEmpty()) {
+            ChunkCompileTask var5 = (ChunkCompileTask)this.chunksToBatch.poll();
+            if (var5 != null) {
+               try {
+                  this.localWorker.doTask(var5);
+                  var4 = true;
+               } catch (InterruptedException var9) {
+                  LOGGER.warn("Skipped task due to interrupt");
+               }
+            }
+         }
+
+         int var11 = 0;
+         synchronized(this.pendingUploads) {
+            while(var11 < 10) {
+               ChunkRenderDispatcher.PendingUpload var7 = (ChunkRenderDispatcher.PendingUpload)this.pendingUploads.poll();
+               if (var7 == null) {
+                  break;
+               }
+
+               if (!var7.future.isDone()) {
+                  var7.future.run();
+                  var4 = true;
+                  var3 = true;
+                  ++var11;
+               }
+            }
+         }
+      } while(var1 != 0L && var4 && var1 >= Util.getNanos());
+
+      return var3;
    }
 
-   public void rebuildChunkSync(ChunkRenderDispatcher.RenderChunk var1) {
-      var1.compileSync();
+   public boolean rebuildChunkAsync(RenderChunk var1) {
+      var1.getTaskLock().lock();
+
+      boolean var4;
+      try {
+         ChunkCompileTask var2 = var1.createCompileTask();
+         var2.addCancelListener(() -> {
+            this.chunksToBatch.remove(var2);
+         });
+         boolean var3 = this.chunksToBatch.offer(var2);
+         if (!var3) {
+            var2.cancel();
+         }
+
+         var4 = var3;
+      } finally {
+         var1.getTaskLock().unlock();
+      }
+
+      return var4;
+   }
+
+   public boolean rebuildChunkSync(RenderChunk var1) {
+      var1.getTaskLock().lock();
+
+      boolean var3;
+      try {
+         ChunkCompileTask var2 = var1.createCompileTask();
+
+         try {
+            this.localWorker.doTask(var2);
+         } catch (InterruptedException var7) {
+         }
+
+         var3 = true;
+      } finally {
+         var1.getTaskLock().unlock();
+      }
+
+      return var3;
    }
 
    public void blockUntilClear() {
       this.clearBatchQueue();
+      ArrayList var1 = Lists.newArrayList();
+
+      while(var1.size() != this.bufferCount) {
+         this.uploadAllPendingUploadsUntil(9223372036854775807L);
+
+         try {
+            var1.add(this.takeChunkBufferBuilder());
+         } catch (InterruptedException var3) {
+         }
+      }
+
+      this.availableChunkBuffers.addAll(var1);
    }
 
-   public void schedule(ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var1) {
-      this.mailbox.tell(() -> {
-         this.toBatch.offer(var1);
-         this.toBatchCount = this.toBatch.size();
-         this.runTask();
-      });
+   public void releaseChunkBufferBuilder(ChunkBufferBuilderPack var1) {
+      this.availableChunkBuffers.add(var1);
    }
 
-   public CompletableFuture<Void> uploadChunkLayer(BufferBuilder var1, VertexBuffer var2) {
-      Runnable var10000 = () -> {
-      };
-      Queue var10001 = this.toUpload;
-      var10001.getClass();
-      return CompletableFuture.runAsync(var10000, var10001::add).thenCompose((var3) -> {
-         return this.doUploadChunkLayer(var1, var2);
-      });
+   public ChunkBufferBuilderPack takeChunkBufferBuilder() throws InterruptedException {
+      return (ChunkBufferBuilderPack)this.availableChunkBuffers.take();
    }
 
-   private CompletableFuture<Void> doUploadChunkLayer(BufferBuilder var1, VertexBuffer var2) {
-      return var2.uploadLater(var1);
+   public ChunkCompileTask takeChunk() throws InterruptedException {
+      return (ChunkCompileTask)this.chunksToBatch.take();
    }
 
-   private void clearBatchQueue() {
-      while(!this.toBatch.isEmpty()) {
-         ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var1 = (ChunkRenderDispatcher.RenderChunk.ChunkCompileTask)this.toBatch.poll();
+   public boolean resortChunkTransparencyAsync(RenderChunk var1) {
+      var1.getTaskLock().lock();
+
+      boolean var3;
+      try {
+         ChunkCompileTask var2 = var1.createTransparencySortTask();
+         if (var2 == null) {
+            var3 = true;
+            return var3;
+         }
+
+         var2.addCancelListener(() -> {
+            this.chunksToBatch.remove(var2);
+         });
+         var3 = this.chunksToBatch.offer(var2);
+      } finally {
+         var1.getTaskLock().unlock();
+      }
+
+      return var3;
+   }
+
+   public ListenableFuture<Void> uploadChunkLayer(BlockLayer var1, BufferBuilder var2, RenderChunk var3, CompiledChunk var4, double var5) {
+      if (Minecraft.getInstance().isSameThread()) {
+         if (GLX.useVbo()) {
+            this.uploadChunkLayer(var2, var3.getBuffer(var1.ordinal()));
+         } else {
+            this.compileChunkLayerIntoGlList(var2, ((ListedRenderChunk)var3).getGlListId(var1, var4));
+         }
+
+         var2.offset(0.0D, 0.0D, 0.0D);
+         return Futures.immediateFuture((Object)null);
+      } else {
+         ListenableFutureTask var7 = ListenableFutureTask.create(() -> {
+            this.uploadChunkLayer(var1, var2, var3, var4, var5);
+         }, (Object)null);
+         synchronized(this.pendingUploads) {
+            this.pendingUploads.add(new ChunkRenderDispatcher.PendingUpload(var7, var5));
+            return var7;
+         }
+      }
+   }
+
+   private void compileChunkLayerIntoGlList(BufferBuilder var1, int var2) {
+      GlStateManager.newList(var2, 4864);
+      this.uploader.end(var1);
+      GlStateManager.endList();
+   }
+
+   private void uploadChunkLayer(BufferBuilder var1, VertexBuffer var2) {
+      this.vboUploader.setBuffer(var2);
+      this.vboUploader.end(var1);
+   }
+
+   public void clearBatchQueue() {
+      while(!this.chunksToBatch.isEmpty()) {
+         ChunkCompileTask var1 = (ChunkCompileTask)this.chunksToBatch.poll();
          if (var1 != null) {
             var1.cancel();
          }
       }
 
-      this.toBatchCount = 0;
    }
 
    public boolean isQueueEmpty() {
-      return this.toBatchCount == 0 && this.toUpload.isEmpty();
+      return this.chunksToBatch.isEmpty() && this.pendingUploads.isEmpty();
    }
 
    public void dispose() {
       this.clearBatchQueue();
-      this.mailbox.close();
-      this.freeBuffers.clear();
+      Iterator var1 = this.workers.iterator();
+
+      while(var1.hasNext()) {
+         ChunkRenderWorker var2 = (ChunkRenderWorker)var1.next();
+         var2.stop();
+      }
+
+      var1 = this.threads.iterator();
+
+      while(var1.hasNext()) {
+         Thread var5 = (Thread)var1.next();
+
+         try {
+            var5.interrupt();
+            var5.join();
+         } catch (InterruptedException var4) {
+            LOGGER.warn("Interrupted whilst waiting for worker to die", var4);
+         }
+      }
+
+      this.availableChunkBuffers.clear();
    }
 
-   public static class CompiledChunk {
-      public static final ChunkRenderDispatcher.CompiledChunk UNCOMPILED = new ChunkRenderDispatcher.CompiledChunk() {
-         public boolean facesCanSeeEachother(Direction var1, Direction var2) {
-            return false;
-         }
-      };
-      private final Set<RenderType> hasBlocks = new ObjectArraySet();
-      private final Set<RenderType> hasLayer = new ObjectArraySet();
-      private boolean isCompletelyEmpty = true;
-      private final List<BlockEntity> renderableBlockEntities = Lists.newArrayList();
-      private VisibilitySet visibilitySet = new VisibilitySet();
-      @Nullable
-      private BufferBuilder.SortState transparencyState;
+   static {
+      THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("Chunk Batcher %d").setDaemon(true).setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER)).build();
+   }
 
-      public CompiledChunk() {
+   class PendingUpload implements Comparable<ChunkRenderDispatcher.PendingUpload> {
+      private final ListenableFutureTask<Void> future;
+      private final double dist;
+
+      public PendingUpload(ListenableFutureTask<Void> var2, double var3) {
          super();
+         this.future = var2;
+         this.dist = var3;
       }
 
-      public boolean hasNoRenderableLayers() {
-         return this.isCompletelyEmpty;
+      public int compareTo(ChunkRenderDispatcher.PendingUpload var1) {
+         return Doubles.compare(this.dist, var1.dist);
       }
 
-      public boolean isEmpty(RenderType var1) {
-         return !this.hasBlocks.contains(var1);
-      }
-
-      public List<BlockEntity> getRenderableBlockEntities() {
-         return this.renderableBlockEntities;
-      }
-
-      public boolean facesCanSeeEachother(Direction var1, Direction var2) {
-         return this.visibilitySet.visibilityBetween(var1, var2);
-      }
-   }
-
-   static enum ChunkTaskResult {
-      SUCCESSFUL,
-      CANCELLED;
-
-      private ChunkTaskResult() {
-      }
-   }
-
-   public class RenderChunk {
-      public final AtomicReference<ChunkRenderDispatcher.CompiledChunk> compiled;
-      @Nullable
-      private ChunkRenderDispatcher.RenderChunk.RebuildTask lastRebuildTask;
-      @Nullable
-      private ChunkRenderDispatcher.RenderChunk.ResortTransparencyTask lastResortTransparencyTask;
-      private final Set<BlockEntity> globalBlockEntities;
-      private final Map<RenderType, VertexBuffer> buffers;
-      public AABB bb;
-      private int lastFrame;
-      private boolean dirty;
-      private final BlockPos.MutableBlockPos origin;
-      private final BlockPos.MutableBlockPos[] relativeOrigins;
-      private boolean playerChanged;
-
-      public RenderChunk() {
-         super();
-         this.compiled = new AtomicReference(ChunkRenderDispatcher.CompiledChunk.UNCOMPILED);
-         this.globalBlockEntities = Sets.newHashSet();
-         this.buffers = (Map)RenderType.chunkBufferLayers().stream().collect(Collectors.toMap((var0) -> {
-            return var0;
-         }, (var0) -> {
-            return new VertexBuffer();
-         }));
-         this.lastFrame = -1;
-         this.dirty = true;
-         this.origin = new BlockPos.MutableBlockPos(-1, -1, -1);
-         this.relativeOrigins = (BlockPos.MutableBlockPos[])Util.make(new BlockPos.MutableBlockPos[6], (var0) -> {
-            for(int var1 = 0; var1 < var0.length; ++var1) {
-               var0[var1] = new BlockPos.MutableBlockPos();
-            }
-
-         });
-      }
-
-      private boolean doesChunkExistAt(BlockPos var1) {
-         return ChunkRenderDispatcher.this.level.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()), ChunkStatus.FULL, false) != null;
-      }
-
-      public boolean hasAllNeighbors() {
-         boolean var1 = true;
-         if (this.getDistToPlayerSqr() <= 576.0D) {
-            return true;
-         } else {
-            return this.doesChunkExistAt(this.relativeOrigins[Direction.WEST.ordinal()]) && this.doesChunkExistAt(this.relativeOrigins[Direction.NORTH.ordinal()]) && this.doesChunkExistAt(this.relativeOrigins[Direction.EAST.ordinal()]) && this.doesChunkExistAt(this.relativeOrigins[Direction.SOUTH.ordinal()]);
-         }
-      }
-
-      public boolean setFrame(int var1) {
-         if (this.lastFrame == var1) {
-            return false;
-         } else {
-            this.lastFrame = var1;
-            return true;
-         }
-      }
-
-      public VertexBuffer getBuffer(RenderType var1) {
-         return (VertexBuffer)this.buffers.get(var1);
-      }
-
-      public void setOrigin(int var1, int var2, int var3) {
-         if (var1 != this.origin.getX() || var2 != this.origin.getY() || var3 != this.origin.getZ()) {
-            this.reset();
-            this.origin.set(var1, var2, var3);
-            this.bb = new AABB((double)var1, (double)var2, (double)var3, (double)(var1 + 16), (double)(var2 + 16), (double)(var3 + 16));
-            Direction[] var4 = Direction.values();
-            int var5 = var4.length;
-
-            for(int var6 = 0; var6 < var5; ++var6) {
-               Direction var7 = var4[var6];
-               this.relativeOrigins[var7.ordinal()].set(this.origin).move(var7, 16);
-            }
-
-         }
-      }
-
-      protected double getDistToPlayerSqr() {
-         Camera var1 = Minecraft.getInstance().gameRenderer.getMainCamera();
-         double var2 = this.bb.minX + 8.0D - var1.getPosition().x;
-         double var4 = this.bb.minY + 8.0D - var1.getPosition().y;
-         double var6 = this.bb.minZ + 8.0D - var1.getPosition().z;
-         return var2 * var2 + var4 * var4 + var6 * var6;
-      }
-
-      private void beginLayer(BufferBuilder var1) {
-         var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
-      }
-
-      public ChunkRenderDispatcher.CompiledChunk getCompiledChunk() {
-         return (ChunkRenderDispatcher.CompiledChunk)this.compiled.get();
-      }
-
-      private void reset() {
-         this.cancelTasks();
-         this.compiled.set(ChunkRenderDispatcher.CompiledChunk.UNCOMPILED);
-         this.dirty = true;
-      }
-
-      public void releaseBuffers() {
-         this.reset();
-         this.buffers.values().forEach(VertexBuffer::close);
-      }
-
-      public BlockPos getOrigin() {
-         return this.origin;
-      }
-
-      public void setDirty(boolean var1) {
-         boolean var2 = this.dirty;
-         this.dirty = true;
-         this.playerChanged = var1 | (var2 && this.playerChanged);
-      }
-
-      public void setNotDirty() {
-         this.dirty = false;
-         this.playerChanged = false;
-      }
-
-      public boolean isDirty() {
-         return this.dirty;
-      }
-
-      public boolean isDirtyFromPlayer() {
-         return this.dirty && this.playerChanged;
-      }
-
-      public BlockPos getRelativeOrigin(Direction var1) {
-         return this.relativeOrigins[var1.ordinal()];
-      }
-
-      public boolean resortTransparency(RenderType var1, ChunkRenderDispatcher var2) {
-         ChunkRenderDispatcher.CompiledChunk var3 = this.getCompiledChunk();
-         if (this.lastResortTransparencyTask != null) {
-            this.lastResortTransparencyTask.cancel();
-         }
-
-         if (!var3.hasLayer.contains(var1)) {
-            return false;
-         } else {
-            this.lastResortTransparencyTask = new ChunkRenderDispatcher.RenderChunk.ResortTransparencyTask(this.getDistToPlayerSqr(), var3);
-            var2.schedule(this.lastResortTransparencyTask);
-            return true;
-         }
-      }
-
-      protected void cancelTasks() {
-         if (this.lastRebuildTask != null) {
-            this.lastRebuildTask.cancel();
-            this.lastRebuildTask = null;
-         }
-
-         if (this.lastResortTransparencyTask != null) {
-            this.lastResortTransparencyTask.cancel();
-            this.lastResortTransparencyTask = null;
-         }
-
-      }
-
-      public ChunkRenderDispatcher.RenderChunk.ChunkCompileTask createCompileTask() {
-         this.cancelTasks();
-         BlockPos var1 = this.origin.immutable();
-         boolean var2 = true;
-         RenderChunkRegion var3 = RenderChunkRegion.createIfNotEmpty(ChunkRenderDispatcher.this.level, var1.offset(-1, -1, -1), var1.offset(16, 16, 16), 1);
-         this.lastRebuildTask = new ChunkRenderDispatcher.RenderChunk.RebuildTask(this.getDistToPlayerSqr(), var3);
-         return this.lastRebuildTask;
-      }
-
-      public void rebuildChunkAsync(ChunkRenderDispatcher var1) {
-         ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var2 = this.createCompileTask();
-         var1.schedule(var2);
-      }
-
-      private void updateGlobalBlockEntities(Set<BlockEntity> var1) {
-         HashSet var2 = Sets.newHashSet(var1);
-         HashSet var3 = Sets.newHashSet(this.globalBlockEntities);
-         var2.removeAll(this.globalBlockEntities);
-         var3.removeAll(var1);
-         this.globalBlockEntities.clear();
-         this.globalBlockEntities.addAll(var1);
-         ChunkRenderDispatcher.this.renderer.updateGlobalBlockEntities(var3, var2);
-      }
-
-      public void compileSync() {
-         ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var1 = this.createCompileTask();
-         var1.doTask(ChunkRenderDispatcher.this.fixedBuffers);
-      }
-
-      abstract class ChunkCompileTask implements Comparable<ChunkRenderDispatcher.RenderChunk.ChunkCompileTask> {
-         protected final double distAtCreation;
-         protected final AtomicBoolean isCancelled = new AtomicBoolean(false);
-
-         public ChunkCompileTask(double var2) {
-            super();
-            this.distAtCreation = var2;
-         }
-
-         public abstract CompletableFuture<ChunkRenderDispatcher.ChunkTaskResult> doTask(ChunkBufferBuilderPack var1);
-
-         public abstract void cancel();
-
-         public int compareTo(ChunkRenderDispatcher.RenderChunk.ChunkCompileTask var1) {
-            return Doubles.compare(this.distAtCreation, var1.distAtCreation);
-         }
-
-         // $FF: synthetic method
-         public int compareTo(Object var1) {
-            return this.compareTo((ChunkRenderDispatcher.RenderChunk.ChunkCompileTask)var1);
-         }
-      }
-
-      class ResortTransparencyTask extends ChunkRenderDispatcher.RenderChunk.ChunkCompileTask {
-         private final ChunkRenderDispatcher.CompiledChunk compiledChunk;
-
-         public ResortTransparencyTask(double var2, ChunkRenderDispatcher.CompiledChunk var4) {
-            super(var2);
-            this.compiledChunk = var4;
-         }
-
-         public CompletableFuture<ChunkRenderDispatcher.ChunkTaskResult> doTask(ChunkBufferBuilderPack var1) {
-            if (this.isCancelled.get()) {
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else if (!RenderChunk.this.hasAllNeighbors()) {
-               this.isCancelled.set(true);
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else if (this.isCancelled.get()) {
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else {
-               Vec3 var2 = ChunkRenderDispatcher.this.getCameraPosition();
-               float var3 = (float)var2.x;
-               float var4 = (float)var2.y;
-               float var5 = (float)var2.z;
-               BufferBuilder.SortState var6 = this.compiledChunk.transparencyState;
-               if (var6 != null && this.compiledChunk.hasBlocks.contains(RenderType.translucent())) {
-                  BufferBuilder var7 = var1.builder(RenderType.translucent());
-                  RenderChunk.this.beginLayer(var7);
-                  var7.restoreSortState(var6);
-                  var7.setQuadSortOrigin(var3 - (float)RenderChunk.this.origin.getX(), var4 - (float)RenderChunk.this.origin.getY(), var5 - (float)RenderChunk.this.origin.getZ());
-                  this.compiledChunk.transparencyState = var7.getSortState();
-                  var7.end();
-                  if (this.isCancelled.get()) {
-                     return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-                  } else {
-                     CompletableFuture var8 = ChunkRenderDispatcher.this.uploadChunkLayer(var1.builder(RenderType.translucent()), RenderChunk.this.getBuffer(RenderType.translucent())).thenApply((var0) -> {
-                        return ChunkRenderDispatcher.ChunkTaskResult.CANCELLED;
-                     });
-                     return var8.handle((var1x, var2x) -> {
-                        if (var2x != null && !(var2x instanceof CancellationException) && !(var2x instanceof InterruptedException)) {
-                           Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var2x, "Rendering chunk"));
-                        }
-
-                        return this.isCancelled.get() ? ChunkRenderDispatcher.ChunkTaskResult.CANCELLED : ChunkRenderDispatcher.ChunkTaskResult.SUCCESSFUL;
-                     });
-                  }
-               } else {
-                  return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-               }
-            }
-         }
-
-         public void cancel() {
-            this.isCancelled.set(true);
-         }
-      }
-
-      class RebuildTask extends ChunkRenderDispatcher.RenderChunk.ChunkCompileTask {
-         @Nullable
-         protected RenderChunkRegion region;
-
-         public RebuildTask(double var2, RenderChunkRegion var4) {
-            super(var2);
-            this.region = var4;
-         }
-
-         public CompletableFuture<ChunkRenderDispatcher.ChunkTaskResult> doTask(ChunkBufferBuilderPack var1) {
-            if (this.isCancelled.get()) {
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else if (!RenderChunk.this.hasAllNeighbors()) {
-               this.region = null;
-               RenderChunk.this.setDirty(false);
-               this.isCancelled.set(true);
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else if (this.isCancelled.get()) {
-               return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-            } else {
-               Vec3 var2 = ChunkRenderDispatcher.this.getCameraPosition();
-               float var3 = (float)var2.x;
-               float var4 = (float)var2.y;
-               float var5 = (float)var2.z;
-               ChunkRenderDispatcher.CompiledChunk var6 = new ChunkRenderDispatcher.CompiledChunk();
-               Set var7 = this.compile(var3, var4, var5, var6, var1);
-               RenderChunk.this.updateGlobalBlockEntities(var7);
-               if (this.isCancelled.get()) {
-                  return CompletableFuture.completedFuture(ChunkRenderDispatcher.ChunkTaskResult.CANCELLED);
-               } else {
-                  ArrayList var8 = Lists.newArrayList();
-                  var6.hasLayer.forEach((var3x) -> {
-                     var8.add(ChunkRenderDispatcher.this.uploadChunkLayer(var1.builder(var3x), RenderChunk.this.getBuffer(var3x)));
-                  });
-                  return Util.sequence(var8).handle((var2x, var3x) -> {
-                     if (var3x != null && !(var3x instanceof CancellationException) && !(var3x instanceof InterruptedException)) {
-                        Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var3x, "Rendering chunk"));
-                     }
-
-                     if (this.isCancelled.get()) {
-                        return ChunkRenderDispatcher.ChunkTaskResult.CANCELLED;
-                     } else {
-                        RenderChunk.this.compiled.set(var6);
-                        return ChunkRenderDispatcher.ChunkTaskResult.SUCCESSFUL;
-                     }
-                  });
-               }
-            }
-         }
-
-         private Set<BlockEntity> compile(float var1, float var2, float var3, ChunkRenderDispatcher.CompiledChunk var4, ChunkBufferBuilderPack var5) {
-            boolean var6 = true;
-            BlockPos var7 = RenderChunk.this.origin.immutable();
-            BlockPos var8 = var7.offset(15, 15, 15);
-            VisGraph var9 = new VisGraph();
-            HashSet var10 = Sets.newHashSet();
-            RenderChunkRegion var11 = this.region;
-            this.region = null;
-            PoseStack var12 = new PoseStack();
-            if (var11 != null) {
-               ModelBlockRenderer.enableCaching();
-               Random var13 = new Random();
-               BlockRenderDispatcher var14 = Minecraft.getInstance().getBlockRenderer();
-               Iterator var15 = BlockPos.betweenClosed(var7, var8).iterator();
-
-               while(var15.hasNext()) {
-                  BlockPos var16 = (BlockPos)var15.next();
-                  BlockState var17 = var11.getBlockState(var16);
-                  if (var17.isSolidRender(var11, var16)) {
-                     var9.setOpaque(var16);
-                  }
-
-                  if (var17.hasBlockEntity()) {
-                     BlockEntity var18 = var11.getBlockEntity(var16, LevelChunk.EntityCreationType.CHECK);
-                     if (var18 != null) {
-                        this.handleBlockEntity(var4, var10, var18);
-                     }
-                  }
-
-                  FluidState var22 = var11.getFluidState(var16);
-                  RenderType var19;
-                  BufferBuilder var20;
-                  if (!var22.isEmpty()) {
-                     var19 = ItemBlockRenderTypes.getRenderLayer(var22);
-                     var20 = var5.builder(var19);
-                     if (var4.hasLayer.add(var19)) {
-                        RenderChunk.this.beginLayer(var20);
-                     }
-
-                     if (var14.renderLiquid(var16, var11, var20, var22)) {
-                        var4.isCompletelyEmpty = false;
-                        var4.hasBlocks.add(var19);
-                     }
-                  }
-
-                  if (var17.getRenderShape() != RenderShape.INVISIBLE) {
-                     var19 = ItemBlockRenderTypes.getChunkRenderType(var17);
-                     var20 = var5.builder(var19);
-                     if (var4.hasLayer.add(var19)) {
-                        RenderChunk.this.beginLayer(var20);
-                     }
-
-                     var12.pushPose();
-                     var12.translate((double)(var16.getX() & 15), (double)(var16.getY() & 15), (double)(var16.getZ() & 15));
-                     if (var14.renderBatched(var17, var16, var11, var12, var20, true, var13)) {
-                        var4.isCompletelyEmpty = false;
-                        var4.hasBlocks.add(var19);
-                     }
-
-                     var12.popPose();
-                  }
-               }
-
-               if (var4.hasBlocks.contains(RenderType.translucent())) {
-                  BufferBuilder var21 = var5.builder(RenderType.translucent());
-                  var21.setQuadSortOrigin(var1 - (float)var7.getX(), var2 - (float)var7.getY(), var3 - (float)var7.getZ());
-                  var4.transparencyState = var21.getSortState();
-               }
-
-               Stream var10000 = var4.hasLayer.stream();
-               var5.getClass();
-               var10000.map(var5::builder).forEach(BufferBuilder::end);
-               ModelBlockRenderer.clearCache();
-            }
-
-            var4.visibilitySet = var9.resolve();
-            return var10;
-         }
-
-         private <E extends BlockEntity> void handleBlockEntity(ChunkRenderDispatcher.CompiledChunk var1, Set<BlockEntity> var2, E var3) {
-            BlockEntityRenderer var4 = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(var3);
-            if (var4 != null) {
-               var1.renderableBlockEntities.add(var3);
-               if (var4.shouldRenderOffScreen(var3)) {
-                  var2.add(var3);
-               }
-            }
-
-         }
-
-         public void cancel() {
-            this.region = null;
-            if (this.isCancelled.compareAndSet(false, true)) {
-               RenderChunk.this.setDirty(false);
-            }
-
-         }
+      // $FF: synthetic method
+      public int compareTo(Object var1) {
+         return this.compareTo((ChunkRenderDispatcher.PendingUpload)var1);
       }
    }
 }

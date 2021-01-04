@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
@@ -15,8 +14,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -40,41 +37,45 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       this.enchantments = ImmutableList.copyOf(var2);
    }
 
-   public LootItemFunctionType getType() {
-      return LootItemFunctions.ENCHANT_RANDOMLY;
-   }
-
    public ItemStack run(ItemStack var1, LootContext var2) {
       Random var4 = var2.getRandom();
       Enchantment var3;
       if (this.enchantments.isEmpty()) {
-         boolean var5 = var1.is(Items.BOOK);
-         List var6 = (List)Registry.ENCHANTMENT.stream().filter(Enchantment::isDiscoverable).filter((var2x) -> {
-            return var5 || var2x.canEnchant(var1);
-         }).collect(Collectors.toList());
-         if (var6.isEmpty()) {
-            LOGGER.warn("Couldn't find a compatible enchantment for {}", var1);
-            return var1;
-         }
+         ArrayList var5 = Lists.newArrayList();
+         Iterator var6 = Registry.ENCHANTMENT.iterator();
 
-         var3 = (Enchantment)var6.get(var4.nextInt(var6.size()));
+         label32:
+         while(true) {
+            Enchantment var7;
+            do {
+               if (!var6.hasNext()) {
+                  if (var5.isEmpty()) {
+                     LOGGER.warn("Couldn't find a compatible enchantment for {}", var1);
+                     return var1;
+                  }
+
+                  var3 = (Enchantment)var5.get(var4.nextInt(var5.size()));
+                  break label32;
+               }
+
+               var7 = (Enchantment)var6.next();
+            } while(var1.getItem() != Items.BOOK && !var7.canEnchant(var1));
+
+            var5.add(var7);
+         }
       } else {
          var3 = (Enchantment)this.enchantments.get(var4.nextInt(this.enchantments.size()));
       }
 
-      return enchantItem(var1, var3, var4);
-   }
-
-   private static ItemStack enchantItem(ItemStack var0, Enchantment var1, Random var2) {
-      int var3 = Mth.nextInt(var2, var1.getMinLevel(), var1.getMaxLevel());
-      if (var0.is(Items.BOOK)) {
-         var0 = new ItemStack(Items.ENCHANTED_BOOK);
-         EnchantedBookItem.addEnchantment(var0, new EnchantmentInstance(var1, var3));
+      int var8 = Mth.nextInt(var4, var3.getMinLevel(), var3.getMaxLevel());
+      if (var1.getItem() == Items.BOOK) {
+         var1 = new ItemStack(Items.ENCHANTED_BOOK);
+         EnchantedBookItem.addEnchantment(var1, new EnchantmentInstance(var3, var8));
       } else {
-         var0.enchant(var1, var3);
+         var1.enchant(var3, var8);
       }
 
-      return var0;
+      return var1;
    }
 
    public static LootItemConditionalFunction.Builder<?> randomApplicableEnchantment() {
@@ -90,7 +91,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
 
    public static class Serializer extends LootItemConditionalFunction.Serializer<EnchantRandomlyFunction> {
       public Serializer() {
-         super();
+         super(new ResourceLocation("enchant_randomly"), EnchantRandomlyFunction.class);
       }
 
       public void serialize(JsonObject var1, EnchantRandomlyFunction var2, JsonSerializationContext var3) {
@@ -136,32 +137,6 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       // $FF: synthetic method
       public LootItemConditionalFunction deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
          return this.deserialize(var1, var2, var3);
-      }
-   }
-
-   public static class Builder extends LootItemConditionalFunction.Builder<EnchantRandomlyFunction.Builder> {
-      private final Set<Enchantment> enchantments = Sets.newHashSet();
-
-      public Builder() {
-         super();
-      }
-
-      protected EnchantRandomlyFunction.Builder getThis() {
-         return this;
-      }
-
-      public EnchantRandomlyFunction.Builder withEnchantment(Enchantment var1) {
-         this.enchantments.add(var1);
-         return this;
-      }
-
-      public LootItemFunction build() {
-         return new EnchantRandomlyFunction(this.getConditions(), this.enchantments);
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
       }
    }
 }

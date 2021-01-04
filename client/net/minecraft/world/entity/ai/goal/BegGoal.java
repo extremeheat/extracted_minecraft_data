@@ -52,7 +52,7 @@ public class BegGoal extends Goal {
    }
 
    public void tick() {
-      this.wolf.getLookControl().setLookAt(this.player.getX(), this.player.getEyeY(), this.player.getZ(), 10.0F, (float)this.wolf.getMaxHeadXRot());
+      this.wolf.getLookControl().setLookAt(this.player.x, this.player.y + (double)this.player.getEyeHeight(), this.player.z, 10.0F, (float)this.wolf.getMaxHeadXRot());
       --this.lookTime;
    }
 
@@ -63,7 +63,7 @@ public class BegGoal extends Goal {
       for(int var4 = 0; var4 < var3; ++var4) {
          InteractionHand var5 = var2[var4];
          ItemStack var6 = var1.getItemInHand(var5);
-         if (this.wolf.isTame() && var6.is(Items.BONE)) {
+         if (this.wolf.isTame() && var6.getItem() == Items.BONE) {
             return true;
          }
 

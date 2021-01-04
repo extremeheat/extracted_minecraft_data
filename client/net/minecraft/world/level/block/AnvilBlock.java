@@ -3,21 +3,17 @@ package net.minecraft.world.level.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -38,9 +34,9 @@ public class AnvilBlock extends FallingBlock {
    private static final VoxelShape Z_TOP;
    private static final VoxelShape X_AXIS_AABB;
    private static final VoxelShape Z_AXIS_AABB;
-   private static final Component CONTAINER_TITLE;
+   private static final TranslatableComponent CONTAINER_TITLE;
 
-   public AnvilBlock(BlockBehaviour.Properties var1) {
+   public AnvilBlock(Block.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
@@ -49,14 +45,9 @@ public class AnvilBlock extends FallingBlock {
       return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getClockWise());
    }
 
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         var4.openMenu(var1.getMenuProvider(var2, var3));
-         var4.awardStat(Stats.INTERACT_WITH_ANVIL);
-         return InteractionResult.CONSUME;
-      }
+   public boolean use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+      var4.openMenu(var1.getMenuProvider(var2, var3));
+      return true;
    }
 
    @Nullable
@@ -75,26 +66,21 @@ public class AnvilBlock extends FallingBlock {
       var1.setHurtsEntities(true);
    }
 
-   public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4, FallingBlockEntity var5) {
-      if (!var5.isSilent()) {
-         var1.levelEvent(1031, var2, 0);
-      }
-
+   public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4) {
+      var1.levelEvent(1031, var2, 0);
    }
 
-   public void onBroken(Level var1, BlockPos var2, FallingBlockEntity var3) {
-      if (!var3.isSilent()) {
-         var1.levelEvent(1029, var2, 0);
-      }
-
+   public void onBroken(Level var1, BlockPos var2) {
+      var1.levelEvent(1029, var2, 0);
    }
 
    @Nullable
    public static BlockState damage(BlockState var0) {
-      if (var0.is(Blocks.ANVIL)) {
+      Block var1 = var0.getBlock();
+      if (var1 == Blocks.ANVIL) {
          return (BlockState)Blocks.CHIPPED_ANVIL.defaultBlockState().setValue(FACING, var0.getValue(FACING));
       } else {
-         return var0.is(Blocks.CHIPPED_ANVIL) ? (BlockState)Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, var0.getValue(FACING)) : null;
+         return var1 == Blocks.CHIPPED_ANVIL ? (BlockState)Blocks.DAMAGED_ANVIL.defaultBlockState().setValue(FACING, var0.getValue(FACING)) : null;
       }
    }
 
@@ -110,10 +96,6 @@ public class AnvilBlock extends FallingBlock {
       return false;
    }
 
-   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getMapColor(var2, var3).col;
-   }
-
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       BASE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 4.0D, 14.0D);
@@ -125,6 +107,6 @@ public class AnvilBlock extends FallingBlock {
       Z_TOP = Block.box(3.0D, 10.0D, 0.0D, 13.0D, 16.0D, 16.0D);
       X_AXIS_AABB = Shapes.or(BASE, X_LEG1, X_LEG2, X_TOP);
       Z_AXIS_AABB = Shapes.or(BASE, Z_LEG1, Z_LEG2, Z_TOP);
-      CONTAINER_TITLE = new TranslatableComponent("container.repair");
+      CONTAINER_TITLE = new TranslatableComponent("container.repair", new Object[0]);
    }
 }

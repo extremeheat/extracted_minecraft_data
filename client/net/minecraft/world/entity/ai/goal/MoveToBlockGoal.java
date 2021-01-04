@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.LevelReader;
 
@@ -64,17 +65,12 @@ public abstract class MoveToBlockGoal extends Goal {
       return 1.0D;
    }
 
-   protected BlockPos getMoveToTarget() {
-      return this.blockPos.above();
-   }
-
    public void tick() {
-      BlockPos var1 = this.getMoveToTarget();
-      if (!var1.closerThan(this.mob.position(), this.acceptedDistance())) {
+      if (!this.blockPos.above().closerThan(this.mob.position(), this.acceptedDistance())) {
          this.reachedTarget = false;
          ++this.tryTicks;
          if (this.shouldRecalculatePath()) {
-            this.mob.getNavigation().moveTo((double)((float)var1.getX()) + 0.5D, (double)var1.getY(), (double)((float)var1.getZ()) + 0.5D, this.speedModifier);
+            this.mob.getNavigation().moveTo((double)((float)this.blockPos.getX()) + 0.5D, (double)(this.blockPos.getY() + 1), (double)((float)this.blockPos.getZ()) + 0.5D, this.speedModifier);
          }
       } else {
          this.reachedTarget = true;
@@ -94,14 +90,14 @@ public abstract class MoveToBlockGoal extends Goal {
    protected boolean findNearestBlock() {
       int var1 = this.searchRange;
       int var2 = this.verticalSearchRange;
-      BlockPos var3 = this.mob.blockPosition();
+      BlockPos var3 = new BlockPos(this.mob);
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
       for(int var5 = this.verticalSearchStart; var5 <= var2; var5 = var5 > 0 ? -var5 : 1 - var5) {
          for(int var6 = 0; var6 < var1; ++var6) {
             for(int var7 = 0; var7 <= var6; var7 = var7 > 0 ? -var7 : 1 - var7) {
                for(int var8 = var7 < var6 && var7 > -var6 ? var6 : 0; var8 <= var6; var8 = var8 > 0 ? -var8 : 1 - var8) {
-                  var4.setWithOffset(var3, var7, var5 - 1, var8);
+                  var4.set((Vec3i)var3).move(var7, var5 - 1, var8);
                   if (this.mob.isWithinRestriction(var4) && this.isValidTarget(this.mob.level, var4)) {
                      this.blockPos = var4;
                      return true;

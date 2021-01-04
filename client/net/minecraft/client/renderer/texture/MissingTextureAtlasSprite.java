@@ -1,11 +1,8 @@
 package net.minecraft.client.renderer.texture;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.NativeImage;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.metadata.animation.AnimationFrame;
-import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.LazyLoadedValue;
 
@@ -31,41 +28,34 @@ public final class MissingTextureAtlasSprite extends TextureAtlasSprite {
       var0.untrack();
       return var0;
    });
-   private static final TextureAtlasSprite.Info INFO;
 
-   private MissingTextureAtlasSprite(TextureAtlas var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, INFO, var2, var3, var4, var5, var6, (NativeImage)MISSING_IMAGE_DATA.get());
+   private MissingTextureAtlasSprite() {
+      super(MISSING_TEXTURE_LOCATION, 16, 16);
+      this.mainImage = new NativeImage[]{(NativeImage)MISSING_IMAGE_DATA.get()};
    }
 
-   public static MissingTextureAtlasSprite newInstance(TextureAtlas var0, int var1, int var2, int var3, int var4, int var5) {
-      return new MissingTextureAtlasSprite(var0, var1, var2, var3, var4, var5);
+   public static MissingTextureAtlasSprite newInstance() {
+      return new MissingTextureAtlasSprite();
    }
 
    public static ResourceLocation getLocation() {
       return MISSING_TEXTURE_LOCATION;
    }
 
-   public static TextureAtlasSprite.Info info() {
-      return INFO;
-   }
-
-   public void close() {
+   public void wipeFrameData() {
       for(int var1 = 1; var1 < this.mainImage.length; ++var1) {
          this.mainImage[var1].close();
       }
 
+      this.mainImage = new NativeImage[]{(NativeImage)MISSING_IMAGE_DATA.get()};
    }
 
    public static DynamicTexture getTexture() {
       if (missingTexture == null) {
          missingTexture = new DynamicTexture((NativeImage)MISSING_IMAGE_DATA.get());
-         Minecraft.getInstance().getTextureManager().register((ResourceLocation)MISSING_TEXTURE_LOCATION, (AbstractTexture)missingTexture);
+         Minecraft.getInstance().getTextureManager().register((ResourceLocation)MISSING_TEXTURE_LOCATION, (TextureObject)missingTexture);
       }
 
       return missingTexture;
-   }
-
-   static {
-      INFO = new TextureAtlasSprite.Info(MISSING_TEXTURE_LOCATION, 16, 16, new AnimationMetadataSection(Lists.newArrayList(new AnimationFrame[]{new AnimationFrame(0, -1)}), 16, 16, 1, false));
    }
 }

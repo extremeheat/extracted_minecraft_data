@@ -33,11 +33,12 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    public EyeOfEnder(Level var1, double var2, double var4, double var6) {
       this(EntityType.EYE_OF_ENDER, var1);
+      this.life = 0;
       this.setPos(var2, var4, var6);
    }
 
    public void setItem(ItemStack var1) {
-      if (!var1.is(Items.ENDER_EYE) || var1.hasTag()) {
+      if (var1.getItem() != Items.ENDER_EYE || var1.hasTag()) {
          this.getEntityData().set(DATA_ITEM_STACK, Util.make(var1.copy(), (var0) -> {
             var0.setCount(1);
          }));
@@ -72,13 +73,13 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       double var2 = (double)var1.getX();
       int var4 = var1.getY();
       double var5 = (double)var1.getZ();
-      double var7 = var2 - this.getX();
-      double var9 = var5 - this.getZ();
+      double var7 = var2 - this.x;
+      double var9 = var5 - this.z;
       float var11 = Mth.sqrt(var7 * var7 + var9 * var9);
       if (var11 > 12.0F) {
-         this.tx = this.getX() + var7 / (double)var11 * 12.0D;
-         this.tz = this.getZ() + var9 / (double)var11 * 12.0D;
-         this.ty = this.getY() + 8.0D;
+         this.tx = this.x + var7 / (double)var11 * 12.0D;
+         this.tz = this.z + var9 / (double)var11 * 12.0D;
+         this.ty = this.y + 8.0D;
       } else {
          this.tx = var2;
          this.ty = (double)var4;
@@ -102,54 +103,72 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public void tick() {
+      this.xOld = this.x;
+      this.yOld = this.y;
+      this.zOld = this.z;
       super.tick();
       Vec3 var1 = this.getDeltaMovement();
-      double var2 = this.getX() + var1.x;
-      double var4 = this.getY() + var1.y;
-      double var6 = this.getZ() + var1.z;
-      float var8 = Mth.sqrt(getHorizontalDistanceSqr(var1));
-      this.xRot = Projectile.lerpRotation(this.xRotO, (float)(Mth.atan2(var1.y, (double)var8) * 57.2957763671875D));
-      this.yRot = Projectile.lerpRotation(this.yRotO, (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875D));
+      this.x += var1.x;
+      this.y += var1.y;
+      this.z += var1.z;
+      float var2 = Mth.sqrt(getHorizontalDistanceSqr(var1));
+      this.yRot = (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875D);
+
+      for(this.xRot = (float)(Mth.atan2(var1.y, (double)var2) * 57.2957763671875D); this.xRot - this.xRotO < -180.0F; this.xRotO -= 360.0F) {
+      }
+
+      while(this.xRot - this.xRotO >= 180.0F) {
+         this.xRotO += 360.0F;
+      }
+
+      while(this.yRot - this.yRotO < -180.0F) {
+         this.yRotO -= 360.0F;
+      }
+
+      while(this.yRot - this.yRotO >= 180.0F) {
+         this.yRotO += 360.0F;
+      }
+
+      this.xRot = Mth.lerp(0.2F, this.xRotO, this.xRot);
+      this.yRot = Mth.lerp(0.2F, this.yRotO, this.yRot);
       if (!this.level.isClientSide) {
-         double var9 = this.tx - var2;
-         double var11 = this.tz - var6;
-         float var13 = (float)Math.sqrt(var9 * var9 + var11 * var11);
-         float var14 = (float)Mth.atan2(var11, var9);
-         double var15 = Mth.lerp(0.0025D, (double)var8, (double)var13);
-         double var17 = var1.y;
-         if (var13 < 1.0F) {
-            var15 *= 0.8D;
-            var17 *= 0.8D;
+         double var3 = this.tx - this.x;
+         double var5 = this.tz - this.z;
+         float var7 = (float)Math.sqrt(var3 * var3 + var5 * var5);
+         float var8 = (float)Mth.atan2(var5, var3);
+         double var9 = Mth.lerp(0.0025D, (double)var2, (double)var7);
+         double var11 = var1.y;
+         if (var7 < 1.0F) {
+            var9 *= 0.8D;
+            var11 *= 0.8D;
          }
 
-         int var19 = this.getY() < this.ty ? 1 : -1;
-         var1 = new Vec3(Math.cos((double)var14) * var15, var17 + ((double)var19 - var17) * 0.014999999664723873D, Math.sin((double)var14) * var15);
+         int var13 = this.y < this.ty ? 1 : -1;
+         var1 = new Vec3(Math.cos((double)var8) * var9, var11 + ((double)var13 - var11) * 0.014999999664723873D, Math.sin((double)var8) * var9);
          this.setDeltaMovement(var1);
       }
 
-      float var20 = 0.25F;
+      float var14 = 0.25F;
       if (this.isInWater()) {
-         for(int var10 = 0; var10 < 4; ++var10) {
-            this.level.addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25D, var4 - var1.y * 0.25D, var6 - var1.z * 0.25D, var1.x, var1.y, var1.z);
+         for(int var4 = 0; var4 < 4; ++var4) {
+            this.level.addParticle(ParticleTypes.BUBBLE, this.x - var1.x * 0.25D, this.y - var1.y * 0.25D, this.z - var1.z * 0.25D, var1.x, var1.y, var1.z);
          }
       } else {
-         this.level.addParticle(ParticleTypes.PORTAL, var2 - var1.x * 0.25D + this.random.nextDouble() * 0.6D - 0.3D, var4 - var1.y * 0.25D - 0.5D, var6 - var1.z * 0.25D + this.random.nextDouble() * 0.6D - 0.3D, var1.x, var1.y, var1.z);
+         this.level.addParticle(ParticleTypes.PORTAL, this.x - var1.x * 0.25D + this.random.nextDouble() * 0.6D - 0.3D, this.y - var1.y * 0.25D - 0.5D, this.z - var1.z * 0.25D + this.random.nextDouble() * 0.6D - 0.3D, var1.x, var1.y, var1.z);
       }
 
       if (!this.level.isClientSide) {
-         this.setPos(var2, var4, var6);
+         this.setPos(this.x, this.y, this.z);
          ++this.life;
          if (this.life > 80 && !this.level.isClientSide) {
             this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
-            this.discard();
+            this.remove();
             if (this.surviveAfterDeath) {
-               this.level.addFreshEntity(new ItemEntity(this.level, this.getX(), this.getY(), this.getZ(), this.getItem()));
+               this.level.addFreshEntity(new ItemEntity(this.level, this.x, this.y, this.z, this.getItem()));
             } else {
-               this.level.levelEvent(2003, this.blockPosition(), 0);
+               this.level.levelEvent(2003, new BlockPos(this), 0);
             }
          }
-      } else {
-         this.setPosRaw(var2, var4, var6);
       }
 
    }
@@ -169,6 +188,10 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    public float getBrightness() {
       return 1.0F;
+   }
+
+   public int getLightColor() {
+      return 15728880;
    }
 
    public boolean isAttackable() {
