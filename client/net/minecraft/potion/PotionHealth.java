@@ -1,0 +1,17 @@
+package net.minecraft.potion;
+
+import net.minecraft.util.ResourceLocation;
+
+public class PotionHealth extends Potion {
+   public PotionHealth(int var1, ResourceLocation var2, boolean var3, int var4) {
+      super(var1, var2, var3, var4);
+   }
+
+   public boolean func_76403_b() {
+      return true;
+   }
+
+   public boolean func_76397_a(int var1, int var2) {
+      return var1 >= 1;
+   }
+}
