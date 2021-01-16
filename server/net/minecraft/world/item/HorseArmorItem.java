@@ -1,0 +1,16 @@
+package net.minecraft.world.item;
+
+public class HorseArmorItem extends Item {
+   private final int protection;
+   private final String texture;
+
+   public HorseArmorItem(int var1, String var2, Item.Properties var3) {
+      super(var3);
+      this.protection = var1;
+      this.texture = "textures/entity/horse/armor/horse_armor_" + var2 + ".png";
+   }
+
+   public int getProtection() {
+      return this.protection;
+   }
+}

@@ -1,0 +1,292 @@
+package it.unimi.dsi.fastutil.shorts;
+
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
+import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Map;
+
+public abstract class AbstractShort2LongMap extends AbstractShort2LongFunction implements Short2LongMap, Serializable {
+   private static final long serialVersionUID = -4940583368468432370L;
+
+   protected AbstractShort2LongMap() {
+      super();
+   }
+
+   public boolean containsValue(long var1) {
+      return this.values().contains(var1);
+   }
+
+   public boolean containsKey(short var1) {
+      ObjectIterator var2 = this.short2LongEntrySet().iterator();
+
+      do {
+         if (!var2.hasNext()) {
+            return false;
+         }
+      } while(((Short2LongMap.Entry)var2.next()).getShortKey() != var1);
+
+      return true;
+   }
+
+   public boolean isEmpty() {
+      return this.size() == 0;
+   }
+
+   public ShortSet keySet() {
+      return new AbstractShortSet() {
+         public boolean contains(short var1) {
+            return AbstractShort2LongMap.this.containsKey(var1);
+         }
+
+         public int size() {
+            return AbstractShort2LongMap.this.size();
+         }
+
+         public void clear() {
+            AbstractShort2LongMap.this.clear();
+         }
+
+         public ShortIterator iterator() {
+            return new ShortIterator() {
+               private final ObjectIterator<Short2LongMap.Entry> i = Short2LongMaps.fastIterator(AbstractShort2LongMap.this);
+
+               public short nextShort() {
+                  return ((Short2LongMap.Entry)this.i.next()).getShortKey();
+               }
+
+               public boolean hasNext() {
+                  return this.i.hasNext();
+               }
+
+               public void remove() {
+                  this.i.remove();
+               }
+            };
+         }
+      };
+   }
+
+   public LongCollection values() {
+      return new AbstractLongCollection() {
+         public boolean contains(long var1) {
+            return AbstractShort2LongMap.this.containsValue(var1);
+         }
+
+         public int size() {
+            return AbstractShort2LongMap.this.size();
+         }
+
+         public void clear() {
+            AbstractShort2LongMap.this.clear();
+         }
+
+         public LongIterator iterator() {
+            return new LongIterator() {
+               private final ObjectIterator<Short2LongMap.Entry> i = Short2LongMaps.fastIterator(AbstractShort2LongMap.this);
+
+               public long nextLong() {
+                  return ((Short2LongMap.Entry)this.i.next()).getLongValue();
+               }
+
+               public boolean hasNext() {
+                  return this.i.hasNext();
+               }
+            };
+         }
+      };
+   }
+
+   public void putAll(Map<? extends Short, ? extends Long> var1) {
+      if (var1 instanceof Short2LongMap) {
+         ObjectIterator var2 = Short2LongMaps.fastIterator((Short2LongMap)var1);
+
+         while(var2.hasNext()) {
+            Short2LongMap.Entry var3 = (Short2LongMap.Entry)var2.next();
+            this.put(var3.getShortKey(), var3.getLongValue());
+         }
+      } else {
+         int var5 = var1.size();
+         Iterator var6 = var1.entrySet().iterator();
+
+         while(var5-- != 0) {
+            java.util.Map.Entry var4 = (java.util.Map.Entry)var6.next();
+            this.put((Short)var4.getKey(), (Long)var4.getValue());
+         }
+      }
+
+   }
+
+   public int hashCode() {
+      int var1 = 0;
+      int var2 = this.size();
+
+      for(ObjectIterator var3 = Short2LongMaps.fastIterator(this); var2-- != 0; var1 += ((Short2LongMap.Entry)var3.next()).hashCode()) {
+      }
+
+      return var1;
+   }
+
+   public boolean equals(Object var1) {
+      if (var1 == this) {
+         return true;
+      } else if (!(var1 instanceof Map)) {
+         return false;
+      } else {
+         Map var2 = (Map)var1;
+         return var2.size() != this.size() ? false : this.short2LongEntrySet().containsAll(var2.entrySet());
+      }
+   }
+
+   public String toString() {
+      StringBuilder var1 = new StringBuilder();
+      ObjectIterator var2 = Short2LongMaps.fastIterator(this);
+      int var3 = this.size();
+      boolean var5 = true;
+      var1.append("{");
+
+      while(var3-- != 0) {
+         if (var5) {
+            var5 = false;
+         } else {
+            var1.append(", ");
+         }
+
+         Short2LongMap.Entry var4 = (Short2LongMap.Entry)var2.next();
+         var1.append(String.valueOf(var4.getShortKey()));
+         var1.append("=>");
+         var1.append(String.valueOf(var4.getLongValue()));
+      }
+
+      var1.append("}");
+      return var1.toString();
+   }
+
+   public abstract static class BasicEntrySet extends AbstractObjectSet<Short2LongMap.Entry> {
+      protected final Short2LongMap map;
+
+      public BasicEntrySet(Short2LongMap var1) {
+         super();
+         this.map = var1;
+      }
+
+      public boolean contains(Object var1) {
+         if (!(var1 instanceof java.util.Map.Entry)) {
+            return false;
+         } else if (var1 instanceof Short2LongMap.Entry) {
+            Short2LongMap.Entry var6 = (Short2LongMap.Entry)var1;
+            short var7 = var6.getShortKey();
+            return this.map.containsKey(var7) && this.map.get(var7) == var6.getLongValue();
+         } else {
+            java.util.Map.Entry var2 = (java.util.Map.Entry)var1;
+            Object var3 = var2.getKey();
+            if (var3 != null && var3 instanceof Short) {
+               short var4 = (Short)var3;
+               Object var5 = var2.getValue();
+               if (var5 != null && var5 instanceof Long) {
+                  return this.map.containsKey(var4) && this.map.get(var4) == (Long)var5;
+               } else {
+                  return false;
+               }
+            } else {
+               return false;
+            }
+         }
+      }
+
+      public boolean remove(Object var1) {
+         if (!(var1 instanceof java.util.Map.Entry)) {
+            return false;
+         } else if (var1 instanceof Short2LongMap.Entry) {
+            Short2LongMap.Entry var8 = (Short2LongMap.Entry)var1;
+            return this.map.remove(var8.getShortKey(), var8.getLongValue());
+         } else {
+            java.util.Map.Entry var2 = (java.util.Map.Entry)var1;
+            Object var3 = var2.getKey();
+            if (var3 != null && var3 instanceof Short) {
+               short var4 = (Short)var3;
+               Object var5 = var2.getValue();
+               if (var5 != null && var5 instanceof Long) {
+                  long var6 = (Long)var5;
+                  return this.map.remove(var4, var6);
+               } else {
+                  return false;
+               }
+            } else {
+               return false;
+            }
+         }
+      }
+
+      public int size() {
+         return this.map.size();
+      }
+   }
+
+   public static class BasicEntry implements Short2LongMap.Entry {
+      protected short key;
+      protected long value;
+
+      public BasicEntry() {
+         super();
+      }
+
+      public BasicEntry(Short var1, Long var2) {
+         super();
+         this.key = var1;
+         this.value = var2;
+      }
+
+      public BasicEntry(short var1, long var2) {
+         super();
+         this.key = var1;
+         this.value = var2;
+      }
+
+      public short getShortKey() {
+         return this.key;
+      }
+
+      public long getLongValue() {
+         return this.value;
+      }
+
+      public long setValue(long var1) {
+         throw new UnsupportedOperationException();
+      }
+
+      public boolean equals(Object var1) {
+         if (!(var1 instanceof java.util.Map.Entry)) {
+            return false;
+         } else if (var1 instanceof Short2LongMap.Entry) {
+            Short2LongMap.Entry var5 = (Short2LongMap.Entry)var1;
+            return this.key == var5.getShortKey() && this.value == var5.getLongValue();
+         } else {
+            java.util.Map.Entry var2 = (java.util.Map.Entry)var1;
+            Object var3 = var2.getKey();
+            if (var3 != null && var3 instanceof Short) {
+               Object var4 = var2.getValue();
+               if (var4 != null && var4 instanceof Long) {
+                  return this.key == (Short)var3 && this.value == (Long)var4;
+               } else {
+                  return false;
+               }
+            } else {
+               return false;
+            }
+         }
+      }
+
+      public int hashCode() {
+         return this.key ^ HashCommon.long2int(this.value);
+      }
+
+      public String toString() {
+         return this.key + "->" + this.value;
+      }
+   }
+}

@@ -1,0 +1,41 @@
+package it.unimi.dsi.fastutil.doubles;
+
+import it.unimi.dsi.fastutil.PriorityQueue;
+
+public interface DoublePriorityQueue extends PriorityQueue<Double> {
+   void enqueue(double var1);
+
+   double dequeueDouble();
+
+   double firstDouble();
+
+   default double lastDouble() {
+      throw new UnsupportedOperationException();
+   }
+
+   DoubleComparator comparator();
+
+   /** @deprecated */
+   @Deprecated
+   default void enqueue(Double var1) {
+      this.enqueue(var1);
+   }
+
+   /** @deprecated */
+   @Deprecated
+   default Double dequeue() {
+      return this.dequeueDouble();
+   }
+
+   /** @deprecated */
+   @Deprecated
+   default Double first() {
+      return this.firstDouble();
+   }
+
+   /** @deprecated */
+   @Deprecated
+   default Double last() {
+      return this.lastDouble();
+   }
+}
