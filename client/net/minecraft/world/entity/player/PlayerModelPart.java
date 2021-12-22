@@ -1,0 +1,48 @@
+package net.minecraft.world.entity.player;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+
+public enum PlayerModelPart {
+   CAPE(0, "cape"),
+   JACKET(1, "jacket"),
+   LEFT_SLEEVE(2, "left_sleeve"),
+   RIGHT_SLEEVE(3, "right_sleeve"),
+   LEFT_PANTS_LEG(4, "left_pants_leg"),
+   RIGHT_PANTS_LEG(5, "right_pants_leg"),
+   HAT(6, "hat");
+
+   private final int bit;
+   private final int mask;
+   // $FF: renamed from: id java.lang.String
+   private final String field_303;
+   private final Component name;
+
+   private PlayerModelPart(int var3, String var4) {
+      this.bit = var3;
+      this.mask = 1 << var3;
+      this.field_303 = var4;
+      this.name = new TranslatableComponent("options.modelPart." + var4);
+   }
+
+   public int getMask() {
+      return this.mask;
+   }
+
+   public int getBit() {
+      return this.bit;
+   }
+
+   public String getId() {
+      return this.field_303;
+   }
+
+   public Component getName() {
+      return this.name;
+   }
+
+   // $FF: synthetic method
+   private static PlayerModelPart[] $values() {
+      return new PlayerModelPart[]{CAPE, JACKET, LEFT_SLEEVE, RIGHT_SLEEVE, LEFT_PANTS_LEG, RIGHT_PANTS_LEG, HAT};
+   }
+}

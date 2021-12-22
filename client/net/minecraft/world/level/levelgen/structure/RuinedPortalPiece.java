@@ -1,0 +1,337 @@
+package net.minecraft.world.level.levelgen.structure;
+
+import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.stream.Collectors;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.StructureFeatureManager;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.feature.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlackstoneReplaceProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockAgeProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LavaSubmergedBlockProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.ProcessorRule;
+import net.minecraft.world.level.levelgen.structure.templatesystem.ProtectedBlockProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RandomBlockMatchTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class RuinedPortalPiece extends TemplateStructurePiece {
+   private static final Logger LOGGER = LogManager.getLogger();
+   private static final float PROBABILITY_OF_GOLD_GONE = 0.3F;
+   private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_NETHERRACK = 0.07F;
+   private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_LAVA = 0.2F;
+   private static final float DEFAULT_MOSSINESS = 0.2F;
+   private final RuinedPortalPiece.VerticalPlacement verticalPlacement;
+   private final RuinedPortalPiece.Properties properties;
+
+   public RuinedPortalPiece(StructureManager var1, BlockPos var2, RuinedPortalPiece.VerticalPlacement var3, RuinedPortalPiece.Properties var4, ResourceLocation var5, StructureTemplate var6, Rotation var7, Mirror var8, BlockPos var9) {
+      super(StructurePieceType.RUINED_PORTAL, 0, var1, var5, var5.toString(), makeSettings(var8, var7, var3, var9, var4), var2);
+      this.verticalPlacement = var3;
+      this.properties = var4;
+   }
+
+   public RuinedPortalPiece(StructureManager var1, CompoundTag var2) {
+      super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> {
+         return makeSettings(var1, var2, var2x);
+      });
+      this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
+      DataResult var10001 = RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties")));
+      Logger var10003 = LOGGER;
+      Objects.requireNonNull(var10003);
+      this.properties = (RuinedPortalPiece.Properties)var10001.getOrThrow(true, var10003::error);
+   }
+
+   protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
+      super.addAdditionalSaveData(var1, var2);
+      var2.putString("Rotation", this.placeSettings.getRotation().name());
+      var2.putString("Mirror", this.placeSettings.getMirror().name());
+      var2.putString("VerticalPlacement", this.verticalPlacement.getName());
+      DataResult var10000 = RuinedPortalPiece.Properties.CODEC.encodeStart(NbtOps.INSTANCE, this.properties);
+      Logger var10001 = LOGGER;
+      Objects.requireNonNull(var10001);
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         var2.put("Properties", var1x);
+      });
+   }
+
+   private static StructurePlaceSettings makeSettings(StructureManager var0, CompoundTag var1, ResourceLocation var2) {
+      StructureTemplate var3 = var0.getOrCreate(var2);
+      BlockPos var4 = new BlockPos(var3.getSize().getX() / 2, 0, var3.getSize().getZ() / 2);
+      Mirror var10000 = Mirror.valueOf(var1.getString("Mirror"));
+      Rotation var10001 = Rotation.valueOf(var1.getString("Rotation"));
+      RuinedPortalPiece.VerticalPlacement var10002 = RuinedPortalPiece.VerticalPlacement.byName(var1.getString("VerticalPlacement"));
+      DataResult var10004 = RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties")));
+      Logger var10006 = LOGGER;
+      Objects.requireNonNull(var10006);
+      return makeSettings(var10000, var10001, var10002, var4, (RuinedPortalPiece.Properties)var10004.getOrThrow(true, var10006::error));
+   }
+
+   private static StructurePlaceSettings makeSettings(Mirror var0, Rotation var1, RuinedPortalPiece.VerticalPlacement var2, BlockPos var3, RuinedPortalPiece.Properties var4) {
+      BlockIgnoreProcessor var5 = var4.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
+      ArrayList var6 = Lists.newArrayList();
+      var6.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
+      var6.add(getLavaProcessorRule(var2, var4));
+      if (!var4.cold) {
+         var6.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
+      }
+
+      StructurePlaceSettings var7 = (new StructurePlaceSettings()).setRotation(var1).setMirror(var0).setRotationPivot(var3).addProcessor(var5).addProcessor(new RuleProcessor(var6)).addProcessor(new BlockAgeProcessor(var4.mossiness)).addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE.getName())).addProcessor(new LavaSubmergedBlockProcessor());
+      if (var4.replaceWithBlackstone) {
+         var7.addProcessor(BlackstoneReplaceProcessor.INSTANCE);
+      }
+
+      return var7;
+   }
+
+   private static ProcessorRule getLavaProcessorRule(RuinedPortalPiece.VerticalPlacement var0, RuinedPortalPiece.Properties var1) {
+      if (var0 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR) {
+         return getBlockReplaceRule(Blocks.LAVA, Blocks.MAGMA_BLOCK);
+      } else {
+         return var1.cold ? getBlockReplaceRule(Blocks.LAVA, Blocks.NETHERRACK) : getBlockReplaceRule(Blocks.LAVA, 0.2F, Blocks.MAGMA_BLOCK);
+      }
+   }
+
+   public void postProcess(WorldGenLevel var1, StructureFeatureManager var2, ChunkGenerator var3, Random var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
+      BoundingBox var8 = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
+      if (var5.isInside(var8.getCenter())) {
+         var5.encapsulate(var8);
+         super.postProcess(var1, var2, var3, var4, var5, var6, var7);
+         this.spreadNetherrack(var4, var1);
+         this.addNetherrackDripColumnsBelowPortal(var4, var1);
+         if (this.properties.vines || this.properties.overgrown) {
+            BlockPos.betweenClosedStream(this.getBoundingBox()).forEach((var3x) -> {
+               if (this.properties.vines) {
+                  this.maybeAddVines(var4, var1, var3x);
+               }
+
+               if (this.properties.overgrown) {
+                  this.maybeAddLeavesAbove(var4, var1, var3x);
+               }
+
+            });
+         }
+
+      }
+   }
+
+   protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, Random var4, BoundingBox var5) {
+   }
+
+   private void maybeAddVines(Random var1, LevelAccessor var2, BlockPos var3) {
+      BlockState var4 = var2.getBlockState(var3);
+      if (!var4.isAir() && !var4.is(Blocks.VINE)) {
+         Direction var5 = getRandomHorizontalDirection(var1);
+         BlockPos var6 = var3.relative(var5);
+         BlockState var7 = var2.getBlockState(var6);
+         if (var7.isAir()) {
+            if (Block.isFaceFull(var4.getCollisionShape(var2, var3), var5)) {
+               BooleanProperty var8 = VineBlock.getPropertyForFace(var5.getOpposite());
+               var2.setBlock(var6, (BlockState)Blocks.VINE.defaultBlockState().setValue(var8, true), 3);
+            }
+         }
+      }
+   }
+
+   private void maybeAddLeavesAbove(Random var1, LevelAccessor var2, BlockPos var3) {
+      if (var1.nextFloat() < 0.5F && var2.getBlockState(var3).is(Blocks.NETHERRACK) && var2.getBlockState(var3.above()).isAir()) {
+         var2.setBlock(var3.above(), (BlockState)Blocks.JUNGLE_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true), 3);
+      }
+
+   }
+
+   private void addNetherrackDripColumnsBelowPortal(Random var1, LevelAccessor var2) {
+      for(int var3 = this.boundingBox.minX() + 1; var3 < this.boundingBox.maxX(); ++var3) {
+         for(int var4 = this.boundingBox.minZ() + 1; var4 < this.boundingBox.maxZ(); ++var4) {
+            BlockPos var5 = new BlockPos(var3, this.boundingBox.minY(), var4);
+            if (var2.getBlockState(var5).is(Blocks.NETHERRACK)) {
+               this.addNetherrackDripColumn(var1, var2, var5.below());
+            }
+         }
+      }
+
+   }
+
+   private void addNetherrackDripColumn(Random var1, LevelAccessor var2, BlockPos var3) {
+      BlockPos.MutableBlockPos var4 = var3.mutable();
+      this.placeNetherrackOrMagma(var1, var2, var4);
+      int var5 = 8;
+
+      while(var5 > 0 && var1.nextFloat() < 0.5F) {
+         var4.move(Direction.DOWN);
+         --var5;
+         this.placeNetherrackOrMagma(var1, var2, var4);
+      }
+
+   }
+
+   private void spreadNetherrack(Random var1, LevelAccessor var2) {
+      boolean var3 = this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_LAND_SURFACE || this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR;
+      BlockPos var4 = this.boundingBox.getCenter();
+      int var5 = var4.getX();
+      int var6 = var4.getZ();
+      float[] var7 = new float[]{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.9F, 0.9F, 0.8F, 0.7F, 0.6F, 0.4F, 0.2F};
+      int var8 = var7.length;
+      int var9 = (this.boundingBox.getXSpan() + this.boundingBox.getZSpan()) / 2;
+      int var10 = var1.nextInt(Math.max(1, 8 - var9 / 2));
+      boolean var11 = true;
+      BlockPos.MutableBlockPos var12 = BlockPos.ZERO.mutable();
+
+      for(int var13 = var5 - var8; var13 <= var5 + var8; ++var13) {
+         for(int var14 = var6 - var8; var14 <= var6 + var8; ++var14) {
+            int var15 = Math.abs(var13 - var5) + Math.abs(var14 - var6);
+            int var16 = Math.max(0, var15 + var10);
+            if (var16 < var8) {
+               float var17 = var7[var16];
+               if (var1.nextDouble() < (double)var17) {
+                  int var18 = getSurfaceY(var2, var13, var14, this.verticalPlacement);
+                  int var19 = var3 ? var18 : Math.min(this.boundingBox.minY(), var18);
+                  var12.set(var13, var19, var14);
+                  if (Math.abs(var19 - this.boundingBox.minY()) <= 3 && this.canBlockBeReplacedByNetherrackOrMagma(var2, var12)) {
+                     this.placeNetherrackOrMagma(var1, var2, var12);
+                     if (this.properties.overgrown) {
+                        this.maybeAddLeavesAbove(var1, var2, var12);
+                     }
+
+                     this.addNetherrackDripColumn(var1, var2, var12.below());
+                  }
+               }
+            }
+         }
+      }
+
+   }
+
+   private boolean canBlockBeReplacedByNetherrackOrMagma(LevelAccessor var1, BlockPos var2) {
+      BlockState var3 = var1.getBlockState(var2);
+      return !var3.is(Blocks.AIR) && !var3.is(Blocks.OBSIDIAN) && !var3.is(BlockTags.FEATURES_CANNOT_REPLACE) && (this.verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_NETHER || !var3.is(Blocks.LAVA));
+   }
+
+   private void placeNetherrackOrMagma(Random var1, LevelAccessor var2, BlockPos var3) {
+      if (!this.properties.cold && var1.nextFloat() < 0.07F) {
+         var2.setBlock(var3, Blocks.MAGMA_BLOCK.defaultBlockState(), 3);
+      } else {
+         var2.setBlock(var3, Blocks.NETHERRACK.defaultBlockState(), 3);
+      }
+
+   }
+
+   private static int getSurfaceY(LevelAccessor var0, int var1, int var2, RuinedPortalPiece.VerticalPlacement var3) {
+      return var0.getHeight(getHeightMapType(var3), var1, var2) - 1;
+   }
+
+   public static Heightmap.Types getHeightMapType(RuinedPortalPiece.VerticalPlacement var0) {
+      return var0 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
+   }
+
+   private static ProcessorRule getBlockReplaceRule(Block var0, float var1, Block var2) {
+      return new ProcessorRule(new RandomBlockMatchTest(var0, var1), AlwaysTrueTest.INSTANCE, var2.defaultBlockState());
+   }
+
+   private static ProcessorRule getBlockReplaceRule(Block var0, Block var1) {
+      return new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, var1.defaultBlockState());
+   }
+
+   public static enum VerticalPlacement {
+      ON_LAND_SURFACE("on_land_surface"),
+      PARTLY_BURIED("partly_buried"),
+      ON_OCEAN_FLOOR("on_ocean_floor"),
+      IN_MOUNTAIN("in_mountain"),
+      UNDERGROUND("underground"),
+      IN_NETHER("in_nether");
+
+      private static final Map<String, RuinedPortalPiece.VerticalPlacement> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap(RuinedPortalPiece.VerticalPlacement::getName, (var0) -> {
+         return var0;
+      }));
+      private final String name;
+
+      private VerticalPlacement(String var3) {
+         this.name = var3;
+      }
+
+      public String getName() {
+         return this.name;
+      }
+
+      public static RuinedPortalPiece.VerticalPlacement byName(String var0) {
+         return (RuinedPortalPiece.VerticalPlacement)BY_NAME.get(var0);
+      }
+
+      // $FF: synthetic method
+      private static RuinedPortalPiece.VerticalPlacement[] $values() {
+         return new RuinedPortalPiece.VerticalPlacement[]{ON_LAND_SURFACE, PARTLY_BURIED, ON_OCEAN_FLOOR, IN_MOUNTAIN, UNDERGROUND, IN_NETHER};
+      }
+   }
+
+   public static class Properties {
+      public static final Codec<RuinedPortalPiece.Properties> CODEC = RecordCodecBuilder.create((var0) -> {
+         return var0.group(Codec.BOOL.fieldOf("cold").forGetter((var0x) -> {
+            return var0x.cold;
+         }), Codec.FLOAT.fieldOf("mossiness").forGetter((var0x) -> {
+            return var0x.mossiness;
+         }), Codec.BOOL.fieldOf("air_pocket").forGetter((var0x) -> {
+            return var0x.airPocket;
+         }), Codec.BOOL.fieldOf("overgrown").forGetter((var0x) -> {
+            return var0x.overgrown;
+         }), Codec.BOOL.fieldOf("vines").forGetter((var0x) -> {
+            return var0x.vines;
+         }), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((var0x) -> {
+            return var0x.replaceWithBlackstone;
+         })).apply(var0, RuinedPortalPiece.Properties::new);
+      });
+      public boolean cold;
+      public float mossiness = 0.2F;
+      public boolean airPocket;
+      public boolean overgrown;
+      public boolean vines;
+      public boolean replaceWithBlackstone;
+
+      public Properties() {
+         super();
+      }
+
+      public Properties(boolean var1, float var2, boolean var3, boolean var4, boolean var5, boolean var6) {
+         super();
+         this.cold = var1;
+         this.mossiness = var2;
+         this.airPocket = var3;
+         this.overgrown = var4;
+         this.vines = var5;
+         this.replaceWithBlackstone = var6;
+      }
+   }
+}

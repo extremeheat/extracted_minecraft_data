@@ -1,0 +1,69 @@
+package net.minecraft.network.protocol.game;
+
+import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import org.apache.commons.lang3.Validate;
+
+public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketListener> {
+   private final SoundEvent sound;
+   private final SoundSource source;
+   // $FF: renamed from: id int
+   private final int field_329;
+   private final float volume;
+   private final float pitch;
+
+   public ClientboundSoundEntityPacket(SoundEvent var1, SoundSource var2, Entity var3, float var4, float var5) {
+      super();
+      Validate.notNull(var1, "sound", new Object[0]);
+      this.sound = var1;
+      this.source = var2;
+      this.field_329 = var3.getId();
+      this.volume = var4;
+      this.pitch = var5;
+   }
+
+   public ClientboundSoundEntityPacket(FriendlyByteBuf var1) {
+      super();
+      this.sound = (SoundEvent)Registry.SOUND_EVENT.byId(var1.readVarInt());
+      this.source = (SoundSource)var1.readEnum(SoundSource.class);
+      this.field_329 = var1.readVarInt();
+      this.volume = var1.readFloat();
+      this.pitch = var1.readFloat();
+   }
+
+   public void write(FriendlyByteBuf var1) {
+      var1.writeVarInt(Registry.SOUND_EVENT.getId(this.sound));
+      var1.writeEnum(this.source);
+      var1.writeVarInt(this.field_329);
+      var1.writeFloat(this.volume);
+      var1.writeFloat(this.pitch);
+   }
+
+   public SoundEvent getSound() {
+      return this.sound;
+   }
+
+   public SoundSource getSource() {
+      return this.source;
+   }
+
+   public int getId() {
+      return this.field_329;
+   }
+
+   public float getVolume() {
+      return this.volume;
+   }
+
+   public float getPitch() {
+      return this.pitch;
+   }
+
+   public void handle(ClientGamePacketListener var1) {
+      var1.handleSoundEntityEvent(this);
+   }
+}

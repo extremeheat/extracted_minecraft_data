@@ -1,0 +1,33 @@
+package net.minecraft.client.gui.screens.inventory;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ShulkerBoxMenu;
+
+public class ShulkerBoxScreen extends AbstractContainerScreen<ShulkerBoxMenu> {
+   private static final ResourceLocation CONTAINER_TEXTURE = new ResourceLocation("textures/gui/container/shulker_box.png");
+
+   public ShulkerBoxScreen(ShulkerBoxMenu var1, Inventory var2, Component var3) {
+      super(var1, var2, var3);
+      ++this.imageHeight;
+   }
+
+   public void render(PoseStack var1, int var2, int var3, float var4) {
+      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
+      this.renderTooltip(var1, var2, var3);
+   }
+
+   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+      RenderSystem.setShader(GameRenderer::getPositionTexShader);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      RenderSystem.setShaderTexture(0, CONTAINER_TEXTURE);
+      int var5 = (this.width - this.imageWidth) / 2;
+      int var6 = (this.height - this.imageHeight) / 2;
+      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+   }
+}
