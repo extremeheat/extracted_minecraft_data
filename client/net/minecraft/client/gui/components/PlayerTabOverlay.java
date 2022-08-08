@@ -96,10 +96,10 @@ public class PlayerTabOverlay extends GuiComponent {
       }
 
       var6 = var6.subList(0, Math.min(var6.size(), 80));
-      int var34 = var6.size();
-      int var35 = var34;
+      int var31 = var6.size();
+      int var32 = var31;
 
-      for(var11 = 1; var35 > 20; var35 = (var34 + var11 - 1) / var11) {
+      for(var11 = 1; var32 > 20; var32 = (var31 + var11 - 1) / var11) {
          ++var11;
       }
 
@@ -129,14 +129,14 @@ public class PlayerTabOverlay extends GuiComponent {
          }
       }
 
-      List var37 = null;
+      List var34 = null;
       FormattedCharSequence var21;
-      Iterator var38;
+      Iterator var35;
       if (this.footer != null) {
-         var37 = this.minecraft.font.split(this.footer, var2 - 50);
+         var34 = this.minecraft.font.split(this.footer, var2 - 50);
 
-         for(var38 = var37.iterator(); var38.hasNext(); var17 = Math.max(var17, this.minecraft.font.width(var21))) {
-            var21 = (FormattedCharSequence)var38.next();
+         for(var35 = var34.iterator(); var35.hasNext(); var17 = Math.max(var17, this.minecraft.font.width(var21))) {
+            var21 = (FormattedCharSequence)var35.next();
          }
       }
 
@@ -144,17 +144,17 @@ public class PlayerTabOverlay extends GuiComponent {
       int var10003;
       int var10005;
       int var22;
-      int var36;
+      int var33;
       if (var18 != null) {
-         var36 = var2 / 2 - var17 / 2 - 1;
+         var33 = var2 / 2 - var17 / 2 - 1;
          var10002 = var16 - 1;
          var10003 = var2 / 2 + var17 / 2 + 1;
          var10005 = var18.size();
          Objects.requireNonNull(this.minecraft.font);
-         fill(var1, var36, var10002, var10003, var16 + var10005 * 9, -2147483648);
+         fill(var1, var33, var10002, var10003, var16 + var10005 * 9, -2147483648);
 
-         for(var38 = var18.iterator(); var38.hasNext(); var16 += 9) {
-            var21 = (FormattedCharSequence)var38.next();
+         for(var35 = var18.iterator(); var35.hasNext(); var16 += 9) {
+            var21 = (FormattedCharSequence)var35.next();
             var22 = this.minecraft.font.width(var21);
             this.minecraft.font.drawShadow(var1, (FormattedCharSequence)var21, (float)(var2 / 2 - var22 / 2), (float)var16, -1);
             Objects.requireNonNull(this.minecraft.font);
@@ -163,44 +163,37 @@ public class PlayerTabOverlay extends GuiComponent {
          ++var16;
       }
 
-      fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var35 * 9, -2147483648);
-      int var39 = this.minecraft.options.getBackgroundColor(553648127);
+      fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var32 * 9, -2147483648);
+      int var36 = this.minecraft.options.getBackgroundColor(553648127);
 
       int var23;
-      for(int var40 = 0; var40 < var34; ++var40) {
-         var22 = var40 / var35;
-         var23 = var40 % var35;
+      for(int var37 = 0; var37 < var31; ++var37) {
+         var22 = var37 / var32;
+         var23 = var37 % var32;
          int var24 = var15 + var22 * var14 + var22 * 5;
          int var25 = var16 + var23 * 9;
-         fill(var1, var24, var25, var24 + var14, var25 + 8, var39);
+         fill(var1, var24, var25, var24 + var14, var25 + 8, var36);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
-         if (var40 < var6.size()) {
-            PlayerInfo var26 = (PlayerInfo)var6.get(var40);
+         if (var37 < var6.size()) {
+            PlayerInfo var26 = (PlayerInfo)var6.get(var37);
             GameProfile var27 = var26.getProfile();
             if (var12) {
                Player var28 = this.minecraft.level.getPlayerByUUID(var27.getId());
                boolean var29 = var28 != null && LivingEntityRenderer.isEntityUpsideDown(var28);
+               boolean var30 = var28 != null && var28.isModelPartShown(PlayerModelPart.HAT);
                RenderSystem.setShaderTexture(0, var26.getSkinLocation());
-               int var30 = 8 + (var29 ? 8 : 0);
-               int var31 = 8 * (var29 ? -1 : 1);
-               GuiComponent.blit(var1, var24, var25, 8, 8, 8.0F, (float)var30, 8, var31, 64, 64);
-               if (var28 != null && var28.isModelPartShown(PlayerModelPart.HAT)) {
-                  int var32 = 8 + (var29 ? 8 : 0);
-                  int var33 = 8 * (var29 ? -1 : 1);
-                  GuiComponent.blit(var1, var24, var25, 8, 8, 40.0F, (float)var32, 8, var33, 64, 64);
-               }
-
+               PlayerFaceRenderer.draw(var1, var24, var25, 8, var30, var29);
                var24 += 9;
             }
 
             this.minecraft.font.drawShadow(var1, this.getNameForDisplay(var26), (float)var24, (float)var25, var26.getGameMode() == GameType.SPECTATOR ? -1862270977 : -1);
             if (var4 != null && var26.getGameMode() != GameType.SPECTATOR) {
-               int var43 = var24 + var7 + 1;
-               int var44 = var43 + var13;
-               if (var44 - var43 > 5) {
-                  this.renderTablistScore(var4, var25, var27.getName(), var43, var44, var26, var1);
+               int var40 = var24 + var7 + 1;
+               int var41 = var40 + var13;
+               if (var41 - var40 > 5) {
+                  this.renderTablistScore(var4, var25, var27.getName(), var40, var41, var26, var1);
                }
             }
 
@@ -208,19 +201,19 @@ public class PlayerTabOverlay extends GuiComponent {
          }
       }
 
-      if (var37 != null) {
-         var16 += var35 * 9 + 1;
-         var36 = var2 / 2 - var17 / 2 - 1;
+      if (var34 != null) {
+         var16 += var32 * 9 + 1;
+         var33 = var2 / 2 - var17 / 2 - 1;
          var10002 = var16 - 1;
          var10003 = var2 / 2 + var17 / 2 + 1;
-         var10005 = var37.size();
+         var10005 = var34.size();
          Objects.requireNonNull(this.minecraft.font);
-         fill(var1, var36, var10002, var10003, var16 + var10005 * 9, -2147483648);
+         fill(var1, var33, var10002, var10003, var16 + var10005 * 9, -2147483648);
 
-         for(Iterator var41 = var37.iterator(); var41.hasNext(); var16 += 9) {
-            FormattedCharSequence var42 = (FormattedCharSequence)var41.next();
-            var23 = this.minecraft.font.width(var42);
-            this.minecraft.font.drawShadow(var1, (FormattedCharSequence)var42, (float)(var2 / 2 - var23 / 2), (float)var16, -1);
+         for(Iterator var38 = var34.iterator(); var38.hasNext(); var16 += 9) {
+            FormattedCharSequence var39 = (FormattedCharSequence)var38.next();
+            var23 = this.minecraft.font.width(var39);
+            this.minecraft.font.drawShadow(var1, (FormattedCharSequence)var39, (float)(var2 / 2 - var23 / 2), (float)var16, -1);
             Objects.requireNonNull(this.minecraft.font);
          }
       }

@@ -31,6 +31,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -787,9 +788,11 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
             var6.set(var7, var4.getInventory().getItem(var7).copy());
          }
 
-         Component var9 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
-         Component var10 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
-         var0.gui.setOverlayMessage(Component.translatable("inventory.hotbarSaved", var10, var9), false);
+         Component var10 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
+         Component var11 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
+         MutableComponent var9 = Component.translatable("inventory.hotbarSaved", var11, var10);
+         var0.gui.setOverlayMessage(var9, false);
+         var0.getNarrator().sayNow((Component)var9);
          var5.save();
       }
 

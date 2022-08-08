@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public class ClientChatPreview {
    private static final long PREVIEW_VALID_AFTER_MS = 200L;
-   private boolean enabled;
    @Nullable
    private String lastQuery;
    @Nullable
@@ -31,7 +30,6 @@ public class ClientChatPreview {
    }
 
    public void update(String var1) {
-      this.enabled = true;
       var1 = normalizeQuery(var1);
       if (!var1.isEmpty()) {
          if (!var1.equals(this.lastQuery)) {
@@ -54,7 +52,6 @@ public class ClientChatPreview {
    }
 
    public void disable() {
-      this.enabled = false;
       this.clear();
    }
 
@@ -68,21 +65,28 @@ public class ClientChatPreview {
    public void handleResponse(int var1, @Nullable Component var2) {
       String var3 = this.requests.handleResponse(var1);
       if (var3 != null) {
-         Object var4 = var2 != null ? var2 : Component.literal(var3);
-         this.preview = new Preview(Util.getMillis(), var3, (Component)var4);
+         this.preview = new Preview(Util.getMillis(), var3, var2);
       }
 
    }
 
-   @Nullable
-   public Component peek() {
-      return (Component)Util.mapNullable(this.preview, Preview::response);
+   public boolean hasScheduledRequest() {
+      return this.scheduledRequest != null || this.preview != null && !this.preview.isPreviewValid();
+   }
+
+   public boolean queryEquals(String var1) {
+      return normalizeQuery(var1).equals(this.lastQuery);
    }
 
    @Nullable
-   public Component pull(String var1) {
+   public Preview peek() {
+      return this.preview;
+   }
+
+   @Nullable
+   public Preview pull(String var1) {
       if (this.preview != null && this.preview.canPull(var1)) {
-         Component var2 = this.preview.response();
+         Preview var2 = this.preview;
          this.preview = null;
          return var2;
       } else {
@@ -90,15 +94,11 @@ public class ClientChatPreview {
       }
    }
 
-   public boolean isEnabled() {
-      return this.enabled;
-   }
-
    static String normalizeQuery(String var0) {
       return StringUtils.normalizeSpace(var0.trim());
    }
 
-   static record Preview(long a, String b, @Nullable Component c) {
+   public static record Preview(long a, String b, @Nullable Component c) {
       private final long receivedTimeStamp;
       private final String query;
       @Nullable
@@ -112,13 +112,17 @@ public class ClientChatPreview {
          this.response = var4;
       }
 
-      public boolean canPull(String var1) {
-         if (this.query.equals(ClientChatPreview.normalizeQuery(var1))) {
-            long var2 = this.receivedTimeStamp + 200L;
-            return Util.getMillis() >= var2;
-         } else {
-            return false;
-         }
+      private boolean queryEquals(String var1) {
+         return this.query.equals(ClientChatPreview.normalizeQuery(var1));
+      }
+
+      boolean canPull(String var1) {
+         return this.queryEquals(var1) ? this.isPreviewValid() : false;
+      }
+
+      boolean isPreviewValid() {
+         long var1 = this.receivedTimeStamp + 200L;
+         return Util.getMillis() >= var1;
       }
 
       public long receivedTimeStamp() {

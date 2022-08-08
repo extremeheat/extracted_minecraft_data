@@ -1,64 +1,46 @@
 package net.minecraft.server.network;
 
-import java.util.function.Function;
+import java.util.Objects;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.FilterMask;
 
-public record FilteredText<T>(T b, @Nullable T c) {
-   private final T raw;
-   @Nullable
-   private final T filtered;
-   public static final FilteredText<String> EMPTY_STRING = passThrough("");
+public record FilteredText(String b, FilterMask c) {
+   private final String raw;
+   private final FilterMask mask;
+   public static final FilteredText EMPTY = passThrough("");
 
-   public FilteredText(T var1, @Nullable T var2) {
+   public FilteredText(String var1, FilterMask var2) {
       super();
       this.raw = var1;
-      this.filtered = var2;
+      this.mask = var2;
    }
 
-   public static <T> FilteredText<T> passThrough(T var0) {
-      return new FilteredText(var0, var0);
+   public static FilteredText passThrough(String var0) {
+      return new FilteredText(var0, FilterMask.PASS_THROUGH);
    }
 
-   public static <T> FilteredText<T> fullyFiltered(T var0) {
-      return new FilteredText(var0, (Object)null);
+   public static FilteredText fullyFiltered(String var0) {
+      return new FilteredText(var0, FilterMask.FULLY_FILTERED);
    }
 
-   public <U> FilteredText<U> map(Function<T, U> var1) {
-      return new FilteredText(var1.apply(this.raw), Util.mapNullable(this.filtered, var1));
+   @Nullable
+   public String filtered() {
+      return this.mask.apply(this.raw);
+   }
+
+   public String filteredOrEmpty() {
+      return (String)Objects.requireNonNullElse(this.filtered(), "");
    }
 
    public boolean isFiltered() {
-      return !this.raw.equals(this.filtered);
+      return !this.mask.isEmpty();
    }
 
-   public boolean isFullyFiltered() {
-      return this.filtered == null;
-   }
-
-   public T filteredOrElse(T var1) {
-      return this.filtered != null ? this.filtered : var1;
-   }
-
-   @Nullable
-   public T filter(ServerPlayer var1, ServerPlayer var2) {
-      return var1.shouldFilterMessageTo(var2) ? this.filtered : this.raw;
-   }
-
-   @Nullable
-   public T filter(CommandSourceStack var1, ServerPlayer var2) {
-      ServerPlayer var3 = var1.getPlayer();
-      return var3 != null ? this.filter(var3, var2) : this.raw;
-   }
-
-   public T raw() {
+   public String raw() {
       return this.raw;
    }
 
-   @Nullable
-   public T filtered() {
-      return this.filtered;
+   public FilterMask mask() {
+      return this.mask;
    }
 }

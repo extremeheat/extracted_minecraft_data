@@ -1,61 +1,73 @@
 package net.minecraft.network.protocol.game;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.network.chat.MessageSigner;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.StringUtil;
+import net.minecraft.server.level.ServerPlayer;
 
-public class ServerboundChatPacket implements Packet<ServerGamePacketListener> {
-   public static final Duration MESSAGE_EXPIRES_AFTER = Duration.ofMinutes(5L);
+public record ServerboundChatPacket(String a, Instant b, long c, MessageSignature d, boolean e, LastSeenMessages.Update f) implements Packet<ServerGamePacketListener> {
    private final String message;
    private final Instant timeStamp;
-   private final Crypt.SaltSignaturePair saltSignature;
+   private final long salt;
+   private final MessageSignature signature;
    private final boolean signedPreview;
-
-   public ServerboundChatPacket(String var1, MessageSignature var2, boolean var3) {
-      super();
-      this.message = StringUtil.trimChatMessage(var1);
-      this.timeStamp = var2.timeStamp();
-      this.saltSignature = var2.saltSignature();
-      this.signedPreview = var3;
-   }
+   private final LastSeenMessages.Update lastSeenMessages;
 
    public ServerboundChatPacket(FriendlyByteBuf var1) {
+      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new MessageSignature(var1), var1.readBoolean(), new LastSeenMessages.Update(var1));
+   }
+
+   public ServerboundChatPacket(String var1, Instant var2, long var3, MessageSignature var5, boolean var6, LastSeenMessages.Update var7) {
       super();
-      this.message = var1.readUtf(256);
-      this.timeStamp = var1.readInstant();
-      this.saltSignature = new Crypt.SaltSignaturePair(var1);
-      this.signedPreview = var1.readBoolean();
+      this.message = var1;
+      this.timeStamp = var2;
+      this.salt = var3;
+      this.signature = var5;
+      this.signedPreview = var6;
+      this.lastSeenMessages = var7;
    }
 
    public void write(FriendlyByteBuf var1) {
       var1.writeUtf(this.message, 256);
       var1.writeInstant(this.timeStamp);
-      Crypt.SaltSignaturePair.write(var1, this.saltSignature);
+      var1.writeLong(this.salt);
+      this.signature.write(var1);
       var1.writeBoolean(this.signedPreview);
+      this.lastSeenMessages.write(var1);
    }
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleChat(this);
    }
 
-   public String getMessage() {
+   public MessageSigner getSigner(ServerPlayer var1) {
+      return new MessageSigner(var1.getUUID(), this.timeStamp, this.salt);
+   }
+
+   public String message() {
       return this.message;
    }
 
-   public MessageSignature getSignature(UUID var1) {
-      return new MessageSignature(var1, this.timeStamp, this.saltSignature);
+   public Instant timeStamp() {
+      return this.timeStamp;
    }
 
-   public Instant getTimeStamp() {
-      return this.timeStamp;
+   public long salt() {
+      return this.salt;
+   }
+
+   public MessageSignature signature() {
+      return this.signature;
    }
 
    public boolean signedPreview() {
       return this.signedPreview;
+   }
+
+   public LastSeenMessages.Update lastSeenMessages() {
+      return this.lastSeenMessages;
    }
 }

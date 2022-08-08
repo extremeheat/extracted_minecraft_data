@@ -3,25 +3,30 @@ package net.minecraft.client.gui.screens.multiplayer;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.multiplayer.chat.ChatPreviewStatus;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class ChatPreviewWarningScreen extends WarningScreen {
    private static final Component TITLE;
-   private static final Component CONTENT;
    private static final Component CHECK;
-   private static final Component NARRATION;
    private final ServerData serverData;
    @Nullable
    private final Screen lastScreen;
 
+   private static Component content() {
+      ChatPreviewStatus var0 = (ChatPreviewStatus)Minecraft.getInstance().options.chatPreview().get();
+      return Component.translatable("chatPreview.warning.content", var0.getCaption());
+   }
+
    public ChatPreviewWarningScreen(@Nullable Screen var1, ServerData var2) {
-      super(TITLE, CONTENT, CHECK, NARRATION);
+      super(TITLE, content(), CHECK, CommonComponents.joinForNarration(TITLE, content()));
       this.serverData = var2;
       this.lastScreen = var1;
    }
@@ -64,8 +69,6 @@ public class ChatPreviewWarningScreen extends WarningScreen {
 
    static {
       TITLE = Component.translatable("chatPreview.warning.title").withStyle(ChatFormatting.BOLD);
-      CONTENT = Component.translatable("chatPreview.warning.content");
       CHECK = Component.translatable("chatPreview.warning.check");
-      NARRATION = TITLE.copy().append("\n").append(CONTENT);
    }
 }

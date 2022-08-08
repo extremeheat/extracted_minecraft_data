@@ -22,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -361,7 +362,7 @@ public class ModelBakery {
 
                      return var4;
                   } catch (Exception var8) {
-                     throw new BlockStateDefinitionException(String.format("Exception loading blockstate definition: '%s' in resourcepack: '%s': %s", var9, var2x.sourcePackId(), var8.getMessage()));
+                     throw new BlockStateDefinitionException(String.format(Locale.ROOT, "Exception loading blockstate definition: '%s' in resourcepack: '%s': %s", var9, var2x.sourcePackId(), var8.getMessage()));
                   }
                }).toList();
                Iterator var14 = var13.iterator();
@@ -411,7 +412,7 @@ public class ModelBakery {
             } catch (BlockStateDefinitionException var25) {
                throw var25;
             } catch (Exception var26) {
-               throw new BlockStateDefinitionException(String.format("Exception loading blockstate definition: '%s': %s", var9, var26));
+               throw new BlockStateDefinitionException(String.format(Locale.ROOT, "Exception loading blockstate definition: '%s': %s", var9, var26));
             } finally {
                if (var24) {
                   HashMap var20 = Maps.newHashMap();

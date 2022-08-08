@@ -2,7 +2,6 @@ package net.minecraft.client;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -35,26 +34,12 @@ public enum NarratorStatus {
       return BY_ID[Mth.positiveModulo(var0, BY_ID.length)];
    }
 
-   public boolean shouldNarrate(ChatType.Narration.Priority var1) {
-      boolean var10000;
-      switch (this) {
-         case OFF:
-            var10000 = false;
-            break;
-         case ALL:
-            var10000 = true;
-            break;
-         case CHAT:
-            var10000 = var1 == ChatType.Narration.Priority.CHAT;
-            break;
-         case SYSTEM:
-            var10000 = var1 == ChatType.Narration.Priority.SYSTEM;
-            break;
-         default:
-            throw new IncompatibleClassChangeError();
-      }
+   public boolean shouldNarrateChat() {
+      return this == ALL || this == CHAT;
+   }
 
-      return var10000;
+   public boolean shouldNarrateSystem() {
+      return this == ALL || this == SYSTEM;
    }
 
    // $FF: synthetic method

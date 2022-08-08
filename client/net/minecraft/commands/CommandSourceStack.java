@@ -20,14 +20,17 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.ChatSender;
+import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.OutgoingPlayerChatMessage;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -53,13 +56,14 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    private final EntityAnchorArgument.Anchor anchor;
    private final Vec2 rotation;
    private final CommandSigningContext signingContext;
+   private final TaskChainer chatMessageChainer;
 
    public CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9) {
       this(var1, var2, var3, var4, var5, var6, var7, var8, var9, false, (var0, var1x, var2x) -> {
-      }, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.NONE);
+      }, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.IMMEDIATE);
    }
 
-   protected CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9, boolean var10, @Nullable ResultConsumer<CommandSourceStack> var11, EntityAnchorArgument.Anchor var12, CommandSigningContext var13) {
+   protected CommandSourceStack(CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9, boolean var10, @Nullable ResultConsumer<CommandSourceStack> var11, EntityAnchorArgument.Anchor var12, CommandSigningContext var13, TaskChainer var14) {
       super();
       this.source = var1;
       this.worldPosition = var2;
@@ -74,26 +78,27 @@ public class CommandSourceStack implements SharedSuggestionProvider {
       this.anchor = var12;
       this.rotation = var3;
       this.signingContext = var13;
+      this.chatMessageChainer = var14;
    }
 
    public CommandSourceStack withSource(CommandSource var1) {
-      return this.source == var1 ? this : new CommandSourceStack(var1, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+      return this.source == var1 ? this : new CommandSourceStack(var1, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withEntity(Entity var1) {
-      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, var1.getName().getString(), var1.getDisplayName(), this.server, var1, this.silent, this.consumer, this.anchor, this.signingContext);
+      return this.entity == var1 ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, var1.getName().getString(), var1.getDisplayName(), this.server, var1, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withPosition(Vec3 var1) {
-      return this.worldPosition.equals(var1) ? this : new CommandSourceStack(this.source, var1, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+      return this.worldPosition.equals(var1) ? this : new CommandSourceStack(this.source, var1, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withRotation(Vec2 var1) {
-      return this.rotation.equals(var1) ? this : new CommandSourceStack(this.source, this.worldPosition, var1, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+      return this.rotation.equals(var1) ? this : new CommandSourceStack(this.source, this.worldPosition, var1, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(ResultConsumer<CommandSourceStack> var1) {
-      return Objects.equals(this.consumer, var1) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, var1, this.anchor, this.signingContext);
+      return Objects.equals(this.consumer, var1) ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, var1, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withCallback(ResultConsumer<CommandSourceStack> var1, BinaryOperator<ResultConsumer<CommandSourceStack>> var2) {
@@ -102,19 +107,19 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    public CommandSourceStack withSuppressedOutput() {
-      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, true, this.consumer, this.anchor, this.signingContext) : this;
+      return !this.silent && !this.source.alwaysAccepts() ? new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, true, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer) : this;
    }
 
    public CommandSourceStack withPermission(int var1) {
-      return var1 == this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+      return var1 == this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withMaximumPermission(int var1) {
-      return var1 <= this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+      return var1 <= this.permissionLevel ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, var1, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withAnchor(EntityAnchorArgument.Anchor var1) {
-      return var1 == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, var1, this.signingContext);
+      return var1 == this.anchor ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, var1, this.signingContext, this.chatMessageChainer);
    }
 
    public CommandSourceStack withLevel(ServerLevel var1) {
@@ -123,7 +128,7 @@ public class CommandSourceStack implements SharedSuggestionProvider {
       } else {
          double var2 = DimensionType.getTeleportationScale(this.level.dimensionType(), var1.dimensionType());
          Vec3 var4 = new Vec3(this.worldPosition.x * var2, this.worldPosition.y, this.worldPosition.z * var2);
-         return new CommandSourceStack(this.source, var4, this.rotation, var1, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext);
+         return new CommandSourceStack(this.source, var4, this.rotation, var1, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, this.chatMessageChainer);
       }
    }
 
@@ -143,7 +148,11 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    public CommandSourceStack withSigningContext(CommandSigningContext var1) {
-      return var1 == this.signingContext ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, var1);
+      return var1 == this.signingContext ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, var1, this.chatMessageChainer);
+   }
+
+   public CommandSourceStack withChatMessageChainer(TaskChainer var1) {
+      return var1 == this.chatMessageChainer ? this : new CommandSourceStack(this.source, this.worldPosition, this.rotation, this.level, this.permissionLevel, this.textName, this.displayName, this.server, this.entity, this.silent, this.consumer, this.anchor, this.signingContext, var1);
    }
 
    public Component getDisplayName() {
@@ -155,7 +164,7 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    public ChatSender asChatSender() {
-      return this.entity != null ? this.entity.asChatSender() : ChatSender.system(this.getDisplayName());
+      return this.entity != null ? this.entity.asChatSender() : ChatSender.SYSTEM;
    }
 
    public boolean hasPermission(int var1) {
@@ -223,6 +232,43 @@ public class CommandSourceStack implements SharedSuggestionProvider {
 
    public CommandSigningContext getSigningContext() {
       return this.signingContext;
+   }
+
+   public TaskChainer getChatMessageChainer() {
+      return this.chatMessageChainer;
+   }
+
+   public boolean shouldFilterMessageTo(ServerPlayer var1) {
+      ServerPlayer var2 = this.getPlayer();
+      if (var1 == var2) {
+         return false;
+      } else {
+         return var2 != null && var2.isTextFilteringEnabled() || var1.isTextFilteringEnabled();
+      }
+   }
+
+   public void sendChatMessage(OutgoingPlayerChatMessage var1, boolean var2, ChatType.Bound var3) {
+      if (!this.silent) {
+         ServerPlayer var4 = this.getPlayer();
+         if (var4 != null) {
+            var4.sendChatMessage(var1, var2, var3);
+         } else {
+            this.source.sendSystemMessage(var3.decorate(var1.serverContent()));
+         }
+
+      }
+   }
+
+   public void sendSystemMessage(Component var1) {
+      if (!this.silent) {
+         ServerPlayer var2 = this.getPlayer();
+         if (var2 != null) {
+            var2.sendSystemMessage(var1);
+         } else {
+            this.source.sendSystemMessage(var1);
+         }
+
+      }
    }
 
    public void sendSuccess(Component var1, boolean var2) {

@@ -114,7 +114,7 @@ public class WorldBorderCommand {
          throw ERROR_SAME_CENTER.create();
       } else if (!((double)Math.abs(var1.x) > 2.9999984E7) && !((double)Math.abs(var1.y) > 2.9999984E7)) {
          var2.setCenter((double)var1.x, (double)var1.y);
-         var0.sendSuccess(Component.translatable("commands.worldborder.center.success", String.format(Locale.ROOT, "%.2f", var1.x), String.format("%.2f", var1.y)), true);
+         var0.sendSuccess(Component.translatable("commands.worldborder.center.success", String.format(Locale.ROOT, "%.2f", var1.x), String.format(Locale.ROOT, "%.2f", var1.y)), true);
          return 0;
       } else {
          throw ERROR_TOO_FAR_OUT.create();

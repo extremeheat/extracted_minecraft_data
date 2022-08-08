@@ -135,7 +135,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.previewsChat = this.get("previews-chat", false);
       this.playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
       this.whiteList = this.getMutable("white-list", false);
-      this.enforceSecureProfile = this.get("enforce-secure-profile", false);
+      this.enforceSecureProfile = this.get("enforce-secure-profile", true);
       this.worldGenProperties = new WorldGenProperties(this.get("level-seed", ""), (JsonObject)this.get("generator-settings", (var0) -> {
          return GsonHelper.parse(!var0.isEmpty() ? var0 : "{}");
       }, new JsonObject()), this.get("generate-structures", true), (String)this.get("level-type", (var0) -> {

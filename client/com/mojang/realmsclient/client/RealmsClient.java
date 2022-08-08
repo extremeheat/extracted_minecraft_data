@@ -27,6 +27,7 @@ import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.util.WorldGenerationInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Locale;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -83,6 +84,10 @@ public class RealmsClient {
 
    public static RealmsClient create() {
       Minecraft var0 = Minecraft.getInstance();
+      return create(var0);
+   }
+
+   public static RealmsClient create(Minecraft var0) {
       String var1 = var0.getUser().getName();
       String var2 = var0.getUser().getSessionId();
       if (!initialized) {
@@ -233,7 +238,7 @@ public class RealmsClient {
    }
 
    public WorldTemplatePaginatedList fetchWorldTemplates(int var1, int var2, RealmsServer.WorldType var3) throws RealmsServiceException {
-      String var4 = this.url("worlds" + "/templates/$WORLD_TYPE".replace("$WORLD_TYPE", var3.toString()), String.format("page=%d&pageSize=%d", var1, var2));
+      String var4 = this.url("worlds" + "/templates/$WORLD_TYPE".replace("$WORLD_TYPE", var3.toString()), String.format(Locale.ROOT, "page=%d&pageSize=%d", var1, var2));
       String var5 = this.execute(Request.get(var4));
       return WorldTemplatePaginatedList.parse(var5);
    }

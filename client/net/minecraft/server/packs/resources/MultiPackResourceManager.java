@@ -28,7 +28,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       HashMap var3 = new HashMap();
       List var4 = var2.stream().flatMap((var1x) -> {
          return var1x.getNamespaces(var1).stream();
-      }).toList();
+      }).distinct().toList();
       Iterator var5 = var2.iterator();
 
       label57:

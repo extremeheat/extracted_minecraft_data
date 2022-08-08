@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import java.nio.IntBuffer;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.Set;
@@ -74,10 +75,7 @@ public class Library {
       } else if (!var3.OpenALC11) {
          throw new IllegalStateException("OpenAL 1.1 not supported");
       } else {
-         if (var3.ALC_SOFT_HRTF && var2) {
-            this.enableHrtf();
-         }
-
+         this.setHrtf(var3.ALC_SOFT_HRTF && var2);
          this.context = ALC10.alcCreateContext(this.currentDevice, (IntBuffer)null);
          ALC10.alcMakeContextCurrent(this.context);
          int var4 = this.getChannelCount();
@@ -101,30 +99,30 @@ public class Library {
       }
    }
 
-   private void enableHrtf() {
-      int var1 = ALC10.alcGetInteger(this.currentDevice, 6548);
-      if (var1 > 0) {
-         MemoryStack var2 = MemoryStack.stackPush();
+   private void setHrtf(boolean var1) {
+      int var2 = ALC10.alcGetInteger(this.currentDevice, 6548);
+      if (var2 > 0) {
+         MemoryStack var3 = MemoryStack.stackPush();
 
          try {
-            IntBuffer var3 = var2.callocInt(10).put(6546).put(1).put(6550).put(0).put(0).flip();
-            if (!SOFTHRTF.alcResetDeviceSOFT(this.currentDevice, var3)) {
+            IntBuffer var4 = var3.callocInt(10).put(6546).put(var1 ? 1 : 0).put(6550).put(0).put(0).flip();
+            if (!SOFTHRTF.alcResetDeviceSOFT(this.currentDevice, var4)) {
                LOGGER.warn("Failed to reset device: {}", ALC10.alcGetString(this.currentDevice, ALC10.alcGetError(this.currentDevice)));
             }
-         } catch (Throwable var6) {
-            if (var2 != null) {
+         } catch (Throwable var7) {
+            if (var3 != null) {
                try {
-                  var2.close();
-               } catch (Throwable var5) {
-                  var6.addSuppressed(var5);
+                  var3.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
                }
             }
 
-            throw var6;
+            throw var7;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (var3 != null) {
+            var3.close();
          }
       }
 
@@ -272,7 +270,7 @@ public class Library {
    }
 
    public String getDebugString() {
-      return String.format("Sounds: %d/%d + %d/%d", this.staticChannels.getUsedCount(), this.staticChannels.getMaxCount(), this.streamingChannels.getUsedCount(), this.streamingChannels.getMaxCount());
+      return String.format(Locale.ROOT, "Sounds: %d/%d + %d/%d", this.staticChannels.getUsedCount(), this.staticChannels.getMaxCount(), this.streamingChannels.getUsedCount(), this.streamingChannels.getMaxCount());
    }
 
    public List<String> getAvailableSoundDevices() {

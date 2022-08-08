@@ -87,16 +87,11 @@ public class RealmsTextureManager {
                   RealmsTextureManager.LOGGER.debug("Downloading http texture from {}", var3);
 
                   try {
-                     try {
-                        var4 = (HttpURLConnection)(new URL(var3)).openConnection(Minecraft.getInstance().getProxy());
-                        var4.setDoInput(true);
-                        var4.setDoOutput(false);
-                        var4.connect();
-                        if (var4.getResponseCode() / 100 != 2) {
-                           RealmsTextureManager.SKIN_FETCH_STATUS.remove(var0);
-                           return;
-                        }
-
+                     var4 = (HttpURLConnection)(new URL(var3)).openConnection(Minecraft.getInstance().getProxy());
+                     var4.setDoInput(true);
+                     var4.setDoOutput(false);
+                     var4.connect();
+                     if (var4.getResponseCode() / 100 == 2) {
                         BufferedImage var5;
                         try {
                            var5 = ImageIO.read(var4.getInputStream());
@@ -112,17 +107,21 @@ public class RealmsTextureManager {
                         ImageIO.write(var5, "png", var6);
                         RealmsTextureManager.FETCHED_SKINS.put(var0, (new Base64()).encodeToString(var6.toByteArray()));
                         RealmsTextureManager.SKIN_FETCH_STATUS.put(var0, true);
-                     } catch (Exception var19) {
-                        RealmsTextureManager.LOGGER.error("Couldn't download http texture", var19);
-                        RealmsTextureManager.SKIN_FETCH_STATUS.remove(var0);
+                        return;
                      }
 
+                     RealmsTextureManager.SKIN_FETCH_STATUS.remove(var0);
+                  } catch (Exception var19) {
+                     RealmsTextureManager.LOGGER.error("Couldn't download http texture", var19);
+                     RealmsTextureManager.SKIN_FETCH_STATUS.remove(var0);
+                     return;
                   } finally {
                      if (var4 != null) {
                         var4.disconnect();
                      }
 
                   }
+
                } else {
                   RealmsTextureManager.SKIN_FETCH_STATUS.put(var0, true);
                }

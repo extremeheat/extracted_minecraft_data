@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -26,10 +25,6 @@ import net.minecraft.client.AttackIndicatorStatus;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.chat.ChatListener;
-import net.minecraft.client.gui.chat.NarratorChatListener;
-import net.minecraft.client.gui.chat.OverlayChatListener;
-import net.minecraft.client.gui.chat.StandardChatListener;
 import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
@@ -48,8 +43,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.ChatSender;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -58,7 +51,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.StringDecomposer;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffect;
@@ -81,7 +73,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
-import org.apache.commons.lang3.StringUtils;
 
 public class Gui extends GuiComponent {
    private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
@@ -134,7 +125,6 @@ public class Gui extends GuiComponent {
    private int screenHeight;
    private float autosaveIndicatorValue;
    private float lastAutosaveIndicatorValue;
-   private final List<ChatListener> chatListeners;
    private float scopeScale;
 
    public Gui(Minecraft var1, ItemRenderer var2) {
@@ -148,7 +138,6 @@ public class Gui extends GuiComponent {
       this.tabList = new PlayerTabOverlay(var1, this);
       this.bossOverlay = new BossHealthOverlay(var1);
       this.subtitleOverlay = new SubtitleOverlay(var1);
-      this.chatListeners = List.of(new StandardChatListener(var1), NarratorChatListener.INSTANCE, new OverlayChatListener(var1));
       this.resetTitleTimes();
    }
 
@@ -285,7 +274,7 @@ public class Gui extends GuiComponent {
                var9 = var14 << 24 & -16777216;
                var10 = var3.width((FormattedText)this.overlayMessageString);
                this.drawBackdrop(var1, var3, -4, var10, 16777215 | var9);
-               var3.draw(var1, this.overlayMessageString, (float)(-var10 / 2), -4.0F, var8 | var9);
+               var3.drawShadow(var1, this.overlayMessageString, (float)(-var10 / 2), -4.0F, var8 | var9);
                RenderSystem.disableBlend();
                var1.popPose();
             }
@@ -1215,7 +1204,9 @@ public class Gui extends GuiComponent {
    }
 
    public void setNowPlaying(Component var1) {
-      this.setOverlayMessage(Component.translatable("record.nowPlaying", var1), true);
+      MutableComponent var2 = Component.translatable("record.nowPlaying", var1);
+      this.setOverlayMessage(var2, true);
+      this.minecraft.getNarrator().sayNow((Component)var2);
    }
 
    public void setOverlayMessage(Component var1, boolean var2) {
@@ -1265,38 +1256,6 @@ public class Gui extends GuiComponent {
       this.title = null;
       this.subtitle = null;
       this.titleTime = 0;
-   }
-
-   public UUID guessChatUUID(Component var1) {
-      String var2 = StringDecomposer.getPlainText(var1);
-      String var3 = StringUtils.substringBetween(var2, "<", ">");
-      return var3 == null ? Util.NIL_UUID : this.minecraft.getPlayerSocialManager().getDiscoveredUUID(var3);
-   }
-
-   public void handlePlayerChat(ChatType var1, Component var2, ChatSender var3) {
-      if (!this.minecraft.isBlocked(var3.uuid())) {
-         if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var2))) {
-            Iterator var4 = this.chatListeners.iterator();
-
-            while(var4.hasNext()) {
-               ChatListener var5 = (ChatListener)var4.next();
-               var5.handle(var1, var2, var3);
-            }
-
-         }
-      }
-   }
-
-   public void handleSystemChat(ChatType var1, Component var2) {
-      if (!(Boolean)this.minecraft.options.hideMatchedNames().get() || !this.minecraft.isBlocked(this.guessChatUUID(var2))) {
-         Iterator var3 = this.chatListeners.iterator();
-
-         while(var3.hasNext()) {
-            ChatListener var4 = (ChatListener)var3.next();
-            var4.handle(var1, var2, (ChatSender)null);
-         }
-
-      }
    }
 
    public ChatComponent getChat() {

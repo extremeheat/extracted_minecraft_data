@@ -25,13 +25,14 @@ import net.minecraft.util.RandomSource;
 
 public class FontSet implements AutoCloseable {
    private static final RandomSource RANDOM = RandomSource.create();
+   private static final float LARGE_FORWARD_ADVANCE = 32.0F;
    private final TextureManager textureManager;
    private final ResourceLocation name;
    private BakedGlyph missingGlyph;
    private BakedGlyph whiteGlyph;
    private final List<GlyphProvider> providers = Lists.newArrayList();
    private final Int2ObjectMap<BakedGlyph> glyphs = new Int2ObjectOpenHashMap();
-   private final Int2ObjectMap<GlyphInfo> glyphInfos = new Int2ObjectOpenHashMap();
+   private final Int2ObjectMap<GlyphInfoFilter> glyphInfos = new Int2ObjectOpenHashMap();
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
 
@@ -111,24 +112,43 @@ public class FontSet implements AutoCloseable {
       this.textures.clear();
    }
 
-   private GlyphInfo computeGlyphInfo(int var1) {
-      Iterator var2 = this.providers.iterator();
-
-      GlyphInfo var4;
-      do {
-         if (!var2.hasNext()) {
-            return SpecialGlyphs.MISSING;
-         }
-
-         GlyphProvider var3 = (GlyphProvider)var2.next();
-         var4 = var3.getGlyph(var1);
-      } while(var4 == null);
-
-      return var4;
+   private static boolean hasFishyAdvance(GlyphInfo var0) {
+      float var1 = var0.getAdvance(false);
+      if (!(var1 < 0.0F) && !(var1 > 32.0F)) {
+         float var2 = var0.getAdvance(true);
+         return var2 < 0.0F || var2 > 32.0F;
+      } else {
+         return true;
+      }
    }
 
-   public GlyphInfo getGlyphInfo(int var1) {
-      return (GlyphInfo)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo);
+   private GlyphInfoFilter computeGlyphInfo(int var1) {
+      GlyphInfo var2 = null;
+      Iterator var3 = this.providers.iterator();
+
+      while(var3.hasNext()) {
+         GlyphProvider var4 = (GlyphProvider)var3.next();
+         GlyphInfo var5 = var4.getGlyph(var1);
+         if (var5 != null) {
+            if (var2 == null) {
+               var2 = var5;
+            }
+
+            if (!hasFishyAdvance(var5)) {
+               return new GlyphInfoFilter(var2, var5);
+            }
+         }
+      }
+
+      if (var2 != null) {
+         return new GlyphInfoFilter(var2, SpecialGlyphs.MISSING);
+      } else {
+         return FontSet.GlyphInfoFilter.MISSING;
+      }
+   }
+
+   public GlyphInfo getGlyphInfo(int var1, boolean var2) {
+      return ((GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo)).select(var2);
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
@@ -180,5 +200,33 @@ public class FontSet implements AutoCloseable {
 
    public BakedGlyph whiteGlyph() {
       return this.whiteGlyph;
+   }
+
+   private static record GlyphInfoFilter(GlyphInfo a, GlyphInfo b) {
+      private final GlyphInfo glyphInfo;
+      private final GlyphInfo glyphInfoNotFishy;
+      static final GlyphInfoFilter MISSING;
+
+      GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
+         super();
+         this.glyphInfo = var1;
+         this.glyphInfoNotFishy = var2;
+      }
+
+      GlyphInfo select(boolean var1) {
+         return var1 ? this.glyphInfoNotFishy : this.glyphInfo;
+      }
+
+      public GlyphInfo glyphInfo() {
+         return this.glyphInfo;
+      }
+
+      public GlyphInfo glyphInfoNotFishy() {
+         return this.glyphInfoNotFishy;
+      }
+
+      static {
+         MISSING = new GlyphInfoFilter(SpecialGlyphs.MISSING, SpecialGlyphs.MISSING);
+      }
    }
 }

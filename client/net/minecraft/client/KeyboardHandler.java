@@ -12,7 +12,6 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -165,11 +164,11 @@ public class KeyboardHandler {
                if (!this.minecraft.player.hasPermissions(2)) {
                   this.debugFeedbackTranslated("debug.creative_spectator.error");
                } else if (!this.minecraft.player.isSpectator()) {
-                  this.minecraft.player.command("gamemode spectator");
+                  this.minecraft.player.commandUnsigned("gamemode spectator");
                } else {
                   LocalPlayer var10000 = this.minecraft.player;
                   GameType var10001 = this.minecraft.gameMode.getPreviousPlayerMode();
-                  var10000.command("gamemode " + ((GameType)MoreObjects.firstNonNull(var10001, GameType.CREATIVE)).getName());
+                  var10000.commandUnsigned("gamemode " + ((GameType)MoreObjects.firstNonNull(var10001, GameType.CREATIVE)).getName());
                }
 
                return true;
@@ -321,7 +320,7 @@ public class KeyboardHandler {
          }
 
          boolean var9;
-         if (NarratorChatListener.INSTANCE.isActive()) {
+         if (this.minecraft.getNarrator().isActive()) {
             boolean var8 = var7 == null || !(var7.getFocused() instanceof EditBox) || !((EditBox)var7.getFocused()).canConsumeInput();
             if (var5 != 0 && var3 == 66 && Screen.hasControlDown() && var8) {
                var9 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;

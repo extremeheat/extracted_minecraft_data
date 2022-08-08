@@ -102,23 +102,16 @@ public class PlayerPredicate implements EntitySubPredicate {
          }
 
          if (!this.advancements.isEmpty()) {
-            label88: {
-               PlayerAdvancements var14 = var4.getAdvancements();
-               ServerAdvancementManager var17 = var4.getServer().getAdvancements();
-               Iterator var9 = this.advancements.entrySet().iterator();
+            PlayerAdvancements var14 = var4.getAdvancements();
+            ServerAdvancementManager var17 = var4.getServer().getAdvancements();
+            Iterator var9 = this.advancements.entrySet().iterator();
 
-               Map.Entry var10;
-               Advancement var11;
-               do {
-                  if (!var9.hasNext()) {
-                     break label88;
-                  }
-
-                  var10 = (Map.Entry)var9.next();
-                  var11 = var17.getAdvancement((ResourceLocation)var10.getKey());
-               } while(var11 != null && ((AdvancementPredicate)var10.getValue()).test(var14.getOrStartProgress(var11)));
-
-               return false;
+            while(var9.hasNext()) {
+               Map.Entry var10 = (Map.Entry)var9.next();
+               Advancement var11 = var17.getAdvancement((ResourceLocation)var10.getKey());
+               if (var11 == null || !((AdvancementPredicate)var10.getValue()).test(var14.getOrStartProgress(var11))) {
+                  return false;
+               }
             }
          }
 

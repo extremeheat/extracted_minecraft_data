@@ -1,6 +1,7 @@
 package net.minecraft.data.models;
 
 import com.google.gson.JsonElement;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import net.minecraft.data.models.model.ModelLocationUtils;
@@ -34,7 +35,7 @@ public class ItemModelGenerators {
    private void generateCompassItem(Item var1) {
       for(int var2 = 0; var2 < 32; ++var2) {
          if (var2 != 16) {
-            this.generateFlatItem(var1, String.format("_%02d", var2), ModelTemplates.FLAT_ITEM);
+            this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
          }
       }
 
@@ -42,7 +43,7 @@ public class ItemModelGenerators {
 
    private void generateClockItem(Item var1) {
       for(int var2 = 1; var2 < 64; ++var2) {
-         this.generateFlatItem(var1, String.format("_%02d", var2), ModelTemplates.FLAT_ITEM);
+         this.generateFlatItem(var1, String.format(Locale.ROOT, "_%02d", var2), ModelTemplates.FLAT_ITEM);
       }
 
    }

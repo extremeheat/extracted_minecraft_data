@@ -6,6 +6,7 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
 import com.mojang.authlib.exceptions.InsufficientPrivilegesException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
+import com.mojang.authlib.exceptions.UserBannedException;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
@@ -20,6 +21,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ClientLoginPacketListener;
@@ -94,9 +96,9 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          }
 
          this.updateStatus.accept(Component.translatable("connect.encrypting"));
-         this.connection.send(var5, (var3x) -> {
+         this.connection.send(var5, PacketSendListener.thenRun(() -> {
             this.connection.setEncryptionKey(var2, var3);
-         });
+         }));
       });
    }
 
@@ -111,8 +113,10 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.invalidSession"));
       } catch (InsufficientPrivilegesException var5) {
          return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.insufficientPrivileges"));
-      } catch (AuthenticationException var6) {
-         return Component.translatable("disconnect.loginFailedInfo", var6.getMessage());
+      } catch (UserBannedException var6) {
+         return Component.translatable("disconnect.loginFailedInfo", Component.translatable("disconnect.loginFailedInfo.userBanned"));
+      } catch (AuthenticationException var7) {
+         return Component.translatable("disconnect.loginFailedInfo", var7.getMessage());
       }
    }
 

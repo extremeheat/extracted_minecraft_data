@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -61,8 +62,8 @@ public class FeatureCountTracker {
          LOGGER.debug(var5 + " total_chunks: " + var6);
          var1.featureData().forEach((var3x, var4x) -> {
             Logger var10000 = LOGGER;
-            String var10002 = String.format("%10d ", var4x);
-            String var10003 = String.format("%10f ", (double)var4x / (double)var6);
+            String var10002 = String.format(Locale.ROOT, "%10d ", var4x);
+            String var10003 = String.format(Locale.ROOT, "%10f ", (double)var4x / (double)var6);
             Optional var10004 = var3x.topFeature();
             Objects.requireNonNull(var4);
             var10000.debug(var5 + " " + var10002 + var10003 + var10004.flatMap(var4::getResourceKey).map(ResourceKey::location) + " " + var3x.feature().feature() + " " + var3x.feature());

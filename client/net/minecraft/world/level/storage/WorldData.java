@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage;
 
 import com.mojang.serialization.Lifecycle;
+import java.util.Locale;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
@@ -36,7 +37,7 @@ public interface WorldData {
       });
       var1.setDetail("Level storage version", () -> {
          int var1 = this.getVersion();
-         return String.format("0x%05X - %s", var1, this.getStorageVersionName(var1));
+         return String.format(Locale.ROOT, "0x%05X - %s", var1, this.getStorageVersionName(var1));
       });
    }
 

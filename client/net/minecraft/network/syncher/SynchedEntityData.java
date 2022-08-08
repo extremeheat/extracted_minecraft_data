@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -253,7 +254,7 @@ public class SynchedEntityData {
 
    private <T> void assignValue(DataItem<T> var1, DataItem<?> var2) {
       if (!Objects.equals(var2.accessor.getSerializer(), var1.accessor.getSerializer())) {
-         throw new IllegalStateException(String.format("Invalid entity data item type for field %d on entity %s: old=%s(%s), new=%s(%s)", var1.accessor.getId(), this.entity, var1.value, var1.value.getClass(), var2.value, var2.value.getClass()));
+         throw new IllegalStateException(String.format(Locale.ROOT, "Invalid entity data item type for field %d on entity %s: old=%s(%s), new=%s(%s)", var1.accessor.getId(), this.entity, var1.value, var1.value.getClass(), var2.value, var2.value.getClass()));
       } else {
          var1.setValue(var2.getValue());
       }

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -363,7 +364,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%02X", var20[var22] & 255));
+                  var0.append(String.format(Locale.ROOT, "0x%02X", var20[var22] & 255));
                }
             }
 
@@ -433,7 +434,7 @@ public final class NbtUtils {
 
             for(var9 = 0; var9 < var26; ++var9) {
                var10 = var7[var9];
-               var21 = Math.max(var21, String.format("%X", var10).length());
+               var21 = Math.max(var21, String.format(Locale.ROOT, "%X", var10).length());
             }
 
             var22 = var17.length;
@@ -457,7 +458,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%0" + var21 + "X", var17[var26]));
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var21 + "X", var17[var26]));
                }
             }
 
@@ -473,7 +474,7 @@ public final class NbtUtils {
 
             for(var10 = 0; var10 < var9; ++var10) {
                long var11 = var8[var10];
-               var6 = Math.max(var6, (long)String.format("%X", var11).length());
+               var6 = Math.max(var6, (long)String.format(Locale.ROOT, "%X", var11).length());
             }
 
             long var25 = (long)var5.length;
@@ -497,7 +498,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%0" + var6 + "X", var5[var10]));
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var6 + "X", var5[var10]));
                }
             }
 

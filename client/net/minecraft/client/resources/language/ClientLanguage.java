@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.locale.Language;
@@ -38,7 +39,7 @@ public class ClientLanguage extends Language {
          LanguageInfo var5 = (LanguageInfo)var4.next();
          var3 |= var5.isBidirectional();
          String var6 = var5.getCode();
-         String var7 = String.format("lang/%s.json", var6);
+         String var7 = String.format(Locale.ROOT, "lang/%s.json", var6);
          Iterator var8 = var0.getNamespaces().iterator();
 
          while(var8.hasNext()) {

@@ -8,6 +8,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TaggedChoice;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DynamicOps;
+import java.util.Locale;
 
 public abstract class EntityRenameFix extends DataFix {
    protected final String name;
@@ -27,7 +28,7 @@ public abstract class EntityRenameFix extends DataFix {
             Pair var7 = this.fix(var5, this.getEntity(var4.getSecond(), var3, var6));
             Type var8 = (Type)var2.types().get(var7.getFirst());
             if (!var8.equals(((Typed)var7.getSecond()).getType(), true, true)) {
-               throw new IllegalStateException(String.format("Dynamic type check failed: %s not equal to %s", var8, ((Typed)var7.getSecond()).getType()));
+               throw new IllegalStateException(String.format(Locale.ROOT, "Dynamic type check failed: %s not equal to %s", var8, ((Typed)var7.getSecond()).getType()));
             } else {
                return Pair.of((String)var7.getFirst(), ((Typed)var7.getSecond()).getValue());
             }

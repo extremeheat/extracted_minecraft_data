@@ -9,8 +9,8 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -45,7 +45,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private boolean isScrolling;
 
    public AdvancementsScreen(ClientAdvancements var1) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.advancements = var1;
    }
 

@@ -33,7 +33,7 @@ public class CrashReportCategory {
       StringBuilder var4 = new StringBuilder();
 
       try {
-         var4.append(String.format("World: (%d,%d,%d)", var1, var2, var3));
+         var4.append(String.format(Locale.ROOT, "World: (%d,%d,%d)", var1, var2, var3));
       } catch (Throwable var19) {
          var4.append("(Error finding world loc)");
       }
@@ -65,7 +65,7 @@ public class CrashReportCategory {
          var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
          var15 = var0.getMaxBuildHeight() - 1;
          var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
-         var4.append(String.format("Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
+         var4.append(String.format(Locale.ROOT, "Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
       } catch (Throwable var18) {
          var4.append("(Error finding chunk loc)");
       }
@@ -85,7 +85,7 @@ public class CrashReportCategory {
          var14 = (var5 + 1 << 9) - 1;
          var15 = var0.getMaxBuildHeight() - 1;
          var16 = (var6 + 1 << 9) - 1;
-         var4.append(String.format("Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16));
+         var4.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16));
       } catch (Throwable var17) {
          var4.append("(Error finding world loc)");
       }

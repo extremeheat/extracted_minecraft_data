@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -42,7 +42,7 @@ public class GameModeSwitcherScreen extends Screen {
    private final List<GameModeSlot> slots = Lists.newArrayList();
 
    public GameModeSwitcherScreen() {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
    }
 
    private GameType getDefaultSelected() {
@@ -113,7 +113,7 @@ public class GameModeSwitcherScreen extends Screen {
          Optional var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
          GameModeIcon var3 = (GameModeIcon)var1.get();
          if (var2.isPresent() && var0.player.hasPermissions(2) && var3 != var2.get()) {
-            var0.player.command(var3.getCommand());
+            var0.player.commandUnsigned(var3.getCommand());
          }
 
       }

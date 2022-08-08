@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -122,7 +123,7 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
    }
 
    private ResourceLocation getSheetLocation(int var1) {
-      ResourceLocation var2 = new ResourceLocation(String.format(this.texturePattern, String.format("%02x", var1 / 256)));
+      ResourceLocation var2 = new ResourceLocation(String.format(Locale.ROOT, this.texturePattern, String.format(Locale.ROOT, "%02x", var1 / 256)));
       return new ResourceLocation(var2.getNamespace(), "textures/" + var2.getPath());
    }
 
@@ -286,7 +287,7 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
          String var1 = GsonHelper.getAsString(var0, "template");
 
          try {
-            String.format(var1, "");
+            String.format(Locale.ROOT, var1, "");
             return var1;
          } catch (IllegalFormatException var3) {
             throw new JsonParseException("Invalid legacy unicode template supplied, expected single '%s': " + var1);

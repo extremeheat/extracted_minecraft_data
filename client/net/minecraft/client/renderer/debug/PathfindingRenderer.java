@@ -124,7 +124,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
          for(var11 = 0; var11 < var0.getNodeCount(); ++var11) {
             var12 = var0.getNode(var11);
             if (distanceToCamera(var12.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               DebugRenderer.renderFloatingText(String.format("%s", var12.type), (double)var12.x + 0.5, (double)var12.y + 0.75, (double)var12.z + 0.5, -1, 0.02F, true, 0.0F, true);
+               DebugRenderer.renderFloatingText(String.valueOf(var12.type), (double)var12.x + 0.5, (double)var12.y + 0.75, (double)var12.z + 0.5, -1, 0.02F, true, 0.0F, true);
                DebugRenderer.renderFloatingText(String.format(Locale.ROOT, "%.2f", var12.costMalus), (double)var12.x + 0.5, (double)var12.y + 0.25, (double)var12.z + 0.5, -1, 0.02F, true, 0.0F, true);
             }
          }

@@ -1,74 +1,89 @@
 package net.minecraft.network.chat;
 
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.security.SignatureException;
-import java.time.Instant;
-import java.util.UUID;
-import net.minecraft.Util;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.SignatureUpdater;
+import java.util.Arrays;
+import java.util.Base64;
+import javax.annotation.Nullable;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.SignatureValidator;
 
-public record MessageSignature(UUID a, Instant b, Crypt.SaltSignaturePair c) {
-   private final UUID sender;
-   private final Instant timeStamp;
-   private final Crypt.SaltSignaturePair saltSignature;
+public record MessageSignature(byte[] b) {
+   private final byte[] bytes;
+   public static final MessageSignature EMPTY;
 
-   public MessageSignature(UUID var1, Instant var2, Crypt.SaltSignaturePair var3) {
+   public MessageSignature(FriendlyByteBuf var1) {
+      this(var1.readByteArray());
+   }
+
+   public MessageSignature(byte[] var1) {
       super();
-      this.sender = var1;
-      this.timeStamp = var2;
-      this.saltSignature = var3;
+      this.bytes = var1;
    }
 
-   public static MessageSignature unsigned() {
-      return new MessageSignature(Util.NIL_UUID, Instant.now(), Crypt.SaltSignaturePair.EMPTY);
+   public void write(FriendlyByteBuf var1) {
+      var1.writeByteArray(this.bytes);
    }
 
-   public boolean verify(SignatureValidator var1, Component var2) {
-      return this.isValid() ? var1.validate((var2x) -> {
-         updateSignature(var2x, var2, this.sender, this.timeStamp, this.saltSignature.salt());
-      }, this.saltSignature.signature()) : false;
+   public boolean verify(SignatureValidator var1, SignedMessageHeader var2, SignedMessageBody var3) {
+      if (!this.isEmpty()) {
+         byte[] var4 = var3.hash().asBytes();
+         return var1.validate((var2x) -> {
+            var2.updateSignature(var2x, var4);
+         }, this.bytes);
+      } else {
+         return false;
+      }
    }
 
-   public boolean verify(SignatureValidator var1, String var2) throws SignatureException {
-      return this.verify(var1, (Component)Component.literal(var2));
+   public boolean verify(SignatureValidator var1, SignedMessageHeader var2, byte[] var3) {
+      return !this.isEmpty() ? var1.validate((var2x) -> {
+         var2.updateSignature(var2x, var3);
+      }, this.bytes) : false;
    }
 
-   public static void updateSignature(SignatureUpdater.Output var0, Component var1, UUID var2, Instant var3, long var4) throws SignatureException {
-      byte[] var6 = new byte[32];
-      ByteBuffer var7 = ByteBuffer.wrap(var6).order(ByteOrder.BIG_ENDIAN);
-      var7.putLong(var4);
-      var7.putLong(var2.getMostSignificantBits()).putLong(var2.getLeastSignificantBits());
-      var7.putLong(var3.getEpochSecond());
-      var0.update(var6);
-      var0.update(encodeContent(var1));
+   public boolean isEmpty() {
+      return this.bytes.length == 0;
    }
 
-   private static byte[] encodeContent(Component var0) {
-      String var1 = Component.Serializer.toStableJson(var0);
-      return var1.getBytes(StandardCharsets.UTF_8);
+   @Nullable
+   public ByteBuffer asByteBuffer() {
+      return !this.isEmpty() ? ByteBuffer.wrap(this.bytes) : null;
    }
 
-   public boolean isValid() {
-      return this.sender != Util.NIL_UUID && this.saltSignature.isValid();
+   public boolean equals(Object var1) {
+      boolean var10000;
+      if (this != var1) {
+         label26: {
+            if (var1 instanceof MessageSignature) {
+               MessageSignature var2 = (MessageSignature)var1;
+               if (Arrays.equals(this.bytes, var2.bytes)) {
+                  break label26;
+               }
+            }
+
+            var10000 = false;
+            return var10000;
+         }
+      }
+
+      var10000 = true;
+      return var10000;
    }
 
-   public boolean isValid(UUID var1) {
-      return this.isValid() && var1.equals(this.sender);
+   public int hashCode() {
+      return Arrays.hashCode(this.bytes);
    }
 
-   public UUID sender() {
-      return this.sender;
+   public String toString() {
+      return !this.isEmpty() ? Base64.getEncoder().encodeToString(this.bytes) : "empty";
    }
 
-   public Instant timeStamp() {
-      return this.timeStamp;
+   public byte[] bytes() {
+      return this.bytes;
    }
 
-   public Crypt.SaltSignaturePair saltSignature() {
-      return this.saltSignature;
+   static {
+      EMPTY = new MessageSignature(ByteArrays.EMPTY_ARRAY);
    }
 }

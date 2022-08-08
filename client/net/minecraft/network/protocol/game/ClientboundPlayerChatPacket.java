@@ -1,49 +1,29 @@
 package net.minecraft.network.protocol.game;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.util.Crypt;
 
-public record ClientboundPlayerChatPacket(Component a, Optional<Component> b, int c, ChatSender d, Instant e, Crypt.SaltSignaturePair f) implements Packet<ClientGamePacketListener> {
-   private final Component signedContent;
-   private final Optional<Component> unsignedContent;
-   private final int typeId;
-   private final ChatSender sender;
-   private final Instant timeStamp;
-   private final Crypt.SaltSignaturePair saltSignature;
-   private static final Duration MESSAGE_EXPIRES_AFTER;
+public record ClientboundPlayerChatPacket(PlayerChatMessage a, ChatType.BoundNetwork b) implements Packet<ClientGamePacketListener> {
+   private final PlayerChatMessage message;
+   private final ChatType.BoundNetwork chatType;
 
    public ClientboundPlayerChatPacket(FriendlyByteBuf var1) {
-      this(var1.readComponent(), var1.readOptional(FriendlyByteBuf::readComponent), var1.readVarInt(), new ChatSender(var1), var1.readInstant(), new Crypt.SaltSignaturePair(var1));
+      this(new PlayerChatMessage(var1), new ChatType.BoundNetwork(var1));
    }
 
-   public ClientboundPlayerChatPacket(Component var1, Optional<Component> var2, int var3, ChatSender var4, Instant var5, Crypt.SaltSignaturePair var6) {
+   public ClientboundPlayerChatPacket(PlayerChatMessage var1, ChatType.BoundNetwork var2) {
       super();
-      this.signedContent = var1;
-      this.unsignedContent = var2;
-      this.typeId = var3;
-      this.sender = var4;
-      this.timeStamp = var5;
-      this.saltSignature = var6;
+      this.message = var1;
+      this.chatType = var2;
    }
 
    public void write(FriendlyByteBuf var1) {
-      var1.writeComponent(this.signedContent);
-      var1.writeOptional(this.unsignedContent, FriendlyByteBuf::writeComponent);
-      var1.writeVarInt(this.typeId);
-      this.sender.write(var1);
-      var1.writeInstant(this.timeStamp);
-      Crypt.SaltSignaturePair.write(var1, this.saltSignature);
+      this.message.write(var1);
+      this.chatType.write(var1);
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -54,48 +34,15 @@ public record ClientboundPlayerChatPacket(Component a, Optional<Component> b, in
       return true;
    }
 
-   public PlayerChatMessage getMessage() {
-      MessageSignature var1 = new MessageSignature(this.sender.uuid(), this.timeStamp, this.saltSignature);
-      return new PlayerChatMessage(this.signedContent, var1, this.unsignedContent);
+   public Optional<ChatType.Bound> resolveChatType(RegistryAccess var1) {
+      return this.chatType.resolve(var1);
    }
 
-   private Instant getExpiresAt() {
-      return this.timeStamp.plus(MESSAGE_EXPIRES_AFTER);
+   public PlayerChatMessage message() {
+      return this.message;
    }
 
-   public boolean hasExpired(Instant var1) {
-      return var1.isAfter(this.getExpiresAt());
-   }
-
-   public ChatType resolveType(Registry<ChatType> var1) {
-      return (ChatType)Objects.requireNonNull((ChatType)var1.byId(this.typeId), "Invalid chat type");
-   }
-
-   public Component signedContent() {
-      return this.signedContent;
-   }
-
-   public Optional<Component> unsignedContent() {
-      return this.unsignedContent;
-   }
-
-   public int typeId() {
-      return this.typeId;
-   }
-
-   public ChatSender sender() {
-      return this.sender;
-   }
-
-   public Instant timeStamp() {
-      return this.timeStamp;
-   }
-
-   public Crypt.SaltSignaturePair saltSignature() {
-      return this.saltSignature;
-   }
-
-   static {
-      MESSAGE_EXPIRES_AFTER = ServerboundChatPacket.MESSAGE_EXPIRES_AFTER.plus(Duration.ofMinutes(2L));
+   public ChatType.BoundNetwork chatType() {
+      return this.chatType;
    }
 }

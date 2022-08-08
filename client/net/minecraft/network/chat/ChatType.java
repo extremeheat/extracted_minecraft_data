@@ -4,34 +4,35 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.Entity;
 
-public record ChatType(Optional<TextDisplay> j, Optional<TextDisplay> k, Optional<Narration> l) {
-   private final Optional<TextDisplay> chat;
-   private final Optional<TextDisplay> overlay;
-   private final Optional<Narration> narration;
+public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
+   private final ChatTypeDecoration chat;
+   private final ChatTypeDecoration narration;
    public static final Codec<ChatType> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ChatType.TextDisplay.CODEC.optionalFieldOf("chat").forGetter(ChatType::chat), ChatType.TextDisplay.CODEC.optionalFieldOf("overlay").forGetter(ChatType::overlay), ChatType.Narration.CODEC.optionalFieldOf("narration").forGetter(ChatType::narration)).apply(var0, ChatType::new);
+      return var0.group(ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat), ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)).apply(var0, ChatType::new);
    });
+   public static final ChatTypeDecoration DEFAULT_CHAT_DECORATION = ChatTypeDecoration.withSender("chat.type.text");
    public static final ResourceKey<ChatType> CHAT = create("chat");
-   public static final ResourceKey<ChatType> SYSTEM = create("system");
-   public static final ResourceKey<ChatType> GAME_INFO = create("game_info");
    public static final ResourceKey<ChatType> SAY_COMMAND = create("say_command");
-   public static final ResourceKey<ChatType> MSG_COMMAND = create("msg_command");
-   public static final ResourceKey<ChatType> TEAM_MSG_COMMAND = create("team_msg_command");
+   public static final ResourceKey<ChatType> MSG_COMMAND_INCOMING = create("msg_command_incoming");
+   public static final ResourceKey<ChatType> MSG_COMMAND_OUTGOING = create("msg_command_outgoing");
+   public static final ResourceKey<ChatType> TEAM_MSG_COMMAND_INCOMING = create("team_msg_command_incoming");
+   public static final ResourceKey<ChatType> TEAM_MSG_COMMAND_OUTGOING = create("team_msg_command_outgoing");
    public static final ResourceKey<ChatType> EMOTE_COMMAND = create("emote_command");
-   public static final ResourceKey<ChatType> TELLRAW_COMMAND = create("tellraw_command");
 
-   public ChatType(Optional<TextDisplay> var1, Optional<TextDisplay> var2, Optional<Narration> var3) {
+   public ChatType(ChatTypeDecoration var1, ChatTypeDecoration var2) {
       super();
       this.chat = var1;
-      this.overlay = var2;
-      this.narration = var3;
+      this.narration = var2;
    }
 
    private static ResourceKey<ChatType> create(String var0) {
@@ -39,118 +40,130 @@ public record ChatType(Optional<TextDisplay> j, Optional<TextDisplay> k, Optiona
    }
 
    public static Holder<ChatType> bootstrap(Registry<ChatType> var0) {
-      BuiltinRegistries.register(var0, (ResourceKey)CHAT, new ChatType(Optional.of(ChatType.TextDisplay.decorated(ChatDecoration.withSender("chat.type.text"))), Optional.empty(), Optional.of(ChatType.Narration.decorated(ChatDecoration.withSender("chat.type.text.narrate"), ChatType.Narration.Priority.CHAT))));
-      BuiltinRegistries.register(var0, (ResourceKey)SYSTEM, new ChatType(Optional.of(ChatType.TextDisplay.undecorated()), Optional.empty(), Optional.of(ChatType.Narration.undecorated(ChatType.Narration.Priority.SYSTEM))));
-      BuiltinRegistries.register(var0, (ResourceKey)GAME_INFO, new ChatType(Optional.empty(), Optional.of(ChatType.TextDisplay.undecorated()), Optional.empty()));
-      BuiltinRegistries.register(var0, (ResourceKey)SAY_COMMAND, new ChatType(Optional.of(ChatType.TextDisplay.decorated(ChatDecoration.withSender("chat.type.announcement"))), Optional.empty(), Optional.of(ChatType.Narration.decorated(ChatDecoration.withSender("chat.type.text.narrate"), ChatType.Narration.Priority.CHAT))));
-      BuiltinRegistries.register(var0, (ResourceKey)MSG_COMMAND, new ChatType(Optional.of(ChatType.TextDisplay.decorated(ChatDecoration.directMessage("commands.message.display.incoming"))), Optional.empty(), Optional.of(ChatType.Narration.decorated(ChatDecoration.withSender("chat.type.text.narrate"), ChatType.Narration.Priority.CHAT))));
-      BuiltinRegistries.register(var0, (ResourceKey)TEAM_MSG_COMMAND, new ChatType(Optional.of(ChatType.TextDisplay.decorated(ChatDecoration.teamMessage("chat.type.team.text"))), Optional.empty(), Optional.of(ChatType.Narration.decorated(ChatDecoration.withSender("chat.type.text.narrate"), ChatType.Narration.Priority.CHAT))));
-      BuiltinRegistries.register(var0, (ResourceKey)EMOTE_COMMAND, new ChatType(Optional.of(ChatType.TextDisplay.decorated(ChatDecoration.withSender("chat.type.emote"))), Optional.empty(), Optional.of(ChatType.Narration.decorated(ChatDecoration.withSender("chat.type.emote"), ChatType.Narration.Priority.CHAT))));
-      return BuiltinRegistries.register(var0, (ResourceKey)TELLRAW_COMMAND, new ChatType(Optional.of(ChatType.TextDisplay.undecorated()), Optional.empty(), Optional.of(ChatType.Narration.undecorated(ChatType.Narration.Priority.CHAT))));
+      BuiltinRegistries.register(var0, (ResourceKey)CHAT, new ChatType(DEFAULT_CHAT_DECORATION, ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      BuiltinRegistries.register(var0, (ResourceKey)SAY_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.announcement"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      BuiltinRegistries.register(var0, (ResourceKey)MSG_COMMAND_INCOMING, new ChatType(ChatTypeDecoration.incomingDirectMessage("commands.message.display.incoming"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      BuiltinRegistries.register(var0, (ResourceKey)MSG_COMMAND_OUTGOING, new ChatType(ChatTypeDecoration.outgoingDirectMessage("commands.message.display.outgoing"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      BuiltinRegistries.register(var0, (ResourceKey)TEAM_MSG_COMMAND_INCOMING, new ChatType(ChatTypeDecoration.teamMessage("chat.type.team.text"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      BuiltinRegistries.register(var0, (ResourceKey)TEAM_MSG_COMMAND_OUTGOING, new ChatType(ChatTypeDecoration.teamMessage("chat.type.team.sent"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      return BuiltinRegistries.register(var0, (ResourceKey)EMOTE_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.emote"), ChatTypeDecoration.withSender("chat.type.emote")));
    }
 
-   public Optional<TextDisplay> chat() {
+   public static Bound bind(ResourceKey<ChatType> var0, Entity var1) {
+      return bind(var0, var1.level.registryAccess(), var1.getDisplayName());
+   }
+
+   public static Bound bind(ResourceKey<ChatType> var0, CommandSourceStack var1) {
+      return bind(var0, var1.registryAccess(), var1.getDisplayName());
+   }
+
+   public static Bound bind(ResourceKey<ChatType> var0, RegistryAccess var1, Component var2) {
+      Registry var3 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+      return ((ChatType)var3.getOrThrow(var0)).bind(var2);
+   }
+
+   public Bound bind(Component var1) {
+      return new Bound(this, var1);
+   }
+
+   public ChatTypeDecoration chat() {
       return this.chat;
    }
 
-   public Optional<TextDisplay> overlay() {
-      return this.overlay;
-   }
-
-   public Optional<Narration> narration() {
+   public ChatTypeDecoration narration() {
       return this.narration;
    }
 
-   public static record TextDisplay(Optional<ChatDecoration> b) {
-      private final Optional<ChatDecoration> decoration;
-      public static final Codec<TextDisplay> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ChatDecoration.CODEC.optionalFieldOf("decoration").forGetter(TextDisplay::decoration)).apply(var0, TextDisplay::new);
-      });
+   public static record Bound(ChatType a, Component b, @Nullable Component c) {
+      private final ChatType chatType;
+      private final Component name;
+      @Nullable
+      private final Component targetName;
 
-      public TextDisplay(Optional<ChatDecoration> var1) {
+      Bound(ChatType var1, Component var2) {
+         this(var1, var2, (Component)null);
+      }
+
+      public Bound(ChatType var1, Component var2, @Nullable Component var3) {
          super();
-         this.decoration = var1;
+         this.chatType = var1;
+         this.name = var2;
+         this.targetName = var3;
       }
 
-      public static TextDisplay undecorated() {
-         return new TextDisplay(Optional.empty());
+      public Component decorate(Component var1) {
+         return this.chatType.chat().decorate(var1, this);
       }
 
-      public static TextDisplay decorated(ChatDecoration var0) {
-         return new TextDisplay(Optional.of(var0));
+      public Component decorateNarration(Component var1) {
+         return this.chatType.narration().decorate(var1, this);
       }
 
-      public Component decorate(Component var1, @Nullable ChatSender var2) {
-         return (Component)this.decoration.map((var2x) -> {
-            return var2x.decorate(var1, var2);
-         }).orElse(var1);
+      public Bound withTargetName(Component var1) {
+         return new Bound(this.chatType, this.name, var1);
       }
 
-      public Optional<ChatDecoration> decoration() {
-         return this.decoration;
+      public BoundNetwork toNetwork(RegistryAccess var1) {
+         Registry var2 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+         return new BoundNetwork(var2.getId(this.chatType), this.name, this.targetName);
+      }
+
+      public ChatType chatType() {
+         return this.chatType;
+      }
+
+      public Component name() {
+         return this.name;
+      }
+
+      @Nullable
+      public Component targetName() {
+         return this.targetName;
       }
    }
 
-   public static record Narration(Optional<ChatDecoration> b, Priority c) {
-      private final Optional<ChatDecoration> decoration;
-      private final Priority priority;
-      public static final Codec<Narration> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ChatDecoration.CODEC.optionalFieldOf("decoration").forGetter(Narration::decoration), ChatType.Narration.Priority.CODEC.fieldOf("priority").forGetter(Narration::priority)).apply(var0, Narration::new);
-      });
+   public static record BoundNetwork(int a, Component b, @Nullable Component c) {
+      private final int chatType;
+      private final Component name;
+      @Nullable
+      private final Component targetName;
 
-      public Narration(Optional<ChatDecoration> var1, Priority var2) {
+      public BoundNetwork(FriendlyByteBuf var1) {
+         this(var1.readVarInt(), var1.readComponent(), (Component)var1.readNullable(FriendlyByteBuf::readComponent));
+      }
+
+      public BoundNetwork(int var1, Component var2, @Nullable Component var3) {
          super();
-         this.decoration = var1;
-         this.priority = var2;
+         this.chatType = var1;
+         this.name = var2;
+         this.targetName = var3;
       }
 
-      public static Narration undecorated(Priority var0) {
-         return new Narration(Optional.empty(), var0);
+      public void write(FriendlyByteBuf var1) {
+         var1.writeVarInt(this.chatType);
+         var1.writeComponent(this.name);
+         var1.writeNullable(this.targetName, FriendlyByteBuf::writeComponent);
       }
 
-      public static Narration decorated(ChatDecoration var0, Priority var1) {
-         return new Narration(Optional.of(var0), var1);
+      public Optional<Bound> resolve(RegistryAccess var1) {
+         Registry var2 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+         ChatType var3 = (ChatType)var2.byId(this.chatType);
+         return Optional.ofNullable(var3).map((var1x) -> {
+            return new Bound(var1x, this.name, this.targetName);
+         });
       }
 
-      public Component decorate(Component var1, @Nullable ChatSender var2) {
-         return (Component)this.decoration.map((var2x) -> {
-            return var2x.decorate(var1, var2);
-         }).orElse(var1);
+      public int chatType() {
+         return this.chatType;
       }
 
-      public Optional<ChatDecoration> decoration() {
-         return this.decoration;
+      public Component name() {
+         return this.name;
       }
 
-      public Priority priority() {
-         return this.priority;
-      }
-
-      public static enum Priority implements StringRepresentable {
-         CHAT("chat", false),
-         SYSTEM("system", true);
-
-         public static final Codec<Priority> CODEC = StringRepresentable.fromEnum(Priority::values);
-         private final String name;
-         private final boolean interrupts;
-
-         private Priority(String var3, boolean var4) {
-            this.name = var3;
-            this.interrupts = var4;
-         }
-
-         public boolean interrupts() {
-            return this.interrupts;
-         }
-
-         public String getSerializedName() {
-            return this.name;
-         }
-
-         // $FF: synthetic method
-         private static Priority[] $values() {
-            return new Priority[]{CHAT, SYSTEM};
-         }
+      @Nullable
+      public Component targetName() {
+         return this.targetName;
       }
    }
 }

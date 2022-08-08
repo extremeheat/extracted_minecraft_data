@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -219,8 +220,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (var8) {
          int var10 = var1.health < var1.maxHealth ? -23296 : -1;
          Position var10000 = var1.pos;
-         String var10002 = String.format("%.1f", var1.health);
-         renderTextOverMob(var10000, var9, "health: " + var10002 + " / " + String.format("%.1f", var1.maxHealth), var10, 0.02F);
+         String var10002 = String.format(Locale.ROOT, "%.1f", var1.health);
+         renderTextOverMob(var10000, var9, "health: " + var10002 + " / " + String.format(Locale.ROOT, "%.1f", var1.maxHealth), var10, 0.02F);
          ++var9;
       }
 

@@ -1,6 +1,7 @@
 package net.minecraft.util.thread;
 
 import com.google.common.collect.Queues;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -53,7 +54,7 @@ public interface StrictQueue<T, F> {
             this.size.incrementAndGet();
             return true;
          } else {
-            throw new IndexOutOfBoundsException("Priority %d not supported. Expected range [0-%d]".formatted(var2, this.queues.length - 1));
+            throw new IndexOutOfBoundsException(String.format(Locale.ROOT, "Priority %d not supported. Expected range [0-%d]", var2, this.queues.length - 1));
          }
       }
 

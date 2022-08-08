@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -174,7 +175,7 @@ public class EntityLoot implements Consumer<BiConsumer<ResourceLocation, LootTab
             if (var5 != BuiltInLootTables.EMPTY && var2.add(var5)) {
                LootTable.Builder var6 = (LootTable.Builder)this.map.remove(var5);
                if (var6 == null) {
-                  throw new IllegalStateException(String.format("Missing loottable '%s' for '%s'", var5, Registry.ENTITY_TYPE.getKey(var4)));
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5, Registry.ENTITY_TYPE.getKey(var4)));
                }
 
                var1.accept(var5, var6);
@@ -185,7 +186,7 @@ public class EntityLoot implements Consumer<BiConsumer<ResourceLocation, LootTab
          return;
       } while(var5 == BuiltInLootTables.EMPTY || this.map.remove(var5) == null);
 
-      throw new IllegalStateException(String.format("Weird loottable '%s' for '%s', not a LivingEntity so should not have loot", var5, Registry.ENTITY_TYPE.getKey(var4)));
+      throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottable '%s' for '%s', not a LivingEntity so should not have loot", var5, Registry.ENTITY_TYPE.getKey(var4)));
    }
 
    private LootItemCondition.Builder killedByFrog() {

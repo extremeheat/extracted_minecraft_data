@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.SignedMessageValidator;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.CryptException;
@@ -39,25 +40,27 @@ public class PlayerInfo {
    private long renderVisibilityId;
    @Nullable
    private final ProfilePublicKey profilePublicKey;
+   private final SignedMessageValidator messageValidator;
 
-   public PlayerInfo(ClientboundPlayerInfoPacket.PlayerUpdate var1, SignatureValidator var2) {
+   public PlayerInfo(ClientboundPlayerInfoPacket.PlayerUpdate var1, SignatureValidator var2, boolean var3) {
       super();
       this.profile = var1.getProfile();
       this.gameMode = var1.getGameMode();
       this.latency = var1.getLatency();
       this.tabListDisplayName = var1.getDisplayName();
-      ProfilePublicKey var3 = null;
+      ProfilePublicKey var4 = null;
 
       try {
-         ProfilePublicKey.Data var4 = var1.getProfilePublicKey();
-         if (var4 != null) {
-            var3 = ProfilePublicKey.createValidated(var2, var4);
+         ProfilePublicKey.Data var5 = var1.getProfilePublicKey();
+         if (var5 != null) {
+            var4 = ProfilePublicKey.createValidated(var2, this.profile.getId(), var5);
          }
-      } catch (InsecurePublicKeyException | CryptException var5) {
-         LOGGER.error("Failed to retrieve publicKey property for profile {}", this.profile.getId(), var5);
+      } catch (InsecurePublicKeyException | CryptException var6) {
+         LOGGER.error("Failed to retrieve publicKey property for profile {}", this.profile.getId(), var6);
       }
 
-      this.profilePublicKey = var3;
+      this.profilePublicKey = var4;
+      this.messageValidator = SignedMessageValidator.create(var4, var3);
    }
 
    public GameProfile getProfile() {
@@ -67,6 +70,10 @@ public class PlayerInfo {
    @Nullable
    public ProfilePublicKey getProfilePublicKey() {
       return this.profilePublicKey;
+   }
+
+   public SignedMessageValidator getMessageValidator() {
+      return this.messageValidator;
    }
 
    @Nullable

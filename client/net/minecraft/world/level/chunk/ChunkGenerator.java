@@ -253,11 +253,13 @@ public abstract class ChunkGenerator {
             if (var14 instanceof ConcentricRingsStructurePlacement) {
                ConcentricRingsStructurePlacement var15 = (ConcentricRingsStructurePlacement)var14;
                Pair var16 = this.getNearestGeneratedStructure((Set)var13.getValue(), var1, var24, var3, var5, var15);
-               BlockPos var17 = (BlockPos)var16.getFirst();
-               double var18 = var3.distSqr(var17);
-               if (var18 < var23) {
-                  var23 = var18;
-                  var22 = var16;
+               if (var16 != null) {
+                  BlockPos var17 = (BlockPos)var16.getFirst();
+                  double var18 = var3.distSqr(var17);
+                  if (var18 < var23) {
+                     var23 = var18;
+                     var22 = var16;
+                  }
                }
             } else if (var14 instanceof RandomSpreadStructurePlacement) {
                var11.add(var13);

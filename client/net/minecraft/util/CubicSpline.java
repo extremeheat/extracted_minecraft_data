@@ -120,7 +120,7 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
       }
 
       public String parityString() {
-         return String.format("k=%.3f", this.value);
+         return String.format(Locale.ROOT, "k=%.3f", this.value);
       }
 
       public float minValue() {

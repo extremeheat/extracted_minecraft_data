@@ -16,6 +16,7 @@ import com.mojang.math.Vector3f;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -32,6 +33,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.TimeSource;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
 import org.slf4j.Logger;
@@ -525,16 +527,18 @@ public class RenderSystem {
 
    public static String getBackendDescription() {
       assertInInitPhase();
-      return String.format("LWJGL version %s", GLX._getLWJGLVersion());
+      return String.format(Locale.ROOT, "LWJGL version %s", GLX._getLWJGLVersion());
    }
 
    public static String getApiDescription() {
       return apiDescription;
    }
 
-   public static LongSupplier initBackendSystem() {
+   public static TimeSource.NanoTimeSource initBackendSystem() {
       assertInInitPhase();
-      return GLX._initGlfw();
+      LongSupplier var10000 = GLX._initGlfw();
+      Objects.requireNonNull(var10000);
+      return var10000::getAsLong;
    }
 
    public static void initRenderer(int var0, boolean var1) {

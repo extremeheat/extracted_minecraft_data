@@ -77,8 +77,7 @@ public class ItemEntity extends Entity {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   @Nullable
-   public Entity getResponsibleEntity() {
+   public Entity getThrowingEntity() {
       UUID var10000 = this.getThrower();
       Level var10001 = this.level;
       Objects.requireNonNull(var10001);

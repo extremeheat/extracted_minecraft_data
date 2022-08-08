@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -135,7 +136,7 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
          CrashReport var14 = CrashReport.forThrowable(var16, "Stitching");
          CrashReportCategory var15 = var14.addCategory("Stitcher");
          var15.setDetail("Sprites", var16.getAllSprites().stream().map((var0) -> {
-            return String.format("%s[%dx%d]", var0.name(), var0.width(), var0.height());
+            return String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height());
          }).collect(Collectors.joining(",")));
          var15.setDetail("Max Texture Size", (Object)var6);
          throw new ReportedException(var14);
@@ -270,7 +271,7 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
    }
 
    private ResourceLocation getResourceLocation(ResourceLocation var1) {
-      return new ResourceLocation(var1.getNamespace(), String.format("textures/%s%s", var1.getPath(), ".png"));
+      return new ResourceLocation(var1.getNamespace(), String.format(Locale.ROOT, "textures/%s%s", var1.getPath(), ".png"));
    }
 
    public void cycleAnimationFrames() {

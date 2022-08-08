@@ -1,35 +1,49 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Objects;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 public class AlertScreen extends Screen {
-   private final Runnable callback;
-   protected final Component text;
+   private static final int LABEL_Y = 90;
+   private final Component messageText;
    private MultiLineLabel message;
-   protected final Component okButton;
+   private final Runnable callback;
+   private final Component okButton;
+   private final boolean shouldCloseOnEsc;
 
    public AlertScreen(Runnable var1, Component var2, Component var3) {
-      this(var1, var2, var3, CommonComponents.GUI_BACK);
+      this(var1, var2, var3, CommonComponents.GUI_BACK, true);
    }
 
-   public AlertScreen(Runnable var1, Component var2, Component var3, Component var4) {
+   public AlertScreen(Runnable var1, Component var2, Component var3, Component var4, boolean var5) {
       super(var2);
       this.message = MultiLineLabel.EMPTY;
       this.callback = var1;
-      this.text = var3;
+      this.messageText = var3;
       this.okButton = var4;
+      this.shouldCloseOnEsc = var5;
+   }
+
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), this.messageText);
    }
 
    protected void init() {
       super.init();
-      this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, this.okButton, (var1) -> {
+      this.message = MultiLineLabel.create(this.font, this.messageText, this.width - 50);
+      int var10000 = this.message.getLineCount();
+      Objects.requireNonNull(this.font);
+      int var1 = var10000 * 9;
+      int var2 = Mth.clamp(90 + var1 + 12, this.height / 6 + 96, this.height - 24);
+      boolean var3 = true;
+      this.addRenderableWidget(new Button((this.width - 150) / 2, var2, 150, 20, this.okButton, (var1x) -> {
          this.callback.run();
       }));
-      this.message = MultiLineLabel.create(this.font, this.text, this.width - 50);
    }
 
    public void render(PoseStack var1, int var2, int var3, float var4) {
@@ -37,5 +51,9 @@ public class AlertScreen extends Screen {
       drawCenteredString(var1, this.font, this.title, this.width / 2, 70, 16777215);
       this.message.renderCentered(var1, this.width / 2, 90);
       super.render(var1, var2, var3, var4);
+   }
+
+   public boolean shouldCloseOnEsc() {
+      return this.shouldCloseOnEsc;
    }
 }

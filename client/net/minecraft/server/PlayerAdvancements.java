@@ -41,7 +41,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
@@ -268,7 +267,7 @@ public class PlayerAdvancements {
          if (!var5 && var4.isDone()) {
             var1.getRewards().grant(this.player);
             if (var1.getDisplay() != null && var1.getDisplay().shouldAnnounceChat() && this.player.level.getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
-               this.playerList.broadcastSystemMessage(Component.translatable("chat.type.advancement." + var1.getDisplay().getFrame().getName(), this.player.getDisplayName(), var1.getChatComponent()), ChatType.SYSTEM);
+               this.playerList.broadcastSystemMessage(Component.translatable("chat.type.advancement." + var1.getDisplay().getFrame().getName(), this.player.getDisplayName(), var1.getChatComponent()), false);
             }
          }
       }

@@ -78,9 +78,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
          } else {
             SignBlockEntity var14 = (SignBlockEntity)var13;
             boolean var15 = var14.hasGlowingText();
-            if (var10 && var15 || var11 && !var15) {
-               return InteractionResult.PASS;
-            } else {
+            if ((!var10 || !var15) && (!var11 || var15)) {
                if (var12) {
                   boolean var16;
                   if (var10) {
@@ -107,6 +105,8 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                }
 
                return var14.executeClickCommands((ServerPlayer)var4) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+            } else {
+               return InteractionResult.PASS;
             }
          }
       }

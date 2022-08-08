@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class AnimationMetadataSection {
    public static final AnimationMetadataSectionSerializer SERIALIZER = new AnimationMetadataSectionSerializer();
@@ -41,7 +42,7 @@ public class AnimationMetadataSection {
       if (isDivisionInteger(var1, var4) && isDivisionInteger(var2, var5)) {
          return var3;
       } else {
-         throw new IllegalArgumentException(String.format("Image size %s,%s is not multiply of frame size %s,%s", var1, var2, var4, var5));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Image size %s,%s is not multiply of frame size %s,%s", var1, var2, var4, var5));
       }
    }
 

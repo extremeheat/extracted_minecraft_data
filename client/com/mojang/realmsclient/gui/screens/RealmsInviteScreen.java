@@ -5,7 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -26,7 +26,7 @@ public class RealmsInviteScreen extends RealmsScreen {
    private Component errorMsg;
 
    public RealmsInviteScreen(RealmsConfigureWorldScreen var1, Screen var2, RealmsServer var3) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.configureScreen = var1;
       this.lastScreen = var2;
       this.serverData = var3;
@@ -76,7 +76,7 @@ public class RealmsInviteScreen extends RealmsScreen {
 
    private void showError(Component var1) {
       this.errorMsg = var1;
-      NarratorChatListener.INSTANCE.sayNow(var1);
+      this.minecraft.getNarrator().sayNow(var1);
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {

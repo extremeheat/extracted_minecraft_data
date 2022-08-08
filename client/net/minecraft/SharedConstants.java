@@ -15,22 +15,22 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 3105;
+   public static final int WORLD_VERSION = 3117;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "1.19";
+   public static final String VERSION_STRING = "1.19.1";
    /** @deprecated */
    @Deprecated
-   public static final String RELEASE_TARGET = "1.19";
+   public static final String RELEASE_TARGET = "1.19.1";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 759;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 760;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 91;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 101;
    public static final int SNBT_NAG_VERSION = 3075;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean THROW_ON_TASK_FAILURE = false;
@@ -87,6 +87,7 @@ public class SharedConstants {
    public static final boolean DEBUG_ORE_VEINS = false;
    public static final boolean DEBUG_SCULK_CATALYST = false;
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = false;
+   public static final boolean DEBUG_SOCIAL_INTERACTIONS = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
    public static final boolean DEBUG_SMALL_SPAWN = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
@@ -123,6 +124,7 @@ public class SharedConstants {
    public static final int MAX_CHAT_LENGTH = 256;
    public static final int MAX_COMMAND_LENGTH = 32500;
    public static final int MAX_CHAINED_NEIGHBOR_UPDATES = 1000000;
+   public static final int MAX_RENDER_DISTANCE = 32;
    public static final char[] ILLEGAL_FILE_CHARACTERS;
    public static final int TICKS_PER_SECOND = 20;
    public static final int TICKS_PER_MINUTE = 1200;
@@ -142,18 +144,24 @@ public class SharedConstants {
    }
 
    public static String filterText(String var0) {
-      StringBuilder var1 = new StringBuilder();
-      char[] var2 = var0.toCharArray();
-      int var3 = var2.length;
+      return filterText(var0, false);
+   }
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         char var5 = var2[var4];
-         if (isAllowedChatCharacter(var5)) {
-            var1.append(var5);
+   public static String filterText(String var0, boolean var1) {
+      StringBuilder var2 = new StringBuilder();
+      char[] var3 = var0.toCharArray();
+      int var4 = var3.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         char var6 = var3[var5];
+         if (isAllowedChatCharacter(var6)) {
+            var2.append(var6);
+         } else if (var1 && var6 == '\n') {
+            var2.append(var6);
          }
       }
 
-      return var1.toString();
+      return var2.toString();
    }
 
    public static void setVersion(WorldVersion var0) {
@@ -181,7 +189,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 759;
+      return 760;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

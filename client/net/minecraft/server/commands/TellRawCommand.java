@@ -7,7 +7,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,7 +24,7 @@ public class TellRawCommand {
 
          for(Iterator var2 = EntityArgument.getPlayers(var0x, "targets").iterator(); var2.hasNext(); ++var1) {
             ServerPlayer var3 = (ServerPlayer)var2.next();
-            var3.sendSystemMessage(ComponentUtils.updateForEntity((CommandSourceStack)var0x.getSource(), (Component)ComponentArgument.getComponent(var0x, "message"), var3, 0), ChatType.TELLRAW_COMMAND);
+            var3.sendSystemMessage(ComponentUtils.updateForEntity((CommandSourceStack)var0x.getSource(), (Component)ComponentArgument.getComponent(var0x, "message"), var3, 0), false);
          }
 
          return var1;

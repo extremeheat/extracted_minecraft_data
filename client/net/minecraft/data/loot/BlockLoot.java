@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -1328,7 +1329,7 @@ public class BlockLoot implements Consumer<BiConsumer<ResourceLocation, LootTabl
          if (var10 != BuiltInLootTables.EMPTY && var7.add(var10)) {
             LootTable.Builder var11 = (LootTable.Builder)this.map.remove(var10);
             if (var11 == null) {
-               throw new IllegalStateException(String.format("Missing loottable '%s' for '%s'", var10, Registry.BLOCK.getKey(var9)));
+               throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var10, Registry.BLOCK.getKey(var9)));
             }
 
             var1.accept(var10, var11);

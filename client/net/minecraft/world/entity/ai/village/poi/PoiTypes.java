@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -67,7 +68,7 @@ public class PoiTypes {
       ((PoiType)var0.value()).matchingStates().forEach((var1) -> {
          Holder var2 = (Holder)TYPE_BY_STATE.put(var1, var0);
          if (var2 != null) {
-            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException(String.format("%s is defined in more than one PoI type", var1)));
+            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", var1)));
          }
       });
    }

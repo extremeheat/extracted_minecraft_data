@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -51,7 +52,7 @@ public class SystemReport {
       });
       this.setDetail("JVM Flags", () -> {
          List var0 = (List)Util.getVmArguments().collect(Collectors.toList());
-         return String.format("%d total; %s", var0.size(), String.join(" ", var0));
+         return String.format(Locale.ROOT, "%d total; %s", var0.size(), String.join(" ", var0));
       });
    }
 
@@ -97,32 +98,32 @@ public class SystemReport {
 
       while(var3.hasNext()) {
          PhysicalMemory var4 = (PhysicalMemory)var3.next();
-         String var5 = String.format("Memory slot #%d ", var2++);
+         String var5 = String.format(Locale.ROOT, "Memory slot #%d ", var2++);
          this.setDetail(var5 + "capacity (MB)", () -> {
-            return String.format("%.2f", (float)var4.getCapacity() / 1048576.0F);
+            return String.format(Locale.ROOT, "%.2f", (float)var4.getCapacity() / 1048576.0F);
          });
          this.setDetail(var5 + "clockSpeed (GHz)", () -> {
-            return String.format("%.2f", (float)var4.getClockSpeed() / 1.0E9F);
+            return String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F);
          });
-         String var6 = var5 + "type";
+         String var10001 = var5 + "type";
          Objects.requireNonNull(var4);
-         this.setDetail(var6, var4::getMemoryType);
+         this.setDetail(var10001, var4::getMemoryType);
       }
 
    }
 
    private void putVirtualMemory(VirtualMemory var1) {
       this.setDetail("Virtual memory max (MB)", () -> {
-         return String.format("%.2f", (float)var1.getVirtualMax() / 1048576.0F);
+         return String.format(Locale.ROOT, "%.2f", (float)var1.getVirtualMax() / 1048576.0F);
       });
       this.setDetail("Virtual memory used (MB)", () -> {
-         return String.format("%.2f", (float)var1.getVirtualInUse() / 1048576.0F);
+         return String.format(Locale.ROOT, "%.2f", (float)var1.getVirtualInUse() / 1048576.0F);
       });
       this.setDetail("Swap memory total (MB)", () -> {
-         return String.format("%.2f", (float)var1.getSwapTotal() / 1048576.0F);
+         return String.format(Locale.ROOT, "%.2f", (float)var1.getSwapTotal() / 1048576.0F);
       });
       this.setDetail("Swap memory used (MB)", () -> {
-         return String.format("%.2f", (float)var1.getSwapUsed() / 1048576.0F);
+         return String.format(Locale.ROOT, "%.2f", (float)var1.getSwapUsed() / 1048576.0F);
       });
    }
 
@@ -141,22 +142,22 @@ public class SystemReport {
 
       while(var3.hasNext()) {
          GraphicsCard var4 = (GraphicsCard)var3.next();
-         String var5 = String.format("Graphics card #%d ", var2++);
-         String var6 = var5 + "name";
+         String var5 = String.format(Locale.ROOT, "Graphics card #%d ", var2++);
+         String var10001 = var5 + "name";
          Objects.requireNonNull(var4);
-         this.setDetail(var6, var4::getName);
-         var6 = var5 + "vendor";
+         this.setDetail(var10001, var4::getName);
+         var10001 = var5 + "vendor";
          Objects.requireNonNull(var4);
-         this.setDetail(var6, var4::getVendor);
+         this.setDetail(var10001, var4::getVendor);
          this.setDetail(var5 + "VRAM (MB)", () -> {
-            return String.format("%.2f", (float)var4.getVRam() / 1048576.0F);
+            return String.format(Locale.ROOT, "%.2f", (float)var4.getVRam() / 1048576.0F);
          });
-         var6 = var5 + "deviceId";
+         var10001 = var5 + "deviceId";
          Objects.requireNonNull(var4);
-         this.setDetail(var6, var4::getDeviceId);
-         var6 = var5 + "versionInfo";
+         this.setDetail(var10001, var4::getDeviceId);
+         var10001 = var5 + "versionInfo";
          Objects.requireNonNull(var4);
-         this.setDetail(var6, var4::getVersionInfo);
+         this.setDetail(var10001, var4::getVersionInfo);
       }
 
    }
@@ -172,7 +173,7 @@ public class SystemReport {
       Objects.requireNonNull(var2);
       this.setDetail("Microarchitecture", var2::getMicroarchitecture);
       this.setDetail("Frequency (GHz)", () -> {
-         return String.format("%.2f", (float)var2.getVendorFreq() / 1.0E9F);
+         return String.format(Locale.ROOT, "%.2f", (float)var2.getVendorFreq() / 1.0E9F);
       });
       this.setDetail("Number of physical packages", () -> {
          return String.valueOf(var1.getPhysicalPackageCount());

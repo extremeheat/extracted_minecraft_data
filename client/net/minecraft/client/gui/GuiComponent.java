@@ -1,6 +1,7 @@
 package net.minecraft.client.gui;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -10,6 +11,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import java.util.function.BiConsumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
@@ -44,6 +46,21 @@ public abstract class GuiComponent {
       }
 
       fill(var1, var2, var3 + 1, var2 + 1, var4, var5);
+   }
+
+   public static void enableScissor(int var0, int var1, int var2, int var3) {
+      Window var4 = Minecraft.getInstance().getWindow();
+      int var5 = var4.getHeight();
+      double var6 = var4.getGuiScale();
+      double var8 = (double)var0 * var6;
+      double var10 = (double)var5 - (double)var3 * var6;
+      double var12 = (double)(var2 - var0) * var6;
+      double var14 = (double)(var3 - var1) * var6;
+      RenderSystem.enableScissor((int)var8, (int)var10, Math.max(0, (int)var12), Math.max(0, (int)var14));
+   }
+
+   public static void disableScissor() {
+      RenderSystem.disableScissor();
    }
 
    public static void fill(PoseStack var0, int var1, int var2, int var3, int var4, int var5) {

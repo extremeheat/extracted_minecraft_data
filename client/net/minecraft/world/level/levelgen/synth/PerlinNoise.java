@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -209,7 +210,7 @@ public class PerlinNoise {
    public void parityConfigString(StringBuilder var1) {
       var1.append("PerlinNoise{");
       List var2 = this.amplitudes.stream().map((var0) -> {
-         return String.format("%.2f", var0);
+         return String.format(Locale.ROOT, "%.2f", var0);
       }).toList();
       var1.append("first octave: ").append(this.firstOctave).append(", amplitudes: ").append(var2).append(", noise levels: [");
 

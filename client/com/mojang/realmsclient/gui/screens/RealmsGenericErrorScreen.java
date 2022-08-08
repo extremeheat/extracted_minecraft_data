@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import java.util.Objects;
-import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,21 +19,21 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
    private MultiLineLabel line2Split;
 
    public RealmsGenericErrorScreen(RealmsServiceException var1, Screen var2) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.line2Split = MultiLineLabel.EMPTY;
       this.nextScreen = var2;
       this.lines = errorMessage(var1);
    }
 
    public RealmsGenericErrorScreen(Component var1, Screen var2) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.line2Split = MultiLineLabel.EMPTY;
       this.nextScreen = var2;
       this.lines = errorMessage(var1);
    }
 
    public RealmsGenericErrorScreen(Component var1, Component var2, Screen var3) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.line2Split = MultiLineLabel.EMPTY;
       this.nextScreen = var3;
       this.lines = errorMessage(var1, var2);

@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
@@ -25,7 +26,7 @@ public abstract class AbstractPackResources implements PackResources {
    }
 
    private static String getPathFromLocation(PackType var0, ResourceLocation var1) {
-      return String.format("%s/%s/%s", var0.getDirectory(), var1.getNamespace(), var1.getPath());
+      return String.format(Locale.ROOT, "%s/%s/%s", var0.getDirectory(), var1.getNamespace(), var1.getPath());
    }
 
    protected static String getRelativePath(File var0, File var1) {

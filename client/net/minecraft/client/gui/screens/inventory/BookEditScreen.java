@@ -20,10 +20,10 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.font.TextFieldHelper;
@@ -65,7 +65,7 @@ public class BookEditScreen extends Screen {
    private final List<String> pages = Lists.newArrayList();
    private String title = "";
    private final TextFieldHelper pageEdit = new TextFieldHelper(this::getCurrentPageText, this::setCurrentPageText, this::getClipboard, this::setClipboard, (var1x) -> {
-      return var1x.length() < 1024 && this.font.wordWrapHeight(var1x, 114) <= 128;
+      return var1x.length() < 1024 && this.font.wordWrapHeight((String)var1x, 114) <= 128;
    });
    private final TextFieldHelper titleEdit = new TextFieldHelper(() -> {
       return this.title;
@@ -89,7 +89,7 @@ public class BookEditScreen extends Screen {
    private final Component ownerText;
 
    public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.displayCache = BookEditScreen.DisplayCache.EMPTY;
       this.pageMsg = CommonComponents.EMPTY;
       this.owner = var1;

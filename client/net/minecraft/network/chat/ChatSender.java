@@ -3,53 +3,34 @@ package net.minecraft.network.chat;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.ProfilePublicKey;
 
-public record ChatSender(UUID a, Component b, @Nullable Component c) {
-   private final UUID uuid;
-   private final Component name;
+public record ChatSender(UUID b, @Nullable ProfilePublicKey c) {
+   private final UUID profileId;
    @Nullable
-   private final Component teamName;
+   private final ProfilePublicKey profilePublicKey;
+   public static final ChatSender SYSTEM;
 
-   public ChatSender(UUID var1, Component var2) {
-      this(var1, var2, (Component)null);
-   }
-
-   public ChatSender(FriendlyByteBuf var1) {
-      this(var1.readUUID(), var1.readComponent(), (Component)var1.readNullable(FriendlyByteBuf::readComponent));
-   }
-
-   public ChatSender(UUID var1, Component var2, @Nullable Component var3) {
+   public ChatSender(UUID var1, @Nullable ProfilePublicKey var2) {
       super();
-      this.uuid = var1;
-      this.name = var2;
-      this.teamName = var3;
+      this.profileId = var1;
+      this.profilePublicKey = var2;
    }
 
-   public static ChatSender system(Component var0) {
-      return new ChatSender(Util.NIL_UUID, var0);
+   public boolean isSystem() {
+      return SYSTEM.equals(this);
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUUID(this.uuid);
-      var1.writeComponent(this.name);
-      var1.writeNullable(this.teamName, FriendlyByteBuf::writeComponent);
-   }
-
-   public ChatSender withTeamName(Component var1) {
-      return new ChatSender(this.uuid, this.name, var1);
-   }
-
-   public UUID uuid() {
-      return this.uuid;
-   }
-
-   public Component name() {
-      return this.name;
+   public UUID profileId() {
+      return this.profileId;
    }
 
    @Nullable
-   public Component teamName() {
-      return this.teamName;
+   public ProfilePublicKey profilePublicKey() {
+      return this.profilePublicKey;
+   }
+
+   static {
+      SYSTEM = new ChatSender(Util.NIL_UUID, (ProfilePublicKey)null);
    }
 }

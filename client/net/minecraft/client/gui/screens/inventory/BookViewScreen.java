@@ -10,9 +10,9 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -67,7 +67,7 @@ public class BookViewScreen extends Screen {
    }
 
    private BookViewScreen(BookAccess var1, boolean var2) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.cachedPageComponents = Collections.emptyList();
       this.cachedPage = -1;
       this.pageMsg = CommonComponents.EMPTY;

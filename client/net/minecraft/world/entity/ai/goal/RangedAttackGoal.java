@@ -53,7 +53,7 @@ public class RangedAttackGoal extends Goal {
    }
 
    public boolean canContinueToUse() {
-      return this.canUse() || !this.mob.getNavigation().isDone();
+      return this.canUse() || this.target.isAlive() && !this.mob.getNavigation().isDone();
    }
 
    public void stop() {

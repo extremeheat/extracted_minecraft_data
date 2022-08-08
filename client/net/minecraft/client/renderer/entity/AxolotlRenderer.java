@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
+import java.util.Locale;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.AxolotlModel;
@@ -15,7 +16,7 @@ public class AxolotlRenderer extends MobRenderer<Axolotl, AxolotlModel<Axolotl>>
 
       for(int var3 = 0; var3 < var2; ++var3) {
          Axolotl.Variant var4 = var1[var3];
-         var0.put(var4, new ResourceLocation(String.format("textures/entity/axolotl/axolotl_%s.png", var4.getName())));
+         var0.put(var4, new ResourceLocation(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", var4.getName())));
       }
 
    });

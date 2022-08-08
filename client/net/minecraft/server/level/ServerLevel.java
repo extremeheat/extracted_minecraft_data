@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1276,23 +1277,23 @@ public class ServerLevel extends Level implements WorldGenLevel {
       BufferedWriter var3 = Files.newBufferedWriter(var1.resolve("stats.txt"));
 
       try {
-         var3.write(String.format("spawning_chunks: %d\n", var2.getDistanceManager().getNaturalSpawnChunkCount()));
+         var3.write(String.format(Locale.ROOT, "spawning_chunks: %d\n", var2.getDistanceManager().getNaturalSpawnChunkCount()));
          NaturalSpawner.SpawnState var4 = this.getChunkSource().getLastSpawnState();
          if (var4 != null) {
             ObjectIterator var5 = var4.getMobCategoryCounts().object2IntEntrySet().iterator();
 
             while(var5.hasNext()) {
                Object2IntMap.Entry var6 = (Object2IntMap.Entry)var5.next();
-               var3.write(String.format("spawn_count.%s: %d\n", ((MobCategory)var6.getKey()).getName(), var6.getIntValue()));
+               var3.write(String.format(Locale.ROOT, "spawn_count.%s: %d\n", ((MobCategory)var6.getKey()).getName(), var6.getIntValue()));
             }
          }
 
-         var3.write(String.format("entities: %s\n", this.entityManager.gatherStats()));
-         var3.write(String.format("block_entity_tickers: %d\n", this.blockEntityTickers.size()));
-         var3.write(String.format("block_ticks: %d\n", this.getBlockTicks().count()));
-         var3.write(String.format("fluid_ticks: %d\n", this.getFluidTicks().count()));
+         var3.write(String.format(Locale.ROOT, "entities: %s\n", this.entityManager.gatherStats()));
+         var3.write(String.format(Locale.ROOT, "block_entity_tickers: %d\n", this.blockEntityTickers.size()));
+         var3.write(String.format(Locale.ROOT, "block_ticks: %d\n", this.getBlockTicks().count()));
+         var3.write(String.format(Locale.ROOT, "fluid_ticks: %d\n", this.getFluidTicks().count()));
          var3.write("distance_manager: " + var2.getDistanceManager().getDebugStatus() + "\n");
-         var3.write(String.format("pending_tasks: %d\n", this.getChunkSource().getPendingTasksCount()));
+         var3.write(String.format(Locale.ROOT, "pending_tasks: %d\n", this.getChunkSource().getPendingTasksCount()));
       } catch (Throwable var22) {
          if (var3 != null) {
             try {
@@ -1315,16 +1316,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          var24.write(var23.getFriendlyReport());
-      } catch (Throwable var21) {
+      } catch (Throwable var19) {
          if (var24 != null) {
             try {
                var24.close();
-            } catch (Throwable var16) {
-               var21.addSuppressed(var16);
+            } catch (Throwable var14) {
+               var19.addSuppressed(var14);
             }
          }
 
-         throw var21;
+         throw var19;
       }
 
       if (var24 != null) {
@@ -1336,16 +1337,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var17) {
+      } catch (Throwable var18) {
          if (var26 != null) {
             try {
                var26.close();
-            } catch (Throwable var11) {
-               var17.addSuppressed(var11);
+            } catch (Throwable var13) {
+               var18.addSuppressed(var13);
             }
          }
 
-         throw var17;
+         throw var18;
       }
 
       if (var26 != null) {
@@ -1357,16 +1358,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var20) {
+      } catch (Throwable var17) {
          if (var28 != null) {
             try {
                var28.close();
-            } catch (Throwable var15) {
-               var20.addSuppressed(var15);
+            } catch (Throwable var11) {
+               var17.addSuppressed(var11);
             }
          }
 
-         throw var20;
+         throw var17;
       }
 
       if (var28 != null) {
@@ -1378,16 +1379,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var18) {
+      } catch (Throwable var21) {
          if (var7 != null) {
             try {
                var7.close();
-            } catch (Throwable var13) {
-               var18.addSuppressed(var13);
+            } catch (Throwable var16) {
+               var21.addSuppressed(var16);
             }
          }
 
-         throw var18;
+         throw var21;
       }
 
       if (var7 != null) {
@@ -1399,16 +1400,16 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       try {
          this.dumpBlockEntityTickers(var8);
-      } catch (Throwable var19) {
+      } catch (Throwable var20) {
          if (var8 != null) {
             try {
                var8.close();
-            } catch (Throwable var14) {
-               var19.addSuppressed(var14);
+            } catch (Throwable var15) {
+               var20.addSuppressed(var15);
             }
          }
 
-         throw var19;
+         throw var20;
       }
 
       if (var8 != null) {
@@ -1487,7 +1488,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @VisibleForTesting
    public String getWatchdogStats() {
-      return String.format("players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s", this.players.size(), this.entityManager.gatherStats(), getTypeCount(this.entityManager.getEntityGetter().getAll(), (var0) -> {
+      return String.format(Locale.ROOT, "players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s", this.players.size(), this.entityManager.gatherStats(), getTypeCount(this.entityManager.getEntityGetter().getAll(), (var0) -> {
          return Registry.ENTITY_TYPE.getKey(var0.getType()).toString();
       }), this.blockEntityTickers.size(), getTypeCount(this.blockEntityTickers, TickingBlockEntity::getType), this.getBlockTicks().count(), this.getFluidTicks().count(), this.gatherChunkSourceStats());
    }

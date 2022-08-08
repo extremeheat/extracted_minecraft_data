@@ -171,7 +171,7 @@ public class ChaseClient {
             ServerLevel var4 = this.server.overworld();
             CommandSourceStack var5 = new CommandSourceStack(var3, Vec3.atLowerCornerOf(var4.getSharedSpawnPos()), Vec2.ZERO, var4, 4, "", CommonComponents.EMPTY, this.server, var3);
             Commands var6 = this.server.getCommands();
-            var6.performCommand(var5, var1);
+            var6.performPrefixedCommand(var5, var1);
          }
       });
    }

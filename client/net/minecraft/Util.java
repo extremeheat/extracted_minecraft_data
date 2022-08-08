@@ -32,6 +32,8 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -56,7 +58,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
@@ -69,9 +70,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeSource;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.block.state.properties.Property;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public class Util {
@@ -82,20 +83,12 @@ public class Util {
    private static final ExecutorService BOOTSTRAP_EXECUTOR = makeExecutor("Bootstrap");
    private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
    private static final ExecutorService IO_POOL = makeIoExecutor();
-   public static LongSupplier timeSource = System::nanoTime;
-   public static final Ticker TICKER = new Ticker() {
-      public long read() {
-         return Util.timeSource.getAsLong();
-      }
-   };
-   public static final UUID NIL_UUID = new UUID(0L, 0L);
-   public static final FileSystemProvider ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> {
-      return var0.getScheme().equalsIgnoreCase("jar");
-   }).findFirst().orElseThrow(() -> {
-      return new IllegalStateException("No jar file system provider found");
-   });
-   private static Consumer<String> thePauser = (var0) -> {
-   };
+   private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER;
+   public static TimeSource.NanoTimeSource timeSource;
+   public static final Ticker TICKER;
+   public static final UUID NIL_UUID;
+   public static final FileSystemProvider ZIP_FILE_SYSTEM_PROVIDER;
+   private static Consumer<String> thePauser;
 
    public Util() {
       super();
@@ -123,6 +116,10 @@ public class Util {
 
    public static long getEpochMillis() {
       return Instant.now().toEpochMilli();
+   }
+
+   public static String getFilenameFormattedDateTime() {
+      return FILENAME_DATE_TIME_FORMATTER.format(ZonedDateTime.now());
    }
 
    private static ExecutorService makeExecutor(String var0) {
@@ -232,7 +229,7 @@ public class Util {
          System.exit(-1);
       }
 
-      LOGGER.error(String.format("Caught exception in thread %s", var0), var1);
+      LOGGER.error(String.format(Locale.ROOT, "Caught exception in thread %s", var0), var1);
    }
 
    @Nullable
@@ -813,6 +810,24 @@ public class Util {
       return var2;
    }
 
+   static {
+      FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+      timeSource = System::nanoTime;
+      TICKER = new Ticker() {
+         public long read() {
+            return Util.timeSource.getAsLong();
+         }
+      };
+      NIL_UUID = new UUID(0L, 0L);
+      ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> {
+         return var0.getScheme().equalsIgnoreCase("jar");
+      }).findFirst().orElseThrow(() -> {
+         return new IllegalStateException("No jar file system provider found");
+      });
+      thePauser = (var0) -> {
+      };
+   }
+
    public static enum OS {
       LINUX("linux"),
       SOLARIS("solaris"),
@@ -839,18 +854,11 @@ public class Util {
             Process var2 = (Process)AccessController.doPrivileged(() -> {
                return Runtime.getRuntime().exec(this.getOpenUrlArguments(var1));
             });
-            Iterator var3 = IOUtils.readLines(var2.getErrorStream()).iterator();
-
-            while(var3.hasNext()) {
-               String var4 = (String)var3.next();
-               Util.LOGGER.error(var4);
-            }
-
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();
-         } catch (IOException | PrivilegedActionException var5) {
-            Util.LOGGER.error("Couldn't open url '{}'", var1, var5);
+         } catch (IOException | PrivilegedActionException var3) {
+            Util.LOGGER.error("Couldn't open url '{}'", var1, var3);
          }
 
       }

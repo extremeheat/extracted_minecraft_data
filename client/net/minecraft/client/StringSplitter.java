@@ -1,5 +1,6 @@
 package net.minecraft.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,6 +9,7 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.FormattedText;
@@ -139,6 +141,12 @@ public class StringSplitter {
             }
          }
       }, var3).orElse(var1);
+   }
+
+   public List<Span> findSpans(FormattedCharSequence var1, Predicate<Style> var2) {
+      SpanBuilder var3 = new SpanBuilder(var2);
+      var1.accept(var3);
+      return var3.build();
    }
 
    public int findLineBreak(String var1, int var2, Style var3) {
@@ -319,6 +327,52 @@ public class StringSplitter {
       }
    }
 
+   private class SpanBuilder implements FormattedCharSink {
+      private final Predicate<Style> predicate;
+      private float cursor;
+      private final ImmutableList.Builder<Span> spans = ImmutableList.builder();
+      private float spanStart;
+      private boolean buildingSpan;
+
+      SpanBuilder(Predicate<Style> var2) {
+         super();
+         this.predicate = var2;
+      }
+
+      public boolean accept(int var1, Style var2, int var3) {
+         boolean var4 = this.predicate.test(var2);
+         if (this.buildingSpan != var4) {
+            if (var4) {
+               this.startSpan();
+            } else {
+               this.endSpan();
+            }
+         }
+
+         this.cursor += StringSplitter.this.widthProvider.getWidth(var3, var2);
+         return true;
+      }
+
+      private void startSpan() {
+         this.buildingSpan = true;
+         this.spanStart = this.cursor;
+      }
+
+      private void endSpan() {
+         float var1 = this.cursor;
+         this.spans.add(new Span(this.spanStart, var1));
+         this.buildingSpan = false;
+      }
+
+      public List<Span> build() {
+         if (this.buildingSpan) {
+            this.endSpan();
+         }
+
+         return this.spans.build();
+      }
+   }
+
    class LineBreakFinder implements FormattedCharSink {
       private final float maxWidth;
       private int lineBreak = -1;
@@ -477,6 +531,25 @@ public class StringSplitter {
 
       public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
          return var1.accept(this.style.applyTo(var2), this.contents);
+      }
+   }
+
+   public static record Span(float a, float b) {
+      private final float left;
+      private final float right;
+
+      public Span(float var1, float var2) {
+         super();
+         this.left = var1;
+         this.right = var2;
+      }
+
+      public float left() {
+         return this.left;
+      }
+
+      public float right() {
+         return this.right;
       }
    }
 }

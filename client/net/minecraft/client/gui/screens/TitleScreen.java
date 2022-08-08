@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.google.common.util.concurrent.Runnables;
+import com.mojang.authlib.minecraft.BanDetails;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -60,7 +61,8 @@ public class TitleScreen extends Screen {
    private Button resetDemoButton;
    private static final ResourceLocation MINECRAFT_LOGO = new ResourceLocation("textures/gui/title/minecraft.png");
    private static final ResourceLocation MINECRAFT_EDITION = new ResourceLocation("textures/gui/title/edition.png");
-   private Screen realmsNotificationsScreen;
+   @Nullable
+   private RealmsNotificationsScreen realmsNotificationsScreen;
    private final PanoramaRenderer panorama;
    private final boolean fading;
    private long fadeInStart;
@@ -151,28 +153,38 @@ public class TitleScreen extends Screen {
       this.addRenderableWidget(new Button(this.width / 2 - 100, var1, 200, 20, Component.translatable("menu.singleplayer"), (var1x) -> {
          this.minecraft.setScreen(new SelectWorldScreen(this));
       }));
-      boolean var3 = this.minecraft.allowsMultiplayer();
-      Button.OnTooltip var4 = var3 ? Button.NO_TOOLTIP : new Button.OnTooltip() {
-         private final Component text = Component.translatable("title.multiplayer.disabled");
-
-         public void onTooltip(Button var1, PoseStack var2, int var3, int var4) {
-            if (!var1.active) {
-               TitleScreen.this.renderTooltip(var2, TitleScreen.this.minecraft.font.split(this.text, Math.max(TitleScreen.this.width / 2 - 43, 170)), var3, var4);
-            }
-
+      final Component var3 = this.getMultiplayerDisabledReason();
+      boolean var4 = var3 == null;
+      Button.OnTooltip var5 = var3 == null ? Button.NO_TOOLTIP : new Button.OnTooltip() {
+         public void onTooltip(Button var1, PoseStack var2, int var3x, int var4) {
+            TitleScreen.this.renderTooltip(var2, TitleScreen.this.minecraft.font.split(var3, Math.max(TitleScreen.this.width / 2 - 43, 170)), var3x, var4);
          }
 
          public void narrateTooltip(Consumer<Component> var1) {
-            var1.accept(this.text);
+            var1.accept(var3);
          }
       };
       ((Button)this.addRenderableWidget(new Button(this.width / 2 - 100, var1 + var2 * 1, 200, 20, Component.translatable("menu.multiplayer"), (var1x) -> {
          Object var2 = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
          this.minecraft.setScreen((Screen)var2);
-      }, var4))).active = var3;
+      }, var5))).active = var4;
       ((Button)this.addRenderableWidget(new Button(this.width / 2 - 100, var1 + var2 * 2, 200, 20, Component.translatable("menu.online"), (var1x) -> {
          this.realmsButtonClicked();
-      }, var4))).active = var3;
+      }, var5))).active = var4;
+   }
+
+   @Nullable
+   private Component getMultiplayerDisabledReason() {
+      if (this.minecraft.allowsMultiplayer()) {
+         return null;
+      } else {
+         BanDetails var1 = this.minecraft.multiplayerBan();
+         if (var1 != null) {
+            return var1.expires() != null ? Component.translatable("title.multiplayer.disabled.banned.temporary") : Component.translatable("title.multiplayer.disabled.banned.permanent");
+         } else {
+            return Component.translatable("title.multiplayer.disabled");
+         }
+      }
    }
 
    private void createDemoMenuOptions(int var1, int var2) {
@@ -333,6 +345,7 @@ public class TitleScreen extends Screen {
 
          super.render(var1, var2, var3, var4);
          if (this.realmsNotificationsEnabled() && var9 >= 1.0F) {
+            RenderSystem.enableDepthTest();
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
          }
 

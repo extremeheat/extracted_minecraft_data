@@ -35,6 +35,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -45,8 +46,8 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.multiplayer.chat.ChatPreviewStatus;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
@@ -170,8 +171,10 @@ public class Options {
    private static final Component CHAT_TOOLTIP_HIDE_MATCHED_NAMES;
    private final OptionInstance<Boolean> hideMatchedNames;
    private final OptionInstance<Boolean> showAutosaveIndicator;
-   private static final Component CHAT_TOOLTIP_PREVIEW;
-   private final OptionInstance<Boolean> chatPreview;
+   private static final Component CHAT_PREVIEW_OFF_TOOLTIP;
+   private static final Component CHAT_PREVIEW_LIVE_TOOLTIP;
+   private static final Component CHAT_PREVIEW_CONFIRM_TOOLTIP;
+   private final OptionInstance<ChatPreviewStatus> chatPreview;
    private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE;
    private final OptionInstance<Boolean> onlyShowSecureChat;
    public final KeyMapping keyUp;
@@ -429,7 +432,7 @@ public class Options {
       return this.showAutosaveIndicator;
    }
 
-   public OptionInstance<Boolean> chatPreview() {
+   public OptionInstance<ChatPreviewStatus> chatPreview() {
       return this.chatPreview;
    }
 
@@ -667,12 +670,13 @@ public class Options {
          Minecraft.getInstance().gui.getChat().rescaleChat();
       });
       this.chatDelay = new OptionInstance("options.chat.delay_instant", OptionInstance.noTooltip(), (var0, var1x) -> {
-         return var1x <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format("%.1f", var1x));
+         return var1x <= 0.0 ? Component.translatable("options.chat.delay_none") : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", var1x));
       }, (new OptionInstance.IntRange(0, 60)).xmap((var0) -> {
          return (double)var0 / 10.0;
       }, (var0) -> {
          return (int)(var0 * 10.0);
       }), Codec.doubleRange(0.0, 6.0), 0.0, (var0) -> {
+         Minecraft.getInstance().getChatListener().setMessageDelay(var0);
       });
       this.mipmapLevels = new OptionInstance("options.mipmapLevels", OptionInstance.noTooltip(), (var0, var1x) -> {
          return (Component)(var1x == 0 ? CommonComponents.optionStatus(var0, false) : genericValueLabel(var0, var1x));
@@ -694,7 +698,7 @@ public class Options {
          Minecraft.getInstance().levelRenderer.allChanged();
       });
       this.mouseWheelSensitivity = new OptionInstance("options.mouseWheelSensitivity", OptionInstance.noTooltip(), (var0, var1x) -> {
-         return genericValueLabel(var0, Component.literal(String.format("%.2f", var1x)));
+         return genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x)));
       }, (new OptionInstance.IntRange(-200, 100)).xmap(Options::logMouse, Options::unlogMouse), Codec.doubleRange(logMouse(-200), logMouse(100)), logMouse(0), (var0) -> {
       });
       this.rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, (var0) -> {
@@ -768,7 +772,27 @@ public class Options {
       });
       this.hideMatchedNames = OptionInstance.createBoolean("options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true);
       this.showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
-      this.chatPreview = OptionInstance.createBoolean("options.chatPreview", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_PREVIEW), true);
+      this.chatPreview = new OptionInstance("options.chatPreview", (var0) -> {
+         return (var1) -> {
+            List var10000;
+            switch (var1) {
+               case OFF:
+                  var10000 = OptionInstance.splitTooltip(var0, CHAT_PREVIEW_OFF_TOOLTIP);
+                  break;
+               case LIVE:
+                  var10000 = OptionInstance.splitTooltip(var0, CHAT_PREVIEW_LIVE_TOOLTIP);
+                  break;
+               case CONFIRM:
+                  var10000 = OptionInstance.splitTooltip(var0, CHAT_PREVIEW_CONFIRM_TOOLTIP);
+                  break;
+               default:
+                  throw new IncompatibleClassChangeError();
+            }
+
+            return var10000;
+         };
+      }, OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ChatPreviewStatus.values()), Codec.INT.xmap(ChatPreviewStatus::byId, ChatPreviewStatus::getId)), ChatPreviewStatus.LIVE, (var0) -> {
+      });
       this.onlyShowSecureChat = OptionInstance.createBoolean("options.onlyShowSecureChat", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_ONLY_SHOW_SECURE), false);
       this.keyUp = new KeyMapping("key.forward", 87, "key.categories.movement");
       this.keyLeft = new KeyMapping("key.left", 65, "key.categories.movement");
@@ -856,10 +880,10 @@ public class Options {
       });
       this.particles = new OptionInstance("options.particles", OptionInstance.noTooltip(), OptionInstance.forOptionEnum(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), Codec.INT.xmap(ParticleStatus::byId, ParticleStatus::getId)), ParticleStatus.ALL, (var0) -> {
       });
-      this.narrator = new OptionInstance("options.narrator", OptionInstance.noTooltip(), (var0, var1x) -> {
-         return (Component)(NarratorChatListener.INSTANCE.isActive() ? var1x.getName() : Component.translatable("options.narrator.notavailable"));
-      }, new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId)), NarratorStatus.OFF, (var0) -> {
-         NarratorChatListener.INSTANCE.updateNarratorStatus(var0);
+      this.narrator = new OptionInstance("options.narrator", OptionInstance.noTooltip(), (var1x, var2x) -> {
+         return (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable"));
+      }, new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId)), NarratorStatus.OFF, (var1x) -> {
+         this.minecraft.getNarrator().updateNarratorStatus(var1x);
       });
       this.languageCode = "en_us";
       this.soundDevice = new OptionInstance("options.audioDevice", OptionInstance.noTooltip(), (var0, var1x) -> {
@@ -1399,7 +1423,9 @@ public class Options {
       MOVEMENT_TOGGLE = Component.translatable("options.key.toggle");
       MOVEMENT_HOLD = Component.translatable("options.key.hold");
       CHAT_TOOLTIP_HIDE_MATCHED_NAMES = Component.translatable("options.hideMatchedNames.tooltip");
-      CHAT_TOOLTIP_PREVIEW = Component.translatable("options.chatPreview.tooltip");
+      CHAT_PREVIEW_OFF_TOOLTIP = Component.translatable("options.chatPreview.tooltip.off");
+      CHAT_PREVIEW_LIVE_TOOLTIP = Component.translatable("options.chatPreview.tooltip.live");
+      CHAT_PREVIEW_CONFIRM_TOOLTIP = Component.translatable("options.chatPreview.tooltip.confirm");
       CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
       ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
       ACCESSIBILITY_TOOLTIP_FOV_EFFECT = Component.translatable("options.fovEffectScale.tooltip");

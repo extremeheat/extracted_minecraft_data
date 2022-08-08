@@ -12,11 +12,10 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -72,7 +71,7 @@ public class DebugCommand {
          ProfileResults var2 = var1.stopTimeProfiler();
          double var3 = (double)var2.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
          double var5 = (double)var2.getTickDuration() / var3;
-         var0.sendSuccess(Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format("%.2f", var5)), true);
+         var0.sendSuccess(Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5)), true);
          return (int)var5;
       }
    }
@@ -80,9 +79,7 @@ public class DebugCommand {
    private static int traceFunction(CommandSourceStack var0, Collection<CommandFunction> var1) {
       int var2 = 0;
       MinecraftServer var3 = var0.getServer();
-      SimpleDateFormat var10000 = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
-      Date var10001 = new Date();
-      String var4 = "debug-trace-" + var10000.format(var10001) + ".txt";
+      String var4 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
 
       try {
          Path var5 = var3.getFile("debug").toPath();

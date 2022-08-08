@@ -8,6 +8,7 @@ import com.mojang.serialization.JsonOps;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -57,7 +58,7 @@ public abstract class TagsProvider<T> implements DataProvider {
             return !var1x.verifyIfPresent(var2, var10002::containsKey);
          }).toList();
          if (!var5.isEmpty()) {
-            throw new IllegalArgumentException(String.format("Couldn't define tag %s as it is missing following references: %s", var2, var5.stream().map(Objects::toString).collect(Collectors.joining(","))));
+            throw new IllegalArgumentException(String.format(Locale.ROOT, "Couldn't define tag %s as it is missing following references: %s", var2, var5.stream().map(Objects::toString).collect(Collectors.joining(","))));
          } else {
             DataResult var10000 = TagFile.CODEC.encodeStart(JsonOps.INSTANCE, new TagFile(var4, false));
             Logger var10002 = LOGGER;

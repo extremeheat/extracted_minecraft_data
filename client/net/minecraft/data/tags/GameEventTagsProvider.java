@@ -1,12 +1,14 @@
 package net.minecraft.data.tags;
 
+import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.core.Registry;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.tags.GameEventTags;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class GameEventTagsProvider extends TagsProvider<GameEvent> {
-   private static final GameEvent[] VIBRATIONS_EXCEPT_FLAP;
+   @VisibleForTesting
+   static final GameEvent[] VIBRATIONS_EXCEPT_FLAP;
 
    public GameEventTagsProvider(DataGenerator var1) {
       super(var1, Registry.GAME_EVENT);

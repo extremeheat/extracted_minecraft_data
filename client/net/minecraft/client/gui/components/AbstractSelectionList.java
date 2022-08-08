@@ -121,6 +121,19 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
       return this.children.size() - 1;
    }
 
+   protected void addEntryToTop(E var1) {
+      double var2 = (double)this.getMaxScroll() - this.getScrollAmount();
+      this.children.add(0, var1);
+      this.setScrollAmount((double)this.getMaxScroll() - var2);
+   }
+
+   protected boolean removeEntryFromTop(E var1) {
+      double var2 = (double)this.getMaxScroll() - this.getScrollAmount();
+      boolean var4 = this.removeEntry(var1);
+      this.setScrollAmount((double)this.getMaxScroll() - var2);
+      return var4;
+   }
+
    protected int getItemCount() {
       return this.children().size();
    }
@@ -196,7 +209,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
          this.renderHeader(var1, var14, var10, var7);
       }
 
-      this.renderList(var1, var14, var10, var2, var3, var4);
+      this.renderList(var1, var2, var3, var4);
       if (this.renderTopAndBottom) {
          RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
          RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
@@ -396,7 +409,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
 
    }
 
-   protected void moveSelection(SelectionDirection var1, Predicate<E> var2) {
+   protected boolean moveSelection(SelectionDirection var1, Predicate<E> var2) {
       int var3 = var1 == AbstractSelectionList.SelectionDirection.UP ? -1 : 1;
       if (!this.children().isEmpty()) {
          int var4 = this.children().indexOf(this.getSelected());
@@ -411,61 +424,51 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
             if (var2.test(var6)) {
                this.setSelected(var6);
                this.ensureVisible(var6);
-               break;
+               return true;
             }
 
             var4 = var5;
          }
       }
 
+      return false;
    }
 
    public boolean isMouseOver(double var1, double var3) {
       return var3 >= (double)this.y0 && var3 <= (double)this.y1 && var1 >= (double)this.x0 && var1 <= (double)this.x1;
    }
 
-   protected void renderList(PoseStack var1, int var2, int var3, int var4, int var5, float var6) {
-      int var7 = this.getItemCount();
-      Tesselator var8 = Tesselator.getInstance();
-      BufferBuilder var9 = var8.getBuilder();
+   protected void renderList(PoseStack var1, int var2, int var3, float var4) {
+      int var5 = this.getRowLeft();
+      int var6 = this.getRowWidth();
+      int var7 = this.itemHeight - 4;
+      int var8 = this.getItemCount();
 
-      for(int var10 = 0; var10 < var7; ++var10) {
-         int var11 = this.getRowTop(var10);
-         int var12 = this.getRowBottom(var10);
-         if (var12 >= this.y0 && var11 <= this.y1) {
-            int var13 = var3 + var10 * this.itemHeight + this.headerHeight;
-            int var14 = this.itemHeight - 4;
-            Entry var15 = this.getEntry(var10);
-            int var16 = this.getRowWidth();
-            int var17;
-            if (this.renderSelection && this.isSelectedItem(var10)) {
-               var17 = this.x0 + this.width / 2 - var16 / 2;
-               int var18 = this.x0 + this.width / 2 + var16 / 2;
-               RenderSystem.disableTexture();
-               RenderSystem.setShader(GameRenderer::getPositionShader);
-               float var19 = this.isFocused() ? 1.0F : 0.5F;
-               RenderSystem.setShaderColor(var19, var19, var19, 1.0F);
-               var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-               var9.vertex((double)var17, (double)(var13 + var14 + 2), 0.0).endVertex();
-               var9.vertex((double)var18, (double)(var13 + var14 + 2), 0.0).endVertex();
-               var9.vertex((double)var18, (double)(var13 - 2), 0.0).endVertex();
-               var9.vertex((double)var17, (double)(var13 - 2), 0.0).endVertex();
-               var8.end();
-               RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-               var9.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-               var9.vertex((double)(var17 + 1), (double)(var13 + var14 + 1), 0.0).endVertex();
-               var9.vertex((double)(var18 - 1), (double)(var13 + var14 + 1), 0.0).endVertex();
-               var9.vertex((double)(var18 - 1), (double)(var13 - 1), 0.0).endVertex();
-               var9.vertex((double)(var17 + 1), (double)(var13 - 1), 0.0).endVertex();
-               var8.end();
-               RenderSystem.enableTexture();
-            }
-
-            var17 = this.getRowLeft();
-            var15.render(var1, var10, var11, var17, var16, var14, var4, var5, Objects.equals(this.hovered, var15), var6);
+      for(int var9 = 0; var9 < var8; ++var9) {
+         int var10 = this.getRowTop(var9);
+         int var11 = this.getRowBottom(var9);
+         if (var11 >= this.y0 && var10 <= this.y1) {
+            this.renderItem(var1, var2, var3, var4, var9, var5, var10, var6, var7);
          }
       }
 
+   }
+
+   protected void renderItem(PoseStack var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
+      Entry var10 = this.getEntry(var5);
+      if (this.renderSelection && this.isSelectedItem(var5)) {
+         int var11 = this.isFocused() ? -1 : -8355712;
+         this.renderSelection(var1, var7, var8, var9, var11, -16777216);
+      }
+
+      var10.render(var1, var5, var7, var6, var8, var9, var2, var3, Objects.equals(this.hovered, var10), var4);
+   }
+
+   protected void renderSelection(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
+      int var7 = this.x0 + (this.width - var3) / 2;
+      int var8 = this.x0 + (this.width + var3) / 2;
+      fill(var1, var7, var2 - 2, var8, var2 + var4 + 2, var5);
+      fill(var1, var7 + 1, var2 - 1, var8 - 1, var2 + var4 + 1, var6);
    }
 
    public int getRowLeft() {

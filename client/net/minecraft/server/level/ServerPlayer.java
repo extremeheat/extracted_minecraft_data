@@ -25,17 +25,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.chat.ChatSender;
+import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.chat.OutgoingPlayerChatMessage;
+import net.minecraft.network.chat.SignedMessageHeader;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
@@ -56,7 +57,7 @@ import net.minecraft.network.protocol.game.ClientboundOpenBookPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerChatHeaderPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatEndPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatEnterPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
@@ -572,18 +573,15 @@ public class ServerPlayer extends Player {
       boolean var2 = this.level.getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
       if (var2) {
          Component var3 = this.getCombatTracker().getDeathMessage();
-         this.connection.send(new ClientboundPlayerCombatKillPacket(this.getCombatTracker(), var3), (var2x) -> {
-            if (!var2x.isSuccess()) {
-               boolean var3x = true;
-               String var4 = var3.getString(256);
-               MutableComponent var5 = Component.translatable("death.attack.message_too_long", Component.literal(var4).withStyle(ChatFormatting.YELLOW));
-               MutableComponent var6 = Component.translatable("death.attack.even_more_magic", this.getDisplayName()).withStyle((var1) -> {
-                  return var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var5));
-               });
-               this.connection.send(new ClientboundPlayerCombatKillPacket(this.getCombatTracker(), var6));
-            }
-
-         });
+         this.connection.send(new ClientboundPlayerCombatKillPacket(this.getCombatTracker(), var3), PacketSendListener.exceptionallySend(() -> {
+            boolean var2 = true;
+            String var3x = var3.getString(256);
+            MutableComponent var4 = Component.translatable("death.attack.message_too_long", Component.literal(var3x).withStyle(ChatFormatting.YELLOW));
+            MutableComponent var5 = Component.translatable("death.attack.even_more_magic", this.getDisplayName()).withStyle((var1) -> {
+               return var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var4));
+            });
+            return new ClientboundPlayerCombatKillPacket(this.getCombatTracker(), var5);
+         }));
          Team var4 = this.getTeam();
          if (var4 != null && var4.getDeathMessageVisibility() != Team.Visibility.ALWAYS) {
             if (var4.getDeathMessageVisibility() == Team.Visibility.HIDE_FOR_OTHER_TEAMS) {
@@ -592,7 +590,7 @@ public class ServerPlayer extends Player {
                this.server.getPlayerList().broadcastSystemToAllExceptTeam(this, var3);
             }
          } else {
-            this.server.getPlayerList().broadcastSystemMessage(var3, ChatType.SYSTEM);
+            this.server.getPlayerList().broadcastSystemMessage(var3, false);
          }
       } else {
          this.connection.send(new ClientboundPlayerCombatKillPacket(this.getCombatTracker(), CommonComponents.EMPTY));
@@ -1106,7 +1104,7 @@ public class ServerPlayer extends Player {
    }
 
    public void displayClientMessage(Component var1, boolean var2) {
-      this.sendSystemMessage(var1, var2 ? ChatType.GAME_INFO : ChatType.SYSTEM);
+      this.sendSystemMessage(var1, var2);
    }
 
    protected void completeUsingItem() {
@@ -1244,40 +1242,36 @@ public class ServerPlayer extends Player {
    }
 
    public void sendSystemMessage(Component var1) {
-      this.sendSystemMessage(var1, ChatType.SYSTEM);
+      this.sendSystemMessage(var1, false);
    }
 
-   public void sendSystemMessage(Component var1, ResourceKey<ChatType> var2) {
-      if (this.acceptsChat(var2)) {
-         this.connection.send(new ClientboundSystemChatPacket(var1, this.resolveChatTypeId(var2)), (var3) -> {
-            if (!var3.isSuccess()) {
-               this.handleMessageDeliveryFailure(var1, var2);
+   public void sendSystemMessage(Component var1, boolean var2) {
+      if (this.acceptsSystemMessages(var2)) {
+         this.connection.send(new ClientboundSystemChatPacket(var1, var2), PacketSendListener.exceptionallySend(() -> {
+            if (this.acceptsSystemMessages(false)) {
+               boolean var2 = true;
+               String var3 = var1.getString(256);
+               MutableComponent var4 = Component.literal(var3).withStyle(ChatFormatting.YELLOW);
+               return new ClientboundSystemChatPacket(Component.translatable("multiplayer.message_not_delivered", var4).withStyle(ChatFormatting.RED), false);
+            } else {
+               return null;
             }
-
-         });
+         }));
       }
    }
 
-   private void handleMessageDeliveryFailure(Component var1, ResourceKey<ChatType> var2) {
-      if ((var2 == ChatType.GAME_INFO || var2 == ChatType.SYSTEM) && this.acceptsChat(ChatType.SYSTEM)) {
-         boolean var3 = true;
-         String var4 = var1.getString(256);
-         MutableComponent var5 = Component.literal(var4).withStyle(ChatFormatting.YELLOW);
-         this.connection.send(new ClientboundSystemChatPacket(Component.translatable("multiplayer.message_not_delivered", var5).withStyle(ChatFormatting.RED), this.resolveChatTypeId(ChatType.SYSTEM)));
+   public void sendChatMessage(OutgoingPlayerChatMessage var1, boolean var2, ChatType.Bound var3) {
+      if (this.acceptsChatMessages()) {
+         var1.sendToPlayer(this, var2, var3);
       }
 
    }
 
-   public void sendChatMessage(PlayerChatMessage var1, ChatSender var2, ResourceKey<ChatType> var3) {
-      if (this.acceptsChat(var3)) {
-         this.connection.send(new ClientboundPlayerChatPacket(var1.signedContent(), var1.unsignedContent(), this.resolveChatTypeId(var3), var2, var1.signature().timeStamp(), var1.signature().saltSignature()));
+   public void sendChatHeader(SignedMessageHeader var1, MessageSignature var2, byte[] var3) {
+      if (this.acceptsChatMessages()) {
+         this.connection.send(new ClientboundPlayerChatHeaderPacket(var1, var2, var3));
       }
 
-   }
-
-   private int resolveChatTypeId(ResourceKey<ChatType> var1) {
-      Registry var2 = this.level.registryAccess().registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
-      return var2.getId((ChatType)var2.get(var1));
    }
 
    public String getIpAddress() {
@@ -1304,16 +1298,12 @@ public class ServerPlayer extends Player {
       return this.chatVisibility;
    }
 
-   private boolean acceptsChat(ResourceKey<ChatType> var1) {
-      switch (this.chatVisibility) {
-         case HIDDEN:
-            return var1 == ChatType.GAME_INFO;
-         case SYSTEM:
-            return var1 == ChatType.SYSTEM || var1 == ChatType.GAME_INFO;
-         case FULL:
-         default:
-            return true;
-      }
+   private boolean acceptsSystemMessages(boolean var1) {
+      return this.chatVisibility == ChatVisiblity.HIDDEN ? var1 : true;
+   }
+
+   private boolean acceptsChatMessages() {
+      return this.chatVisibility == ChatVisiblity.FULL;
    }
 
    public void sendTexturePack(String var1, String var2, boolean var3, @Nullable Component var4) {
@@ -1321,7 +1311,7 @@ public class ServerPlayer extends Player {
    }
 
    public void sendServerStatus(ServerStatus var1) {
-      this.connection.send(new ClientboundServerDataPacket(var1.getDescription(), var1.getFavicon(), var1.previewsChat()));
+      this.connection.send(new ClientboundServerDataPacket(var1.getDescription(), var1.getFavicon(), var1.previewsChat(), var1.enforcesSecureChat()));
    }
 
    protected int getPermissionLevel() {

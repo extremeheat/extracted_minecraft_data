@@ -7,11 +7,12 @@ import com.google.gson.JsonSyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class CriterionProgress {
-   private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+   private static final SimpleDateFormat DATE_FORMAT;
    @Nullable
    private Date obtained;
 
@@ -64,5 +65,9 @@ public class CriterionProgress {
       } catch (ParseException var3) {
          throw new JsonSyntaxException("Invalid datetime: " + var0, var3);
       }
+   }
+
+   static {
+      DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
    }
 }
