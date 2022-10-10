@@ -1,0 +1,82 @@
+package net.minecraft.world.storage;
+
+import com.google.common.collect.Lists;
+import java.util.Collections;
+import java.util.List;
+import net.minecraft.util.DefaultUncaughtExceptionHandlerWithName;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class ThreadedFileIOBase implements Runnable {
+   private static final Logger field_199622_a = LogManager.getLogger();
+   private static final ThreadedFileIOBase field_75741_a = new ThreadedFileIOBase();
+   private final List<IThreadedFileIO> field_75739_b = Collections.synchronizedList(Lists.newArrayList());
+   private volatile long field_75740_c;
+   private volatile long field_75737_d;
+   private volatile boolean field_75738_e;
+
+   private ThreadedFileIOBase() {
+      super();
+      Thread var1 = new Thread(this, "File IO Thread");
+      var1.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandlerWithName(field_199622_a));
+      var1.setPriority(1);
+      var1.start();
+   }
+
+   public static ThreadedFileIOBase func_178779_a() {
+      return field_75741_a;
+   }
+
+   public void run() {
+      while(true) {
+         this.func_75736_b();
+      }
+   }
+
+   private void func_75736_b() {
+      for(int var1 = 0; var1 < this.field_75739_b.size(); ++var1) {
+         IThreadedFileIO var2 = (IThreadedFileIO)this.field_75739_b.get(var1);
+         boolean var3;
+         synchronized(var2) {
+            var3 = var2.func_75814_c();
+         }
+
+         if (!var3) {
+            this.field_75739_b.remove(var1--);
+            ++this.field_75737_d;
+         }
+
+         try {
+            Thread.sleep(this.field_75738_e ? 0L : 10L);
+         } catch (InterruptedException var7) {
+            var7.printStackTrace();
+         }
+      }
+
+      if (this.field_75739_b.isEmpty()) {
+         try {
+            Thread.sleep(25L);
+         } catch (InterruptedException var6) {
+            var6.printStackTrace();
+         }
+      }
+
+   }
+
+   public void func_75735_a(IThreadedFileIO var1) {
+      if (!this.field_75739_b.contains(var1)) {
+         ++this.field_75740_c;
+         this.field_75739_b.add(var1);
+      }
+   }
+
+   public void func_75734_a() throws InterruptedException {
+      this.field_75738_e = true;
+
+      while(this.field_75740_c != this.field_75737_d) {
+         Thread.sleep(10L);
+      }
+
+      this.field_75738_e = false;
+   }
+}

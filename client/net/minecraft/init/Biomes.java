@@ -1,0 +1,172 @@
+package net.minecraft.init;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.IRegistry;
+import net.minecraft.world.biome.Biome;
+
+public abstract class Biomes {
+   public static final Biome field_76771_b;
+   public static final Biome field_180279_ad;
+   public static final Biome field_76772_c;
+   public static final Biome field_76769_d;
+   public static final Biome field_76770_e;
+   public static final Biome field_76767_f;
+   public static final Biome field_76768_g;
+   public static final Biome field_76780_h;
+   public static final Biome field_76781_i;
+   public static final Biome field_76778_j;
+   public static final Biome field_76779_k;
+   public static final Biome field_76776_l;
+   public static final Biome field_76777_m;
+   public static final Biome field_76774_n;
+   public static final Biome field_76775_o;
+   public static final Biome field_76789_p;
+   public static final Biome field_76788_q;
+   public static final Biome field_76787_r;
+   public static final Biome field_76786_s;
+   public static final Biome field_76785_t;
+   public static final Biome field_76784_u;
+   public static final Biome field_76783_v;
+   public static final Biome field_76782_w;
+   public static final Biome field_76792_x;
+   public static final Biome field_150574_L;
+   public static final Biome field_150575_M;
+   public static final Biome field_150576_N;
+   public static final Biome field_150577_O;
+   public static final Biome field_150583_P;
+   public static final Biome field_150582_Q;
+   public static final Biome field_150585_R;
+   public static final Biome field_150584_S;
+   public static final Biome field_150579_T;
+   public static final Biome field_150578_U;
+   public static final Biome field_150581_V;
+   public static final Biome field_150580_W;
+   public static final Biome field_150588_X;
+   public static final Biome field_150587_Y;
+   public static final Biome field_150589_Z;
+   public static final Biome field_150607_aa;
+   public static final Biome field_150608_ab;
+   public static final Biome field_201936_P;
+   public static final Biome field_201937_Q;
+   public static final Biome field_201938_R;
+   public static final Biome field_201939_S;
+   public static final Biome field_203614_T;
+   public static final Biome field_203615_U;
+   public static final Biome field_203616_V;
+   public static final Biome field_203617_W;
+   public static final Biome field_203618_X;
+   public static final Biome field_203619_Y;
+   public static final Biome field_203620_Z;
+   public static final Biome field_185440_P;
+   public static final Biome field_185441_Q;
+   public static final Biome field_185442_R;
+   public static final Biome field_185443_S;
+   public static final Biome field_185444_T;
+   public static final Biome field_150590_f;
+   public static final Biome field_150599_m;
+   public static final Biome field_185445_W;
+   public static final Biome field_185446_X;
+   public static final Biome field_185447_Y;
+   public static final Biome field_185448_Z;
+   public static final Biome field_185429_aa;
+   public static final Biome field_185430_ab;
+   public static final Biome field_185431_ac;
+   public static final Biome field_185432_ad;
+   public static final Biome field_185433_ae;
+   public static final Biome field_185434_af;
+   public static final Biome field_185435_ag;
+   public static final Biome field_185436_ah;
+   public static final Biome field_185437_ai;
+   public static final Biome field_185438_aj;
+   public static final Biome field_185439_ak;
+
+   private static Biome func_185428_a(String var0) {
+      Biome var1 = (Biome)IRegistry.field_212624_m.func_212608_b(new ResourceLocation(var0));
+      if (var1 == null) {
+         throw new IllegalStateException("Invalid Biome requested: " + var0);
+      } else {
+         return var1;
+      }
+   }
+
+   static {
+      if (!Bootstrap.func_179869_a()) {
+         throw new RuntimeException("Accessed Biomes before Bootstrap!");
+      } else {
+         field_76771_b = func_185428_a("ocean");
+         field_180279_ad = field_76771_b;
+         field_76772_c = func_185428_a("plains");
+         field_76769_d = func_185428_a("desert");
+         field_76770_e = func_185428_a("mountains");
+         field_76767_f = func_185428_a("forest");
+         field_76768_g = func_185428_a("taiga");
+         field_76780_h = func_185428_a("swamp");
+         field_76781_i = func_185428_a("river");
+         field_76778_j = func_185428_a("nether");
+         field_76779_k = func_185428_a("the_end");
+         field_76776_l = func_185428_a("frozen_ocean");
+         field_76777_m = func_185428_a("frozen_river");
+         field_76774_n = func_185428_a("snowy_tundra");
+         field_76775_o = func_185428_a("snowy_mountains");
+         field_76789_p = func_185428_a("mushroom_fields");
+         field_76788_q = func_185428_a("mushroom_field_shore");
+         field_76787_r = func_185428_a("beach");
+         field_76786_s = func_185428_a("desert_hills");
+         field_76785_t = func_185428_a("wooded_hills");
+         field_76784_u = func_185428_a("taiga_hills");
+         field_76783_v = func_185428_a("mountain_edge");
+         field_76782_w = func_185428_a("jungle");
+         field_76792_x = func_185428_a("jungle_hills");
+         field_150574_L = func_185428_a("jungle_edge");
+         field_150575_M = func_185428_a("deep_ocean");
+         field_150576_N = func_185428_a("stone_shore");
+         field_150577_O = func_185428_a("snowy_beach");
+         field_150583_P = func_185428_a("birch_forest");
+         field_150582_Q = func_185428_a("birch_forest_hills");
+         field_150585_R = func_185428_a("dark_forest");
+         field_150584_S = func_185428_a("snowy_taiga");
+         field_150579_T = func_185428_a("snowy_taiga_hills");
+         field_150578_U = func_185428_a("giant_tree_taiga");
+         field_150581_V = func_185428_a("giant_tree_taiga_hills");
+         field_150580_W = func_185428_a("wooded_mountains");
+         field_150588_X = func_185428_a("savanna");
+         field_150587_Y = func_185428_a("savanna_plateau");
+         field_150589_Z = func_185428_a("badlands");
+         field_150607_aa = func_185428_a("wooded_badlands_plateau");
+         field_150608_ab = func_185428_a("badlands_plateau");
+         field_201936_P = func_185428_a("small_end_islands");
+         field_201937_Q = func_185428_a("end_midlands");
+         field_201938_R = func_185428_a("end_highlands");
+         field_201939_S = func_185428_a("end_barrens");
+         field_203614_T = func_185428_a("warm_ocean");
+         field_203615_U = func_185428_a("lukewarm_ocean");
+         field_203616_V = func_185428_a("cold_ocean");
+         field_203617_W = func_185428_a("deep_warm_ocean");
+         field_203618_X = func_185428_a("deep_lukewarm_ocean");
+         field_203619_Y = func_185428_a("deep_cold_ocean");
+         field_203620_Z = func_185428_a("deep_frozen_ocean");
+         field_185440_P = func_185428_a("the_void");
+         field_185441_Q = func_185428_a("sunflower_plains");
+         field_185442_R = func_185428_a("desert_lakes");
+         field_185443_S = func_185428_a("gravelly_mountains");
+         field_185444_T = func_185428_a("flower_forest");
+         field_150590_f = func_185428_a("taiga_mountains");
+         field_150599_m = func_185428_a("swamp_hills");
+         field_185445_W = func_185428_a("ice_spikes");
+         field_185446_X = func_185428_a("modified_jungle");
+         field_185447_Y = func_185428_a("modified_jungle_edge");
+         field_185448_Z = func_185428_a("tall_birch_forest");
+         field_185429_aa = func_185428_a("tall_birch_hills");
+         field_185430_ab = func_185428_a("dark_forest_hills");
+         field_185431_ac = func_185428_a("snowy_taiga_mountains");
+         field_185432_ad = func_185428_a("giant_spruce_taiga");
+         field_185433_ae = func_185428_a("giant_spruce_taiga_hills");
+         field_185434_af = func_185428_a("modified_gravelly_mountains");
+         field_185435_ag = func_185428_a("shattered_savanna");
+         field_185436_ah = func_185428_a("shattered_savanna_plateau");
+         field_185437_ai = func_185428_a("eroded_badlands");
+         field_185438_aj = func_185428_a("modified_wooded_badlands_plateau");
+         field_185439_ak = func_185428_a("modified_badlands_plateau");
+      }
+   }
+}
