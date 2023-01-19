@@ -75,6 +75,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -155,14 +157,10 @@ import org.slf4j.Logger;
 
 public class ServerLevel extends Level implements WorldGenLevel {
    public static final BlockPos END_SPAWN_POINT = new BlockPos(100, 50, 0);
-   private static final int MIN_RAIN_DELAY_TIME = 12000;
-   private static final int MAX_RAIN_DELAY_TIME = 180000;
-   private static final int MIN_RAIN_TIME = 12000;
-   private static final int MAX_RAIN_TIME = 24000;
-   private static final int MIN_THUNDER_DELAY_TIME = 12000;
-   private static final int MAX_THUNDER_DELAY_TIME = 180000;
-   private static final int MIN_THUNDER_TIME = 3600;
-   private static final int MAX_THUNDER_TIME = 15600;
+   public static final IntProvider RAIN_DELAY = UniformInt.of(12000, 180000);
+   public static final IntProvider RAIN_DURATION = UniformInt.of(12000, 24000);
+   private static final IntProvider THUNDER_DELAY = UniformInt.of(12000, 180000);
+   public static final IntProvider THUNDER_DURATION = UniformInt.of(3600, 15600);
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int EMPTY_TIME_NO_TICK = 300;
    private static final int MAX_SCHEDULED_TICKS_PER_TICK = 65536;
@@ -466,13 +464,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
                }
             }
 
-            BlockState var26 = this.getBlockState(var19);
-            Biome.Precipitation var28 = var21.getPrecipitation();
-            if (var28 == Biome.Precipitation.RAIN && var21.coldEnoughToSnow(var19)) {
-               var28 = Biome.Precipitation.SNOW;
+            Biome.Precipitation var26 = var21.getPrecipitationAt(var19);
+            if (var26 != Biome.Precipitation.NONE) {
+               BlockState var28 = this.getBlockState(var19);
+               var28.getBlock().handlePrecipitation(var28, this, var19, var26);
             }
-
-            var26.getBlock().handlePrecipitation(var26, this, var19, var28);
          }
       }
 
@@ -593,9 +589,9 @@ public class ServerLevel extends Level implements WorldGenLevel {
                      var5 = !var5;
                   }
                } else if (var5) {
-                  var3 = Mth.randomBetweenInclusive(this.random, 3600, 15600);
+                  var3 = THUNDER_DURATION.sample(this.random);
                } else {
-                  var3 = Mth.randomBetweenInclusive(this.random, 12000, 180000);
+                  var3 = THUNDER_DELAY.sample(this.random);
                }
 
                if (var4 > 0) {
@@ -603,9 +599,9 @@ public class ServerLevel extends Level implements WorldGenLevel {
                      var6 = !var6;
                   }
                } else if (var6) {
-                  var4 = Mth.randomBetweenInclusive(this.random, 12000, 24000);
+                  var4 = RAIN_DURATION.sample(this.random);
                } else {
-                  var4 = Mth.randomBetweenInclusive(this.random, 12000, 180000);
+                  var4 = RAIN_DELAY.sample(this.random);
                }
             }
 

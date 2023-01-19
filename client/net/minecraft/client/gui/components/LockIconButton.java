@@ -36,7 +36,6 @@ public class LockIconButton extends Button {
    public void renderButton(PoseStack var1, int var2, int var3, float var4) {
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, Button.WIDGETS_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       LockIconButton.Icon var5;
       if (!this.active) {
          var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;

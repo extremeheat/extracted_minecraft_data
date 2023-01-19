@@ -130,7 +130,7 @@ public class SpriteLoader {
       }
 
       FrameSize var11 = var2.calculateFrameSize(var3.getWidth(), var3.getHeight());
-      if (Mth.isDivisionInteger(var3.getWidth(), var11.width()) && Mth.isDivisionInteger(var3.getHeight(), var11.height())) {
+      if (Mth.isMultipleOf(var3.getWidth(), var11.width()) && Mth.isMultipleOf(var3.getHeight(), var11.height())) {
          return new SpriteContents(var0, var11, var3, var2);
       } else {
          LOGGER.error(

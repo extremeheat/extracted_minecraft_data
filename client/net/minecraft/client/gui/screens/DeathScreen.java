@@ -34,10 +34,12 @@ public class DeathScreen extends Screen {
       this.delayTicker = 0;
       this.exitButtons.clear();
       MutableComponent var1 = this.hardcore ? Component.translatable("deathScreen.spectate") : Component.translatable("deathScreen.respawn");
-      this.exitButtons.add(this.addRenderableWidget(Button.builder(var1, var1x -> {
-         this.minecraft.player.respawn();
-         this.minecraft.setScreen(null);
-      }).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()));
+      this.exitButtons
+         .add(
+            this.addRenderableWidget(
+               Button.builder(var1, var1x -> this.minecraft.player.respawn()).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()
+            )
+         );
       this.exitToTitleButton = this.addRenderableWidget(
          Button.builder(
                Component.translatable("deathScreen.titleScreen"),
@@ -114,7 +116,6 @@ public class DeathScreen extends Screen {
       super.render(var1, var2, var3, var4);
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
          RenderSystem.setShaderTexture(0, AbstractWidget.WIDGETS_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          this.blit(var1, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 182, 24, 15, 15);
       }
    }

@@ -3,11 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -388,7 +384,6 @@ public class BookEditScreen extends Screen {
       this.renderBackground(var1);
       this.setFocused(null);
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, BookViewScreen.BOOK_LOCATION);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
@@ -414,7 +409,7 @@ public class BookEditScreen extends Screen {
             this.font.draw(var1, var12.asComponent, (float)var12.x, (float)var12.y, -16777216);
          }
 
-         this.renderHighlight(var14.selection);
+         this.renderHighlight(var1, var14.selection);
          this.renderCursor(var1, var14.cursor, var14.cursorAtEnd);
       }
 
@@ -432,30 +427,19 @@ public class BookEditScreen extends Screen {
       }
    }
 
-   private void renderHighlight(Rect2i[] var1) {
-      Tesselator var2 = Tesselator.getInstance();
-      BufferBuilder var3 = var2.getBuilder();
-      RenderSystem.setShader(GameRenderer::getPositionShader);
-      RenderSystem.setShaderColor(0.0F, 0.0F, 255.0F, 255.0F);
-      RenderSystem.disableTexture();
+   private void renderHighlight(PoseStack var1, Rect2i[] var2) {
       RenderSystem.enableColorLogicOp();
       RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
-      for(Rect2i var7 : var1) {
-         int var8 = var7.getX();
-         int var9 = var7.getY();
-         int var10 = var8 + var7.getWidth();
-         int var11 = var9 + var7.getHeight();
-         var3.vertex((double)var8, (double)var11, 0.0).endVertex();
-         var3.vertex((double)var10, (double)var11, 0.0).endVertex();
-         var3.vertex((double)var10, (double)var9, 0.0).endVertex();
-         var3.vertex((double)var8, (double)var9, 0.0).endVertex();
+      for(Rect2i var6 : var2) {
+         int var7 = var6.getX();
+         int var8 = var6.getY();
+         int var9 = var7 + var6.getWidth();
+         int var10 = var8 + var6.getHeight();
+         fill(var1, var7, var8, var9, var10, -16776961);
       }
 
-      var2.end();
       RenderSystem.disableColorLogicOp();
-      RenderSystem.enableTexture();
    }
 
    private BookEditScreen.Pos2i convertScreenToLocal(BookEditScreen.Pos2i var1) {

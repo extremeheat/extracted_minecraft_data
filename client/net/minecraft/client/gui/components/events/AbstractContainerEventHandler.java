@@ -30,6 +30,14 @@ public abstract class AbstractContainerEventHandler extends GuiComponent impleme
 
    @Override
    public void setFocused(@Nullable GuiEventListener var1) {
+      if (this.focused != null) {
+         this.focused.setFocused(false);
+      }
+
+      if (var1 != null) {
+         var1.setFocused(true);
+      }
+
       this.focused = var1;
    }
 }

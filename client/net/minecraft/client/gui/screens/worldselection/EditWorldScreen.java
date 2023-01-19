@@ -59,7 +59,16 @@ public class EditWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      Button var1 = this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit.resetIcon"), var1x -> {
+      this.renameButton = Button.builder(Component.translatable("selectWorld.edit.save"), var1x -> this.onRename())
+         .bounds(this.width / 2 - 100, this.height / 4 + 144 + 5, 98, 20)
+         .build();
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 38, 200, 20, Component.translatable("selectWorld.enterName"));
+      LevelSummary var1 = this.levelAccess.getSummary();
+      String var2 = var1 == null ? "" : var1.getLevelName();
+      this.nameEdit.setValue(var2);
+      this.nameEdit.setResponder(var1x -> this.renameButton.active = !var1x.trim().isEmpty());
+      this.addWidget(this.nameEdit);
+      Button var3 = this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit.resetIcon"), var1x -> {
          this.levelAccess.getIconFile().ifPresent(var0 -> FileUtils.deleteQuietly(var0.toFile()));
          var1x.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 0 + 5, 200, 20).build());
@@ -157,23 +166,13 @@ public class EditWorldScreen extends Screen {
             .bounds(this.width / 2 - 100, this.height / 4 + 120 + 5, 200, 20)
             .build()
       );
-      this.renameButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("selectWorld.edit.save"), var1x -> this.onRename())
-            .bounds(this.width / 2 - 100, this.height / 4 + 144 + 5, 98, 20)
-            .build()
-      );
+      this.addRenderableWidget(this.renameButton);
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.callback.accept(false))
             .bounds(this.width / 2 + 2, this.height / 4 + 144 + 5, 98, 20)
             .build()
       );
-      var1.active = this.levelAccess.getIconFile().filter(var0 -> Files.isRegularFile(var0)).isPresent();
-      LevelSummary var2 = this.levelAccess.getSummary();
-      String var3 = var2 == null ? "" : var2.getLevelName();
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 38, 200, 20, Component.translatable("selectWorld.enterName"));
-      this.nameEdit.setValue(var3);
-      this.nameEdit.setResponder(var1x -> this.renameButton.active = !var1x.trim().isEmpty());
-      this.addWidget(this.nameEdit);
+      var3.active = this.levelAccess.getIconFile().filter(var0 -> Files.isRegularFile(var0)).isPresent();
       this.setInitialFocus(this.nameEdit);
    }
 

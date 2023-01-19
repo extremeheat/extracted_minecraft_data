@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -130,8 +131,26 @@ public class PackSelectionScreen extends Screen {
 
    private void updateList(TransferableSelectionList var1, Stream<PackSelectionModel.Entry> var2) {
       var1.children().clear();
+      TransferableSelectionList.PackEntry var3 = var1.getSelected();
+      String var4 = var3 == null ? "" : var3.getPackId();
       var1.setSelected(null);
-      var2.forEach(var2x -> var1.children().add(new TransferableSelectionList.PackEntry(this.minecraft, var1, this, var2x)));
+      var2.forEach(var3x -> {
+         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
+         var1.children().add(var4x);
+         if (var3x.getId().equals(var4)) {
+            var1.setSelected(var4x);
+         }
+      });
+   }
+
+   public void updateFocus(PackSelectionModel.Entry var1, TransferableSelectionList var2) {
+      TransferableSelectionList var3 = this.selectedPackList == var2 ? this.availablePackList : this.selectedPackList;
+      this.changeFocus(ComponentPath.path(var3.getFirstElement(), var3, this));
+   }
+
+   public void clearSelected() {
+      this.selectedPackList.setSelected(null);
+      this.availablePackList.setSelected(null);
    }
 
    private void reload() {
@@ -143,7 +162,7 @@ public class PackSelectionScreen extends Screen {
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(0);
+      this.renderDirtBackground(var1);
       this.availablePackList.render(var1, var2, var3, var4);
       this.selectedPackList.render(var1, var2, var3, var4);
       drawCenteredString(var1, this.font, this.title, this.width / 2, 8, 16777215);

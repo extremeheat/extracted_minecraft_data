@@ -412,7 +412,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    private void drawExpired(PoseStack var1, int var2, int var3, int var4, int var5) {
       RenderSystem.setShaderTexture(0, EXPIRED_ICON_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_EXPIRED_TOOLTIP;
@@ -421,7 +420,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    private void drawExpiring(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
       RenderSystem.setShaderTexture(0, EXPIRES_SOON_ICON_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       if (this.animTick % 20 < 10) {
          GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 20, 28);
       } else {
@@ -441,7 +439,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    private void drawOpen(PoseStack var1, int var2, int var3, int var4, int var5) {
       RenderSystem.setShaderTexture(0, ON_ICON_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_OPEN_TOOLTIP;
@@ -450,7 +447,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    private void drawClose(PoseStack var1, int var2, int var3, int var4, int var5) {
       RenderSystem.setShaderTexture(0, OFF_ICON_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_CLOSED_TOOLTIP;

@@ -490,7 +490,12 @@ public class ArmorStand extends LivingEntity {
    }
 
    private void brokenByPlayer(DamageSource var1) {
-      Block.popResource(this.level, this.blockPosition(), new ItemStack(Items.ARMOR_STAND));
+      ItemStack var2 = new ItemStack(Items.ARMOR_STAND);
+      if (this.hasCustomName()) {
+         var2.setHoverName(this.getCustomName());
+      }
+
+      Block.popResource(this.level, this.blockPosition(), var2);
       this.brokenByAnything(var1);
    }
 

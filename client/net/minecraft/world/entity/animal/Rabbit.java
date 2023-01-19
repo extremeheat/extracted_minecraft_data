@@ -58,7 +58,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
@@ -381,9 +380,9 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    private static Rabbit.Variant getRandomRabbitVariant(LevelAccessor var0, BlockPos var1) {
       Holder var2 = var0.getBiome(var1);
       int var3 = var0.getRandom().nextInt(100);
-      if (((Biome)var2.value()).getPrecipitation() == Biome.Precipitation.SNOW) {
+      if (var2.is(BiomeTags.SPAWNS_WHITE_RABBITS)) {
          return var3 < 80 ? Rabbit.Variant.WHITE : Rabbit.Variant.WHITE_SPLOTCHED;
-      } else if (var2.is(BiomeTags.ONLY_ALLOWS_SNOW_AND_GOLD_RABBITS)) {
+      } else if (var2.is(BiomeTags.SPAWNS_GOLD_RABBITS)) {
          return Rabbit.Variant.GOLD;
       } else {
          return var3 < 50 ? Rabbit.Variant.BROWN : (var3 < 90 ? Rabbit.Variant.SALT : Rabbit.Variant.BLACK);

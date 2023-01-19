@@ -2,15 +2,20 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
@@ -24,8 +29,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, NarratableEntry {
+public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
    public static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
+   protected static final int BUTTON_TEXTURE_Y_OFFSET = 46;
    protected int width;
    protected int height;
    private int x;
@@ -51,19 +57,24 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       this.message = var5;
    }
 
+   @Override
    public int getHeight() {
       return this.height;
    }
 
-   protected int getYImage(boolean var1) {
-      byte var2 = 1;
+   protected ResourceLocation getTextureLocation() {
+      return WIDGETS_LOCATION;
+   }
+
+   protected int getTextureY() {
+      byte var1 = 1;
       if (!this.active) {
-         var2 = 0;
-      } else if (var1) {
-         var2 = 2;
+         var1 = 0;
+      } else if (this.isHoveredOrFocused()) {
+         var1 = 2;
       }
 
-      return var2;
+      return 46 + var1 * 20;
    }
 
    @Override
@@ -77,7 +88,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
 
    private void updateTooltip() {
       if (this.tooltip != null) {
-         boolean var1 = this.isHoveredOrFocused();
+         boolean var1 = this.isHovered || this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard();
          if (var1 != this.wasHoveredOrFocused) {
             if (var1) {
                this.hoverOrFocusedStartTime = Util.getMillis();
@@ -96,7 +107,9 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
    }
 
    protected ClientTooltipPositioner createTooltipPositioner() {
-      return (ClientTooltipPositioner)(this.isFocused() ? new BelowOrAboveWidgetTooltipPositioner(this) : DefaultTooltipPositioner.INSTANCE);
+      return (ClientTooltipPositioner)(!this.isHovered && this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard()
+         ? new BelowOrAboveWidgetTooltipPositioner(this)
+         : DefaultTooltipPositioner.INSTANCE);
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
@@ -119,19 +132,20 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       Minecraft var5 = Minecraft.getInstance();
       Font var6 = var5.font;
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
+      RenderSystem.setShaderTexture(0, this.getTextureLocation());
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-      int var7 = this.getYImage(this.isHoveredOrFocused());
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
       RenderSystem.enableDepthTest();
-      this.blit(var1, this.getX(), this.getY(), 0, 46 + var7 * 20, this.width / 2, this.height);
-      this.blit(var1, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2, 46 + var7 * 20, this.width / 2, this.height);
+      int var7 = this.width / 2;
+      int var8 = this.width - var7;
+      int var9 = this.getTextureY();
+      this.blit(var1, this.getX(), this.getY(), 0, var9, var7, this.height);
+      this.blit(var1, this.getX() + var7, this.getY(), 200 - var8, var9, var8, this.height);
       this.renderBg(var1, var5, var2, var3);
-      int var8 = this.active ? 16777215 : 10526880;
-      drawCenteredString(
-         var1, var6, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, var8 | Mth.ceil(this.alpha * 255.0F) << 24
-      );
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      int var10 = this.active ? 16777215 : 10526880;
+      drawCenteredString(var1, var6, this.getMessage(), this.getX() + var7, this.getY() + (this.height - 8) / 2, var10 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
 
    protected void renderBg(PoseStack var1, Minecraft var2, int var3, int var4) {
@@ -198,21 +212,17 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
    }
 
    public boolean isHoveredOrFocused() {
-      return this.isHovered || this.focused;
+      return this.isHovered || this.isFocused();
    }
 
+   @Nullable
    @Override
-   public boolean changeFocus(boolean var1) {
-      if (this.active && this.visible) {
-         this.focused = !this.focused;
-         this.onFocusedChanged(this.focused);
-         return this.focused;
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      if (!this.active || !this.visible) {
+         return null;
       } else {
-         return false;
+         return !this.isFocused() ? ComponentPath.leaf(this) : null;
       }
-   }
-
-   protected void onFocusedChanged(boolean var1) {
    }
 
    @Override
@@ -229,6 +239,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       var1.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
+   @Override
    public int getWidth() {
       return this.width;
    }
@@ -249,6 +260,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return this.message;
    }
 
+   @Override
    public boolean isFocused() {
       return this.focused;
    }
@@ -258,13 +270,14 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return this.visible && this.active;
    }
 
-   protected void setFocused(boolean var1) {
+   @Override
+   public void setFocused(boolean var1) {
       this.focused = var1;
    }
 
    @Override
    public NarratableEntry.NarrationPriority narrationPriority() {
-      if (this.focused) {
+      if (this.isFocused()) {
          return NarratableEntry.NarrationPriority.FOCUSED;
       } else {
          return this.isHovered ? NarratableEntry.NarrationPriority.HOVERED : NarratableEntry.NarrationPriority.NONE;
@@ -292,24 +305,33 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       }
    }
 
+   @Override
    public int getX() {
       return this.x;
    }
 
+   @Override
    public void setX(int var1) {
       this.x = var1;
    }
 
-   public void setPosition(int var1, int var2) {
-      this.setX(var1);
-      this.setY(var2);
-   }
-
+   @Override
    public int getY() {
       return this.y;
    }
 
+   @Override
    public void setY(int var1) {
       this.y = var1;
+   }
+
+   @Override
+   public void visitWidgets(Consumer<AbstractWidget> var1) {
+      var1.accept(this);
+   }
+
+   @Override
+   public ScreenRectangle getRectangle() {
+      return new ScreenRectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
    }
 }

@@ -246,7 +246,9 @@ public class Util {
       Type var2 = null;
 
       try {
-         var2 = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getWorldVersion())).getChoiceType(var0, var1);
+         var2 = DataFixers.getDataFixer()
+            .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getDataVersion().getVersion()))
+            .getChoiceType(var0, var1);
       } catch (IllegalArgumentException var4) {
          LOGGER.error("No data fixer registered for {}", var1);
          if (SharedConstants.IS_RUNNING_IN_IDE) {

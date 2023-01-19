@@ -1,11 +1,21 @@
 package net.minecraft.client.gui.components.events;
 
+import com.mojang.datafixers.util.Pair;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenAxis;
+import net.minecraft.client.gui.navigation.ScreenDirection;
+import net.minecraft.client.gui.navigation.ScreenPosition;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import org.joml.Vector2i;
 
 public interface ContainerEventHandler extends GuiEventListener {
    List<? extends GuiEventListener> children();
@@ -82,47 +92,152 @@ public interface ContainerEventHandler extends GuiEventListener {
 
    void setFocused(@Nullable GuiEventListener var1);
 
-   default void setInitialFocus(@Nullable GuiEventListener var1) {
-      this.setFocused(var1);
-      var1.changeFocus(true);
+   @Override
+   default void setFocused(boolean var1) {
+   }
+
+   @Override
+   default boolean isFocused() {
+      return this.getFocused() != null;
+   }
+
+   @Nullable
+   @Override
+   default ComponentPath getCurrentFocusPath() {
+      GuiEventListener var1 = this.getFocused();
+      return var1 != null ? ComponentPath.path(this, var1.getCurrentFocusPath()) : null;
    }
 
    default void magicalSpecialHackyFocus(@Nullable GuiEventListener var1) {
       this.setFocused(var1);
    }
 
+   @Nullable
    @Override
-   default boolean changeFocus(boolean var1) {
+   default ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       GuiEventListener var2 = this.getFocused();
-      boolean var3 = var2 != null;
-      if (var3 && var2.changeFocus(var1)) {
-         return true;
-      } else {
-         List var4 = this.children();
-         int var6 = var4.indexOf(var2);
-         int var5;
-         if (var3 && var6 >= 0) {
-            var5 = var6 + (var1 ? 1 : 0);
-         } else if (var1) {
-            var5 = 0;
-         } else {
-            var5 = var4.size();
+      if (var2 != null) {
+         ComponentPath var3 = var2.nextFocusPath(var1);
+         if (var3 != null) {
+            return ComponentPath.path(this, var3);
          }
+      }
 
-         ListIterator var7 = var4.listIterator(var5);
-         BooleanSupplier var8 = var1 ? var7::hasNext : var7::hasPrevious;
-         Supplier var9 = var1 ? var7::next : var7::previous;
+      if (var1 instanceof FocusNavigationEvent.TabNavigation var5) {
+         return this.handleTabNavigation((FocusNavigationEvent.TabNavigation)var5);
+      } else {
+         return var1 instanceof FocusNavigationEvent.ArrowNavigation var4 ? this.handleArrowNavigation(var4) : null;
+      }
+   }
 
-         while(var8.getAsBoolean()) {
-            GuiEventListener var10 = (GuiEventListener)var9.get();
-            if (var10.changeFocus(var1)) {
-               this.setFocused(var10);
-               return true;
+   @Nullable
+   private ComponentPath handleTabNavigation(FocusNavigationEvent.TabNavigation var1) {
+      boolean var2 = var1.forward();
+      GuiEventListener var3 = this.getFocused();
+      List var4 = this.children();
+      int var6 = var4.indexOf(var3);
+      int var5;
+      if (var3 != null && var6 >= 0) {
+         var5 = var6 + (var2 ? 1 : 0);
+      } else if (var2) {
+         var5 = 0;
+      } else {
+         var5 = var4.size();
+      }
+
+      ListIterator var7 = var4.listIterator(var5);
+      BooleanSupplier var8 = var2 ? var7::hasNext : var7::hasPrevious;
+      Supplier var9 = var2 ? var7::next : var7::previous;
+
+      while(var8.getAsBoolean()) {
+         GuiEventListener var10 = (GuiEventListener)var9.get();
+         ComponentPath var11 = var10.nextFocusPath(var1);
+         if (var11 != null) {
+            return ComponentPath.path(this, var11);
+         }
+      }
+
+      return null;
+   }
+
+   @Nullable
+   private ComponentPath handleArrowNavigation(FocusNavigationEvent.ArrowNavigation var1) {
+      GuiEventListener var2 = this.getFocused();
+      if (var2 == null) {
+         ScreenDirection var5 = var1.direction();
+         ScreenRectangle var4 = this.getRectangle().getBorder(var5.getOpposite());
+         return ComponentPath.path(this, this.nextFocusPathInDirection(var4, var5, null, var1));
+      } else {
+         ScreenRectangle var3 = var2.getRectangle();
+         return ComponentPath.path(this, this.nextFocusPathInDirection(var3, var1.direction(), var2, var1));
+      }
+   }
+
+   @Nullable
+   private ComponentPath nextFocusPathInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
+      ScreenAxis var5 = var2.getAxis();
+      ScreenAxis var6 = var5.orthogonal();
+      ScreenDirection var7 = var6.getPositive();
+      int var8 = var1.getBoundInDirection(var2.getOpposite());
+      ArrayList var9 = new ArrayList();
+
+      for(GuiEventListener var11 : this.children()) {
+         if (var11 != var3) {
+            ScreenRectangle var12 = var11.getRectangle();
+            if (var12.overlapsInAxis(var1, var6)) {
+               int var13 = var12.getBoundInDirection(var2.getOpposite());
+               if (var2.isAfter(var13, var8)) {
+                  var9.add(var11);
+               } else if (var13 == var8 && var2.isAfter(var12.getBoundInDirection(var2), var1.getBoundInDirection(var2))) {
+                  var9.add(var11);
+               }
             }
          }
-
-         this.setFocused(null);
-         return false;
       }
+
+      Comparator var15 = Comparator.comparing(var1x -> var1x.getRectangle().getBoundInDirection(var2.getOpposite()), var2.coordinateValueComparator());
+      Comparator var16 = Comparator.comparing(var1x -> var1x.getRectangle().getBoundInDirection(var7.getOpposite()), var7.coordinateValueComparator());
+      var9.sort(var15.thenComparing(var16));
+
+      for(GuiEventListener var18 : var9) {
+         ComponentPath var14 = var18.nextFocusPath(var4);
+         if (var14 != null) {
+            return var14;
+         }
+      }
+
+      return this.nextFocusPathVaguelyInDirection(var1, var2, var3, var4);
+   }
+
+   @Nullable
+   private ComponentPath nextFocusPathVaguelyInDirection(
+      ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4
+   ) {
+      ScreenAxis var5 = var2.getAxis();
+      ScreenAxis var6 = var5.orthogonal();
+      ArrayList var7 = new ArrayList();
+      ScreenPosition var8 = ScreenPosition.of(var5, var1.getBoundInDirection(var2), var1.getCenterInAxis(var6));
+
+      for(GuiEventListener var10 : this.children()) {
+         if (var10 != var3) {
+            ScreenRectangle var11 = var10.getRectangle();
+            ScreenPosition var12 = ScreenPosition.of(var5, var11.getBoundInDirection(var2.getOpposite()), var11.getCenterInAxis(var6));
+            if (var2.isAfter(var12.getCoordinate(var5), var8.getCoordinate(var5))) {
+               long var13 = Vector2i.distanceSquared(var8.x(), var8.y(), var12.x(), var12.y());
+               var7.add(Pair.of(var10, var13));
+            }
+         }
+      }
+
+      var7.sort(Comparator.comparingDouble(Pair::getSecond));
+
+      for(Pair var16 : var7) {
+         ComponentPath var17 = ((GuiEventListener)var16.getFirst()).nextFocusPath(var4);
+         if (var17 != null) {
+            return var17;
+         }
+      }
+
+      return null;
    }
 }

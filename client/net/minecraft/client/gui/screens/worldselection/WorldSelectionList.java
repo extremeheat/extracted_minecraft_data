@@ -27,7 +27,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -194,19 +193,9 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       return super.getRowWidth() + 50;
    }
 
-   @Override
-   protected boolean isFocused() {
-      return this.screen.getFocused() == this;
-   }
-
    public void setSelected(@Nullable WorldSelectionList.Entry var1) {
       super.setSelected(var1);
       this.screen.updateButtonStatus(var1 != null && var1.isSelectable());
-   }
-
-   @Override
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-      this.moveSelection(var1, WorldSelectionList.Entry::isSelectable);
    }
 
    public Optional<WorldSelectionList.WorldListEntry> getSelectedOpt() {
@@ -341,7 +330,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
          this.minecraft.font.draw(var1, var12, (float)(var4 + 32 + 3), (float)(var3 + 9 + 3), 8421504);
          this.minecraft.font.draw(var1, var13, (float)(var4 + 32 + 3), (float)(var3 + 9 + 9 + 3), 8421504);
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.setShaderTexture(0, this.icon != null ? this.iconLocation : WorldSelectionList.ICON_MISSING);
          RenderSystem.enableBlend();
          GuiComponent.blit(var1, var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
@@ -350,7 +338,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             RenderSystem.setShaderTexture(0, WorldSelectionList.ICON_OVERLAY_LOCATION);
             GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int var14 = var7 - var4;
             boolean var15 = var14 < 32;
             int var16 = var15 ? 32 : 0;
@@ -408,7 +395,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                return true;
             } else {
                this.lastClickTime = Util.getMillis();
-               return false;
+               return true;
             }
          }
       }

@@ -33,7 +33,6 @@ public class TutorialToast implements Toast {
    @Override
    public Toast.Visibility render(PoseStack var1, ToastComponent var2, long var3) {
       RenderSystem.setShaderTexture(0, TEXTURE);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       var2.blit(var1, 0, 0, 0, 96, this.width(), this.height());
       this.icon.render(var1, var2, 6, 6);
       if (this.message == null) {

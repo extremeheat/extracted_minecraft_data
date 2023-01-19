@@ -33,9 +33,7 @@ public class VillageSectionsDebugRenderer implements DebugRenderer.SimpleDebugRe
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       this.doRender(var3, var5, var7);
-      RenderSystem.enableTexture();
       RenderSystem.disableBlend();
    }
 

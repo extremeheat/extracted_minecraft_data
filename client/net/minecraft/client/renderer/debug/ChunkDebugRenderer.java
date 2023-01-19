@@ -50,7 +50,6 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
          RenderSystem.lineWidth(2.0F);
-         RenderSystem.disableTexture();
          RenderSystem.depthMask(false);
          Map var24 = this.data.serverData.getNow(null);
          double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
@@ -79,7 +78,6 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
          RenderSystem.depthMask(true);
-         RenderSystem.enableTexture();
          RenderSystem.disableBlend();
       }
    }

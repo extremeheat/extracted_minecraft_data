@@ -41,7 +41,7 @@ public class BannerBlock extends AbstractBannerBlock {
 
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var1.getRotation())));
+      return this.defaultBlockState().setValue(ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var1.getRotation() + 180.0F)));
    }
 
    @Override

@@ -104,6 +104,10 @@ public class ToastComponent extends GuiComponent {
       return this.minecraft;
    }
 
+   public double getNotificationDisplayTimeMultiplier() {
+      return this.minecraft.options.notificationDisplayTime().get();
+   }
+
    class ToastInstance<T extends Toast> {
       private static final long ANIMATION_TIME = 600L;
       private final T toast;

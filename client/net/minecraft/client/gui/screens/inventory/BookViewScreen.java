@@ -163,7 +163,6 @@ public class BookViewScreen extends Screen {
    public void render(PoseStack var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, BOOK_LOCATION);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;

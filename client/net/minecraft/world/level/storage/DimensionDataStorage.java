@@ -63,7 +63,7 @@ public class DimensionDataStorage {
       try {
          File var3 = this.getDataFile(var2);
          if (var3.exists()) {
-            CompoundTag var4 = this.readTagFromDisk(var2, SharedConstants.getCurrentVersion().getWorldVersion());
+            CompoundTag var4 = this.readTagFromDisk(var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
             return (T)var1.apply(var4.getCompound("data"));
          }
       } catch (Exception var5) {
@@ -94,8 +94,8 @@ public class DimensionDataStorage {
             }
          }
 
-         int var16 = var6.contains("DataVersion", 99) ? var6.getInt("DataVersion") : 1343;
-         var8 = NbtUtils.update(this.fixerUpper, DataFixTypes.SAVED_DATA, var6, var16, var2);
+         int var16 = NbtUtils.getDataVersion(var6, 1343);
+         var8 = DataFixTypes.SAVED_DATA.update(this.fixerUpper, var6, var16, var2);
       }
 
       return var8;

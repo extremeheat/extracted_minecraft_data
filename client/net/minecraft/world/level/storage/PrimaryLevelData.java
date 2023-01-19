@@ -22,7 +22,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -147,7 +146,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    public PrimaryLevelData(LevelSettings var1, WorldOptions var2, PrimaryLevelData.SpecialWorldProperty var3, Lifecycle var4) {
       this(
          null,
-         SharedConstants.getCurrentVersion().getWorldVersion(),
+         SharedConstants.getCurrentVersion().getDataVersion().getVersion(),
          null,
          false,
          0,
@@ -179,8 +178,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       );
    }
 
-   public static PrimaryLevelData parse(
-      Dynamic<Tag> var0,
+   public static <T> PrimaryLevelData parse(
+      Dynamic<T> var0,
       DataFixer var1,
       int var2,
       @Nullable CompoundTag var3,
@@ -191,10 +190,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       Lifecycle var8
    ) {
       long var9 = var0.get("Time").asLong(0L);
-      CompoundTag var11 = var0.get("DragonFight")
-         .result()
-         .<CompoundTag>map(Dynamic::getValue)
-         .orElseGet(() -> (Tag)var0.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap().getValue());
+      CompoundTag var11 = (CompoundTag)((Dynamic)var0.get("DragonFight")
+            .result()
+            .orElseGet(() -> (T)var0.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap()))
+         .convert(NbtOps.INSTANCE)
+         .getValue();
       return new PrimaryLevelData(
          var1,
          var2,
@@ -217,7 +217,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          WorldBorder.Settings.read(var0, WorldBorder.DEFAULT_SETTINGS),
          var0.get("WanderingTraderSpawnDelay").asInt(0),
          var0.get("WanderingTraderSpawnChance").asInt(0),
-         (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse(null),
+         (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((T)null),
          var0.get("ServerBrands").asStream().flatMap(var0x -> var0x.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)),
          new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()),
          (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(),
@@ -252,7 +252,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var5.putBoolean("Snapshot", !SharedConstants.getCurrentVersion().isStable());
       var5.putString("Series", SharedConstants.getCurrentVersion().getDataVersion().getSeries());
       var2.put("Version", var5);
-      var2.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
+      NbtUtils.addCurrentDataVersion(var2);
       RegistryOps var6 = RegistryOps.create(NbtOps.INSTANCE, var1);
       WorldGenSettings.encode(var6, this.worldOptions, var1)
          .resultOrPartial(Util.prefix("WorldGenSettings: ", LOGGER::error))
@@ -330,14 +330,14 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
 
    private void updatePlayerTag() {
       if (!this.upgradedPlayerTag && this.loadedPlayerTag != null) {
-         if (this.playerDataVersion < SharedConstants.getCurrentVersion().getWorldVersion()) {
+         if (this.playerDataVersion < SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
             if (this.fixerUpper == null) {
                throw (NullPointerException)Util.pauseInIde(
                   new NullPointerException("Fixer Upper not set inside LevelData, and the player tag is not upgraded.")
                );
             }
 
-            this.loadedPlayerTag = NbtUtils.update(this.fixerUpper, DataFixTypes.PLAYER, this.loadedPlayerTag, this.playerDataVersion);
+            this.loadedPlayerTag = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, this.loadedPlayerTag, this.playerDataVersion);
          }
 
          this.upgradedPlayerTag = true;

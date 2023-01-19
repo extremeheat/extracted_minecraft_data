@@ -80,7 +80,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
                if (var1 == 0) {
                   throw ERROR_DIVIDE_BY_ZERO.create();
                } else {
-                  return Mth.intFloorDiv(var0x, var1);
+                  return Mth.floorDiv(var0x, var1);
                }
             };
          case "%=":

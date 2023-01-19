@@ -691,7 +691,7 @@ public final class ItemStack {
 
                   if (var18) {
                      var3.add(
-                        Component.literal(" ")
+                        CommonComponents.space()
                            .append(
                               Component.translatable(
                                  "attribute.modifier.equals." + var13.getOperation().toValue(),

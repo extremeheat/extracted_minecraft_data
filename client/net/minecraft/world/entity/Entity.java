@@ -1777,11 +1777,15 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
 
             this.setPose(Pose.STANDING);
             this.vehicle = var1;
-            this.vehicle.addPassenger(this);
-            var1.getIndirectPassengersStream()
-               .filter(var0 -> var0 instanceof ServerPlayer)
-               .forEach(var0 -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)var0));
-            return true;
+            if (!this.vehicle.addPassenger(this)) {
+               this.vehicle = null;
+               return false;
+            } else {
+               var1.getIndirectPassengersStream()
+                  .filter(var0 -> var0 instanceof ServerPlayer)
+                  .forEach(var0 -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)var0));
+               return true;
+            }
          } else {
             return false;
          }
@@ -1810,15 +1814,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       }
    }
 
-   public boolean allowsDismounting(Entity var1) {
-      return true;
-   }
-
    public void stopRiding() {
       this.removeVehicle();
    }
 
-   protected void addPassenger(Entity var1) {
+   protected boolean addPassenger(Entity var1) {
       if (var1.getVehicle() != this) {
          throw new IllegalStateException("Use x.startRiding(y), not y.addPassenger(x)");
       } else {
@@ -1826,7 +1826,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
             this.passengers = ImmutableList.of(var1);
          } else {
             ArrayList var2 = Lists.newArrayList(this.passengers);
-            if (!this.level.isClientSide && var1 instanceof Player && !(this.getControllingPassenger() instanceof Player)) {
+            if (!this.level.isClientSide && var1 instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
                var2.add(0, var1);
             } else {
                var2.add(var1);
@@ -1834,6 +1834,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
 
             this.passengers = ImmutableList.copyOf(var2);
          }
+
+         return true;
       }
    }
 
@@ -1949,7 +1951,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       }
    }
 
-   public void animateHurt() {
+   public void animateHurt(float var1) {
    }
 
    public Iterable<ItemStack> getHandSlots() {
@@ -2402,7 +2404,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    public boolean canChangeDimensions() {
-      return true;
+      return !this.isPassenger() && !this.isVehicle();
    }
 
    public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
@@ -2505,6 +2507,28 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
          this.level.getChunk(var7.x, var7.z);
          this.teleportTo(var1, var3, var5);
       }
+   }
+
+   public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<RelativeMovement> var8, float var9, float var10) {
+      float var11 = Mth.clamp(var10, -90.0F, 90.0F);
+      if (var1 == this.level) {
+         this.moveTo(var2, var4, var6, var9, var11);
+         this.setYHeadRot(var9);
+      } else {
+         this.unRide();
+         Entity var12 = this.getType().create(var1);
+         if (var12 == null) {
+            return false;
+         }
+
+         var12.restoreFrom(this);
+         var12.moveTo(var2, var4, var6, var9, var11);
+         var12.setYHeadRot(var9);
+         this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
+         var1.addDuringTeleport(var12);
+      }
+
+      return true;
    }
 
    public void dismountTo(double var1, double var3, double var5) {
@@ -3134,6 +3158,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       } else {
          this.xRot = var1;
       }
+   }
+
+   public boolean canSprint() {
+      return false;
    }
 
    public final boolean isRemoved() {

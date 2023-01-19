@@ -25,7 +25,6 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       ClientLevel var9 = this.minecraft.level;
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       BlockPos var10 = new BlockPos(var3, var5, var7);
       LongOpenHashSet var11 = new LongOpenHashSet();
 
@@ -49,7 +48,5 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
             DebugRenderer.renderFloatingText(String.valueOf(var14), (double)var13.getX() + 0.5, (double)var13.getY() + 0.25, (double)var13.getZ() + 0.5, var16);
          }
       }
-
-      RenderSystem.enableTexture();
    }
 }

@@ -56,7 +56,7 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       var1.writeVarInt(this.positions.length);
 
       for(int var2 = 0; var2 < this.positions.length; ++var2) {
-         var1.writeVarLong((long)(Block.getId(this.states[var2]) << 12 | this.positions[var2]));
+         var1.writeVarLong((long)Block.getId(this.states[var2]) << 12 | (long)this.positions[var2]);
       }
    }
 

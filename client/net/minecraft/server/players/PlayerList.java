@@ -837,9 +837,8 @@ public abstract class PlayerList {
       UUID var2 = var1.getUUID();
       PlayerAdvancements var3 = this.advancements.get(var2);
       if (var3 == null) {
-         File var4 = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).toFile();
-         File var5 = new File(var4, var2 + ".json");
-         var3 = new PlayerAdvancements(this.server.getFixerUpper(), this, this.server.getAdvancements(), var5, var1);
+         Path var4 = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).resolve(var2 + ".json");
+         var3 = new PlayerAdvancements(this.server.getFixerUpper(), this, this.server.getAdvancements(), var4, var1);
          this.advancements.put(var2, var3);
       }
 

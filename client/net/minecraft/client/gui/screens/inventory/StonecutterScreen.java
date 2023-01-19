@@ -46,7 +46,6 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
       this.renderBackground(var1);
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, BG_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;

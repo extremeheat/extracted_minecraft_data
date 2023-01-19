@@ -20,7 +20,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,7 +32,9 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.Validate;
@@ -52,11 +53,12 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
    static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
    static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/server_selection.png");
    static final Component SCANNING_LABEL = Component.translatable("lanServer.scanning");
-   static final Component CANT_RESOLVE_TEXT = Component.translatable("multiplayer.status.cannot_resolve").withStyle(ChatFormatting.DARK_RED);
-   static final Component CANT_CONNECT_TEXT = Component.translatable("multiplayer.status.cannot_connect").withStyle(ChatFormatting.DARK_RED);
-   static final Component INCOMPATIBLE_TOOLTIP = Component.translatable("multiplayer.status.incompatible");
-   static final Component NO_CONNECTION_TOOLTIP = Component.translatable("multiplayer.status.no_connection");
-   static final Component PINGING_TOOLTIP = Component.translatable("multiplayer.status.pinging");
+   static final Component CANT_RESOLVE_TEXT = Component.translatable("multiplayer.status.cannot_resolve").withStyle(var0 -> var0.withColor(-65536));
+   static final Component CANT_CONNECT_TEXT = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
+   static final Component INCOMPATIBLE_STATUS = Component.translatable("multiplayer.status.incompatible");
+   static final Component NO_CONNECTION_STATUS = Component.translatable("multiplayer.status.no_connection");
+   static final Component PINGING_STATUS = Component.translatable("multiplayer.status.pinging");
+   static final Component ONLINE_STATUS = Component.translatable("multiplayer.status.online");
    private final JoinMultiplayerScreen screen;
    private final List<ServerSelectionList.OnlineServerEntry> onlineServers = Lists.newArrayList();
    private final ServerSelectionList.Entry lanHeader = new ServerSelectionList.LANHeader();
@@ -85,11 +87,6 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       return var4 != null && var4.keyPressed(var1, var2, var3) || super.keyPressed(var1, var2, var3);
    }
 
-   @Override
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-      this.moveSelection(var1, var0 -> !(var0 instanceof ServerSelectionList.LANHeader));
-   }
-
    public void updateOnlineServers(ServerList var1) {
       this.onlineServers.clear();
 
@@ -101,13 +98,24 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
    }
 
    public void updateNetworkServers(List<LanServer> var1) {
+      int var2 = var1.size() - this.networkServers.size();
       this.networkServers.clear();
 
-      for(LanServer var3 : var1) {
-         this.networkServers.add(new ServerSelectionList.NetworkServerEntry(this.screen, var3));
+      for(LanServer var4 : var1) {
+         this.networkServers.add(new ServerSelectionList.NetworkServerEntry(this.screen, var4));
       }
 
       this.refreshEntries();
+
+      for(int var8 = this.networkServers.size() - var2; var8 < this.networkServers.size(); ++var8) {
+         ServerSelectionList.NetworkServerEntry var9 = this.networkServers.get(var8);
+         int var5 = var8 - this.networkServers.size() + this.children().size();
+         int var6 = this.getRowTop(var5);
+         int var7 = this.getRowBottom(var5);
+         if (var7 >= this.y0 && var6 <= this.y1) {
+            this.minecraft.getNarrator().say(Component.translatable("multiplayer.lan.server_found", var9.getServerNarration()));
+         }
+      }
    }
 
    @Override
@@ -118,11 +126,6 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
    @Override
    public int getRowWidth() {
       return super.getRowWidth() + 85;
-   }
-
-   @Override
-   protected boolean isFocused() {
-      return this.screen.getFocused() == this;
    }
 
    public abstract static class Entry extends ObjectSelectionList.Entry<ServerSelectionList.Entry> {
@@ -156,7 +159,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
       @Override
       public Component getNarration() {
-         return CommonComponents.EMPTY;
+         return ServerSelectionList.SCANNING_LABEL;
       }
    }
 
@@ -204,7 +207,11 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
       @Override
       public Component getNarration() {
-         return Component.translatable("narrator.select", Component.empty().append(LAN_SERVER_HEADER).append(" ").append(this.serverData.getMotd()));
+         return Component.translatable("narrator.select", this.getServerNarration());
+      }
+
+      public Component getServerNarration() {
+         return Component.empty().append(LAN_SERVER_HEADER).append(CommonComponents.SPACE).append(this.serverData.getMotd());
       }
    }
 
@@ -259,7 +266,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             });
          }
 
-         boolean var11 = this.serverData.protocol != SharedConstants.getCurrentVersion().getProtocolVersion();
+         boolean var11 = !this.isCompatible();
          this.minecraft.font.draw(var1, this.serverData.name, (float)(var4 + 32 + 3), (float)(var3 + 1), 16777215);
          List var12 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
@@ -276,9 +283,9 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          Object var18;
          if (var11) {
             var16 = 5;
-            var18 = ServerSelectionList.INCOMPATIBLE_TOOLTIP;
+            var18 = ServerSelectionList.INCOMPATIBLE_STATUS;
             var17 = this.serverData.playerList;
-         } else if (this.serverData.pinged && this.serverData.ping != -2L) {
+         } else if (this.pingCompleted()) {
             if (this.serverData.ping < 0L) {
                var16 = 5;
             } else if (this.serverData.ping < 150L) {
@@ -294,7 +301,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             }
 
             if (this.serverData.ping < 0L) {
-               var18 = ServerSelectionList.NO_CONNECTION_TOOLTIP;
+               var18 = ServerSelectionList.NO_CONNECTION_STATUS;
                var17 = Collections.emptyList();
             } else {
                var18 = Component.translatable("multiplayer.status.ping", this.serverData.ping);
@@ -307,12 +314,11 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
                var16 = 8 - var16;
             }
 
-            var18 = ServerSelectionList.PINGING_TOOLTIP;
+            var18 = ServerSelectionList.PINGING_STATUS;
             var17 = Collections.emptyList();
          }
 
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
          GuiComponent.blit(var1, var4 + var5 - 15, var3, (float)(var15 * 10), (float)(176 + var16 * 8), 10, 8, 256, 256);
          String var19 = this.serverData.getIconB64();
@@ -343,7 +349,6 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             RenderSystem.setShaderTexture(0, ServerSelectionList.ICON_OVERLAY_LOCATION);
             GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int var22 = var7 - var4;
             int var23 = var8 - var3;
             if (this.canJoin()) {
@@ -370,6 +375,14 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
                }
             }
          }
+      }
+
+      private boolean pingCompleted() {
+         return this.serverData.pinged && this.serverData.ping != -2L;
+      }
+
+      private boolean isCompatible() {
+         return this.serverData.protocol == SharedConstants.getCurrentVersion().getProtocolVersion();
       }
 
       public void updateServerList() {
@@ -472,7 +485,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          }
 
          this.lastClickTime = Util.getMillis();
-         return false;
+         return true;
       }
 
       public ServerData getServerData() {
@@ -481,7 +494,38 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
       @Override
       public Component getNarration() {
-         return Component.translatable("narrator.select", this.serverData.name);
+         MutableComponent var1 = Component.empty();
+         var1.append(Component.translatable("narrator.select", this.serverData.name));
+         var1.append(CommonComponents.NARRATION_SEPARATOR);
+         if (!this.isCompatible()) {
+            var1.append(ServerSelectionList.INCOMPATIBLE_STATUS);
+            var1.append(CommonComponents.NARRATION_SEPARATOR);
+            var1.append(Component.translatable("multiplayer.status.version.narration", this.serverData.version));
+            var1.append(CommonComponents.NARRATION_SEPARATOR);
+            var1.append(Component.translatable("multiplayer.status.motd.narration", this.serverData.motd));
+         } else if (this.serverData.ping < 0L) {
+            var1.append(ServerSelectionList.NO_CONNECTION_STATUS);
+         } else if (!this.pingCompleted()) {
+            var1.append(ServerSelectionList.PINGING_STATUS);
+         } else {
+            var1.append(ServerSelectionList.ONLINE_STATUS);
+            var1.append(CommonComponents.NARRATION_SEPARATOR);
+            var1.append(Component.translatable("multiplayer.status.ping.narration", this.serverData.ping));
+            var1.append(CommonComponents.NARRATION_SEPARATOR);
+            var1.append(Component.translatable("multiplayer.status.motd.narration", this.serverData.motd));
+            if (this.serverData.players != null) {
+               var1.append(CommonComponents.NARRATION_SEPARATOR);
+               var1.append(
+                  Component.translatable(
+                     "multiplayer.status.player_count.narration", this.serverData.players.getNumPlayers(), this.serverData.players.getMaxPlayers()
+                  )
+               );
+               var1.append(CommonComponents.NARRATION_SEPARATOR);
+               var1.append(ComponentUtils.formatList(this.serverData.playerList, Component.literal(", ")));
+            }
+         }
+
+         return var1;
       }
    }
 }

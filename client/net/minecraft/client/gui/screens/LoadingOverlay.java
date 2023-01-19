@@ -115,6 +115,7 @@ public class LoadingOverlay extends Overlay {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var11);
       blit(var1, var26 - var19, var27 - var16, var19, (int)var28, -0.0625F, 0.0F, 120, 60, 120, 120);
       blit(var1, var26, var27 - var16, var19, (int)var28, 0.0625F, 60.0F, 120, 60, 120, 120);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.defaultBlendFunc();
       RenderSystem.disableBlend();
       int var20 = (int)((double)this.minecraft.getWindow().getGuiScaledHeight() * 0.8325);

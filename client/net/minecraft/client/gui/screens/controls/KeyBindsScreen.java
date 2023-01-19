@@ -32,7 +32,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
             var5.setKey(var5.getDefaultKey());
          }
 
-         KeyMapping.resetMapping();
+         this.resetMappingAndUpdateButtons();
       }).bounds(this.width / 2 - 155, this.height - 29, 150, 20).build());
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
@@ -41,12 +41,17 @@ public class KeyBindsScreen extends OptionsSubScreen {
       );
    }
 
+   private void resetMappingAndUpdateButtons() {
+      KeyMapping.resetMapping();
+      this.keyBindsList.children().forEach(KeyBindsList.Entry::onMappingChanged);
+   }
+
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.selectedKey != null) {
          this.options.setKey(this.selectedKey, InputConstants.Type.MOUSE.getOrCreate(var5));
          this.selectedKey = null;
-         KeyMapping.resetMapping();
+         this.resetMappingAndUpdateButtons();
          return true;
       } else {
          return super.mouseClicked(var1, var3, var5);
@@ -64,7 +69,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
 
          this.selectedKey = null;
          this.lastKeySelection = Util.getMillis();
-         KeyMapping.resetMapping();
+         this.resetMappingAndUpdateButtons();
          return true;
       } else {
          return super.keyPressed(var1, var2, var3);

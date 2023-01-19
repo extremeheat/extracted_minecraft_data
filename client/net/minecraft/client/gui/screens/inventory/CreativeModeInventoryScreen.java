@@ -544,7 +544,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       if (selectedTab.getType() == CreativeModeTab.Type.SEARCH) {
          this.searchBox.setVisible(true);
          this.searchBox.setCanLoseFocus(false);
-         this.searchBox.setFocus(true);
+         this.searchBox.setFocused(true);
          if (var2 != var1) {
             this.searchBox.setValue("");
          }
@@ -553,7 +553,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       } else {
          this.searchBox.setVisible(false);
          this.searchBox.setCanLoseFocus(true);
-         this.searchBox.setFocus(false);
+         this.searchBox.setFocused(false);
          this.searchBox.setValue("");
       }
 
@@ -620,7 +620,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          this.renderTooltip(var1, TRASH_SLOT_TOOLTIP, var2, var3);
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       this.renderTooltip(var1, var2, var3);
    }
 
@@ -659,8 +658,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION);
@@ -673,7 +670,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       RenderSystem.setShaderTexture(0, new ResourceLocation("textures/gui/container/creative_inventory/tab_" + selectedTab.getBackgroundSuffix()));
       this.blit(var1, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
       this.searchBox.render(var1, var3, var4, var2);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var8 = this.leftPos + 175;
       int var9 = this.topPos + 18;
       int var7 = var9 + 112;

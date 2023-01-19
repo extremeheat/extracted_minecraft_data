@@ -78,7 +78,6 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
       Lighting.setupForFlatItems();
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, ENCHANTING_TABLE_LOCATION);
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
@@ -102,8 +101,8 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       var1.mulPose(Axis.XP.rotationDegrees(180.0F));
       float var12 = Mth.lerp(var2, this.oFlip, this.flip) + 0.25F;
       float var13 = Mth.lerp(var2, this.oFlip, this.flip) + 0.75F;
-      var12 = (var12 - (float)Mth.fastFloor((double)var12)) * 1.6F - 0.3F;
-      var13 = (var13 - (float)Mth.fastFloor((double)var13)) * 1.6F - 0.3F;
+      var12 = (var12 - (float)Mth.floor(var12)) * 1.6F - 0.3F;
+      var13 = (var13 - (float)Mth.floor(var13)) * 1.6F - 0.3F;
       if (var12 < 0.0F) {
          var12 = 0.0F;
       }
@@ -129,7 +128,6 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       RenderSystem.viewport(0, 0, this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
       RenderSystem.restoreProjectionMatrix();
       Lighting.setupFor3DItems();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       EnchantmentNames.getInstance().initSeed((long)this.menu.getEnchantmentSeed());
       int var16 = this.menu.getGoldCount();
 
@@ -140,7 +138,6 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, ENCHANTING_TABLE_LOCATION);
          int var20 = this.menu.costs[var17];
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          if (var20 == 0) {
             this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
          } else {

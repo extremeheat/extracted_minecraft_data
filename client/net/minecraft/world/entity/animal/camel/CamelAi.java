@@ -162,7 +162,7 @@ public class CamelAi {
       }
 
       protected void start(ServerLevel var1, Camel var2, long var3) {
-         if (var2.isPoseSitting()) {
+         if (var2.isCamelSitting()) {
             var2.standUp();
          } else if (!var2.isPanicking()) {
             var2.sitDown();

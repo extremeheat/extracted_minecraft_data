@@ -285,36 +285,31 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
 
    private BlockPathTypes getCachedBlockPathType(int var1, int var2, int var3) {
       return (BlockPathTypes)this.pathTypeByPosCache
-         .computeIfAbsent(
-            BlockPos.asLong(var1, var2, var3),
-            var4 -> this.getBlockPathType(
-                  this.level, var1, var2, var3, this.mob, this.entityWidth, this.entityHeight, this.entityDepth, this.canOpenDoors(), this.canPassDoors()
-               )
-         );
+         .computeIfAbsent(BlockPos.asLong(var1, var2, var3), var4 -> this.getBlockPathType(this.level, var1, var2, var3, this.mob));
    }
 
    @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5, int var6, int var7, int var8, boolean var9, boolean var10) {
-      EnumSet var11 = EnumSet.noneOf(BlockPathTypes.class);
-      BlockPathTypes var12 = BlockPathTypes.BLOCKED;
-      BlockPos var13 = var5.blockPosition();
-      var12 = super.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var8, var9, var10, var11, var12, var13);
-      if (var11.contains(BlockPathTypes.FENCE)) {
+   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5) {
+      EnumSet var6 = EnumSet.noneOf(BlockPathTypes.class);
+      BlockPathTypes var7 = BlockPathTypes.BLOCKED;
+      BlockPos var8 = var5.blockPosition();
+      var7 = super.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var8);
+      if (var6.contains(BlockPathTypes.FENCE)) {
          return BlockPathTypes.FENCE;
       } else {
-         BlockPathTypes var14 = BlockPathTypes.BLOCKED;
+         BlockPathTypes var9 = BlockPathTypes.BLOCKED;
 
-         for(BlockPathTypes var16 : var11) {
-            if (var5.getPathfindingMalus(var16) < 0.0F) {
-               return var16;
+         for(BlockPathTypes var11 : var6) {
+            if (var5.getPathfindingMalus(var11) < 0.0F) {
+               return var11;
             }
 
-            if (var5.getPathfindingMalus(var16) >= var5.getPathfindingMalus(var14)) {
-               var14 = var16;
+            if (var5.getPathfindingMalus(var11) >= var5.getPathfindingMalus(var9)) {
+               var9 = var11;
             }
          }
 
-         return var12 == BlockPathTypes.OPEN && var5.getPathfindingMalus(var14) == 0.0F ? BlockPathTypes.OPEN : var14;
+         return var7 == BlockPathTypes.OPEN && var5.getPathfindingMalus(var9) == 0.0F ? BlockPathTypes.OPEN : var9;
       }
    }
 
@@ -326,8 +321,6 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          BlockPathTypes var7 = getBlockPathTypeRaw(var1, var5.set(var2, var3 - 1, var4));
          if (var7 == BlockPathTypes.DAMAGE_FIRE || var7 == BlockPathTypes.LAVA) {
             var6 = BlockPathTypes.DAMAGE_FIRE;
-         } else if (var7 == BlockPathTypes.DAMAGE_CACTUS) {
-            var6 = BlockPathTypes.DAMAGE_CACTUS;
          } else if (var7 == BlockPathTypes.DAMAGE_OTHER) {
             var6 = BlockPathTypes.DAMAGE_OTHER;
          } else if (var7 == BlockPathTypes.COCOA) {

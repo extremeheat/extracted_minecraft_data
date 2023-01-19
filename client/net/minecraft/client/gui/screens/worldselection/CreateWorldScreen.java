@@ -176,7 +176,7 @@ public class CreateWorldScreen extends Screen {
          @Override
          protected MutableComponent createNarrationMessage() {
             return CommonComponents.joinForNarration(super.createNarrationMessage(), Component.translatable("selectWorld.resultFolder"))
-               .append(" ")
+               .append(CommonComponents.SPACE)
                .append(CreateWorldScreen.this.resultFolder);
          }
       };
@@ -197,7 +197,7 @@ public class CreateWorldScreen extends Screen {
                var1x -> AbstractWidget.wrapDefaultNarrationMessage(var1x.getMessage())
                      .append(CommonComponents.NARRATION_SEPARATOR)
                      .append(this.gameModeHelp1)
-                     .append(" ")
+                     .append(CommonComponents.SPACE)
                      .append(this.gameModeHelp2)
             )
             .create(var1, 100, 150, 20, GAME_MODEL_LABEL, (var1x, var2x) -> this.setGameMode(var2x))
@@ -429,7 +429,14 @@ public class CreateWorldScreen extends Screen {
          this.worldGenSettingsComponent.render(var1, var2, var3, var4);
       } else {
          drawString(var1, this.font, NAME_LABEL, this.width / 2 - 100, 47, -6250336);
-         drawString(var1, this.font, Component.empty().append(OUTPUT_DIR_INFO).append(" ").append(this.resultFolder), this.width / 2 - 100, 85, -6250336);
+         drawString(
+            var1,
+            this.font,
+            Component.empty().append(OUTPUT_DIR_INFO).append(CommonComponents.SPACE).append(this.resultFolder),
+            this.width / 2 - 100,
+            85,
+            -6250336
+         );
          this.nameEdit.render(var1, var2, var3, var4);
          drawString(var1, this.font, this.gameModeHelp1, this.width / 2 - 150, 122, -6250336);
          drawString(var1, this.font, this.gameModeHelp2, this.width / 2 - 150, 134, -6250336);

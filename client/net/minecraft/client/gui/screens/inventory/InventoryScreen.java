@@ -100,7 +100,6 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, INVENTORY_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;

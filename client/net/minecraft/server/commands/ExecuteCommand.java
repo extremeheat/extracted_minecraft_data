@@ -3,6 +3,7 @@ package net.minecraft.server.commands;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.RedirectModifier;
 import com.mojang.brigadier.ResultConsumer;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -19,10 +20,14 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Stream;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -43,6 +48,7 @@ import net.minecraft.commands.arguments.coordinates.RotationArgument;
 import net.minecraft.commands.arguments.coordinates.SwizzleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
@@ -57,12 +63,17 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
+import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.PredicateManager;
@@ -99,138 +110,139 @@ public class ExecuteCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       LiteralCommandNode var2 = var0.register((LiteralArgumentBuilder)Commands.literal("execute").requires(var0x -> var0x.hasPermission(2)));
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
-                                                   "execute"
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
+                                                      "execute"
+                                                   )
+                                                   .requires(var0x -> var0x.hasPermission(2)))
+                                                .then(Commands.literal("run").redirect(var0.getRoot())))
+                                             .then(addConditionals(var2, Commands.literal("if"), true, var1)))
+                                          .then(addConditionals(var2, Commands.literal("unless"), false, var1)))
+                                       .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
+                                          ArrayList var1x = Lists.newArrayList();
+                                 
+                                          for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
+                                             var1x.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
+                                          }
+                                 
+                                          return var1x;
+                                       }))))
+                                    .then(
+                                       Commands.literal("at")
+                                          .then(
+                                             Commands.argument("targets", EntityArgument.entities())
+                                                .fork(
+                                                   var2,
+                                                   var0x -> {
+                                                      ArrayList var1x = Lists.newArrayList();
+                                             
+                                                      for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
+                                                         var1x.add(
+                                                            ((CommandSourceStack)var0x.getSource())
+                                                               .withLevel((ServerLevel)var3.level)
+                                                               .withPosition(var3.position())
+                                                               .withRotation(var3.getRotationVector())
+                                                         );
+                                                      }
+                                             
+                                                      return var1x;
+                                                   }
                                                 )
-                                                .requires(var0x -> var0x.hasPermission(2)))
-                                             .then(Commands.literal("run").redirect(var0.getRoot())))
-                                          .then(addConditionals(var2, Commands.literal("if"), true, var1)))
-                                       .then(addConditionals(var2, Commands.literal("unless"), false, var1)))
+                                          )
+                                    ))
+                                 .then(
+                                    ((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(var2, Commands.literal("result"), true)))
+                                       .then(wrapStores(var2, Commands.literal("success"), false))
+                                 ))
+                              .then(
+                                 ((LiteralArgumentBuilder)Commands.literal("positioned")
+                                       .then(
+                                          Commands.argument("pos", Vec3Argument.vec3())
+                                             .redirect(
+                                                var2,
+                                                var0x -> ((CommandSourceStack)var0x.getSource())
+                                                      .withPosition(Vec3Argument.getVec3(var0x, "pos"))
+                                                      .withAnchor(EntityAnchorArgument.Anchor.FEET)
+                                             )
+                                       ))
                                     .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
                                        ArrayList var1x = Lists.newArrayList();
                               
                                        for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                          var1x.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
+                                          var1x.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
                                        }
                               
                                        return var1x;
-                                    }))))
-                                 .then(
-                                    Commands.literal("at")
-                                       .then(
-                                          Commands.argument("targets", EntityArgument.entities())
-                                             .fork(
-                                                var2,
-                                                var0x -> {
-                                                   ArrayList var1x = Lists.newArrayList();
-                                          
-                                                   for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                      var1x.add(
-                                                         ((CommandSourceStack)var0x.getSource())
-                                                            .withLevel((ServerLevel)var3.level)
-                                                            .withPosition(var3.position())
-                                                            .withRotation(var3.getRotationVector())
-                                                      );
-                                                   }
-                                          
-                                                   return var1x;
-                                                }
-                                             )
-                                       )
-                                 ))
-                              .then(
-                                 ((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(var2, Commands.literal("result"), true)))
-                                    .then(wrapStores(var2, Commands.literal("success"), false))
+                                    })))
                               ))
                            .then(
-                              ((LiteralArgumentBuilder)Commands.literal("positioned")
+                              ((LiteralArgumentBuilder)Commands.literal("rotated")
                                     .then(
-                                       Commands.argument("pos", Vec3Argument.vec3())
+                                       Commands.argument("rot", RotationArgument.rotation())
                                           .redirect(
                                              var2,
                                              var0x -> ((CommandSourceStack)var0x.getSource())
-                                                   .withPosition(Vec3Argument.getVec3(var0x, "pos"))
-                                                   .withAnchor(EntityAnchorArgument.Anchor.FEET)
+                                                   .withRotation(RotationArgument.getRotation(var0x, "rot").getRotation((CommandSourceStack)var0x.getSource()))
                                           )
                                     ))
                                  .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
                                     ArrayList var1x = Lists.newArrayList();
                            
                                     for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                       var1x.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
+                                       var1x.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
                                     }
                            
                                     return var1x;
                                  })))
                            ))
                         .then(
-                           ((LiteralArgumentBuilder)Commands.literal("rotated")
+                           ((LiteralArgumentBuilder)Commands.literal("facing")
                                  .then(
-                                    Commands.argument("rot", RotationArgument.rotation())
-                                       .redirect(
-                                          var2,
-                                          var0x -> ((CommandSourceStack)var0x.getSource())
-                                                .withRotation(RotationArgument.getRotation(var0x, "rot").getRotation((CommandSourceStack)var0x.getSource()))
+                                    Commands.literal("entity")
+                                       .then(
+                                          Commands.argument("targets", EntityArgument.entities())
+                                             .then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(var2, var0x -> {
+                                                ArrayList var1x = Lists.newArrayList();
+                                                EntityAnchorArgument.Anchor var2x = EntityAnchorArgument.getAnchor(var0x, "anchor");
+                                       
+                                                for(Entity var4 : EntityArgument.getOptionalEntities(var0x, "targets")) {
+                                                   var1x.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2x));
+                                                }
+                                       
+                                                return var1x;
+                                             }))
                                        )
                                  ))
-                              .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
-                                 ArrayList var1x = Lists.newArrayList();
-                        
-                                 for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                    var1x.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
-                                 }
-                        
-                                 return var1x;
-                              })))
+                              .then(
+                                 Commands.argument("pos", Vec3Argument.vec3())
+                                    .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).facing(Vec3Argument.getVec3(var0x, "pos")))
+                              )
                         ))
                      .then(
-                        ((LiteralArgumentBuilder)Commands.literal("facing")
-                              .then(
-                                 Commands.literal("entity")
-                                    .then(
-                                       Commands.argument("targets", EntityArgument.entities())
-                                          .then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(var2, var0x -> {
-                                             ArrayList var1x = Lists.newArrayList();
-                                             EntityAnchorArgument.Anchor var2x = EntityAnchorArgument.getAnchor(var0x, "anchor");
-                                    
-                                             for(Entity var4 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                var1x.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2x));
-                                             }
-                                    
-                                             return var1x;
-                                          }))
-                                    )
-                              ))
+                        Commands.literal("align")
                            .then(
-                              Commands.argument("pos", Vec3Argument.vec3())
-                                 .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).facing(Vec3Argument.getVec3(var0x, "pos")))
+                              Commands.argument("axes", SwizzleArgument.swizzle())
+                                 .redirect(
+                                    var2,
+                                    var0x -> ((CommandSourceStack)var0x.getSource())
+                                          .withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes")))
+                                 )
                            )
                      ))
                   .then(
-                     Commands.literal("align")
+                     Commands.literal("anchored")
                         .then(
-                           Commands.argument("axes", SwizzleArgument.swizzle())
-                              .redirect(
-                                 var2,
-                                 var0x -> ((CommandSourceStack)var0x.getSource())
-                                       .withPosition(((CommandSourceStack)var0x.getSource()).getPosition().align(SwizzleArgument.getSwizzle(var0x, "axes")))
-                              )
+                           Commands.argument("anchor", EntityAnchorArgument.anchor())
+                              .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor")))
                         )
                   ))
                .then(
-                  Commands.literal("anchored")
+                  Commands.literal("in")
                      .then(
-                        Commands.argument("anchor", EntityAnchorArgument.anchor())
-                           .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).withAnchor(EntityAnchorArgument.getAnchor(var0x, "anchor")))
+                        Commands.argument("dimension", DimensionArgument.dimension())
+                           .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension")))
                      )
                ))
-            .then(
-               Commands.literal("in")
-                  .then(
-                     Commands.argument("dimension", DimensionArgument.dimension())
-                        .redirect(var2, var0x -> ((CommandSourceStack)var0x.getSource()).withLevel(DimensionArgument.getDimension(var0x, "dimension")))
-                  )
-            )
+            .then(createRelationOperations(var2, Commands.literal("on")))
       );
    }
 
@@ -416,43 +428,83 @@ public class ExecuteCommand {
       }, CALLBACK_CHAINER);
    }
 
+   private static boolean isChunkLoaded(ServerLevel var0, BlockPos var1) {
+      int var2 = SectionPos.blockToSectionCoord(var1.getX());
+      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
+      LevelChunk var4 = var0.getChunkSource().getChunkNow(var2, var3);
+      if (var4 != null) {
+         return var4.getFullStatus() == ChunkHolder.FullChunkStatus.ENTITY_TICKING;
+      } else {
+         return false;
+      }
+   }
+
    private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(
       CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2, CommandBuildContext var3
    ) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
-                        Commands.literal("block")
-                           .then(
-                              Commands.argument("pos", BlockPosArgument.blockPos())
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
+                              Commands.literal("block")
                                  .then(
-                                    addConditional(
-                                       var0,
-                                       Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
-                                       var2,
-                                       var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
-                                             .test(
-                                                new BlockInWorld(
-                                                   ((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true
-                                                )
-                                             )
-                                    )
+                                    Commands.argument("pos", BlockPosArgument.blockPos())
+                                       .then(
+                                          addConditional(
+                                             var0,
+                                             Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
+                                             var2,
+                                             var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
+                                                   .test(
+                                                      new BlockInWorld(
+                                                         ((CommandSourceStack)var0x.getSource()).getLevel(),
+                                                         BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
+                                                         true
+                                                      )
+                                                   )
+                                          )
+                                       )
                                  )
-                           )
-                     ))
+                           ))
+                           .then(
+                              Commands.literal("biome")
+                                 .then(
+                                    Commands.argument("pos", BlockPosArgument.blockPos())
+                                       .then(
+                                          addConditional(
+                                             var0,
+                                             Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)),
+                                             var2,
+                                             var0x -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)
+                                                   .test(
+                                                      ((CommandSourceStack)var0x.getSource())
+                                                         .getLevel()
+                                                         .getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos"))
+                                                   )
+                                          )
+                                       )
+                                 )
+                           ))
+                        .then(
+                           Commands.literal("loaded")
+                              .then(
+                                 Commands.argument("pos", BlockPosArgument.blockPos())
+                                    .fork(
+                                       var0,
+                                       var1x -> expect(
+                                             var1x,
+                                             var2,
+                                             isChunkLoaded(((CommandSourceStack)var1x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var1x, "pos"))
+                                          )
+                                    )
+                              )
+                        ))
                      .then(
-                        Commands.literal("biome")
+                        Commands.literal("dimension")
                            .then(
-                              Commands.argument("pos", BlockPosArgument.blockPos())
-                                 .then(
-                                    addConditional(
-                                       var0,
-                                       Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)),
-                                       var2,
-                                       var0x -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)
-                                             .test(
-                                                ((CommandSourceStack)var0x.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos"))
-                                             )
-                                    )
-                                 )
+                              addConditional(
+                                 var0,
+                                 Commands.argument("dimension", DimensionArgument.dimension()),
+                                 var2,
+                                 var0x -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel()
+                              )
                            )
                      ))
                   .then(
@@ -760,6 +812,66 @@ public class ExecuteCommand {
 
          return OptionalInt.of(var9);
       }
+   }
+
+   private static RedirectModifier<CommandSourceStack> expandOneToOneEntityRelation(Function<Entity, Optional<Entity>> var0) {
+      return var1 -> {
+         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
+         Entity var3 = var2.getEntity();
+         return (Collection)(var3 == null
+            ? List.of()
+            : ((Optional)var0.apply(var3)).filter(var0xx -> !var0xx.isRemoved()).map(var1x -> List.of(var2.withEntity(var1x))).orElse(List.of()));
+      };
+   }
+
+   private static RedirectModifier<CommandSourceStack> expandOneToManyEntityRelation(Function<Entity, Stream<Entity>> var0) {
+      return var1 -> {
+         CommandSourceStack var2 = (CommandSourceStack)var1.getSource();
+         Entity var3 = var2.getEntity();
+         return var3 == null ? List.of() : ((Stream)var0.apply(var3)).filter(var0xx -> !var0xx.isRemoved()).map(var2::withEntity).toList();
+      };
+   }
+
+   private static LiteralArgumentBuilder<CommandSourceStack> createRelationOperations(
+      CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1
+   ) {
+      return (LiteralArgumentBuilder<CommandSourceStack>)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
+                           Commands.literal("owner")
+                              .fork(
+                                 var0,
+                                 expandOneToOneEntityRelation(
+                                    var0x -> var0x instanceof TamableAnimal var1x ? Optional.ofNullable(var1x.getOwner()) : Optional.empty()
+                                 )
+                              )
+                        ))
+                        .then(
+                           Commands.literal("leasher")
+                              .fork(
+                                 var0,
+                                 expandOneToOneEntityRelation(
+                                    var0x -> var0x instanceof Mob var1x ? Optional.ofNullable(var1x.getLeashHolder()) : Optional.empty()
+                                 )
+                              )
+                        ))
+                     .then(
+                        Commands.literal("target")
+                           .fork(
+                              var0,
+                              expandOneToOneEntityRelation(var0x -> var0x instanceof Mob var1x ? Optional.ofNullable(var1x.getTarget()) : Optional.empty())
+                           )
+                     ))
+                  .then(
+                     Commands.literal("attacker")
+                        .fork(
+                           var0,
+                           expandOneToOneEntityRelation(
+                              var0x -> var0x instanceof LivingEntity var1x ? Optional.ofNullable(var1x.getLastHurtByMob()) : Optional.empty()
+                           )
+                        )
+                  ))
+               .then(Commands.literal("vehicle").fork(var0, expandOneToOneEntityRelation(var0x -> Optional.ofNullable(var0x.getVehicle())))))
+            .then(Commands.literal("controller").fork(var0, expandOneToOneEntityRelation(var0x -> Optional.ofNullable(var0x.getControllingPassenger())))))
+         .then(Commands.literal("passengers").fork(var0, expandOneToManyEntityRelation(var0x -> var0x.getPassengers().stream())));
    }
 
    @FunctionalInterface

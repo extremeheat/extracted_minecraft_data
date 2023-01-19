@@ -39,13 +39,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.nbt.visitors.SkipFields;
@@ -56,7 +56,6 @@ import net.minecraft.util.DirectoryLock;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.datafix.DataFixers;
-import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
@@ -121,7 +120,7 @@ public class LevelStorageSource {
          }
       }
 
-      Dynamic var7 = var1.update(References.WORLD_GEN_SETTINGS, var3, var2, SharedConstants.getCurrentVersion().getWorldVersion());
+      Dynamic var7 = DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var3, var2);
       return WorldGenSettings.CODEC.parse(var7);
    }
 
@@ -221,10 +220,8 @@ public class LevelStorageSource {
          Tag var2 = readLightweightData(var0);
          if (var2 instanceof CompoundTag var3) {
             CompoundTag var4 = var3.getCompound("Data");
-            int var5 = var4.contains("DataVersion", 99) ? var4.getInt("DataVersion") : -1;
-            Dynamic var6 = var1.update(
-               DataFixTypes.LEVEL.getType(), new Dynamic(NbtOps.INSTANCE, var4), var5, SharedConstants.getCurrentVersion().getWorldVersion()
-            );
+            int var5 = NbtUtils.getDataVersion(var4, -1);
+            Dynamic var6 = DataFixTypes.LEVEL.updateToCurrentVersion(var1, new Dynamic(NbtOps.INSTANCE, var4), var5);
             return readDataConfig(var6);
          }
       } catch (Exception var7) {
@@ -248,8 +245,8 @@ public class LevelStorageSource {
          CompoundTag var7 = var6.getCompound("Data");
          CompoundTag var8 = var7.contains("Player", 10) ? var7.getCompound("Player") : null;
          var7.remove("Player");
-         int var9 = var7.contains("DataVersion", 99) ? var7.getInt("DataVersion") : -1;
-         Dynamic var10 = var5.update(DataFixTypes.LEVEL.getType(), new Dynamic(var0, var7), var9, SharedConstants.getCurrentVersion().getWorldVersion());
+         int var9 = NbtUtils.getDataVersion(var7, -1);
+         Dynamic var10 = DataFixTypes.LEVEL.updateToCurrentVersion(var5, new Dynamic(var0, var7), var9);
          WorldGenSettings var11 = (WorldGenSettings)readWorldGenSettings(var10, var5, var9)
             .getOrThrow(false, Util.prefix("WorldGenSettings: ", LOGGER::error));
          LevelVersion var12 = LevelVersion.parse(var10);
@@ -267,10 +264,8 @@ public class LevelStorageSource {
             Tag var5 = readLightweightData(var3);
             if (var5 instanceof CompoundTag var6) {
                CompoundTag var7 = var6.getCompound("Data");
-               int var8 = var7.contains("DataVersion", 99) ? var7.getInt("DataVersion") : -1;
-               Dynamic var9 = var4.update(
-                  DataFixTypes.LEVEL.getType(), new Dynamic(NbtOps.INSTANCE, var7), var8, SharedConstants.getCurrentVersion().getWorldVersion()
-               );
+               int var8 = NbtUtils.getDataVersion(var7, -1);
+               Dynamic var9 = DataFixTypes.LEVEL.updateToCurrentVersion(var4, new Dynamic(NbtOps.INSTANCE, var7), var8);
                LevelVersion var10 = LevelVersion.parse(var9);
                int var11 = var10.levelDataVersion();
                if (var11 == 19132 || var11 == 19133) {
@@ -294,7 +289,7 @@ public class LevelStorageSource {
       };
    }
 
-   private static FeatureFlagSet parseFeatureFlagsFromSummary(Dynamic<Tag> var0) {
+   private static FeatureFlagSet parseFeatureFlagsFromSummary(Dynamic<?> var0) {
       Set var1 = var0.get("enabled_features")
          .asStream()
          .flatMap(var0x -> var0x.asString().result().map(ResourceLocation::tryParse).stream())

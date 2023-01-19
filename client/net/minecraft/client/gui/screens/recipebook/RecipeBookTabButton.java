@@ -68,7 +68,6 @@ public class RecipeBookTabButton extends StateSwitchingButton {
          var8 -= 2;
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       this.blit(var1, var8, this.getY(), var6, var7, this.width, this.height);
       RenderSystem.enableDepthTest();
       this.renderIcon(var9.getItemRenderer());

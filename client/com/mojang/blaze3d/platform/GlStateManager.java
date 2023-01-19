@@ -509,16 +509,6 @@ public class GlStateManager {
       }
    }
 
-   public static void _enableTexture() {
-      RenderSystem.assertOnRenderThreadOrInit();
-      TEXTURES[activeTexture].enable = true;
-   }
-
-   public static void _disableTexture() {
-      RenderSystem.assertOnRenderThread();
-      TEXTURES[activeTexture].enable = false;
-   }
-
    public static void _texParameter(int var0, int var1, float var2) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL11.glTexParameterf(var0, var1, var2);
@@ -575,10 +565,6 @@ public class GlStateManager {
          TEXTURES[activeTexture].binding = var0;
          GL11.glBindTexture(3553, var0);
       }
-   }
-
-   public static int _getTextureId(int var0) {
-      return var0 >= 0 && var0 < 12 && TEXTURES[var0].enable ? TEXTURES[var0].binding : 0;
    }
 
    public static int _getActiveTexture() {
@@ -928,7 +914,6 @@ public class GlStateManager {
    }
 
    static class TextureState {
-      public boolean enable;
       public int binding;
 
       TextureState() {

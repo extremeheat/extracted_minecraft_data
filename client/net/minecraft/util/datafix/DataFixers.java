@@ -131,6 +131,7 @@ import net.minecraft.util.datafix.fixes.ObjectiveDisplayNameFix;
 import net.minecraft.util.datafix.fixes.ObjectiveRenderTypeFix;
 import net.minecraft.util.datafix.fixes.OminousBannerBlockEntityRenameFix;
 import net.minecraft.util.datafix.fixes.OminousBannerRenameFix;
+import net.minecraft.util.datafix.fixes.OptionsAccessibilityOnboardFix;
 import net.minecraft.util.datafix.fixes.OptionsAddTextBackgroundFix;
 import net.minecraft.util.datafix.fixes.OptionsAmbientOcclusionFix;
 import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
@@ -264,7 +265,7 @@ public class DataFixers {
    }
 
    private static synchronized DataFixer createFixerUpper() {
-      DataFixerBuilder var0 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getWorldVersion());
+      DataFixerBuilder var0 = new DataFixerBuilder(SharedConstants.getCurrentVersion().getDataVersion().getVersion());
       addFixers(var0);
 
       boolean var1 = switch(SharedConstants.DATAFIXER_OPTIMIZATION_OPTION) {
@@ -1049,6 +1050,8 @@ public class DataFixers {
       var0.addFixer(new ItemStackSpawnEggFix(var181, false, "minecraft:pig_spawn_egg"));
       Schema var182 = var0.addSchema(3214, SAME_NAMESPACED);
       var0.addFixer(new OptionsAmbientOcclusionFix(var182));
+      Schema var183 = var0.addSchema(3319, SAME_NAMESPACED);
+      var0.addFixer(new OptionsAccessibilityOnboardFix(var183));
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {

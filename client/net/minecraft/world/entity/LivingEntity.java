@@ -172,7 +172,6 @@ public abstract class LivingEntity extends Entity {
    public int removeStingerTime;
    public int hurtTime;
    public int hurtDuration;
-   public float hurtDir;
    public int deathTime;
    public float oAttackAnim;
    public float attackAnim;
@@ -1095,7 +1094,6 @@ public abstract class LivingEntity extends Entity {
             var2 *= 0.75F;
          }
 
-         this.hurtDir = 0.0F;
          Entity var13 = var1.getEntity();
          if (var13 != null) {
             if (var13 instanceof LivingEntity && !var1.isNoAggro()) {
@@ -1150,10 +1148,7 @@ public abstract class LivingEntity extends Entity {
                   var15 = (Math.random() - Math.random()) * 0.01;
                }
 
-               this.hurtDir = (float)(Mth.atan2(var10, var15) * 57.2957763671875 - (double)this.getYRot());
                this.knockback(0.4000000059604645, var15, var10);
-            } else {
-               this.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
             }
          }
 
@@ -1442,6 +1437,10 @@ public abstract class LivingEntity extends Entity {
       return var2 instanceof RiderShieldingMount var1 ? this.position().add(0.0, var1.getRiderShieldingHeight(), 0.0) : this.position();
    }
 
+   public float getHurtDir() {
+      return 0.0F;
+   }
+
    public LivingEntity.Fallsounds getFallSounds() {
       return new LivingEntity.Fallsounds(SoundEvents.GENERIC_SMALL_FALL, SoundEvents.GENERIC_BIG_FALL);
    }
@@ -1534,10 +1533,9 @@ public abstract class LivingEntity extends Entity {
    }
 
    @Override
-   public void animateHurt() {
+   public void animateHurt(float var1) {
       this.hurtDuration = 10;
       this.hurtTime = this.hurtDuration;
-      this.hurtDir = 0.0F;
    }
 
    public int getArmorValue() {
@@ -1597,22 +1595,27 @@ public abstract class LivingEntity extends Entity {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void actuallyHurt(DamageSource var1, float var2) {
       if (!this.isInvulnerableTo(var1)) {
          var2 = this.getDamageAfterArmorAbsorb(var1, var2);
          var2 = this.getDamageAfterMagicAbsorb(var1, var2);
-         float var8 = Math.max(var2 - this.getAbsorptionAmount(), 0.0F);
-         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var2 - var8));
-         float var4 = var2 - var8;
-         if (var4 > 0.0F && var4 < 3.4028235E37F && var1.getEntity() instanceof ServerPlayer) {
-            ((ServerPlayer)var1.getEntity()).awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(var4 * 10.0F));
+         float var9 = Math.max(var2 - this.getAbsorptionAmount(), 0.0F);
+         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var2 - var9));
+         float var4 = var2 - var9;
+         if (var4 > 0.0F && var4 < 3.4028235E37F) {
+            Entity var6 = var1.getEntity();
+            if (var6 instanceof ServerPlayer var5) {
+               var5.awardStat(Stats.DAMAGE_DEALT_ABSORBED, Math.round(var4 * 10.0F));
+            }
          }
 
-         if (var8 != 0.0F) {
-            float var5 = this.getHealth();
-            this.setHealth(var5 - var8);
-            this.getCombatTracker().recordDamage(var1, var5, var8);
-            this.setAbsorptionAmount(this.getAbsorptionAmount() - var8);
+         if (var9 != 0.0F) {
+            float var10 = this.getHealth();
+            this.getCombatTracker().recordDamage(var1, var10, var9);
+            this.setHealth(var10 - var9);
+            this.setAbsorptionAmount(this.getAbsorptionAmount() - var9);
             this.gameEvent(GameEvent.ENTITY_DAMAGE);
          }
       }
@@ -1695,7 +1698,6 @@ public abstract class LivingEntity extends Entity {
             this.invulnerableTime = 20;
             this.hurtDuration = 10;
             this.hurtTime = this.hurtDuration;
-            this.hurtDir = 0.0F;
             if (var1 == 33) {
                this.playSound(SoundEvents.THORNS_HIT, this.getSoundVolume(), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             }
@@ -3156,6 +3158,11 @@ public abstract class LivingEntity extends Entity {
       return new AABB(
          (double)(-var2.width / 2.0F), 0.0, (double)(-var2.width / 2.0F), (double)(var2.width / 2.0F), (double)var2.height, (double)(var2.width / 2.0F)
       );
+   }
+
+   @Override
+   public boolean canChangeDimensions() {
+      return super.canChangeDimensions() && !this.isSleeping();
    }
 
    public Optional<BlockPos> getSleepingPos() {

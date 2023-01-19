@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import org.slf4j.Logger;
 
@@ -31,16 +32,17 @@ public class TimerQueue<T> {
       return Comparator.<TimerQueue.Event<T>>comparingLong(var0 -> var0.triggerTime).thenComparing(var0 -> var0.sequentialId);
    }
 
-   public TimerQueue(TimerCallbacks<T> var1, Stream<Dynamic<Tag>> var2) {
+   public TimerQueue(TimerCallbacks<T> var1, Stream<? extends Dynamic<?>> var2) {
       this(var1);
       this.queue.clear();
       this.events.clear();
       this.sequentialId = UnsignedLong.ZERO;
       var2.forEach(var1x -> {
-         if (!(var1x.getValue() instanceof CompoundTag)) {
-            LOGGER.warn("Invalid format of events: {}", var1x);
+         Tag var2x = (Tag)var1x.convert(NbtOps.INSTANCE).getValue();
+         if (var2x instanceof CompoundTag var3) {
+            this.loadEvent((CompoundTag)var3);
          } else {
-            this.loadEvent((CompoundTag)var1x.getValue());
+            LOGGER.warn("Invalid format of events: {}", var2x);
          }
       });
    }

@@ -1,58 +1,31 @@
 package net.minecraft.client.resources.language;
 
-import com.mojang.bridge.game.Language;
-import java.util.Locale;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 
-public class LanguageInfo implements Language, Comparable<LanguageInfo> {
-   private final String code;
+public record LanguageInfo(String b, String c, boolean d) {
    private final String region;
    private final String name;
    private final boolean bidirectional;
+   public static final Codec<LanguageInfo> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.NON_EMPTY_STRING.fieldOf("region").forGetter(LanguageInfo::region),
+               ExtraCodecs.NON_EMPTY_STRING.fieldOf("name").forGetter(LanguageInfo::name),
+               Codec.BOOL.optionalFieldOf("bidirectional", false).forGetter(LanguageInfo::bidirectional)
+            )
+            .apply(var0, LanguageInfo::new)
+   );
 
-   public LanguageInfo(String var1, String var2, String var3, boolean var4) {
+   public LanguageInfo(String var1, String var2, boolean var3) {
       super();
-      this.code = var1;
-      this.region = var2;
-      this.name = var3;
-      this.bidirectional = var4;
+      this.region = var1;
+      this.name = var2;
+      this.bidirectional = var3;
    }
 
-   public String getCode() {
-      return this.code;
-   }
-
-   public String getName() {
-      return this.name;
-   }
-
-   public String getRegion() {
-      return this.region;
-   }
-
-   public boolean isBidirectional() {
-      return this.bidirectional;
-   }
-
-   @Override
-   public String toString() {
-      return String.format(Locale.ROOT, "%s (%s)", this.name, this.region);
-   }
-
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         return !(var1 instanceof LanguageInfo) ? false : this.code.equals(((LanguageInfo)var1).code);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return this.code.hashCode();
-   }
-
-   public int compareTo(LanguageInfo var1) {
-      return this.code.compareTo(var1.code);
+   public Component toComponent() {
+      return Component.literal(this.name + " (" + this.region + ")");
    }
 }

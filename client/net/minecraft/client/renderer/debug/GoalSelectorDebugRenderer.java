@@ -38,7 +38,6 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       Camera var9 = this.minecraft.gameRenderer.getMainCamera();
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       BlockPos var10 = new BlockPos(var9.getPosition().x, 0.0, var9.getPosition().z);
       this.goalSelectors.forEach((var1x, var2x) -> {
          for(int var3x = 0; var3x < var2x.size(); ++var3x) {
@@ -53,7 +52,6 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
          }
       });
       RenderSystem.enableDepthTest();
-      RenderSystem.enableTexture();
    }
 
    public static class DebugGoal {

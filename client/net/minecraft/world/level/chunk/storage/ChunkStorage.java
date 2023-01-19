@@ -41,7 +41,7 @@ public class ChunkStorage implements AutoCloseable {
    ) {
       int var5 = getVersion(var3);
       if (var5 < 1493) {
-         var3 = NbtUtils.update(this.fixerUpper, DataFixTypes.CHUNK, var3, var5, 1493);
+         var3 = DataFixTypes.CHUNK.update(this.fixerUpper, var3, var5, 1493);
          if (var3.getCompound("Level").getBoolean("hasLegacyStructureData")) {
             LegacyStructureDataHandler var6 = this.getLegacyStructureHandler(var1, var2);
             var3 = var6.updateFromLegacy(var3);
@@ -49,9 +49,9 @@ public class ChunkStorage implements AutoCloseable {
       }
 
       injectDatafixingContext(var3, var1, var4);
-      var3 = NbtUtils.update(this.fixerUpper, DataFixTypes.CHUNK, var3, Math.max(1493, var5));
-      if (var5 < SharedConstants.getCurrentVersion().getWorldVersion()) {
-         var3.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
+      var3 = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, var3, Math.max(1493, var5));
+      if (var5 < SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
+         NbtUtils.addCurrentDataVersion(var3);
       }
 
       var3.remove("__context");
@@ -80,7 +80,7 @@ public class ChunkStorage implements AutoCloseable {
    }
 
    public static int getVersion(CompoundTag var0) {
-      return var0.contains("DataVersion", 99) ? var0.getInt("DataVersion") : -1;
+      return NbtUtils.getDataVersion(var0, -1);
    }
 
    public CompletableFuture<Optional<CompoundTag>> read(ChunkPos var1) {

@@ -64,10 +64,8 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
    public static void renderPath(Path var0, float var1, boolean var2, boolean var3, double var4, double var6, double var8) {
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       RenderSystem.lineWidth(6.0F);
       doRenderPath(var0, var1, var2, var3, var4, var6, var8);
-      RenderSystem.enableTexture();
       RenderSystem.disableBlend();
    }
 

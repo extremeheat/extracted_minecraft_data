@@ -222,7 +222,7 @@ public class BlendingData {
          var7 = var12;
       }
 
-      int var16 = this.getCellYIndex(Mth.intFloorDiv(var4, 8));
+      int var16 = this.getCellYIndex(Mth.floorDiv(var4, 8));
       if (var16 >= 0 && var16 < var5.length - 1) {
          double var17 = ((double)var4 + 0.5) % 8.0 / 8.0;
          double var18 = (1.0 - var17) / var17;

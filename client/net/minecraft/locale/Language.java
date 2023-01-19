@@ -49,8 +49,8 @@ public abstract class Language {
       final ImmutableMap var9 = var0.build();
       return new Language() {
          @Override
-         public String getOrDefault(String var1) {
-            return var9.getOrDefault(var1, var1);
+         public String getOrDefault(String var1, String var2) {
+            return var9.getOrDefault(var1, var2);
          }
 
          @Override
@@ -90,7 +90,11 @@ public abstract class Language {
       instance = var0;
    }
 
-   public abstract String getOrDefault(String var1);
+   public String getOrDefault(String var1) {
+      return this.getOrDefault(var1, var1);
+   }
+
+   public abstract String getOrDefault(String var1, String var2);
 
    public abstract boolean has(String var1);
 

@@ -10,7 +10,7 @@ public class MultiLineTextWidget extends AbstractWidget {
    private final int lineHeight;
    private final boolean centered;
 
-   private MultiLineTextWidget(MultiLineLabel var1, Font var2, Component var3, boolean var4) {
+   protected MultiLineTextWidget(MultiLineLabel var1, Font var2, Component var3, boolean var4) {
       super(0, 0, var1.getWidth(), var1.getLineCount() * 9, var3);
       this.multiLineLabel = var1;
       this.lineHeight = 9;

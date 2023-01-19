@@ -31,7 +31,6 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
       RenderSystem.lineWidth(2.0F);
-      RenderSystem.disableTexture();
       RenderSystem.depthMask(false);
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
       BlockPos var10 = new BlockPos(var3, var5, var7);
@@ -123,7 +122,6 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       RenderSystem.depthMask(true);
-      RenderSystem.enableTexture();
       RenderSystem.disableBlend();
    }
 }

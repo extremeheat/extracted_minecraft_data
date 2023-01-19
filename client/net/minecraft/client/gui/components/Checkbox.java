@@ -60,6 +60,7 @@ public class Checkbox extends AbstractButton {
       RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
       blit(var1, this.getX(), this.getY(), this.isFocused() ? 20.0F : 0.0F, this.selected ? 20.0F : 0.0F, 20, this.height, 64, 64);
       this.renderBg(var1, var5, var2, var3);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       if (this.showLabel) {
          drawString(var1, var6, this.getMessage(), this.getX() + 24, this.getY() + (this.height - 8) / 2, 14737632 | Mth.ceil(this.alpha * 255.0F) << 24);
       }

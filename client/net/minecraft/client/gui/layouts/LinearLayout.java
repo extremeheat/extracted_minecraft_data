@@ -1,34 +1,33 @@
-package net.minecraft.client.gui.components;
+package net.minecraft.client.gui.layouts;
 
-import com.google.common.collect.Lists;
 import com.mojang.math.Divisor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import net.minecraft.network.chat.Component;
+import java.util.function.Consumer;
 
-public class LinearLayoutWidget extends AbstractContainerWidget {
-   private final LinearLayoutWidget.Orientation orientation;
-   private final List<LinearLayoutWidget.ChildContainer> children = new ArrayList<>();
-   private final List<AbstractWidget> containedChildrenView = Collections.unmodifiableList(Lists.transform(this.children, var0 -> var0.child));
+public class LinearLayout extends AbstractLayout {
+   private final LinearLayout.Orientation orientation;
+   private final List<LinearLayout.ChildContainer> children = new ArrayList<>();
    private final LayoutSettings defaultChildLayoutSettings = LayoutSettings.defaults();
 
-   public LinearLayoutWidget(int var1, int var2, LinearLayoutWidget.Orientation var3) {
+   public LinearLayout(int var1, int var2, LinearLayout.Orientation var3) {
       this(0, 0, var1, var2, var3);
    }
 
-   public LinearLayoutWidget(int var1, int var2, int var3, int var4, LinearLayoutWidget.Orientation var5) {
-      super(var1, var2, var3, var4, Component.empty());
+   public LinearLayout(int var1, int var2, int var3, int var4, LinearLayout.Orientation var5) {
+      super(var1, var2, var3, var4);
       this.orientation = var5;
    }
 
-   public void pack() {
+   @Override
+   public void arrangeElements() {
+      super.arrangeElements();
       if (!this.children.isEmpty()) {
          int var1 = 0;
          int var2 = this.orientation.getSecondaryLength(this);
 
-         for(LinearLayoutWidget.ChildContainer var4 : this.children) {
+         for(LinearLayout.ChildContainer var4 : this.children) {
             var1 += this.orientation.getPrimaryLength(var4);
             var2 = Math.max(var2, this.orientation.getSecondaryLength(var4));
          }
@@ -36,31 +35,37 @@ public class LinearLayoutWidget extends AbstractContainerWidget {
          int var10 = this.orientation.getPrimaryLength(this) - var1;
          int var11 = this.orientation.getPrimaryPosition(this);
          Iterator var5 = this.children.iterator();
-         LinearLayoutWidget.ChildContainer var6 = (LinearLayoutWidget.ChildContainer)var5.next();
+         LinearLayout.ChildContainer var6 = (LinearLayout.ChildContainer)var5.next();
          this.orientation.setPrimaryPosition(var6, var11);
          var11 += this.orientation.getPrimaryLength(var6);
-         LinearLayoutWidget.ChildContainer var8;
+         LinearLayout.ChildContainer var8;
          if (this.children.size() >= 2) {
             for(Divisor var7 = new Divisor(var10, this.children.size() - 1); var7.hasNext(); var11 += this.orientation.getPrimaryLength(var8)) {
                var11 += var7.nextInt();
-               var8 = (LinearLayoutWidget.ChildContainer)var5.next();
+               var8 = (LinearLayout.ChildContainer)var5.next();
                this.orientation.setPrimaryPosition(var8, var11);
             }
          }
 
          int var14 = this.orientation.getSecondaryPosition(this);
 
-         for(LinearLayoutWidget.ChildContainer var9 : this.children) {
+         for(LinearLayout.ChildContainer var9 : this.children) {
             this.orientation.setSecondaryPosition(var9, var14, var2);
          }
 
-         this.orientation.setSecondaryLength(this, var2);
+         switch(this.orientation) {
+            case HORIZONTAL:
+               this.height = var2;
+               break;
+            case VERTICAL:
+               this.width = var2;
+         }
       }
    }
 
    @Override
-   protected List<? extends AbstractWidget> getContainedChildren() {
-      return this.containedChildrenView;
+   protected void visitChildren(Consumer<LayoutElement> var1) {
+      this.children.forEach(var1x -> var1.accept(var1x.child));
    }
 
    public LayoutSettings newChildLayoutSettings() {
@@ -71,17 +76,17 @@ public class LinearLayoutWidget extends AbstractContainerWidget {
       return this.defaultChildLayoutSettings;
    }
 
-   public <T extends AbstractWidget> T addChild(T var1) {
+   public <T extends LayoutElement> T addChild(T var1) {
       return this.addChild((T)var1, this.newChildLayoutSettings());
    }
 
-   public <T extends AbstractWidget> T addChild(T var1, LayoutSettings var2) {
-      this.children.add(new LinearLayoutWidget.ChildContainer(var1, var2));
+   public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
+      this.children.add(new LinearLayout.ChildContainer(var1, var2));
       return (T)var1;
    }
 
-   static class ChildContainer extends AbstractContainerWidget.AbstractChildWrapper {
-      protected ChildContainer(AbstractWidget var1, LayoutSettings var2) {
+   static class ChildContainer extends AbstractLayout.AbstractChildWrapper {
+      protected ChildContainer(LayoutElement var1, LayoutSettings var2) {
          super(var1, var2);
       }
    }
@@ -93,35 +98,35 @@ public class LinearLayoutWidget extends AbstractContainerWidget {
       private Orientation() {
       }
 
-      int getPrimaryLength(AbstractWidget var1) {
+      int getPrimaryLength(LayoutElement var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getWidth();
             case VERTICAL -> var1.getHeight();
          };
       }
 
-      int getPrimaryLength(LinearLayoutWidget.ChildContainer var1) {
+      int getPrimaryLength(LinearLayout.ChildContainer var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getWidth();
             case VERTICAL -> var1.getHeight();
          };
       }
 
-      int getSecondaryLength(AbstractWidget var1) {
+      int getSecondaryLength(LayoutElement var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getHeight();
             case VERTICAL -> var1.getWidth();
          };
       }
 
-      int getSecondaryLength(LinearLayoutWidget.ChildContainer var1) {
+      int getSecondaryLength(LinearLayout.ChildContainer var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getHeight();
             case VERTICAL -> var1.getWidth();
          };
       }
 
-      void setPrimaryPosition(LinearLayoutWidget.ChildContainer var1, int var2) {
+      void setPrimaryPosition(LinearLayout.ChildContainer var1, int var2) {
          switch(this) {
             case HORIZONTAL:
                var1.setX(var2, var1.getWidth());
@@ -131,7 +136,7 @@ public class LinearLayoutWidget extends AbstractContainerWidget {
          }
       }
 
-      void setSecondaryPosition(LinearLayoutWidget.ChildContainer var1, int var2, int var3) {
+      void setSecondaryPosition(LinearLayout.ChildContainer var1, int var2, int var3) {
          switch(this) {
             case HORIZONTAL:
                var1.setY(var2, var3);
@@ -141,28 +146,18 @@ public class LinearLayoutWidget extends AbstractContainerWidget {
          }
       }
 
-      int getPrimaryPosition(AbstractWidget var1) {
+      int getPrimaryPosition(LayoutElement var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getX();
             case VERTICAL -> var1.getY();
          };
       }
 
-      int getSecondaryPosition(AbstractWidget var1) {
+      int getSecondaryPosition(LayoutElement var1) {
          return switch(this) {
             case HORIZONTAL -> var1.getY();
             case VERTICAL -> var1.getX();
          };
-      }
-
-      void setSecondaryLength(AbstractWidget var1, int var2) {
-         switch(this) {
-            case HORIZONTAL:
-               var1.height = var2;
-               break;
-            case VERTICAL:
-               var1.width = var2;
-         }
       }
    }
 }

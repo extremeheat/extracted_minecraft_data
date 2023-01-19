@@ -147,9 +147,9 @@ public class SectionStorage<R> implements AutoCloseable {
       } else {
          Dynamic var14 = new Dynamic(var2, var3);
          int var5 = getVersion(var14);
-         int var6 = SharedConstants.getCurrentVersion().getWorldVersion();
+         int var6 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
          boolean var7 = var5 != var6;
-         Dynamic var8 = this.fixerUpper.update(this.type.getType(), var14, var5, var6);
+         Dynamic var8 = this.type.update(this.fixerUpper, var14, var5, var6);
          OptionalDynamic var9 = var8.get("Sections");
 
          for(int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); ++var10) {
@@ -200,7 +200,7 @@ public class SectionStorage<R> implements AutoCloseable {
                var2.createString("Sections"),
                var2.createMap(var3),
                var2.createString("DataVersion"),
-               var2.createInt(SharedConstants.getCurrentVersion().getWorldVersion())
+               var2.createInt(SharedConstants.getCurrentVersion().getDataVersion().getVersion())
             )
          )
       );

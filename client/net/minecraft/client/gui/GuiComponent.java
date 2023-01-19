@@ -64,38 +64,40 @@ public abstract class GuiComponent {
    }
 
    public static void fill(PoseStack var0, int var1, int var2, int var3, int var4, int var5) {
-      innerFill(var0.last().pose(), var1, var2, var3, var4, var5);
+      fill(var0, var1, var2, var3, var4, 0, var5);
    }
 
-   private static void innerFill(Matrix4f var0, int var1, int var2, int var3, int var4, int var5) {
+   public static void fill(PoseStack var0, int var1, int var2, int var3, int var4, int var5, int var6) {
+      innerFill(var0.last().pose(), var1, var2, var3, var4, var5, var6);
+   }
+
+   private static void innerFill(Matrix4f var0, int var1, int var2, int var3, int var4, int var5, int var6) {
       if (var1 < var3) {
-         int var6 = var1;
+         int var7 = var1;
          var1 = var3;
-         var3 = var6;
+         var3 = var7;
       }
 
       if (var2 < var4) {
-         int var11 = var2;
+         int var12 = var2;
          var2 = var4;
-         var4 = var11;
+         var4 = var12;
       }
 
-      float var12 = (float)(var5 >> 24 & 0xFF) / 255.0F;
-      float var7 = (float)(var5 >> 16 & 0xFF) / 255.0F;
-      float var8 = (float)(var5 >> 8 & 0xFF) / 255.0F;
-      float var9 = (float)(var5 & 0xFF) / 255.0F;
-      BufferBuilder var10 = Tesselator.getInstance().getBuilder();
+      float var13 = (float)(var6 >> 24 & 0xFF) / 255.0F;
+      float var8 = (float)(var6 >> 16 & 0xFF) / 255.0F;
+      float var9 = (float)(var6 >> 8 & 0xFF) / 255.0F;
+      float var10 = (float)(var6 & 0xFF) / 255.0F;
+      BufferBuilder var11 = Tesselator.getInstance().getBuilder();
       RenderSystem.enableBlend();
-      RenderSystem.disableTexture();
       RenderSystem.defaultBlendFunc();
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      var10.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-      var10.vertex(var0, (float)var1, (float)var4, 0.0F).color(var7, var8, var9, var12).endVertex();
-      var10.vertex(var0, (float)var3, (float)var4, 0.0F).color(var7, var8, var9, var12).endVertex();
-      var10.vertex(var0, (float)var3, (float)var2, 0.0F).color(var7, var8, var9, var12).endVertex();
-      var10.vertex(var0, (float)var1, (float)var2, 0.0F).color(var7, var8, var9, var12).endVertex();
-      BufferUploader.drawWithShader(var10.end());
-      RenderSystem.enableTexture();
+      var11.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+      var11.vertex(var0, (float)var1, (float)var4, (float)var5).color(var8, var9, var10, var13).endVertex();
+      var11.vertex(var0, (float)var3, (float)var4, (float)var5).color(var8, var9, var10, var13).endVertex();
+      var11.vertex(var0, (float)var3, (float)var2, (float)var5).color(var8, var9, var10, var13).endVertex();
+      var11.vertex(var0, (float)var1, (float)var2, (float)var5).color(var8, var9, var10, var13).endVertex();
+      BufferUploader.drawWithShader(var11.end());
       RenderSystem.disableBlend();
    }
 
@@ -104,7 +106,6 @@ public abstract class GuiComponent {
    }
 
    protected static void fillGradient(PoseStack var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      RenderSystem.disableTexture();
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
@@ -114,7 +115,6 @@ public abstract class GuiComponent {
       fillGradient(var0.last().pose(), var9, var1, var2, var3, var4, var7, var5, var6);
       var8.end();
       RenderSystem.disableBlend();
-      RenderSystem.enableTexture();
    }
 
    protected static void fillGradient(Matrix4f var0, BufferBuilder var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {

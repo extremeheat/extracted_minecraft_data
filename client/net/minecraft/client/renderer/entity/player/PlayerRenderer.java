@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -153,7 +154,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          Objective var9 = var8.getDisplayObjective(2);
          if (var9 != null) {
             Score var10 = var8.getOrCreatePlayerScore(var1.getScoreboardName(), var9);
-            super.renderNameTag(var1, Component.literal(Integer.toString(var10.getScore())).append(" ").append(var9.getDisplayName()), var3, var4, var5);
+            super.renderNameTag(
+               var1, Component.literal(Integer.toString(var10.getScore())).append(CommonComponents.SPACE).append(var9.getDisplayName()), var3, var4, var5
+            );
             var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
          }
       }

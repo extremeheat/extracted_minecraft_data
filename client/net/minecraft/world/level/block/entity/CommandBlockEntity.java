@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -41,10 +42,11 @@ public class CommandBlockEntity extends BlockEntity {
 
       @Override
       public CommandSourceStack createCommandSourceStack() {
+         Direction var1 = CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
          return new CommandSourceStack(
             this,
             Vec3.atCenterOf(CommandBlockEntity.this.worldPosition),
-            Vec2.ZERO,
+            new Vec2(0.0F, var1.toYRot()),
             this.getLevel(),
             2,
             this.getName().getString(),

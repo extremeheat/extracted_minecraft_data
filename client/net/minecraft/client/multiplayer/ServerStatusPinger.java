@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 public class ServerStatusPinger {
    static final Splitter SPLITTER = Splitter.on('\u0000').limit(6);
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withStyle(ChatFormatting.DARK_RED);
+   private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
 
    public ServerStatusPinger() {
@@ -69,7 +69,7 @@ public class ServerStatusPinger {
          this.connections.add(var6);
          var1.motd = Component.translatable("multiplayer.status.pinging");
          var1.ping = -1L;
-         var1.playerList = null;
+         var1.playerList = Collections.emptyList();
          var6.setListener(new ClientStatusPacketListener() {
             private boolean success;
             private boolean receivedPing;
@@ -98,6 +98,7 @@ public class ServerStatusPinger {
 
                   if (var2x.getPlayers() != null) {
                      var1.status = ServerStatusPinger.formatPlayerCount(var2x.getPlayers().getNumPlayers(), var2x.getPlayers().getMaxPlayers());
+                     var1.players = var2x.getPlayers();
                      ArrayList var3 = Lists.newArrayList();
                      GameProfile[] var4 = var2x.getPlayers().getSample();
                      if (var4 != null && var4.length > 0) {
@@ -152,8 +153,8 @@ public class ServerStatusPinger {
             }
 
             @Override
-            public Connection getConnection() {
-               return var6;
+            public boolean isAcceptingMessages() {
+               return var6.isConnected();
             }
          });
 
@@ -228,6 +229,7 @@ public class ServerStatusPinger {
                                  var2.version = Component.literal(var7);
                                  var2.motd = Component.literal(var8);
                                  var2.status = ServerStatusPinger.formatPlayerCount(var9, var10);
+                                 var2.players = new ServerStatus.Players(var10, var9);
                               }
                            }
          

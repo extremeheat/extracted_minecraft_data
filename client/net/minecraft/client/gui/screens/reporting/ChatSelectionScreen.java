@@ -13,11 +13,11 @@ import net.minecraft.Util;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
@@ -201,36 +201,27 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      @Override
-      protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-         if (!this.moveSelectableSelection(var1) && var1 == AbstractSelectionList.SelectionDirection.UP) {
-            ChatSelectionScreen.this.onReachedScrollTop();
-            this.moveSelectableSelection(var1);
-         }
+      @Nullable
+      protected ChatSelectionScreen.ChatSelectionList.Entry nextEntry(ScreenDirection var1) {
+         return this.nextEntry(var1, ChatSelectionScreen.ChatSelectionList.Entry::canSelect);
       }
 
-      private boolean moveSelectableSelection(AbstractSelectionList.SelectionDirection var1) {
-         return this.moveSelection(var1, ChatSelectionScreen.ChatSelectionList.Entry::canSelect);
+      public void setSelected(@Nullable ChatSelectionScreen.ChatSelectionList.Entry var1) {
+         super.setSelected(var1);
+         ChatSelectionScreen.ChatSelectionList.Entry var2 = this.nextEntry(ScreenDirection.UP);
+         if (var2 == null) {
+            ChatSelectionScreen.this.onReachedScrollTop();
+         }
       }
 
       @Override
       public boolean keyPressed(int var1, int var2, int var3) {
          ChatSelectionScreen.ChatSelectionList.Entry var4 = this.getSelected();
-         if (var4 != null && var4.keyPressed(var1, var2, var3)) {
-            return true;
-         } else {
-            this.setFocused(null);
-            return super.keyPressed(var1, var2, var3);
-         }
+         return var4 != null && var4.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
       }
 
       public int getFooterTop() {
          return this.y1 + 9;
-      }
-
-      @Override
-      protected boolean isFocused() {
-         return ChatSelectionScreen.this.getFocused() == this;
       }
 
       public class DividerEntry extends ChatSelectionScreen.ChatSelectionList.Entry {

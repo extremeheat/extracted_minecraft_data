@@ -1,4 +1,4 @@
-package net.minecraft.client.gui.components;
+package net.minecraft.client.gui.layouts;
 
 public interface LayoutSettings {
    LayoutSettings padding(int var1);

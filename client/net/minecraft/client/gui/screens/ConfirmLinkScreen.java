@@ -34,7 +34,7 @@ public class ConfirmLinkScreen extends ConfirmScreen {
    }
 
    protected static MutableComponent confirmMessage(boolean var0, String var1) {
-      return confirmMessage(var0).append(" ").append(Component.literal(var1));
+      return confirmMessage(var0).append(CommonComponents.SPACE).append(Component.literal(var1));
    }
 
    protected static MutableComponent confirmMessage(boolean var0) {

@@ -70,6 +70,8 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
          this.blit(var1, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 0, 22, 24, 22);
       }
 
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
       for(int var6 = 0; var6 < 9; ++var6) {
          this.renderSlot(var1, var6, this.minecraft.getWindow().getGuiScaledWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
       }
@@ -86,6 +88,7 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
          float var8 = var6.isEnabled() ? 1.0F : 0.25F;
          RenderSystem.setShaderColor(var8, var8, var8, var5);
          var6.renderIcon(var1, var8, var7);
+         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          var1.popPose();
          if (var7 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();

@@ -141,7 +141,6 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public void renderWindow(PoseStack var1, int var2, int var3) {
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.enableBlend();
       RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, WINDOW_LOCATION);
@@ -166,7 +165,6 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    private void renderTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       if (this.selectedTab != null) {
          PoseStack var6 = RenderSystem.getModelViewStack();
          var6.pushPose();

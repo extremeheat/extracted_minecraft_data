@@ -10,14 +10,10 @@ public class V2509 extends NamespacedSchema {
       super(var1, var2);
    }
 
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> V100.equipment(var0));
-   }
-
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
       var2.remove("minecraft:zombie_pigman");
-      registerMob(var1, var2, "minecraft:zombified_piglin");
+      var1.register(var2, "minecraft:zombified_piglin", () -> V100.equipment(var1));
       return var2;
    }
 }

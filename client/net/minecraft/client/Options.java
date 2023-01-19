@@ -53,7 +53,6 @@ import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -313,6 +312,17 @@ public class Options {
       0.0,
       var0 -> Minecraft.getInstance().getChatListener().setMessageDelay(var0)
    );
+   private static final Component ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
+   private final OptionInstance<Double> notificationDisplayTime = new OptionInstance<>(
+      "options.notifications.display_time",
+      OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME),
+      (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)),
+      new OptionInstance.IntRange(5, 100).xmap(var0 -> (double)var0 / 10.0, var0 -> (int)(var0 * 10.0)),
+      Codec.doubleRange(0.5, 10.0),
+      1.0,
+      var0 -> {
+      }
+   );
    private final OptionInstance<Integer> mipmapLevels = new OptionInstance<>(
       "options.mipmapLevels",
       OptionInstance.noTooltip(),
@@ -356,7 +366,7 @@ public class Options {
       }
    });
    public int glDebugVerbosity = 1;
-   private final OptionInstance<Boolean> autoJump = OptionInstance.createBoolean("options.autoJump", true);
+   private final OptionInstance<Boolean> autoJump = OptionInstance.createBoolean("options.autoJump", false);
    private final OptionInstance<Boolean> operatorItemsTab = OptionInstance.createBoolean("options.operatorItemsTab", false);
    private final OptionInstance<Boolean> autoSuggestions = OptionInstance.createBoolean("options.autoSuggestCommands", true);
    private final OptionInstance<Boolean> chatColors = OptionInstance.createBoolean("options.chat.color", true);
@@ -648,6 +658,7 @@ public class Options {
          var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
+   public boolean onboardAccessibility = true;
    public boolean syncWrites;
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
@@ -736,6 +747,10 @@ public class Options {
 
    public OptionInstance<Double> chatDelay() {
       return this.chatDelay;
+   }
+
+   public OptionInstance<Double> notificationDisplayTime() {
+      return this.notificationDisplayTime;
    }
 
    public OptionInstance<Integer> mipmapLevels() {
@@ -1030,6 +1045,7 @@ public class Options {
       var1.process("chatHeightUnfocused", this.chatHeightUnfocused);
       var1.process("chatScale", this.chatScale);
       var1.process("chatWidth", this.chatWidth);
+      var1.process("notificationDisplayTime", this.notificationDisplayTime);
       var1.process("mipmapLevels", this.mipmapLevels);
       this.useNativeTransport = var1.process("useNativeTransport", this.useNativeTransport);
       var1.process("mainHand", this.mainHand);
@@ -1050,6 +1066,7 @@ public class Options {
       var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
       var1.process("panoramaScrollSpeed", this.panoramaSpeed);
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
+      this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1198,12 +1215,12 @@ public class Options {
       } catch (RuntimeException var4) {
       }
 
-      return NbtUtils.update(this.minecraft.getFixerUpper(), DataFixTypes.OPTIONS, var1, var2);
+      return DataFixTypes.OPTIONS.updateToCurrentVersion(this.minecraft.getFixerUpper(), var1, var2);
    }
 
    public void save() {
       try (final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8))) {
-         var1.println("version:" + SharedConstants.getCurrentVersion().getWorldVersion());
+         var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
          this.processOptions(new Options.FieldAccess() {
             public void writePrefix(String var1x) {
                var1.print(var1x);

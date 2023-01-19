@@ -580,7 +580,6 @@ public abstract class RenderStateShard {
 
       public TextureStateShard(ResourceLocation var1, boolean var2, boolean var3) {
          super(() -> {
-            RenderSystem.enableTexture();
             TextureManager var3x = Minecraft.getInstance().getTextureManager();
             var3x.getTexture(var1).setFilter(var2, var3);
             RenderSystem.setShaderTexture(0, var1);

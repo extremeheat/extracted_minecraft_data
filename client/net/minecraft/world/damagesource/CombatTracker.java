@@ -84,15 +84,15 @@ public class CombatTracker {
             if (var1.getSource() == DamageSource.FALL || var1.getSource() == DamageSource.OUT_OF_WORLD) {
                var3 = Component.translatable("death.fell.accident." + this.getFallLocation(var1), this.mob.getDisplayName());
             } else if (var6 != null && !var6.equals(var4)) {
-               Entity var9 = var1.getSource().getEntity();
-               ItemStack var8 = var9 instanceof LivingEntity ? ((LivingEntity)var9).getMainHandItem() : ItemStack.EMPTY;
-               if (!var8.isEmpty() && var8.hasCustomHoverName()) {
-                  var3 = Component.translatable("death.fell.assist.item", this.mob.getDisplayName(), var6, var8.getDisplayName());
+               Entity var10 = var1.getSource().getEntity();
+               ItemStack var11 = var10 instanceof LivingEntity var9 ? var9.getMainHandItem() : ItemStack.EMPTY;
+               if (!var11.isEmpty() && var11.hasCustomHoverName()) {
+                  var3 = Component.translatable("death.fell.assist.item", this.mob.getDisplayName(), var6, var11.getDisplayName());
                } else {
                   var3 = Component.translatable("death.fell.assist", this.mob.getDisplayName(), var6);
                }
             } else if (var4 != null) {
-               ItemStack var7 = var5 instanceof LivingEntity ? ((LivingEntity)var5).getMainHandItem() : ItemStack.EMPTY;
+               ItemStack var7 = var5 instanceof LivingEntity var8 ? var8.getMainHandItem() : ItemStack.EMPTY;
                if (!var7.isEmpty() && var7.hasCustomHoverName()) {
                   var3 = Component.translatable("death.fell.finish.item", this.mob.getDisplayName(), var4, var7.getDisplayName());
                } else {
@@ -111,20 +111,22 @@ public class CombatTracker {
 
    @Nullable
    public LivingEntity getKiller() {
-      LivingEntity var1 = null;
-      Player var2 = null;
+      Object var1 = null;
+      Object var2 = null;
       float var3 = 0.0F;
       float var4 = 0.0F;
 
       for(CombatEntry var6 : this.entries) {
-         if (var6.getSource().getEntity() instanceof Player && (var2 == null || var6.getDamage() > var4)) {
+         Entity var8 = var6.getSource().getEntity();
+         if (var8 instanceof Player var7 && (var2 == null || var6.getDamage() > var4)) {
             var4 = var6.getDamage();
-            var2 = (Player)var6.getSource().getEntity();
+            var2 = var7;
          }
 
-         if (var6.getSource().getEntity() instanceof LivingEntity && (var1 == null || var6.getDamage() > var3)) {
+         var8 = var6.getSource().getEntity();
+         if (var8 instanceof LivingEntity var9 && (var1 == null || var6.getDamage() > var3)) {
             var3 = var6.getDamage();
-            var1 = (LivingEntity)var6.getSource().getEntity();
+            var1 = var9;
          }
       }
 

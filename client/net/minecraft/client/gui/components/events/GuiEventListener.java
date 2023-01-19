@@ -1,5 +1,10 @@
 package net.minecraft.client.gui.components.events;
 
+import javax.annotation.Nullable;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+
 public interface GuiEventListener {
    long DOUBLE_CLICK_THRESHOLD_MS = 250L;
 
@@ -34,11 +39,25 @@ public interface GuiEventListener {
       return false;
    }
 
-   default boolean changeFocus(boolean var1) {
-      return false;
+   @Nullable
+   default ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      return null;
    }
 
    default boolean isMouseOver(double var1, double var3) {
       return false;
+   }
+
+   void setFocused(boolean var1);
+
+   boolean isFocused();
+
+   @Nullable
+   default ComponentPath getCurrentFocusPath() {
+      return this.isFocused() ? ComponentPath.leaf(this) : null;
+   }
+
+   default ScreenRectangle getRectangle() {
+      return ScreenRectangle.empty();
    }
 }

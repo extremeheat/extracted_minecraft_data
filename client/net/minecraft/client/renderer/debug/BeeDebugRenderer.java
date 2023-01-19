@@ -83,11 +83,9 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       this.clearRemovedHives();
       this.clearRemovedBees();
       this.doRender();
-      RenderSystem.enableTexture();
       RenderSystem.disableBlend();
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();

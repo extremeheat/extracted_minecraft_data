@@ -1,33 +1,31 @@
-package net.minecraft.client.gui.components;
+package net.minecraft.client.gui.layouts;
 
 import com.mojang.math.Divisor;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.network.chat.Component;
+import java.util.function.Consumer;
 import net.minecraft.util.Mth;
 
-public class GridWidget extends AbstractContainerWidget {
-   private final List<AbstractWidget> children = new ArrayList<>();
-   private final List<GridWidget.CellInhabitant> cellInhabitants = new ArrayList<>();
+public class GridLayout extends AbstractLayout {
+   private final List<LayoutElement> children = new ArrayList<>();
+   private final List<GridLayout.CellInhabitant> cellInhabitants = new ArrayList<>();
    private final LayoutSettings defaultCellSettings = LayoutSettings.defaults();
 
-   public GridWidget() {
+   public GridLayout() {
       this(0, 0);
    }
 
-   public GridWidget(int var1, int var2) {
-      this(var1, var2, Component.empty());
+   public GridLayout(int var1, int var2) {
+      super(var1, var2, 0, 0);
    }
 
-   public GridWidget(int var1, int var2, Component var3) {
-      super(var1, var2, 0, 0, var3);
-   }
-
-   public void pack() {
+   @Override
+   public void arrangeElements() {
+      super.arrangeElements();
       int var1 = 0;
       int var2 = 0;
 
-      for(GridWidget.CellInhabitant var4 : this.cellInhabitants) {
+      for(GridLayout.CellInhabitant var4 : this.cellInhabitants) {
          var1 = Math.max(var4.getLastOccupiedRow(), var1);
          var2 = Math.max(var4.getLastOccupiedColumn(), var2);
       }
@@ -35,7 +33,7 @@ public class GridWidget extends AbstractContainerWidget {
       int[] var12 = new int[var2 + 1];
       int[] var13 = new int[var1 + 1];
 
-      for(GridWidget.CellInhabitant var6 : this.cellInhabitants) {
+      for(GridLayout.CellInhabitant var6 : this.cellInhabitants) {
          Divisor var7 = new Divisor(var6.getHeight(), var6.occupiedRows);
 
          for(int var8 = var6.row; var8 <= var6.getLastOccupiedRow(); ++var8) {
@@ -63,7 +61,7 @@ public class GridWidget extends AbstractContainerWidget {
          var15[var17] = var15[var17 - 1] + var13[var17 - 1];
       }
 
-      for(GridWidget.CellInhabitant var20 : this.cellInhabitants) {
+      for(GridLayout.CellInhabitant var20 : this.cellInhabitants) {
          int var21 = 0;
 
          for(int var10 = var20.column; var10 <= var20.getLastOccupiedColumn(); ++var10) {
@@ -84,33 +82,33 @@ public class GridWidget extends AbstractContainerWidget {
       this.height = var15[var1] + var13[var1];
    }
 
-   public <T extends AbstractWidget> T addChild(T var1, int var2, int var3) {
+   public <T extends LayoutElement> T addChild(T var1, int var2, int var3) {
       return this.addChild((T)var1, var2, var3, this.newCellSettings());
    }
 
-   public <T extends AbstractWidget> T addChild(T var1, int var2, int var3, LayoutSettings var4) {
+   public <T extends LayoutElement> T addChild(T var1, int var2, int var3, LayoutSettings var4) {
       return this.addChild((T)var1, var2, var3, 1, 1, var4);
    }
 
-   public <T extends AbstractWidget> T addChild(T var1, int var2, int var3, int var4, int var5) {
+   public <T extends LayoutElement> T addChild(T var1, int var2, int var3, int var4, int var5) {
       return this.addChild((T)var1, var2, var3, var4, var5, this.newCellSettings());
    }
 
-   public <T extends AbstractWidget> T addChild(T var1, int var2, int var3, int var4, int var5, LayoutSettings var6) {
+   public <T extends LayoutElement> T addChild(T var1, int var2, int var3, int var4, int var5, LayoutSettings var6) {
       if (var4 < 1) {
          throw new IllegalArgumentException("Occupied rows must be at least 1");
       } else if (var5 < 1) {
          throw new IllegalArgumentException("Occupied columns must be at least 1");
       } else {
-         this.cellInhabitants.add(new GridWidget.CellInhabitant(var1, var2, var3, var4, var5, var6));
+         this.cellInhabitants.add(new GridLayout.CellInhabitant(var1, var2, var3, var4, var5, var6));
          this.children.add(var1);
          return (T)var1;
       }
    }
 
    @Override
-   protected List<? extends AbstractWidget> getContainedChildren() {
-      return this.children;
+   protected void visitChildren(Consumer<LayoutElement> var1) {
+      this.children.forEach(var1);
    }
 
    public LayoutSettings newCellSettings() {
@@ -121,17 +119,17 @@ public class GridWidget extends AbstractContainerWidget {
       return this.defaultCellSettings;
    }
 
-   public GridWidget.RowHelper createRowHelper(int var1) {
-      return new GridWidget.RowHelper(var1);
+   public GridLayout.RowHelper createRowHelper(int var1) {
+      return new GridLayout.RowHelper(var1);
    }
 
-   static class CellInhabitant extends AbstractContainerWidget.AbstractChildWrapper {
+   static class CellInhabitant extends AbstractLayout.AbstractChildWrapper {
       final int row;
       final int column;
       final int occupiedRows;
       final int occupiedColumns;
 
-      CellInhabitant(AbstractWidget var1, int var2, int var3, int var4, int var5, LayoutSettings var6) {
+      CellInhabitant(LayoutElement var1, int var2, int var3, int var4, int var5, LayoutSettings var6) {
          super(var1, var6.getExposed());
          this.row = var2;
          this.column = var3;
@@ -157,19 +155,19 @@ public class GridWidget extends AbstractContainerWidget {
          this.columns = var2;
       }
 
-      public <T extends AbstractWidget> T addChild(T var1) {
+      public <T extends LayoutElement> T addChild(T var1) {
          return this.addChild((T)var1, 1);
       }
 
-      public <T extends AbstractWidget> T addChild(T var1, int var2) {
+      public <T extends LayoutElement> T addChild(T var1, int var2) {
          return this.addChild((T)var1, var2, this.defaultCellSetting());
       }
 
-      public <T extends AbstractWidget> T addChild(T var1, LayoutSettings var2) {
+      public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
          return this.addChild((T)var1, 1, var2);
       }
 
-      public <T extends AbstractWidget> T addChild(T var1, int var2, LayoutSettings var3) {
+      public <T extends LayoutElement> T addChild(T var1, int var2, LayoutSettings var3) {
          int var4 = this.index / this.columns;
          int var5 = this.index % this.columns;
          if (var5 + var2 > this.columns) {
@@ -179,15 +177,15 @@ public class GridWidget extends AbstractContainerWidget {
          }
 
          this.index += var2;
-         return GridWidget.this.addChild((T)var1, var4, var5, 1, var2, var3);
+         return GridLayout.this.addChild((T)var1, var4, var5, 1, var2, var3);
       }
 
       public LayoutSettings newCellSettings() {
-         return GridWidget.this.newCellSettings();
+         return GridLayout.this.newCellSettings();
       }
 
       public LayoutSettings defaultCellSetting() {
-         return GridWidget.this.defaultCellSetting();
+         return GridLayout.this.defaultCellSetting();
       }
    }
 }

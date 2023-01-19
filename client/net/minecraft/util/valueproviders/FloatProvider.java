@@ -3,8 +3,8 @@ package net.minecraft.util.valueproviders;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.ExtraCodecs;
 
 public abstract class FloatProvider implements SampledFloat {
    private static final Codec<Either<Float, FloatProvider>> CONSTANT_OR_DISPATCH_CODEC = Codec.either(
@@ -20,16 +20,18 @@ public abstract class FloatProvider implements SampledFloat {
    }
 
    public static Codec<FloatProvider> codec(float var0, float var1) {
-      Function var2 = var2x -> {
-         if (var2x.getMinValue() < var0) {
-            return DataResult.error("Value provider too low: " + var0 + " [" + var2x.getMinValue() + "-" + var2x.getMaxValue() + "]");
-         } else {
-            return var2x.getMaxValue() > var1
-               ? DataResult.error("Value provider too high: " + var1 + " [" + var2x.getMinValue() + "-" + var2x.getMaxValue() + "]")
-               : DataResult.success(var2x);
+      return ExtraCodecs.validate(
+         CODEC,
+         var2 -> {
+            if (var2.getMinValue() < var0) {
+               return DataResult.error("Value provider too low: " + var0 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]");
+            } else {
+               return var2.getMaxValue() > var1
+                  ? DataResult.error("Value provider too high: " + var1 + " [" + var2.getMinValue() + "-" + var2.getMaxValue() + "]")
+                  : DataResult.success(var2);
+            }
          }
-      };
-      return CODEC.flatXmap(var2, var2);
+      );
    }
 
    public abstract float getMinValue();

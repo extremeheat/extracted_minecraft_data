@@ -138,11 +138,6 @@ public class ReportReasonSelectionScreen extends Screen {
          return this.getRowRight() - 2;
       }
 
-      @Override
-      protected boolean isFocused() {
-         return ReportReasonSelectionScreen.this.getFocused() == this;
-      }
-
       public void setSelected(@Nullable ReportReasonSelectionScreen.ReasonSelectionList.Entry var1) {
          super.setSelected(var1);
          ReportReasonSelectionScreen.this.currentlySelectedReason = var1 != null ? var1.getReason() : null;

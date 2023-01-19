@@ -22,15 +22,13 @@ import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -173,7 +171,7 @@ public class TeleportCommand {
             var2.getX(),
             var2.getY(),
             var2.getZ(),
-            EnumSet.noneOf(ClientboundPlayerPositionPacket.RelativeArgument.class),
+            EnumSet.noneOf(RelativeMovement.class),
             var2.getYRot(),
             var2.getXRot(),
             null
@@ -201,29 +199,29 @@ public class TeleportCommand {
    ) throws CommandSyntaxException {
       Vec3 var6 = var3.getPosition(var0);
       Vec2 var7 = var4 == null ? null : var4.getRotation(var0);
-      EnumSet var8 = EnumSet.noneOf(ClientboundPlayerPositionPacket.RelativeArgument.class);
+      EnumSet var8 = EnumSet.noneOf(RelativeMovement.class);
       if (var3.isXRelative()) {
-         var8.add(ClientboundPlayerPositionPacket.RelativeArgument.X);
+         var8.add(RelativeMovement.X);
       }
 
       if (var3.isYRelative()) {
-         var8.add(ClientboundPlayerPositionPacket.RelativeArgument.Y);
+         var8.add(RelativeMovement.Y);
       }
 
       if (var3.isZRelative()) {
-         var8.add(ClientboundPlayerPositionPacket.RelativeArgument.Z);
+         var8.add(RelativeMovement.Z);
       }
 
       if (var4 == null) {
-         var8.add(ClientboundPlayerPositionPacket.RelativeArgument.X_ROT);
-         var8.add(ClientboundPlayerPositionPacket.RelativeArgument.Y_ROT);
+         var8.add(RelativeMovement.X_ROT);
+         var8.add(RelativeMovement.Y_ROT);
       } else {
          if (var4.isXRelative()) {
-            var8.add(ClientboundPlayerPositionPacket.RelativeArgument.X_ROT);
+            var8.add(RelativeMovement.X_ROT);
          }
 
          if (var4.isYRelative()) {
-            var8.add(ClientboundPlayerPositionPacket.RelativeArgument.Y_ROT);
+            var8.add(RelativeMovement.Y_ROT);
          }
       }
 
@@ -262,6 +260,8 @@ public class TeleportCommand {
       return String.format(Locale.ROOT, "%f", var0);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void performTeleport(
       CommandSourceStack var0,
       Entity var1,
@@ -269,7 +269,7 @@ public class TeleportCommand {
       double var3,
       double var5,
       double var7,
-      Set<ClientboundPlayerPositionPacket.RelativeArgument> var9,
+      Set<RelativeMovement> var9,
       float var10,
       float var11,
       @Nullable TeleportCommand.LookAt var12
@@ -280,53 +280,19 @@ public class TeleportCommand {
       } else {
          float var14 = Mth.wrapDegrees(var10);
          float var15 = Mth.wrapDegrees(var11);
-         if (var1 instanceof ServerPlayer) {
-            ChunkPos var16 = new ChunkPos(new BlockPos(var3, var5, var7));
-            var2.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var16, 1, var1.getId());
-            var1.stopRiding();
-            if (((ServerPlayer)var1).isSleeping()) {
-               ((ServerPlayer)var1).stopSleepInBed(true, true);
+         if (var1.teleportTo(var2, var3, var5, var7, var9, var14, var15)) {
+            if (var12 != null) {
+               var12.perform(var0, var1);
             }
 
-            if (var2 == var1.level) {
-               ((ServerPlayer)var1).connection.teleport(var3, var5, var7, var14, var15, var9);
-            } else {
-               ((ServerPlayer)var1).teleportTo(var2, var3, var5, var7, var14, var15);
+            if (!(var1 instanceof LivingEntity var16) || !var16.isFallFlying()) {
+               var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+               var1.setOnGround(true);
             }
 
-            var1.setYHeadRot(var14);
-         } else {
-            float var18 = Mth.clamp(var15, -90.0F, 90.0F);
-            if (var2 == var1.level) {
-               var1.moveTo(var3, var5, var7, var14, var18);
-               var1.setYHeadRot(var14);
-            } else {
-               var1.unRide();
-               Entity var17 = var1;
-               var1 = var1.getType().create(var2);
-               if (var1 == null) {
-                  return;
-               }
-
-               var1.restoreFrom(var17);
-               var1.moveTo(var3, var5, var7, var14, var18);
-               var1.setYHeadRot(var14);
-               var17.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
-               var2.addDuringTeleport(var1);
+            if (var1 instanceof PathfinderMob var17) {
+               var17.getNavigation().stop();
             }
-         }
-
-         if (var12 != null) {
-            var12.perform(var0, var1);
-         }
-
-         if (!(var1 instanceof LivingEntity) || !((LivingEntity)var1).isFallFlying()) {
-            var1.setDeltaMovement(var1.getDeltaMovement().multiply(1.0, 0.0, 1.0));
-            var1.setOnGround(true);
-         }
-
-         if (var1 instanceof PathfinderMob) {
-            ((PathfinderMob)var1).getNavigation().stop();
          }
       }
    }

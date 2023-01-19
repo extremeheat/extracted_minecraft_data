@@ -197,10 +197,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          RealmsPendingInvitesScreen.this.font
             .draw(var1, RealmsUtil.convertToAgePresentationFromInstant(var2.date), (float)(var3 + 38), (float)(var4 + 24), 7105644);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
-         RealmsTextureManager.withBoundFace(var2.worldOwnerUuid, () -> {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            PlayerFaceRenderer.draw(var1, var3, var4, 32);
-         });
+         RealmsTextureManager.withBoundFace(var2.worldOwnerUuid, () -> PlayerFaceRenderer.draw(var1, var3, var4, 32));
       }
 
       @Override
@@ -221,7 +218,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          @Override
          protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
             RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.ACCEPT_ICON_LOCATION);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float var5 = var4 ? 19.0F : 0.0F;
             GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
@@ -243,7 +239,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          @Override
          protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
             RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.REJECT_ICON_LOCATION);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float var5 = var4 ? 19.0F : 0.0F;
             GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
@@ -275,11 +270,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       @Override
       public int getRowWidth() {
          return 260;
-      }
-
-      @Override
-      public boolean isFocused() {
-         return RealmsPendingInvitesScreen.this.getFocused() == this;
       }
 
       @Override

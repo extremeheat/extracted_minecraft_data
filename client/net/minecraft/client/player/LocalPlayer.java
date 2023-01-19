@@ -113,7 +113,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    public Input input;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
-   public int sprintTime;
    public float yBob;
    public float xBob;
    public float yBobO;
@@ -445,12 +444,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.level.collidesWithSuffocatingBlock(this, var3);
    }
 
-   @Override
-   public void setSprinting(boolean var1) {
-      super.setSprinting(var1);
-      this.sprintTime = 0;
-   }
-
    public void setExperienceValues(float var1, int var2, int var3) {
       this.experienceProgress = var1;
       this.totalExperience = var2;
@@ -655,7 +648,6 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Override
    public void aiStep() {
-      ++this.sprintTime;
       if (this.sprintTriggerTime > 0) {
          --this.sprintTriggerTime;
       }
@@ -695,15 +687,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var6 = this.hasEnoughFoodToStartSprinting();
-      if ((this.onGround || this.isUnderWater() || this.isPassenger() && this.getVehicle().isOnGround())
-         && !var2
-         && !var3
-         && this.hasEnoughImpulseToStartSprinting()
-         && !this.isSprinting()
-         && var6
-         && !this.isUsingItem()
-         && !this.hasEffect(MobEffects.BLINDNESS)) {
+      boolean var6 = this.canStartSprinting();
+      boolean var7 = this.isPassenger() ? this.getVehicle().isOnGround() : this.onGround;
+      boolean var8 = !var2 && !var3;
+      if ((var7 || this.isUnderWater()) && var8 && var6) {
          if (this.sprintTriggerTime <= 0 && !this.minecraft.options.keySprint.isDown()) {
             this.sprintTriggerTime = 7;
          } else {
@@ -711,34 +698,28 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if (!this.isSprinting()
-         && (!this.isInWater() || this.isUnderWater())
-         && this.hasEnoughImpulseToStartSprinting()
-         && var6
-         && !this.isUsingItem()
-         && !this.hasEffect(MobEffects.BLINDNESS)
-         && this.minecraft.options.keySprint.isDown()) {
+      if ((!this.isInWater() || this.isUnderWater()) && var6 && this.minecraft.options.keySprint.isDown()) {
          this.setSprinting(true);
       }
 
       if (this.isSprinting()) {
-         boolean var7 = !this.input.hasForwardImpulse() || !var6;
-         boolean var8 = var7 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
+         boolean var9 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
+         boolean var10 = var9 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround && !this.input.shiftKeyDown && var7 || !this.isInWater()) {
+            if (!this.onGround && !this.input.shiftKeyDown && var9 || !this.isInWater()) {
                this.setSprinting(false);
             }
-         } else if (var8) {
+         } else if (var10) {
             this.setSprinting(false);
          }
       }
 
-      boolean var9 = false;
+      boolean var11 = false;
       if (this.getAbilities().mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
             if (!this.getAbilities().flying) {
                this.getAbilities().flying = true;
-               var9 = true;
+               var11 = true;
                this.onUpdateAbilities();
             }
          } else if (!var1 && this.input.jumping && !var5) {
@@ -746,16 +727,16 @@ public class LocalPlayer extends AbstractClientPlayer {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
                this.getAbilities().flying = !this.getAbilities().flying;
-               var9 = true;
+               var11 = true;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.jumping && !var9 && !var1 && !this.getAbilities().flying && !this.isPassenger() && !this.onClimbable()) {
-         ItemStack var10 = this.getItemBySlot(EquipmentSlot.CHEST);
-         if (var10.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var10) && this.tryToStartFallFlying()) {
+      if (this.input.jumping && !var11 && !var1 && !this.getAbilities().flying && !this.isPassenger() && !this.onClimbable()) {
+         ItemStack var12 = this.getItemBySlot(EquipmentSlot.CHEST);
+         if (var12.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var12) && this.tryToStartFallFlying()) {
             this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
          }
       }
@@ -766,30 +747,30 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         int var11 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var11, 0, 600);
+         int var13 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var13, 0, 600);
       } else if (this.waterVisionTime > 0) {
          this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
       if (this.getAbilities().flying && this.isControlledCamera()) {
-         int var12 = 0;
+         int var14 = 0;
          if (this.input.shiftKeyDown) {
-            --var12;
+            --var14;
          }
 
          if (this.input.jumping) {
-            ++var12;
+            ++var14;
          }
 
-         if (var12 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var12 * this.getAbilities().getFlyingSpeed() * 3.0F), 0.0));
+         if (var14 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var14 * this.getAbilities().getFlyingSpeed() * 3.0F), 0.0));
          }
       }
 
-      PlayerRideableJumping var13 = this.jumpableVehicle();
-      if (var13 != null && var13.getJumpCooldown() == 0) {
+      PlayerRideableJumping var15 = this.jumpableVehicle();
+      if (var15 != null && var15.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
             ++this.jumpRidingTicks;
             if (this.jumpRidingTicks == 0) {
@@ -799,7 +780,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (var1 && !this.input.jumping) {
             this.jumpRidingTicks = -10;
-            var13.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var15.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
          } else if (!var1 && this.input.jumping) {
             this.jumpRidingTicks = 0;
@@ -934,7 +915,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             }
          }
 
-         float var41 = Mth.fastInvSqrt(var7);
+         float var41 = Mth.invSqrt(var7);
          Vec3 var42 = var5.scale((double)var41);
          Vec3 var43 = this.getForward();
          float var44 = (float)(var43.x * var42.x + var43.z * var42.z);
@@ -1042,6 +1023,20 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean isMoving() {
       Vec2 var1 = this.input.getMoveVector();
       return var1.x != 0.0F || var1.y != 0.0F;
+   }
+
+   private boolean canStartSprinting() {
+      return !this.isSprinting()
+         && this.hasEnoughImpulseToStartSprinting()
+         && this.hasEnoughFoodToStartSprinting()
+         && !this.isUsingItem()
+         && !this.hasEffect(MobEffects.BLINDNESS)
+         && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle()))
+         && !this.isFallFlying();
+   }
+
+   private boolean vehicleCanSprint(Entity var1) {
+      return var1.canSprint() && var1.isControlledByLocalInstance();
    }
 
    private boolean hasEnoughImpulseToStartSprinting() {

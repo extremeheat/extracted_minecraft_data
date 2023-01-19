@@ -408,7 +408,6 @@ public class ParticleEngine implements PreparableReloadListener {
          Iterable var9 = this.particles.get(var8);
          if (var9 != null) {
             RenderSystem.setShader(GameRenderer::getParticleShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             Tesselator var10 = Tesselator.getInstance();
             BufferBuilder var11 = var10.getBuilder();
             var8.begin(var11, this.textureManager);

@@ -4,14 +4,10 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.math.MatrixUtil;
 import java.util.List;
@@ -23,10 +19,10 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -264,7 +260,6 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
       RenderSystem.enableBlend();
       RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       PoseStack var5 = RenderSystem.getModelViewStack();
       var5.pushPose();
       var5.translate((float)var2, (float)var3, 100.0F + this.blitOffset);
@@ -354,16 +349,12 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
          if (var2.isBarVisible()) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
-            RenderSystem.disableBlend();
-            Tesselator var11 = Tesselator.getInstance();
-            BufferBuilder var13 = var11.getBuilder();
-            int var9 = var2.getBarWidth();
-            int var10 = var2.getBarColor();
-            this.fillRect(var13, var3 + 2, var4 + 13, 13, 2, 0, 0, 0, 255);
-            this.fillRect(var13, var3 + 2, var4 + 13, var9, 1, var10 >> 16 & 0xFF, var10 >> 8 & 0xFF, var10 & 0xFF, 255);
-            RenderSystem.enableBlend();
-            RenderSystem.enableTexture();
+            int var11 = var2.getBarWidth();
+            int var13 = var2.getBarColor();
+            int var9 = var3 + 2;
+            int var10 = var4 + 13;
+            GuiComponent.fill(var6, var9, var10, var9 + 13, var10 + 2, -16777216);
+            GuiComponent.fill(var6, var9, var10, var9 + var11, var10 + 1, var13 | 0xFF000000);
             RenderSystem.enableDepthTest();
          }
 
@@ -371,26 +362,12 @@ public class ItemRenderer implements ResourceManagerReloadListener {
          float var14 = var12 == null ? 0.0F : var12.getCooldowns().getCooldownPercent(var2.getItem(), Minecraft.getInstance().getFrameTime());
          if (var14 > 0.0F) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            Tesselator var15 = Tesselator.getInstance();
-            BufferBuilder var16 = var15.getBuilder();
-            this.fillRect(var16, var3, var4 + Mth.floor(16.0F * (1.0F - var14)), 16, Mth.ceil(16.0F * var14), 255, 255, 255, 127);
-            RenderSystem.enableTexture();
+            int var15 = var4 + Mth.floor(16.0F * (1.0F - var14));
+            int var16 = var15 + Mth.ceil(16.0F * var14);
+            GuiComponent.fill(var6, var3, var15, var3 + 16, var16, 2147483647);
             RenderSystem.enableDepthTest();
          }
       }
-   }
-
-   private void fillRect(BufferBuilder var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-      var1.vertex((double)(var2 + 0), (double)(var3 + 0), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + 0), (double)(var3 + var5), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + var4), (double)(var3 + var5), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + var4), (double)(var3 + 0), 0.0).color(var6, var7, var8, var9).endVertex();
-      BufferUploader.drawWithShader(var1.end());
    }
 
    @Override
