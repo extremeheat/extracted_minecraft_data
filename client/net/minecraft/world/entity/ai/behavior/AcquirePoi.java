@@ -1,9 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.datafixers.util.Pair;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.HashSet;
 import java.util.Optional;
@@ -15,95 +12,88 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.pathfinder.Path;
+import org.apache.commons.lang3.mutable.MutableLong;
 
-public class AcquirePoi extends Behavior<PathfinderMob> {
-   private static final int BATCH_SIZE = 5;
-   private static final int RATE = 20;
+public class AcquirePoi {
    public static final int SCAN_RANGE = 48;
-   private final Predicate<Holder<PoiType>> poiType;
-   private final MemoryModuleType<GlobalPos> memoryToAcquire;
-   private final boolean onlyIfAdult;
-   private final Optional<Byte> onPoiAcquisitionEvent;
-   private long nextScheduledStart;
-   private final Long2ObjectMap<AcquirePoi.JitteredLinearRetry> batchCache = new Long2ObjectOpenHashMap();
 
-   public AcquirePoi(Predicate<Holder<PoiType>> var1, MemoryModuleType<GlobalPos> var2, MemoryModuleType<GlobalPos> var3, boolean var4, Optional<Byte> var5) {
-      super(constructEntryConditionMap(var2, var3));
-      this.poiType = var1;
-      this.memoryToAcquire = var3;
-      this.onlyIfAdult = var4;
-      this.onPoiAcquisitionEvent = var5;
+   public AcquirePoi() {
+      super();
    }
 
-   public AcquirePoi(Predicate<Holder<PoiType>> var1, MemoryModuleType<GlobalPos> var2, boolean var3, Optional<Byte> var4) {
-      this(var1, var2, var2, var3, var4);
+   public static BehaviorControl<PathfinderMob> create(Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1, boolean var2, Optional<Byte> var3) {
+      return create(var0, var1, var1, var2, var3);
    }
 
-   private static ImmutableMap<MemoryModuleType<?>, MemoryStatus> constructEntryConditionMap(
-      MemoryModuleType<GlobalPos> var0, MemoryModuleType<GlobalPos> var1
+   public static BehaviorControl<PathfinderMob> create(
+      Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1, MemoryModuleType<GlobalPos> var2, boolean var3, Optional<Byte> var4
    ) {
-      Builder var2 = ImmutableMap.builder();
-      var2.put(var0, MemoryStatus.VALUE_ABSENT);
-      if (var1 != var0) {
-         var2.put(var1, MemoryStatus.VALUE_ABSENT);
-      }
-
-      return var2.build();
-   }
-
-   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
-      if (this.onlyIfAdult && var2.isBaby()) {
-         return false;
-      } else if (this.nextScheduledStart == 0L) {
-         this.nextScheduledStart = var2.level.getGameTime() + (long)var1.random.nextInt(20);
-         return false;
-      } else {
-         return var1.getGameTime() >= this.nextScheduledStart;
-      }
-   }
-
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      this.nextScheduledStart = var3 + 20L + (long)var1.getRandom().nextInt(20);
-      PoiManager var5 = var1.getPoiManager();
-      this.batchCache.long2ObjectEntrySet().removeIf(var2x -> !((AcquirePoi.JitteredLinearRetry)var2x.getValue()).isStillValid(var3));
-      Predicate var6 = var3x -> {
-         AcquirePoi.JitteredLinearRetry var4 = (AcquirePoi.JitteredLinearRetry)this.batchCache.get(var3x.asLong());
-         if (var4 == null) {
-            return true;
-         } else if (!var4.shouldRetry(var3)) {
-            return false;
-         } else {
-            var4.markAttempt(var3);
-            return true;
-         }
-      };
-      Set var7 = var5.findAllClosestFirstWithType(this.poiType, var6, var2.blockPosition(), 48, PoiManager.Occupancy.HAS_SPACE)
-         .limit(5L)
-         .collect(Collectors.toSet());
-      Path var8 = findPathToPois(var2, var7);
-      if (var8 != null && var8.canReach()) {
-         BlockPos var11 = var8.getTarget();
-         var5.getType(var11).ifPresent(var5x -> {
-            var5.take(this.poiType, (var1xx, var2xx) -> var2xx.equals(var11), var11, 1);
-            var2.getBrain().setMemory(this.memoryToAcquire, GlobalPos.of(var1.dimension(), var11));
-            this.onPoiAcquisitionEvent.ifPresent(var2xx -> var1.broadcastEntityEvent(var2, var2xx));
-            this.batchCache.clear();
-            DebugPackets.sendPoiTicketCountPacket(var1, var11);
-         });
-      } else {
-         for(Pair var10 : var7) {
-            this.batchCache.computeIfAbsent(((BlockPos)var10.getSecond()).asLong(), var3x -> new AcquirePoi.JitteredLinearRetry(var2.level.random, var3));
-         }
-      }
+      boolean var5 = true;
+      boolean var6 = true;
+      MutableLong var7 = new MutableLong(0L);
+      Long2ObjectOpenHashMap var8 = new Long2ObjectOpenHashMap();
+      OneShot var9 = BehaviorBuilder.create(
+         var6x -> var6x.group(var6x.absent(var2))
+               .apply(
+                  var6x,
+                  var5xx -> (var6xx, var7x, var8x) -> {
+                        if (var3 && var7x.isBaby()) {
+                           return false;
+                        } else if (var7.getValue() == 0L) {
+                           var7.setValue(var6xx.getGameTime() + (long)var6xx.random.nextInt(20));
+                           return false;
+                        } else if (var6xx.getGameTime() < var7.getValue()) {
+                           return false;
+                        } else {
+                           var7.setValue(var8x + 20L + (long)var6xx.getRandom().nextInt(20));
+                           PoiManager var10 = var6xx.getPoiManager();
+                           var8.long2ObjectEntrySet().removeIf(var2xxxx -> !((AcquirePoi.JitteredLinearRetry)var2xxxx.getValue()).isStillValid(var8x));
+                           Predicate var11 = var3xxxx -> {
+                              AcquirePoi.JitteredLinearRetry var4xxxx = (AcquirePoi.JitteredLinearRetry)var8.get(var3xxxx.asLong());
+                              if (var4xxxx == null) {
+                                 return true;
+                              } else if (!var4xxxx.shouldRetry(var8x)) {
+                                 return false;
+                              } else {
+                                 var4xxxx.markAttempt(var8x);
+                                 return true;
+                              }
+                           };
+                           Set var12 = var10.findAllClosestFirstWithType(var0, var11, var7x.blockPosition(), 48, PoiManager.Occupancy.HAS_SPACE)
+                              .limit(5L)
+                              .collect(Collectors.toSet());
+                           Path var13 = findPathToPois(var7x, var12);
+                           if (var13 != null && var13.canReach()) {
+                              BlockPos var16 = var13.getTarget();
+                              var10.getType(var16).ifPresent(var8xx -> {
+                                 var10.take(var0, (var1xxxxx, var2xxxxx) -> var2xxxxx.equals(var16), var16, 1);
+                                 var5xx.set(GlobalPos.of(var6xx.dimension(), var16));
+                                 var4.ifPresent(var2xxxxx -> var6xx.broadcastEntityEvent(var7x, var2xxxxx));
+                                 var8.clear();
+                                 DebugPackets.sendPoiTicketCountPacket(var6xx, var16);
+                              });
+                           } else {
+                              for(Pair var15 : var12) {
+                                 var8.computeIfAbsent(
+                                    ((BlockPos)var15.getSecond()).asLong(), var3xxxx -> new AcquirePoi.JitteredLinearRetry(var6xx.random, var8x)
+                                 );
+                              }
+                           }
+         
+                           return true;
+                        }
+                     }
+               )
+      );
+      return var2 == var1 ? var9 : BehaviorBuilder.create(var2x -> var2x.group(var2x.absent(var1)).apply(var2x, var1xx -> var9));
    }
 
    @Nullable

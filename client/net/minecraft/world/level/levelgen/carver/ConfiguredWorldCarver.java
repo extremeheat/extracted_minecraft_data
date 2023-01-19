@@ -6,8 +6,9 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -19,13 +20,11 @@ import net.minecraft.world.level.levelgen.Aquifer;
 public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<WC> d, WC e) {
    private final WorldCarver<WC> worldCarver;
    private final WC config;
-   public static final Codec<ConfiguredWorldCarver<?>> DIRECT_CODEC = Registry.CARVER
+   public static final Codec<ConfiguredWorldCarver<?>> DIRECT_CODEC = BuiltInRegistries.CARVER
       .byNameCodec()
       .dispatch(var0 -> var0.worldCarver, WorldCarver::configuredCodec);
-   public static final Codec<Holder<ConfiguredWorldCarver<?>>> CODEC = RegistryFileCodec.create(Registry.CONFIGURED_CARVER_REGISTRY, DIRECT_CODEC);
-   public static final Codec<HolderSet<ConfiguredWorldCarver<?>>> LIST_CODEC = RegistryCodecs.homogeneousList(
-      Registry.CONFIGURED_CARVER_REGISTRY, DIRECT_CODEC
-   );
+   public static final Codec<Holder<ConfiguredWorldCarver<?>>> CODEC = RegistryFileCodec.create(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
+   public static final Codec<HolderSet<ConfiguredWorldCarver<?>>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
 
    public ConfiguredWorldCarver(WorldCarver<WC> var1, WC var2) {
       super();

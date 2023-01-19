@@ -222,18 +222,22 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       if (var1.getDifficulty() != Difficulty.PEACEFUL) {
          ZombifiedPiglin var3 = EntityType.ZOMBIFIED_PIGLIN.create(var1);
-         var3.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
-         var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-         var3.setNoAi(this.isNoAi());
-         var3.setBaby(this.isBaby());
-         if (this.hasCustomName()) {
-            var3.setCustomName(this.getCustomName());
-            var3.setCustomNameVisible(this.isCustomNameVisible());
-         }
+         if (var3 != null) {
+            var3.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SWORD));
+            var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+            var3.setNoAi(this.isNoAi());
+            var3.setBaby(this.isBaby());
+            if (this.hasCustomName()) {
+               var3.setCustomName(this.getCustomName());
+               var3.setCustomNameVisible(this.isCustomNameVisible());
+            }
 
-         var3.setPersistenceRequired();
-         var1.addFreshEntity(var3);
-         this.discard();
+            var3.setPersistenceRequired();
+            var1.addFreshEntity(var3);
+            this.discard();
+         } else {
+            super.thunderHit(var1, var2);
+         }
       } else {
          super.thunderHit(var1, var2);
       }
@@ -259,6 +263,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       return this.steering.boost(this.getRandom());
    }
 
+   @Nullable
    public Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.PIG.create(var1);
    }

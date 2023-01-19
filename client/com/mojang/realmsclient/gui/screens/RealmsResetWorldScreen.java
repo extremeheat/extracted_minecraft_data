@@ -76,7 +76,9 @@ public class RealmsResetWorldScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.addRenderableWidget(new Button(this.width / 2 - 40, row(14) - 10, 80, 20, this.buttonTitle, var1 -> this.minecraft.setScreen(this.lastScreen)));
+      this.addRenderableWidget(
+         Button.builder(this.buttonTitle, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 40, row(14) - 10, 80, 20).build()
+      );
       (new Thread("Realms-reset-world-fetcher") {
          @Override
          public void run() {
@@ -193,11 +195,6 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    }
 
    @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
-   }
-
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          this.minecraft.setScreen(this.lastScreen);
@@ -273,14 +270,14 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       private final ResourceLocation image;
 
       public FrameButton(int var2, int var3, Component var4, ResourceLocation var5, Button.OnPress var6) {
-         super(var2, var3, 60, 72, var4, var6);
+         super(var2, var3, 60, 72, var4, var6, DEFAULT_NARRATION);
          this.image = var5;
       }
 
       @Override
       public void renderButton(PoseStack var1, int var2, int var3, float var4) {
          RealmsResetWorldScreen.this.drawFrame(
-            var1, this.x, this.y, this.getMessage(), this.image, this.isHoveredOrFocused(), this.isMouseOver((double)var2, (double)var3)
+            var1, this.getX(), this.getY(), this.getMessage(), this.image, this.isHoveredOrFocused(), this.isMouseOver((double)var2, (double)var3)
          );
       }
    }

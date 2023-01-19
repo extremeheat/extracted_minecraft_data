@@ -1,9 +1,8 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -16,8 +15,10 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -228,8 +229,8 @@ public class Panda extends Animal {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("MainGene", this.getMainGene().getName());
-      var1.putString("HiddenGene", this.getHiddenGene().getName());
+      var1.putString("MainGene", this.getMainGene().getSerializedName());
+      var1.putString("HiddenGene", this.getHiddenGene().getSerializedName());
    }
 
    @Override
@@ -243,11 +244,14 @@ public class Panda extends Animal {
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Panda var3 = EntityType.PANDA.create(var1);
-      if (var2 instanceof Panda) {
-         var3.setGeneFromParents(this, (Panda)var2);
+      if (var3 != null) {
+         if (var2 instanceof Panda var4) {
+            var3.setGeneFromParents(this, (Panda)var4);
+         }
+
+         var3.setAttributes();
       }
 
-      var3.setAttributes();
       return var3;
    }
 
@@ -684,7 +688,7 @@ public class Panda extends Animal {
       return !this.isOnBack() && !this.isScared() && !this.isEating() && !this.isRolling() && !this.isSitting();
    }
 
-   public static enum Gene {
+   public static enum Gene implements StringRepresentable {
       NORMAL(0, "normal", false),
       LAZY(1, "lazy", false),
       WORRIED(2, "worried", false),
@@ -693,9 +697,8 @@ public class Panda extends Animal {
       WEAK(5, "weak", true),
       AGGRESSIVE(6, "aggressive", false);
 
-      private static final Panda.Gene[] BY_ID = Arrays.stream(values())
-         .sorted(Comparator.comparingInt(Panda.Gene::getId))
-         .toArray(var0 -> new Panda.Gene[var0]);
+      public static final StringRepresentable.EnumCodec<Panda.Gene> CODEC = StringRepresentable.fromEnum(Panda.Gene::values);
+      private static final IntFunction<Panda.Gene> BY_ID = ByIdMap.continuous(Panda.Gene::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       private static final int MAX_GENE = 6;
       private final int id;
       private final String name;
@@ -711,7 +714,8 @@ public class Panda extends Animal {
          return this.id;
       }
 
-      public String getName() {
+      @Override
+      public String getSerializedName() {
          return this.name;
       }
 
@@ -728,21 +732,11 @@ public class Panda extends Animal {
       }
 
       public static Panda.Gene byId(int var0) {
-         if (var0 < 0 || var0 >= BY_ID.length) {
-            var0 = 0;
-         }
-
-         return BY_ID[var0];
+         return BY_ID.apply(var0);
       }
 
       public static Panda.Gene byName(String var0) {
-         for(Panda.Gene var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
-            }
-         }
-
-         return NORMAL;
+         return CODEC.byName(var0, NORMAL);
       }
 
       public static Panda.Gene getRandom(RandomSource var0) {

@@ -21,7 +21,7 @@ import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -40,7 +40,6 @@ import net.minecraft.world.phys.Vec3;
 public class KeyboardHandler {
    public static final int DEBUG_CRASH_TIME = 10000;
    private final Minecraft minecraft;
-   private boolean sendRepeatsToGui;
    private final ClipboardManager clipboardManager = new ClipboardManager();
    private long debugCrashKeyTime = -1L;
    private long debugCrashKeyReportedTime = -1L;
@@ -177,11 +176,12 @@ public class KeyboardHandler {
                if (!this.minecraft.player.hasPermissions(2)) {
                   this.debugFeedbackTranslated("debug.creative_spectator.error");
                } else if (!this.minecraft.player.isSpectator()) {
-                  this.minecraft.player.commandUnsigned("gamemode spectator");
+                  this.minecraft.player.connection.sendUnsignedCommand("gamemode spectator");
                } else {
                   this.minecraft
                      .player
-                     .commandUnsigned(
+                     .connection
+                     .sendUnsignedCommand(
                         "gamemode " + ((GameType)MoreObjects.firstNonNull(this.minecraft.gameMode.getPreviousPlayerMode(), GameType.CREATIVE)).getName()
                      );
                }
@@ -254,7 +254,7 @@ public class KeyboardHandler {
                break;
             case ENTITY:
                Entity var4 = ((EntityHitResult)var3).getEntity();
-               ResourceLocation var5 = Registry.ENTITY_TYPE.getKey(var4.getType());
+               ResourceLocation var5 = BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType());
                if (var1) {
                   if (var2) {
                      this.minecraft.player.connection.getDebugQueryHandler().queryEntityTag(var4.getId(), var3x -> {
@@ -353,13 +353,11 @@ public class KeyboardHandler {
          if (var7 != null) {
             boolean[] var11 = new boolean[]{false};
             Screen.wrapScreenError(() -> {
-               if (var5 != 1 && (var5 != 2 || !this.sendRepeatsToGui)) {
-                  if (var5 == 0) {
-                     var11[0] = var7.keyReleased(var3, var4, var6);
-                  }
-               } else {
+               if (var5 == 1 || var5 == 2) {
                   var7.afterKeyboardAction();
                   var11[0] = var7.keyPressed(var3, var4, var6);
+               } else if (var5 == 0) {
+                  var11[0] = var7.keyReleased(var3, var4, var6);
                }
             }, "keyPressed event handler", var7.getClass().getCanonicalName());
             if (var11[0]) {
@@ -427,10 +425,6 @@ public class KeyboardHandler {
             }
          }
       }
-   }
-
-   public void setSendRepeatsToGui(boolean var1) {
-      this.sendRepeatsToGui = var1;
    }
 
    public void setup(long var1) {

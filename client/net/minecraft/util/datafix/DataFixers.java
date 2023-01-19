@@ -132,10 +132,12 @@ import net.minecraft.util.datafix.fixes.ObjectiveRenderTypeFix;
 import net.minecraft.util.datafix.fixes.OminousBannerBlockEntityRenameFix;
 import net.minecraft.util.datafix.fixes.OminousBannerRenameFix;
 import net.minecraft.util.datafix.fixes.OptionsAddTextBackgroundFix;
+import net.minecraft.util.datafix.fixes.OptionsAmbientOcclusionFix;
 import net.minecraft.util.datafix.fixes.OptionsForceVBOFix;
 import net.minecraft.util.datafix.fixes.OptionsKeyLwjgl3Fix;
 import net.minecraft.util.datafix.fixes.OptionsKeyTranslationFix;
 import net.minecraft.util.datafix.fixes.OptionsLowerCaseLanguageFix;
+import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OverreachingTickFix;
 import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
@@ -232,6 +234,9 @@ import net.minecraft.util.datafix.schemas.V3078;
 import net.minecraft.util.datafix.schemas.V3081;
 import net.minecraft.util.datafix.schemas.V3082;
 import net.minecraft.util.datafix.schemas.V3083;
+import net.minecraft.util.datafix.schemas.V3202;
+import net.minecraft.util.datafix.schemas.V3203;
+import net.minecraft.util.datafix.schemas.V3204;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -403,7 +408,7 @@ public class DataFixers {
          )
       );
       var0.addFixer(new AddNewChoices(var43, "RemoveNoteBlockFlowerPotFix", References.BLOCK_ENTITY));
-      var0.addFixer(new ItemStackSpawnEggFix(var43, false));
+      var0.addFixer(new ItemStackSpawnEggFix(var43, false, "minecraft:spawn_egg"));
       var0.addFixer(new EntityWolfColorFix(var43, false));
       var0.addFixer(new BlockEntityBannerColorFix(var43, false));
       var0.addFixer(new LevelFlatGeneratorInfoFix(var43, false));
@@ -1032,6 +1037,18 @@ public class DataFixers {
       var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", Set.of("minecraft:unemployed", "minecraft:nitwit")::contains));
       Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
+      Schema var177 = var0.addSchema(3201, SAME_NAMESPACED);
+      var0.addFixer(new OptionsProgrammerArtFix(var177));
+      Schema var178 = var0.addSchema(3202, V3202::new);
+      var0.addFixer(new AddNewChoices(var178, "Added Hanging Sign", References.BLOCK_ENTITY));
+      Schema var179 = var0.addSchema(3203, V3203::new);
+      var0.addFixer(new AddNewChoices(var179, "Added Camel", References.ENTITY));
+      Schema var180 = var0.addSchema(3204, V3204::new);
+      var0.addFixer(new AddNewChoices(var180, "Added Chiseled Bookshelf", References.BLOCK_ENTITY));
+      Schema var181 = var0.addSchema(3209, SAME_NAMESPACED);
+      var0.addFixer(new ItemStackSpawnEggFix(var181, false, "minecraft:pig_spawn_egg"));
+      Schema var182 = var0.addSchema(3214, SAME_NAMESPACED);
+      var0.addFixer(new OptionsAmbientOcclusionFix(var182));
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {

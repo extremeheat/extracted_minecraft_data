@@ -3,11 +3,11 @@ package com.mojang.blaze3d.vertex;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.math.Matrix4f;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.joml.Matrix4f;
 
 public class VertexBuffer implements AutoCloseable {
    private int vertexBufferId;
@@ -106,7 +106,7 @@ public class VertexBuffer implements AutoCloseable {
 
    public void drawWithShader(Matrix4f var1, Matrix4f var2, ShaderInstance var3) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> this._drawWithShader(var1.copy(), var2.copy(), var3));
+         RenderSystem.recordRenderCall(() -> this._drawWithShader(new Matrix4f(var1), new Matrix4f(var2), var3));
       } else {
          this._drawWithShader(var1, var2, var3);
       }

@@ -17,19 +17,16 @@ public class Donkey extends AbstractChestedHorse {
 
    @Override
    protected SoundEvent getAmbientSound() {
-      super.getAmbientSound();
       return SoundEvents.DONKEY_AMBIENT;
    }
 
    @Override
    protected SoundEvent getAngrySound() {
-      super.getAngrySound();
       return SoundEvents.DONKEY_ANGRY;
    }
 
    @Override
    protected SoundEvent getDeathSound() {
-      super.getDeathSound();
       return SoundEvents.DONKEY_DEATH;
    }
 
@@ -41,7 +38,6 @@ public class Donkey extends AbstractChestedHorse {
 
    @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
-      super.getHurtSound(var1);
       return SoundEvents.DONKEY_HURT;
    }
 
@@ -56,11 +52,15 @@ public class Donkey extends AbstractChestedHorse {
       }
    }
 
+   @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       EntityType var3 = var2 instanceof Horse ? EntityType.MULE : EntityType.DONKEY;
       AbstractHorse var4 = (AbstractHorse)var3.create(var1);
-      this.setOffspringAttributes(var2, var4);
+      if (var4 != null) {
+         this.setOffspringAttributes(var2, var4);
+      }
+
       return var4;
    }
 }

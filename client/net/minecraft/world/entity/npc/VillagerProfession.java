@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -94,6 +95,6 @@ public record VillagerProfession(
       ImmutableSet<Block> var4,
       @Nullable SoundEvent var5
    ) {
-      return Registry.register(Registry.VILLAGER_PROFESSION, new ResourceLocation(var0), new VillagerProfession(var0, var1, var2, var3, var4, var5));
+      return Registry.register(BuiltInRegistries.VILLAGER_PROFESSION, new ResourceLocation(var0), new VillagerProfession(var0, var1, var2, var3, var4, var5));
    }
 }

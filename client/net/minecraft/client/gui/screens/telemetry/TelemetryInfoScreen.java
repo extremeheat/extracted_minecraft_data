@@ -1,0 +1,115 @@
+package net.minecraft.client.gui.screens.telemetry;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import java.nio.file.Path;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CenteredStringWidget;
+import net.minecraft.client.gui.components.FrameWidget;
+import net.minecraft.client.gui.components.GridWidget;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+
+public class TelemetryInfoScreen extends Screen {
+   private static final int PADDING = 8;
+   private static final String FEEDBACK_URL = "https://aka.ms/javafeedback?ref=game";
+   private static final Component TITLE = Component.translatable("telemetry_info.screen.title");
+   private static final Component DESCRIPTION = Component.translatable("telemetry_info.screen.description").withStyle(ChatFormatting.GRAY);
+   private static final Component BUTTON_GIVE_FEEDBACK = Component.translatable("telemetry_info.button.give_feedback");
+   private static final Component BUTTON_SHOW_DATA = Component.translatable("telemetry_info.button.show_data");
+   private final Screen lastScreen;
+   private final Options options;
+   private TelemetryEventWidget telemetryEventWidget;
+   private double savedScroll;
+
+   public TelemetryInfoScreen(Screen var1, Options var2) {
+      super(TITLE);
+      this.lastScreen = var1;
+      this.options = var2;
+   }
+
+   @Override
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), DESCRIPTION);
+   }
+
+   @Override
+   protected void init() {
+      FrameWidget var1 = new FrameWidget(0, 0, this.width, this.height);
+      var1.defaultChildLayoutSetting().padding(8);
+      var1.setMinHeight(this.height);
+      GridWidget var2 = var1.addChild(new GridWidget(), var1.newChildLayoutSettings().align(0.5F, 0.0F));
+      var2.defaultCellSetting().alignHorizontallyCenter().paddingBottom(8);
+      GridWidget.RowHelper var3 = var2.createRowHelper(1);
+      var3.addChild(new CenteredStringWidget(this.getTitle(), this.font));
+      var3.addChild(MultiLineTextWidget.createCentered(this.width - 16, this.font, DESCRIPTION));
+      GridWidget var4 = this.twoButtonContainer(
+         Button.builder(BUTTON_GIVE_FEEDBACK, this::openFeedbackLink).build(), Button.builder(BUTTON_SHOW_DATA, this::openDataFolder).build()
+      );
+      var3.addChild(var4);
+      GridWidget var5 = this.twoButtonContainer(this.createTelemetryButton(), Button.builder(CommonComponents.GUI_DONE, this::openLastScreen).build());
+      var1.addChild(var5, var1.newChildLayoutSettings().align(0.5F, 1.0F));
+      var2.pack();
+      var1.pack();
+      this.telemetryEventWidget = new TelemetryEventWidget(0, 0, this.width - 40, var5.getY() - (var4.getY() + var4.getHeight()) - 16, this.minecraft.font);
+      this.telemetryEventWidget.setScrollAmount(this.savedScroll);
+      this.telemetryEventWidget.setOnScrolledListener(var1x -> this.savedScroll = var1x);
+      this.setInitialFocus(this.telemetryEventWidget);
+      var3.addChild(this.telemetryEventWidget);
+      var2.pack();
+      var1.pack();
+      FrameWidget.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.0F);
+      this.addRenderableWidget(var1);
+   }
+
+   private AbstractWidget createTelemetryButton() {
+      AbstractWidget var1 = this.options.telemetryOptInExtra().createButton(this.options, 0, 0, 150, var1x -> this.telemetryEventWidget.onOptInChanged(var1x));
+      var1.active = this.minecraft.extraTelemetryAvailable();
+      return var1;
+   }
+
+   private void openLastScreen(Button var1) {
+      this.minecraft.setScreen(this.lastScreen);
+   }
+
+   private void openFeedbackLink(Button var1) {
+      this.minecraft.setScreen(new ConfirmLinkScreen(var1x -> {
+         if (var1x) {
+            Util.getPlatform().openUri("https://aka.ms/javafeedback?ref=game");
+         }
+
+         this.minecraft.setScreen(this);
+      }, "https://aka.ms/javafeedback?ref=game", true));
+   }
+
+   private void openDataFolder(Button var1) {
+      Path var2 = this.minecraft.getTelemetryManager().getLogDirectory();
+      Util.getPlatform().openUri(var2.toUri());
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
+   }
+
+   @Override
+   public void render(PoseStack var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(0);
+      super.render(var1, var2, var3, var4);
+   }
+
+   private GridWidget twoButtonContainer(AbstractWidget var1, AbstractWidget var2) {
+      GridWidget var3 = new GridWidget();
+      var3.defaultCellSetting().alignHorizontallyCenter().paddingHorizontal(4);
+      var3.addChild(var1, 0, 0);
+      var3.addChild(var2, 0, 1);
+      var3.pack();
+      return var3;
+   }
+}

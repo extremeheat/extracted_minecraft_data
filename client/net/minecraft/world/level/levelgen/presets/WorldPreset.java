@@ -9,22 +9,21 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldDimensions;
 
 public class WorldPreset {
    public static final Codec<WorldPreset> DIRECT_CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  Codec.unboundedMap(ResourceKey.codec(Registry.LEVEL_STEM_REGISTRY), LevelStem.CODEC)
-                     .fieldOf("dimensions")
-                     .forGetter(var0x -> var0x.dimensions)
+                  Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter(var0x -> var0x.dimensions)
                )
                .apply(var0, WorldPreset::new)
       )
       .flatXmap(WorldPreset::requireOverworld, WorldPreset::requireOverworld);
-   public static final Codec<Holder<WorldPreset>> CODEC = RegistryFileCodec.create(Registry.WORLD_PRESET_REGISTRY, DIRECT_CODEC);
+   public static final Codec<Holder<WorldPreset>> CODEC = RegistryFileCodec.create(Registries.WORLD_PRESET, DIRECT_CODEC);
    private final Map<ResourceKey<LevelStem>, LevelStem> dimensions;
 
    public WorldPreset(Map<ResourceKey<LevelStem>, LevelStem> var1) {
@@ -33,8 +32,8 @@ public class WorldPreset {
    }
 
    private Registry<LevelStem> createRegistry() {
-      MappedRegistry var1 = new MappedRegistry<>(Registry.LEVEL_STEM_REGISTRY, Lifecycle.experimental(), null);
-      LevelStem.keysInOrder(this.dimensions.keySet().stream()).forEach(var2 -> {
+      MappedRegistry var1 = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.experimental());
+      WorldDimensions.keysInOrder(this.dimensions.keySet().stream()).forEach(var2 -> {
          LevelStem var3 = this.dimensions.get(var2);
          if (var3 != null) {
             var1.register(var2, var3, Lifecycle.stable());
@@ -43,20 +42,12 @@ public class WorldPreset {
       return var1.freeze();
    }
 
-   public WorldGenSettings createWorldGenSettings(long var1, boolean var3, boolean var4) {
-      return new WorldGenSettings(var1, var3, var4, this.createRegistry());
-   }
-
-   public WorldGenSettings recreateWorldGenSettings(WorldGenSettings var1) {
-      return this.createWorldGenSettings(var1.seed(), var1.generateStructures(), var1.generateBonusChest());
+   public WorldDimensions createWorldDimensions() {
+      return new WorldDimensions(this.createRegistry());
    }
 
    public Optional<LevelStem> overworld() {
       return Optional.ofNullable(this.dimensions.get(LevelStem.OVERWORLD));
-   }
-
-   public LevelStem overworldOrThrow() {
-      return this.overworld().orElseThrow(() -> new IllegalStateException("Can't find overworld in this preset"));
    }
 
    private static DataResult<WorldPreset> requireOverworld(WorldPreset var0) {

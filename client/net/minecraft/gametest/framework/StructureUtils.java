@@ -17,8 +17,9 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.data.structures.StructureUpdater;
@@ -277,21 +278,22 @@ public class StructureUtils {
 
    private static void clearBlock(int var0, BlockPos var1, ServerLevel var2) {
       BlockState var3 = null;
-      FlatLevelGeneratorSettings var4 = FlatLevelGeneratorSettings.getDefault(
-         var2.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), var2.registryAccess().registryOrThrow(Registry.STRUCTURE_SET_REGISTRY)
+      RegistryAccess var4 = var2.registryAccess();
+      FlatLevelGeneratorSettings var5 = FlatLevelGeneratorSettings.getDefault(
+         var4.lookupOrThrow(Registries.BIOME), var4.lookupOrThrow(Registries.STRUCTURE_SET), var4.lookupOrThrow(Registries.PLACED_FEATURE)
       );
-      List var5 = var4.getLayers();
-      int var6 = var1.getY() - var2.getMinBuildHeight();
-      if (var1.getY() < var0 && var6 > 0 && var6 <= var5.size()) {
-         var3 = (BlockState)var5.get(var6 - 1);
+      List var6 = var5.getLayers();
+      int var7 = var1.getY() - var2.getMinBuildHeight();
+      if (var1.getY() < var0 && var7 > 0 && var7 <= var6.size()) {
+         var3 = (BlockState)var6.get(var7 - 1);
       }
 
       if (var3 == null) {
          var3 = Blocks.AIR.defaultBlockState();
       }
 
-      BlockInput var7 = new BlockInput(var3, Collections.emptySet(), null);
-      var7.place(var2, var1, 2);
+      BlockInput var8 = new BlockInput(var3, Collections.emptySet(), null);
+      var8.place(var2, var1, 2);
       var2.blockUpdated(var1, var3.getBlock());
    }
 

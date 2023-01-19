@@ -36,11 +36,7 @@ public class Target extends Node {
 
    public static Target createFromStream(FriendlyByteBuf var0) {
       Target var1 = new Target(var0.readInt(), var0.readInt(), var0.readInt());
-      var1.walkedDistance = var0.readFloat();
-      var1.costMalus = var0.readFloat();
-      var1.closed = var0.readBoolean();
-      var1.type = BlockPathTypes.values()[var0.readInt()];
-      var1.f = var0.readFloat();
+      readContents(var0, var1);
       return var1;
    }
 }

@@ -7,6 +7,8 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.Optional;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderOwner;
 import net.minecraft.core.Registry;
 
 public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
@@ -33,9 +35,9 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(Holder<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
-         Optional var5 = var4.registry(this.registryKey);
+         Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
-            if (!var1.isValidInRegistry((Registry<T>)var5.get())) {
+            if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
                return DataResult.error("Element " + var1 + " is not valid in current registry set");
             }
 
@@ -51,11 +53,11 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<Holder<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
-         Optional var4 = var3.registry(this.registryKey);
+         Optional var4 = var3.getter(this.registryKey);
          if (var4.isEmpty()) {
             return DataResult.error("Registry does not exist: " + this.registryKey);
          } else {
-            Registry var5 = (Registry)var4.get();
+            HolderGetter var5 = (HolderGetter)var4.get();
             DataResult var6 = ResourceLocation.CODEC.decode(var1, var2);
             if (var6.result().isEmpty()) {
                return !this.allowInline
@@ -64,15 +66,9 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
             } else {
                Pair var7 = (Pair)var6.result().get();
                ResourceKey var8 = ResourceKey.create(this.registryKey, (ResourceLocation)var7.getFirst());
-               Optional var9 = var3.registryLoader();
-               if (var9.isPresent()) {
-                  return ((RegistryLoader.Bound)var9.get())
-                     .overrideElementFromResources(this.registryKey, this.elementCodec, var8, var3.getAsJson())
-                     .map(var1x -> Pair.of(var1x, var7.getSecond()));
-               } else {
-                  DataResult var10 = var5.getOrCreateHolder(var8);
-                  return var10.map(var1x -> Pair.of(var1x, var7.getSecond())).setLifecycle(Lifecycle.stable());
-               }
+               return ((DataResult)var5.get(var8).map(DataResult::success).orElseGet(() -> (T)DataResult.error("Failed to get element " + var8)))
+                  .map(var1x -> Pair.of(var1x, var7.getSecond()))
+                  .setLifecycle(Lifecycle.stable());
             }
          }
       } else {

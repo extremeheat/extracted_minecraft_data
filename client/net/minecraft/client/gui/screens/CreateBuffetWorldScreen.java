@@ -13,6 +13,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -33,9 +34,9 @@ public class CreateBuffetWorldScreen extends Screen {
       super(Component.translatable("createWorld.customize.buffet.title"));
       this.parent = var1;
       this.applySettings = var3;
-      this.biomes = var2.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+      this.biomes = var2.worldgenLoadContext().registryOrThrow(Registries.BIOME);
       Holder var4 = this.biomes.getHolder(Biomes.PLAINS).or(() -> this.biomes.holders().findAny()).orElseThrow();
-      this.biome = var2.worldGenSettings().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(var4);
+      this.biome = var2.selectedDimensions().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(var4);
    }
 
    @Override
@@ -45,15 +46,16 @@ public class CreateBuffetWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.list = new CreateBuffetWorldScreen.BiomeList();
       this.addWidget(this.list);
-      this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 28, 150, 20, CommonComponents.GUI_DONE, var1 -> {
+      this.doneButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
          this.applySettings.accept(this.biome);
          this.minecraft.setScreen(this.parent);
-      }));
+      }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
       this.addRenderableWidget(
-         new Button(this.width / 2 + 5, this.height - 28, 150, 20, CommonComponents.GUI_CANCEL, var1 -> this.minecraft.setScreen(this.parent))
+         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.minecraft.setScreen(this.parent))
+            .bounds(this.width / 2 + 5, this.height - 28, 150, 20)
+            .build()
       );
       this.list.setSelected(this.list.children().stream().filter(var1 -> Objects.equals(var1.biome, this.biome)).findFirst().orElse(null));
    }

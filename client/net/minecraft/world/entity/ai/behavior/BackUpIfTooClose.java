@@ -1,53 +1,36 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 
-public class BackUpIfTooClose<E extends Mob> extends Behavior<E> {
-   private final int tooCloseDistance;
-   private final float strafeSpeed;
+public class BackUpIfTooClose {
+   public BackUpIfTooClose() {
+      super();
+   }
 
-   public BackUpIfTooClose(int var1, float var2) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-            MemoryStatus.VALUE_PRESENT
-         )
+   public static OneShot<Mob> create(int var0, float var1) {
+      return BehaviorBuilder.create(
+         var2 -> var2.group(
+                  var2.absent(MemoryModuleType.WALK_TARGET),
+                  var2.registered(MemoryModuleType.LOOK_TARGET),
+                  var2.present(MemoryModuleType.ATTACK_TARGET),
+                  var2.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+               )
+               .apply(var2, (var3, var4, var5, var6) -> (var6x, var7, var8) -> {
+                     LivingEntity var10 = var2.get(var5);
+                     if (var10.closerThan(var7, (double)var0) && var2.<NearestVisibleLivingEntities>get(var6).contains(var10)) {
+                        var4.set(new EntityTracker(var10, true));
+                        var7.getMoveControl().strafe(-var1, 0.0F);
+                        var7.setYRot(Mth.rotateIfNecessary(var7.getYRot(), var7.yHeadRot, 0.0F));
+                        return true;
+                     } else {
+                        return false;
+                     }
+                  })
       );
-      this.tooCloseDistance = var1;
-      this.strafeSpeed = var2;
-   }
-
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return this.isTargetVisible((E)var2) && this.isTargetTooClose((E)var2);
-   }
-
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(this.getTarget((E)var2), true));
-      var2.getMoveControl().strafe(-this.strafeSpeed, 0.0F);
-      var2.setYRot(Mth.rotateIfNecessary(var2.getYRot(), var2.yHeadRot, 0.0F));
-   }
-
-   private boolean isTargetVisible(E var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get().contains(this.getTarget((E)var1));
-   }
-
-   private boolean isTargetTooClose(E var1) {
-      return this.getTarget((E)var1).closerThan(var1, (double)this.tooCloseDistance);
-   }
-
-   private LivingEntity getTarget(E var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
    }
 }

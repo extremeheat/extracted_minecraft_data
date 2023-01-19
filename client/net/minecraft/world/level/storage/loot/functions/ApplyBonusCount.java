@@ -8,7 +8,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
@@ -169,7 +169,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
 
       public void serialize(JsonObject var1, ApplyBonusCount var2, JsonSerializationContext var3) {
          super.serialize(var1, var2, var3);
-         var1.addProperty("enchantment", Registry.ENCHANTMENT.getKey(var2.enchantment).toString());
+         var1.addProperty("enchantment", BuiltInRegistries.ENCHANTMENT.getKey(var2.enchantment).toString());
          var1.addProperty("formula", var2.formula.getType().toString());
          JsonObject var4 = new JsonObject();
          var2.formula.serializeParams(var4, var3);
@@ -180,7 +180,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
 
       public ApplyBonusCount deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
          ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "enchantment"));
-         Enchantment var5 = Registry.ENCHANTMENT.getOptional(var4).orElseThrow(() -> new JsonParseException("Invalid enchantment id: " + var4));
+         Enchantment var5 = BuiltInRegistries.ENCHANTMENT.getOptional(var4).orElseThrow(() -> new JsonParseException("Invalid enchantment id: " + var4));
          ResourceLocation var6 = new ResourceLocation(GsonHelper.getAsString(var1, "formula"));
          ApplyBonusCount.FormulaDeserializer var7 = ApplyBonusCount.FORMULAS.get(var6);
          if (var7 == null) {

@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundPaddleBoatPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -19,7 +18,9 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.entity.player.Player;
@@ -50,7 +52,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class Boat extends Entity {
+public class Boat extends Entity implements VariantHolder<Boat.Type> {
    private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.FLOAT);
@@ -149,7 +151,7 @@ public class Boat extends Entity {
 
    @Override
    public double getPassengersRidingOffset() {
-      return -0.1;
+      return this.getVariant() == Boat.Type.BAMBOO ? 0.3 : -0.1;
    }
 
    @Override
@@ -222,23 +224,16 @@ public class Boat extends Entity {
    }
 
    public Item getDropItem() {
-      switch(this.getBoatType()) {
-         case OAK:
-         default:
-            return Items.OAK_BOAT;
-         case SPRUCE:
-            return Items.SPRUCE_BOAT;
-         case BIRCH:
-            return Items.BIRCH_BOAT;
-         case JUNGLE:
-            return Items.JUNGLE_BOAT;
-         case ACACIA:
-            return Items.ACACIA_BOAT;
-         case DARK_OAK:
-            return Items.DARK_OAK_BOAT;
-         case MANGROVE:
-            return Items.MANGROVE_BOAT;
-      }
+      return switch(this.getVariant()) {
+         case SPRUCE -> Items.SPRUCE_BOAT;
+         case BIRCH -> Items.BIRCH_BOAT;
+         case JUNGLE -> Items.JUNGLE_BOAT;
+         case ACACIA -> Items.ACACIA_BOAT;
+         case DARK_OAK -> Items.DARK_OAK_BOAT;
+         case MANGROVE -> Items.MANGROVE_BOAT;
+         case BAMBOO -> Items.BAMBOO_RAFT;
+         default -> Items.OAK_BOAT;
+      };
    }
 
    @Override
@@ -750,13 +745,13 @@ public class Boat extends Entity {
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
-      var1.putString("Type", this.getBoatType().getName());
+      var1.putString("Type", this.getVariant().getSerializedName());
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.contains("Type", 8)) {
-         this.setType(Boat.Type.byName(var1.getString("Type")));
+         this.setVariant(Boat.Type.byName(var1.getString("Type")));
       }
    }
 
@@ -791,7 +786,7 @@ public class Boat extends Entity {
                   this.kill();
                   if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                      for(int var6 = 0; var6 < 3; ++var6) {
-                        this.spawnAtLocation(this.getBoatType().getPlanks());
+                        this.spawnAtLocation(this.getVariant().getPlanks());
                      }
 
                      for(int var7 = 0; var7 < 2; ++var7) {
@@ -848,11 +843,11 @@ public class Boat extends Entity {
       return this.entityData.get(DATA_ID_HURTDIR);
    }
 
-   public void setType(Boat.Type var1) {
+   public void setVariant(Boat.Type var1) {
       this.entityData.set(DATA_ID_TYPE, var1.ordinal());
    }
 
-   public Boat.Type getBoatType() {
+   public Boat.Type getVariant() {
       return Boat.Type.byId(this.entityData.get(DATA_ID_TYPE));
    }
 
@@ -879,11 +874,6 @@ public class Boat extends Entity {
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
-   }
-
-   @Override
    public boolean isUnderWater() {
       return this.status == Boat.Status.UNDER_WATER || this.status == Boat.Status.UNDER_FLOWING_WATER;
    }
@@ -904,21 +894,29 @@ public class Boat extends Entity {
       }
    }
 
-   public static enum Type {
+   public static enum Type implements StringRepresentable {
       OAK(Blocks.OAK_PLANKS, "oak"),
       SPRUCE(Blocks.SPRUCE_PLANKS, "spruce"),
       BIRCH(Blocks.BIRCH_PLANKS, "birch"),
       JUNGLE(Blocks.JUNGLE_PLANKS, "jungle"),
       ACACIA(Blocks.ACACIA_PLANKS, "acacia"),
       DARK_OAK(Blocks.DARK_OAK_PLANKS, "dark_oak"),
-      MANGROVE(Blocks.MANGROVE_PLANKS, "mangrove");
+      MANGROVE(Blocks.MANGROVE_PLANKS, "mangrove"),
+      BAMBOO(Blocks.BAMBOO_PLANKS, "bamboo");
 
       private final String name;
       private final Block planks;
+      public static final StringRepresentable.EnumCodec<Boat.Type> CODEC = StringRepresentable.fromEnum(Boat.Type::values);
+      private static final IntFunction<Boat.Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
 
       private Type(Block var3, String var4) {
          this.name = var4;
          this.planks = var3;
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
 
       public String getName() {
@@ -935,24 +933,11 @@ public class Boat extends Entity {
       }
 
       public static Boat.Type byId(int var0) {
-         Boat.Type[] var1 = values();
-         if (var0 < 0 || var0 >= var1.length) {
-            var0 = 0;
-         }
-
-         return var1[var0];
+         return BY_ID.apply(var0);
       }
 
       public static Boat.Type byName(String var0) {
-         Boat.Type[] var1 = values();
-
-         for(int var2 = 0; var2 < var1.length; ++var2) {
-            if (var1[var2].getName().equals(var0)) {
-               return var1[var2];
-            }
-         }
-
-         return var1[0];
+         return CODEC.byName(var0, OAK);
       }
    }
 }

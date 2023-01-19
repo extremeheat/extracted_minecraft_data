@@ -1,18 +1,20 @@
 package net.minecraft.data.tags;
 
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BannerPatternTags;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatterns;
 
 public class BannerPatternTagsProvider extends TagsProvider<BannerPattern> {
-   public BannerPatternTagsProvider(DataGenerator var1) {
-      super(var1, Registry.BANNER_PATTERN);
+   public BannerPatternTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.BANNER_PATTERN, var2);
    }
 
    @Override
-   protected void addTags() {
+   protected void addTags(HolderLookup.Provider var1) {
       this.tag(BannerPatternTags.NO_ITEM_REQUIRED)
          .add(
             BannerPatterns.SQUARE_BOTTOM_LEFT,

@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -37,7 +38,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    private final Codec<ConfiguredWorldCarver<C>> configuredCodec;
 
    private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
-      return Registry.register(Registry.CARVER, var0, (F)var1);
+      return Registry.register(BuiltInRegistries.CARVER, var0, (F)var1);
    }
 
    public WorldCarver(Codec<C> var1) {

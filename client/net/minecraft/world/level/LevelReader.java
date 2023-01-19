@@ -5,10 +5,15 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.QuartPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.state.BlockState;
@@ -207,5 +212,14 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
       }
 
       return true;
+   }
+
+   RegistryAccess registryAccess();
+
+   FeatureFlagSet enabledFeatures();
+
+   default <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<? extends T>> var1) {
+      Registry var2 = this.registryAccess().registryOrThrow(var1);
+      return var2.asLookup().filterFeatures(this.enabledFeatures());
    }
 }

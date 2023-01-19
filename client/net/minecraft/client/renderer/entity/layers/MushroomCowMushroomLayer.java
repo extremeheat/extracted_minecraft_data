@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.CowModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,31 +27,31 @@ public class MushroomCowMushroomLayer<T extends MushroomCow> extends RenderLayer
          Minecraft var11 = Minecraft.getInstance();
          boolean var12 = var11.shouldEntityAppearGlowing(var4) && var4.isInvisible();
          if (!var4.isInvisible() || var12) {
-            BlockState var13 = var4.getMushroomType().getBlockState();
+            BlockState var13 = var4.getVariant().getBlockState();
             int var14 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
             BakedModel var15 = this.blockRenderer.getBlockModel(var13);
             var1.pushPose();
-            var1.translate(0.20000000298023224, -0.3499999940395355, 0.5);
-            var1.mulPose(Vector3f.YP.rotationDegrees(-48.0F));
+            var1.translate(0.2F, -0.35F, 0.5F);
+            var1.mulPose(Axis.YP.rotationDegrees(-48.0F));
             var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5, -0.5, -0.5);
+            var1.translate(-0.5F, -0.5F, -0.5F);
             this.renderMushroomBlock(var1, var2, var3, var12, var13, var14, var15);
             var1.popPose();
             var1.pushPose();
-            var1.translate(0.20000000298023224, -0.3499999940395355, 0.5);
-            var1.mulPose(Vector3f.YP.rotationDegrees(42.0F));
-            var1.translate(0.10000000149011612, 0.0, -0.6000000238418579);
-            var1.mulPose(Vector3f.YP.rotationDegrees(-48.0F));
+            var1.translate(0.2F, -0.35F, 0.5F);
+            var1.mulPose(Axis.YP.rotationDegrees(42.0F));
+            var1.translate(0.1F, 0.0F, -0.6F);
+            var1.mulPose(Axis.YP.rotationDegrees(-48.0F));
             var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5, -0.5, -0.5);
+            var1.translate(-0.5F, -0.5F, -0.5F);
             this.renderMushroomBlock(var1, var2, var3, var12, var13, var14, var15);
             var1.popPose();
             var1.pushPose();
             this.getParentModel().getHead().translateAndRotate(var1);
-            var1.translate(0.0, -0.699999988079071, -0.20000000298023224);
-            var1.mulPose(Vector3f.YP.rotationDegrees(-78.0F));
+            var1.translate(0.0F, -0.7F, -0.2F);
+            var1.mulPose(Axis.YP.rotationDegrees(-78.0F));
             var1.scale(-1.0F, -1.0F, 1.0F);
-            var1.translate(-0.5, -0.5, -0.5);
+            var1.translate(-0.5F, -0.5F, -0.5F);
             this.renderMushroomBlock(var1, var2, var3, var12, var13, var14, var15);
             var1.popPose();
          }

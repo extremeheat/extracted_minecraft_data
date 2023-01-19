@@ -18,7 +18,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -32,20 +31,20 @@ public abstract class AbstractClientPlayer extends Player {
    public float elytraRotZ;
    public final ClientLevel clientLevel;
 
-   public AbstractClientPlayer(ClientLevel var1, GameProfile var2, @Nullable ProfilePublicKey var3) {
-      super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2, var3);
+   public AbstractClientPlayer(ClientLevel var1, GameProfile var2) {
+      super(var1, var1.getSharedSpawnPos(), var1.getSharedSpawnAngle(), var2);
       this.clientLevel = var1;
    }
 
    @Override
    public boolean isSpectator() {
-      PlayerInfo var1 = Minecraft.getInstance().getConnection().getPlayerInfo(this.getGameProfile().getId());
+      PlayerInfo var1 = this.getPlayerInfo();
       return var1 != null && var1.getGameMode() == GameType.SPECTATOR;
    }
 
    @Override
    public boolean isCreative() {
-      PlayerInfo var1 = Minecraft.getInstance().getConnection().getPlayerInfo(this.getGameProfile().getId());
+      PlayerInfo var1 = this.getPlayerInfo();
       return var1 != null && var1.getGameMode() == GameType.CREATIVE;
    }
 

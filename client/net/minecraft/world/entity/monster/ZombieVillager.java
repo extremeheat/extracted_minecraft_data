@@ -7,7 +7,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -67,7 +67,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
-      Registry.VILLAGER_PROFESSION.getRandom(this.random).ifPresent(var1x -> this.setVillagerData(this.getVillagerData().setProfession(var1x.value())));
+      BuiltInRegistries.VILLAGER_PROFESSION
+         .getRandom(this.random)
+         .ifPresent(var1x -> this.setVillagerData(this.getVillagerData().setProfession(var1x.value())));
    }
 
    @Override
@@ -112,7 +114,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          this.tradeOffers = var1.getCompound("Offers");
       }
 
-      if (var1.contains("Gossips", 10)) {
+      if (var1.contains("Gossips", 9)) {
          this.gossips = var1.getList("Gossips", 10);
       }
 

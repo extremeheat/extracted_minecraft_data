@@ -18,6 +18,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerAdvancementManager;
@@ -152,7 +153,7 @@ public class PlayerPredicate implements EntitySubPredicate {
          for(JsonElement var7 : var5) {
             JsonObject var8 = GsonHelper.convertToJsonObject(var7, "stats entry");
             ResourceLocation var9 = new ResourceLocation(GsonHelper.getAsString(var8, "type"));
-            StatType var10 = Registry.STAT_TYPE.get(var9);
+            StatType var10 = BuiltInRegistries.STAT_TYPE.get(var9);
             if (var10 == null) {
                throw new JsonParseException("Invalid stat type: " + var9);
             }
@@ -190,7 +191,7 @@ public class PlayerPredicate implements EntitySubPredicate {
       Registry var2 = var0.getRegistry();
       Object var3 = var2.get(var1);
       if (var3 == null) {
-         throw new JsonParseException("Unknown object " + var1 + " for stat type " + Registry.STAT_TYPE.getKey(var0));
+         throw new JsonParseException("Unknown object " + var1 + " for stat type " + BuiltInRegistries.STAT_TYPE.getKey(var0));
       } else {
          return var0.get(var3);
       }
@@ -212,7 +213,7 @@ public class PlayerPredicate implements EntitySubPredicate {
          JsonArray var2 = new JsonArray();
          this.stats.forEach((var1x, var2x) -> {
             JsonObject var3x = new JsonObject();
-            var3x.addProperty("type", Registry.STAT_TYPE.getKey(var1x.getType()).toString());
+            var3x.addProperty("type", BuiltInRegistries.STAT_TYPE.getKey(var1x.getType()).toString());
             var3x.addProperty("stat", getStatValueId(var1x).toString());
             var3x.add("value", var2x.serializeToJson());
             var2.add(var3x);

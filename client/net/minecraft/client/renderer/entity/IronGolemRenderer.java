@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.IronGolemCrackinessLayer;
@@ -28,7 +28,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemModel<Iro
          float var6 = 13.0F;
          float var7 = var1.animationPosition - var1.animationSpeed * (1.0F - var5) + 6.0F;
          float var8 = (Math.abs(var7 % 13.0F - 6.5F) - 3.25F) / 3.25F;
-         var2.mulPose(Vector3f.ZP.rotationDegrees(6.5F * var8));
+         var2.mulPose(Axis.ZP.rotationDegrees(6.5F * var8));
       }
    }
 }

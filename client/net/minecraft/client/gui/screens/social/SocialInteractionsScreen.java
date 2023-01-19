@@ -61,8 +61,6 @@ public class SocialInteractionsScreen extends Screen {
    private Component serverLabel;
    private int playerCount;
    private boolean initialized;
-   @Nullable
-   private Runnable postRenderRunnable;
 
    public SocialInteractionsScreen() {
       super(Component.translatable("gui.socialInteractions.title"));
@@ -100,7 +98,6 @@ public class SocialInteractionsScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       if (this.initialized) {
          this.socialInteractionsPlayerList.updateSize(this.width, this.height, 88, this.listEnd());
       } else {
@@ -113,12 +110,14 @@ public class SocialInteractionsScreen extends Screen {
       int var4 = this.font.width(BLOCKING_HINT) + 40;
       int var5 = 64 + 16 * this.backgroundUnits();
       int var6 = (this.width - var4) / 2 + 3;
-      this.allButton = this.addRenderableWidget(new Button(var2, 45, var1, 20, TAB_ALL, var1x -> this.showPage(SocialInteractionsScreen.Page.ALL)));
+      this.allButton = this.addRenderableWidget(
+         Button.builder(TAB_ALL, var1x -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(var2, 45, var1, 20).build()
+      );
       this.hiddenButton = this.addRenderableWidget(
-         new Button((var2 + var3 - var1) / 2 + 1, 45, var1, 20, TAB_HIDDEN, var1x -> this.showPage(SocialInteractionsScreen.Page.HIDDEN))
+         Button.builder(TAB_HIDDEN, var1x -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((var2 + var3 - var1) / 2 + 1, 45, var1, 20).build()
       );
       this.blockedButton = this.addRenderableWidget(
-         new Button(var3 - var1 + 1, 45, var1, 20, TAB_BLOCKED, var1x -> this.showPage(SocialInteractionsScreen.Page.BLOCKED))
+         Button.builder(TAB_BLOCKED, var1x -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build()
       );
       String var7 = this.searchBox != null ? this.searchBox.getValue() : "";
       this.searchBox = new EditBox(this.font, this.marginX() + 28, 78, 196, 16, SEARCH_HINT) {
@@ -134,18 +133,17 @@ public class SocialInteractionsScreen extends Screen {
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(16777215);
       this.searchBox.setValue(var7);
+      this.searchBox.setHint(SEARCH_HINT);
       this.searchBox.setResponder(this::checkSearchStringUpdate);
       this.addWidget(this.searchBox);
       this.addWidget(this.socialInteractionsPlayerList);
-      this.blockingHintButton = this.addRenderableWidget(
-         new Button(var6, var5, var4, 20, BLOCKING_HINT, var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-               if (var1xx) {
-                  Util.getPlatform().openUri("https://aka.ms/javablocking");
-               }
-   
-               this.minecraft.setScreen(this);
-            }, "https://aka.ms/javablocking", true)))
-      );
+      this.blockingHintButton = this.addRenderableWidget(Button.builder(BLOCKING_HINT, var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
+            if (var1xx) {
+               Util.getPlatform().openUri("https://aka.ms/javablocking");
+            }
+
+            this.minecraft.setScreen(this);
+         }, "https://aka.ms/javablocking", true))).bounds(var6, var5, var4, 20).build());
       this.initialized = true;
       this.showPage(this.page);
    }
@@ -189,11 +187,6 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
-   }
-
-   @Override
    public void renderBackground(PoseStack var1) {
       int var2 = this.marginX() + 3;
       super.renderBackground(var1);
@@ -227,17 +220,9 @@ public class SocialInteractionsScreen extends Screen {
          drawCenteredString(var1, this.minecraft.font, EMPTY_BLOCKED, this.width / 2, (78 + this.listEnd()) / 2, -1);
       }
 
-      if (!this.searchBox.isFocused() && this.searchBox.getValue().isEmpty()) {
-         drawString(var1, this.minecraft.font, SEARCH_HINT, this.searchBox.x, this.searchBox.y, -1);
-      } else {
-         this.searchBox.render(var1, var2, var3, var4);
-      }
-
+      this.searchBox.render(var1, var2, var3, var4);
       this.blockingHintButton.visible = this.page == SocialInteractionsScreen.Page.BLOCKED;
       super.render(var1, var2, var3, var4);
-      if (this.postRenderRunnable != null) {
-         this.postRenderRunnable.run();
-      }
    }
 
    @Override
@@ -300,10 +285,6 @@ public class SocialInteractionsScreen extends Screen {
 
    public void onRemovePlayer(UUID var1) {
       this.socialInteractionsPlayerList.removePlayer(var1);
-   }
-
-   public void setPostRenderRunnable(@Nullable Runnable var1) {
-      this.postRenderRunnable = var1;
    }
 
    public static enum Page {

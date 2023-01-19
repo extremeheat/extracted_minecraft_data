@@ -6,11 +6,11 @@ import java.io.IOException;
 import net.minecraft.util.Mth;
 
 public class FloatTag extends NumericTag {
-   private static final int SELF_SIZE_IN_BITS = 96;
+   private static final int SELF_SIZE_IN_BYTES = 12;
    public static final FloatTag ZERO = new FloatTag(0.0F);
    public static final TagType<FloatTag> TYPE = new TagType.StaticSize<FloatTag>() {
       public FloatTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(96L);
+         var3.accountBytes(12L);
          return FloatTag.valueOf(var1.readFloat());
       }
 
@@ -53,6 +53,11 @@ public class FloatTag extends NumericTag {
    @Override
    public void write(DataOutput var1) throws IOException {
       var1.writeFloat(this.data);
+   }
+
+   @Override
+   public int sizeInBytes() {
+      return 12;
    }
 
    @Override

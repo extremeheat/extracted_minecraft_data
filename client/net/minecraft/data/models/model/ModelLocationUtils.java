@@ -1,6 +1,6 @@
 package net.minecraft.data.models.model;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -20,22 +20,22 @@ public class ModelLocationUtils {
    }
 
    public static ResourceLocation getModelLocation(Block var0, String var1) {
-      ResourceLocation var2 = Registry.BLOCK.getKey(var0);
-      return new ResourceLocation(var2.getNamespace(), "block/" + var2.getPath() + var1);
+      ResourceLocation var2 = BuiltInRegistries.BLOCK.getKey(var0);
+      return var2.withPath(var1x -> "block/" + var1x + var1);
    }
 
    public static ResourceLocation getModelLocation(Block var0) {
-      ResourceLocation var1 = Registry.BLOCK.getKey(var0);
-      return new ResourceLocation(var1.getNamespace(), "block/" + var1.getPath());
+      ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(var0);
+      return var1.withPrefix("block/");
    }
 
    public static ResourceLocation getModelLocation(Item var0) {
-      ResourceLocation var1 = Registry.ITEM.getKey(var0);
-      return new ResourceLocation(var1.getNamespace(), "item/" + var1.getPath());
+      ResourceLocation var1 = BuiltInRegistries.ITEM.getKey(var0);
+      return var1.withPrefix("item/");
    }
 
    public static ResourceLocation getModelLocation(Item var0, String var1) {
-      ResourceLocation var2 = Registry.ITEM.getKey(var0);
-      return new ResourceLocation(var2.getNamespace(), "item/" + var2.getPath() + var1);
+      ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(var0);
+      return var2.withPath(var1x -> "item/" + var1x + var1);
    }
 }

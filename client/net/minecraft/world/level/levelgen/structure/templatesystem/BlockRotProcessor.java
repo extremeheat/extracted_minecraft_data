@@ -6,9 +6,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.tags.TagKey;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -16,16 +15,16 @@ import net.minecraft.world.level.block.Block;
 public class BlockRotProcessor extends StructureProcessor {
    public static final Codec<BlockRotProcessor> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY).optionalFieldOf("rottable_blocks").forGetter(var0x -> var0x.rottableBlocks),
+               RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter(var0x -> var0x.rottableBlocks),
                Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter(var0x -> var0x.integrity)
             )
             .apply(var0, BlockRotProcessor::new)
    );
-   private Optional<HolderSet<Block>> rottableBlocks;
+   private final Optional<HolderSet<Block>> rottableBlocks;
    private final float integrity;
 
-   public BlockRotProcessor(TagKey<Block> var1, float var2) {
-      this(Optional.of(Registry.BLOCK.getOrCreateTag(var1)), var2);
+   public BlockRotProcessor(HolderSet<Block> var1, float var2) {
+      this(Optional.of(var1), var2);
    }
 
    public BlockRotProcessor(float var1) {

@@ -49,7 +49,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.pendingInvitationSelectionList = new RealmsPendingInvitesScreen.PendingInvitationSelectionList();
       (new Thread("Realms-pending-invitations-fetcher") {
          @Override
@@ -68,25 +67,21 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          }
       }).start();
       this.addWidget(this.pendingInvitationSelectionList);
-      this.acceptButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 174, this.height - 32, 100, 20, Component.translatable("mco.invites.button.accept"), var1 -> {
-            this.accept(this.selectedInvite);
-            this.selectedInvite = -1;
-            this.updateButtonStates();
-         })
-      );
+      this.acceptButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.invites.button.accept"), var1 -> {
+         this.accept(this.selectedInvite);
+         this.selectedInvite = -1;
+         this.updateButtonStates();
+      }).bounds(this.width / 2 - 174, this.height - 32, 100, 20).build());
       this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 50, this.height - 32, 100, 20, CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(new RealmsMainScreen(this.lastScreen))
-         )
+         Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(new RealmsMainScreen(this.lastScreen)))
+            .bounds(this.width / 2 - 50, this.height - 32, 100, 20)
+            .build()
       );
-      this.rejectButton = this.addRenderableWidget(
-         new Button(this.width / 2 + 74, this.height - 32, 100, 20, Component.translatable("mco.invites.button.reject"), var1 -> {
-            this.reject(this.selectedInvite);
-            this.selectedInvite = -1;
-            this.updateButtonStates();
-         })
-      );
+      this.rejectButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.invites.button.reject"), var1 -> {
+         this.reject(this.selectedInvite);
+         this.selectedInvite = -1;
+         this.updateButtonStates();
+      }).bounds(this.width / 2 + 74, this.height - 32, 100, 20).build());
       this.updateButtonStates();
    }
 

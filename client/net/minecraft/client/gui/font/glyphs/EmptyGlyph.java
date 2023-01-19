@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.font.glyphs;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
 
 public class EmptyGlyph extends BakedGlyph {
    public static final EmptyGlyph INSTANCE = new EmptyGlyph();

@@ -3,12 +3,12 @@ package com.mojang.blaze3d.shaders;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -147,9 +147,7 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    @Override
    public final void set(Vector3f var1) {
       this.floatValues.position(0);
-      this.floatValues.put(0, var1.x());
-      this.floatValues.put(1, var1.y());
-      this.floatValues.put(2, var1.z());
+      var1.get(this.floatValues);
       this.markDirty();
    }
 
@@ -167,10 +165,7 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    @Override
    public final void set(Vector4f var1) {
       this.floatValues.position(0);
-      this.floatValues.put(0, var1.x());
-      this.floatValues.put(1, var1.y());
-      this.floatValues.put(2, var1.z());
-      this.floatValues.put(3, var1.w());
+      var1.get(this.floatValues);
       this.markDirty();
    }
 
@@ -423,14 +418,14 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    @Override
    public final void set(Matrix4f var1) {
       this.floatValues.position(0);
-      var1.store(this.floatValues);
+      var1.get(this.floatValues);
       this.markDirty();
    }
 
    @Override
    public final void set(Matrix3f var1) {
       this.floatValues.position(0);
-      var1.store(this.floatValues);
+      var1.get(this.floatValues);
       this.markDirty();
    }
 

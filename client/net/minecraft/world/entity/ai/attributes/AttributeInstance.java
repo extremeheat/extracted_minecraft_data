@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 
@@ -165,7 +165,7 @@ public class AttributeInstance {
 
    public CompoundTag save() {
       CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", Registry.ATTRIBUTE.getKey(this.attribute).toString());
+      var1.putString("Name", BuiltInRegistries.ATTRIBUTE.getKey(this.attribute).toString());
       var1.putDouble("Base", this.baseValue);
       if (!this.permanentModifiers.isEmpty()) {
          ListTag var2 = new ListTag();

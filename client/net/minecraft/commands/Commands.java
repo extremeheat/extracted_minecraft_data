@@ -15,6 +15,7 @@ import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -26,7 +27,10 @@ import net.minecraft.Util;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.ArgumentUtils;
 import net.minecraft.commands.synchronization.SuggestionProviders;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.gametest.framework.TestCommand;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -35,6 +39,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -53,6 +58,7 @@ import net.minecraft.server.commands.EmoteCommands;
 import net.minecraft.server.commands.EnchantCommand;
 import net.minecraft.server.commands.ExecuteCommand;
 import net.minecraft.server.commands.ExperienceCommand;
+import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.commands.FillCommand;
 import net.minecraft.server.commands.ForceLoadCommand;
 import net.minecraft.server.commands.FunctionCommand;
@@ -107,6 +113,7 @@ import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 import org.slf4j.Logger;
 
@@ -122,7 +129,7 @@ public class Commands {
    public Commands(Commands.CommandSelection var1, CommandBuildContext var2) {
       super();
       AdvancementCommands.register(this.dispatcher);
-      AttributeCommand.register(this.dispatcher);
+      AttributeCommand.register(this.dispatcher, var2);
       ExecuteCommand.register(this.dispatcher, var2);
       BossBarCommands.register(this.dispatcher);
       ClearInventoryCommands.register(this.dispatcher, var2);
@@ -132,11 +139,12 @@ public class Commands {
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
       DifficultyCommand.register(this.dispatcher);
-      EffectCommands.register(this.dispatcher);
+      EffectCommands.register(this.dispatcher, var2);
       EmoteCommands.register(this.dispatcher);
-      EnchantCommand.register(this.dispatcher);
+      EnchantCommand.register(this.dispatcher, var2);
       ExperienceCommand.register(this.dispatcher);
       FillCommand.register(this.dispatcher, var2);
+      FillBiomeCommand.register(this.dispatcher, var2);
       ForceLoadCommand.register(this.dispatcher);
       FunctionCommand.register(this.dispatcher);
       GameModeCommand.register(this.dispatcher);
@@ -147,10 +155,10 @@ public class Commands {
       KickCommand.register(this.dispatcher);
       KillCommand.register(this.dispatcher);
       ListPlayersCommand.register(this.dispatcher);
-      LocateCommand.register(this.dispatcher);
+      LocateCommand.register(this.dispatcher, var2);
       LootCommand.register(this.dispatcher, var2);
       MsgCommand.register(this.dispatcher);
-      ParticleCommand.register(this.dispatcher);
+      ParticleCommand.register(this.dispatcher, var2);
       PlaceCommand.register(this.dispatcher);
       PlaySoundCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
@@ -165,7 +173,7 @@ public class Commands {
       SpectateCommand.register(this.dispatcher);
       SpreadPlayersCommand.register(this.dispatcher);
       StopSoundCommand.register(this.dispatcher);
-      SummonCommand.register(this.dispatcher);
+      SummonCommand.register(this.dispatcher, var2);
       TagCommand.register(this.dispatcher);
       TeamCommand.register(this.dispatcher);
       TeamMsgCommand.register(this.dispatcher);
@@ -363,9 +371,29 @@ public class Commands {
       }
    }
 
+   public static CommandBuildContext createValidationContext(final HolderLookup.Provider var0) {
+      return new CommandBuildContext() {
+         @Override
+         public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1) {
+            final HolderLookup.RegistryLookup var2 = var0.lookupOrThrow(var1);
+            return new HolderLookup.Delegate<T>(var2) {
+               @Override
+               public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
+                  return Optional.of(this.getOrThrow(var1));
+               }
+
+               @Override
+               public HolderSet.Named<T> getOrThrow(TagKey<T> var1) {
+                  Optional var2x = var2.get(var1);
+                  return var2x.orElseGet(() -> HolderSet.emptyNamed(var2, var1));
+               }
+            };
+         }
+      };
+   }
+
    public static void validate() {
-      CommandBuildContext var0 = new CommandBuildContext(RegistryAccess.BUILTIN.get());
-      var0.missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy.RETURN_EMPTY);
+      CommandBuildContext var0 = createValidationContext(VanillaRegistries.createLookup());
       CommandDispatcher var1 = new Commands(Commands.CommandSelection.ALL, var0).getDispatcher();
       RootCommandNode var2 = var1.getRoot();
       var1.findAmbiguities(

@@ -22,8 +22,12 @@ public class RealmsConfirmScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.addRenderableWidget(new Button(this.width / 2 - 105, row(9), 100, 20, CommonComponents.GUI_YES, var1 -> this.callback.accept(true)));
-      this.addRenderableWidget(new Button(this.width / 2 + 5, row(9), 100, 20, CommonComponents.GUI_NO, var1 -> this.callback.accept(false)));
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_YES, var1 -> this.callback.accept(true)).bounds(this.width / 2 - 105, row(9), 100, 20).build()
+      );
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_NO, var1 -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build()
+      );
    }
 
    @Override

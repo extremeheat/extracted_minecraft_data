@@ -5,9 +5,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.NoiseColumn;
@@ -18,21 +20,27 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
    public static final Codec<FlatLevelSource> CODEC = RecordCodecBuilder.create(
-      var0 -> commonCodec(var0)
-            .and(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings))
+      var0 -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings))
             .apply(var0, var0.stable(FlatLevelSource::new))
    );
    private final FlatLevelGeneratorSettings settings;
 
-   public FlatLevelSource(Registry<StructureSet> var1, FlatLevelGeneratorSettings var2) {
-      super(var1, var2.structureOverrides(), new FixedBiomeSource(var2.getBiome()), Util.memoize(var2::adjustGenerationSettings));
-      this.settings = var2;
+   public FlatLevelSource(FlatLevelGeneratorSettings var1) {
+      super(new FixedBiomeSource(var1.getBiome()), Util.memoize(var1::adjustGenerationSettings));
+      this.settings = var1;
+   }
+
+   @Override
+   public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
+      Stream var5 = this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map(var0x -> var0x));
+      return ChunkGeneratorStructureState.createForFlat(var2, var3, this.biomeSource, var5);
    }
 
    @Override

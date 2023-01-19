@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -19,6 +18,8 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> {
    public static final Material SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation("entity/conduit/base"));
@@ -78,8 +79,8 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          float var16 = var1.getActiveRotation(0.0F);
          VertexConsumer var18 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
          var3.pushPose();
-         var3.translate(0.5, 0.5, 0.5);
-         var3.mulPose(Vector3f.YP.rotationDegrees(var16));
+         var3.translate(0.5F, 0.5F, 0.5F);
+         var3.mulPose(new Quaternionf().rotationY(var16 * 0.017453292F));
          this.shell.render(var3, var18, var5, var6);
          var3.popPose();
       } else {
@@ -87,39 +88,35 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
          float var9 = Mth.sin(var7 * 0.1F) / 2.0F + 0.5F;
          var9 = var9 * var9 + var9;
          var3.pushPose();
-         var3.translate(0.5, (double)(0.3F + var9 * 0.2F), 0.5);
-         Vector3f var10 = new Vector3f(0.5F, 1.0F, 0.5F);
-         var10.normalize();
-         var3.mulPose(var10.rotationDegrees(var8));
+         var3.translate(0.5F, 0.3F + var9 * 0.2F, 0.5F);
+         Vector3f var10 = new Vector3f(0.5F, 1.0F, 0.5F).normalize();
+         var3.mulPose(new Quaternionf().rotationAxis(var8 * 0.017453292F, var10));
          this.cage.render(var3, ACTIVE_SHELL_TEXTURE.buffer(var4, RenderType::entityCutoutNoCull), var5, var6);
          var3.popPose();
          int var11 = var1.tickCount / 66 % 3;
          var3.pushPose();
-         var3.translate(0.5, 0.5, 0.5);
+         var3.translate(0.5F, 0.5F, 0.5F);
          if (var11 == 1) {
-            var3.mulPose(Vector3f.XP.rotationDegrees(90.0F));
+            var3.mulPose(new Quaternionf().rotationX(1.5707964F));
          } else if (var11 == 2) {
-            var3.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+            var3.mulPose(new Quaternionf().rotationZ(1.5707964F));
          }
 
          VertexConsumer var12 = (var11 == 1 ? VERTICAL_WIND_TEXTURE : WIND_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull);
          this.wind.render(var3, var12, var5, var6);
          var3.popPose();
          var3.pushPose();
-         var3.translate(0.5, 0.5, 0.5);
+         var3.translate(0.5F, 0.5F, 0.5F);
          var3.scale(0.875F, 0.875F, 0.875F);
-         var3.mulPose(Vector3f.XP.rotationDegrees(180.0F));
-         var3.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+         var3.mulPose(new Quaternionf().rotationXYZ(3.1415927F, 0.0F, 3.1415927F));
          this.wind.render(var3, var12, var5, var6);
          var3.popPose();
          Camera var13 = this.renderer.camera;
          var3.pushPose();
-         var3.translate(0.5, (double)(0.3F + var9 * 0.2F), 0.5);
+         var3.translate(0.5F, 0.3F + var9 * 0.2F, 0.5F);
          var3.scale(0.5F, 0.5F, 0.5F);
          float var14 = -var13.getYRot();
-         var3.mulPose(Vector3f.YP.rotationDegrees(var14));
-         var3.mulPose(Vector3f.XP.rotationDegrees(var13.getXRot()));
-         var3.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+         var3.mulPose(new Quaternionf().rotationYXZ(var14 * 0.017453292F, var13.getXRot() * 0.017453292F, 3.1415927F));
          float var15 = 1.3333334F;
          var3.scale(1.3333334F, 1.3333334F, 1.3333334F);
          this.eye.render(var3, (var1.isHunting() ? OPEN_EYE_TEXTURE : CLOSED_EYE_TEXTURE).buffer(var4, RenderType::entityCutoutNoCull), var5, var6);

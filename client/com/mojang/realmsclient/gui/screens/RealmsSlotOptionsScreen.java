@@ -78,11 +78,6 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
    }
 
    @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
-   }
-
-   @Override
    public void tick() {
       this.nameEdit.tick();
    }
@@ -226,9 +221,13 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       }
 
       this.addRenderableWidget(
-         new Button(this.column1X, row(13), this.columnWidth, 20, Component.translatable("mco.configure.world.buttons.done"), var1x -> this.saveSettings())
+         Button.builder(Component.translatable("mco.configure.world.buttons.done"), var1x -> this.saveSettings())
+            .bounds(this.column1X, row(13), this.columnWidth, 20)
+            .build()
       );
-      this.addRenderableWidget(new Button(var1, row(13), this.columnWidth, 20, CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.parent)));
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.parent)).bounds(var1, row(13), this.columnWidth, 20).build()
+      );
       this.addWidget(this.nameEdit);
    }
 

@@ -6,9 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
-import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
 public class RandomSpreadStructurePlacement extends StructurePlacement {
@@ -76,9 +75,9 @@ public class RandomSpreadStructurePlacement extends StructurePlacement {
    }
 
    @Override
-   protected boolean isPlacementChunk(ChunkGenerator var1, RandomState var2, long var3, int var5, int var6) {
-      ChunkPos var7 = this.getPotentialStructureChunk(var3, var5, var6);
-      return var7.x == var5 && var7.z == var6;
+   protected boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
+      ChunkPos var4 = this.getPotentialStructureChunk(var1.getLevelSeed(), var2, var3);
+      return var4.x == var2 && var4.z == var3;
    }
 
    @Override

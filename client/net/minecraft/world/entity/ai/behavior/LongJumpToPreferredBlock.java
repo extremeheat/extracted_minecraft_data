@@ -3,8 +3,8 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +13,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos<E> {
    private final TagKey<Block> preferredBlockTag;
@@ -22,7 +21,7 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
    private boolean currentlyWantingPreferredOnes;
 
    public LongJumpToPreferredBlock(
-      UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, TagKey<Block> var6, float var7, Predicate<BlockState> var8
+      UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, TagKey<Block> var6, float var7, BiPredicate<E, BlockPos> var8
    ) {
       super(var1, var2, var3, var4, var5, var8);
       this.preferredBlockTag = var6;
@@ -57,14 +56,5 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
 
          return !this.notPrefferedJumpCandidates.isEmpty() ? Optional.of(this.notPrefferedJumpCandidates.remove(0)) : Optional.empty();
       }
-   }
-
-   @Override
-   protected boolean isAcceptableLandingPosition(ServerLevel var1, E var2, BlockPos var3) {
-      return super.isAcceptableLandingPosition(var1, (E)var2, var3) && this.willNotLandInFluid(var1, var3);
-   }
-
-   private boolean willNotLandInFluid(ServerLevel var1, BlockPos var2) {
-      return var1.getFluidState(var2).isEmpty() && var1.getFluidState(var2.below()).isEmpty();
    }
 }

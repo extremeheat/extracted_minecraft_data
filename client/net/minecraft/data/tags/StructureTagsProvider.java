@@ -1,18 +1,20 @@
 package net.minecraft.data.tags;
 
-import net.minecraft.data.BuiltinRegistries;
-import net.minecraft.data.DataGenerator;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class StructureTagsProvider extends TagsProvider<Structure> {
-   public StructureTagsProvider(DataGenerator var1) {
-      super(var1, BuiltinRegistries.STRUCTURES);
+   public StructureTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.STRUCTURE, var2);
    }
 
    @Override
-   protected void addTags() {
+   protected void addTags(HolderLookup.Provider var1) {
       this.tag(StructureTags.VILLAGE)
          .add(BuiltinStructures.VILLAGE_PLAINS)
          .add(BuiltinStructures.VILLAGE_DESERT)

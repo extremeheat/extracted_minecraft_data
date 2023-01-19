@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CollisionGetter;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
@@ -91,17 +90,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
                var2.removeBlock(var7, false);
             }
 
-            var2.explode(
-               null,
-               DamageSource.badRespawnPointExplosion(),
-               null,
-               (double)var3.getX() + 0.5,
-               (double)var3.getY() + 0.5,
-               (double)var3.getZ() + 0.5,
-               5.0F,
-               true,
-               Explosion.BlockInteraction.DESTROY
-            );
+            Vec3 var8 = var3.getCenter();
+            var2.explode(null, DamageSource.badRespawnPointExplosion(var8), null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS;
          } else if (var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {
@@ -229,14 +219,13 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       return var0.getBlockState(var1.below()).getBlock() instanceof BedBlock;
    }
 
-   public static Optional<Vec3> findStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2, float var3) {
-      Direction var4 = var1.getBlockState(var2).getValue(FACING);
-      Direction var5 = var4.getClockWise();
-      Direction var6 = var5.isFacingAngle(var3) ? var5.getOpposite() : var5;
+   public static Optional<Vec3> findStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2, Direction var3, float var4) {
+      Direction var5 = var3.getClockWise();
+      Direction var6 = var5.isFacingAngle(var4) ? var5.getOpposite() : var5;
       if (isBunkBed(var1, var2)) {
-         return findBunkBedStandUpPosition(var0, var1, var2, var4, var6);
+         return findBunkBedStandUpPosition(var0, var1, var2, var3, var6);
       } else {
-         int[][] var7 = bedStandUpOffsets(var4, var6);
+         int[][] var7 = bedStandUpOffsets(var3, var6);
          Optional var8 = findStandUpPositionAtOffset(var0, var1, var2, var7, true);
          return var8.isPresent() ? var8 : findStandUpPositionAtOffset(var0, var1, var2, var7, false);
       }

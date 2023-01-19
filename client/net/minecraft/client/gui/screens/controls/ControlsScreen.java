@@ -23,27 +23,25 @@ public class ControlsScreen extends OptionsSubScreen {
       int var2 = var1 + 160;
       int var3 = this.height / 6 - 12;
       this.addRenderableWidget(
-         new Button(
-            var1,
-            var3,
-            150,
-            20,
-            Component.translatable("options.mouse_settings"),
-            var1x -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options))
-         )
+         Button.builder(Component.translatable("options.mouse_settings"), var1x -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options)))
+            .bounds(var1, var3, 150, 20)
+            .build()
       );
       this.addRenderableWidget(
-         new Button(
-            var2, var3, 150, 20, Component.translatable("controls.keybinds"), var1x -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))
-         )
+         Button.builder(Component.translatable("controls.keybinds"), var1x -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options)))
+            .bounds(var2, var3, 150, 20)
+            .build()
       );
       var3 += 24;
       this.addRenderableWidget(this.options.toggleCrouch().createButton(this.options, var1, var3, 150));
       this.addRenderableWidget(this.options.toggleSprint().createButton(this.options, var2, var3, 150));
       var3 += 24;
       this.addRenderableWidget(this.options.autoJump().createButton(this.options, var1, var3, 150));
+      this.addRenderableWidget(this.options.operatorItemsTab().createButton(this.options, var2, var3, 150));
       var3 += 24;
-      this.addRenderableWidget(new Button(this.width / 2 - 100, var3, 200, 20, CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen)));
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, var3, 200, 20).build()
+      );
    }
 
    @Override

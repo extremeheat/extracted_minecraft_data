@@ -25,6 +25,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -33,7 +34,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
@@ -107,6 +107,7 @@ import net.minecraft.world.level.block.PowderSnowBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -343,14 +344,16 @@ public abstract class LivingEntity extends Entity {
 
       if (this.isAlive()) {
          boolean var1 = this instanceof Player;
-         if (this.isInWall()) {
-            this.hurt(DamageSource.IN_WALL, 1.0F);
-         } else if (var1 && !this.level.getWorldBorder().isWithinBounds(this.getBoundingBox())) {
-            double var2 = this.level.getWorldBorder().getDistanceToBorder(this) + this.level.getWorldBorder().getDamageSafeZone();
-            if (var2 < 0.0) {
-               double var4 = this.level.getWorldBorder().getDamagePerBlock();
-               if (var4 > 0.0) {
-                  this.hurt(DamageSource.IN_WALL, (float)Math.max(1, Mth.floor(-var2 * var4)));
+         if (!this.level.isClientSide) {
+            if (this.isInWall()) {
+               this.hurt(DamageSource.IN_WALL, 1.0F);
+            } else if (var1 && !this.level.getWorldBorder().isWithinBounds(this.getBoundingBox())) {
+               double var2 = this.level.getWorldBorder().getDistanceToBorder(this) + this.level.getWorldBorder().getDamageSafeZone();
+               if (var2 < 0.0) {
+                  double var4 = this.level.getWorldBorder().getDamagePerBlock();
+                  if (var4 > 0.0) {
+                     this.hurt(DamageSource.IN_WALL, (float)Math.max(1, Mth.floor(-var2 * var4)));
+                  }
                }
             }
          }
@@ -391,11 +394,7 @@ public abstract class LivingEntity extends Entity {
       }
 
       if (this.isAlive() && (this.isInWaterRainOrBubble() || this.isInPowderSnow)) {
-         if (!this.level.isClientSide && this.wasOnFire) {
-            this.playEntityOnFireExtinguishedSound();
-         }
-
-         this.clearFire();
+         this.extinguishFire();
       }
 
       if (this.hurtTime > 0) {
@@ -564,7 +563,7 @@ public abstract class LivingEntity extends Entity {
 
    protected void tickDeath() {
       ++this.deathTime;
-      if (this.deathTime == 20 && !this.level.isClientSide()) {
+      if (this.deathTime >= 20 && !this.level.isClientSide() && !this.isRemoved()) {
          this.level.broadcastEntityEvent(this, (byte)60);
          this.remove(Entity.RemovalReason.KILLED);
       }
@@ -659,7 +658,7 @@ public abstract class LivingEntity extends Entity {
 
    public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
       boolean var4 = var3.isEmpty() && var2.isEmpty();
-      if (!var4 && !ItemStack.isSameIgnoreDurability(var2, var3) && !this.firstTick) {
+      if (!var4 && !ItemStack.isSame(var2, var3) && !this.firstTick) {
          if (var1.getType() == EquipmentSlot.Type.ARMOR) {
             this.playEquipSound(var3);
          }
@@ -859,6 +858,8 @@ public abstract class LivingEntity extends Entity {
          EntityType var5 = var1.getType();
          if (var5 == EntityType.SKELETON && var6.is(Items.SKELETON_SKULL)
             || var5 == EntityType.ZOMBIE && var6.is(Items.ZOMBIE_HEAD)
+            || var5 == EntityType.PIGLIN && var6.is(Items.PIGLIN_HEAD)
+            || var5 == EntityType.PIGLIN_BRUTE && var6.is(Items.PIGLIN_HEAD)
             || var5 == EntityType.CREEPER && var6.is(Items.CREEPER_HEAD)) {
             var2 *= 0.5;
          }
@@ -1063,8 +1064,8 @@ public abstract class LivingEntity extends Entity {
             var2 = 0.0F;
             if (!var1.isProjectile()) {
                Entity var6 = var1.getDirectEntity();
-               if (var6 instanceof LivingEntity) {
-                  this.blockUsingShield((LivingEntity)var6);
+               if (var6 instanceof LivingEntity var7) {
+                  this.blockUsingShield((LivingEntity)var7);
                }
             }
 
@@ -1095,16 +1096,16 @@ public abstract class LivingEntity extends Entity {
          }
 
          this.hurtDir = 0.0F;
-         Entity var7 = var1.getEntity();
-         if (var7 != null) {
-            if (var7 instanceof LivingEntity && !var1.isNoAggro()) {
-               this.setLastHurtByMob((LivingEntity)var7);
+         Entity var13 = var1.getEntity();
+         if (var13 != null) {
+            if (var13 instanceof LivingEntity && !var1.isNoAggro()) {
+               this.setLastHurtByMob((LivingEntity)var13);
             }
 
-            if (var7 instanceof Player) {
+            if (var13 instanceof Player) {
                this.lastHurtByPlayerTime = 100;
-               this.lastHurtByPlayer = (Player)var7;
-            } else if (var7 instanceof Wolf var8 && var8.isTame()) {
+               this.lastHurtByPlayer = (Player)var13;
+            } else if (var13 instanceof Wolf var8 && var8.isTame()) {
                this.lastHurtByPlayerTime = 100;
                LivingEntity var9 = var8.getOwner();
                if (var9 != null && var9.getType() == EntityType.PLAYER) {
@@ -1121,36 +1122,36 @@ public abstract class LivingEntity extends Entity {
             } else if (var1 instanceof EntityDamageSource && ((EntityDamageSource)var1).isThorns()) {
                this.level.broadcastEntityEvent(this, (byte)33);
             } else {
-               byte var13;
+               byte var14;
                if (var1 == DamageSource.DROWN) {
-                  var13 = 36;
+                  var14 = 36;
                } else if (var1.isFire()) {
-                  var13 = 37;
+                  var14 = 37;
                } else if (var1 == DamageSource.SWEET_BERRY_BUSH) {
-                  var13 = 44;
+                  var14 = 44;
                } else if (var1 == DamageSource.FREEZE) {
-                  var13 = 57;
+                  var14 = 57;
                } else {
-                  var13 = 2;
+                  var14 = 2;
                }
 
-               this.level.broadcastEntityEvent(this, var13);
+               this.level.broadcastEntityEvent(this, var14);
             }
 
             if (var1 != DamageSource.DROWN && (!var4 || var2 > 0.0F)) {
                this.markHurt();
             }
 
-            if (var7 != null) {
-               double var14 = var7.getX() - this.getX();
+            if (var13 != null && !var1.isExplosion()) {
+               double var15 = var13.getX() - this.getX();
 
                double var10;
-               for(var10 = var7.getZ() - this.getZ(); var14 * var14 + var10 * var10 < 1.0E-4; var10 = (Math.random() - Math.random()) * 0.01) {
-                  var14 = (Math.random() - Math.random()) * 0.01;
+               for(var10 = var13.getZ() - this.getZ(); var15 * var15 + var10 * var10 < 1.0E-4; var10 = (Math.random() - Math.random()) * 0.01) {
+                  var15 = (Math.random() - Math.random()) * 0.01;
                }
 
-               this.hurtDir = (float)(Mth.atan2(var10, var14) * 57.2957763671875 - (double)this.getYRot());
-               this.knockback(0.4000000059604645, var14, var10);
+               this.hurtDir = (float)(Mth.atan2(var10, var15) * 57.2957763671875 - (double)this.getYRot());
+               this.knockback(0.4000000059604645, var15, var10);
             } else {
                this.hurtDir = (float)((int)(Math.random() * 2.0) * 180);
             }
@@ -1158,9 +1159,9 @@ public abstract class LivingEntity extends Entity {
 
          if (this.isDeadOrDying()) {
             if (!this.checkTotemDeathProtection(var1)) {
-               SoundEvent var15 = this.getDeathSound();
-               if (var12 && var15 != null) {
-                  this.playSound(var15, this.getSoundVolume(), this.getVoicePitch());
+               SoundEvent var16 = this.getDeathSound();
+               if (var12 && var16 != null) {
+                  this.playSound(var16, this.getSoundVolume(), this.getVoicePitch());
                }
 
                this.die(var1);
@@ -1169,8 +1170,8 @@ public abstract class LivingEntity extends Entity {
             this.playHurtSound(var1);
          }
 
-         boolean var16 = !var4 || var2 > 0.0F;
-         if (var16) {
+         boolean var17 = !var4 || var2 > 0.0F;
+         if (var17) {
             this.lastDamageSource = var1;
             this.lastDamageStamp = this.level.getGameTime();
          }
@@ -1182,11 +1183,11 @@ public abstract class LivingEntity extends Entity {
             }
          }
 
-         if (var7 instanceof ServerPlayer) {
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var7, this, var1, var3, var2, var4);
+         if (var13 instanceof ServerPlayer) {
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var13, this, var1, var3, var2, var4);
          }
 
-         return var16;
+         return var17;
       }
    }
 
@@ -1434,6 +1435,11 @@ public abstract class LivingEntity extends Entity {
 
    public boolean wasExperienceConsumed() {
       return this.skipDropExperience;
+   }
+
+   protected Vec3 getMeleeAttackReferencePosition() {
+      Entity var2 = this.getVehicle();
+      return var2 instanceof RiderShieldingMount var1 ? this.position().add(0.0, var1.getRiderShieldingHeight(), 0.0) : this.position();
    }
 
    public LivingEntity.Fallsounds getFallSounds() {
@@ -1859,8 +1865,16 @@ public abstract class LivingEntity extends Entity {
       return this.getAttributes().getInstance(var1);
    }
 
+   public double getAttributeValue(Holder<Attribute> var1) {
+      return this.getAttributeValue((Attribute)var1.value());
+   }
+
    public double getAttributeValue(Attribute var1) {
       return this.getAttributes().getValue(var1);
+   }
+
+   public double getAttributeBaseValue(Holder<Attribute> var1) {
+      return this.getAttributeBaseValue((Attribute)var1.value());
    }
 
    public double getAttributeBaseValue(Attribute var1) {
@@ -2103,11 +2117,8 @@ public abstract class LivingEntity extends Entity {
                this.setDeltaMovement(var29.x, 0.30000001192092896, var29.z);
             }
          } else if (this.isFallFlying()) {
+            this.checkSlowFallDistance();
             Vec3 var6 = this.getDeltaMovement();
-            if (var6.y > -0.5) {
-               this.fallDistance = 1.0F;
-            }
-
             Vec3 var7 = this.getLookAngle();
             float var8 = this.getXRot() * 0.017453292F;
             double var9 = Math.sqrt(var7.x * var7.x + var7.z * var7.z);
@@ -2401,7 +2412,7 @@ public abstract class LivingEntity extends Entity {
          }
 
          ItemStack var7 = this.getItemBySlot(var5);
-         if (!ItemStack.matches(var7, var6)) {
+         if (this.equipmentHasChanged(var6, var7)) {
             if (var1 == null) {
                var1 = Maps.newEnumMap(EquipmentSlot.class);
             }
@@ -2418,6 +2429,10 @@ public abstract class LivingEntity extends Entity {
       }
 
       return var1;
+   }
+
+   public boolean equipmentHasChanged(ItemStack var1, ItemStack var2) {
+      return !ItemStack.matches(var2, var1);
    }
 
    private void handleHandSwap(Map<EquipmentSlot, ItemStack> var1) {
@@ -2652,26 +2667,30 @@ public abstract class LivingEntity extends Entity {
    }
 
    protected void pushEntities() {
-      List var1 = this.level.getEntities(this, this.getBoundingBox(), EntitySelector.pushableBy(this));
-      if (!var1.isEmpty()) {
-         int var2 = this.level.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
-         if (var2 > 0 && var1.size() > var2 - 1 && this.random.nextInt(4) == 0) {
-            int var3 = 0;
+      if (this.level.isClientSide()) {
+         this.level.getEntities(EntityTypeTest.forClass(Player.class), this.getBoundingBox(), EntitySelector.pushableBy(this)).forEach(this::doPush);
+      } else {
+         List var1 = this.level.getEntities(this, this.getBoundingBox(), EntitySelector.pushableBy(this));
+         if (!var1.isEmpty()) {
+            int var2 = this.level.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            if (var2 > 0 && var1.size() > var2 - 1 && this.random.nextInt(4) == 0) {
+               int var3 = 0;
 
-            for(int var4 = 0; var4 < var1.size(); ++var4) {
-               if (!((Entity)var1.get(var4)).isPassenger()) {
-                  ++var3;
+               for(int var4 = 0; var4 < var1.size(); ++var4) {
+                  if (!((Entity)var1.get(var4)).isPassenger()) {
+                     ++var3;
+                  }
+               }
+
+               if (var3 > var2 - 1) {
+                  this.hurt(DamageSource.CRAMMING, 6.0F);
                }
             }
 
-            if (var3 > var2 - 1) {
-               this.hurt(DamageSource.CRAMMING, 6.0F);
+            for(int var5 = 0; var5 < var1.size(); ++var5) {
+               Entity var6 = (Entity)var1.get(var5);
+               this.doPush(var6);
             }
-         }
-
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            Entity var6 = (Entity)var1.get(var5);
-            this.doPush(var6);
          }
       }
    }
@@ -2859,7 +2878,7 @@ public abstract class LivingEntity extends Entity {
 
    private void updatingUsingItem() {
       if (this.isUsingItem()) {
-         if (ItemStack.isSameIgnoreDurability(this.getItemInHand(this.getUsedItemHand()), this.useItem)) {
+         if (ItemStack.isSame(this.getItemInHand(this.getUsedItemHand()), this.useItem)) {
             this.useItem = this.getItemInHand(this.getUsedItemHand());
             this.updateUsingItem(this.useItem);
          } else {
@@ -3124,11 +3143,6 @@ public abstract class LivingEntity extends Entity {
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
-   }
-
-   @Override
    public EntityDimensions getDimensions(Pose var1) {
       return var1 == Pose.SLEEPING ? SLEEPING_DIMENSIONS : super.getDimensions(var1).scale(this.getScale());
    }
@@ -3189,15 +3203,16 @@ public abstract class LivingEntity extends Entity {
       this.getSleepingPos().filter(this.level::hasChunkAt).ifPresent(var1x -> {
          BlockState var2 = this.level.getBlockState(var1x);
          if (var2.getBlock() instanceof BedBlock) {
+            Direction var3 = var2.getValue(BedBlock.FACING);
             this.level.setBlock(var1x, var2.setValue(BedBlock.OCCUPIED, Boolean.valueOf(false)), 3);
-            Vec3 var3 = BedBlock.findStandUpPosition(this.getType(), this.level, var1x, this.getYRot()).orElseGet(() -> {
+            Vec3 var4 = BedBlock.findStandUpPosition(this.getType(), this.level, var1x, var3, this.getYRot()).orElseGet(() -> {
                BlockPos var1xx = var1x.above();
                return new Vec3((double)var1xx.getX() + 0.5, (double)var1xx.getY() + 0.1, (double)var1xx.getZ() + 0.5);
             });
-            Vec3 var4 = Vec3.atBottomCenterOf(var1x).subtract(var3).normalize();
-            float var5 = (float)Mth.wrapDegrees(Mth.atan2(var4.z, var4.x) * 57.2957763671875 - 90.0);
-            this.setPos(var3.x, var3.y, var3.z);
-            this.setYRot(var5);
+            Vec3 var5 = Vec3.atBottomCenterOf(var1x).subtract(var4).normalize();
+            float var6 = (float)Mth.wrapDegrees(Mth.atan2(var5.z, var5.x) * 57.2957763671875 - 90.0);
+            this.setPos(var4.x, var4.y, var4.z);
+            this.setYRot(var6);
             this.setXRot(0.0F);
          }
       });

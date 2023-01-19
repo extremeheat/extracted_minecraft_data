@@ -1,13 +1,13 @@
 package net.minecraft.data.worldgen.features;
 
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
-import net.minecraft.util.RandomSource;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -22,19 +22,16 @@ public class FeatureUtils {
       super();
    }
 
-   public static Holder<? extends ConfiguredFeature<?, ?>> bootstrap(Registry<ConfiguredFeature<?, ?>> var0) {
-      List var1 = List.of(
-         AquaticFeatures.KELP,
-         CaveFeatures.MOSS_PATCH_BONEMEAL,
-         EndFeatures.CHORUS_PLANT,
-         MiscOverworldFeatures.SPRING_LAVA_OVERWORLD,
-         NetherFeatures.BASALT_BLOBS,
-         OreFeatures.ORE_ANCIENT_DEBRIS_LARGE,
-         PileFeatures.PILE_HAY,
-         TreeFeatures.AZALEA_TREE,
-         VegetationFeatures.TREES_OLD_GROWTH_PINE_TAIGA
-      );
-      return Util.getRandom(var1, RandomSource.create());
+   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+      AquaticFeatures.bootstrap(var0);
+      CaveFeatures.bootstrap(var0);
+      EndFeatures.bootstrap(var0);
+      MiscOverworldFeatures.bootstrap(var0);
+      NetherFeatures.bootstrap(var0);
+      OreFeatures.bootstrap(var0);
+      PileFeatures.bootstrap(var0);
+      TreeFeatures.bootstrap(var0);
+      VegetationFeatures.bootstrap(var0);
    }
 
    private static BlockPredicate simplePatchPredicate(List<Block> var0) {
@@ -66,11 +63,19 @@ public class FeatureUtils {
       return simplePatchConfiguration((F)var0, var1, List.of(), 96);
    }
 
-   public static Holder<ConfiguredFeature<NoneFeatureConfiguration, ?>> register(String var0, Feature<NoneFeatureConfiguration> var1) {
-      return register(var0, var1, FeatureConfiguration.NONE);
+   public static ResourceKey<ConfiguredFeature<?, ?>> createKey(String var0) {
+      return ResourceKey.create(Registries.CONFIGURED_FEATURE, new ResourceLocation(var0));
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<ConfiguredFeature<FC, ?>> register(String var0, F var1, FC var2) {
-      return BuiltinRegistries.registerExact(BuiltinRegistries.CONFIGURED_FEATURE, var0, new ConfiguredFeature<>((F)var1, (FC)var2));
+   public static void register(
+      BootstapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2
+   ) {
+      register(var0, var1, var2, FeatureConfiguration.NONE);
+   }
+
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> void register(
+      BootstapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3
+   ) {
+      var0.register(var1, new ConfiguredFeature<>((F)var2, var3));
    }
 }

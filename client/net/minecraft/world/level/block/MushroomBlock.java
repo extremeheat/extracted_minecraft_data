@@ -1,8 +1,10 @@
 package net.minecraft.world.level.block;
 
-import java.util.function.Supplier;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -18,11 +20,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class MushroomBlock extends BushBlock implements BonemealableBlock {
    protected static final float AABB_OFFSET = 3.0F;
    protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
-   private final Supplier<Holder<? extends ConfiguredFeature<?, ?>>> featureSupplier;
+   private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 
-   public MushroomBlock(BlockBehaviour.Properties var1, Supplier<Holder<? extends ConfiguredFeature<?, ?>>> var2) {
+   public MushroomBlock(BlockBehaviour.Properties var1, ResourceKey<ConfiguredFeature<?, ?>> var2) {
       super(var1);
-      this.featureSupplier = var2;
+      this.feature = var2;
    }
 
    @Override
@@ -77,17 +79,22 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
-      var1.removeBlock(var2, false);
-      if (this.featureSupplier.get().value().place(var1, var1.getChunkSource().getGenerator(), var4, var2)) {
-         return true;
-      } else {
-         var1.setBlock(var2, var3, 3);
+      Optional var5 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(this.feature);
+      if (var5.isEmpty()) {
          return false;
+      } else {
+         var1.removeBlock(var2, false);
+         if (((ConfiguredFeature)((Holder)var5.get()).value()).place(var1, var1.getChunkSource().getGenerator(), var4, var2)) {
+            return true;
+         } else {
+            var1.setBlock(var2, var3, 3);
+            return false;
+         }
       }
    }
 
    @Override
-   public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return true;
    }
 

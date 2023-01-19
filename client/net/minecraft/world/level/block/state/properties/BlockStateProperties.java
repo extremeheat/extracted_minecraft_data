@@ -114,8 +114,7 @@ public class BlockStateProperties {
    public static final int MIN_RESPAWN_ANCHOR_CHARGES = 0;
    public static final int MAX_RESPAWN_ANCHOR_CHARGES = 4;
    public static final IntegerProperty RESPAWN_ANCHOR_CHARGES = IntegerProperty.create("charges", 0, 4);
-   public static final int MAX_ROTATIONS_16 = 15;
-   public static final IntegerProperty ROTATION_16 = IntegerProperty.create("rotation", 0, 15);
+   public static final IntegerProperty ROTATION_16 = IntegerProperty.create("rotation", 0, RotationSegment.getMaxSegmentIndex());
    public static final EnumProperty<BedPart> BED_PART = EnumProperty.create("part", BedPart.class);
    public static final EnumProperty<ChestType> CHEST_TYPE = EnumProperty.create("type", ChestType.class);
    public static final EnumProperty<ComparatorMode> MODE_COMPARATOR = EnumProperty.create("mode", ComparatorMode.class);
@@ -130,6 +129,12 @@ public class BlockStateProperties {
    public static final DirectionProperty VERTICAL_DIRECTION = DirectionProperty.create("vertical_direction", Direction.UP, Direction.DOWN);
    public static final EnumProperty<DripstoneThickness> DRIPSTONE_THICKNESS = EnumProperty.create("thickness", DripstoneThickness.class);
    public static final EnumProperty<SculkSensorPhase> SCULK_SENSOR_PHASE = EnumProperty.create("sculk_sensor_phase", SculkSensorPhase.class);
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_0_OCCUPIED = BooleanProperty.create("slot_0_occupied");
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_1_OCCUPIED = BooleanProperty.create("slot_1_occupied");
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_2_OCCUPIED = BooleanProperty.create("slot_2_occupied");
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_3_OCCUPIED = BooleanProperty.create("slot_3_occupied");
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_4_OCCUPIED = BooleanProperty.create("slot_4_occupied");
+   public static final BooleanProperty CHISELED_BOOKSHELF_SLOT_5_OCCUPIED = BooleanProperty.create("slot_5_occupied");
 
    public BlockStateProperties() {
       super();

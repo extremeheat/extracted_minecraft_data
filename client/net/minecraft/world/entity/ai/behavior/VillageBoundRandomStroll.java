@@ -1,60 +1,46 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.phys.Vec3;
 
-public class VillageBoundRandomStroll extends Behavior<PathfinderMob> {
+public class VillageBoundRandomStroll {
    private static final int MAX_XZ_DIST = 10;
    private static final int MAX_Y_DIST = 7;
-   private final float speedModifier;
-   private final int maxXyDist;
-   private final int maxYDist;
 
-   public VillageBoundRandomStroll(float var1) {
-      this(var1, 10, 7);
+   public VillageBoundRandomStroll() {
+      super();
    }
 
-   public VillageBoundRandomStroll(float var1, int var2, int var3) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
-      this.maxXyDist = var2;
-      this.maxYDist = var3;
+   public static OneShot<PathfinderMob> create(float var0) {
+      return create(var0, 10, 7);
    }
 
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      BlockPos var5 = var2.blockPosition();
-      if (var1.isVillage(var5)) {
-         this.setRandomPos(var2);
-      } else {
-         SectionPos var6 = SectionPos.of(var5);
-         SectionPos var7 = BehaviorUtils.findSectionClosestToVillage(var1, var6, 2);
-         if (var7 != var6) {
-            this.setTargetedPos(var2, var7);
-         } else {
-            this.setRandomPos(var2);
-         }
-      }
-   }
+   public static OneShot<PathfinderMob> create(float var0, int var1, int var2) {
+      return BehaviorBuilder.create(var3 -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET)).apply(var3, var3x -> (var4, var5, var6) -> {
+               BlockPos var8 = var5.blockPosition();
+               Vec3 var9;
+               if (var4.isVillage(var8)) {
+                  var9 = LandRandomPos.getPos(var5, var1, var2);
+               } else {
+                  SectionPos var10 = SectionPos.of(var8);
+                  SectionPos var11 = BehaviorUtils.findSectionClosestToVillage(var4, var10, 2);
+                  if (var11 != var10) {
+                     var9 = DefaultRandomPos.getPosTowards(var5, var1, var2, Vec3.atBottomCenterOf(var11.center()), 1.5707963705062866);
+                  } else {
+                     var9 = LandRandomPos.getPos(var5, var1, var2);
+                  }
+               }
 
-   private void setTargetedPos(PathfinderMob var1, SectionPos var2) {
-      Optional var3 = Optional.ofNullable(
-         DefaultRandomPos.getPosTowards(var1, this.maxXyDist, this.maxYDist, Vec3.atBottomCenterOf(var2.center()), 1.5707963705062866)
-      );
-      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var3.map(var1x -> new WalkTarget(var1x, this.speedModifier, 0)));
-   }
-
-   private void setRandomPos(PathfinderMob var1) {
-      Optional var2 = Optional.ofNullable(LandRandomPos.getPos(var1, this.maxXyDist, this.maxYDist));
-      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var2.map(var1x -> new WalkTarget(var1x, this.speedModifier, 0)));
+               var3x.setOrErase(Optional.ofNullable(var9).map(var1xxxx -> new WalkTarget(var1xxxx, var0, 0)));
+               return true;
+            }));
    }
 }

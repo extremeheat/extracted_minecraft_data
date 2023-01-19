@@ -11,15 +11,17 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 
-public class ShapelessRecipeBuilder implements RecipeBuilder {
+public class ShapelessRecipeBuilder extends CraftingRecipeBuilder implements RecipeBuilder {
+   private final RecipeCategory category;
    private final Item result;
    private final int count;
    private final List<Ingredient> ingredients = Lists.newArrayList();
@@ -27,18 +29,19 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
    @Nullable
    private String group;
 
-   public ShapelessRecipeBuilder(ItemLike var1, int var2) {
+   public ShapelessRecipeBuilder(RecipeCategory var1, ItemLike var2, int var3) {
       super();
-      this.result = var1.asItem();
-      this.count = var2;
+      this.category = var1;
+      this.result = var2.asItem();
+      this.count = var3;
    }
 
-   public static ShapelessRecipeBuilder shapeless(ItemLike var0) {
-      return new ShapelessRecipeBuilder(var0, 1);
+   public static ShapelessRecipeBuilder shapeless(RecipeCategory var0, ItemLike var1) {
+      return new ShapelessRecipeBuilder(var0, var1, 1);
    }
 
-   public static ShapelessRecipeBuilder shapeless(ItemLike var0, int var1) {
-      return new ShapelessRecipeBuilder(var0, var1);
+   public static ShapelessRecipeBuilder shapeless(RecipeCategory var0, ItemLike var1, int var2) {
+      return new ShapelessRecipeBuilder(var0, var1, var2);
    }
 
    public ShapelessRecipeBuilder requires(TagKey<Item> var1) {
@@ -98,9 +101,10 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
             this.result,
             this.count,
             this.group == null ? "" : this.group,
+            determineBookCategory(this.category),
             this.ingredients,
             this.advancement,
-            new ResourceLocation(var2.getNamespace(), "recipes/" + this.result.getItemCategory().getRecipeFolderName() + "/" + var2.getPath())
+            var2.withPrefix("recipes/" + this.category.getFolderName() + "/")
          )
       );
    }
@@ -111,7 +115,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
       }
    }
 
-   public static class Result implements FinishedRecipe {
+   public static class Result extends CraftingRecipeBuilder.CraftingResult {
       private final ResourceLocation id;
       private final Item result;
       private final int count;
@@ -120,19 +124,29 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
       private final Advancement.Builder advancement;
       private final ResourceLocation advancementId;
 
-      public Result(ResourceLocation var1, Item var2, int var3, String var4, List<Ingredient> var5, Advancement.Builder var6, ResourceLocation var7) {
-         super();
+      public Result(
+         ResourceLocation var1,
+         Item var2,
+         int var3,
+         String var4,
+         CraftingBookCategory var5,
+         List<Ingredient> var6,
+         Advancement.Builder var7,
+         ResourceLocation var8
+      ) {
+         super(var5);
          this.id = var1;
          this.result = var2;
          this.count = var3;
          this.group = var4;
-         this.ingredients = var5;
-         this.advancement = var6;
-         this.advancementId = var7;
+         this.ingredients = var6;
+         this.advancement = var7;
+         this.advancementId = var8;
       }
 
       @Override
       public void serializeRecipeData(JsonObject var1) {
+         super.serializeRecipeData(var1);
          if (!this.group.isEmpty()) {
             var1.addProperty("group", this.group);
          }
@@ -145,7 +159,7 @@ public class ShapelessRecipeBuilder implements RecipeBuilder {
 
          var1.add("ingredients", var2);
          JsonObject var5 = new JsonObject();
-         var5.addProperty("item", Registry.ITEM.getKey(this.result).toString());
+         var5.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result).toString());
          if (this.count > 1) {
             var5.addProperty("count", this.count);
          }

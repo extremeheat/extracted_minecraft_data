@@ -10,12 +10,14 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.UUID;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceKeyArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.UuidArgument;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,20 +44,20 @@ public class AttributeCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("attribute").requires(var0x -> var0x.hasPermission(2)))
             .then(
                Commands.argument("target", EntityArgument.entity())
                   .then(
-                     ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("attribute", ResourceKeyArgument.key(Registry.ATTRIBUTE_REGISTRY))
+                     ((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("attribute", ResourceArgument.resource(var1, Registries.ATTRIBUTE))
                               .then(
                                  ((LiteralArgumentBuilder)Commands.literal("get")
                                        .executes(
                                           var0x -> getAttributeValue(
                                                 (CommandSourceStack)var0x.getSource(),
                                                 EntityArgument.getEntity(var0x, "target"),
-                                                ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                ResourceArgument.getAttribute(var0x, "attribute"),
                                                 1.0
                                              )
                                        ))
@@ -65,7 +67,7 @@ public class AttributeCommand {
                                              var0x -> getAttributeValue(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    EntityArgument.getEntity(var0x, "target"),
-                                                   ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                   ResourceArgument.getAttribute(var0x, "attribute"),
                                                    DoubleArgumentType.getDouble(var0x, "scale")
                                                 )
                                           )
@@ -81,7 +83,7 @@ public class AttributeCommand {
                                                    var0x -> setAttributeBase(
                                                          (CommandSourceStack)var0x.getSource(),
                                                          EntityArgument.getEntity(var0x, "target"),
-                                                         ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                         ResourceArgument.getAttribute(var0x, "attribute"),
                                                          DoubleArgumentType.getDouble(var0x, "value")
                                                       )
                                                 )
@@ -93,7 +95,7 @@ public class AttributeCommand {
                                              var0x -> getAttributeBase(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    EntityArgument.getEntity(var0x, "target"),
-                                                   ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                   ResourceArgument.getAttribute(var0x, "attribute"),
                                                    1.0
                                                 )
                                           ))
@@ -103,7 +105,7 @@ public class AttributeCommand {
                                                 var0x -> getAttributeBase(
                                                       (CommandSourceStack)var0x.getSource(),
                                                       EntityArgument.getEntity(var0x, "target"),
-                                                      ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                      ResourceArgument.getAttribute(var0x, "attribute"),
                                                       DoubleArgumentType.getDouble(var0x, "scale")
                                                    )
                                              )
@@ -128,7 +130,7 @@ public class AttributeCommand {
                                                                            var0x -> addModifier(
                                                                                  (CommandSourceStack)var0x.getSource(),
                                                                                  EntityArgument.getEntity(var0x, "target"),
-                                                                                 ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                                                 ResourceArgument.getAttribute(var0x, "attribute"),
                                                                                  UuidArgument.getUuid(var0x, "uuid"),
                                                                                  StringArgumentType.getString(var0x, "name"),
                                                                                  DoubleArgumentType.getDouble(var0x, "value"),
@@ -142,7 +144,7 @@ public class AttributeCommand {
                                                                         var0x -> addModifier(
                                                                               (CommandSourceStack)var0x.getSource(),
                                                                               EntityArgument.getEntity(var0x, "target"),
-                                                                              ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                                              ResourceArgument.getAttribute(var0x, "attribute"),
                                                                               UuidArgument.getUuid(var0x, "uuid"),
                                                                               StringArgumentType.getString(var0x, "name"),
                                                                               DoubleArgumentType.getDouble(var0x, "value"),
@@ -156,7 +158,7 @@ public class AttributeCommand {
                                                                      var0x -> addModifier(
                                                                            (CommandSourceStack)var0x.getSource(),
                                                                            EntityArgument.getEntity(var0x, "target"),
-                                                                           ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                                           ResourceArgument.getAttribute(var0x, "attribute"),
                                                                            UuidArgument.getUuid(var0x, "uuid"),
                                                                            StringArgumentType.getString(var0x, "name"),
                                                                            DoubleArgumentType.getDouble(var0x, "value"),
@@ -176,7 +178,7 @@ public class AttributeCommand {
                                                 var0x -> removeModifier(
                                                       (CommandSourceStack)var0x.getSource(),
                                                       EntityArgument.getEntity(var0x, "target"),
-                                                      ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                      ResourceArgument.getAttribute(var0x, "attribute"),
                                                       UuidArgument.getUuid(var0x, "uuid")
                                                    )
                                              )
@@ -192,7 +194,7 @@ public class AttributeCommand {
                                                       var0x -> getAttributeModifier(
                                                             (CommandSourceStack)var0x.getSource(),
                                                             EntityArgument.getEntity(var0x, "target"),
-                                                            ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                            ResourceArgument.getAttribute(var0x, "attribute"),
                                                             UuidArgument.getUuid(var0x, "uuid"),
                                                             1.0
                                                          )
@@ -203,7 +205,7 @@ public class AttributeCommand {
                                                          var0x -> getAttributeModifier(
                                                                (CommandSourceStack)var0x.getSource(),
                                                                EntityArgument.getEntity(var0x, "target"),
-                                                               ResourceKeyArgument.getAttribute(var0x, "attribute"),
+                                                               ResourceArgument.getAttribute(var0x, "attribute"),
                                                                UuidArgument.getUuid(var0x, "uuid"),
                                                                DoubleArgumentType.getDouble(var0x, "scale")
                                                             )
@@ -218,10 +220,10 @@ public class AttributeCommand {
       );
    }
 
-   private static AttributeInstance getAttributeInstance(Entity var0, Attribute var1) throws CommandSyntaxException {
+   private static AttributeInstance getAttributeInstance(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
       AttributeInstance var2 = getLivingEntity(var0).getAttributes().getInstance(var1);
       if (var2 == null) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), Component.translatable(var1.getDescriptionId()));
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), getAttributeDescription(var1));
       } else {
          return var2;
       }
@@ -235,81 +237,74 @@ public class AttributeCommand {
       }
    }
 
-   private static LivingEntity getEntityWithAttribute(Entity var0, Attribute var1) throws CommandSyntaxException {
+   private static LivingEntity getEntityWithAttribute(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
       LivingEntity var2 = getLivingEntity(var0);
       if (!var2.getAttributes().hasAttribute(var1)) {
-         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), Component.translatable(var1.getDescriptionId()));
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(var0.getName(), getAttributeDescription(var1));
       } else {
          return var2;
       }
    }
 
-   private static int getAttributeValue(CommandSourceStack var0, Entity var1, Attribute var2, double var3) throws CommandSyntaxException {
+   private static int getAttributeValue(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
       LivingEntity var5 = getEntityWithAttribute(var1, var2);
       double var6 = var5.getAttributeValue(var2);
-      var0.sendSuccess(
-         Component.translatable("commands.attribute.value.get.success", Component.translatable(var2.getDescriptionId()), var1.getName(), var6), false
-      );
+      var0.sendSuccess(Component.translatable("commands.attribute.value.get.success", getAttributeDescription(var2), var1.getName(), var6), false);
       return (int)(var6 * var3);
    }
 
-   private static int getAttributeBase(CommandSourceStack var0, Entity var1, Attribute var2, double var3) throws CommandSyntaxException {
+   private static int getAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
       LivingEntity var5 = getEntityWithAttribute(var1, var2);
       double var6 = var5.getAttributeBaseValue(var2);
-      var0.sendSuccess(
-         Component.translatable("commands.attribute.base_value.get.success", Component.translatable(var2.getDescriptionId()), var1.getName(), var6), false
-      );
+      var0.sendSuccess(Component.translatable("commands.attribute.base_value.get.success", getAttributeDescription(var2), var1.getName(), var6), false);
       return (int)(var6 * var3);
    }
 
-   private static int getAttributeModifier(CommandSourceStack var0, Entity var1, Attribute var2, UUID var3, double var4) throws CommandSyntaxException {
+   private static int getAttributeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3, double var4) throws CommandSyntaxException {
       LivingEntity var6 = getEntityWithAttribute(var1, var2);
       AttributeMap var7 = var6.getAttributes();
       if (!var7.hasModifier(var2, var3)) {
-         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), Component.translatable(var2.getDescriptionId()), var3);
+         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), getAttributeDescription(var2), var3);
       } else {
          double var8 = var7.getModifierValue(var2, var3);
          var0.sendSuccess(
-            Component.translatable(
-               "commands.attribute.modifier.value.get.success", var3, Component.translatable(var2.getDescriptionId()), var1.getName(), var8
-            ),
-            false
+            Component.translatable("commands.attribute.modifier.value.get.success", var3, getAttributeDescription(var2), var1.getName(), var8), false
          );
          return (int)(var8 * var4);
       }
    }
 
-   private static int setAttributeBase(CommandSourceStack var0, Entity var1, Attribute var2, double var3) throws CommandSyntaxException {
+   private static int setAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
       getAttributeInstance(var1, var2).setBaseValue(var3);
-      var0.sendSuccess(
-         Component.translatable("commands.attribute.base_value.set.success", Component.translatable(var2.getDescriptionId()), var1.getName(), var3), false
-      );
+      var0.sendSuccess(Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(var2), var1.getName(), var3), false);
       return 1;
    }
 
-   private static int addModifier(CommandSourceStack var0, Entity var1, Attribute var2, UUID var3, String var4, double var5, AttributeModifier.Operation var7) throws CommandSyntaxException {
+   private static int addModifier(
+      CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3, String var4, double var5, AttributeModifier.Operation var7
+   ) throws CommandSyntaxException {
       AttributeInstance var8 = getAttributeInstance(var1, var2);
       AttributeModifier var9 = new AttributeModifier(var3, var4, var5, var7);
       if (var8.hasModifier(var9)) {
-         throw ERROR_MODIFIER_ALREADY_PRESENT.create(var1.getName(), Component.translatable(var2.getDescriptionId()), var3);
+         throw ERROR_MODIFIER_ALREADY_PRESENT.create(var1.getName(), getAttributeDescription(var2), var3);
       } else {
          var8.addPermanentModifier(var9);
-         var0.sendSuccess(
-            Component.translatable("commands.attribute.modifier.add.success", var3, Component.translatable(var2.getDescriptionId()), var1.getName()), false
-         );
+         var0.sendSuccess(Component.translatable("commands.attribute.modifier.add.success", var3, getAttributeDescription(var2), var1.getName()), false);
          return 1;
       }
    }
 
-   private static int removeModifier(CommandSourceStack var0, Entity var1, Attribute var2, UUID var3) throws CommandSyntaxException {
+   private static int removeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, UUID var3) throws CommandSyntaxException {
       AttributeInstance var4 = getAttributeInstance(var1, var2);
       if (var4.removePermanentModifier(var3)) {
-         var0.sendSuccess(
-            Component.translatable("commands.attribute.modifier.remove.success", var3, Component.translatable(var2.getDescriptionId()), var1.getName()), false
-         );
+         var0.sendSuccess(Component.translatable("commands.attribute.modifier.remove.success", var3, getAttributeDescription(var2), var1.getName()), false);
          return 1;
       } else {
-         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), Component.translatable(var2.getDescriptionId()), var3);
+         throw ERROR_NO_SUCH_MODIFIER.create(var1.getName(), getAttributeDescription(var2), var3);
       }
+   }
+
+   private static Component getAttributeDescription(Holder<Attribute> var0) {
+      return Component.translatable(((Attribute)var0.value()).getDescriptionId());
    }
 }

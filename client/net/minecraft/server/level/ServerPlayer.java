@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +24,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.PacketSendListener;
@@ -30,11 +32,11 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.OutgoingPlayerChatMessage;
-import net.minecraft.network.chat.SignedMessageHeader;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -54,11 +56,11 @@ import net.minecraft.network.protocol.game.ClientboundOpenBookPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerChatHeaderPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatEndPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatEnterPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerLookAtPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
@@ -103,10 +105,10 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
@@ -193,6 +195,7 @@ public class ServerPlayer extends Player {
    private final TextFilter textFilter;
    private boolean textFilteringEnabled;
    private boolean allowsListing = true;
+   private WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
@@ -237,12 +240,14 @@ public class ServerPlayer extends Player {
       public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
       }
    };
+   @Nullable
+   private RemoteChatSession chatSession;
    private int containerCounter;
    public int latency;
    public boolean wonGame;
 
-   public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3, @Nullable ProfilePublicKey var4) {
-      super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3, var4);
+   public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3) {
+      super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
       this.textFilter = var1.createTextFilterForPlayer(this);
       this.gameMode = var1.createGameModeForPlayer(this);
       this.server = var1;
@@ -299,6 +304,13 @@ public class ServerPlayer extends Player {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
+      if (var1.contains("warden_spawn_tracker", 10)) {
+         WardenSpawnTracker.CODEC
+            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("warden_spawn_tracker")))
+            .resultOrPartial(LOGGER::error)
+            .ifPresent(var1x -> this.wardenSpawnTracker = var1x);
+      }
+
       if (var1.contains("enteredNetherPosition", 10)) {
          CompoundTag var2 = var1.getCompound("enteredNetherPosition");
          this.enteredNetherPosition = new Vec3(var2.getDouble("x"), var2.getDouble("y"), var2.getDouble("z"));
@@ -329,6 +341,10 @@ public class ServerPlayer extends Player {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
+      WardenSpawnTracker.CODEC
+         .encodeStart(NbtOps.INSTANCE, this.wardenSpawnTracker)
+         .resultOrPartial(LOGGER::error)
+         .ifPresent(var1x -> var1.put("warden_spawn_tracker", var1x));
       this.storeGameTypes(var1);
       var1.putBoolean("seenCredits", this.seenCredits);
       if (this.enteredNetherPosition != null) {
@@ -423,6 +439,7 @@ public class ServerPlayer extends Player {
    @Override
    public void tick() {
       this.gameMode.tick();
+      this.wardenSpawnTracker.tick();
       --this.spawnInvulnerableTime;
       if (this.invulnerableTime > 0) {
          --this.invulnerableTime;
@@ -743,7 +760,7 @@ public class ServerPlayer extends Player {
                   this.gameMode.getPreviousGameModeForPlayer(),
                   var1.isDebug(),
                   var1.isFlat(),
-                  true,
+                  (byte)3,
                   this.getLastDeathLocation()
                )
             );
@@ -764,9 +781,9 @@ public class ServerPlayer extends Player {
             var2.getProfiler().pop();
             var2.getProfiler().push("placing");
             this.setLevel(var1);
+            this.connection.teleport(var6.pos.x, var6.pos.y, var6.pos.z, var6.yRot, var6.xRot);
+            this.connection.resetPosition();
             var1.addDuringPortalTeleport(this);
-            this.setRot(var6.yRot, var6.xRot);
-            this.moveTo(var6.pos.x, var6.pos.y, var6.pos.z);
             var2.getProfiler().pop();
             this.triggerDimensionChangeTriggers(var2);
             this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
@@ -1053,6 +1070,7 @@ public class ServerPlayer extends Player {
       this.doCloseContainer();
    }
 
+   @Override
    public void doCloseContainer() {
       this.containerMenu.removed(this);
       this.inventoryMenu.transferState(this.containerMenu);
@@ -1155,8 +1173,11 @@ public class ServerPlayer extends Player {
    }
 
    public void restoreFrom(ServerPlayer var1, boolean var2) {
+      this.wardenSpawnTracker = var1.wardenSpawnTracker;
       this.textFilteringEnabled = var1.textFilteringEnabled;
+      this.chatSession = var1.chatSession;
       this.gameMode.setGameModeForPlayer(var1.gameMode.getGameModeForPlayer(), var1.gameMode.getPreviousGameModeForPlayer());
+      this.onUpdateAbilities();
       if (var2) {
          this.getInventory().replaceWith(var1.getInventory());
          this.setHealth(var1.getHealth());
@@ -1220,7 +1241,15 @@ public class ServerPlayer extends Player {
 
    @Override
    public void teleportTo(double var1, double var3, double var5) {
-      this.connection.teleport(var1, var3, var5, this.getYRot(), this.getXRot());
+      this.connection.teleport(var1, var3, var5, this.getYRot(), this.getXRot(), ClientboundPlayerPositionPacket.RelativeArgument.ROTATION);
+   }
+
+   @Override
+   public void teleportRelative(double var1, double var3, double var5) {
+      this.connection
+         .teleport(
+            this.getX() + var1, this.getY() + var3, this.getZ() + var5, this.getYRot(), this.getXRot(), ClientboundPlayerPositionPacket.RelativeArgument.ALL
+         );
    }
 
    @Override
@@ -1299,15 +1328,9 @@ public class ServerPlayer extends Player {
       }
    }
 
-   public void sendChatMessage(OutgoingPlayerChatMessage var1, boolean var2, ChatType.Bound var3) {
+   public void sendChatMessage(OutgoingChatMessage var1, boolean var2, ChatType.Bound var3) {
       if (this.acceptsChatMessages()) {
          var1.sendToPlayer(this, var2, var3);
-      }
-   }
-
-   public void sendChatHeader(SignedMessageHeader var1, MessageSignature var2, byte[] var3) {
-      if (this.acceptsChatMessages()) {
-         this.connection.send(new ClientboundPlayerChatHeaderPacket(var1, var2, var3));
       }
    }
 
@@ -1347,7 +1370,7 @@ public class ServerPlayer extends Player {
    }
 
    public void sendServerStatus(ServerStatus var1) {
-      this.connection.send(new ClientboundServerDataPacket(var1.getDescription(), var1.getFavicon(), var1.previewsChat(), var1.enforcesSecureChat()));
+      this.connection.send(new ClientboundServerDataPacket(var1.getDescription(), var1.getFavicon(), var1.enforcesSecureChat()));
    }
 
    @Override
@@ -1386,7 +1409,8 @@ public class ServerPlayer extends Player {
       this.camera = (Entity)(var1 == null ? this : var1);
       if (var2 != this.camera) {
          this.connection.send(new ClientboundSetCameraPacket(this.camera));
-         this.teleportTo(this.camera.getX(), this.camera.getY(), this.camera.getZ());
+         this.connection.teleport(this.camera.getX(), this.camera.getY(), this.camera.getZ(), this.getYRot(), this.getXRot());
+         this.connection.resetPosition();
       }
    }
 
@@ -1451,7 +1475,7 @@ public class ServerPlayer extends Player {
                   this.gameMode.getPreviousGameModeForPlayer(),
                   var1.isDebug(),
                   var1.isFlat(),
-                  true,
+                  (byte)3,
                   this.getLastDeathLocation()
                )
             );
@@ -1525,11 +1549,16 @@ public class ServerPlayer extends Player {
 
    @Override
    public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
-      this.connection.send(new ClientboundSoundPacket(var1, var2, this.getX(), this.getY(), this.getZ(), var3, var4, this.random.nextLong()));
+      this.connection
+         .send(
+            new ClientboundSoundPacket(
+               BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var1), var2, this.getX(), this.getY(), this.getZ(), var3, var4, this.random.nextLong()
+            )
+         );
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddPlayerPacket(this);
    }
 
@@ -1589,6 +1618,7 @@ public class ServerPlayer extends Player {
       }
    }
 
+   @Override
    public boolean isTextFilteringEnabled() {
       return this.textFilteringEnabled;
    }
@@ -1624,11 +1654,25 @@ public class ServerPlayer extends Player {
    }
 
    @Override
+   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
+      return Optional.of(this.wardenSpawnTracker);
+   }
+
+   @Override
    public void onItemPickup(ItemEntity var1) {
       super.onItemPickup(var1);
       Entity var2 = var1.getThrower() != null ? this.getLevel().getEntity(var1.getThrower()) : null;
       if (var2 != null) {
          CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_PLAYER.trigger(this, var1.getItem(), var2);
       }
+   }
+
+   public void setChatSession(RemoteChatSession var1) {
+      this.chatSession = var1;
+   }
+
+   @Nullable
+   public RemoteChatSession getChatSession() {
+      return this.chatSession;
    }
 }

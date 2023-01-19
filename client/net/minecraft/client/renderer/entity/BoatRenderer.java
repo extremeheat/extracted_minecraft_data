@@ -4,22 +4,28 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.client.model.BoatModel;
+import net.minecraft.client.model.ChestBoatModel;
+import net.minecraft.client.model.ChestRaftModel;
+import net.minecraft.client.model.ListModel;
+import net.minecraft.client.model.RaftModel;
+import net.minecraft.client.model.WaterPatchModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.Boat;
+import org.joml.Quaternionf;
 
 public class BoatRenderer extends EntityRenderer<Boat> {
-   private final Map<Boat.Type, Pair<ResourceLocation, BoatModel>> boatResources;
+   private final Map<Boat.Type, Pair<ResourceLocation, ListModel<Boat>>> boatResources;
 
    public BoatRenderer(EntityRendererProvider.Context var1, boolean var2) {
       super(var1);
@@ -32,19 +38,26 @@ public class BoatRenderer extends EntityRenderer<Boat> {
          );
    }
 
-   private BoatModel createBoatModel(EntityRendererProvider.Context var1, Boat.Type var2, boolean var3) {
+   private ListModel<Boat> createBoatModel(EntityRendererProvider.Context var1, Boat.Type var2, boolean var3) {
       ModelLayerLocation var4 = var3 ? ModelLayers.createChestBoatModelName(var2) : ModelLayers.createBoatModelName(var2);
-      return new BoatModel(var1.bakeLayer(var4), var3);
+      ModelPart var5 = var1.bakeLayer(var4);
+      if (var2 == Boat.Type.BAMBOO) {
+         return (ListModel<Boat>)(var3 ? new ChestRaftModel(var5) : new RaftModel(var5));
+      } else {
+         return (ListModel<Boat>)(var3 ? new ChestBoatModel(var5) : new BoatModel(var5));
+      }
    }
 
    private static String getTextureLocation(Boat.Type var0, boolean var1) {
       return var1 ? "textures/entity/chest_boat/" + var0.getName() + ".png" : "textures/entity/boat/" + var0.getName() + ".png";
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(Boat var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
-      var4.translate(0.0, 0.375, 0.0);
-      var4.mulPose(Vector3f.YP.rotationDegrees(180.0F - var2));
+      var4.translate(0.0F, 0.375F, 0.0F);
+      var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
       float var7 = (float)var1.getHurtTime() - var3;
       float var8 = var1.getDamage() - var3;
       if (var8 < 0.0F) {
@@ -52,25 +65,27 @@ public class BoatRenderer extends EntityRenderer<Boat> {
       }
 
       if (var7 > 0.0F) {
-         var4.mulPose(Vector3f.XP.rotationDegrees(Mth.sin(var7) * var7 * var8 / 10.0F * (float)var1.getHurtDir()));
+         var4.mulPose(Axis.XP.rotationDegrees(Mth.sin(var7) * var7 * var8 / 10.0F * (float)var1.getHurtDir()));
       }
 
       float var9 = var1.getBubbleAngle(var3);
       if (!Mth.equal(var9, 0.0F)) {
-         var4.mulPose(new Quaternion(new Vector3f(1.0F, 0.0F, 1.0F), var1.getBubbleAngle(var3), true));
+         var4.mulPose(new Quaternionf().setAngleAxis(var1.getBubbleAngle(var3) * 0.017453292F, 1.0F, 0.0F, 1.0F));
       }
 
-      Pair var10 = (Pair)this.boatResources.get(var1.getBoatType());
+      Pair var10 = (Pair)this.boatResources.get(var1.getVariant());
       ResourceLocation var11 = (ResourceLocation)var10.getFirst();
-      BoatModel var12 = (BoatModel)var10.getSecond();
+      ListModel var12 = (ListModel)var10.getSecond();
       var4.scale(-1.0F, -1.0F, 1.0F);
-      var4.mulPose(Vector3f.YP.rotationDegrees(90.0F));
+      var4.mulPose(Axis.YP.rotationDegrees(90.0F));
       var12.setupAnim(var1, var3, 0.0F, -0.1F, 0.0F, 0.0F);
       VertexConsumer var13 = var5.getBuffer(var12.renderType(var11));
       var12.renderToBuffer(var4, var13, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
       if (!var1.isUnderWater()) {
          VertexConsumer var14 = var5.getBuffer(RenderType.waterMask());
-         var12.waterPatch().render(var4, var14, var6, OverlayTexture.NO_OVERLAY);
+         if (var12 instanceof WaterPatchModel var15) {
+            var15.waterPatch().render(var4, var14, var6, OverlayTexture.NO_OVERLAY);
+         }
       }
 
       var4.popPose();
@@ -78,6 +93,6 @@ public class BoatRenderer extends EntityRenderer<Boat> {
    }
 
    public ResourceLocation getTextureLocation(Boat var1) {
-      return (ResourceLocation)((Pair)this.boatResources.get(var1.getBoatType())).getFirst();
+      return (ResourceLocation)((Pair)this.boatResources.get(var1.getVariant())).getFirst();
    }
 }

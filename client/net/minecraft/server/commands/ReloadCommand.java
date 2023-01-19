@@ -33,7 +33,7 @@ public class ReloadCommand {
    private static Collection<String> discoverNewPacks(PackRepository var0, WorldData var1, Collection<String> var2) {
       var0.reload();
       ArrayList var3 = Lists.newArrayList(var2);
-      List var4 = var1.getDataPackConfig().getDisabled();
+      List var4 = var1.getDataConfiguration().dataPacks().getDisabled();
 
       for(String var6 : var0.getAvailableIds()) {
          if (!var4.contains(var6) && !var3.contains(var6)) {

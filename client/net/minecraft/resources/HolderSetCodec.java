@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
@@ -46,12 +48,12 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
-         Optional var4 = var3.registry(this.registryKey);
+         Optional var4 = var3.getter(this.registryKey);
          if (var4.isPresent()) {
-            Registry var5 = (Registry)var4.get();
+            HolderGetter var5 = (HolderGetter)var4.get();
             return this.registryAwareCodec
                .decode(var1, var2)
-               .map(var1x -> var1x.mapFirst(var1xx -> (HolderSet)var1xx.map(var5::getOrCreateTag, HolderSet::direct)));
+               .map(var1x -> var1x.mapFirst(var1xx -> (HolderSet)var1xx.map(var5::getOrThrow, HolderSet::direct)));
          }
       }
 
@@ -62,9 +64,9 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(HolderSet<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
-         Optional var5 = var4.registry(this.registryKey);
+         Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
-            if (!var1.isValidInRegistry((Registry<T>)var5.get())) {
+            if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
                return DataResult.error("HolderSet " + var1 + " is not valid in current registry set");
             }
 

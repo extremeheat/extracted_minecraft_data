@@ -2,8 +2,8 @@ package net.minecraft.world.level.entity;
 
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.ClassInstanceMultiMap;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.phys.AABB;
@@ -28,23 +28,29 @@ public class EntitySection<T extends EntityAccess> {
       return this.storage.remove(var1);
    }
 
-   public void getEntities(AABB var1, Consumer<T> var2) {
+   public AbortableIterationConsumer.Continuation getEntities(AABB var1, AbortableIterationConsumer<T> var2) {
       for(EntityAccess var4 : this.storage) {
-         if (var4.getBoundingBox().intersects(var1)) {
-            var2.accept(var4);
+         if (var4.getBoundingBox().intersects(var1) && var2.accept(var4).shouldAbort()) {
+            return AbortableIterationConsumer.Continuation.ABORT;
          }
       }
+
+      return AbortableIterationConsumer.Continuation.CONTINUE;
    }
 
-   public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AABB var2, Consumer<? super U> var3) {
+   public <U extends T> AbortableIterationConsumer.Continuation getEntities(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<? super U> var3) {
       Collection var4 = this.storage.find(var1.getBaseClass());
-      if (!var4.isEmpty()) {
+      if (var4.isEmpty()) {
+         return AbortableIterationConsumer.Continuation.CONTINUE;
+      } else {
          for(EntityAccess var6 : var4) {
             EntityAccess var7 = (EntityAccess)var1.tryCast(var6);
-            if (var7 != null && var6.getBoundingBox().intersects(var2)) {
-               var3.accept(var7);
+            if (var7 != null && var6.getBoundingBox().intersects(var2) && var3.accept(var7).shouldAbort()) {
+               return AbortableIterationConsumer.Continuation.ABORT;
             }
          }
+
+         return AbortableIterationConsumer.Continuation.CONTINUE;
       }
    }
 

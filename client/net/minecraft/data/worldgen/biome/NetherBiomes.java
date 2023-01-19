@@ -1,5 +1,6 @@
 package net.minecraft.data.worldgen.biome;
 
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.Carvers;
@@ -20,14 +21,16 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class NetherBiomes {
    public NetherBiomes() {
       super();
    }
 
-   public static Biome netherWastes() {
-      MobSpawnSettings var0 = new MobSpawnSettings.Builder()
+   public static Biome netherWastes(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings var2 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.GHAST, 50, 4, 4))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIFIED_PIGLIN, 100, 4, 4))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.MAGMA_CUBE, 2, 4, 4))
@@ -35,11 +38,11 @@ public class NetherBiomes {
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.PIGLIN, 15, 4, 4))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder()
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
          .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      var1.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.PATCH_FIRE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.PATCH_SOUL_FIRE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.GLOWSTONE_EXTRA)
@@ -48,7 +51,7 @@ public class NetherBiomes {
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, VegetationPlacements.RED_MUSHROOM_NETHER)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, OrePlacements.ORE_MAGMA)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_CLOSED);
-      BiomeDefaultFeatures.addNetherDefaultOres(var1);
+      BiomeDefaultFeatures.addNetherDefaultOres(var3);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -65,15 +68,15 @@ public class NetherBiomes {
                .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_NETHER_WASTES))
                .build()
          )
-         .mobSpawnSettings(var0)
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2)
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome soulSandValley() {
-      double var0 = 0.7;
-      double var2 = 0.15;
-      MobSpawnSettings var4 = new MobSpawnSettings.Builder()
+   public static Biome soulSandValley(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      double var2 = 0.7;
+      double var4 = 0.15;
+      MobSpawnSettings var6 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SKELETON, 20, 5, 5))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.GHAST, 50, 4, 4))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 1, 4, 4))
@@ -83,7 +86,7 @@ public class NetherBiomes {
          .addMobCharge(EntityType.ENDERMAN, 0.7, 0.15)
          .addMobCharge(EntityType.STRIDER, 0.7, 0.15)
          .build();
-      BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder()
+      BiomeGenerationSettings.Builder var7 = new BiomeGenerationSettings.Builder(var0, var1)
          .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA)
          .addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, NetherPlacements.BASALT_PILLAR)
@@ -96,7 +99,7 @@ public class NetherBiomes {
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, OrePlacements.ORE_MAGMA)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_CLOSED)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, OrePlacements.ORE_SOUL_SAND);
-      BiomeDefaultFeatures.addNetherDefaultOres(var5);
+      BiomeDefaultFeatures.addNetherDefaultOres(var7);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -114,18 +117,18 @@ public class NetherBiomes {
                .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SOUL_SAND_VALLEY))
                .build()
          )
-         .mobSpawnSettings(var4)
-         .generationSettings(var5.build())
+         .mobSpawnSettings(var6)
+         .generationSettings(var7.build())
          .build();
    }
 
-   public static Biome basaltDeltas() {
-      MobSpawnSettings var0 = new MobSpawnSettings.Builder()
+   public static Biome basaltDeltas(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings var2 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.GHAST, 40, 1, 1))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.MAGMA_CUBE, 100, 2, 5))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder()
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
          .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, NetherPlacements.DELTA)
          .addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, NetherPlacements.SMALL_BASALT_COLUMNS)
@@ -143,7 +146,7 @@ public class NetherBiomes {
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_CLOSED_DOUBLE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, OrePlacements.ORE_GOLD_DELTAS)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, OrePlacements.ORE_QUARTZ_DELTAS);
-      BiomeDefaultFeatures.addAncientDebris(var1);
+      BiomeDefaultFeatures.addAncientDebris(var3);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -161,23 +164,23 @@ public class NetherBiomes {
                .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_BASALT_DELTAS))
                .build()
          )
-         .mobSpawnSettings(var0)
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2)
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome crimsonForest() {
-      MobSpawnSettings var0 = new MobSpawnSettings.Builder()
+   public static Biome crimsonForest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings var2 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ZOMBIFIED_PIGLIN, 1, 2, 4))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.HOGLIN, 9, 3, 4))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.PIGLIN, 5, 3, 4))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .build();
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder()
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
          .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      var1.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.PATCH_FIRE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.GLOWSTONE_EXTRA)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.GLOWSTONE)
@@ -186,7 +189,7 @@ public class NetherBiomes {
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, NetherPlacements.WEEPING_VINES)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, TreePlacements.CRIMSON_FUNGI)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, NetherPlacements.CRIMSON_FOREST_VEGETATION);
-      BiomeDefaultFeatures.addNetherDefaultOres(var1);
+      BiomeDefaultFeatures.addNetherDefaultOres(var3);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -204,22 +207,22 @@ public class NetherBiomes {
                .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_CRIMSON_FOREST))
                .build()
          )
-         .mobSpawnSettings(var0)
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2)
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome warpedForest() {
-      MobSpawnSettings var0 = new MobSpawnSettings.Builder()
+   public static Biome warpedForest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings var2 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.ENDERMAN, 1, 4, 4))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.STRIDER, 60, 1, 2))
          .addMobCharge(EntityType.ENDERMAN, 1.0, 0.12)
          .build();
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder()
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1)
          .addCarver(GenerationStep.Carving.AIR, Carvers.NETHER_CAVE)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, MiscOverworldPlacements.SPRING_LAVA);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      var1.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      var3.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.SPRING_OPEN)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.PATCH_FIRE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.PATCH_SOUL_FIRE)
          .addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, NetherPlacements.GLOWSTONE_EXTRA)
@@ -230,7 +233,7 @@ public class NetherBiomes {
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, NetherPlacements.WARPED_FOREST_VEGETATION)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, NetherPlacements.NETHER_SPROUTS)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, NetherPlacements.TWISTING_VINES);
-      BiomeDefaultFeatures.addNetherDefaultOres(var1);
+      BiomeDefaultFeatures.addNetherDefaultOres(var3);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -248,8 +251,8 @@ public class NetherBiomes {
                .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_WARPED_FOREST))
                .build()
          )
-         .mobSpawnSettings(var0)
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2)
+         .generationSettings(var3.build())
          .build();
    }
 }

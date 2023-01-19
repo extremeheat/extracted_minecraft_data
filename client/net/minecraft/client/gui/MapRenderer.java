@@ -2,8 +2,7 @@ package net.minecraft.client.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -18,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import org.joml.Matrix4f;
 
 public class MapRenderer implements AutoCloseable {
    private static final ResourceLocation MAP_ICONS_LOCATION = new ResourceLocation("textures/map/map_icons.png");
@@ -122,10 +122,10 @@ public class MapRenderer implements AutoCloseable {
          for(MapDecoration var12 : this.data.getDecorations()) {
             if (!var3 || var12.renderOnFrame()) {
                var1.pushPose();
-               var1.translate((double)(0.0F + (float)var12.getX() / 2.0F + 64.0F), (double)(0.0F + (float)var12.getY() / 2.0F + 64.0F), -0.019999999552965164);
-               var1.mulPose(Vector3f.ZP.rotationDegrees((float)(var12.getRot() * 360) / 16.0F));
+               var1.translate(0.0F + (float)var12.getX() / 2.0F + 64.0F, 0.0F + (float)var12.getY() / 2.0F + 64.0F, -0.02F);
+               var1.mulPose(Axis.ZP.rotationDegrees((float)(var12.getRot() * 360) / 16.0F));
                var1.scale(4.0F, 4.0F, 3.0F);
-               var1.translate(-0.125, 0.125, 0.0);
+               var1.translate(-0.125F, 0.125F, 0.0F);
                byte var13 = var12.getImage();
                float var14 = (float)(var13 % 16 + 0) / 16.0F;
                float var15 = (float)(var13 / 16 + 0) / 16.0F;
@@ -145,13 +145,9 @@ public class MapRenderer implements AutoCloseable {
                   float var23 = (float)var21.width(var22);
                   float var24 = Mth.clamp(25.0F / var23, 0.0F, 6.0F / 9.0F);
                   var1.pushPose();
-                  var1.translate(
-                     (double)(0.0F + (float)var12.getX() / 2.0F + 64.0F - var23 * var24 / 2.0F),
-                     (double)(0.0F + (float)var12.getY() / 2.0F + 64.0F + 4.0F),
-                     -0.02500000037252903
-                  );
+                  var1.translate(0.0F + (float)var12.getX() / 2.0F + 64.0F - var23 * var24 / 2.0F, 0.0F + (float)var12.getY() / 2.0F + 64.0F + 4.0F, -0.025F);
                   var1.scale(var24, var24, 1.0F);
-                  var1.translate(0.0, 0.0, -0.10000000149011612);
+                  var1.translate(0.0F, 0.0F, -0.1F);
                   var21.drawInBatch(var22, 0.0F, 0.0F, -1, false, var1.last().pose(), var2, false, -2147483648, var4);
                   var1.popPose();
                }

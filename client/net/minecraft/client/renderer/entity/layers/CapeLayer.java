@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,7 +27,7 @@ public class CapeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abs
          ItemStack var11 = var4.getItemBySlot(EquipmentSlot.CHEST);
          if (!var11.is(Items.ELYTRA)) {
             var1.pushPose();
-            var1.translate(0.0, 0.0, 0.125);
+            var1.translate(0.0F, 0.0F, 0.125F);
             double var12 = Mth.lerp((double)var7, var4.xCloakO, var4.xCloak) - Mth.lerp((double)var7, var4.xo, var4.getX());
             double var14 = Mth.lerp((double)var7, var4.yCloakO, var4.yCloak) - Mth.lerp((double)var7, var4.yo, var4.getY());
             double var16 = Mth.lerp((double)var7, var4.zCloakO, var4.zCloak) - Mth.lerp((double)var7, var4.zo, var4.getZ());
@@ -50,9 +50,9 @@ public class CapeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abs
                var23 += 25.0F;
             }
 
-            var1.mulPose(Vector3f.XP.rotationDegrees(6.0F + var24 / 2.0F + var23));
-            var1.mulPose(Vector3f.ZP.rotationDegrees(var25 / 2.0F));
-            var1.mulPose(Vector3f.YP.rotationDegrees(180.0F - var25 / 2.0F));
+            var1.mulPose(Axis.XP.rotationDegrees(6.0F + var24 / 2.0F + var23));
+            var1.mulPose(Axis.ZP.rotationDegrees(var25 / 2.0F));
+            var1.mulPose(Axis.YP.rotationDegrees(180.0F - var25 / 2.0F));
             VertexConsumer var27 = var2.getBuffer(RenderType.entitySolid(var4.getCloakTextureLocation()));
             this.getParentModel().renderCloak(var1, var27, var3, OverlayTexture.NO_OVERLAY);
             var1.popPose();

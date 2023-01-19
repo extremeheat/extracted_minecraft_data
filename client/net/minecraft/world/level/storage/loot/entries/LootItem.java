@@ -4,7 +4,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import java.util.function.Consumer;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
@@ -43,7 +43,7 @@ public class LootItem extends LootPoolSingletonContainer {
 
       public void serializeCustom(JsonObject var1, LootItem var2, JsonSerializationContext var3) {
          super.serializeCustom(var1, var2, var3);
-         ResourceLocation var4 = Registry.ITEM.getKey(var2.item);
+         ResourceLocation var4 = BuiltInRegistries.ITEM.getKey(var2.item);
          if (var4 == null) {
             throw new IllegalArgumentException("Can't serialize unknown item " + var2.item);
          } else {

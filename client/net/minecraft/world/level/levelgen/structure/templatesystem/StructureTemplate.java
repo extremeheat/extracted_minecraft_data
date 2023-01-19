@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
@@ -612,66 +613,66 @@ public class StructureTemplate {
       return var1;
    }
 
-   public void load(CompoundTag var1) {
+   public void load(HolderGetter<Block> var1, CompoundTag var2) {
       this.palettes.clear();
       this.entityInfoList.clear();
-      ListTag var2 = var1.getList("size", 3);
-      this.size = new Vec3i(var2.getInt(0), var2.getInt(1), var2.getInt(2));
-      ListTag var3 = var1.getList("blocks", 10);
-      if (var1.contains("palettes", 9)) {
-         ListTag var4 = var1.getList("palettes", 9);
+      ListTag var3 = var2.getList("size", 3);
+      this.size = new Vec3i(var3.getInt(0), var3.getInt(1), var3.getInt(2));
+      ListTag var4 = var2.getList("blocks", 10);
+      if (var2.contains("palettes", 9)) {
+         ListTag var5 = var2.getList("palettes", 9);
 
-         for(int var5 = 0; var5 < var4.size(); ++var5) {
-            this.loadPalette(var4.getList(var5), var3);
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
+            this.loadPalette(var1, var5.getList(var6), var4);
          }
       } else {
-         this.loadPalette(var1.getList("palette", 10), var3);
+         this.loadPalette(var1, var2.getList("palette", 10), var4);
       }
 
-      ListTag var12 = var1.getList("entities", 10);
+      ListTag var13 = var2.getList("entities", 10);
 
-      for(int var13 = 0; var13 < var12.size(); ++var13) {
-         CompoundTag var6 = var12.getCompound(var13);
-         ListTag var7 = var6.getList("pos", 6);
-         Vec3 var8 = new Vec3(var7.getDouble(0), var7.getDouble(1), var7.getDouble(2));
-         ListTag var9 = var6.getList("blockPos", 3);
-         BlockPos var10 = new BlockPos(var9.getInt(0), var9.getInt(1), var9.getInt(2));
-         if (var6.contains("nbt")) {
-            CompoundTag var11 = var6.getCompound("nbt");
-            this.entityInfoList.add(new StructureTemplate.StructureEntityInfo(var8, var10, var11));
+      for(int var14 = 0; var14 < var13.size(); ++var14) {
+         CompoundTag var7 = var13.getCompound(var14);
+         ListTag var8 = var7.getList("pos", 6);
+         Vec3 var9 = new Vec3(var8.getDouble(0), var8.getDouble(1), var8.getDouble(2));
+         ListTag var10 = var7.getList("blockPos", 3);
+         BlockPos var11 = new BlockPos(var10.getInt(0), var10.getInt(1), var10.getInt(2));
+         if (var7.contains("nbt")) {
+            CompoundTag var12 = var7.getCompound("nbt");
+            this.entityInfoList.add(new StructureTemplate.StructureEntityInfo(var9, var11, var12));
          }
       }
    }
 
-   private void loadPalette(ListTag var1, ListTag var2) {
-      StructureTemplate.SimplePalette var3 = new StructureTemplate.SimplePalette();
+   private void loadPalette(HolderGetter<Block> var1, ListTag var2, ListTag var3) {
+      StructureTemplate.SimplePalette var4 = new StructureTemplate.SimplePalette();
 
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
-         var3.addMapping(NbtUtils.readBlockState(var1.getCompound(var4)), var4);
+      for(int var5 = 0; var5 < var2.size(); ++var5) {
+         var4.addMapping(NbtUtils.readBlockState(var1, var2.getCompound(var5)), var5);
       }
 
-      ArrayList var14 = Lists.newArrayList();
-      ArrayList var5 = Lists.newArrayList();
+      ArrayList var15 = Lists.newArrayList();
       ArrayList var6 = Lists.newArrayList();
+      ArrayList var7 = Lists.newArrayList();
 
-      for(int var7 = 0; var7 < var2.size(); ++var7) {
-         CompoundTag var8 = var2.getCompound(var7);
-         ListTag var9 = var8.getList("pos", 3);
-         BlockPos var10 = new BlockPos(var9.getInt(0), var9.getInt(1), var9.getInt(2));
-         BlockState var11 = var3.stateFor(var8.getInt("state"));
-         CompoundTag var12;
-         if (var8.contains("nbt")) {
-            var12 = var8.getCompound("nbt");
+      for(int var8 = 0; var8 < var3.size(); ++var8) {
+         CompoundTag var9 = var3.getCompound(var8);
+         ListTag var10 = var9.getList("pos", 3);
+         BlockPos var11 = new BlockPos(var10.getInt(0), var10.getInt(1), var10.getInt(2));
+         BlockState var12 = var4.stateFor(var9.getInt("state"));
+         CompoundTag var13;
+         if (var9.contains("nbt")) {
+            var13 = var9.getCompound("nbt");
          } else {
-            var12 = null;
+            var13 = null;
          }
 
-         StructureTemplate.StructureBlockInfo var13 = new StructureTemplate.StructureBlockInfo(var10, var11, var12);
-         addToLists(var13, var14, var5, var6);
+         StructureTemplate.StructureBlockInfo var14 = new StructureTemplate.StructureBlockInfo(var11, var12, var13);
+         addToLists(var14, var15, var6, var7);
       }
 
-      List var15 = buildInfoList(var14, var5, var6);
-      this.palettes.add(new StructureTemplate.Palette(var15));
+      List var16 = buildInfoList(var15, var6, var7);
+      this.palettes.add(new StructureTemplate.Palette(var16));
    }
 
    private ListTag newIntegerList(int... var1) {

@@ -13,6 +13,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.lang.reflect.Type;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.network.chat.Component;
@@ -25,26 +26,25 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    public static final char NAMESPACE_SEPARATOR = ':';
    public static final String DEFAULT_NAMESPACE = "minecraft";
    public static final String REALMS_NAMESPACE = "realms";
-   protected final String namespace;
-   protected final String path;
+   private final String namespace;
+   private final String path;
 
-   protected ResourceLocation(String[] var1) {
+   protected ResourceLocation(String var1, String var2, @Nullable ResourceLocation.Dummy var3) {
       super();
-      this.namespace = StringUtils.isEmpty(var1[0]) ? "minecraft" : var1[0];
-      this.path = var1[1];
-      if (!isValidNamespace(this.namespace)) {
-         throw new ResourceLocationException("Non [a-z0-9_.-] character in namespace of location: " + this.namespace + ":" + this.path);
-      } else if (!isValidPath(this.path)) {
-         throw new ResourceLocationException("Non [a-z0-9/._-] character in path of location: " + this.namespace + ":" + this.path);
-      }
+      this.namespace = var1;
+      this.path = var2;
+   }
+
+   public ResourceLocation(String var1, String var2) {
+      this(assertValidNamespace(var1, var2), assertValidPath(var1, var2), null);
+   }
+
+   private ResourceLocation(String[] var1) {
+      this(var1[0], var1[1]);
    }
 
    public ResourceLocation(String var1) {
       this(decompose(var1, ':'));
-   }
-
-   public ResourceLocation(String var1, String var2) {
-      this(new String[]{var1, var2});
    }
 
    public static ResourceLocation of(String var0, char var1) {
@@ -73,7 +73,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       String[] var2 = new String[]{"minecraft", var0};
       int var3 = var0.indexOf(var1);
       if (var3 >= 0) {
-         var2[1] = var0.substring(var3 + 1, var0.length());
+         var2[1] = var0.substring(var3 + 1);
          if (var3 >= 1) {
             var2[0] = var0.substring(0, var3);
          }
@@ -96,6 +96,18 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
    public String getNamespace() {
       return this.namespace;
+   }
+
+   public ResourceLocation withPath(String var1) {
+      return new ResourceLocation(this.namespace, assertValidPath(this.namespace, var1), null);
+   }
+
+   public ResourceLocation withPath(UnaryOperator<String> var1) {
+      return this.withPath(var1.apply(this.path));
+   }
+
+   public ResourceLocation withPrefix(String var1) {
+      return this.withPath(var1 + this.path);
    }
 
    @Override
@@ -186,6 +198,14 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       return true;
    }
 
+   private static String assertValidNamespace(String var0, String var1) {
+      if (!isValidNamespace(var0)) {
+         throw new ResourceLocationException("Non [a-z0-9_.-] character in namespace of location: " + var0 + ":" + var1);
+      } else {
+         return var0;
+      }
+   }
+
    public static boolean validPathChar(char var0) {
       return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '/' || var0 == '.';
    }
@@ -197,6 +217,17 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    public static boolean isValidResourceLocation(String var0) {
       String[] var1 = decompose(var0, ':');
       return isValidNamespace(StringUtils.isEmpty(var1[0]) ? "minecraft" : var1[0]) && isValidPath(var1[1]);
+   }
+
+   private static String assertValidPath(String var0, String var1) {
+      if (!isValidPath(var1)) {
+         throw new ResourceLocationException("Non [a-z0-9/._-] character in path of location: " + var0 + ":" + var1);
+      } else {
+         return var1;
+      }
+   }
+
+   protected interface Dummy {
    }
 
    public static class Serializer implements JsonDeserializer<ResourceLocation>, JsonSerializer<ResourceLocation> {

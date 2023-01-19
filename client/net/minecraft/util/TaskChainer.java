@@ -2,19 +2,23 @@ package net.minecraft.util;
 
 import com.mojang.logging.LogUtils;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 
 @FunctionalInterface
 public interface TaskChainer {
    Logger LOGGER = LogUtils.getLogger();
-   TaskChainer IMMEDIATE = var0 -> var0.get().exceptionally(var0x -> {
-         LOGGER.error("Task failed", var0x);
-         return null;
-      });
+
+   static TaskChainer immediate(Executor var0) {
+      return var1 -> var1.submit(var0).exceptionally(var0xx -> {
+            LOGGER.error("Task failed", var0xx);
+            return null;
+         });
+   }
 
    void append(TaskChainer.DelayedTask var1);
 
-   public interface DelayedTask extends Supplier<CompletableFuture<?>> {
+   public interface DelayedTask {
+      CompletableFuture<?> submit(Executor var1);
    }
 }

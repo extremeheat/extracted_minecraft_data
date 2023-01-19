@@ -2,6 +2,7 @@ package net.minecraft.world.level.material;
 
 import com.google.common.collect.UnmodifiableIterator;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class Fluids {
    public static final Fluid EMPTY = register("empty", new EmptyFluid());
@@ -15,11 +16,11 @@ public class Fluids {
    }
 
    private static <T extends Fluid> T register(String var0, T var1) {
-      return Registry.register(Registry.FLUID, var0, (T)var1);
+      return Registry.register(BuiltInRegistries.FLUID, var0, (T)var1);
    }
 
    static {
-      for(Fluid var1 : Registry.FLUID) {
+      for(Fluid var1 : BuiltInRegistries.FLUID) {
          UnmodifiableIterator var2 = var1.getStateDefinition().getPossibleStates().iterator();
 
          while(var2.hasNext()) {

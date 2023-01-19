@@ -1,26 +1,23 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
+import com.mojang.datafixers.util.Function3;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public class BecomePassiveIfMemoryPresent extends Behavior<LivingEntity> {
-   private final int pacifyDuration;
-
-   public BecomePassiveIfMemoryPresent(MemoryModuleType<?> var1, int var2) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.ATTACK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.PACIFIED, MemoryStatus.VALUE_ABSENT, var1, MemoryStatus.VALUE_PRESENT
-         )
-      );
-      this.pacifyDuration = var2;
+public class BecomePassiveIfMemoryPresent {
+   public BecomePassiveIfMemoryPresent() {
+      super();
    }
 
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      var2.getBrain().setMemoryWithExpiry(MemoryModuleType.PACIFIED, true, (long)this.pacifyDuration);
-      var2.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+   public static BehaviorControl<LivingEntity> create(MemoryModuleType<?> var0, int var1) {
+      return BehaviorBuilder.create(
+         var2 -> var2.group(var2.registered(MemoryModuleType.ATTACK_TARGET), var2.absent(MemoryModuleType.PACIFIED), var2.present(var0))
+               .apply(var2, var2.point(() -> "[BecomePassive if " + var0 + " present]", (Function3)(var1xx, var2x, var3) -> (var3x, var4, var5) -> {
+                     var2x.setWithExpiry(true, (long)var1);
+                     var1xx.erase();
+                     return true;
+                  }))
+      );
    }
 }

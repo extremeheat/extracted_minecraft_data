@@ -1,12 +1,9 @@
 package net.minecraft.world.entity.ai.gossip;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
+import com.mojang.serialization.Codec;
+import net.minecraft.util.StringRepresentable;
 
-public enum GossipType {
+public enum GossipType implements StringRepresentable {
    MAJOR_NEGATIVE("major_negative", -5, 100, 10, 10),
    MINOR_NEGATIVE("minor_negative", -1, 200, 20, 20),
    MINOR_POSITIVE("minor_positive", 1, 200, 1, 5),
@@ -21,7 +18,7 @@ public enum GossipType {
    public final int max;
    public final int decayPerDay;
    public final int decayPerTransfer;
-   private static final Map<String, GossipType> BY_ID = Stream.of(values()).collect(ImmutableMap.toImmutableMap(var0 -> var0.id, Function.identity()));
+   public static final Codec<GossipType> CODEC = StringRepresentable.fromEnum(GossipType::values);
 
    private GossipType(String var3, int var4, int var5, int var6, int var7) {
       this.id = var3;
@@ -31,8 +28,8 @@ public enum GossipType {
       this.decayPerTransfer = var7;
    }
 
-   @Nullable
-   public static GossipType byId(String var0) {
-      return BY_ID.get(var0);
+   @Override
+   public String getSerializedName() {
+      return this.id;
    }
 }

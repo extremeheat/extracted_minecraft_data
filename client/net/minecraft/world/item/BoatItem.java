@@ -52,7 +52,7 @@ public class BoatItem extends Item {
 
          if (var5.getType() == HitResult.Type.BLOCK) {
             Boat var14 = this.getBoat(var1, var5);
-            var14.setType(this.type);
+            var14.setVariant(this.type);
             var14.setYRot(var2.getYRot());
             if (!var1.noCollision(var14, var14.getBoundingBox())) {
                return InteractionResultHolder.fail(var4);

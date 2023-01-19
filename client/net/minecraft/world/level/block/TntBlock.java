@@ -63,7 +63,7 @@ public class TntBlock extends Block {
    @Override
    public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
       if (!var1.isClientSide) {
-         PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getSourceMob());
+         PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
          int var5 = var4.getFuse();
          var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
          var1.addFreshEntity(var4);

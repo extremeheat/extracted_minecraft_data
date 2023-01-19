@@ -29,6 +29,13 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
       MeshDefinition var1 = PlayerModel.createMesh(var0, false);
       PartDefinition var2 = var1.getRoot();
       var2.addOrReplaceChild("body", CubeListBuilder.create().texOffs(16, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0), PartPose.ZERO);
+      addHead(var0, var1);
+      var2.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
+      return var1;
+   }
+
+   public static void addHead(CubeDeformation var0, MeshDefinition var1) {
+      PartDefinition var2 = var1.getRoot();
       PartDefinition var3 = var2.addOrReplaceChild(
          "head",
          CubeListBuilder.create()
@@ -52,8 +59,6 @@ public class PiglinModel<T extends Mob> extends PlayerModel<T> {
          CubeListBuilder.create().texOffs(39, 6).addBox(-1.0F, 0.0F, -2.0F, 1.0F, 5.0F, 4.0F, var0),
          PartPose.offsetAndRotation(-4.5F, -6.0F, 0.0F, 0.0F, 0.0F, 0.5235988F)
       );
-      var2.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
-      return var1;
    }
 
    // $QF: Could not properly define all variable types!

@@ -57,34 +57,32 @@ public class CreateFlatWorldScreen extends Screen {
       this.columnHeight = Component.translatable("createWorld.customize.flat.height");
       this.list = new CreateFlatWorldScreen.DetailsList();
       this.addWidget(this.list);
-      this.deleteLayerButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 155, this.height - 52, 150, 20, Component.translatable("createWorld.customize.flat.removeLayer"), var1 -> {
-            if (this.hasValidSelection()) {
-               List var2 = this.generator.getLayersInfo();
-               int var3 = this.list.children().indexOf(this.list.getSelected());
-               int var4 = var2.size() - var3 - 1;
-               var2.remove(var4);
-               this.list.setSelected(var2.isEmpty() ? null : this.list.children().get(Math.min(var3, var2.size() - 1)));
-               this.generator.updateLayers();
-               this.list.resetRows();
-               this.updateButtonValidity();
-            }
-         })
-      );
-      this.addRenderableWidget(new Button(this.width / 2 + 5, this.height - 52, 150, 20, Component.translatable("createWorld.customize.presets"), var1 -> {
+      this.deleteLayerButton = this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.flat.removeLayer"), var1 -> {
+         if (this.hasValidSelection()) {
+            List var2 = this.generator.getLayersInfo();
+            int var3 = this.list.children().indexOf(this.list.getSelected());
+            int var4 = var2.size() - var3 - 1;
+            var2.remove(var4);
+            this.list.setSelected(var2.isEmpty() ? null : this.list.children().get(Math.min(var3, var2.size() - 1)));
+            this.generator.updateLayers();
+            this.list.resetRows();
+            this.updateButtonValidity();
+         }
+      }).bounds(this.width / 2 - 155, this.height - 52, 150, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets"), var1 -> {
          this.minecraft.setScreen(new PresetFlatWorldScreen(this));
          this.generator.updateLayers();
          this.updateButtonValidity();
-      }));
-      this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 28, 150, 20, CommonComponents.GUI_DONE, var1 -> {
+      }).bounds(this.width / 2 + 5, this.height - 52, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
          this.applySettings.accept(this.generator);
          this.minecraft.setScreen(this.parent);
          this.generator.updateLayers();
-      }));
-      this.addRenderableWidget(new Button(this.width / 2 + 5, this.height - 28, 150, 20, CommonComponents.GUI_CANCEL, var1 -> {
+      }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
          this.minecraft.setScreen(this.parent);
          this.generator.updateLayers();
-      }));
+      }).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
       this.generator.updateLayers();
       this.updateButtonValidity();
    }

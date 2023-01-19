@@ -18,19 +18,21 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.chat.ChatSender;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.OutgoingPlayerChatMessage;
+import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -61,7 +63,7 @@ public class CommandSourceStack implements SharedSuggestionProvider {
       CommandSource var1, Vec3 var2, Vec2 var3, ServerLevel var4, int var5, String var6, Component var7, MinecraftServer var8, @Nullable Entity var9
    ) {
       this(var1, var2, var3, var4, var5, var6, var7, var8, var9, false, (var0, var1x, var2x) -> {
-      }, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.IMMEDIATE);
+      }, EntityAnchorArgument.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(var8));
    }
 
    protected CommandSourceStack(
@@ -381,10 +383,6 @@ public class CommandSourceStack implements SharedSuggestionProvider {
       return this.textName;
    }
 
-   public ChatSender asChatSender() {
-      return this.entity != null ? this.entity.asChatSender() : ChatSender.SYSTEM;
-   }
-
    @Override
    public boolean hasPermission(int var1) {
       return this.permissionLevel >= var1;
@@ -459,13 +457,13 @@ public class CommandSourceStack implements SharedSuggestionProvider {
       }
    }
 
-   public void sendChatMessage(OutgoingPlayerChatMessage var1, boolean var2, ChatType.Bound var3) {
+   public void sendChatMessage(OutgoingChatMessage var1, boolean var2, ChatType.Bound var3) {
       if (!this.silent) {
          ServerPlayer var4 = this.getPlayer();
          if (var4 != null) {
             var4.sendChatMessage(var1, var2, var3);
          } else {
-            this.source.sendSystemMessage(var3.decorate(var1.serverContent()));
+            this.source.sendSystemMessage(var3.decorate(var1.content()));
          }
       }
    }
@@ -529,8 +527,8 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    }
 
    @Override
-   public Collection<ResourceLocation> getAvailableSoundEvents() {
-      return Registry.SOUND_EVENT.keySet();
+   public Stream<ResourceLocation> getAvailableSounds() {
+      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::getLocation);
    }
 
    @Override
@@ -561,5 +559,10 @@ public class CommandSourceStack implements SharedSuggestionProvider {
    @Override
    public RegistryAccess registryAccess() {
       return this.server.registryAccess();
+   }
+
+   @Override
+   public FeatureFlagSet enabledFeatures() {
+      return this.level.enabledFeatures();
    }
 }

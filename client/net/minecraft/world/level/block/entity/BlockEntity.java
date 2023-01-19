@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -104,7 +104,7 @@ public abstract class BlockEntity {
          LOGGER.error("Block entity has invalid type: {}", var3);
          return null;
       } else {
-         return Registry.BLOCK_ENTITY_TYPE.getOptional(var4).map(var3x -> {
+         return BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var4).map(var3x -> {
             try {
                return var3x.create(var0, var1);
             } catch (Throwable var5) {
@@ -173,7 +173,7 @@ public abstract class BlockEntity {
    }
 
    public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Name", () -> Registry.BLOCK_ENTITY_TYPE.getKey(this.getType()) + " // " + this.getClass().getCanonicalName());
+      var1.setDetail("Name", () -> BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()) + " // " + this.getClass().getCanonicalName());
       if (this.level != null) {
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.getBlockState());
          CrashReportCategory.populateBlockDetails(var1, this.level, this.worldPosition, this.level.getBlockState(this.worldPosition));

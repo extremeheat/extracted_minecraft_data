@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
@@ -798,8 +798,8 @@ public class VillagerTrades {
 
       public EmeraldsForVillagerTypeItem(int var1, int var2, int var3, Map<VillagerType, Item> var4) {
          super();
-         Registry.VILLAGER_TYPE.stream().filter(var1x -> !var4.containsKey(var1x)).findAny().ifPresent(var0 -> {
-            throw new IllegalStateException("Missing trade for villager type: " + Registry.VILLAGER_TYPE.getKey(var0));
+         BuiltInRegistries.VILLAGER_TYPE.stream().filter(var1x -> !var4.containsKey(var1x)).findAny().ifPresent(var0 -> {
+            throw new IllegalStateException("Missing trade for villager type: " + BuiltInRegistries.VILLAGER_TYPE.getKey(var0));
          });
          this.trades = var4;
          this.cost = var1;
@@ -829,7 +829,7 @@ public class VillagerTrades {
 
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         List var3 = Registry.ENCHANTMENT.stream().filter(Enchantment::isTradeable).collect(Collectors.toList());
+         List var3 = BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isTradeable).collect(Collectors.toList());
          Enchantment var4 = (Enchantment)var3.get(var2.nextInt(var3.size()));
          int var5 = Mth.nextInt(var2, var4.getMinLevel(), var4.getMaxLevel());
          ItemStack var6 = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var4, var5));
@@ -1015,7 +1015,7 @@ public class VillagerTrades {
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = new ItemStack(Items.EMERALD, this.emeraldCost);
-         List var4 = Registry.POTION
+         List var4 = BuiltInRegistries.POTION
             .stream()
             .filter(var0 -> !var0.getEffects().isEmpty() && PotionBrewing.isBrewablePotion(var0))
             .collect(Collectors.toList());

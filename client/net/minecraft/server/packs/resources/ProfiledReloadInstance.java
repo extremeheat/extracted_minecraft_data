@@ -43,18 +43,18 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
 
    private List<ProfiledReloadInstance.State> finish(List<ProfiledReloadInstance.State> var1) {
       this.total.stop();
-      int var2 = 0;
+      long var2 = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      for(ProfiledReloadInstance.State var4 : var1) {
-         ProfileResults var5 = var4.preparationResult;
-         ProfileResults var6 = var4.reloadResult;
-         int var7 = (int)((double)var4.preparationNanos.get() / 1000000.0);
-         int var8 = (int)((double)var4.reloadNanos.get() / 1000000.0);
-         int var9 = var7 + var8;
-         String var10 = var4.name;
-         LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var10, var9, var7, var8});
-         var2 += var8;
+      for(ProfiledReloadInstance.State var5 : var1) {
+         ProfileResults var6 = var5.preparationResult;
+         ProfileResults var7 = var5.reloadResult;
+         long var8 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
+         long var10 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
+         long var12 = var8 + var10;
+         String var14 = var5.name;
+         LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var14, var12, var8, var10});
+         var2 += var10;
       }
 
       LOGGER.info("Total blocking time: {} ms", var2);

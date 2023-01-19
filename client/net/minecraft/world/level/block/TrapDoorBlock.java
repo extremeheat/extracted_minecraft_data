@@ -3,6 +3,8 @@ package net.minecraft.world.level.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -38,8 +40,10 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    protected static final VoxelShape NORTH_OPEN_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
    protected static final VoxelShape BOTTOM_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0);
    protected static final VoxelShape TOP_AABB = Block.box(0.0, 13.0, 0.0, 16.0, 16.0, 16.0);
+   private final SoundEvent closeSound;
+   private final SoundEvent openSound;
 
-   protected TrapDoorBlock(BlockBehaviour.Properties var1) {
+   protected TrapDoorBlock(BlockBehaviour.Properties var1, SoundEvent var2, SoundEvent var3) {
       super(var1);
       this.registerDefaultState(
          this.stateDefinition
@@ -50,6 +54,8 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
             .setValue(POWERED, Boolean.valueOf(false))
             .setValue(WATERLOGGED, Boolean.valueOf(false))
       );
+      this.closeSound = var2;
+      this.openSound = var3;
    }
 
    @Override
@@ -102,14 +108,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected void playSound(@Nullable Player var1, Level var2, BlockPos var3, boolean var4) {
-      if (var4) {
-         int var5 = this.material == Material.METAL ? 1037 : 1007;
-         var2.levelEvent(var1, var5, var3, 0);
-      } else {
-         int var6 = this.material == Material.METAL ? 1036 : 1013;
-         var2.levelEvent(var1, var6, var3, 0);
-      }
-
+      var2.playSound(var1, var3, var4 ? this.openSound : this.closeSound, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
       var2.gameEvent(var1, var4 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
    }
 

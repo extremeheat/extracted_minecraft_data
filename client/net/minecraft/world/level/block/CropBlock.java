@@ -170,7 +170,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return !this.isMaxAge(var3);
    }
 

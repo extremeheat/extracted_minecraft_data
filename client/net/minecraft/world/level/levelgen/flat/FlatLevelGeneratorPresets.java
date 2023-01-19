@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -33,25 +33,23 @@ public class FlatLevelGeneratorPresets {
       super();
    }
 
-   public static Holder<FlatLevelGeneratorPreset> bootstrap(Registry<FlatLevelGeneratorPreset> var0) {
-      return new FlatLevelGeneratorPresets.Bootstrap(var0).run();
+   public static void bootstrap(BootstapContext<FlatLevelGeneratorPreset> var0) {
+      new FlatLevelGeneratorPresets.Bootstrap(var0).run();
    }
 
    private static ResourceKey<FlatLevelGeneratorPreset> register(String var0) {
-      return ResourceKey.create(Registry.FLAT_LEVEL_GENERATOR_PRESET_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.FLAT_LEVEL_GENERATOR_PRESET, new ResourceLocation(var0));
    }
 
    static class Bootstrap {
-      private final Registry<FlatLevelGeneratorPreset> presets;
-      private final Registry<Biome> biomes = BuiltinRegistries.BIOME;
-      private final Registry<StructureSet> structureSets = BuiltinRegistries.STRUCTURE_SETS;
+      private final BootstapContext<FlatLevelGeneratorPreset> context;
 
-      Bootstrap(Registry<FlatLevelGeneratorPreset> var1) {
+      Bootstrap(BootstapContext<FlatLevelGeneratorPreset> var1) {
          super();
-         this.presets = var1;
+         this.context = var1;
       }
 
-      private Holder<FlatLevelGeneratorPreset> register(
+      private void register(
          ResourceKey<FlatLevelGeneratorPreset> var1,
          ItemLike var2,
          ResourceKey<Biome> var3,
@@ -60,25 +58,29 @@ public class FlatLevelGeneratorPresets {
          boolean var6,
          FlatLayerInfo... var7
       ) {
-         HolderSet.Direct var8 = HolderSet.direct(var4.stream().flatMap(var1x -> this.structureSets.getHolder(var1x).stream()).collect(Collectors.toList()));
-         FlatLevelGeneratorSettings var9 = new FlatLevelGeneratorSettings(Optional.of(var8), this.biomes);
+         HolderGetter var8 = this.context.lookup(Registries.STRUCTURE_SET);
+         HolderGetter var9 = this.context.lookup(Registries.PLACED_FEATURE);
+         HolderGetter var10 = this.context.lookup(Registries.BIOME);
+         HolderSet.Direct var11 = HolderSet.direct(var4.stream().map(var8::getOrThrow).collect(Collectors.toList()));
+         FlatLevelGeneratorSettings var12 = new FlatLevelGeneratorSettings(
+            Optional.of(var11), var10.getOrThrow(var3), FlatLevelGeneratorSettings.createLakesList(var9)
+         );
          if (var5) {
-            var9.setDecoration();
+            var12.setDecoration();
          }
 
          if (var6) {
-            var9.setAddLakes();
+            var12.setAddLakes();
          }
 
-         for(int var10 = var7.length - 1; var10 >= 0; --var10) {
-            var9.getLayersInfo().add(var7[var10]);
+         for(int var13 = var7.length - 1; var13 >= 0; --var13) {
+            var12.getLayersInfo().add(var7[var13]);
          }
 
-         var9.setBiome(this.biomes.getOrCreateHolderOrThrow(var3));
-         return BuiltinRegistries.register(this.presets, var1, new FlatLevelGeneratorPreset(var2.asItem().builtInRegistryHolder(), var9));
+         this.context.register(var1, new FlatLevelGeneratorPreset(var2.asItem().builtInRegistryHolder(), var12));
       }
 
-      public Holder<FlatLevelGeneratorPreset> run() {
+      public void run() {
          this.register(
             FlatLevelGeneratorPresets.CLASSIC_FLAT,
             Blocks.GRASS_BLOCK,
@@ -183,9 +185,7 @@ public class FlatLevelGeneratorPresets {
             new FlatLayerInfo(3, Blocks.STONE),
             new FlatLayerInfo(1, Blocks.BEDROCK)
          );
-         return this.register(
-            FlatLevelGeneratorPresets.THE_VOID, Blocks.BARRIER, Biomes.THE_VOID, ImmutableSet.of(), true, false, new FlatLayerInfo(1, Blocks.AIR)
-         );
+         this.register(FlatLevelGeneratorPresets.THE_VOID, Blocks.BARRIER, Biomes.THE_VOID, ImmutableSet.of(), true, false, new FlatLayerInfo(1, Blocks.AIR));
       }
    }
 }

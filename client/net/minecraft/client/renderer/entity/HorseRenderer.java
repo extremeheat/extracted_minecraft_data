@@ -19,7 +19,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseModel
       var0.put(Variant.BROWN, new ResourceLocation("textures/entity/horse/horse_brown.png"));
       var0.put(Variant.BLACK, new ResourceLocation("textures/entity/horse/horse_black.png"));
       var0.put(Variant.GRAY, new ResourceLocation("textures/entity/horse/horse_gray.png"));
-      var0.put(Variant.DARKBROWN, new ResourceLocation("textures/entity/horse/horse_darkbrown.png"));
+      var0.put(Variant.DARK_BROWN, new ResourceLocation("textures/entity/horse/horse_darkbrown.png"));
    });
 
    public HorseRenderer(EntityRendererProvider.Context var1) {

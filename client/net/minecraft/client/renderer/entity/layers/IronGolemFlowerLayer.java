@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -26,12 +26,12 @@ public class IronGolemFlowerLayer extends RenderLayer<IronGolem, IronGolemModel<
          var1.pushPose();
          ModelPart var11 = this.getParentModel().getFlowerHoldingArm();
          var11.translateAndRotate(var1);
-         var1.translate(-1.1875, 1.0625, -0.9375);
-         var1.translate(0.5, 0.5, 0.5);
+         var1.translate(-1.1875F, 1.0625F, -0.9375F);
+         var1.translate(0.5F, 0.5F, 0.5F);
          float var12 = 0.5F;
          var1.scale(0.5F, 0.5F, 0.5F);
-         var1.mulPose(Vector3f.XP.rotationDegrees(-90.0F));
-         var1.translate(-0.5, -0.5, -0.5);
+         var1.mulPose(Axis.XP.rotationDegrees(-90.0F));
+         var1.translate(-0.5F, -0.5F, -0.5F);
          this.blockRenderer.renderSingleBlock(Blocks.POPPY.defaultBlockState(), var1, var2, var3, OverlayTexture.NO_OVERLAY);
          var1.popPose();
       }

@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,6 +40,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -68,7 +69,7 @@ import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.phys.Vec3;
 
-public class Frog extends Animal {
+public class Frog extends Animal implements VariantHolder<FrogVariant> {
    public static final Ingredient TEMPTATION_ITEM = Ingredient.of(Items.SLIME_BALL);
    protected static final ImmutableList<SensorType<? extends Sensor<? super Frog>>> SENSOR_TYPES = ImmutableList.of(
       SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FROG_ATTACKABLES, SensorType.FROG_TEMPTATIONS, SensorType.IS_IN_WATER
@@ -174,13 +175,13 @@ public class Frog extends Animal {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", Registry.FROG_VARIANT.getKey(this.getVariant()).toString());
+      var1.putString("variant", BuiltInRegistries.FROG_VARIANT.getKey(this.getVariant()).toString());
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      FrogVariant var2 = Registry.FROG_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
+      FrogVariant var2 = BuiltInRegistries.FROG_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
       if (var2 != null) {
          this.setVariant(var2);
       }
@@ -419,12 +420,13 @@ public class Frog extends Animal {
          super(var1);
       }
 
-      @Nullable
       @Override
       public Node getStart() {
-         return this.getStartNode(
-            new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY), Mth.floor(this.mob.getBoundingBox().minZ))
-         );
+         return !this.mob.isInWater()
+            ? super.getStart()
+            : this.getStartNode(
+               new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY), Mth.floor(this.mob.getBoundingBox().minZ))
+            );
       }
 
       @Override

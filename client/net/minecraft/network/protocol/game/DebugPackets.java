@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +30,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
@@ -157,7 +157,7 @@ public class DebugPackets {
       }
 
       var1.writeCollection(var2.getActiveActivities(), (var0x, var1x) -> var0x.writeUtf(var1x.getName()));
-      Set var10 = var2.getRunningBehaviors().stream().map(Behavior::toString).collect(Collectors.toSet());
+      Set var10 = var2.getRunningBehaviors().stream().map(BehaviorControl::debugString).collect(Collectors.toSet());
       var1.writeCollection(var10, FriendlyByteBuf::writeUtf);
       var1.writeCollection(getMemoryDescriptions(var0, var3), (var0x, var1x) -> {
          String var2x = StringUtil.truncateStringIfNecessary(var1x, 255, true);
@@ -221,7 +221,7 @@ public class DebugPackets {
             var9 = "-";
          }
 
-         var4.add(Registry.MEMORY_MODULE_TYPE.getKey(var7).getPath() + ": " + var9);
+         var4.add(BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(var7).getPath() + ": " + var9);
       }
 
       var4.sort(String::compareTo);

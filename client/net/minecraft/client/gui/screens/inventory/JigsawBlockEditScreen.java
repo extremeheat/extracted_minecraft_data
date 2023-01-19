@@ -84,7 +84,6 @@ public class JigsawBlockEditScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.poolEdit = new EditBox(this.font, this.width / 2 - 152, 20, 300, 20, Component.translatable("jigsaw_block.pool"));
       this.poolEdit.setMaxLength(128);
       this.poolEdit.setValue(this.jigsawEntity.getPool().location().toString());
@@ -135,12 +134,14 @@ public class JigsawBlockEditScreen extends Screen {
          CycleButton.onOffBuilder(this.keepJigsaws)
             .create(this.width / 2 - 50, 180, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2x) -> this.keepJigsaws = var2x)
       );
-      this.generateButton = this.addRenderableWidget(new Button(this.width / 2 + 54, 180, 100, 20, Component.translatable("jigsaw_block.generate"), var1x -> {
+      this.generateButton = this.addRenderableWidget(Button.builder(Component.translatable("jigsaw_block.generate"), var1x -> {
          this.onDone();
          this.sendGenerate();
-      }));
-      this.doneButton = this.addRenderableWidget(new Button(this.width / 2 - 4 - 150, 210, 150, 20, CommonComponents.GUI_DONE, var1x -> this.onDone()));
-      this.addRenderableWidget(new Button(this.width / 2 + 4, 210, 150, 20, CommonComponents.GUI_CANCEL, var1x -> this.onCancel()));
+      }).bounds(this.width / 2 + 54, 180, 100, 20).build());
+      this.doneButton = this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build()
+      );
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
       this.setInitialFocus(this.poolEdit);
       this.updateValidity();
    }
@@ -169,11 +170,6 @@ public class JigsawBlockEditScreen extends Screen {
       this.levels = var8;
       this.joint = var9;
       this.jointButton.setValue(var9);
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    @Override

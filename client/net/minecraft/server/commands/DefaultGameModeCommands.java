@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,13 +16,13 @@ public class DefaultGameModeCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires(var0x -> var0x.hasPermission(2));
-
-      for(GameType var5 : GameType.values()) {
-         var1.then(Commands.literal(var5.getName()).executes(var1x -> setMode((CommandSourceStack)var1x.getSource(), var5)));
-      }
-
-      var0.register(var1);
+      var0.register(
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires(var0x -> var0x.hasPermission(2)))
+            .then(
+               Commands.argument("gamemode", GameModeArgument.gameMode())
+                  .executes(var0x -> setMode((CommandSourceStack)var0x.getSource(), GameModeArgument.getGameMode(var0x, "gamemode")))
+            )
+      );
    }
 
    private static int setMode(CommandSourceStack var0, GameType var1) {

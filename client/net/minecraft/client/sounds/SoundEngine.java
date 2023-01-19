@@ -9,7 +9,6 @@ import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Vector3f;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +24,14 @@ import net.minecraft.client.Options;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -69,7 +69,7 @@ public class SoundEngine {
    private final List<TickableSoundInstance> queuedTickableSounds = Lists.newArrayList();
    private final List<Sound> preloadQueue = Lists.newArrayList();
 
-   public SoundEngine(SoundManager var1, Options var2, ResourceManager var3) {
+   public SoundEngine(SoundManager var1, Options var2, ResourceProvider var3) {
       super();
       this.soundManager = var1;
       this.options = var2;
@@ -79,10 +79,10 @@ public class SoundEngine {
    public void reload() {
       ONLY_WARN_ONCE.clear();
 
-      for(SoundEvent var2 : Registry.SOUND_EVENT) {
+      for(SoundEvent var2 : BuiltInRegistries.SOUND_EVENT) {
          ResourceLocation var3 = var2.getLocation();
          if (this.soundManager.getSoundEvent(var3) == null) {
-            LOGGER.warn("Missing sound for event: {}", Registry.SOUND_EVENT.getKey(var2));
+            LOGGER.warn("Missing sound for event: {}", BuiltInRegistries.SOUND_EVENT.getKey(var2));
             ONLY_WARN_ONCE.add(var3);
          }
       }

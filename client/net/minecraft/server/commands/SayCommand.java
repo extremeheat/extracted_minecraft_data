@@ -17,10 +17,11 @@ public class SayCommand {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires(var0x -> var0x.hasPermission(2)))
             .then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
-               MessageArgument.ChatMessage var1 = MessageArgument.getChatMessage(var0x, "message");
-               CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-               PlayerList var3 = var2.getServer().getPlayerList();
-               var1.resolve(var2, var2x -> var3.broadcastChatMessage(var2x, var2, ChatType.bind(ChatType.SAY_COMMAND, var2)));
+               MessageArgument.resolveChatMessage(var0x, "message", var1 -> {
+                  CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
+                  PlayerList var3 = var2.getServer().getPlayerList();
+                  var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.SAY_COMMAND, var2));
+               });
                return 1;
             }))
       );

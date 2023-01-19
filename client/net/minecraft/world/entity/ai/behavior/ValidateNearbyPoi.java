@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -9,51 +8,42 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class ValidateNearbyPoi extends Behavior<LivingEntity> {
+public class ValidateNearbyPoi {
    private static final int MAX_DISTANCE = 16;
-   private final MemoryModuleType<GlobalPos> memoryType;
-   private final Predicate<Holder<PoiType>> poiPredicate;
 
-   public ValidateNearbyPoi(Predicate<Holder<PoiType>> var1, MemoryModuleType<GlobalPos> var2) {
-      super(ImmutableMap.of(var2, MemoryStatus.VALUE_PRESENT));
-      this.poiPredicate = var1;
-      this.memoryType = var2;
+   public ValidateNearbyPoi() {
+      super();
    }
 
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      GlobalPos var3 = var2.getBrain().getMemory(this.memoryType).get();
-      return var1.dimension() == var3.dimension() && var3.pos().closerToCenterThan(var2.position(), 16.0);
+   public static BehaviorControl<LivingEntity> create(Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1) {
+      return BehaviorBuilder.create(var2 -> var2.group(var2.present(var1)).apply(var2, var2x -> (var3, var4, var5) -> {
+               GlobalPos var7 = var2.get(var2x);
+               BlockPos var8 = var7.pos();
+               if (var3.dimension() == var7.dimension() && var8.closerToCenterThan(var4.position(), 16.0)) {
+                  ServerLevel var9 = var3.getServer().getLevel(var7.dimension());
+                  if (var9 == null || !var9.getPoiManager().exists(var8, var0)) {
+                     var2x.erase();
+                  } else if (bedIsOccupied(var9, var8, var4)) {
+                     var2x.erase();
+                     var3.getPoiManager().release(var8);
+                     DebugPackets.sendPoiTicketCountPacket(var3, var8);
+                  }
+
+                  return true;
+               } else {
+                  return false;
+               }
+            }));
    }
 
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      Brain var5 = var2.getBrain();
-      GlobalPos var6 = var5.getMemory(this.memoryType).get();
-      BlockPos var7 = var6.pos();
-      ServerLevel var8 = var1.getServer().getLevel(var6.dimension());
-      if (var8 == null || this.poiDoesntExist(var8, var7)) {
-         var5.eraseMemory(this.memoryType);
-      } else if (this.bedIsOccupied(var8, var7, var2)) {
-         var5.eraseMemory(this.memoryType);
-         var1.getPoiManager().release(var7);
-         DebugPackets.sendPoiTicketCountPacket(var1, var7);
-      }
-   }
-
-   private boolean bedIsOccupied(ServerLevel var1, BlockPos var2, LivingEntity var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      return var4.is(BlockTags.BEDS) && var4.getValue(BedBlock.OCCUPIED) && !var3.isSleeping();
-   }
-
-   private boolean poiDoesntExist(ServerLevel var1, BlockPos var2) {
-      return !var1.getPoiManager().exists(var2, this.poiPredicate);
+   private static boolean bedIsOccupied(ServerLevel var0, BlockPos var1, LivingEntity var2) {
+      BlockState var3 = var0.getBlockState(var1);
+      return var3.is(BlockTags.BEDS) && var3.getValue(BedBlock.OCCUPIED) && !var2.isSleeping();
    }
 }

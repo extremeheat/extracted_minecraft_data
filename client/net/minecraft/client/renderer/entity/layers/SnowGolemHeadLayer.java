@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.SnowGolemModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -37,15 +37,15 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolem, SnowGolemModel<Sn
             var1.pushPose();
             this.getParentModel().getHead().translateAndRotate(var1);
             float var12 = 0.625F;
-            var1.translate(0.0, -0.34375, 0.0);
-            var1.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+            var1.translate(0.0F, -0.34375F, 0.0F);
+            var1.mulPose(Axis.YP.rotationDegrees(180.0F));
             var1.scale(0.625F, -0.625F, -0.625F);
             ItemStack var13 = new ItemStack(Blocks.CARVED_PUMPKIN);
             if (var11) {
                BlockState var14 = Blocks.CARVED_PUMPKIN.defaultBlockState();
                BakedModel var15 = this.blockRenderer.getBlockModel(var14);
                int var16 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-               var1.translate(-0.5, -0.5, -0.5);
+               var1.translate(-0.5F, -0.5F, -0.5F);
                this.blockRenderer
                   .getModelRenderer()
                   .renderModel(var1.last(), var2.getBuffer(RenderType.outline(TextureAtlas.LOCATION_BLOCKS)), var14, var15, 0.0F, 0.0F, 0.0F, var3, var16);

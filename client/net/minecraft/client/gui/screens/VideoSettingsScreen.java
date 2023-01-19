@@ -6,7 +6,6 @@ import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GraphicsStatus;
@@ -103,11 +102,11 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addBig(this.options.biomeBlendRadius());
       this.list.addSmall(options(this.options));
       this.addWidget(this.list);
-      this.addRenderableWidget(new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, var2x -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var2x -> {
          this.minecraft.options.save();
          var2.changeFullscreenVideoMode();
          this.minecraft.setScreen(this.lastScreen);
-      }));
+      }).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
    }
 
    @Override
@@ -166,28 +165,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    @Override
-   public boolean mouseReleased(double var1, double var3, int var5) {
-      int var6 = this.options.guiScale().get();
-      if (super.mouseReleased(var1, var3, var5)) {
-         return true;
-      } else if (this.list.mouseReleased(var1, var3, var5)) {
-         if (this.options.guiScale().get() != var6) {
-            this.minecraft.resizeDisplay();
-         }
-
-         return true;
-      } else {
-         return false;
-      }
-   }
-
-   @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.list.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 5, 16777215);
-      super.render(var1, var2, var3, var4);
-      List var5 = tooltipAt(this.list, var2, var3);
-      this.renderTooltip(var1, var5, var2, var3);
+      this.basicListRender(var1, this.list, var2, var3, var4);
    }
 }

@@ -20,7 +20,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -79,16 +79,24 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
    public void initButtons() {
       this.addRenderableWidget(
-         new Button(this.width / 2 - 120, this.height - 52, 80, 20, Component.translatable("stat.generalButton"), var1x -> this.setActiveList(this.statsList))
+         Button.builder(Component.translatable("stat.generalButton"), var1x -> this.setActiveList(this.statsList))
+            .bounds(this.width / 2 - 120, this.height - 52, 80, 20)
+            .build()
       );
       Button var1 = this.addRenderableWidget(
-         new Button(this.width / 2 - 40, this.height - 52, 80, 20, Component.translatable("stat.itemsButton"), var1x -> this.setActiveList(this.itemStatsList))
+         Button.builder(Component.translatable("stat.itemsButton"), var1x -> this.setActiveList(this.itemStatsList))
+            .bounds(this.width / 2 - 40, this.height - 52, 80, 20)
+            .build()
       );
       Button var2 = this.addRenderableWidget(
-         new Button(this.width / 2 + 40, this.height - 52, 80, 20, Component.translatable("stat.mobsButton"), var1x -> this.setActiveList(this.mobsStatsList))
+         Button.builder(Component.translatable("stat.mobsButton"), var1x -> this.setActiveList(this.mobsStatsList))
+            .bounds(this.width / 2 + 40, this.height - 52, 80, 20)
+            .build()
       );
       this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height - 28, 200, 20, CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen))
+         Button.builder(CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen))
+            .bounds(this.width / 2 - 100, this.height - 28, 200, 20)
+            .build()
       );
       if (this.itemStatsList.children().isEmpty()) {
          var1.active = false;
@@ -233,7 +241,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          this.setRenderHeader(true, 20);
          Set var3 = Sets.newIdentityHashSet();
 
-         for(Item var5 : Registry.ITEM) {
+         for(Item var5 : BuiltInRegistries.ITEM) {
             boolean var6 = false;
 
             for(StatType var8 : this.itemColumns) {
@@ -247,7 +255,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
             }
          }
 
-         for(Block var11 : Registry.BLOCK) {
+         for(Block var11 : BuiltInRegistries.BLOCK) {
             boolean var13 = false;
 
             for(StatType var15 : this.blockColumns) {
@@ -373,7 +381,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
             int var7 = StatsScreen.this.font.width(var2);
             this.fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
             var1.pushPose();
-            var1.translate(0.0, 0.0, 400.0);
+            var1.translate(0.0F, 0.0F, 400.0F);
             StatsScreen.this.font.drawShadow(var1, var2, (float)var5, (float)var6, -1);
             var1.popPose();
          }
@@ -480,7 +488,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
       public MobsStatisticsList(Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height, 32, StatsScreen.this.height - 64, 9 * 4);
 
-         for(EntityType var4 : Registry.ENTITY_TYPE) {
+         for(EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
             if (StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) > 0 || StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) > 0) {
                this.addEntry(new StatsScreen.MobsStatisticsList.MobRow(var4));
             }

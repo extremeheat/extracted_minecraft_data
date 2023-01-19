@@ -11,13 +11,11 @@ import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.ParticleArgument;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -39,6 +37,10 @@ public class AreaEffectCloud extends Entity {
    private static final EntityDataAccessor<Boolean> DATA_WAITING = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<ParticleOptions> DATA_PARTICLE = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
    private static final float MAX_RADIUS = 32.0F;
+   private static final float MINIMAL_RADIUS = 0.5F;
+   private static final float DEFAULT_RADIUS = 3.0F;
+   public static final float DEFAULT_WIDTH = 6.0F;
+   public static final float HEIGHT = 0.5F;
    private Potion potion = Potions.EMPTY;
    private final List<MobEffectInstance> effects = Lists.newArrayList();
    private final Map<Entity, Integer> victims = Maps.newHashMap();
@@ -57,7 +59,6 @@ public class AreaEffectCloud extends Entity {
    public AreaEffectCloud(EntityType<? extends AreaEffectCloud> var1, Level var2) {
       super(var1, var2);
       this.noPhysics = true;
-      this.setRadius(3.0F);
    }
 
    public AreaEffectCloud(Level var1, double var2, double var4, double var6) {
@@ -68,7 +69,7 @@ public class AreaEffectCloud extends Entity {
    @Override
    protected void defineSynchedData() {
       this.getEntityData().define(DATA_COLOR, 0);
-      this.getEntityData().define(DATA_RADIUS, 0.5F);
+      this.getEntityData().define(DATA_RADIUS, 3.0F);
       this.getEntityData().define(DATA_WAITING, false);
       this.getEntityData().define(DATA_PARTICLE, ParticleTypes.ENTITY_EFFECT);
    }
@@ -340,7 +341,7 @@ public class AreaEffectCloud extends Entity {
 
       if (var1.contains("Particle", 8)) {
          try {
-            this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle"))));
+            this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle")), BuiltInRegistries.PARTICLE_TYPE.asLookup()));
          } catch (CommandSyntaxException var5) {
             LOGGER.warn("Couldn't load custom particle {}", var1.getString("Particle"), var5);
          }
@@ -387,7 +388,7 @@ public class AreaEffectCloud extends Entity {
       }
 
       if (this.potion != Potions.EMPTY) {
-         var1.putString("Potion", Registry.POTION.getKey(this.potion).toString());
+         var1.putString("Potion", BuiltInRegistries.POTION.getKey(this.potion).toString());
       }
 
       if (!this.effects.isEmpty()) {
@@ -417,11 +418,6 @@ public class AreaEffectCloud extends Entity {
    @Override
    public PushReaction getPistonPushReaction() {
       return PushReaction.IGNORE;
-   }
-
-   @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
    }
 
    @Override

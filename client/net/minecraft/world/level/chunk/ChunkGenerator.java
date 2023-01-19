@@ -1,17 +1,11 @@
 package net.minecraft.world.level.chunk;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Suppliers;
-import com.mojang.datafixers.Products.P1;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,12 +17,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -37,17 +29,18 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
@@ -62,7 +55,6 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.FeatureSorter;
 import net.minecraft.world.level.biome.MobSpawnSettings;
-import net.minecraft.world.level.levelgen.FlatLevelSource;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -83,134 +75,42 @@ import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStruct
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.slf4j.Logger;
 
 public abstract class ChunkGenerator {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Codec<ChunkGenerator> CODEC = Registry.CHUNK_GENERATOR.byNameCodec().dispatchStable(ChunkGenerator::codec, Function.identity());
-   protected final Registry<StructureSet> structureSets;
+   public static final Codec<ChunkGenerator> CODEC = BuiltInRegistries.CHUNK_GENERATOR
+      .byNameCodec()
+      .dispatchStable(ChunkGenerator::codec, Function.identity());
    protected final BiomeSource biomeSource;
    private final Supplier<List<FeatureSorter.StepFeatureData>> featuresPerStep;
-   protected final Optional<HolderSet<StructureSet>> structureOverrides;
    private final Function<Holder<Biome>, BiomeGenerationSettings> generationSettingsGetter;
-   private final Map<Structure, List<StructurePlacement>> placementsForStructure = new Object2ObjectOpenHashMap();
-   private final Map<ConcentricRingsStructurePlacement, CompletableFuture<List<ChunkPos>>> ringPositions = new Object2ObjectArrayMap();
-   private boolean hasGeneratedPositions;
 
-   protected static <T extends ChunkGenerator> P1<Mu<T>, Registry<StructureSet>> commonCodec(Instance<T> var0) {
-      return var0.group(RegistryOps.retrieveRegistry(Registry.STRUCTURE_SET_REGISTRY).forGetter(var0x -> var0x.structureSets));
+   public ChunkGenerator(BiomeSource var1) {
+      this(var1, var0 -> var0.value().getGenerationSettings());
    }
 
-   public ChunkGenerator(Registry<StructureSet> var1, Optional<HolderSet<StructureSet>> var2, BiomeSource var3) {
-      this(var1, var2, var3, var0 -> var0.value().getGenerationSettings());
-   }
-
-   public ChunkGenerator(
-      Registry<StructureSet> var1, Optional<HolderSet<StructureSet>> var2, BiomeSource var3, Function<Holder<Biome>, BiomeGenerationSettings> var4
-   ) {
+   public ChunkGenerator(BiomeSource var1, Function<Holder<Biome>, BiomeGenerationSettings> var2) {
       super();
-      this.structureSets = var1;
-      this.biomeSource = var3;
-      this.generationSettingsGetter = var4;
-      this.structureOverrides = var2;
+      this.biomeSource = var1;
+      this.generationSettingsGetter = var2;
       this.featuresPerStep = Suppliers.memoize(
-         () -> FeatureSorter.buildFeaturesPerStep(List.copyOf(var3.possibleBiomes()), var1xx -> ((BiomeGenerationSettings)var4.apply(var1xx)).features(), true)
+         () -> FeatureSorter.buildFeaturesPerStep(List.copyOf(var1.possibleBiomes()), var1xx -> ((BiomeGenerationSettings)var2.apply(var1xx)).features(), true)
       );
-   }
-
-   public Stream<Holder<StructureSet>> possibleStructureSets() {
-      return this.structureOverrides.isPresent() ? this.structureOverrides.get().stream() : this.structureSets.holders().map(Holder::hackyErase);
-   }
-
-   private void generatePositions(RandomState var1) {
-      Set var2 = this.biomeSource.possibleBiomes();
-      this.possibleStructureSets().forEach(var3 -> {
-         StructureSet var4 = var3.value();
-         boolean var5 = false;
-
-         for(StructureSet.StructureSelectionEntry var7 : var4.structures()) {
-            Structure var8 = var7.structure().value();
-            if (var8.biomes().stream().anyMatch(var2::contains)) {
-               this.placementsForStructure.computeIfAbsent(var8, var0 -> new ArrayList()).add(var4.placement());
-               var5 = true;
-            }
-         }
-
-         if (var5) {
-            StructurePlacement var10 = var4.placement();
-            if (var10 instanceof ConcentricRingsStructurePlacement var9) {
-               this.ringPositions
-                  .put((ConcentricRingsStructurePlacement)var9, this.generateRingPositions(var3, var1, (ConcentricRingsStructurePlacement)var9));
-            }
-         }
-      });
-   }
-
-   private CompletableFuture<List<ChunkPos>> generateRingPositions(Holder<StructureSet> var1, RandomState var2, ConcentricRingsStructurePlacement var3) {
-      return var3.count() == 0
-         ? CompletableFuture.completedFuture(List.of())
-         : CompletableFuture.supplyAsync(
-            Util.wrapThreadWithTaskName(
-               "placement calculation",
-               () -> {
-                  Stopwatch var4 = Stopwatch.createStarted(Util.TICKER);
-                  ArrayList var5 = new ArrayList();
-                  int var6 = var3.distance();
-                  int var7 = var3.count();
-                  int var8 = var3.spread();
-                  HolderSet var9 = var3.preferredBiomes();
-                  RandomSource var10 = RandomSource.create();
-                  var10.setSeed(this instanceof FlatLevelSource ? 0L : var2.legacyLevelSeed());
-                  double var11 = var10.nextDouble() * 3.141592653589793 * 2.0;
-                  int var13 = 0;
-                  int var14 = 0;
-         
-                  for(int var15 = 0; var15 < var7; ++var15) {
-                     double var16 = (double)(4 * var6 + var6 * var14 * 6) + (var10.nextDouble() - 0.5) * (double)var6 * 2.5;
-                     int var18 = (int)Math.round(Math.cos(var11) * var16);
-                     int var19 = (int)Math.round(Math.sin(var11) * var16);
-                     Pair var20 = this.biomeSource
-                        .findBiomeHorizontal(
-                           SectionPos.sectionToBlockCoord(var18, 8), 0, SectionPos.sectionToBlockCoord(var19, 8), 112, var9::contains, var10, var2.sampler()
-                        );
-                     if (var20 != null) {
-                        BlockPos var21 = (BlockPos)var20.getFirst();
-                        var18 = SectionPos.blockToSectionCoord(var21.getX());
-                        var19 = SectionPos.blockToSectionCoord(var21.getZ());
-                     }
-         
-                     var5.add(new ChunkPos(var18, var19));
-                     var11 += 6.283185307179586 / (double)var8;
-                     if (++var13 == var8) {
-                        ++var14;
-                        var13 = 0;
-                        var8 += 2 * var8 / (var14 + 1);
-                        var8 = Math.min(var8, var7 - var15);
-                        var11 += var10.nextDouble() * 3.141592653589793 * 2.0;
-                     }
-                  }
-         
-                  double var23 = (double)var4.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
-                  LOGGER.debug("Calculation for {} took {}s", var1, var23);
-                  return var5;
-               }
-            ),
-            Util.backgroundExecutor()
-         );
    }
 
    protected abstract Codec<? extends ChunkGenerator> codec();
 
-   public Optional<ResourceKey<Codec<? extends ChunkGenerator>>> getTypeNameForDataFixer() {
-      return Registry.CHUNK_GENERATOR.getResourceKey(this.codec());
+   public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
+      return ChunkGeneratorStructureState.createForNormal(var2, var3, this.biomeSource, var1);
    }
 
-   public CompletableFuture<ChunkAccess> createBiomes(
-      Registry<Biome> var1, Executor var2, RandomState var3, Blender var4, StructureManager var5, ChunkAccess var6
-   ) {
+   public Optional<ResourceKey<Codec<? extends ChunkGenerator>>> getTypeNameForDataFixer() {
+      return BuiltInRegistries.CHUNK_GENERATOR.getResourceKey(this.codec());
+   }
+
+   public CompletableFuture<ChunkAccess> createBiomes(Executor var1, RandomState var2, Blender var3, StructureManager var4, ChunkAccess var5) {
       return CompletableFuture.supplyAsync(Util.wrapThreadWithTaskName("init_biomes", () -> {
-         var6.fillBiomesFromNoise(this.biomeSource, var3.sampler());
-         return var6;
+         var5.fillBiomesFromNoise(this.biomeSource, var2.sampler());
+         return var5;
       }), Util.backgroundExecutor());
    }
 
@@ -220,70 +120,71 @@ public abstract class ChunkGenerator {
 
    @Nullable
    public Pair<BlockPos, Holder<Structure>> findNearestMapStructure(ServerLevel var1, HolderSet<Structure> var2, BlockPos var3, int var4, boolean var5) {
-      Object2ObjectArrayMap var6 = new Object2ObjectArrayMap();
+      ChunkGeneratorStructureState var6 = var1.getChunkSource().getGeneratorState();
+      Object2ObjectArrayMap var7 = new Object2ObjectArrayMap();
 
-      for(Holder var8 : var2) {
-         for(StructurePlacement var10 : this.getPlacementsForStructure(var8, var1.getChunkSource().randomState())) {
-            var6.computeIfAbsent(var10, var0 -> new ObjectArraySet()).add(var8);
+      for(Holder var9 : var2) {
+         for(StructurePlacement var11 : var6.getPlacementsForStructure(var9)) {
+            var7.computeIfAbsent(var11, var0 -> new ObjectArraySet()).add(var9);
          }
       }
 
-      if (var6.isEmpty()) {
+      if (var7.isEmpty()) {
          return null;
       } else {
-         Pair var22 = null;
-         double var23 = 1.7976931348623157E308;
-         StructureManager var24 = var1.structureManager();
-         ArrayList var11 = new ArrayList(var6.size());
+         Pair var23 = null;
+         double var24 = 1.7976931348623157E308;
+         StructureManager var25 = var1.structureManager();
+         ArrayList var12 = new ArrayList(var7.size());
 
-         for(Entry var13 : var6.entrySet()) {
-            StructurePlacement var14 = (StructurePlacement)var13.getKey();
-            if (var14 instanceof ConcentricRingsStructurePlacement var15) {
-               Pair var16 = this.getNearestGeneratedStructure(
-                  (Set<Holder<Structure>>)var13.getValue(), var1, var24, var3, var5, (ConcentricRingsStructurePlacement)var15
+         for(Entry var14 : var7.entrySet()) {
+            StructurePlacement var15 = (StructurePlacement)var14.getKey();
+            if (var15 instanceof ConcentricRingsStructurePlacement var16) {
+               Pair var17 = this.getNearestGeneratedStructure(
+                  (Set<Holder<Structure>>)var14.getValue(), var1, var25, var3, var5, (ConcentricRingsStructurePlacement)var16
                );
-               if (var16 != null) {
-                  BlockPos var17 = (BlockPos)var16.getFirst();
-                  double var18 = var3.distSqr(var17);
-                  if (var18 < var23) {
-                     var23 = var18;
-                     var22 = var16;
+               if (var17 != null) {
+                  BlockPos var18 = (BlockPos)var17.getFirst();
+                  double var19 = var3.distSqr(var18);
+                  if (var19 < var24) {
+                     var24 = var19;
+                     var23 = var17;
                   }
                }
-            } else if (var14 instanceof RandomSpreadStructurePlacement) {
-               var11.add(var13);
+            } else if (var15 instanceof RandomSpreadStructurePlacement) {
+               var12.add(var14);
             }
          }
 
-         if (!var11.isEmpty()) {
-            int var25 = SectionPos.blockToSectionCoord(var3.getX());
-            int var26 = SectionPos.blockToSectionCoord(var3.getZ());
+         if (!var12.isEmpty()) {
+            int var26 = SectionPos.blockToSectionCoord(var3.getX());
+            int var27 = SectionPos.blockToSectionCoord(var3.getZ());
 
-            for(int var27 = 0; var27 <= var4; ++var27) {
-               boolean var28 = false;
+            for(int var28 = 0; var28 <= var4; ++var28) {
+               boolean var29 = false;
 
-               for(Entry var30 : var11) {
-                  RandomSpreadStructurePlacement var31 = (RandomSpreadStructurePlacement)var30.getKey();
-                  Pair var19 = getNearestGeneratedStructure(
-                     (Set<Holder<Structure>>)var30.getValue(), var1, var24, var25, var26, var27, var5, var1.getSeed(), var31
+               for(Entry var31 : var12) {
+                  RandomSpreadStructurePlacement var32 = (RandomSpreadStructurePlacement)var31.getKey();
+                  Pair var20 = getNearestGeneratedStructure(
+                     (Set<Holder<Structure>>)var31.getValue(), var1, var25, var26, var27, var28, var5, var6.getLevelSeed(), var32
                   );
-                  if (var19 != null) {
-                     var28 = true;
-                     double var20 = var3.distSqr((Vec3i)var19.getFirst());
-                     if (var20 < var23) {
+                  if (var20 != null) {
+                     var29 = true;
+                     double var21 = var3.distSqr((Vec3i)var20.getFirst());
+                     if (var21 < var24) {
+                        var24 = var21;
                         var23 = var20;
-                        var22 = var19;
                      }
                   }
                }
 
-               if (var28) {
-                  return var22;
+               if (var29) {
+                  return var23;
                }
             }
          }
 
-         return var22;
+         return var23;
       }
    }
 
@@ -291,7 +192,7 @@ public abstract class ChunkGenerator {
    private Pair<BlockPos, Holder<Structure>> getNearestGeneratedStructure(
       Set<Holder<Structure>> var1, ServerLevel var2, StructureManager var3, BlockPos var4, boolean var5, ConcentricRingsStructurePlacement var6
    ) {
-      List var7 = this.getRingPositionsFor(var6, var2.getChunkSource().randomState());
+      List var7 = var2.getChunkSource().getGeneratorState().getRingPositionsFor(var6);
       if (var7 == null) {
          throw new IllegalStateException("Somehow tried to find structures for a placement that doesn't exist");
       } else {
@@ -386,7 +287,7 @@ public abstract class ChunkGenerator {
       if (!SharedConstants.debugVoidTerrain(var4)) {
          SectionPos var5 = SectionPos.of(var4, var1.getMinSection());
          BlockPos var6 = var5.origin();
-         Registry var7 = var1.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY);
+         Registry var7 = var1.registryAccess().registryOrThrow(Registries.STRUCTURE);
          Map var8 = var7.stream().collect(Collectors.groupingBy(var0 -> var0.step().ordinal()));
          List var9 = this.featuresPerStep.get();
          WorldgenRandom var10 = new WorldgenRandom(new XoroshiroRandomSource(RandomSupport.generateUniqueSeed()));
@@ -403,7 +304,7 @@ public abstract class ChunkGenerator {
          int var14 = var9.size();
 
          try {
-            Registry var15 = var1.registryAccess().registryOrThrow(Registry.PLACED_FEATURE_REGISTRY);
+            Registry var15 = var1.registryAccess().registryOrThrow(Registries.PLACED_FEATURE);
             int var32 = Math.max(GenerationStep.Decoration.values().length, var14);
 
             for(int var17 = 0; var17 < var32; ++var17) {
@@ -470,25 +371,6 @@ public abstract class ChunkGenerator {
       }
    }
 
-   public boolean hasStructureChunkInRange(Holder<StructureSet> var1, RandomState var2, long var3, int var5, int var6, int var7) {
-      StructureSet var8 = (StructureSet)var1.value();
-      if (var8 == null) {
-         return false;
-      } else {
-         StructurePlacement var9 = var8.placement();
-
-         for(int var10 = var5 - var7; var10 <= var5 + var7; ++var10) {
-            for(int var11 = var6 - var7; var11 <= var6 + var7; ++var11) {
-               if (var9.isStructureChunk(this, var2, var3, var10, var11)) {
-                  return true;
-               }
-            }
-         }
-
-         return false;
-      }
-   }
-
    private static BoundingBox getWritableArea(ChunkAccess var0) {
       ChunkPos var1 = var0.getPos();
       int var2 = var1.getMinBlockX();
@@ -538,54 +420,55 @@ public abstract class ChunkGenerator {
       return ((Biome)var1.value()).getMobSettings().getMobs(var3);
    }
 
-   public void createStructures(RegistryAccess var1, RandomState var2, StructureManager var3, ChunkAccess var4, StructureTemplateManager var5, long var6) {
-      ChunkPos var8 = var4.getPos();
-      SectionPos var9 = SectionPos.bottomOf(var4);
-      this.possibleStructureSets().forEach(var10 -> {
-         StructurePlacement var11 = var10.value().placement();
-         List var12 = var10.value().structures();
+   public void createStructures(RegistryAccess var1, ChunkGeneratorStructureState var2, StructureManager var3, ChunkAccess var4, StructureTemplateManager var5) {
+      ChunkPos var6 = var4.getPos();
+      SectionPos var7 = SectionPos.bottomOf(var4);
+      RandomState var8 = var2.randomState();
+      var2.possibleStructureSets().forEach(var9 -> {
+         StructurePlacement var10 = var9.value().placement();
+         List var11 = var9.value().structures();
 
-         for(StructureSet.StructureSelectionEntry var14 : var12) {
-            StructureStart var15 = var3.getStartForStructure(var9, var14.structure().value(), var4);
-            if (var15 != null && var15.isValid()) {
+         for(StructureSet.StructureSelectionEntry var13 : var11) {
+            StructureStart var14 = var3.getStartForStructure(var7, var13.structure().value(), var4);
+            if (var14 != null && var14.isValid()) {
                return;
             }
          }
 
-         if (var11.isStructureChunk(this, var2, var6, var8.x, var8.z)) {
-            if (var12.size() == 1) {
-               this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var12.get(0), var3, var1, var2, var5, var6, var4, var8, var9);
+         if (var10.isStructureChunk(var2, var6.x, var6.z)) {
+            if (var11.size() == 1) {
+               this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var11.get(0), var3, var1, var8, var5, var2.getLevelSeed(), var4, var6, var7);
             } else {
-               ArrayList var20 = new ArrayList(var12.size());
-               var20.addAll(var12);
-               WorldgenRandom var21 = new WorldgenRandom(new LegacyRandomSource(0L));
-               var21.setLargeFeatureSeed(var6, var8.x, var8.z);
-               int var22 = 0;
+               ArrayList var19 = new ArrayList(var11.size());
+               var19.addAll(var11);
+               WorldgenRandom var20 = new WorldgenRandom(new LegacyRandomSource(0L));
+               var20.setLargeFeatureSeed(var2.getLevelSeed(), var6.x, var6.z);
+               int var21 = 0;
 
-               for(StructureSet.StructureSelectionEntry var17 : var20) {
-                  var22 += var17.weight();
+               for(StructureSet.StructureSelectionEntry var16 : var19) {
+                  var21 += var16.weight();
                }
 
-               while(!var20.isEmpty()) {
-                  int var23 = var21.nextInt(var22);
-                  int var24 = 0;
+               while(!var19.isEmpty()) {
+                  int var22 = var20.nextInt(var21);
+                  int var23 = 0;
 
-                  for(StructureSet.StructureSelectionEntry var19 : var20) {
-                     var23 -= var19.weight();
-                     if (var23 < 0) {
+                  for(StructureSet.StructureSelectionEntry var18 : var19) {
+                     var22 -= var18.weight();
+                     if (var22 < 0) {
                         break;
                      }
 
-                     ++var24;
+                     ++var23;
                   }
 
-                  StructureSet.StructureSelectionEntry var25 = (StructureSet.StructureSelectionEntry)var20.get(var24);
-                  if (this.tryGenerateStructure(var25, var3, var1, var2, var5, var6, var4, var8, var9)) {
+                  StructureSet.StructureSelectionEntry var24 = (StructureSet.StructureSelectionEntry)var19.get(var23);
+                  if (this.tryGenerateStructure(var24, var3, var1, var8, var5, var2.getLevelSeed(), var4, var6, var7)) {
                      return;
                   }
 
-                  var20.remove(var24);
-                  var22 -= var25.weight();
+                  var19.remove(var23);
+                  var21 -= var24.weight();
                }
             }
          }
@@ -643,9 +526,9 @@ public abstract class ChunkGenerator {
                } catch (Exception var21) {
                   CrashReport var18 = CrashReport.forThrowable(var21, "Generating structure reference");
                   CrashReportCategory var19 = var18.addCategory("Structure");
-                  Optional var20 = var1.registryAccess().registry(Registry.STRUCTURE_REGISTRY);
+                  Optional var20 = var1.registryAccess().registry(Registries.STRUCTURE);
                   var19.setDetail("Id", () -> var20.<String>map(var1xx -> var1xx.getKey(var16.getStructure()).toString()).orElse("UNKNOWN"));
-                  var19.setDetail("Name", () -> Registry.STRUCTURE_TYPES.getKey(var16.getStructure().type()).toString());
+                  var19.setDetail("Name", () -> BuiltInRegistries.STRUCTURE_TYPE.getKey(var16.getStructure().type()).toString());
                   var19.setDetail("Class", () -> var16.getStructure().getClass().getCanonicalName());
                   throw new ReportedException(var18);
                }
@@ -670,25 +553,6 @@ public abstract class ChunkGenerator {
 
    public int getFirstOccupiedHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
       return this.getBaseHeight(var1, var2, var3, var4, var5) - 1;
-   }
-
-   public void ensureStructuresGenerated(RandomState var1) {
-      if (!this.hasGeneratedPositions) {
-         this.generatePositions(var1);
-         this.hasGeneratedPositions = true;
-      }
-   }
-
-   @Nullable
-   public List<ChunkPos> getRingPositionsFor(ConcentricRingsStructurePlacement var1, RandomState var2) {
-      this.ensureStructuresGenerated(var2);
-      CompletableFuture var3 = this.ringPositions.get(var1);
-      return var3 != null ? (List)var3.join() : null;
-   }
-
-   private List<StructurePlacement> getPlacementsForStructure(Holder<Structure> var1, RandomState var2) {
-      this.ensureStructuresGenerated(var2);
-      return this.placementsForStructure.getOrDefault(var1.value(), List.of());
    }
 
    public abstract void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3);

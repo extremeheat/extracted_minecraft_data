@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
+import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.FastColor;
@@ -164,18 +166,21 @@ public class LoadingOverlay extends Overlay {
 
       @Override
       protected SimpleTexture.TextureImage getTextureImage(ResourceManager var1) {
-         Minecraft var2 = Minecraft.getInstance();
-         VanillaPackResources var3 = var2.getClientPackSource().getVanillaPack();
+         VanillaPackResources var2 = Minecraft.getInstance().getVanillaPackResources();
+         IoSupplier var3 = var2.getResource(PackType.CLIENT_RESOURCES, LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
+         if (var3 == null) {
+            return new SimpleTexture.TextureImage(new FileNotFoundException(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION.toString()));
+         } else {
+            try {
+               SimpleTexture.TextureImage var5;
+               try (InputStream var4 = (InputStream)var3.get()) {
+                  var5 = new SimpleTexture.TextureImage(new TextureMetadataSection(true, true), NativeImage.read(var4));
+               }
 
-         try {
-            SimpleTexture.TextureImage var5;
-            try (InputStream var4 = var3.getResource(PackType.CLIENT_RESOURCES, LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION)) {
-               var5 = new SimpleTexture.TextureImage(new TextureMetadataSection(true, true), NativeImage.read(var4));
+               return var5;
+            } catch (IOException var9) {
+               return new SimpleTexture.TextureImage(var9);
             }
-
-            return var5;
-         } catch (IOException var9) {
-            return new SimpleTexture.TextureImage(var9);
          }
       }
    }

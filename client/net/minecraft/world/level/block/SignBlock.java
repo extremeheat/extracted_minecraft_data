@@ -76,30 +76,30 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       if (var2.isClientSide) {
          return var12 ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
       } else {
-         BlockEntity var13 = var2.getBlockEntity(var3);
-         if (!(var13 instanceof SignBlockEntity)) {
+         BlockEntity var14 = var2.getBlockEntity(var3);
+         if (!(var14 instanceof SignBlockEntity)) {
             return InteractionResult.PASS;
          } else {
-            SignBlockEntity var14 = (SignBlockEntity)var13;
-            boolean var15 = var14.hasGlowingText();
-            if ((!var10 || !var15) && (!var11 || var15)) {
+            SignBlockEntity var13 = (SignBlockEntity)var14;
+            boolean var16 = var13.hasGlowingText();
+            if ((!var10 || !var16) && (!var11 || var16)) {
                if (var12) {
-                  boolean var16;
+                  boolean var15;
                   if (var10) {
                      var2.playSound(null, var3, SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     var16 = var14.setHasGlowingText(true);
+                     var15 = var13.setHasGlowingText(true);
                      if (var4 instanceof ServerPlayer) {
                         CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var4, var3, var7);
                      }
                   } else if (var11) {
                      var2.playSound(null, var3, SoundEvents.INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     var16 = var14.setHasGlowingText(false);
+                     var15 = var13.setHasGlowingText(false);
                   } else {
                      var2.playSound(null, var3, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     var16 = var14.setColor(((DyeItem)var8).getDyeColor());
+                     var15 = var13.setColor(((DyeItem)var8).getDyeColor());
                   }
 
-                  if (var16) {
+                  if (var15) {
                      if (!var4.isCreative()) {
                         var7.shrink(1);
                      }
@@ -108,7 +108,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                   }
                }
 
-               return var14.executeClickCommands((ServerPlayer)var4) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+               return var13.executeClickCommands((ServerPlayer)var4) ? InteractionResult.SUCCESS : InteractionResult.PASS;
             } else {
                return InteractionResult.PASS;
             }
@@ -123,5 +123,16 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
 
    public WoodType type() {
       return this.type;
+   }
+
+   public static WoodType getWoodType(Block var0) {
+      WoodType var1;
+      if (var0 instanceof SignBlock) {
+         var1 = ((SignBlock)var0).type();
+      } else {
+         var1 = WoodType.OAK;
+      }
+
+      return var1;
    }
 }

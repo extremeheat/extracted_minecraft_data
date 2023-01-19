@@ -6,19 +6,17 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
@@ -56,18 +54,13 @@ public class MultiVariant implements UnbakedModel {
    }
 
    @Override
-   public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> var1, Set<Pair<String, String>> var2) {
-      return this.getVariants()
-         .stream()
-         .map(Variant::getModelLocation)
-         .distinct()
-         .flatMap(var2x -> ((UnbakedModel)var1.apply(var2x)).getMaterials(var1, var2).stream())
-         .collect(Collectors.toSet());
+   public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
+      this.getVariants().stream().map(Variant::getModelLocation).distinct().forEach(var1x -> ((UnbakedModel)var1.apply(var1x)).resolveParents(var1));
    }
 
    @Nullable
    @Override
-   public BakedModel bake(ModelBakery var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
+   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       if (this.getVariants().isEmpty()) {
          return null;
       } else {

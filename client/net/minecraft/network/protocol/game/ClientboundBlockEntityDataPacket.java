@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.game;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
@@ -34,14 +34,14 @@ public class ClientboundBlockEntityDataPacket implements Packet<ClientGamePacket
    public ClientboundBlockEntityDataPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
-      this.type = var1.readById(Registry.BLOCK_ENTITY_TYPE);
+      this.type = var1.readById(BuiltInRegistries.BLOCK_ENTITY_TYPE);
       this.tag = var1.readNbt();
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
-      var1.writeId(Registry.BLOCK_ENTITY_TYPE, this.type);
+      var1.writeId(BuiltInRegistries.BLOCK_ENTITY_TYPE, this.type);
       var1.writeNbt(this.tag);
    }
 

@@ -9,10 +9,13 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ItemEnchantmentArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,18 +42,18 @@ public class EnchantCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("enchant").requires(var0x -> var0x.hasPermission(2)))
             .then(
                Commands.argument("targets", EntityArgument.entities())
                   .then(
-                     ((RequiredArgumentBuilder)Commands.argument("enchantment", ItemEnchantmentArgument.enchantment())
+                     ((RequiredArgumentBuilder)Commands.argument("enchantment", ResourceArgument.resource(var1, Registries.ENCHANTMENT))
                            .executes(
                               var0x -> enchant(
                                     (CommandSourceStack)var0x.getSource(),
                                     EntityArgument.getEntities(var0x, "targets"),
-                                    ItemEnchantmentArgument.getEnchantment(var0x, "enchantment"),
+                                    ResourceArgument.getEnchantment(var0x, "enchantment"),
                                     1
                                  )
                            ))
@@ -60,7 +63,7 @@ public class EnchantCommand {
                                  var0x -> enchant(
                                        (CommandSourceStack)var0x.getSource(),
                                        EntityArgument.getEntities(var0x, "targets"),
-                                       ItemEnchantmentArgument.getEnchantment(var0x, "enchantment"),
+                                       ResourceArgument.getEnchantment(var0x, "enchantment"),
                                        IntegerArgumentType.getInteger(var0x, "level")
                                     )
                               )
@@ -72,42 +75,43 @@ public class EnchantCommand {
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static int enchant(CommandSourceStack var0, Collection<? extends Entity> var1, Enchantment var2, int var3) throws CommandSyntaxException {
-      if (var3 > var2.getMaxLevel()) {
-         throw ERROR_LEVEL_TOO_HIGH.create(var3, var2.getMaxLevel());
+   private static int enchant(CommandSourceStack var0, Collection<? extends Entity> var1, Holder<Enchantment> var2, int var3) throws CommandSyntaxException {
+      Enchantment var4 = (Enchantment)var2.value();
+      if (var3 > var4.getMaxLevel()) {
+         throw ERROR_LEVEL_TOO_HIGH.create(var3, var4.getMaxLevel());
       } else {
-         int var4 = 0;
+         int var5 = 0;
 
-         for(Entity var6 : var1) {
-            if (var6 instanceof LivingEntity var7) {
-               ItemStack var8 = var7.getMainHandItem();
-               if (!var8.isEmpty()) {
-                  if (var2.canEnchant(var8) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantments(var8).keySet(), var2)) {
-                     var8.enchant(var2, var3);
-                     ++var4;
+         for(Entity var7 : var1) {
+            if (var7 instanceof LivingEntity var8) {
+               ItemStack var9 = var8.getMainHandItem();
+               if (!var9.isEmpty()) {
+                  if (var4.canEnchant(var9) && EnchantmentHelper.isEnchantmentCompatible(EnchantmentHelper.getEnchantments(var9).keySet(), var4)) {
+                     var9.enchant(var4, var3);
+                     ++var5;
                   } else if (var1.size() == 1) {
-                     throw ERROR_INCOMPATIBLE.create(var8.getItem().getName(var8).getString());
+                     throw ERROR_INCOMPATIBLE.create(var9.getItem().getName(var9).getString());
                   }
                } else if (var1.size() == 1) {
-                  throw ERROR_NO_ITEM.create(var7.getName().getString());
+                  throw ERROR_NO_ITEM.create(var8.getName().getString());
                }
             } else if (var1.size() == 1) {
-               throw ERROR_NOT_LIVING_ENTITY.create(var6.getName().getString());
+               throw ERROR_NOT_LIVING_ENTITY.create(var7.getName().getString());
             }
          }
 
-         if (var4 == 0) {
+         if (var5 == 0) {
             throw ERROR_NOTHING_HAPPENED.create();
          } else {
             if (var1.size() == 1) {
                var0.sendSuccess(
-                  Component.translatable("commands.enchant.success.single", var2.getFullname(var3), ((Entity)var1.iterator().next()).getDisplayName()), true
+                  Component.translatable("commands.enchant.success.single", var4.getFullname(var3), ((Entity)var1.iterator().next()).getDisplayName()), true
                );
             } else {
-               var0.sendSuccess(Component.translatable("commands.enchant.success.multiple", var2.getFullname(var3), var1.size()), true);
+               var0.sendSuccess(Component.translatable("commands.enchant.success.multiple", var4.getFullname(var3), var1.size()), true);
             }
 
-            return var4;
+            return var5;
          }
       }
    }

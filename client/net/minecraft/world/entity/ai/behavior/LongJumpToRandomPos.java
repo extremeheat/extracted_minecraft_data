@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -24,11 +24,10 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
@@ -47,14 +46,21 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    protected Vec3 chosenJump;
    protected int findJumpTries;
    protected long prepareJumpStart;
-   private Function<E, SoundEvent> getJumpSound;
-   private final Predicate<BlockState> acceptableLandingSpot;
+   private final Function<E, SoundEvent> getJumpSound;
+   private final BiPredicate<E, BlockPos> acceptableLandingSpot;
 
    public LongJumpToRandomPos(UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5) {
-      this(var1, var2, var3, var4, var5, var0 -> false);
+      this(var1, var2, var3, var4, var5, LongJumpToRandomPos::defaultAcceptableLandingSpot);
    }
 
-   public LongJumpToRandomPos(UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, Predicate<BlockState> var6) {
+   public static <E extends Mob> boolean defaultAcceptableLandingSpot(E var0, BlockPos var1) {
+      Level var2 = var0.level;
+      BlockPos var3 = var1.below();
+      return var2.getBlockState(var3).isSolidRender(var2, var3)
+         && var0.getPathfindingMalus(WalkNodeEvaluator.getBlockPathTypeStatic(var2, var1.mutable())) == 0.0F;
+   }
+
+   public LongJumpToRandomPos(UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, BiPredicate<E, BlockPos> var6) {
       super(
          ImmutableMap.of(
             MemoryModuleType.LOOK_TARGET,
@@ -165,17 +171,11 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       return var2;
    }
 
-   protected boolean isAcceptableLandingPosition(ServerLevel var1, E var2, BlockPos var3) {
+   private boolean isAcceptableLandingPosition(ServerLevel var1, E var2, BlockPos var3) {
       BlockPos var4 = var2.blockPosition();
       int var5 = var4.getX();
       int var6 = var4.getZ();
-      if (var5 == var3.getX() && var6 == var3.getZ()) {
-         return false;
-      } else if (!var2.getNavigation().isStableDestination(var3) && !this.acceptableLandingSpot.test(var1.getBlockState(var3.below()))) {
-         return false;
-      } else {
-         return var2.getPathfindingMalus(WalkNodeEvaluator.getBlockPathTypeStatic(var2.level, var3.mutable())) == 0.0F;
-      }
+      return var5 == var3.getX() && var6 == var3.getZ() ? false : this.acceptableLandingSpot.test((E)var2, var3);
    }
 
    @Nullable
@@ -224,18 +224,19 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             int var38 = Mth.ceil(var12 / var34) * 2;
             double var39 = 0.0;
             Vec3 var41 = null;
+            EntityDimensions var42 = var1.getDimensions(Pose.LONG_JUMPING);
 
-            for(int var42 = 0; var42 < var38 - 1; ++var42) {
+            for(int var43 = 0; var43 < var38 - 1; ++var43) {
                var39 += var12 / (double)var38;
-               double var43 = var22 / var24 * var39 - Math.pow(var39, 2.0) * 0.08 / (2.0 * var30 * Math.pow(var24, 2.0));
-               double var45 = var39 * var28;
-               double var47 = var39 * var26;
-               Vec3 var49 = new Vec3(var4.x + var45, var4.y + var43, var4.z + var47);
-               if (var41 != null && !this.isClearTransition(var1, var41, var49)) {
+               double var44 = var22 / var24 * var39 - Math.pow(var39, 2.0) * 0.08 / (2.0 * var30 * Math.pow(var24, 2.0));
+               double var46 = var39 * var28;
+               double var48 = var39 * var26;
+               Vec3 var50 = new Vec3(var4.x + var46, var4.y + var44, var4.z + var48);
+               if (var41 != null && !this.isClearTransition(var1, var42, var41, var50)) {
                   return null;
                }
 
-               var41 = var49;
+               var41 = var50;
             }
 
             return new Vec3(var34 * var28, var36, var34 * var26).scale(0.949999988079071);
@@ -243,18 +244,16 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       }
    }
 
-   private boolean isClearTransition(Mob var1, Vec3 var2, Vec3 var3) {
-      EntityDimensions var4 = var1.getDimensions(Pose.LONG_JUMPING);
-      Vec3 var5 = var3.subtract(var2);
-      double var6 = (double)Math.min(var4.width, var4.height);
+   private boolean isClearTransition(Mob var1, EntityDimensions var2, Vec3 var3, Vec3 var4) {
+      Vec3 var5 = var4.subtract(var3);
+      double var6 = (double)Math.min(var2.width, var2.height);
       int var8 = Mth.ceil(var5.length() / var6);
       Vec3 var9 = var5.normalize();
-      Vec3 var10 = var2;
+      Vec3 var10 = var3;
 
       for(int var11 = 0; var11 < var8; ++var11) {
-         var10 = var11 == var8 - 1 ? var3 : var10.add(var9.scale(var6 * 0.8999999761581421));
-         AABB var12 = var4.makeBoundingBox(var10);
-         if (!var1.level.noCollision(var1, var12)) {
+         var10 = var11 == var8 - 1 ? var4 : var10.add(var9.scale(var6 * 0.8999999761581421));
+         if (!var1.level.noCollision(var1, var2.makeBoundingBox(var10))) {
             return false;
          }
       }

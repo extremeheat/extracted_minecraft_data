@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.Map;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.GlowSquid;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,6 +32,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.camel.Camel;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.Tadpole;
 import net.minecraft.world.entity.animal.goat.Goat;
@@ -86,6 +87,7 @@ public class DefaultAttributes {
       .put(EntityType.BEE, Bee.createAttributes().build())
       .put(EntityType.BLAZE, Blaze.createAttributes().build())
       .put(EntityType.CAT, Cat.createAttributes().build())
+      .put(EntityType.CAMEL, Camel.createAttributes().build())
       .put(EntityType.CAVE_SPIDER, CaveSpider.createCaveSpider().build())
       .put(EntityType.CHICKEN, Chicken.createAttributes().build())
       .put(EntityType.COD, AbstractFish.createAttributes().build())
@@ -173,11 +175,11 @@ public class DefaultAttributes {
    }
 
    public static void validate() {
-      Registry.ENTITY_TYPE
+      BuiltInRegistries.ENTITY_TYPE
          .stream()
          .filter(var0 -> var0.getCategory() != MobCategory.MISC)
          .filter(var0 -> !hasSupplier(var0))
-         .map(Registry.ENTITY_TYPE::getKey)
+         .map(BuiltInRegistries.ENTITY_TYPE::getKey)
          .forEach(var0 -> Util.logAndPauseIfInIde("Entity " + var0 + " has no attributes"));
    }
 }

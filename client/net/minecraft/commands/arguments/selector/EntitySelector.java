@@ -25,6 +25,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class EntitySelector {
    public static final int INFINITE = 2147483647;
+   public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_ARBITRARY = (var0, var1) -> {
+   };
    private static final EntityTypeTest<Entity, ?> ANY_TYPE = new EntityTypeTest<Entity, Entity>() {
       public Entity tryCast(Entity var1) {
          return var1;
@@ -49,7 +51,7 @@ public class EntitySelector {
    private final String playerName;
    @Nullable
    private final UUID entityUUID;
-   private EntityTypeTest<Entity, ?> type;
+   private final EntityTypeTest<Entity, ?> type;
    private final boolean usesSelector;
 
    public EntitySelector(
@@ -122,6 +124,10 @@ public class EntitySelector {
    }
 
    public List<? extends Entity> findEntities(CommandSourceStack var1) throws CommandSyntaxException {
+      return this.findEntitiesRaw(var1).stream().filter(var1x -> var1x.getType().isEnabled(var1.enabledFeatures())).toList();
+   }
+
+   private List<? extends Entity> findEntitiesRaw(CommandSourceStack var1) throws CommandSyntaxException {
       this.checkPermissions(var1);
       if (!this.includesEntities) {
          return this.findPlayers(var1);
@@ -160,11 +166,18 @@ public class EntitySelector {
    }
 
    private void addEntities(List<Entity> var1, ServerLevel var2, Vec3 var3, Predicate<Entity> var4) {
-      if (this.aabb != null) {
-         var1.addAll(var2.getEntities(this.type, this.aabb.move(var3), var4));
-      } else {
-         var1.addAll(var2.getEntities(this.type, var4));
+      int var5 = this.getResultLimit();
+      if (var1.size() < var5) {
+         if (this.aabb != null) {
+            var2.getEntities(this.type, this.aabb.move(var3), var4, var1, var5);
+         } else {
+            var2.getEntities(this.type, var4, var1, var5);
+         }
       }
+   }
+
+   private int getResultLimit() {
+      return this.order == ORDER_ARBITRARY ? this.maxResults : 2147483647;
    }
 
    public ServerPlayer findSinglePlayer(CommandSourceStack var1) throws CommandSyntaxException {
@@ -180,30 +193,34 @@ public class EntitySelector {
    public List<ServerPlayer> findPlayers(CommandSourceStack var1) throws CommandSyntaxException {
       this.checkPermissions(var1);
       if (this.playerName != null) {
-         ServerPlayer var8 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
-         return (List<ServerPlayer>)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
+         ServerPlayer var9 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
+         return (List<ServerPlayer>)(var9 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var9}));
       } else if (this.entityUUID != null) {
-         ServerPlayer var7 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
-         return (List<ServerPlayer>)(var7 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var7}));
+         ServerPlayer var8 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
+         return (List<ServerPlayer>)(var8 == null ? Collections.emptyList() : Lists.newArrayList(new ServerPlayer[]{var8}));
       } else {
          Vec3 var2 = this.position.apply(var1.getPosition());
          Predicate var3 = this.getPredicate(var2);
          if (this.currentEntity) {
-            if (var1.getEntity() instanceof ServerPlayer var9 && var3.test(var9)) {
-               return Lists.newArrayList(new ServerPlayer[]{(ServerPlayer)var9});
+            if (var1.getEntity() instanceof ServerPlayer var10 && var3.test(var10)) {
+               return Lists.newArrayList(new ServerPlayer[]{(ServerPlayer)var10});
             }
 
             return Collections.emptyList();
          } else {
+            int var5 = this.getResultLimit();
             Object var4;
             if (this.isWorldLimited()) {
-               var4 = var1.getLevel().getPlayers(var3);
+               var4 = var1.getLevel().getPlayers(var3, var5);
             } else {
                var4 = Lists.newArrayList();
 
-               for(ServerPlayer var6 : var1.getServer().getPlayerList().getPlayers()) {
-                  if (var3.test(var6)) {
-                     var4.add(var6);
+               for(ServerPlayer var7 : var1.getServer().getPlayerList().getPlayers()) {
+                  if (var3.test(var7)) {
+                     var4.add(var7);
+                     if (var4.size() >= var5) {
+                        return (List<ServerPlayer>)var4;
+                     }
                   }
                }
             }

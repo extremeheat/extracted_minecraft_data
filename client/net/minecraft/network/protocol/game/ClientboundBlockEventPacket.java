@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.level.block.Block;
@@ -25,7 +25,7 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
       this.pos = var1.readBlockPos();
       this.b0 = var1.readUnsignedByte();
       this.b1 = var1.readUnsignedByte();
-      this.block = var1.readById(Registry.BLOCK);
+      this.block = var1.readById(BuiltInRegistries.BLOCK);
    }
 
    @Override
@@ -33,7 +33,7 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
       var1.writeBlockPos(this.pos);
       var1.writeByte(this.b0);
       var1.writeByte(this.b1);
-      var1.writeId(Registry.BLOCK, this.block);
+      var1.writeId(BuiltInRegistries.BLOCK, this.block);
    }
 
    public void handle(ClientGamePacketListener var1) {

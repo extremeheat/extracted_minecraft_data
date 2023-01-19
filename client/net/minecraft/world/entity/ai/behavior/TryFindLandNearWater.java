@@ -1,64 +1,61 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.apache.commons.lang3.mutable.MutableLong;
 
-public class TryFindLandNearWater extends Behavior<PathfinderMob> {
-   private final int range;
-   private final float speedModifier;
-   private long nextOkStartTime;
+public class TryFindLandNearWater {
+   public TryFindLandNearWater() {
+      super();
+   }
 
-   public TryFindLandNearWater(int var1, float var2) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED
-         )
+   public static BehaviorControl<PathfinderMob> create(int var0, float var1) {
+      MutableLong var2 = new MutableLong(0L);
+      return BehaviorBuilder.create(
+         var3 -> var3.group(
+                  var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)
+               )
+               .apply(
+                  var3,
+                  (var3x, var4, var5) -> (var5x, var6, var7) -> {
+                        if (var5x.getFluidState(var6.blockPosition()).is(FluidTags.WATER)) {
+                           return false;
+                        } else if (var7 < var2.getValue()) {
+                           var2.setValue(var7 + 40L);
+                           return true;
+                        } else {
+                           CollisionContext var9 = CollisionContext.of(var6);
+                           BlockPos var10 = var6.blockPosition();
+                           BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+         
+                           label45:
+                           for(BlockPos var13 : BlockPos.withinManhattan(var10, var0, var0, var0)) {
+                              if ((var13.getX() != var10.getX() || var13.getZ() != var10.getZ())
+                                 && var5x.getBlockState(var13).getCollisionShape(var5x, var13, var9).isEmpty()
+                                 && !var5x.getBlockState(var11.setWithOffset(var13, Direction.DOWN)).getCollisionShape(var5x, var13, var9).isEmpty()) {
+                                 for(Direction var15 : Direction.Plane.HORIZONTAL) {
+                                    var11.setWithOffset(var13, var15);
+                                    if (var5x.getBlockState(var11).isAir() && var5x.getBlockState(var11.move(Direction.DOWN)).is(Blocks.WATER)) {
+                                       var5.set(new BlockPosTracker(var13));
+                                       var4.set(new WalkTarget(new BlockPosTracker(var13), var1, 0));
+                                       break label45;
+                                    }
+                                 }
+                              }
+                           }
+         
+                           var2.setValue(var7 + 40L);
+                           return true;
+                        }
+                     }
+               )
       );
-      this.range = var1;
-      this.speedModifier = var2;
-   }
-
-   protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
-      this.nextOkStartTime = var3 + 40L;
-   }
-
-   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
-      return !var2.level.getFluidState(var2.blockPosition()).is(FluidTags.WATER);
-   }
-
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      if (var3 >= this.nextOkStartTime) {
-         CollisionContext var5 = CollisionContext.of(var2);
-         BlockPos var6 = var2.blockPosition();
-         BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
-
-         for(BlockPos var9 : BlockPos.withinManhattan(var6, this.range, this.range, this.range)) {
-            if ((var9.getX() != var6.getX() || var9.getZ() != var6.getZ())
-               && var1.getBlockState(var9).getCollisionShape(var1, var9, var5).isEmpty()
-               && !var1.getBlockState(var7.setWithOffset(var9, Direction.DOWN)).getCollisionShape(var1, var9, var5).isEmpty()) {
-               for(Direction var11 : Direction.Plane.HORIZONTAL) {
-                  var7.setWithOffset(var9, var11);
-                  if (var1.getBlockState(var7).isAir() && var1.getBlockState(var7.move(Direction.DOWN)).is(Blocks.WATER)) {
-                     this.nextOkStartTime = var3 + 40L;
-                     BehaviorUtils.setWalkAndLookTargetMemories(var2, var9, this.speedModifier, 0);
-                     return;
-                  }
-               }
-            }
-         }
-      }
    }
 }

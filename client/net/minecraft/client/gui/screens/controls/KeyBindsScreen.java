@@ -27,17 +27,17 @@ public class KeyBindsScreen extends OptionsSubScreen {
    protected void init() {
       this.keyBindsList = new KeyBindsList(this, this.minecraft);
       this.addWidget(this.keyBindsList);
-      this.resetButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 155, this.height - 29, 150, 20, Component.translatable("controls.resetAll"), var1 -> {
-            for(KeyMapping var5 : this.options.keyMappings) {
-               var5.setKey(var5.getDefaultKey());
-            }
-   
-            KeyMapping.resetMapping();
-         })
-      );
+      this.resetButton = this.addRenderableWidget(Button.builder(Component.translatable("controls.resetAll"), var1 -> {
+         for(KeyMapping var5 : this.options.keyMappings) {
+            var5.setKey(var5.getDefaultKey());
+         }
+
+         KeyMapping.resetMapping();
+      }).bounds(this.width / 2 - 155, this.height - 29, 150, 20).build());
       this.addRenderableWidget(
-         new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20, CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
+         Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
+            .bounds(this.width / 2 - 155 + 160, this.height - 29, 150, 20)
+            .build()
       );
    }
 

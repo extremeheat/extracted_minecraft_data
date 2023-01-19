@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.InclusiveRange;
@@ -13,6 +12,7 @@ import net.minecraft.util.random.SimpleWeightedRandomList;
 public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
    private final CompoundTag entityToSpawn;
    private final Optional<SpawnData.CustomSpawnRules> customSpawnRules;
+   public static final String ENTITY_TAG = "entity";
    public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                CompoundTag.CODEC.fieldOf("entity").forGetter(var0x -> var0x.entityToSpawn),
@@ -21,16 +21,22 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
             .apply(var0, SpawnData::new)
    );
    public static final Codec<SimpleWeightedRandomList<SpawnData>> LIST_CODEC = SimpleWeightedRandomList.wrappedCodecAllowingEmpty(CODEC);
-   public static final String DEFAULT_TYPE = "minecraft:pig";
 
    public SpawnData() {
-      this(Util.make(new CompoundTag(), var0 -> var0.putString("id", "minecraft:pig")), Optional.empty());
+      this(new CompoundTag(), Optional.empty());
    }
 
    public SpawnData(CompoundTag var1, Optional<SpawnData.CustomSpawnRules> var2) {
       super();
-      ResourceLocation var3 = ResourceLocation.tryParse(var1.getString("id"));
-      var1.putString("id", var3 != null ? var3.toString() : "minecraft:pig");
+      if (var1.contains("id")) {
+         ResourceLocation var3 = ResourceLocation.tryParse(var1.getString("id"));
+         if (var3 != null) {
+            var1.putString("id", var3.toString());
+         } else {
+            var1.remove("id");
+         }
+      }
+
       this.entityToSpawn = var1;
       this.customSpawnRules = var2;
    }

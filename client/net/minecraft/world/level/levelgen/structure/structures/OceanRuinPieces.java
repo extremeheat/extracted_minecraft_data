@@ -241,14 +241,16 @@ public class OceanRuinPieces {
             }
          } else if ("drowned".equals(var1)) {
             Drowned var7 = EntityType.DROWNED.create(var3.getLevel());
-            var7.setPersistenceRequired();
-            var7.moveTo(var2, 0.0F, 0.0F);
-            var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null, null);
-            var3.addFreshEntityWithPassengers(var7);
-            if (var2.getY() > var3.getSeaLevel()) {
-               var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
-            } else {
-               var3.setBlock(var2, Blocks.WATER.defaultBlockState(), 2);
+            if (var7 != null) {
+               var7.setPersistenceRequired();
+               var7.moveTo(var2, 0.0F, 0.0F);
+               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null, null);
+               var3.addFreshEntityWithPassengers(var7);
+               if (var2.getY() > var3.getSeaLevel()) {
+                  var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
+               } else {
+                  var3.setBlock(var2, Blocks.WATER.defaultBlockState(), 2);
+               }
             }
          }
       }

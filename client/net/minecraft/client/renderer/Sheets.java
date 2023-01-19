@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
@@ -61,11 +61,13 @@ public class Sheets {
       .map(var0 -> new Material(SHULKER_SHEET, new ResourceLocation("entity/shulker/shulker_" + var0)))
       .collect(ImmutableList.toImmutableList());
    public static final Map<WoodType, Material> SIGN_MATERIALS = WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
-   public static final Map<ResourceKey<BannerPattern>, Material> BANNER_MATERIALS = Registry.BANNER_PATTERN
+   public static final Map<WoodType, Material> HANGING_SIGN_MATERIALS = WoodType.values()
+      .collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
+   public static final Map<ResourceKey<BannerPattern>, Material> BANNER_MATERIALS = BuiltInRegistries.BANNER_PATTERN
       .registryKeySet()
       .stream()
       .collect(Collectors.toMap(Function.identity(), Sheets::createBannerMaterial));
-   public static final Map<ResourceKey<BannerPattern>, Material> SHIELD_MATERIALS = Registry.BANNER_PATTERN
+   public static final Map<ResourceKey<BannerPattern>, Material> SHIELD_MATERIALS = BuiltInRegistries.BANNER_PATTERN
       .registryKeySet()
       .stream()
       .collect(Collectors.toMap(Function.identity(), Sheets::createShieldMaterial));
@@ -108,6 +110,10 @@ public class Sheets {
       return SIGN_SHEET_TYPE;
    }
 
+   public static RenderType hangingSignSheet() {
+      return SIGN_SHEET_TYPE;
+   }
+
    public static RenderType chestSheet() {
       return CHEST_SHEET_TYPE;
    }
@@ -134,6 +140,7 @@ public class Sheets {
       BANNER_MATERIALS.values().forEach(var0);
       SHIELD_MATERIALS.values().forEach(var0);
       SIGN_MATERIALS.values().forEach(var0);
+      HANGING_SIGN_MATERIALS.values().forEach(var0);
 
       for(Material var4 : BED_TEXTURES) {
          var0.accept(var4);
@@ -155,8 +162,16 @@ public class Sheets {
       return new Material(SIGN_SHEET, new ResourceLocation("entity/signs/" + var0.name()));
    }
 
+   private static Material createHangingSignMaterial(WoodType var0) {
+      return new Material(SIGN_SHEET, new ResourceLocation("entity/signs/hanging/" + var0.name()));
+   }
+
    public static Material getSignMaterial(WoodType var0) {
       return SIGN_MATERIALS.get(var0);
+   }
+
+   public static Material getHangingSignMaterial(WoodType var0) {
+      return HANGING_SIGN_MATERIALS.get(var0);
    }
 
    private static Material createBannerMaterial(ResourceKey<BannerPattern> var0) {

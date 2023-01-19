@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,6 +19,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.multiplayer.chat.ChatLog;
+import net.minecraft.client.multiplayer.chat.LoggedChatEvent;
+import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 
 public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<PlayerEntry> {
    private final SocialInteractionsScreen socialInteractionsScreen;
@@ -58,15 +62,14 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       for(UUID var5 : var1) {
          PlayerInfo var6 = var3.getPlayerInfo(var5);
          if (var6 != null) {
-            UUID var7 = var6.getProfile().getId();
-            boolean var8 = var6.getProfilePublicKey() != null;
-            var2.put(var7, new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var7, var6.getProfile().getName(), var6::getSkinLocation, var8));
+            boolean var7 = var6.hasVerifiableChat();
+            var2.put(var5, new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5, var6.getProfile().getName(), var6::getSkinLocation, var7));
          }
       }
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {
-      for(GameProfile var5 : this.minecraft.getReportingContext().chatLog().selectAllDescending().reportableGameProfiles()) {
+      for(GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
          PlayerEntry var6;
          if (var2) {
             var6 = var1.computeIfAbsent(
@@ -95,18 +98,41 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private static Collection<GameProfile> collectProfilesFromChatLog(ChatLog var0) {
+      ObjectLinkedOpenHashSet var1 = new ObjectLinkedOpenHashSet();
+
+      for(int var2 = var0.end(); var2 >= var0.start(); --var2) {
+         LoggedChatEvent var3 = var0.lookup(var2);
+         if (var3 instanceof LoggedChatMessage.Player var4 && var4.message().hasSignature()) {
+            var1.add(var4.profile());
+         }
+      }
+
+      return var1;
+   }
+
    private void sortPlayerEntries() {
       this.players.sort(Comparator.<PlayerEntry, Integer>comparing(var1 -> {
          if (var1.getPlayerId().equals(this.minecraft.getUser().getProfileId())) {
             return 0;
          } else if (var1.getPlayerId().version() == 2) {
-            return 3;
+            return 4;
+         } else if (this.minecraft.getReportingContext().hasDraftReportFor(var1.getPlayerId())) {
+            return 1;
          } else {
-            return var1.hasRecentMessages() ? 1 : 2;
+            return var1.hasRecentMessages() ? 2 : 3;
          }
       }).thenComparing(var0 -> {
-         int var1 = var0.getPlayerName().codePointAt(0);
-         return var1 != 95 && (var1 < 97 || var1 > 122) && (var1 < 65 || var1 > 90) && (var1 < 48 || var1 > 57) ? 1 : 0;
+         if (!var0.getPlayerName().isBlank()) {
+            int var1 = var0.getPlayerName().codePointAt(0);
+            if (var1 == 95 || var1 >= 97 && var1 <= 122 || var1 >= 65 && var1 <= 90 || var1 >= 48 && var1 <= 57) {
+               return 0;
+            }
+         }
+
+         return 1;
       }).thenComparing(PlayerEntry::getPlayerName, String::compareToIgnoreCase));
    }
 
@@ -146,7 +172,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
       if ((var2 == SocialInteractionsScreen.Page.ALL || this.minecraft.getPlayerSocialManager().shouldHideMessageFrom(var3))
          && (Strings.isNullOrEmpty(this.filter) || var1.getProfile().getName().toLowerCase(Locale.ROOT).contains(this.filter))) {
-         boolean var6 = var1.getProfilePublicKey() != null;
+         boolean var6 = var1.hasVerifiableChat();
          PlayerEntry var7 = new PlayerEntry(
             this.minecraft, this.socialInteractionsScreen, var1.getProfile().getId(), var1.getProfile().getName(), var1::getSkinLocation, var6
          );

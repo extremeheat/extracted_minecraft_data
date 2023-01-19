@@ -13,7 +13,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.slf4j.Logger;
 
 public class ArgumentUtils {
@@ -59,7 +59,7 @@ public class ArgumentUtils {
    private static <T extends ArgumentType<?>> void serializeArgumentToJson(JsonObject var0, T var1) {
       ArgumentTypeInfo.Template var2 = ArgumentTypeInfos.unpack(var1);
       var0.addProperty("type", "argument");
-      var0.addProperty("parser", Registry.COMMAND_ARGUMENT_TYPE.getKey(var2.type()).toString());
+      var0.addProperty("parser", BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(var2.type()).toString());
       JsonObject var3 = new JsonObject();
       serializeCap(var3, var2);
       if (var3.size() > 0) {

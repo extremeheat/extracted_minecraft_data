@@ -6,8 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.ArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.BookModel;
@@ -26,6 +25,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.joml.Matrix4f;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
    private static final ResourceLocation ENCHANTING_TABLE_LOCATION = new ResourceLocation("textures/gui/container/enchanting_table.png");
@@ -85,93 +85,90 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       int var7 = (int)this.minecraft.getWindow().getGuiScale();
       RenderSystem.viewport((this.width - 320) / 2 * var7, (this.height - 240) / 2 * var7, 320 * var7, 240 * var7);
-      Matrix4f var8 = Matrix4f.createTranslateMatrix(-0.34F, 0.23F, 0.0F);
-      var8.multiply(Matrix4f.perspective(90.0, 1.3333334F, 9.0F, 80.0F));
+      Matrix4f var8 = new Matrix4f().translation(-0.34F, 0.23F, 0.0F).perspective(1.5707964F, 1.3333334F, 9.0F, 80.0F);
       RenderSystem.backupProjectionMatrix();
       RenderSystem.setProjectionMatrix(var8);
       var1.pushPose();
-      PoseStack.Pose var9 = var1.last();
-      var9.pose().setIdentity();
-      var9.normal().setIdentity();
-      var1.translate(0.0, 3.299999952316284, 1984.0);
-      float var10 = 5.0F;
+      var1.setIdentity();
+      var1.translate(0.0F, 3.3F, 1984.0F);
+      float var9 = 5.0F;
       var1.scale(5.0F, 5.0F, 5.0F);
-      var1.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-      var1.mulPose(Vector3f.XP.rotationDegrees(20.0F));
-      float var11 = Mth.lerp(var2, this.oOpen, this.open);
-      var1.translate((double)((1.0F - var11) * 0.2F), (double)((1.0F - var11) * 0.1F), (double)((1.0F - var11) * 0.25F));
-      float var12 = -(1.0F - var11) * 90.0F - 90.0F;
-      var1.mulPose(Vector3f.YP.rotationDegrees(var12));
-      var1.mulPose(Vector3f.XP.rotationDegrees(180.0F));
-      float var13 = Mth.lerp(var2, this.oFlip, this.flip) + 0.25F;
-      float var14 = Mth.lerp(var2, this.oFlip, this.flip) + 0.75F;
+      var1.mulPose(Axis.ZP.rotationDegrees(180.0F));
+      var1.mulPose(Axis.XP.rotationDegrees(20.0F));
+      float var10 = Mth.lerp(var2, this.oOpen, this.open);
+      var1.translate((1.0F - var10) * 0.2F, (1.0F - var10) * 0.1F, (1.0F - var10) * 0.25F);
+      float var11 = -(1.0F - var10) * 90.0F - 90.0F;
+      var1.mulPose(Axis.YP.rotationDegrees(var11));
+      var1.mulPose(Axis.XP.rotationDegrees(180.0F));
+      float var12 = Mth.lerp(var2, this.oFlip, this.flip) + 0.25F;
+      float var13 = Mth.lerp(var2, this.oFlip, this.flip) + 0.75F;
+      var12 = (var12 - (float)Mth.fastFloor((double)var12)) * 1.6F - 0.3F;
       var13 = (var13 - (float)Mth.fastFloor((double)var13)) * 1.6F - 0.3F;
-      var14 = (var14 - (float)Mth.fastFloor((double)var14)) * 1.6F - 0.3F;
+      if (var12 < 0.0F) {
+         var12 = 0.0F;
+      }
+
       if (var13 < 0.0F) {
          var13 = 0.0F;
       }
 
-      if (var14 < 0.0F) {
-         var14 = 0.0F;
+      if (var12 > 1.0F) {
+         var12 = 1.0F;
       }
 
       if (var13 > 1.0F) {
          var13 = 1.0F;
       }
 
-      if (var14 > 1.0F) {
-         var14 = 1.0F;
-      }
-
-      this.bookModel.setupAnim(0.0F, var13, var14, var11);
-      MultiBufferSource.BufferSource var15 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-      VertexConsumer var16 = var15.getBuffer(this.bookModel.renderType(ENCHANTING_BOOK_LOCATION));
-      this.bookModel.renderToBuffer(var1, var16, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
-      var15.endBatch();
+      this.bookModel.setupAnim(0.0F, var12, var13, var10);
+      MultiBufferSource.BufferSource var14 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+      VertexConsumer var15 = var14.getBuffer(this.bookModel.renderType(ENCHANTING_BOOK_LOCATION));
+      this.bookModel.renderToBuffer(var1, var15, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+      var14.endBatch();
       var1.popPose();
       RenderSystem.viewport(0, 0, this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
       RenderSystem.restoreProjectionMatrix();
       Lighting.setupFor3DItems();
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       EnchantmentNames.getInstance().initSeed((long)this.menu.getEnchantmentSeed());
-      int var17 = this.menu.getGoldCount();
+      int var16 = this.menu.getGoldCount();
 
-      for(int var18 = 0; var18 < 3; ++var18) {
-         int var19 = var5 + 60;
-         int var20 = var19 + 20;
+      for(int var17 = 0; var17 < 3; ++var17) {
+         int var18 = var5 + 60;
+         int var19 = var18 + 20;
          this.setBlitOffset(0);
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, ENCHANTING_TABLE_LOCATION);
-         int var21 = this.menu.costs[var18];
+         int var20 = this.menu.costs[var17];
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         if (var21 == 0) {
-            this.blit(var1, var19, var6 + 14 + 19 * var18, 0, 185, 108, 19);
+         if (var20 == 0) {
+            this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
          } else {
-            String var22 = var21 + "";
-            int var23 = 86 - this.font.width(var22);
-            FormattedText var24 = EnchantmentNames.getInstance().getRandomName(this.font, var23);
-            int var25 = 6839882;
-            if ((var17 < var18 + 1 || this.minecraft.player.experienceLevel < var21) && !this.minecraft.player.getAbilities().instabuild) {
-               this.blit(var1, var19, var6 + 14 + 19 * var18, 0, 185, 108, 19);
-               this.blit(var1, var19 + 1, var6 + 15 + 19 * var18, 16 * var18, 239, 16, 16);
-               this.font.drawWordWrap(var24, var20, var6 + 16 + 19 * var18, var23, (var25 & 16711422) >> 1);
-               var25 = 4226832;
+            String var21 = var20 + "";
+            int var22 = 86 - this.font.width(var21);
+            FormattedText var23 = EnchantmentNames.getInstance().getRandomName(this.font, var22);
+            int var24 = 6839882;
+            if ((var16 < var17 + 1 || this.minecraft.player.experienceLevel < var20) && !this.minecraft.player.getAbilities().instabuild) {
+               this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
+               this.blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 239, 16, 16);
+               this.font.drawWordWrap(var23, var19, var6 + 16 + 19 * var17, var22, (var24 & 16711422) >> 1);
+               var24 = 4226832;
             } else {
-               int var26 = var3 - (var5 + 60);
-               int var27 = var4 - (var6 + 14 + 19 * var18);
-               if (var26 >= 0 && var27 >= 0 && var26 < 108 && var27 < 19) {
-                  this.blit(var1, var19, var6 + 14 + 19 * var18, 0, 204, 108, 19);
-                  var25 = 16777088;
+               int var25 = var3 - (var5 + 60);
+               int var26 = var4 - (var6 + 14 + 19 * var17);
+               if (var25 >= 0 && var26 >= 0 && var25 < 108 && var26 < 19) {
+                  this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 204, 108, 19);
+                  var24 = 16777088;
                } else {
-                  this.blit(var1, var19, var6 + 14 + 19 * var18, 0, 166, 108, 19);
+                  this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 166, 108, 19);
                }
 
-               this.blit(var1, var19 + 1, var6 + 15 + 19 * var18, 16 * var18, 223, 16, 16);
-               this.font.drawWordWrap(var24, var20, var6 + 16 + 19 * var18, var23, var25);
-               var25 = 8453920;
+               this.blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 223, 16, 16);
+               this.font.drawWordWrap(var23, var19, var6 + 16 + 19 * var17, var22, var24);
+               var24 = 8453920;
             }
 
-            this.font.drawShadow(var1, var22, (float)(var20 + 86 - this.font.width(var22)), (float)(var6 + 16 + 19 * var18 + 7), var25);
+            this.font.drawShadow(var1, var21, (float)(var19 + 86 - this.font.width(var21)), (float)(var6 + 16 + 19 * var17 + 7), var24);
          }
       }
    }

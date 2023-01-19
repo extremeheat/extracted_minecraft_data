@@ -44,9 +44,9 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       if (this.animationTime > 0.0F) {
          float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
          var1.pushPose();
-         var1.translate((double)(this.x + 8), (double)(this.y + 12), 0.0);
+         var1.translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
          var1.scale(1.0F, var5, 1.0F);
-         var1.translate((double)(-(this.x + 8)), (double)(-(this.y + 12)), 0.0);
+         var1.translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
       }
 
       Minecraft var9 = Minecraft.getInstance();
@@ -63,13 +63,13 @@ public class RecipeBookTabButton extends StateSwitchingButton {
          var7 += this.yDiffTex;
       }
 
-      int var8 = this.x;
+      int var8 = this.getX();
       if (this.isStateTriggered) {
          var8 -= 2;
       }
 
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      this.blit(var1, var8, this.y, var6, var7, this.width, this.height);
+      this.blit(var1, var8, this.getY(), var6, var7, this.width, this.height);
       RenderSystem.enableDepthTest();
       this.renderIcon(var9.getItemRenderer());
       if (this.animationTime > 0.0F) {
@@ -82,10 +82,10 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var2 = this.category.getIconItems();
       int var3 = this.isStateTriggered ? -2 : 0;
       if (var2.size() == 1) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.x + 9 + var3, this.y + 5);
+         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.getX() + 9 + var3, this.getY() + 5);
       } else if (var2.size() == 2) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.x + 3 + var3, this.y + 5);
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(1), this.x + 14 + var3, this.y + 5);
+         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.getX() + 3 + var3, this.getY() + 5);
+         var1.renderAndDecorateFakeItem((ItemStack)var2.get(1), this.getX() + 14 + var3, this.getY() + 5);
       }
    }
 

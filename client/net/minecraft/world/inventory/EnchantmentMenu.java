@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -115,7 +115,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                      List var10 = this.getEnchantmentList(var2, var9, this.costs[var9]);
                      if (var10 != null && !var10.isEmpty()) {
                         EnchantmentInstance var7 = (EnchantmentInstance)var10.get(this.random.nextInt(var10.size()));
-                        this.enchantClue[var9] = Registry.ENCHANTMENT.getId(var7.enchantment);
+                        this.enchantClue[var9] = BuiltInRegistries.ENCHANTMENT.getId(var7.enchantment);
                         this.levelClue[var9] = var7.level;
                      }
                   }

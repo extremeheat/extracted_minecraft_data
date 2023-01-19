@@ -2,16 +2,17 @@ package net.minecraft.client.model.geom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public final class ModelPart {
    public static final float DEFAULT_SCALE = 1.0F;
@@ -144,17 +145,9 @@ public final class ModelPart {
    }
 
    public void translateAndRotate(PoseStack var1) {
-      var1.translate((double)(this.x / 16.0F), (double)(this.y / 16.0F), (double)(this.z / 16.0F));
-      if (this.zRot != 0.0F) {
-         var1.mulPose(Vector3f.ZP.rotation(this.zRot));
-      }
-
-      if (this.yRot != 0.0F) {
-         var1.mulPose(Vector3f.YP.rotation(this.yRot));
-      }
-
-      if (this.xRot != 0.0F) {
-         var1.mulPose(Vector3f.XP.rotation(this.xRot));
+      var1.translate(this.x / 16.0F, this.y / 16.0F, this.z / 16.0F);
+      if (this.xRot != 0.0F || this.yRot != 0.0F || this.zRot != 0.0F) {
+         var1.mulPose(new Quaternionf().rotationZYX(this.zRot, this.yRot, this.xRot));
       }
 
       if (this.xScale != 1.0F || this.yScale != 1.0F || this.zScale != 1.0F) {
@@ -288,8 +281,7 @@ public final class ModelPart {
          Matrix3f var10 = var1.normal();
 
          for(ModelPart.Polygon var14 : this.polygons) {
-            Vector3f var15 = var14.normal.copy();
-            var15.transform(var10);
+            Vector3f var15 = var10.transform(new Vector3f(var14.normal));
             float var16 = var15.x();
             float var17 = var15.y();
             float var18 = var15.z();
@@ -298,8 +290,7 @@ public final class ModelPart {
                float var23 = var22.pos.x() / 16.0F;
                float var24 = var22.pos.y() / 16.0F;
                float var25 = var22.pos.z() / 16.0F;
-               Vector4f var26 = new Vector4f(var23, var24, var25, 1.0F);
-               var26.transform(var9);
+               Vector4f var26 = var9.transform(new Vector4f(var23, var24, var25, 1.0F));
                var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
             }
          }

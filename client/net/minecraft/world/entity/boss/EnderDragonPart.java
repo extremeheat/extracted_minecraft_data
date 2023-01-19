@@ -1,12 +1,15 @@
 package net.minecraft.world.entity.boss;
 
+import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.item.ItemStack;
 
 public class EnderDragonPart extends Entity {
    public final EnderDragon parentMob;
@@ -38,6 +41,12 @@ public class EnderDragonPart extends Entity {
       return true;
    }
 
+   @Nullable
+   @Override
+   public ItemStack getPickResult() {
+      return this.parentMob.getPickResult();
+   }
+
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       return this.isInvulnerableTo(var1) ? false : this.parentMob.hurt(this, var1, var2);
@@ -49,7 +58,7 @@ public class EnderDragonPart extends Entity {
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
       throw new UnsupportedOperationException();
    }
 

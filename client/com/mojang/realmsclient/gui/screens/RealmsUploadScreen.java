@@ -84,11 +84,12 @@ public class RealmsUploadScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      this.backButton = this.addRenderableWidget(new Button(this.width / 2 - 100, this.height - 42, 200, 20, CommonComponents.GUI_BACK, var1 -> this.onBack()));
+      this.backButton = this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.onBack()).bounds(this.width / 2 - 100, this.height - 42, 200, 20).build()
+      );
       this.backButton.visible = false;
       this.cancelButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height - 42, 200, 20, CommonComponents.GUI_CANCEL, var1 -> this.onCancel())
+         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.onCancel()).bounds(this.width / 2 - 100, this.height - 42, 200, 20).build()
       );
       if (!this.uploadStarted) {
          if (this.lastScreen.slot == -1) {
@@ -103,11 +104,6 @@ public class RealmsUploadScreen extends RealmsScreen {
             });
          }
       }
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    private void onBack() {

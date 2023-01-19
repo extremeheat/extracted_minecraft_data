@@ -13,13 +13,13 @@ import java.util.concurrent.CompletionException;
 import net.minecraft.Util;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 
 public class SoundBufferLibrary {
-   private final ResourceManager resourceManager;
+   private final ResourceProvider resourceManager;
    private final Map<ResourceLocation, CompletableFuture<SoundBuffer>> cache = Maps.newHashMap();
 
-   public SoundBufferLibrary(ResourceManager var1) {
+   public SoundBufferLibrary(ResourceProvider var1) {
       super();
       this.resourceManager = var1;
    }

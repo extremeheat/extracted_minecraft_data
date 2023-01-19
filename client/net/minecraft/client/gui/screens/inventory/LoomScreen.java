@@ -109,9 +109,9 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
          MultiBufferSource.BufferSource var12 = this.minecraft.renderBuffers().bufferSource();
          var1.pushPose();
-         var1.translate((double)(var5 + 139), (double)(var6 + 52), 0.0);
+         var1.translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
          var1.scale(24.0F, -24.0F, 1.0F);
-         var1.translate(0.5, 0.5, 0.5);
+         var1.translate(0.5F, 0.5F, 0.5F);
          float var13 = 0.6666667F;
          var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
          this.flag.xRot = 0.0F;
@@ -167,10 +167,10 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       BlockItem.setBlockEntityData(var6, BlockEntityType.BANNER, var4);
       PoseStack var7 = new PoseStack();
       var7.pushPose();
-      var7.translate((double)((float)var2 + 0.5F), (double)(var3 + 16), 0.0);
+      var7.translate((float)var2 + 0.5F, (float)(var3 + 16), 0.0F);
       var7.scale(6.0F, -6.0F, 1.0F);
-      var7.translate(0.5, 0.5, 0.0);
-      var7.translate(0.5, 0.5, 0.5);
+      var7.translate(0.5F, 0.5F, 0.0F);
+      var7.translate(0.5F, 0.5F, 0.5F);
       float var8 = 0.6666667F;
       var7.scale(0.6666667F, -0.6666667F, -0.6666667F);
       MultiBufferSource.BufferSource var9 = this.minecraft.renderBuffers().bufferSource();

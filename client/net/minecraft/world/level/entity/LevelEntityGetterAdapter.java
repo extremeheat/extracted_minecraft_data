@@ -3,6 +3,7 @@ package net.minecraft.world.level.entity;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.world.phys.AABB;
 
 public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEntityGetter<T> {
@@ -33,17 +34,17 @@ public class LevelEntityGetterAdapter<T extends EntityAccess> implements LevelEn
    }
 
    @Override
-   public <U extends T> void get(EntityTypeTest<T, U> var1, Consumer<U> var2) {
+   public <U extends T> void get(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
       this.visibleEntities.getEntities(var1, var2);
    }
 
    @Override
    public void get(AABB var1, Consumer<T> var2) {
-      this.sectionStorage.getEntities(var1, var2);
+      this.sectionStorage.getEntities(var1, AbortableIterationConsumer.forConsumer(var2));
    }
 
    @Override
-   public <U extends T> void get(EntityTypeTest<T, U> var1, AABB var2, Consumer<U> var3) {
+   public <U extends T> void get(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<U> var3) {
       this.sectionStorage.getEntities(var1, var2, var3);
    }
 }

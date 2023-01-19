@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -21,14 +20,13 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -149,7 +147,6 @@ public abstract class Player extends LivingEntity {
    public final InventoryMenu inventoryMenu;
    public AbstractContainerMenu containerMenu;
    protected FoodData foodData = new FoodData();
-   protected WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
    protected int jumpTriggerTime;
    public float oBob;
    public float bob;
@@ -170,8 +167,6 @@ public abstract class Player extends LivingEntity {
    protected final float defaultFlySpeed = 0.02F;
    private int lastLevelUpTime;
    private final GameProfile gameProfile;
-   @Nullable
-   private final ProfilePublicKey profilePublicKey;
    private boolean reducedDebugInfo;
    private ItemStack lastItemInMainHand = ItemStack.EMPTY;
    private final ItemCooldowns cooldowns = this.createItemCooldowns();
@@ -179,11 +174,10 @@ public abstract class Player extends LivingEntity {
    @Nullable
    public FishingHook fishing;
 
-   public Player(Level var1, BlockPos var2, float var3, GameProfile var4, @Nullable ProfilePublicKey var5) {
+   public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
       super(EntityType.PLAYER, var1);
       this.setUUID(UUIDUtil.getOrCreatePlayerUUID(var4));
       this.gameProfile = var4;
-      this.profilePublicKey = var5;
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
       this.moveTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
@@ -200,7 +194,7 @@ public abstract class Player extends LivingEntity {
       } else {
          ItemStack var4 = this.getMainHandItem();
          return var4.isEmpty()
-            || !var4.hasAdventureModeBreakTagForBlock(var1.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), new BlockInWorld(var1, var2, false));
+            || !var4.hasAdventureModeBreakTagForBlock(var1.registryAccess().registryOrThrow(Registries.BLOCK), new BlockInWorld(var1, var2, false));
       }
    }
 
@@ -260,7 +254,6 @@ public abstract class Player extends LivingEntity {
       this.moveCloak();
       if (!this.level.isClientSide) {
          this.foodData.tick(this);
-         this.wardenSpawnTracker.tick();
          this.awardStat(Stats.PLAY_TIME);
          this.awardStat(Stats.TOTAL_WORLD_TIME);
          if (this.isAlive()) {
@@ -286,7 +279,7 @@ public abstract class Player extends LivingEntity {
       ++this.attackStrengthTicker;
       ItemStack var6 = this.getMainHandItem();
       if (!ItemStack.matches(this.lastItemInMainHand, var6)) {
-         if (!ItemStack.isSameIgnoreDurability(this.lastItemInMainHand, var6)) {
+         if (!ItemStack.isSame(this.lastItemInMainHand, var6)) {
             this.resetAttackStrengthTicker();
          }
 
@@ -468,6 +461,9 @@ public abstract class Player extends LivingEntity {
 
    protected void closeContainer() {
       this.containerMenu = this.inventoryMenu;
+   }
+
+   protected void doCloseContainer() {
    }
 
    @Override
@@ -770,13 +766,6 @@ public abstract class Player extends LivingEntity {
 
       this.setScore(var1.getInt("Score"));
       this.foodData.readAdditionalSaveData(var1);
-      if (var1.contains("warden_spawn_tracker", 10)) {
-         WardenSpawnTracker.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("warden_spawn_tracker")))
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> this.wardenSpawnTracker = var1x);
-      }
-
       this.abilities.loadSaveData(var1);
       this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue((double)this.abilities.getWalkingSpeed());
       if (var1.contains("EnderItems", 9)) {
@@ -809,10 +798,6 @@ public abstract class Player extends LivingEntity {
       var1.putInt("XpSeed", this.enchantmentSeed);
       var1.putInt("Score", this.getScore());
       this.foodData.addAdditionalSaveData(var1);
-      WardenSpawnTracker.CODEC
-         .encodeStart(NbtOps.INSTANCE, this.wardenSpawnTracker)
-         .resultOrPartial(LOGGER::error)
-         .ifPresent(var1x -> var1.put("warden_spawn_tracker", var1x));
       this.abilities.addSaveData(var1);
       var1.put("EnderItems", this.enderChestInventory.createTag());
       if (!this.getShoulderEntityLeft().isEmpty()) {
@@ -964,6 +949,10 @@ public abstract class Player extends LivingEntity {
    @Override
    protected boolean onSoulSpeedBlock() {
       return !this.abilities.flying && super.onSoulSpeedBlock();
+   }
+
+   public boolean isTextFilteringEnabled() {
+      return false;
    }
 
    public void openTextEdit(SignBlockEntity var1) {
@@ -1322,8 +1311,8 @@ public abstract class Player extends LivingEntity {
    public void remove(Entity.RemovalReason var1) {
       super.remove(var1);
       this.inventoryMenu.removed(this);
-      if (this.containerMenu != null) {
-         this.containerMenu.removed(this);
+      if (this.containerMenu != null && this.hasContainerOpen()) {
+         this.doCloseContainer();
       }
    }
 
@@ -1333,11 +1322,6 @@ public abstract class Player extends LivingEntity {
 
    public GameProfile getGameProfile() {
       return this.gameProfile;
-   }
-
-   @Nullable
-   public ProfilePublicKey getProfilePublicKey() {
-      return this.profilePublicKey;
    }
 
    public Inventory getInventory() {
@@ -1378,15 +1362,15 @@ public abstract class Player extends LivingEntity {
    public static Optional<Vec3> findRespawnPositionAndUseSpawnBlock(ServerLevel var0, BlockPos var1, float var2, boolean var3, boolean var4) {
       BlockState var5 = var0.getBlockState(var1);
       Block var6 = var5.getBlock();
-      if (var6 instanceof RespawnAnchorBlock && var5.getValue(RespawnAnchorBlock.CHARGE) > 0 && RespawnAnchorBlock.canSetSpawn(var0)) {
+      if (var6 instanceof RespawnAnchorBlock && (var3 || var5.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
          Optional var9 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
-         if (!var4 && var9.isPresent()) {
+         if (!var3 && !var4 && var9.isPresent()) {
             var0.setBlock(var1, var5.setValue(RespawnAnchorBlock.CHARGE, Integer.valueOf(var5.getValue(RespawnAnchorBlock.CHARGE) - 1)), 3);
          }
 
          return var9;
       } else if (var6 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
-         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, var2);
+         return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, var5.getValue(BedBlock.FACING), var2);
       } else if (!var3) {
          return Optional.empty();
       } else {
@@ -1581,11 +1565,6 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   @Override
-   public ChatSender asChatSender() {
-      return new ChatSender(this.getGameProfile().getId(), this.getProfilePublicKey());
-   }
-
    public boolean tryToStartFallFlying() {
       if (!this.onGround && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
          ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
@@ -1701,8 +1680,8 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   public WardenSpawnTracker getWardenSpawnTracker() {
-      return this.wardenSpawnTracker;
+   public Optional<WardenSpawnTracker> getWardenSpawnTracker() {
+      return Optional.empty();
    }
 
    public FoodData getFoodData() {
@@ -1727,7 +1706,7 @@ public abstract class Player extends LivingEntity {
       } else {
          BlockPos var4 = var1.relative(var2.getOpposite());
          BlockInWorld var5 = new BlockInWorld(this.level, var4, false);
-         return var3.hasAdventureModePlaceTagForBlock(this.level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), var5);
+         return var3.hasAdventureModePlaceTagForBlock(this.level.registryAccess().registryOrThrow(Registries.BLOCK), var5);
       }
    }
 

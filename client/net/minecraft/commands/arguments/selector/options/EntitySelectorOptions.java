@@ -19,8 +19,10 @@ import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
@@ -172,26 +174,26 @@ public class EntitySelectorOptions {
             int var1 = var0.getReader().getCursor();
             String var2 = var0.getReader().readUnquotedString();
             var0.setSuggestions((var0x, var1x) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x));
-            BiConsumer var3;
+            BiConsumer var10001;
             switch(var2) {
                case "nearest":
-                  var3 = EntitySelectorParser.ORDER_NEAREST;
+                  var10001 = EntitySelectorParser.ORDER_NEAREST;
                   break;
                case "furthest":
-                  var3 = EntitySelectorParser.ORDER_FURTHEST;
+                  var10001 = EntitySelectorParser.ORDER_FURTHEST;
                   break;
                case "random":
-                  var3 = EntitySelectorParser.ORDER_RANDOM;
+                  var10001 = EntitySelectorParser.ORDER_RANDOM;
                   break;
                case "arbitrary":
-                  var3 = EntitySelectorParser.ORDER_ARBITRARY;
+                  var10001 = EntitySelector.ORDER_ARBITRARY;
                   break;
                default:
                   var0.getReader().setCursor(var1);
                   throw ERROR_SORT_UNKNOWN.createWithContext(var0.getReader(), var2);
             }
 
-            var0.setOrder(var3);
+            var0.setOrder(var10001);
             var0.setSorted(true);
          }, var0 -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", var0 -> {
@@ -271,11 +273,11 @@ public class EntitySelectorOptions {
          }, var0 -> !var0.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
          register("type", var0 -> {
             var0.setSuggestions((var1x, var2x) -> {
-               SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, "!#");
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, "!#");
                if (!var0.isTypeLimitedInversely()) {
-                  SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.keySet(), var1x);
-                  SharedSuggestionProvider.suggestResource(Registry.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, String.valueOf('#'));
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, String.valueOf('#'));
                }
 
                return var1x.buildFuture();
@@ -291,11 +293,11 @@ public class EntitySelectorOptions {
                }
 
                if (var0.isTag()) {
-                  TagKey var3 = TagKey.create(Registry.ENTITY_TYPE_REGISTRY, ResourceLocation.read(var0.getReader()));
+                  TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(var0.getReader()));
                   var0.addPredicate(var2x -> var2x.getType().is(var3) != var2);
                } else {
                   ResourceLocation var5 = ResourceLocation.read(var0.getReader());
-                  EntityType var4 = Registry.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
+                  EntityType var4 = BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
                      var0.getReader().setCursor(var1);
                      return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var5.toString());
                   });
@@ -500,7 +502,7 @@ public class EntitySelectorOptions {
    public static EntitySelectorOptions.Modifier get(EntitySelectorParser var0, String var1, int var2) throws CommandSyntaxException {
       EntitySelectorOptions.Option var3 = OPTIONS.get(var1);
       if (var3 != null) {
-         if (var3.predicate.test(var0)) {
+         if (var3.canUse.test(var0)) {
             return var3.modifier;
          } else {
             throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), var1);
@@ -515,7 +517,7 @@ public class EntitySelectorOptions {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
 
       for(Entry var4 : OPTIONS.entrySet()) {
-         if (((EntitySelectorOptions.Option)var4.getValue()).predicate.test(var0) && ((String)var4.getKey()).toLowerCase(Locale.ROOT).startsWith(var2)) {
+         if (((EntitySelectorOptions.Option)var4.getValue()).canUse.test(var0) && ((String)var4.getKey()).toLowerCase(Locale.ROOT).startsWith(var2)) {
             var1.suggest((String)var4.getKey() + "=", ((EntitySelectorOptions.Option)var4.getValue()).description);
          }
       }
@@ -525,15 +527,15 @@ public class EntitySelectorOptions {
       void handle(EntitySelectorParser var1) throws CommandSyntaxException;
    }
 
-   static class Option {
-      public final EntitySelectorOptions.Modifier modifier;
-      public final Predicate<EntitySelectorParser> predicate;
-      public final Component description;
+   static record Option(EntitySelectorOptions.Modifier a, Predicate<EntitySelectorParser> b, Component c) {
+      final EntitySelectorOptions.Modifier modifier;
+      final Predicate<EntitySelectorParser> canUse;
+      final Component description;
 
       Option(EntitySelectorOptions.Modifier var1, Predicate<EntitySelectorParser> var2, Component var3) {
          super();
          this.modifier = var1;
-         this.predicate = var2;
+         this.canUse = var2;
          this.description = var3;
       }
    }

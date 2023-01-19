@@ -1,8 +1,8 @@
 package net.minecraft.client.animation;
 
-import com.mojang.math.Vector3f;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
+import org.joml.Vector3f;
 
 public record AnimationChannel(AnimationChannel.Target a, Keyframe... b) {
    private final AnimationChannel.Target target;
@@ -22,8 +22,7 @@ public record AnimationChannel(AnimationChannel.Target a, Keyframe... b) {
       public static final AnimationChannel.Interpolation LINEAR = (var0, var1, var2, var3, var4, var5) -> {
          Vector3f var6 = var2[var3].target();
          Vector3f var7 = var2[var4].target();
-         var0.set(Mth.lerp(var1, var6.x(), var7.x()) * var5, Mth.lerp(var1, var6.y(), var7.y()) * var5, Mth.lerp(var1, var6.z(), var7.z()) * var5);
-         return var0;
+         return var6.lerp(var7, var1, var0).mul(var5);
       };
       public static final AnimationChannel.Interpolation CATMULLROM = (var0, var1, var2, var3, var4, var5) -> {
          Vector3f var6 = var2[Math.max(0, var3 - 1)].target();

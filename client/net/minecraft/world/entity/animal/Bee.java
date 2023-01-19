@@ -490,6 +490,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    boolean isHiveValid() {
       if (!this.hasHive()) {
          return false;
+      } else if (this.isTooFarAway(this.hivePos)) {
+         return false;
       } else {
          BlockEntity var1 = this.level.getBlockEntity(this.hivePos);
          return var1 != null && var1.getType() == BlockEntityType.BEEHIVE;
@@ -603,6 +605,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       return 0.4F;
    }
 
+   @Nullable
    public Bee getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.BEE.create(var1);
    }

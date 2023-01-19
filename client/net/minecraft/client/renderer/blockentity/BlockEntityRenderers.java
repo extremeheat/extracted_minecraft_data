@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -25,7 +25,7 @@ public class BlockEntityRenderers {
          try {
             var1.put(var2, var3.create(var0));
          } catch (Exception var5) {
-            throw new IllegalStateException("Failed to create model for " + Registry.BLOCK_ENTITY_TYPE.getKey(var2), var5);
+            throw new IllegalStateException("Failed to create model for " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var2), var5);
          }
       });
       return var1.build();
@@ -33,6 +33,7 @@ public class BlockEntityRenderers {
 
    static {
       register(BlockEntityType.SIGN, SignRenderer::new);
+      register(BlockEntityType.HANGING_SIGN, HangingSignRenderer::new);
       register(BlockEntityType.MOB_SPAWNER, SpawnerRenderer::new);
       register(BlockEntityType.PISTON, PistonHeadRenderer::new);
       register(BlockEntityType.CHEST, ChestRenderer::new);

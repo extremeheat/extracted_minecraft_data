@@ -35,15 +35,15 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       super.done();
    }
 
-   @Nullable
    @Override
    public Node getStart() {
-      return this.getStartNode(
-         new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ))
-      );
+      return !this.mob.isInWater()
+         ? super.getStart()
+         : this.getStartNode(
+            new BlockPos(Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ))
+         );
    }
 
-   @Nullable
    @Override
    public Target getGoal(double var1, double var3, double var5) {
       return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3 + 0.5), Mth.floor(var5)));
@@ -84,11 +84,6 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
 
    private boolean isVerticalNeighborValid(@Nullable Node var1, Node var2) {
       return this.isNeighborValid(var1, var2) && var1.type == BlockPathTypes.WATER;
-   }
-
-   @Override
-   protected double getFloorLevel(BlockPos var1) {
-      return this.mob.isInWater() ? (double)var1.getY() + 0.5 : super.getFloorLevel(var1);
    }
 
    @Override

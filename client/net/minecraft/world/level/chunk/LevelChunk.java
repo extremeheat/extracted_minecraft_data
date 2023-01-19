@@ -18,8 +18,8 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
@@ -38,9 +38,9 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.EuclideanGameEventDispatcher;
-import net.minecraft.world.level.gameevent.GameEventDispatcher;
+import net.minecraft.world.level.gameevent.EuclideanGameEventListenerRegistry;
 import net.minecraft.world.level.gameevent.GameEventListener;
+import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
@@ -81,7 +81,7 @@ public class LevelChunk extends ChunkAccess {
    private Supplier<ChunkHolder.FullChunkStatus> fullStatus;
    @Nullable
    private LevelChunk.PostLoadProcessor postLoad;
-   private final Int2ObjectMap<GameEventDispatcher> gameEventDispatcherSections;
+   private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
    private final LevelChunkTicks<Block> blockTicks;
    private final LevelChunkTicks<Fluid> fluidTicks;
 
@@ -100,9 +100,9 @@ public class LevelChunk extends ChunkAccess {
       @Nullable LevelChunk.PostLoadProcessor var9,
       @Nullable BlendingData var10
    ) {
-      super(var2, var3, var1, var1.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), var6, var8, var10);
+      super(var2, var3, var1, var1.registryAccess().registryOrThrow(Registries.BIOME), var6, var8, var10);
       this.level = var1;
-      this.gameEventDispatcherSections = new Int2ObjectOpenHashMap();
+      this.gameEventListenerRegistrySections = new Int2ObjectOpenHashMap();
 
       for(Heightmap.Types var14 : Heightmap.Types.values()) {
          if (ChunkStatus.FULL.heightmapsAfter().contains(var14)) {
@@ -167,11 +167,11 @@ public class LevelChunk extends ChunkAccess {
    }
 
    @Override
-   public GameEventDispatcher getEventDispatcher(int var1) {
+   public GameEventListenerRegistry getListenerRegistry(int var1) {
       Level var3 = this.level;
       return var3 instanceof ServerLevel var2
-         ? (GameEventDispatcher)this.gameEventDispatcherSections.computeIfAbsent(var1, var1x -> new EuclideanGameEventDispatcher(var2))
-         : super.getEventDispatcher(var1);
+         ? (GameEventListenerRegistry)this.gameEventListenerRegistrySections.computeIfAbsent(var1, var1x -> new EuclideanGameEventListenerRegistry(var2))
+         : super.getListenerRegistry(var1);
    }
 
    @Override
@@ -424,10 +424,10 @@ public class LevelChunk extends ChunkAccess {
          GameEventListener var4 = ((EntityBlock)var3).getListener(var2, var1);
          if (var4 != null) {
             int var5 = SectionPos.blockToSectionCoord(var1.getBlockPos().getY());
-            GameEventDispatcher var6 = this.getEventDispatcher(var5);
+            GameEventListenerRegistry var6 = this.getListenerRegistry(var5);
             var6.unregister(var4);
             if (var6.isEmpty()) {
-               this.gameEventDispatcherSections.remove(var5);
+               this.gameEventListenerRegistrySections.remove(var5);
             }
          }
       }
@@ -615,8 +615,7 @@ public class LevelChunk extends ChunkAccess {
       if (var3 instanceof EntityBlock) {
          GameEventListener var4 = ((EntityBlock)var3).getListener(var2, var1);
          if (var4 != null) {
-            GameEventDispatcher var5 = this.getEventDispatcher(SectionPos.blockToSectionCoord(var1.getBlockPos().getY()));
-            var5.register(var4);
+            this.getListenerRegistry(SectionPos.blockToSectionCoord(var1.getBlockPos().getY())).register(var4);
          }
       }
    }

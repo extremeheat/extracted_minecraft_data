@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -151,11 +151,25 @@ public class TextureMapping {
    }
 
    public static TextureMapping logColumn(Block var0) {
-      return new TextureMapping().put(TextureSlot.SIDE, getBlockTexture(var0)).put(TextureSlot.END, getBlockTexture(var0, "_top"));
+      return new TextureMapping()
+         .put(TextureSlot.SIDE, getBlockTexture(var0))
+         .put(TextureSlot.END, getBlockTexture(var0, "_top"))
+         .put(TextureSlot.PARTICLE, getBlockTexture(var0));
    }
 
    public static TextureMapping column(ResourceLocation var0, ResourceLocation var1) {
       return new TextureMapping().put(TextureSlot.SIDE, var0).put(TextureSlot.END, var1);
+   }
+
+   public static TextureMapping fence(Block var0) {
+      return new TextureMapping()
+         .put(TextureSlot.TEXTURE, getBlockTexture(var0))
+         .put(TextureSlot.SIDE, getBlockTexture(var0, "_side"))
+         .put(TextureSlot.TOP, getBlockTexture(var0, "_top"));
+   }
+
+   public static TextureMapping customParticle(Block var0) {
+      return new TextureMapping().put(TextureSlot.TEXTURE, getBlockTexture(var0)).put(TextureSlot.PARTICLE, getBlockTexture(var0, "_particle"));
    }
 
    public static TextureMapping cubeBottomTop(Block var0) {
@@ -176,7 +190,11 @@ public class TextureMapping {
 
    public static TextureMapping columnWithWall(Block var0) {
       ResourceLocation var1 = getBlockTexture(var0);
-      return new TextureMapping().put(TextureSlot.WALL, var1).put(TextureSlot.SIDE, var1).put(TextureSlot.END, getBlockTexture(var0, "_top"));
+      return new TextureMapping()
+         .put(TextureSlot.TEXTURE, var1)
+         .put(TextureSlot.WALL, var1)
+         .put(TextureSlot.SIDE, var1)
+         .put(TextureSlot.END, getBlockTexture(var0, "_top"));
    }
 
    public static TextureMapping door(ResourceLocation var0, ResourceLocation var1) {
@@ -320,22 +338,22 @@ public class TextureMapping {
    }
 
    public static ResourceLocation getBlockTexture(Block var0) {
-      ResourceLocation var1 = Registry.BLOCK.getKey(var0);
-      return new ResourceLocation(var1.getNamespace(), "block/" + var1.getPath());
+      ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(var0);
+      return var1.withPrefix("block/");
    }
 
    public static ResourceLocation getBlockTexture(Block var0, String var1) {
-      ResourceLocation var2 = Registry.BLOCK.getKey(var0);
-      return new ResourceLocation(var2.getNamespace(), "block/" + var2.getPath() + var1);
+      ResourceLocation var2 = BuiltInRegistries.BLOCK.getKey(var0);
+      return var2.withPath(var1x -> "block/" + var1x + var1);
    }
 
    public static ResourceLocation getItemTexture(Item var0) {
-      ResourceLocation var1 = Registry.ITEM.getKey(var0);
-      return new ResourceLocation(var1.getNamespace(), "item/" + var1.getPath());
+      ResourceLocation var1 = BuiltInRegistries.ITEM.getKey(var0);
+      return var1.withPrefix("item/");
    }
 
    public static ResourceLocation getItemTexture(Item var0, String var1) {
-      ResourceLocation var2 = Registry.ITEM.getKey(var0);
-      return new ResourceLocation(var2.getNamespace(), "item/" + var2.getPath() + var1);
+      ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(var0);
+      return var2.withPath(var1x -> "item/" + var1x + var1);
    }
 }

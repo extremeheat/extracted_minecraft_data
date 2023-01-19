@@ -7,7 +7,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +22,7 @@ import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
 import net.minecraft.client.resources.model.UnbakedModel;
@@ -79,13 +78,13 @@ public class MultiPart implements UnbakedModel {
    }
 
    @Override
-   public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> var1, Set<Pair<String, String>> var2) {
-      return this.getSelectors().stream().flatMap(var2x -> var2x.getVariant().getMaterials(var1, var2).stream()).collect(Collectors.toSet());
+   public void resolveParents(Function<ResourceLocation, UnbakedModel> var1) {
+      this.getSelectors().forEach(var1x -> var1x.getVariant().resolveParents(var1));
    }
 
    @Nullable
    @Override
-   public BakedModel bake(ModelBakery var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
+   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
       MultiPartBakedModel.Builder var5 = new MultiPartBakedModel.Builder();
 
       for(Selector var7 : this.getSelectors()) {

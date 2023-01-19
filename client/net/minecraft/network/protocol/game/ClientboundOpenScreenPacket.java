@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -22,14 +22,14 @@ public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListe
    public ClientboundOpenScreenPacket(FriendlyByteBuf var1) {
       super();
       this.containerId = var1.readVarInt();
-      this.type = var1.readById(Registry.MENU);
+      this.type = var1.readById(BuiltInRegistries.MENU);
       this.title = var1.readComponent();
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.containerId);
-      var1.writeId(Registry.MENU, this.type);
+      var1.writeId(BuiltInRegistries.MENU, this.type);
       var1.writeComponent(this.title);
    }
 

@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
@@ -28,12 +28,14 @@ public class SuggestionProviders {
    );
    public static final SuggestionProvider<CommandSourceStack> AVAILABLE_SOUNDS = register(
       new ResourceLocation("available_sounds"),
-      (var0, var1) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSoundEvents(), var1)
+      (var0, var1) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1)
    );
    public static final SuggestionProvider<CommandSourceStack> SUMMONABLE_ENTITIES = register(
       new ResourceLocation("summonable_entities"),
       (var0, var1) -> SharedSuggestionProvider.suggestResource(
-            Registry.ENTITY_TYPE.stream().filter(EntityType::canSummon),
+            BuiltInRegistries.ENTITY_TYPE
+               .stream()
+               .filter(var1x -> var1x.isEnabled(((SharedSuggestionProvider)var0.getSource()).enabledFeatures()) && var1x.canSummon()),
             var1,
             EntityType::getKey,
             var0x -> Component.translatable(Util.makeDescriptionId("entity", EntityType.getKey(var0x)))

@@ -21,6 +21,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 
 public interface SharedSuggestionProvider {
@@ -36,7 +37,7 @@ public interface SharedSuggestionProvider {
 
    Collection<String> getAllTeams();
 
-   Collection<ResourceLocation> getAvailableSoundEvents();
+   Stream<ResourceLocation> getAvailableSounds();
 
    Stream<ResourceLocation> getRecipeNames();
 
@@ -53,6 +54,8 @@ public interface SharedSuggestionProvider {
    Set<ResourceKey<Level>> levels();
 
    RegistryAccess registryAccess();
+
+   FeatureFlagSet enabledFeatures();
 
    default void suggestRegistryElements(Registry<?> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3) {
       if (var2.shouldSuggestTags()) {

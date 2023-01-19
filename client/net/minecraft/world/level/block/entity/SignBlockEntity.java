@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
@@ -25,6 +26,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class SignBlockEntity extends BlockEntity {
    public static final int LINES = 4;
+   private static final int MAX_TEXT_LINE_WIDTH = 90;
+   private static final int TEXT_LINE_HEIGHT = 10;
    private static final String[] RAW_TEXT_FIELD_NAMES = new String[]{"Text1", "Text2", "Text3", "Text4"};
    private static final String[] FILTERED_TEXT_FIELD_NAMES = new String[]{"FilteredText1", "FilteredText2", "FilteredText3", "FilteredText4"};
    private final Component[] messages = new Component[]{CommonComponents.EMPTY, CommonComponents.EMPTY, CommonComponents.EMPTY, CommonComponents.EMPTY};
@@ -42,6 +45,18 @@ public class SignBlockEntity extends BlockEntity {
 
    public SignBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SIGN, var1, var2);
+   }
+
+   public SignBlockEntity(BlockEntityType var1, BlockPos var2, BlockState var3) {
+      super(var1, var2, var3);
+   }
+
+   public int getTextLineHeight() {
+      return 10;
+   }
+
+   public int getMaxTextLineWidth() {
+      return 90;
    }
 
    @Override
@@ -171,6 +186,18 @@ public class SignBlockEntity extends BlockEntity {
    @Nullable
    public UUID getPlayerWhoMayEdit() {
       return this.playerWhoMayEdit;
+   }
+
+   public boolean hasAnyClickCommands(Player var1) {
+      for(Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
+         Style var6 = var5.getStyle();
+         ClickEvent var7 = var6.getClickEvent();
+         if (var7 != null && var7.getAction() == ClickEvent.Action.RUN_COMMAND) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public boolean executeClickCommands(ServerPlayer var1) {

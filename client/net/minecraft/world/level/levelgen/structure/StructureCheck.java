@@ -14,6 +14,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.NbtUtils;
@@ -76,8 +77,8 @@ public class StructureCheck {
       this.biomeSource = var8;
       this.seed = var9;
       this.fixerUpper = var11;
-      this.biomes = var2.ownedRegistryOrThrow(Registry.BIOME_REGISTRY);
-      this.structureConfigs = var2.ownedRegistryOrThrow(Registry.STRUCTURE_REGISTRY);
+      this.biomes = var2.registryOrThrow(Registries.BIOME);
+      this.structureConfigs = var2.registryOrThrow(Registries.STRUCTURE);
    }
 
    public StructureCheckResult checkStart(ChunkPos var1, Structure var2, boolean var3) {
@@ -98,7 +99,7 @@ public class StructureCheck {
    }
 
    private boolean canCreateStructure(ChunkPos var1, Structure var2) {
-      return var2.findGenerationPoint(
+      return var2.findValidGenerationPoint(
             new Structure.GenerationContext(
                this.registryAccess,
                this.chunkGenerator,
@@ -173,7 +174,7 @@ public class StructureCheck {
                return Object2IntMaps.emptyMap();
             } else {
                Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
-               Registry var5 = this.registryAccess.registryOrThrow(Registry.STRUCTURE_REGISTRY);
+               Registry var5 = this.registryAccess.registryOrThrow(Registries.STRUCTURE);
 
                for(String var7 : var3.getAllKeys()) {
                   ResourceLocation var8 = ResourceLocation.tryParse(var7);

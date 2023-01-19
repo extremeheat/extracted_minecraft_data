@@ -4,12 +4,15 @@ import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.ToFloatFunction;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.DensityFunctions;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
 
@@ -132,69 +135,55 @@ public final class OverworldBiomeBuilder {
    }
 
    protected void addBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      if (!SharedConstants.debugGenerateSquareTerrainWithoutNoise) {
+      if (SharedConstants.debugGenerateSquareTerrainWithoutNoise) {
+         this.addDebugBiomes(var1);
+      } else {
          this.addOffCoastBiomes(var1);
          this.addInlandBiomes(var1);
          this.addUndergroundBiomes(var1);
-      } else {
-         DensityFunctions.Spline.Coordinate var2 = new DensityFunctions.Spline.Coordinate(
-            BuiltinRegistries.DENSITY_FUNCTION.getHolderOrThrow(NoiseRouterData.CONTINENTS)
-         );
-         DensityFunctions.Spline.Coordinate var3 = new DensityFunctions.Spline.Coordinate(
-            BuiltinRegistries.DENSITY_FUNCTION.getHolderOrThrow(NoiseRouterData.EROSION)
-         );
-         DensityFunctions.Spline.Coordinate var4 = new DensityFunctions.Spline.Coordinate(
-            BuiltinRegistries.DENSITY_FUNCTION.getHolderOrThrow(NoiseRouterData.RIDGES_FOLDED)
-         );
-         var1.accept(
-            Pair.of(
-               Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F),
-               Biomes.PLAINS
-            )
-         );
-         CubicSpline var5 = TerrainProvider.buildErosionOffsetSpline(
-            var3, var4, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, ToFloatFunction.IDENTITY
-         );
-         if (var5 instanceof CubicSpline.Multipoint var6) {
-            ResourceKey var7 = Biomes.DESERT;
+      }
+   }
 
-            for(float var11 : var6.locations()) {
-               var1.accept(
-                  Pair.of(
-                     Climate.parameters(
-                        this.FULL_RANGE,
-                        this.FULL_RANGE,
-                        this.FULL_RANGE,
-                        Climate.Parameter.point(var11),
-                        Climate.Parameter.point(0.0F),
-                        this.FULL_RANGE,
-                        0.0F
-                     ),
-                     var7
-                  )
-               );
-               var7 = var7 == Biomes.DESERT ? Biomes.BADLANDS : Biomes.DESERT;
-            }
+   private void addDebugBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
+      HolderLookup.Provider var2 = VanillaRegistries.createLookup();
+      HolderLookup.RegistryLookup var3 = var2.lookupOrThrow(Registries.DENSITY_FUNCTION);
+      DensityFunctions.Spline.Coordinate var4 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.CONTINENTS));
+      DensityFunctions.Spline.Coordinate var5 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.EROSION));
+      DensityFunctions.Spline.Coordinate var6 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.RIDGES_FOLDED));
+      var1.accept(
+         Pair.of(
+            Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F),
+            Biomes.PLAINS
+         )
+      );
+      CubicSpline var7 = TerrainProvider.buildErosionOffsetSpline(var5, var6, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, ToFloatFunction.IDENTITY);
+      if (var7 instanceof CubicSpline.Multipoint var8) {
+         ResourceKey var9 = Biomes.DESERT;
+
+         for(float var13 : var8.locations()) {
+            var1.accept(
+               Pair.of(
+                  Climate.parameters(
+                     this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var13), Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F
+                  ),
+                  var9
+               )
+            );
+            var9 = var9 == Biomes.DESERT ? Biomes.BADLANDS : Biomes.DESERT;
          }
+      }
 
-         CubicSpline var12 = TerrainProvider.overworldOffset(var2, var3, var4, false);
-         if (var12 instanceof CubicSpline.Multipoint var13) {
-            for(float var17 : var13.locations()) {
-               var1.accept(
-                  Pair.of(
-                     Climate.parameters(
-                        this.FULL_RANGE,
-                        this.FULL_RANGE,
-                        Climate.Parameter.point(var17),
-                        this.FULL_RANGE,
-                        Climate.Parameter.point(0.0F),
-                        this.FULL_RANGE,
-                        0.0F
-                     ),
-                     Biomes.SNOWY_TAIGA
-                  )
-               );
-            }
+      CubicSpline var14 = TerrainProvider.overworldOffset(var4, var5, var6, false);
+      if (var14 instanceof CubicSpline.Multipoint var15) {
+         for(float var19 : var15.locations()) {
+            var1.accept(
+               Pair.of(
+                  Climate.parameters(
+                     this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var19), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F
+                  ),
+                  Biomes.SNOWY_TAIGA
+               )
+            );
          }
       }
    }
@@ -760,8 +749,8 @@ public final class OverworldBiomeBuilder {
       var1.accept(Pair.of(Climate.parameters(var2, var3, var4, var5, Climate.Parameter.point(1.1F), var6, var7), var8));
    }
 
-   public static boolean isDeepDarkRegion(double var0, double var2) {
-      return var0 < -0.22499999403953552 && var2 > 0.8999999761581421;
+   public static boolean isDeepDarkRegion(DensityFunction var0, DensityFunction var1, DensityFunction.FunctionContext var2) {
+      return var0.compute(var2) < -0.22499999403953552 && var1.compute(var2) > 0.8999999761581421;
    }
 
    public static String getDebugStringForPeaksAndValleys(double var0) {

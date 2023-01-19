@@ -25,6 +25,7 @@ public class ModelLayers {
    public static final ModelLayerLocation BOOK = register("book");
    public static final ModelLayerLocation CAT = register("cat");
    public static final ModelLayerLocation CAT_COLLAR = register("cat", "collar");
+   public static final ModelLayerLocation CAMEL = register("camel");
    public static final ModelLayerLocation CAVE_SPIDER = register("cave_spider");
    public static final ModelLayerLocation CHEST = register("chest");
    public static final ModelLayerLocation CHEST_MINECART = register("chest_minecart");
@@ -92,6 +93,7 @@ public class ModelLayers {
    public static final ModelLayerLocation PIGLIN_BRUTE = register("piglin_brute");
    public static final ModelLayerLocation PIGLIN_BRUTE_INNER_ARMOR = registerInnerArmor("piglin_brute");
    public static final ModelLayerLocation PIGLIN_BRUTE_OUTER_ARMOR = registerOuterArmor("piglin_brute");
+   public static final ModelLayerLocation PIGLIN_HEAD = register("piglin_head");
    public static final ModelLayerLocation PIGLIN_INNER_ARMOR = registerInnerArmor("piglin");
    public static final ModelLayerLocation PIGLIN_OUTER_ARMOR = registerOuterArmor("piglin");
    public static final ModelLayerLocation PIG_SADDLE = register("pig", "saddle");
@@ -199,6 +201,14 @@ public class ModelLayers {
       return register(var0, "outer_armor");
    }
 
+   public static ModelLayerLocation createRaftModelName(Boat.Type var0) {
+      return createLocation("raft/" + var0.getName(), "main");
+   }
+
+   public static ModelLayerLocation createChestRaftModelName(Boat.Type var0) {
+      return createLocation("chest_raft/" + var0.getName(), "main");
+   }
+
    public static ModelLayerLocation createBoatModelName(Boat.Type var0) {
       return createLocation("boat/" + var0.getName(), "main");
    }
@@ -209,6 +219,10 @@ public class ModelLayers {
 
    public static ModelLayerLocation createSignModelName(WoodType var0) {
       return createLocation("sign/" + var0.name(), "main");
+   }
+
+   public static ModelLayerLocation createHangingSignModelName(WoodType var0) {
+      return createLocation("hanging_sign/" + var0.name(), "main");
    }
 
    public static Stream<ModelLayerLocation> getKnownLocations() {

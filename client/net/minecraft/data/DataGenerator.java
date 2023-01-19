@@ -1,113 +1,92 @@
 package net.minecraft.data;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import net.minecraft.WorldVersion;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import org.slf4j.Logger;
 
 public class DataGenerator {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Collection<Path> inputFolders;
-   private final Path outputFolder;
-   private final List<DataProvider> allProviders = Lists.newArrayList();
-   private final List<DataProvider> providersToRun = Lists.newArrayList();
+   private final Path rootOutputFolder;
+   private final PackOutput vanillaPackOutput;
+   final Set<String> allProviderIds = new HashSet<>();
+   final Map<String, DataProvider> providersToRun = new LinkedHashMap<>();
    private final WorldVersion version;
    private final boolean alwaysGenerate;
 
-   public DataGenerator(Path var1, Collection<Path> var2, WorldVersion var3, boolean var4) {
+   public DataGenerator(Path var1, WorldVersion var2, boolean var3) {
       super();
-      this.outputFolder = var1;
-      this.inputFolders = var2;
-      this.version = var3;
-      this.alwaysGenerate = var4;
-   }
-
-   public Collection<Path> getInputFolders() {
-      return this.inputFolders;
-   }
-
-   public Path getOutputFolder() {
-      return this.outputFolder;
-   }
-
-   public Path getOutputFolder(DataGenerator.Target var1) {
-      return this.getOutputFolder().resolve(var1.directory);
+      this.rootOutputFolder = var1;
+      this.vanillaPackOutput = new PackOutput(this.rootOutputFolder);
+      this.version = var2;
+      this.alwaysGenerate = var3;
    }
 
    public void run() throws IOException {
-      HashCache var1 = new HashCache(this.outputFolder, this.allProviders, this.version);
+      HashCache var1 = new HashCache(this.rootOutputFolder, this.allProviderIds, this.version);
       Stopwatch var2 = Stopwatch.createStarted();
       Stopwatch var3 = Stopwatch.createUnstarted();
-
-      for(DataProvider var5 : this.providersToRun) {
-         if (!this.alwaysGenerate && !var1.shouldRunInThisVersion(var5)) {
-            LOGGER.debug("Generator {} already run for version {}", var5.getName(), this.version.getName());
+      this.providersToRun.forEach((var3x, var4) -> {
+         if (!this.alwaysGenerate && !var1.shouldRunInThisVersion(var3x)) {
+            LOGGER.debug("Generator {} already run for version {}", var3x, this.version.getName());
          } else {
-            LOGGER.info("Starting provider: {}", var5.getName());
+            LOGGER.info("Starting provider: {}", var3x);
             var3.start();
-            var5.run(var1.getUpdater(var5));
+            var1.applyUpdate(var1.generateUpdate(var3x, var4::run).join());
             var3.stop();
-            LOGGER.info("{} finished after {} ms", var5.getName(), var3.elapsed(TimeUnit.MILLISECONDS));
+            LOGGER.info("{} finished after {} ms", var3x, var3.elapsed(TimeUnit.MILLISECONDS));
             var3.reset();
          }
-      }
-
+      });
       LOGGER.info("All providers took: {} ms", var2.elapsed(TimeUnit.MILLISECONDS));
       var1.purgeStaleAndWrite();
    }
 
-   public void addProvider(boolean var1, DataProvider var2) {
-      if (var1) {
-         this.providersToRun.add(var2);
-      }
-
-      this.allProviders.add(var2);
+   public DataGenerator.PackGenerator getVanillaPack(boolean var1) {
+      return new DataGenerator.PackGenerator(var1, "vanilla", this.vanillaPackOutput);
    }
 
-   public DataGenerator.PathProvider createPathProvider(DataGenerator.Target var1, String var2) {
-      return new DataGenerator.PathProvider(this, var1, var2);
+   public DataGenerator.PackGenerator getBuiltinDatapack(boolean var1, String var2) {
+      Path var3 = this.vanillaPackOutput.getOutputFolder(PackOutput.Target.DATA_PACK).resolve("minecraft").resolve("datapacks").resolve(var2);
+      return new DataGenerator.PackGenerator(var1, var2, new PackOutput(var3));
    }
 
    static {
       Bootstrap.bootStrap();
    }
 
-   public static class PathProvider {
-      private final Path root;
-      private final String kind;
+   public class PackGenerator {
+      private final boolean toRun;
+      private final String providerPrefix;
+      private final PackOutput output;
 
-      PathProvider(DataGenerator var1, DataGenerator.Target var2, String var3) {
+      PackGenerator(boolean var2, String var3, PackOutput var4) {
          super();
-         this.root = var1.getOutputFolder(var2);
-         this.kind = var3;
+         this.toRun = var2;
+         this.providerPrefix = var3;
+         this.output = var4;
       }
 
-      public Path file(ResourceLocation var1, String var2) {
-         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + "." + var2);
-      }
+      public <T extends DataProvider> T addProvider(DataProvider.Factory<T> var1) {
+         DataProvider var2 = var1.create(this.output);
+         String var3 = this.providerPrefix + "/" + var2.getName();
+         if (!DataGenerator.this.allProviderIds.add(var3)) {
+            throw new IllegalStateException("Duplicate provider: " + var3);
+         } else {
+            if (this.toRun) {
+               DataGenerator.this.providersToRun.put(var3, var2);
+            }
 
-      public Path json(ResourceLocation var1) {
-         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
-      }
-   }
-
-   public static enum Target {
-      DATA_PACK("data"),
-      RESOURCE_PACK("assets"),
-      REPORTS("reports");
-
-      final String directory;
-
-      private Target(String var3) {
-         this.directory = var3;
+            return (T)var2;
+         }
       }
    }
 }

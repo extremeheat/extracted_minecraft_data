@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> extends LivingEntityRenderer<T, M> {
    public static final int LEASH_RENDER_STEPS = 24;
@@ -47,7 +47,7 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       var3.pushPose();
       Vec3 var6 = var5.getRopeHoldPosition(var2);
       double var7 = (double)(Mth.lerp(var2, var1.yBodyRotO, var1.yBodyRot) * 0.017453292F) + 1.5707963267948966;
-      Vec3 var9 = var1.getLeashOffset();
+      Vec3 var9 = var1.getLeashOffset(var2);
       double var10 = Math.cos(var7) * var9.z + Math.sin(var7) * var9.x;
       double var12 = Math.sin(var7) * var9.z - Math.cos(var7) * var9.x;
       double var14 = Mth.lerp((double)var2, var1.xo, var1.getX()) + var10;

@@ -1,6 +1,7 @@
 package net.minecraft.world.effect;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
@@ -123,6 +124,6 @@ public class MobEffects {
    }
 
    private static MobEffect register(int var0, String var1, MobEffect var2) {
-      return Registry.registerMapping(Registry.MOB_EFFECT, var0, var1, var2);
+      return Registry.registerMapping(BuiltInRegistries.MOB_EFFECT, var0, var1, var2);
    }
 }

@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Calendar;
@@ -70,7 +70,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 14.0F, 10.0F, 14.0F), PartPose.ZERO);
       var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 14.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -1.0F, 15.0F, 2.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(7.0F, -2.0F, 14.0F, 2.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -79,7 +79,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(1.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
       var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(1.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -1.0F, 15.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(15.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -88,7 +88,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       PartDefinition var1 = var0.getRoot();
       var1.addOrReplaceChild("bottom", CubeListBuilder.create().texOffs(0, 19).addBox(0.0F, 0.0F, 1.0F, 15.0F, 10.0F, 14.0F), PartPose.ZERO);
       var1.addOrReplaceChild("lid", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 15.0F, 5.0F, 14.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
-      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -1.0F, 15.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 8.0F, 0.0F));
+      var1.addOrReplaceChild("lock", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, -2.0F, 14.0F, 1.0F, 4.0F, 1.0F), PartPose.offset(0.0F, 9.0F, 1.0F));
       return LayerDefinition.create(var0, 64, 64);
    }
 
@@ -104,9 +104,9 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
          boolean var13 = var10 != ChestType.SINGLE;
          var3.pushPose();
          float var14 = var9.getValue(ChestBlock.FACING).toYRot();
-         var3.translate(0.5, 0.5, 0.5);
-         var3.mulPose(Vector3f.YP.rotationDegrees(-var14));
-         var3.translate(-0.5, -0.5, -0.5);
+         var3.translate(0.5F, 0.5F, 0.5F);
+         var3.mulPose(Axis.YP.rotationDegrees(-var14));
+         var3.translate(-0.5F, -0.5F, -0.5F);
          DoubleBlockCombiner.NeighborCombineResult var15;
          if (var8) {
             var15 = var12.combine(var9, var7, var1.getBlockPos(), true);

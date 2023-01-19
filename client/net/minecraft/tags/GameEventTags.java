@@ -1,6 +1,6 @@
 package net.minecraft.tags;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -16,6 +16,6 @@ public class GameEventTags {
    }
 
    private static TagKey<GameEvent> create(String var0) {
-      return TagKey.create(Registry.GAME_EVENT_REGISTRY, new ResourceLocation(var0));
+      return TagKey.create(Registries.GAME_EVENT, new ResourceLocation(var0));
    }
 }

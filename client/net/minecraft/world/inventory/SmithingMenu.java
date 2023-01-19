@@ -58,10 +58,13 @@ public class SmithingMenu extends ItemCombinerMenu {
       if (var1.isEmpty()) {
          this.resultSlots.setItem(0, ItemStack.EMPTY);
       } else {
-         this.selectedRecipe = (UpgradeRecipe)var1.get(0);
-         ItemStack var2 = this.selectedRecipe.assemble(this.inputSlots);
-         this.resultSlots.setRecipeUsed(this.selectedRecipe);
-         this.resultSlots.setItem(0, var2);
+         UpgradeRecipe var2 = (UpgradeRecipe)var1.get(0);
+         ItemStack var3 = var2.assemble(this.inputSlots);
+         if (var3.isItemEnabled(this.level.enabledFeatures())) {
+            this.selectedRecipe = var2;
+            this.resultSlots.setRecipeUsed(var2);
+            this.resultSlots.setItem(0, var3);
+         }
       }
    }
 

@@ -158,7 +158,8 @@ public class RecipeBookPage {
                   this.lastClickedRecipe = var11.getRecipe();
                   this.lastClickedRecipeCollection = var11.getCollection();
                } else if (var5 == 1 && !this.overlay.isVisible() && !var11.isOnlyOption()) {
-                  this.overlay.init(this.minecraft, var11.getCollection(), var11.x, var11.y, var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
+                  this.overlay
+                     .init(this.minecraft, var11.getCollection(), var11.getX(), var11.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var11.getWidth());
                }
 
                return true;

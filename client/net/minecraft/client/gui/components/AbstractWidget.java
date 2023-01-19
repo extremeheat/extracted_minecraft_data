@@ -2,6 +2,8 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
@@ -9,6 +11,10 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -18,18 +24,23 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractWidget extends GuiComponent implements Widget, GuiEventListener, NarratableEntry {
+public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, NarratableEntry {
    public static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
    protected int width;
    protected int height;
-   public int x;
-   public int y;
+   private int x;
+   private int y;
    private Component message;
    protected boolean isHovered;
    public boolean active = true;
    public boolean visible = true;
    protected float alpha = 1.0F;
    private boolean focused;
+   @Nullable
+   private Tooltip tooltip;
+   private int tooltipMsDelay;
+   private long hoverOrFocusedStartTime;
+   private boolean wasHoveredOrFocused;
 
    public AbstractWidget(int var1, int var2, int var3, int var4, Component var5) {
       super();
@@ -58,9 +69,42 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.isHovered = var2 >= this.x && var3 >= this.y && var2 < this.x + this.width && var3 < this.y + this.height;
+         this.isHovered = var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
          this.renderButton(var1, var2, var3, var4);
+         this.updateTooltip();
       }
+   }
+
+   private void updateTooltip() {
+      if (this.tooltip != null) {
+         boolean var1 = this.isHoveredOrFocused();
+         if (var1 != this.wasHoveredOrFocused) {
+            if (var1) {
+               this.hoverOrFocusedStartTime = Util.getMillis();
+            }
+
+            this.wasHoveredOrFocused = var1;
+         }
+
+         if (var1 && Util.getMillis() - this.hoverOrFocusedStartTime > (long)this.tooltipMsDelay) {
+            Screen var2 = Minecraft.getInstance().screen;
+            if (var2 != null) {
+               var2.setTooltipForNextRenderPass(this.tooltip, this.createTooltipPositioner(), this.isFocused());
+            }
+         }
+      }
+   }
+
+   protected ClientTooltipPositioner createTooltipPositioner() {
+      return (ClientTooltipPositioner)(this.isFocused() ? new BelowOrAboveWidgetTooltipPositioner(this) : DefaultTooltipPositioner.INSTANCE);
+   }
+
+   public void setTooltip(@Nullable Tooltip var1) {
+      this.tooltip = var1;
+   }
+
+   public void setTooltipDelay(int var1) {
+      this.tooltipMsDelay = var1;
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -81,11 +125,13 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
       RenderSystem.enableDepthTest();
-      this.blit(var1, this.x, this.y, 0, 46 + var7 * 20, this.width / 2, this.height);
-      this.blit(var1, this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + var7 * 20, this.width / 2, this.height);
+      this.blit(var1, this.getX(), this.getY(), 0, 46 + var7 * 20, this.width / 2, this.height);
+      this.blit(var1, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2, 46 + var7 * 20, this.width / 2, this.height);
       this.renderBg(var1, var5, var2, var3);
       int var8 = this.active ? 16777215 : 10526880;
-      drawCenteredString(var1, var6, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, var8 | Mth.ceil(this.alpha * 255.0F) << 24);
+      drawCenteredString(
+         var1, var6, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, var8 | Mth.ceil(this.alpha * 255.0F) << 24
+      );
    }
 
    protected void renderBg(PoseStack var1, Minecraft var2, int var3, int var4) {
@@ -145,10 +191,10 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
    protected boolean clicked(double var1, double var3) {
       return this.active
          && this.visible
-         && var1 >= (double)this.x
-         && var3 >= (double)this.y
-         && var1 < (double)(this.x + this.width)
-         && var3 < (double)(this.y + this.height);
+         && var1 >= (double)this.getX()
+         && var3 >= (double)this.getY()
+         && var1 < (double)(this.getX() + this.width)
+         && var3 < (double)(this.getY() + this.height);
    }
 
    public boolean isHoveredOrFocused() {
@@ -173,13 +219,10 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
    public boolean isMouseOver(double var1, double var3) {
       return this.active
          && this.visible
-         && var1 >= (double)this.x
-         && var3 >= (double)this.y
-         && var1 < (double)(this.x + this.width)
-         && var3 < (double)(this.y + this.height);
-   }
-
-   public void renderToolTip(PoseStack var1, int var2, int var3) {
+         && var1 >= (double)this.getX()
+         && var3 >= (double)this.getY()
+         && var1 < (double)(this.getX() + this.width)
+         && var3 < (double)(this.getY() + this.height);
    }
 
    public void playDownSound(SoundManager var1) {
@@ -228,6 +271,16 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
       }
    }
 
+   @Override
+   public final void updateNarration(NarrationElementOutput var1) {
+      this.updateWidgetNarration(var1);
+      if (this.tooltip != null) {
+         this.tooltip.updateNarration(var1);
+      }
+   }
+
+   protected abstract void updateWidgetNarration(NarrationElementOutput var1);
+
    protected void defaultButtonNarrationText(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
       if (this.active) {
@@ -237,5 +290,26 @@ public abstract class AbstractWidget extends GuiComponent implements Widget, Gui
             var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"));
          }
       }
+   }
+
+   public int getX() {
+      return this.x;
+   }
+
+   public void setX(int var1) {
+      this.x = var1;
+   }
+
+   public void setPosition(int var1, int var2) {
+      this.setX(var1);
+      this.setY(var2);
+   }
+
+   public int getY() {
+      return this.y;
+   }
+
+   public void setY(int var1) {
+      this.y = var1;
    }
 }

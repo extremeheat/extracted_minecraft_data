@@ -2,15 +2,12 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -31,8 +28,10 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
@@ -49,6 +48,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.LookControl;
@@ -90,7 +90,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
-public class Fox extends Animal {
+public class Fox extends Animal implements VariantHolder<Fox.Type> {
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.BYTE);
    private static final int FLAG_SITTING = 1;
@@ -286,9 +286,13 @@ public class Fox extends Animal {
          .add(Attributes.ATTACK_DAMAGE, 2.0);
    }
 
+   @Nullable
    public Fox getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Fox var3 = EntityType.FOX.create(var1);
-      var3.setFoxType(this.random.nextBoolean() ? this.getFoxType() : ((Fox)var2).getFoxType());
+      if (var3 != null) {
+         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : ((Fox)var2).getVariant());
+      }
+
       return var3;
    }
 
@@ -315,7 +319,7 @@ public class Fox extends Animal {
          var4 = new Fox.FoxGroupData(var7);
       }
 
-      this.setFoxType(var7);
+      this.setVariant(var7);
       if (var8) {
          this.setAge(-24000);
       }
@@ -329,7 +333,7 @@ public class Fox extends Animal {
    }
 
    private void setTargetGoals() {
-      if (this.getFoxType() == Fox.Type.RED) {
+      if (this.getVariant() == Fox.Type.RED) {
          this.targetSelector.addGoal(4, this.landTargetGoal);
          this.targetSelector.addGoal(4, this.turtleEggTargetGoal);
          this.targetSelector.addGoal(6, this.fishTargetGoal);
@@ -354,11 +358,11 @@ public class Fox extends Animal {
       return this.isBaby() ? var2.height * 0.85F : 0.4F;
    }
 
-   public Fox.Type getFoxType() {
+   public Fox.Type getVariant() {
       return Fox.Type.byId(this.entityData.get(DATA_TYPE_ID));
    }
 
-   private void setFoxType(Fox.Type var1) {
+   public void setVariant(Fox.Type var1) {
       this.entityData.set(DATA_TYPE_ID, var1.getId());
    }
 
@@ -391,7 +395,7 @@ public class Fox extends Animal {
 
       var1.put("Trusted", var3);
       var1.putBoolean("Sleeping", this.isSleeping());
-      var1.putString("Type", this.getFoxType().getName());
+      var1.putString("Type", this.getVariant().getSerializedName());
       var1.putBoolean("Sitting", this.isSitting());
       var1.putBoolean("Crouching", this.isCrouching());
    }
@@ -406,7 +410,7 @@ public class Fox extends Animal {
       }
 
       this.setSleeping(var1.getBoolean("Sleeping"));
-      this.setFoxType(Fox.Type.byName(var1.getString("Type")));
+      this.setVariant(Fox.Type.byName(var1.getString("Type")));
       this.setSitting(var1.getBoolean("Sitting"));
       this.setIsCrouching(var1.getBoolean("Crouching"));
       if (this.level instanceof ServerLevel) {
@@ -695,7 +699,7 @@ public class Fox extends Animal {
          double var12 = var6 == 0.0 ? var4 * (double)((float)var9 / 6.0F) : var10 / var6;
 
          for(int var14 = 1; var14 < 4; ++var14) {
-            if (!var0.level.getBlockState(new BlockPos(var0.getX() + var12, var0.getY() + (double)var14, var0.getZ() + var10)).getMaterial().isReplaceable()) {
+            if (!var0.level.getBlockState(new BlockPos(var0.getX() + var12, var0.getY() + (double)var14, var0.getZ() + var10)).canBeReplaced()) {
                return false;
             }
          }
@@ -1484,12 +1488,12 @@ public class Fox extends Animal {
       }
    }
 
-   public static enum Type {
+   public static enum Type implements StringRepresentable {
       RED(0, "red"),
       SNOW(1, "snow");
 
-      private static final Fox.Type[] BY_ID = Arrays.stream(values()).sorted(Comparator.comparingInt(Fox.Type::getId)).toArray(var0 -> new Fox.Type[var0]);
-      private static final Map<String, Fox.Type> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(Fox.Type::getName, var0 -> var0));
+      public static final StringRepresentable.EnumCodec<Fox.Type> CODEC = StringRepresentable.fromEnum(Fox.Type::values);
+      private static final IntFunction<Fox.Type> BY_ID = ByIdMap.continuous(Fox.Type::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       private final int id;
       private final String name;
 
@@ -1498,7 +1502,8 @@ public class Fox extends Animal {
          this.name = var4;
       }
 
-      public String getName() {
+      @Override
+      public String getSerializedName() {
          return this.name;
       }
 
@@ -1507,15 +1512,11 @@ public class Fox extends Animal {
       }
 
       public static Fox.Type byName(String var0) {
-         return BY_NAME.getOrDefault(var0, RED);
+         return CODEC.byName(var0, RED);
       }
 
       public static Fox.Type byId(int var0) {
-         if (var0 < 0 || var0 > BY_ID.length) {
-            var0 = 0;
-         }
-
-         return BY_ID[var0];
+         return BY_ID.apply(var0);
       }
 
       public static Fox.Type byBiome(Holder<Biome> var0) {

@@ -2,9 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -12,6 +10,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ExperienceOrb;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
    private static final ResourceLocation EXPERIENCE_ORB_LOCATION = new ResourceLocation("textures/entity/experience_orb.png");
@@ -42,9 +42,9 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
       int var17 = (int)((Mth.sin(var16 + 0.0F) + 1.0F) * 0.5F * 255.0F);
       boolean var18 = true;
       int var19 = (int)((Mth.sin(var16 + 4.1887903F) + 1.0F) * 0.1F * 255.0F);
-      var4.translate(0.0, 0.10000000149011612, 0.0);
+      var4.translate(0.0F, 0.1F, 0.0F);
       var4.mulPose(this.entityRenderDispatcher.cameraOrientation());
-      var4.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+      var4.mulPose(Axis.YP.rotationDegrees(180.0F));
       float var20 = 0.3F;
       var4.scale(0.3F, 0.3F, 0.3F);
       VertexConsumer var21 = var5.getBuffer(RENDER_TYPE);

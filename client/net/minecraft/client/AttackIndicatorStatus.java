@@ -1,8 +1,7 @@
 package net.minecraft.client;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import net.minecraft.util.Mth;
+import java.util.function.IntFunction;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.OptionEnum;
 
 public enum AttackIndicatorStatus implements OptionEnum {
@@ -10,9 +9,7 @@ public enum AttackIndicatorStatus implements OptionEnum {
    CROSSHAIR(1, "options.attack.crosshair"),
    HOTBAR(2, "options.attack.hotbar");
 
-   private static final AttackIndicatorStatus[] BY_ID = Arrays.stream(values())
-      .sorted(Comparator.comparingInt(AttackIndicatorStatus::getId))
-      .toArray(var0 -> new AttackIndicatorStatus[var0]);
+   private static final IntFunction<AttackIndicatorStatus> BY_ID = ByIdMap.continuous(AttackIndicatorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
@@ -32,6 +29,6 @@ public enum AttackIndicatorStatus implements OptionEnum {
    }
 
    public static AttackIndicatorStatus byId(int var0) {
-      return BY_ID[Mth.positiveModulo(var0, BY_ID.length)];
+      return BY_ID.apply(var0);
    }
 }

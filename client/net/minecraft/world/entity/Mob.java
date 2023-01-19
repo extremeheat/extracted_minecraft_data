@@ -1,11 +1,11 @@
 package net.minecraft.world.entity;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -526,15 +526,19 @@ public abstract class Mob extends LivingEntity {
 
    protected void pickUpItem(ItemEntity var1) {
       ItemStack var2 = var1.getItem();
-      if (this.equipItemIfPossible(var2)) {
+      ItemStack var3 = this.equipItemIfPossible(var2.copy());
+      if (!var3.isEmpty()) {
          this.onItemPickup(var1);
-         this.take(var1, var2.getCount());
-         var1.discard();
+         this.take(var1, var3.getCount());
+         var2.shrink(var3.getCount());
+         if (var2.isEmpty()) {
+            var1.discard();
+         }
       }
    }
 
-   public boolean equipItemIfPossible(ItemStack var1) {
-      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
+   public ItemStack equipItemIfPossible(ItemStack var1) {
+      EquipmentSlot var2 = this.getEquipmentSlotForItemStack(var1);
       ItemStack var3 = this.getItemBySlot(var2);
       boolean var4 = this.canReplaceCurrentItem(var1, var3);
       if (var4 && this.canHoldItem(var1)) {
@@ -543,11 +547,23 @@ public abstract class Mob extends LivingEntity {
             this.spawnAtLocation(var3);
          }
 
-         this.setItemSlotAndDropWhenKilled(var2, var1);
-         return true;
+         if (var2.isArmor() && var1.getCount() > 1) {
+            ItemStack var7 = var1.copyWithCount(1);
+            this.setItemSlotAndDropWhenKilled(var2, var7);
+            return var7;
+         } else {
+            this.setItemSlotAndDropWhenKilled(var2, var1);
+            return var1;
+         }
       } else {
-         return false;
+         return ItemStack.EMPTY;
       }
+   }
+
+   private EquipmentSlot getEquipmentSlotForItemStack(ItemStack var1) {
+      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
+      boolean var3 = this.getItemBySlot(var2).isEmpty();
+      return var2.isArmor() && !var3 ? EquipmentSlot.MAINHAND : var2;
    }
 
    protected void setItemSlotAndDropWhenKilled(EquipmentSlot var1, ItemStack var2) {
@@ -1139,41 +1155,45 @@ public abstract class Mob extends LivingEntity {
          return null;
       } else {
          Mob var3 = (Mob)var1.create(this.level);
-         var3.copyPosition(this);
-         var3.setBaby(this.isBaby());
-         var3.setNoAi(this.isNoAi());
-         if (this.hasCustomName()) {
-            var3.setCustomName(this.getCustomName());
-            var3.setCustomNameVisible(this.isCustomNameVisible());
-         }
+         if (var3 == null) {
+            return null;
+         } else {
+            var3.copyPosition(this);
+            var3.setBaby(this.isBaby());
+            var3.setNoAi(this.isNoAi());
+            if (this.hasCustomName()) {
+               var3.setCustomName(this.getCustomName());
+               var3.setCustomNameVisible(this.isCustomNameVisible());
+            }
 
-         if (this.isPersistenceRequired()) {
-            var3.setPersistenceRequired();
-         }
+            if (this.isPersistenceRequired()) {
+               var3.setPersistenceRequired();
+            }
 
-         var3.setInvulnerable(this.isInvulnerable());
-         if (var2) {
-            var3.setCanPickUpLoot(this.canPickUpLoot());
+            var3.setInvulnerable(this.isInvulnerable());
+            if (var2) {
+               var3.setCanPickUpLoot(this.canPickUpLoot());
 
-            for(EquipmentSlot var7 : EquipmentSlot.values()) {
-               ItemStack var8 = this.getItemBySlot(var7);
-               if (!var8.isEmpty()) {
-                  var3.setItemSlot(var7, var8.copy());
-                  var3.setDropChance(var7, this.getEquipmentDropChance(var7));
-                  var8.setCount(0);
+               for(EquipmentSlot var7 : EquipmentSlot.values()) {
+                  ItemStack var8 = this.getItemBySlot(var7);
+                  if (!var8.isEmpty()) {
+                     var3.setItemSlot(var7, var8.copy());
+                     var3.setDropChance(var7, this.getEquipmentDropChance(var7));
+                     var8.setCount(0);
+                  }
                }
             }
-         }
 
-         this.level.addFreshEntity(var3);
-         if (this.isPassenger()) {
-            Entity var9 = this.getVehicle();
-            this.stopRiding();
-            var3.startRiding(var9, true);
-         }
+            this.level.addFreshEntity(var3);
+            if (this.isPassenger()) {
+               Entity var9 = this.getVehicle();
+               this.stopRiding();
+               var3.startRiding(var9, true);
+            }
 
-         this.discard();
-         return (T)var3;
+            this.discard();
+            return (T)var3;
+         }
       }
    }
 
@@ -1318,8 +1338,12 @@ public abstract class Mob extends LivingEntity {
       return (double)(this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F + var1.getBbWidth());
    }
 
+   public double getPerceivedTargetDistanceSquareForMeleeAttack(LivingEntity var1) {
+      return Math.max(this.distanceToSqr(var1.getMeleeAttackReferencePosition()), this.distanceToSqr(var1.position()));
+   }
+
    public boolean isWithinMeleeAttackRange(LivingEntity var1) {
-      double var2 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
+      double var2 = this.getPerceivedTargetDistanceSquareForMeleeAttack(var1);
       return var2 <= this.getMeleeAttackRangeSqr(var1);
    }
 
@@ -1389,8 +1413,12 @@ public abstract class Mob extends LivingEntity {
    }
 
    public void removeFreeWill() {
-      this.goalSelector.removeAllGoals();
+      this.removeAllGoals(var0 -> true);
       this.getBrain().removeAllBehaviors();
+   }
+
+   public void removeAllGoals(Predicate<Goal> var1) {
+      this.goalSelector.removeAllGoals(var1);
    }
 
    @Override
@@ -1405,14 +1433,5 @@ public abstract class Mob extends LivingEntity {
    public ItemStack getPickResult() {
       SpawnEggItem var1 = SpawnEggItem.byId(this.getType());
       return var1 == null ? null : new ItemStack(var1);
-   }
-
-   public Iterable<BlockPos> iteratePathfindingStartNodeCandidatePositions() {
-      return ImmutableSet.of(
-         new BlockPos(this.getBoundingBox().minX, (double)this.getBlockY(), this.getBoundingBox().minZ),
-         new BlockPos(this.getBoundingBox().minX, (double)this.getBlockY(), this.getBoundingBox().maxZ),
-         new BlockPos(this.getBoundingBox().maxX, (double)this.getBlockY(), this.getBoundingBox().minZ),
-         new BlockPos(this.getBoundingBox().maxX, (double)this.getBlockY(), this.getBoundingBox().maxZ)
-      );
    }
 }

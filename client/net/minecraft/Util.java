@@ -3,7 +3,6 @@ package net.minecraft;
 import com.google.common.base.Ticker;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.DSL.TypeReference;
@@ -11,6 +10,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DataResult.PartialResult;
 import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -45,6 +45,7 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -215,12 +216,6 @@ public class Util {
          var1.setUncaughtExceptionHandler(Util::onThreadException);
          return var1;
       });
-   }
-
-   public static <T> CompletableFuture<T> failedFuture(Throwable var0) {
-      CompletableFuture var1 = new CompletableFuture();
-      var1.completeExceptionally(var0);
-      return var1;
    }
 
    public static void throwAsRuntime(Throwable var0) {
@@ -693,7 +688,7 @@ public class Util {
 
    public static <T, R> Function<T, R> memoize(final Function<T, R> var0) {
       return new Function<T, R>() {
-         private final Map<T, R> cache = Maps.newHashMap();
+         private final Map<T, R> cache = new ConcurrentHashMap<>();
 
          @Override
          public R apply(T var1) {
@@ -709,7 +704,7 @@ public class Util {
 
    public static <T, U, R> BiFunction<T, U, R> memoize(final BiFunction<T, U, R> var0) {
       return new BiFunction<T, U, R>() {
-         private final Map<Pair<T, U>, R> cache = Maps.newHashMap();
+         private final Map<Pair<T, U>, R> cache = new ConcurrentHashMap<>();
 
          @Override
          public R apply(T var1, U var2) {
@@ -802,6 +797,15 @@ public class Util {
       }
 
       return var2;
+   }
+
+   public static <T, E extends Exception> T getOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
+      Optional var2 = var0.error();
+      if (var2.isPresent()) {
+         throw (Exception)var1.apply(((PartialResult)var2.get()).message());
+      } else {
+         return (T)var0.result().orElseThrow();
+      }
    }
 
    static enum IdentityStrategy implements Strategy<Object> {

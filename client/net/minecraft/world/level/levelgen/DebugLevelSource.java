@@ -3,14 +3,14 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.Mth;
@@ -28,16 +28,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
-import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class DebugLevelSource extends ChunkGenerator {
    public static final Codec<DebugLevelSource> CODEC = RecordCodecBuilder.create(
-      var0 -> commonCodec(var0)
-            .and(RegistryOps.retrieveRegistry(Registry.BIOME_REGISTRY).forGetter(var0x -> var0x.biomes))
-            .apply(var0, var0.stable(DebugLevelSource::new))
+      var0 -> var0.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(var0, var0.stable(DebugLevelSource::new))
    );
    private static final int BLOCK_MARGIN = 2;
-   private static final List<BlockState> ALL_BLOCKS = StreamSupport.stream(Registry.BLOCK.spliterator(), false)
+   private static final List<BlockState> ALL_BLOCKS = StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false)
       .flatMap(var0 -> var0.getStateDefinition().getPossibleStates().stream())
       .collect(Collectors.toList());
    private static final int GRID_WIDTH = Mth.ceil(Mth.sqrt((float)ALL_BLOCKS.size()));
@@ -46,15 +43,9 @@ public class DebugLevelSource extends ChunkGenerator {
    protected static final BlockState BARRIER = Blocks.BARRIER.defaultBlockState();
    public static final int HEIGHT = 70;
    public static final int BARRIER_HEIGHT = 60;
-   private final Registry<Biome> biomes;
 
-   public DebugLevelSource(Registry<StructureSet> var1, Registry<Biome> var2) {
-      super(var1, Optional.empty(), new FixedBiomeSource(var2.getOrCreateHolderOrThrow(Biomes.PLAINS)));
-      this.biomes = var2;
-   }
-
-   public Registry<Biome> biomes() {
-      return this.biomes;
+   public DebugLevelSource(Holder.Reference<Biome> var1) {
+      super(new FixedBiomeSource(var1));
    }
 
    @Override

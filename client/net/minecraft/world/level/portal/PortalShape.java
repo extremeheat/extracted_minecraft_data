@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -16,7 +17,10 @@ import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PortalShape {
    private static final int MIN_WIDTH = 2;
@@ -24,6 +28,8 @@ public class PortalShape {
    private static final int MIN_HEIGHT = 3;
    public static final int MAX_HEIGHT = 21;
    private static final BlockBehaviour.StatePredicate FRAME = (var0, var1, var2) -> var0.is(Blocks.OBSIDIAN);
+   private static final float SAFE_TRAVEL_MAX_ENTITY_XY = 4.0F;
+   private static final double SAFE_TRAVEL_MAX_VERTICAL_DELTA = 1.0;
    private final LevelAccessor level;
    private final Direction.Axis axis;
    private final Direction rightDir;
@@ -194,20 +200,35 @@ public class PortalShape {
    }
 
    public static PortalInfo createPortalInfo(
-      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, EntityDimensions var4, Vec3 var5, float var6, float var7
+      ServerLevel var0, BlockUtil.FoundRectangle var1, Direction.Axis var2, Vec3 var3, Entity var4, Vec3 var5, float var6, float var7
    ) {
       BlockPos var8 = var1.minCorner;
       BlockState var9 = var0.getBlockState(var8);
       Direction.Axis var10 = var9.getOptionalValue(BlockStateProperties.HORIZONTAL_AXIS).orElse(Direction.Axis.X);
       double var11 = (double)var1.axis1Size;
       double var13 = (double)var1.axis2Size;
-      int var15 = var2 == var10 ? 0 : 90;
-      Vec3 var16 = var2 == var10 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
-      double var17 = (double)var4.width / 2.0 + (var11 - (double)var4.width) * var3.x();
-      double var19 = (var13 - (double)var4.height) * var3.y();
-      double var21 = 0.5 + var3.z();
-      boolean var23 = var10 == Direction.Axis.X;
-      Vec3 var24 = new Vec3((double)var8.getX() + (var23 ? var17 : var21), (double)var8.getY() + var19, (double)var8.getZ() + (var23 ? var21 : var17));
-      return new PortalInfo(var24, var16, var6 + (float)var15, var7);
+      EntityDimensions var15 = var4.getDimensions(var4.getPose());
+      int var16 = var2 == var10 ? 0 : 90;
+      Vec3 var17 = var2 == var10 ? var5 : new Vec3(var5.z, var5.y, -var5.x);
+      double var18 = (double)var15.width / 2.0 + (var11 - (double)var15.width) * var3.x();
+      double var20 = (var13 - (double)var15.height) * var3.y();
+      double var22 = 0.5 + var3.z();
+      boolean var24 = var10 == Direction.Axis.X;
+      Vec3 var25 = new Vec3((double)var8.getX() + (var24 ? var18 : var22), (double)var8.getY() + var20, (double)var8.getZ() + (var24 ? var22 : var18));
+      Vec3 var26 = findCollisionFreePosition(var25, var0, var4, var15);
+      return new PortalInfo(var26, var17, var6 + (float)var16, var7);
+   }
+
+   private static Vec3 findCollisionFreePosition(Vec3 var0, ServerLevel var1, Entity var2, EntityDimensions var3) {
+      if (!(var3.width > 4.0F) && !(var3.height > 4.0F)) {
+         double var4 = (double)var3.height / 2.0;
+         Vec3 var6 = var0.add(0.0, var4, 0.0);
+         VoxelShape var7 = Shapes.create(AABB.ofSize(var6, (double)var3.width, 0.0, (double)var3.width).expandTowards(0.0, 1.0, 0.0).inflate(1.0E-6));
+         Optional var8 = var1.findFreePosition(var2, var7, var6, (double)var3.width, (double)var3.height, (double)var3.width);
+         Optional var9 = var8.map(var2x -> var2x.subtract(0.0, var4, 0.0));
+         return var9.orElse(var0);
+      } else {
+         return var0;
+      }
    }
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.math.Vector3f;
 import java.util.HashSet;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -438,7 +437,7 @@ public class RedStoneWireBlock extends Block {
          double var14 = 0.5 + (double)(0.4375F * (float)var5.getStepY()) + (double)(var11 * (float)var6.getStepY());
          double var16 = 0.5 + (double)(0.4375F * (float)var5.getStepZ()) + (double)(var11 * (float)var6.getStepZ());
          var1.addParticle(
-            new DustParticleOptions(new Vector3f(var4), 1.0F),
+            new DustParticleOptions(var4.toVector3f(), 1.0F),
             (double)var3.getX() + var12,
             (double)var3.getY() + var14,
             (double)var3.getZ() + var16,

@@ -56,11 +56,6 @@ public class RecipeButton extends AbstractWidget {
       return this.collection;
    }
 
-   public void setPosition(int var1, int var2) {
-      this.x = var1;
-      this.y = var2;
-   }
-
    @Override
    public void renderButton(PoseStack var1, int var2, int var3, float var4) {
       if (!Screen.hasControlDown()) {
@@ -85,24 +80,24 @@ public class RecipeButton extends AbstractWidget {
       if (var8) {
          float var10 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
          var9.pushPose();
-         var9.translate((double)(this.x + 8), (double)(this.y + 12), 0.0);
+         var9.translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
          var9.scale(var10, var10, 1.0F);
-         var9.translate((double)(-(this.x + 8)), (double)(-(this.y + 12)), 0.0);
+         var9.translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
          RenderSystem.applyModelViewMatrix();
          this.animationTime -= var4;
       }
 
-      this.blit(var1, this.x, this.y, var6, var7, this.width, this.height);
+      this.blit(var1, this.getX(), this.getY(), var6, var7, this.width, this.height);
       List var13 = this.getOrderedRecipes();
       this.currentIndex = Mth.floor(this.time / 30.0F) % var13.size();
       ItemStack var11 = ((Recipe)var13.get(this.currentIndex)).getResultItem();
       int var12 = 4;
       if (this.collection.hasSingleResultItem() && this.getOrderedRecipes().size() > 1) {
-         var5.getItemRenderer().renderAndDecorateItem(var11, this.x + var12 + 1, this.y + var12 + 1, 0, 10);
+         var5.getItemRenderer().renderAndDecorateItem(var11, this.getX() + var12 + 1, this.getY() + var12 + 1, 0, 10);
          --var12;
       }
 
-      var5.getItemRenderer().renderAndDecorateFakeItem(var11, this.x + var12, this.y + var12);
+      var5.getItemRenderer().renderAndDecorateFakeItem(var11, this.getX() + var12, this.getY() + var12);
       if (var8) {
          var9.popPose();
          RenderSystem.applyModelViewMatrix();
@@ -138,7 +133,7 @@ public class RecipeButton extends AbstractWidget {
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(NarrationElementOutput var1) {
       ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).getResultItem();
       var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {

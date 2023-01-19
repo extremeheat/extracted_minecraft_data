@@ -7,7 +7,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -42,13 +42,18 @@ public interface NeighborUpdater {
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Exception while updating neighbours");
          CrashReportCategory var8 = var7.addCategory("Block being updated");
-         var8.setDetail("Source block type", () -> {
-            try {
-               return String.format(Locale.ROOT, "ID #%s (%s // %s)", Registry.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName());
-            } catch (Throwable var2x) {
-               return "ID #" + Registry.BLOCK.getKey(var3);
+         var8.setDetail(
+            "Source block type",
+            () -> {
+               try {
+                  return String.format(
+                     Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName()
+                  );
+               } catch (Throwable var2x) {
+                  return "ID #" + BuiltInRegistries.BLOCK.getKey(var3);
+               }
             }
-         });
+         );
          CrashReportCategory.populateBlockDetails(var8, var0, var2, var1);
          throw new ReportedException(var7);
       }

@@ -27,6 +27,8 @@ import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -56,6 +58,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -74,7 +77,7 @@ import org.slf4j.Logger;
 public final class ItemStack {
    public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               Registry.ITEM.byNameCodec().fieldOf("id").forGetter(var0x -> var0x.item),
+               BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(var0x -> var0x.item),
                Codec.INT.fieldOf("Count").forGetter(var0x -> var0x.count),
                CompoundTag.CODEC.optionalFieldOf("tag").forGetter(var0x -> Optional.ofNullable(var0x.tag))
             )
@@ -96,6 +99,7 @@ public final class ItemStack {
    private static final String TAG_CAN_DESTROY_BLOCK_LIST = "CanDestroy";
    private static final String TAG_CAN_PLACE_ON_BLOCK_LIST = "CanPlaceOn";
    private static final String TAG_HIDE_FLAGS = "HideFlags";
+   private static final Component DISABLED_ITEM_TOOLTIP = Component.translatable("item.disabled").withStyle(ChatFormatting.RED);
    private static final int DONT_HIDE_TOOLTIP = 0;
    private static final Style LORE_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withItalic(true);
    private int count;
@@ -151,7 +155,7 @@ public final class ItemStack {
 
    private ItemStack(CompoundTag var1) {
       super();
-      this.item = Registry.ITEM.get(new ResourceLocation(var1.getString("id")));
+      this.item = BuiltInRegistries.ITEM.get(new ResourceLocation(var1.getString("id")));
       this.count = var1.getByte("Count");
       if (var1.contains("tag", 10)) {
          this.tag = var1.getCompound("tag");
@@ -182,6 +186,10 @@ public final class ItemStack {
       } else {
          return this.count <= 0;
       }
+   }
+
+   public boolean isItemEnabled(FeatureFlagSet var1) {
+      return this.isEmpty() || this.getItem().isEnabled(var1);
    }
 
    public ItemStack split(int var1) {
@@ -226,7 +234,7 @@ public final class ItemStack {
       BlockInWorld var4 = new BlockInWorld(var1.getLevel(), var3, false);
       if (var2 != null
          && !var2.getAbilities().mayBuild
-         && !this.hasAdventureModePlaceTagForBlock(var1.getLevel().registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY), var4)) {
+         && !this.hasAdventureModePlaceTagForBlock(var1.getLevel().registryAccess().registryOrThrow(Registries.BLOCK), var4)) {
          return InteractionResult.PASS;
       } else {
          Item var5 = this.getItem();
@@ -252,7 +260,7 @@ public final class ItemStack {
    }
 
    public CompoundTag save(CompoundTag var1) {
-      ResourceLocation var2 = Registry.ITEM.getKey(this.getItem());
+      ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(this.getItem());
       var1.putString("id", var2 == null ? "minecraft:air" : var2.toString());
       var1.putByte("Count", (byte)this.count);
       if (this.tag != null) {
@@ -398,6 +406,12 @@ public final class ItemStack {
       }
    }
 
+   public ItemStack copyWithCount(int var1) {
+      ItemStack var2 = this.copy();
+      var2.setCount(var1);
+      return var2;
+   }
+
    public static boolean tagMatches(ItemStack var0, ItemStack var1) {
       if (var0.isEmpty() && var1.isEmpty()) {
          return true;
@@ -438,24 +452,8 @@ public final class ItemStack {
       }
    }
 
-   public static boolean isSameIgnoreDurability(ItemStack var0, ItemStack var1) {
-      if (var0 == var1) {
-         return true;
-      } else {
-         return !var0.isEmpty() && !var1.isEmpty() ? var0.sameItemStackIgnoreDurability(var1) : false;
-      }
-   }
-
    public boolean sameItem(ItemStack var1) {
       return !var1.isEmpty() && this.is(var1.getItem());
-   }
-
-   public boolean sameItemStackIgnoreDurability(ItemStack var1) {
-      if (!this.isDamageableItem()) {
-         return this.sameItem(var1);
-      } else {
-         return !var1.isEmpty() && this.is(var1.getItem());
-      }
    }
 
    public static boolean isSameItemSameTags(ItemStack var0, ItemStack var1) {
@@ -763,10 +761,14 @@ public final class ItemStack {
             var3.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
          }
 
-         var3.add(Component.literal(Registry.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+         var3.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
          if (this.hasTag()) {
             var3.add(Component.translatable("item.nbt_tags", this.tag.getAllKeys().size()).withStyle(ChatFormatting.DARK_GRAY));
          }
+      }
+
+      if (var1 != null && !this.getItem().isEnabled(var1.getLevel().enabledFeatures())) {
+         var3.add(DISABLED_ITEM_TOOLTIP);
       }
 
       return var3;
@@ -788,7 +790,7 @@ public final class ItemStack {
    public static void appendEnchantmentNames(List<Component> var0, ListTag var1) {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          CompoundTag var3 = var1.getCompound(var2);
-         Registry.ENCHANTMENT
+         BuiltInRegistries.ENCHANTMENT
             .getOptional(EnchantmentHelper.getEnchantmentId(var3))
             .ifPresent(var2x -> var0.add(var2x.getFullname(EnchantmentHelper.getEnchantmentLevel(var3))));
       }
@@ -796,7 +798,7 @@ public final class ItemStack {
 
    private static Collection<Component> expandBlockState(String var0) {
       try {
-         return (Collection<Component>)BlockStateParser.parseForTesting(Registry.BLOCK, var0, true)
+         return (Collection<Component>)BlockStateParser.parseForTesting(BuiltInRegistries.BLOCK.asLookup(), var0, true)
             .map(
                var0x -> Lists.newArrayList(new Component[]{var0x.blockState().getBlock().getName().withStyle(ChatFormatting.DARK_GRAY)}),
                var0x -> var0x.tag().stream().map(var0xx -> var0xx.value().getName().withStyle(ChatFormatting.DARK_GRAY)).collect(Collectors.toList())
@@ -879,7 +881,7 @@ public final class ItemStack {
          for(int var4 = 0; var4 < var3.size(); ++var4) {
             CompoundTag var5 = var3.getCompound(var4);
             if (!var5.contains("Slot", 8) || var5.getString("Slot").equals(var1.getName())) {
-               Optional var6 = Registry.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var5.getString("AttributeName")));
+               Optional var6 = BuiltInRegistries.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var5.getString("AttributeName")));
                if (var6.isPresent()) {
                   AttributeModifier var7 = AttributeModifier.load(var5);
                   if (var7 != null && var7.getId().getLeastSignificantBits() != 0L && var7.getId().getMostSignificantBits() != 0L) {
@@ -903,7 +905,7 @@ public final class ItemStack {
 
       ListTag var4 = this.tag.getList("AttributeModifiers", 10);
       CompoundTag var5 = var2.save();
-      var5.putString("AttributeName", Registry.ATTRIBUTE.getKey(var1).toString());
+      var5.putString("AttributeName", BuiltInRegistries.ATTRIBUTE.getKey(var1).toString());
       if (var3 != null) {
          var5.putString("Slot", var3.getName());
       }

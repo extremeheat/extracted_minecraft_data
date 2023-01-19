@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import com.mojang.math.Vector3f;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +30,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -45,6 +45,7 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -53,8 +54,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
-public class Shulker extends AbstractGolem implements Enemy {
+public class Shulker extends AbstractGolem implements VariantHolder<Optional<DyeColor>>, Enemy {
    private static final UUID COVERED_ARMOR_MODIFIER_UUID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER = new AttributeModifier(
       COVERED_ARMOR_MODIFIER_UUID, "Covered armor bonus", 20.0, AttributeModifier.Operation.ADDITION
@@ -259,7 +261,9 @@ public class Shulker extends AbstractGolem implements Enemy {
    @Override
    public double getMyRidingOffset() {
       EntityType var1 = this.getVehicle().getType();
-      return var1 != EntityType.BOAT && var1 != EntityType.MINECART ? super.getMyRidingOffset() : 0.1875 - this.getVehicle().getPassengersRidingOffset();
+      return !(this.getVehicle() instanceof Boat) && var1 != EntityType.MINECART
+         ? super.getMyRidingOffset()
+         : 0.1875 - this.getVehicle().getPassengersRidingOffset();
    }
 
    @Override
@@ -449,13 +453,11 @@ public class Shulker extends AbstractGolem implements Enemy {
          float var4 = (float)(var3 - 1) / 5.0F;
          if (!(this.level.random.nextFloat() < var4)) {
             Shulker var5 = EntityType.SHULKER.create(this.level);
-            DyeColor var6 = this.getColor();
-            if (var6 != null) {
-               var5.setColor(var6);
+            if (var5 != null) {
+               var5.setVariant(this.getVariant());
+               var5.moveTo(var1);
+               this.level.addFreshEntity(var5);
             }
-
-            var5.moveTo(var1);
-            this.level.addFreshEntity(var5);
          }
       }
    }
@@ -551,8 +553,12 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
    }
 
-   private void setColor(DyeColor var1) {
-      this.entityData.set(DATA_COLOR_ID, (byte)var1.getId());
+   public void setVariant(Optional<DyeColor> var1) {
+      this.entityData.set(DATA_COLOR_ID, var1.<Byte>map(var0 -> (byte)var0.getId()).orElse((byte)16));
+   }
+
+   public Optional<DyeColor> getVariant() {
+      return Optional.ofNullable(this.getColor());
    }
 
    @Nullable
@@ -664,8 +670,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       @Override
       protected Optional<Float> getYRotD() {
          Direction var1 = Shulker.this.getAttachFace().getOpposite();
-         Vector3f var2 = Shulker.FORWARD.copy();
-         var2.transform(var1.getRotation());
+         Vector3f var2 = var1.getRotation().transform(new Vector3f(Shulker.FORWARD));
          Vec3i var3 = var1.getNormal();
          Vector3f var4 = new Vector3f((float)var3.getX(), (float)var3.getY(), (float)var3.getZ());
          var4.cross(var2);

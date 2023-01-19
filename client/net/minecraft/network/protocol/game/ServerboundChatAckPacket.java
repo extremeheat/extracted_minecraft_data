@@ -1,24 +1,23 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.protocol.Packet;
 
-public record ServerboundChatAckPacket(LastSeenMessages.Update a) implements Packet<ServerGamePacketListener> {
-   private final LastSeenMessages.Update lastSeenMessages;
+public record ServerboundChatAckPacket(int a) implements Packet<ServerGamePacketListener> {
+   private final int offset;
 
    public ServerboundChatAckPacket(FriendlyByteBuf var1) {
-      this(new LastSeenMessages.Update(var1));
+      this(var1.readVarInt());
    }
 
-   public ServerboundChatAckPacket(LastSeenMessages.Update var1) {
+   public ServerboundChatAckPacket(int var1) {
       super();
-      this.lastSeenMessages = var1;
+      this.offset = var1;
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
-      this.lastSeenMessages.write(var1);
+      var1.writeVarInt(this.offset);
    }
 
    public void handle(ServerGamePacketListener var1) {

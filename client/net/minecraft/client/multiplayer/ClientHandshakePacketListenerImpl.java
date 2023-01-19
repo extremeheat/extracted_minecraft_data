@@ -1,6 +1,5 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.primitives.Longs;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
@@ -11,6 +10,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
@@ -35,24 +35,33 @@ import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.HttpUtil;
-import net.minecraft.util.Signer;
 import org.slf4j.Logger;
 
 public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Minecraft minecraft;
    @Nullable
+   private final ServerData serverData;
+   @Nullable
    private final Screen parent;
    private final Consumer<Component> updateStatus;
    private final Connection connection;
    private GameProfile localGameProfile;
+   private final boolean newWorld;
+   @Nullable
+   private final Duration worldLoadDuration;
 
-   public ClientHandshakePacketListenerImpl(Connection var1, Minecraft var2, @Nullable Screen var3, Consumer<Component> var4) {
+   public ClientHandshakePacketListenerImpl(
+      Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7
+   ) {
       super();
       this.connection = var1;
       this.minecraft = var2;
-      this.parent = var3;
-      this.updateStatus = var4;
+      this.serverData = var3;
+      this.parent = var4;
+      this.updateStatus = var7;
+      this.newWorld = var5;
+      this.worldLoadDuration = var6;
    }
 
    @Override
@@ -67,27 +76,17 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          var4 = new BigInteger(Crypt.digestData(var1.getServerId(), var7, var6)).toString(16);
          var2 = Crypt.getCipher(2, var6);
          var3 = Crypt.getCipher(1, var6);
-         byte[] var8 = var1.getNonce();
-         Signer var9 = this.minecraft.getProfileKeyPairManager().signer();
-         if (var9 == null) {
-            var5 = new ServerboundKeyPacket(var6, var7, var8);
-         } else {
-            long var10 = Crypt.SaltSupplier.getLong();
-            byte[] var12 = var9.sign(var3x -> {
-               var3x.update(var8);
-               var3x.update(Longs.toByteArray(var10));
-            });
-            var5 = new ServerboundKeyPacket(var6, var7, var10, var12);
-         }
-      } catch (Exception var13) {
-         throw new IllegalStateException("Protocol error", var13);
+         byte[] var8 = var1.getChallenge();
+         var5 = new ServerboundKeyPacket(var6, var7, var8);
+      } catch (Exception var9) {
+         throw new IllegalStateException("Protocol error", var9);
       }
 
       this.updateStatus.accept(Component.translatable("connect.authorizing"));
       HttpUtil.DOWNLOAD_EXECUTOR.submit(() -> {
          Component var5x = this.authenticateServer(var4);
          if (var5x != null) {
-            if (this.minecraft.getCurrentServer() == null || !this.minecraft.getCurrentServer().isLan()) {
+            if (this.serverData == null || !this.serverData.isLan()) {
                this.connection.disconnect(var5x);
                return;
             }
@@ -128,7 +127,16 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.localGameProfile = var1.getGameProfile();
       this.connection.setProtocol(ConnectionProtocol.PLAY);
       this.connection
-         .setListener(new ClientPacketListener(this.minecraft, this.parent, this.connection, this.localGameProfile, this.minecraft.createTelemetryManager()));
+         .setListener(
+            new ClientPacketListener(
+               this.minecraft,
+               this.parent,
+               this.connection,
+               this.serverData,
+               this.localGameProfile,
+               this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration)
+            )
+         );
    }
 
    @Override

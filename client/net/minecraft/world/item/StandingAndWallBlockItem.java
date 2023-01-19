@@ -6,16 +6,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class StandingAndWallBlockItem extends BlockItem {
    protected final Block wallBlock;
+   private final Direction attachmentDirection;
 
-   public StandingAndWallBlockItem(Block var1, Block var2, Item.Properties var3) {
+   public StandingAndWallBlockItem(Block var1, Block var2, Item.Properties var3, Direction var4) {
       super(var1, var3);
       this.wallBlock = var2;
+      this.attachmentDirection = var4;
+   }
+
+   protected boolean canPlace(LevelReader var1, BlockState var2, BlockPos var3) {
+      return var2.canSurvive(var1, var3);
    }
 
    @Nullable
@@ -27,9 +34,9 @@ public class StandingAndWallBlockItem extends BlockItem {
       BlockPos var5 = var1.getClickedPos();
 
       for(Direction var9 : var1.getNearestLookingDirections()) {
-         if (var9 != Direction.UP) {
-            BlockState var10 = var9 == Direction.DOWN ? this.getBlock().getStateForPlacement(var1) : var2;
-            if (var10 != null && var10.canSurvive(var4, var5)) {
+         if (var9 != this.attachmentDirection.getOpposite()) {
+            BlockState var10 = var9 == this.attachmentDirection ? this.getBlock().getStateForPlacement(var1) : var2;
+            if (var10 != null && this.canPlace(var4, var10, var5)) {
                var3 = var10;
                break;
             }

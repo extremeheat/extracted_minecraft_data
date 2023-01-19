@@ -16,7 +16,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.item.Item;
@@ -28,7 +28,7 @@ public class ItemPredicateArgument implements ArgumentType<ItemPredicateArgument
 
    public ItemPredicateArgument(CommandBuildContext var1) {
       super();
-      this.items = var1.holderLookup(Registry.ITEM_REGISTRY);
+      this.items = var1.holderLookup(Registries.ITEM);
    }
 
    public static ItemPredicateArgument itemPredicate(CommandBuildContext var0) {

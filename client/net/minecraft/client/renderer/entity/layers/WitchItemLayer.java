@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.WitchModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,11 +22,11 @@ public class WitchItemLayer<T extends LivingEntity> extends CrossedArmsItemLayer
       if (var11.is(Items.POTION)) {
          this.getParentModel().getHead().translateAndRotate(var1);
          this.getParentModel().getNose().translateAndRotate(var1);
-         var1.translate(0.0625, 0.25, 0.0);
-         var1.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
-         var1.mulPose(Vector3f.XP.rotationDegrees(140.0F));
-         var1.mulPose(Vector3f.ZP.rotationDegrees(10.0F));
-         var1.translate(0.0, -0.4000000059604645, 0.4000000059604645);
+         var1.translate(0.0625F, 0.25F, 0.0F);
+         var1.mulPose(Axis.ZP.rotationDegrees(180.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(140.0F));
+         var1.mulPose(Axis.ZP.rotationDegrees(10.0F));
+         var1.translate(0.0F, -0.4F, 0.4F);
       }
 
       super.render(var1, var2, var3, (T)var4, var5, var6, var7, var8, var9, var10);

@@ -12,7 +12,6 @@ import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -421,10 +420,6 @@ public final class NativeImage implements AutoCloseable {
       GlStateManager._glDrawPixels(this.width, this.height, this.format.glFormat(), 5121, this.pixels);
    }
 
-   public void writeToFile(String var1) throws IOException {
-      this.writeToFile(FileSystems.getDefault().getPath(var1));
-   }
-
    public void writeToFile(File var1) throws IOException {
       this.writeToFile(var1.toPath());
    }
@@ -527,12 +522,16 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void copyRect(int var1, int var2, int var3, int var4, int var5, int var6, boolean var7, boolean var8) {
-      for(int var9 = 0; var9 < var6; ++var9) {
-         for(int var10 = 0; var10 < var5; ++var10) {
-            int var11 = var7 ? var5 - 1 - var10 : var10;
-            int var12 = var8 ? var6 - 1 - var9 : var9;
-            int var13 = this.getPixelRGBA(var1 + var10, var2 + var9);
-            this.setPixelRGBA(var1 + var3 + var11, var2 + var4 + var12, var13);
+      this.copyRect(this, var1, var2, var1 + var3, var2 + var4, var5, var6, var7, var8);
+   }
+
+   public void copyRect(NativeImage var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9) {
+      for(int var10 = 0; var10 < var7; ++var10) {
+         for(int var11 = 0; var11 < var6; ++var11) {
+            int var12 = var8 ? var6 - 1 - var11 : var11;
+            int var13 = var9 ? var7 - 1 - var10 : var10;
+            int var14 = this.getPixelRGBA(var2 + var11, var3 + var10);
+            var1.setPixelRGBA(var4 + var12, var5 + var13, var14);
          }
       }
    }

@@ -10,14 +10,11 @@ import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ParsedArgument;
-import com.mojang.brigadier.context.ParsedCommandNode;
-import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.context.SuggestionContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -354,45 +351,6 @@ public class CommandSuggestions {
 
    public String getNarrationMessage() {
       return this.suggestions != null ? "\n" + this.suggestions.getNarrationMessage() : "";
-   }
-
-   @Nullable
-   public CommandNode<SharedSuggestionProvider> getNodeAt(int var1) {
-      return this.currentParse != null ? getNodeAt(var1, this.currentParse.getContext()) : null;
-   }
-
-   @Nullable
-   public ParseResults<SharedSuggestionProvider> getCurrentContext() {
-      return this.currentParse;
-   }
-
-   @Nullable
-   private static <S> CommandNode<S> getNodeAt(int var0, CommandContextBuilder<S> var1) {
-      StringRange var2 = var1.getRange();
-      if (var0 < var2.getStart()) {
-         return null;
-      } else {
-         List var3 = var1.getNodes();
-         if (var0 <= var2.getEnd()) {
-            for(ParsedCommandNode var5 : var3) {
-               StringRange var6 = var5.getRange();
-               if (var0 >= var6.getStart() && var0 <= var6.getEnd()) {
-                  return var5.getNode();
-               }
-            }
-         } else {
-            if (var1.getChild() != null) {
-               return getNodeAt(var0, var1.getChild());
-            }
-
-            if (!var3.isEmpty()) {
-               ParsedCommandNode var7 = (ParsedCommandNode)var3.get(var3.size() - 1);
-               return var7.getNode();
-            }
-         }
-
-         return var1.getRootNode();
-      }
    }
 
    public class SuggestionsList {

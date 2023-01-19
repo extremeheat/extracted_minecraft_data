@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -23,6 +22,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 public class DebugRenderer {
    public final PathfindingRenderer pathfindingRenderer = new PathfindingRenderer();
@@ -174,8 +174,8 @@ public class DebugRenderer {
          double var19 = var13.getPosition().z;
          PoseStack var21 = RenderSystem.getModelViewStack();
          var21.pushPose();
-         var21.translate((double)((float)(var1 - var15)), (double)((float)(var3 - var17) + 0.07F), (double)((float)(var5 - var19)));
-         var21.mulPoseMatrix(new Matrix4f(var13.rotation()));
+         var21.translate((float)(var1 - var15), (float)(var3 - var17) + 0.07F, (float)(var5 - var19));
+         var21.mulPoseMatrix(new Matrix4f().rotation(var13.rotation()));
          var21.scale(var8, -var8, var8);
          RenderSystem.enableTexture();
          if (var11) {

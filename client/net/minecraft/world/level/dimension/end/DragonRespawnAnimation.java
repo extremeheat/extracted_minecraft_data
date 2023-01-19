@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
-import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
@@ -67,7 +67,7 @@ public enum DragonRespawnAnimation {
                      (double)var11.getHeight(),
                      (double)((float)var11.getCenterZ() + 0.5F),
                      5.0F,
-                     Explosion.BlockInteraction.DESTROY
+                     Level.ExplosionInteraction.BLOCK
                   );
                   SpikeConfiguration var17 = new SpikeConfiguration(true, ImmutableList.of(var11), new BlockPos(0, 128, 0));
                   Feature.END_SPIKE
@@ -88,7 +88,7 @@ public enum DragonRespawnAnimation {
 
             for(EndCrystal var7 : var3) {
                var7.setBeamTarget(null);
-               var1.explode(var7, var7.getX(), var7.getY(), var7.getZ(), 6.0F, Explosion.BlockInteraction.NONE);
+               var1.explode(var7, var7.getX(), var7.getY(), var7.getZ(), 6.0F, Level.ExplosionInteraction.NONE);
                var7.discard();
             }
          } else if (var4 >= 80) {

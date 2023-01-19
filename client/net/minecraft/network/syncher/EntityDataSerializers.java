@@ -8,10 +8,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.Rotations;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -29,6 +29,7 @@ public class EntityDataSerializers {
    private static final CrudeIncrementalIntIdentityHashBiMap<EntityDataSerializer<?>> SERIALIZERS = CrudeIncrementalIntIdentityHashBiMap.create(16);
    public static final EntityDataSerializer<Byte> BYTE = EntityDataSerializer.simple((var0, var1) -> var0.writeByte(var1), FriendlyByteBuf::readByte);
    public static final EntityDataSerializer<Integer> INT = EntityDataSerializer.simple(FriendlyByteBuf::writeVarInt, FriendlyByteBuf::readVarInt);
+   public static final EntityDataSerializer<Long> LONG = EntityDataSerializer.simple(FriendlyByteBuf::writeVarLong, FriendlyByteBuf::readVarLong);
    public static final EntityDataSerializer<Float> FLOAT = EntityDataSerializer.simple(FriendlyByteBuf::writeFloat, FriendlyByteBuf::readFloat);
    public static final EntityDataSerializer<String> STRING = EntityDataSerializer.simple(FriendlyByteBuf::writeUtf, FriendlyByteBuf::readUtf);
    public static final EntityDataSerializer<Component> COMPONENT = EntityDataSerializer.simple(FriendlyByteBuf::writeComponent, FriendlyByteBuf::readComponent);
@@ -65,12 +66,12 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Boolean> BOOLEAN = EntityDataSerializer.simple(FriendlyByteBuf::writeBoolean, FriendlyByteBuf::readBoolean);
    public static final EntityDataSerializer<ParticleOptions> PARTICLE = new EntityDataSerializer.ForValueType<ParticleOptions>() {
       public void write(FriendlyByteBuf var1, ParticleOptions var2) {
-         var1.writeId(Registry.PARTICLE_TYPE, var2.getType());
+         var1.writeId(BuiltInRegistries.PARTICLE_TYPE, var2.getType());
          var2.writeToNetwork(var1);
       }
 
       public ParticleOptions read(FriendlyByteBuf var1) {
-         return this.readParticle(var1, var1.readById(Registry.PARTICLE_TYPE));
+         return this.readParticle(var1, var1.readById(BuiltInRegistries.PARTICLE_TYPE));
       }
 
       private <T extends ParticleOptions> T readParticle(FriendlyByteBuf var1, ParticleType<T> var2) {
@@ -114,13 +115,13 @@ public class EntityDataSerializers {
    };
    public static final EntityDataSerializer<VillagerData> VILLAGER_DATA = new EntityDataSerializer.ForValueType<VillagerData>() {
       public void write(FriendlyByteBuf var1, VillagerData var2) {
-         var1.writeId(Registry.VILLAGER_TYPE, var2.getType());
-         var1.writeId(Registry.VILLAGER_PROFESSION, var2.getProfession());
+         var1.writeId(BuiltInRegistries.VILLAGER_TYPE, var2.getType());
+         var1.writeId(BuiltInRegistries.VILLAGER_PROFESSION, var2.getProfession());
          var1.writeVarInt(var2.getLevel());
       }
 
       public VillagerData read(FriendlyByteBuf var1) {
-         return new VillagerData(var1.readById(Registry.VILLAGER_TYPE), var1.readById(Registry.VILLAGER_PROFESSION), var1.readVarInt());
+         return new VillagerData(var1.readById(BuiltInRegistries.VILLAGER_TYPE), var1.readById(BuiltInRegistries.VILLAGER_PROFESSION), var1.readVarInt());
       }
    };
    public static final EntityDataSerializer<OptionalInt> OPTIONAL_UNSIGNED_INT = new EntityDataSerializer.ForValueType<OptionalInt>() {
@@ -134,10 +135,10 @@ public class EntityDataSerializers {
       }
    };
    public static final EntityDataSerializer<Pose> POSE = EntityDataSerializer.simpleEnum(Pose.class);
-   public static final EntityDataSerializer<CatVariant> CAT_VARIANT = EntityDataSerializer.simpleId(Registry.CAT_VARIANT);
-   public static final EntityDataSerializer<FrogVariant> FROG_VARIANT = EntityDataSerializer.simpleId(Registry.FROG_VARIANT);
+   public static final EntityDataSerializer<CatVariant> CAT_VARIANT = EntityDataSerializer.simpleId(BuiltInRegistries.CAT_VARIANT);
+   public static final EntityDataSerializer<FrogVariant> FROG_VARIANT = EntityDataSerializer.simpleId(BuiltInRegistries.FROG_VARIANT);
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT = EntityDataSerializer.simpleId(
-      Registry.PAINTING_VARIANT.asHolderIdMap()
+      BuiltInRegistries.PAINTING_VARIANT.asHolderIdMap()
    );
 
    public static void registerSerializer(EntityDataSerializer<?> var0) {
@@ -160,6 +161,7 @@ public class EntityDataSerializers {
    static {
       registerSerializer(BYTE);
       registerSerializer(INT);
+      registerSerializer(LONG);
       registerSerializer(FLOAT);
       registerSerializer(STRING);
       registerSerializer(COMPONENT);

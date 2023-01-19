@@ -1,24 +1,29 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Locale;
+import com.mojang.serialization.Codec;
+import java.util.List;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,62 +32,34 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 
-public class TropicalFish extends AbstractSchoolingFish {
+public class TropicalFish extends AbstractSchoolingFish implements VariantHolder<TropicalFish.Pattern> {
    public static final String BUCKET_VARIANT_TAG = "BucketVariantTag";
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(TropicalFish.class, EntityDataSerializers.INT);
-   public static final int BASE_SMALL = 0;
-   public static final int BASE_LARGE = 1;
-   private static final int BASES = 2;
-   private static final ResourceLocation[] BASE_TEXTURE_LOCATIONS = new ResourceLocation[]{
-      new ResourceLocation("textures/entity/fish/tropical_a.png"), new ResourceLocation("textures/entity/fish/tropical_b.png")
-   };
-   private static final ResourceLocation[] PATTERN_A_TEXTURE_LOCATIONS = new ResourceLocation[]{
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_1.png"),
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_2.png"),
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_3.png"),
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_4.png"),
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_5.png"),
-      new ResourceLocation("textures/entity/fish/tropical_a_pattern_6.png")
-   };
-   private static final ResourceLocation[] PATTERN_B_TEXTURE_LOCATIONS = new ResourceLocation[]{
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_1.png"),
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_2.png"),
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_3.png"),
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_4.png"),
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_5.png"),
-      new ResourceLocation("textures/entity/fish/tropical_b_pattern_6.png")
-   };
-   private static final int PATTERNS = 6;
-   private static final int COLORS = 15;
-   public static final int[] COMMON_VARIANTS = new int[]{
-      calculateVariant(TropicalFish.Pattern.STRIPEY, DyeColor.ORANGE, DyeColor.GRAY),
-      calculateVariant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.GRAY),
-      calculateVariant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.BLUE),
-      calculateVariant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.GRAY),
-      calculateVariant(TropicalFish.Pattern.SUNSTREAK, DyeColor.BLUE, DyeColor.GRAY),
-      calculateVariant(TropicalFish.Pattern.KOB, DyeColor.ORANGE, DyeColor.WHITE),
-      calculateVariant(TropicalFish.Pattern.SPOTTY, DyeColor.PINK, DyeColor.LIGHT_BLUE),
-      calculateVariant(TropicalFish.Pattern.BLOCKFISH, DyeColor.PURPLE, DyeColor.YELLOW),
-      calculateVariant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.RED),
-      calculateVariant(TropicalFish.Pattern.SPOTTY, DyeColor.WHITE, DyeColor.YELLOW),
-      calculateVariant(TropicalFish.Pattern.GLITTER, DyeColor.WHITE, DyeColor.GRAY),
-      calculateVariant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.ORANGE),
-      calculateVariant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.PINK),
-      calculateVariant(TropicalFish.Pattern.BRINELY, DyeColor.LIME, DyeColor.LIGHT_BLUE),
-      calculateVariant(TropicalFish.Pattern.BETTY, DyeColor.RED, DyeColor.WHITE),
-      calculateVariant(TropicalFish.Pattern.SNOOPER, DyeColor.GRAY, DyeColor.RED),
-      calculateVariant(TropicalFish.Pattern.BLOCKFISH, DyeColor.RED, DyeColor.WHITE),
-      calculateVariant(TropicalFish.Pattern.FLOPPER, DyeColor.WHITE, DyeColor.YELLOW),
-      calculateVariant(TropicalFish.Pattern.KOB, DyeColor.RED, DyeColor.WHITE),
-      calculateVariant(TropicalFish.Pattern.SUNSTREAK, DyeColor.GRAY, DyeColor.WHITE),
-      calculateVariant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.YELLOW),
-      calculateVariant(TropicalFish.Pattern.FLOPPER, DyeColor.YELLOW, DyeColor.YELLOW)
-   };
+   public static final List<TropicalFish.Variant> COMMON_VARIANTS = List.of(
+      new TropicalFish.Variant(TropicalFish.Pattern.STRIPEY, DyeColor.ORANGE, DyeColor.GRAY),
+      new TropicalFish.Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.GRAY),
+      new TropicalFish.Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.BLUE),
+      new TropicalFish.Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.GRAY),
+      new TropicalFish.Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.BLUE, DyeColor.GRAY),
+      new TropicalFish.Variant(TropicalFish.Pattern.KOB, DyeColor.ORANGE, DyeColor.WHITE),
+      new TropicalFish.Variant(TropicalFish.Pattern.SPOTTY, DyeColor.PINK, DyeColor.LIGHT_BLUE),
+      new TropicalFish.Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.PURPLE, DyeColor.YELLOW),
+      new TropicalFish.Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.RED),
+      new TropicalFish.Variant(TropicalFish.Pattern.SPOTTY, DyeColor.WHITE, DyeColor.YELLOW),
+      new TropicalFish.Variant(TropicalFish.Pattern.GLITTER, DyeColor.WHITE, DyeColor.GRAY),
+      new TropicalFish.Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.ORANGE),
+      new TropicalFish.Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.PINK),
+      new TropicalFish.Variant(TropicalFish.Pattern.BRINELY, DyeColor.LIME, DyeColor.LIGHT_BLUE),
+      new TropicalFish.Variant(TropicalFish.Pattern.BETTY, DyeColor.RED, DyeColor.WHITE),
+      new TropicalFish.Variant(TropicalFish.Pattern.SNOOPER, DyeColor.GRAY, DyeColor.RED),
+      new TropicalFish.Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.RED, DyeColor.WHITE),
+      new TropicalFish.Variant(TropicalFish.Pattern.FLOPPER, DyeColor.WHITE, DyeColor.YELLOW),
+      new TropicalFish.Variant(TropicalFish.Pattern.KOB, DyeColor.RED, DyeColor.WHITE),
+      new TropicalFish.Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.GRAY, DyeColor.WHITE),
+      new TropicalFish.Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.YELLOW),
+      new TropicalFish.Variant(TropicalFish.Pattern.FLOPPER, DyeColor.YELLOW, DyeColor.YELLOW)
+   );
    private boolean isSchool = true;
-
-   private static int calculateVariant(TropicalFish.Pattern var0, DyeColor var1, DyeColor var2) {
-      return var0.getBase() & 0xFF | (var0.getIndex() & 0xFF) << 8 | (var1.getId() & 0xFF) << 16 | (var2.getId() & 0xFF) << 24;
-   }
 
    public TropicalFish(EntityType<? extends TropicalFish> var1, Level var2) {
       super(var1, var2);
@@ -92,18 +69,20 @@ public class TropicalFish extends AbstractSchoolingFish {
       return "entity.minecraft.tropical_fish.predefined." + var0;
    }
 
+   static int packVariant(TropicalFish.Pattern var0, DyeColor var1, DyeColor var2) {
+      return var0.getPackedId() & 65535 | (var1.getId() & 0xFF) << 16 | (var2.getId() & 0xFF) << 24;
+   }
+
    public static DyeColor getBaseColor(int var0) {
-      return DyeColor.byId(getBaseColorIdx(var0));
+      return DyeColor.byId(var0 >> 16 & 0xFF);
    }
 
    public static DyeColor getPatternColor(int var0) {
-      return DyeColor.byId(getPatternColorIdx(var0));
+      return DyeColor.byId(var0 >> 24 & 0xFF);
    }
 
-   public static String getFishTypeName(int var0) {
-      int var1 = getBaseVariant(var0);
-      int var2 = getPatternVariant(var0);
-      return "entity.minecraft.tropical_fish.type." + TropicalFish.Pattern.getPatternName(var1, var2);
+   public static TropicalFish.Pattern getPattern(int var0) {
+      return TropicalFish.Pattern.byId(var0 & 65535);
    }
 
    @Override
@@ -115,16 +94,16 @@ public class TropicalFish extends AbstractSchoolingFish {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant());
+      var1.putInt("Variant", this.getPackedVariant());
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(var1.getInt("Variant"));
+      this.setPackedVariant(var1.getInt("Variant"));
    }
 
-   public void setVariant(int var1) {
+   private void setPackedVariant(int var1) {
       this.entityData.set(DATA_ID_TYPE_VARIANT, var1);
    }
 
@@ -133,15 +112,34 @@ public class TropicalFish extends AbstractSchoolingFish {
       return !this.isSchool;
    }
 
-   public int getVariant() {
+   private int getPackedVariant() {
       return this.entityData.get(DATA_ID_TYPE_VARIANT);
+   }
+
+   public DyeColor getBaseColor() {
+      return getBaseColor(this.getPackedVariant());
+   }
+
+   public DyeColor getPatternColor() {
+      return getPatternColor(this.getPackedVariant());
+   }
+
+   public TropicalFish.Pattern getVariant() {
+      return getPattern(this.getPackedVariant());
+   }
+
+   public void setVariant(TropicalFish.Pattern var1) {
+      int var2 = this.getPackedVariant();
+      DyeColor var3 = getBaseColor(var2);
+      DyeColor var4 = getPatternColor(var2);
+      this.setPackedVariant(packVariant(var1, var3, var4));
    }
 
    @Override
    public void saveToBucketTag(ItemStack var1) {
       super.saveToBucketTag(var1);
       CompoundTag var2 = var1.getOrCreateTag();
-      var2.putInt("BucketVariantTag", this.getVariant());
+      var2.putInt("BucketVariantTag", this.getPackedVariant());
    }
 
    @Override
@@ -169,44 +167,6 @@ public class TropicalFish extends AbstractSchoolingFish {
       return SoundEvents.TROPICAL_FISH_FLOP;
    }
 
-   private static int getBaseColorIdx(int var0) {
-      return (var0 & 0xFF0000) >> 16;
-   }
-
-   public float[] getBaseColor() {
-      return DyeColor.byId(getBaseColorIdx(this.getVariant())).getTextureDiffuseColors();
-   }
-
-   private static int getPatternColorIdx(int var0) {
-      return (var0 & 0xFF000000) >> 24;
-   }
-
-   public float[] getPatternColor() {
-      return DyeColor.byId(getPatternColorIdx(this.getVariant())).getTextureDiffuseColors();
-   }
-
-   public static int getBaseVariant(int var0) {
-      return Math.min(var0 & 0xFF, 1);
-   }
-
-   public int getBaseVariant() {
-      return getBaseVariant(this.getVariant());
-   }
-
-   private static int getPatternVariant(int var0) {
-      return Math.min((var0 & 0xFF00) >> 8, 5);
-   }
-
-   public ResourceLocation getPatternTextureLocation() {
-      return getBaseVariant(this.getVariant()) == 0
-         ? PATTERN_A_TEXTURE_LOCATIONS[getPatternVariant(this.getVariant())]
-         : PATTERN_B_TEXTURE_LOCATIONS[getPatternVariant(this.getVariant())];
-   }
-
-   public ResourceLocation getBaseTextureLocation() {
-      return BASE_TEXTURE_LOCATIONS[getBaseVariant(this.getVariant())];
-   }
-
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
@@ -216,35 +176,27 @@ public class TropicalFish extends AbstractSchoolingFish {
    ) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       if (var3 == MobSpawnType.BUCKET && var5 != null && var5.contains("BucketVariantTag", 3)) {
-         this.setVariant(var5.getInt("BucketVariantTag"));
+         this.setPackedVariant(var5.getInt("BucketVariantTag"));
          return var4;
       } else {
-         RandomSource var10 = var1.getRandom();
-         int var6;
-         int var7;
-         int var8;
-         int var9;
-         if (var4 instanceof TropicalFish.TropicalFishGroupData var11) {
-            var6 = var11.base;
-            var7 = var11.pattern;
-            var8 = var11.baseColor;
-            var9 = var11.patternColor;
-         } else if ((double)var10.nextFloat() < 0.9) {
-            int var13 = Util.getRandom(COMMON_VARIANTS, var10);
-            var6 = var13 & 0xFF;
-            var7 = (var13 & 0xFF00) >> 8;
-            var8 = (var13 & 0xFF0000) >> 16;
-            var9 = (var13 & 0xFF000000) >> 24;
-            var4 = new TropicalFish.TropicalFishGroupData(this, var6, var7, var8, var9);
+         RandomSource var7 = var1.getRandom();
+         TropicalFish.Variant var6;
+         if (var4 instanceof TropicalFish.TropicalFishGroupData var8) {
+            var6 = var8.variant;
+         } else if ((double)var7.nextFloat() < 0.9) {
+            var6 = Util.getRandom(COMMON_VARIANTS, var7);
+            var4 = new TropicalFish.TropicalFishGroupData(this, var6);
          } else {
             this.isSchool = false;
-            var6 = var10.nextInt(2);
-            var7 = var10.nextInt(6);
-            var8 = var10.nextInt(15);
-            var9 = var10.nextInt(15);
+            TropicalFish.Pattern[] var9 = TropicalFish.Pattern.values();
+            DyeColor[] var10 = DyeColor.values();
+            TropicalFish.Pattern var11 = Util.getRandom(var9, var7);
+            DyeColor var12 = Util.getRandom(var10, var7);
+            DyeColor var13 = Util.getRandom(var10, var7);
+            var6 = new TropicalFish.Variant(var11, var12, var13);
          }
 
-         this.setVariant(var6 | var7 << 8 | var8 << 16 | var9 << 24);
+         this.setPackedVariant(var6.getPackedId());
          return var4;
       }
    }
@@ -258,58 +210,90 @@ public class TropicalFish extends AbstractSchoolingFish {
          );
    }
 
-   static enum Pattern {
-      KOB(0, 0),
-      SUNSTREAK(0, 1),
-      SNOOPER(0, 2),
-      DASHER(0, 3),
-      BRINELY(0, 4),
-      SPOTTY(0, 5),
-      FLOPPER(1, 0),
-      STRIPEY(1, 1),
-      GLITTER(1, 2),
-      BLOCKFISH(1, 3),
-      BETTY(1, 4),
-      CLAYFISH(1, 5);
+   public static enum Base {
+      SMALL(0),
+      LARGE(1);
 
-      private final int base;
-      private final int index;
-      private static final TropicalFish.Pattern[] VALUES = values();
+      final int id;
 
-      private Pattern(int var3, int var4) {
-         this.base = var3;
-         this.index = var4;
+      private Base(int var3) {
+         this.id = var3;
+      }
+   }
+
+   public static enum Pattern implements StringRepresentable {
+      KOB("kob", TropicalFish.Base.SMALL, 0),
+      SUNSTREAK("sunstreak", TropicalFish.Base.SMALL, 1),
+      SNOOPER("snooper", TropicalFish.Base.SMALL, 2),
+      DASHER("dasher", TropicalFish.Base.SMALL, 3),
+      BRINELY("brinely", TropicalFish.Base.SMALL, 4),
+      SPOTTY("spotty", TropicalFish.Base.SMALL, 5),
+      FLOPPER("flopper", TropicalFish.Base.LARGE, 0),
+      STRIPEY("stripey", TropicalFish.Base.LARGE, 1),
+      GLITTER("glitter", TropicalFish.Base.LARGE, 2),
+      BLOCKFISH("blockfish", TropicalFish.Base.LARGE, 3),
+      BETTY("betty", TropicalFish.Base.LARGE, 4),
+      CLAYFISH("clayfish", TropicalFish.Base.LARGE, 5);
+
+      public static final Codec<TropicalFish.Pattern> CODEC = StringRepresentable.fromEnum(TropicalFish.Pattern::values);
+      private static final IntFunction<TropicalFish.Pattern> BY_ID = ByIdMap.sparse(TropicalFish.Pattern::getPackedId, values(), KOB);
+      private final String name;
+      private final Component displayName;
+      private final TropicalFish.Base base;
+      private final int packedId;
+
+      private Pattern(String var3, TropicalFish.Base var4, int var5) {
+         this.name = var3;
+         this.base = var4;
+         this.packedId = var4.id | var5 << 8;
+         this.displayName = Component.translatable("entity.minecraft.tropical_fish.type." + this.name);
       }
 
-      public int getBase() {
+      public static TropicalFish.Pattern byId(int var0) {
+         return BY_ID.apply(var0);
+      }
+
+      public TropicalFish.Base base() {
          return this.base;
       }
 
-      public int getIndex() {
-         return this.index;
+      public int getPackedId() {
+         return this.packedId;
       }
 
-      public static String getPatternName(int var0, int var1) {
-         return VALUES[var1 + 6 * var0].getName();
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
 
-      public String getName() {
-         return this.name().toLowerCase(Locale.ROOT);
+      public Component displayName() {
+         return this.displayName;
       }
    }
 
    static class TropicalFishGroupData extends AbstractSchoolingFish.SchoolSpawnGroupData {
-      final int base;
-      final int pattern;
-      final int baseColor;
-      final int patternColor;
+      final TropicalFish.Variant variant;
 
-      TropicalFishGroupData(TropicalFish var1, int var2, int var3, int var4, int var5) {
+      TropicalFishGroupData(TropicalFish var1, TropicalFish.Variant var2) {
          super(var1);
-         this.base = var2;
-         this.pattern = var3;
-         this.baseColor = var4;
-         this.patternColor = var5;
+         this.variant = var2;
+      }
+   }
+
+   public static record Variant(TropicalFish.Pattern a, DyeColor b, DyeColor c) {
+      private final TropicalFish.Pattern pattern;
+      private final DyeColor baseColor;
+      private final DyeColor patternColor;
+
+      public Variant(TropicalFish.Pattern var1, DyeColor var2, DyeColor var3) {
+         super();
+         this.pattern = var1;
+         this.baseColor = var2;
+         this.patternColor = var3;
+      }
+
+      public int getPackedId() {
+         return TropicalFish.packVariant(this.pattern, this.baseColor, this.patternColor);
       }
    }
 }

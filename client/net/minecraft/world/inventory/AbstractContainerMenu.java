@@ -17,13 +17,14 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -287,7 +288,7 @@ public abstract class AbstractContainerMenu {
       } catch (Exception var8) {
          CrashReport var6 = CrashReport.forThrowable(var8, "Container click");
          CrashReportCategory var7 = var6.addCategory("Click info");
-         var7.setDetail("Menu Type", () -> this.menuType != null ? Registry.MENU.getKey(this.menuType).toString() : "<no type>");
+         var7.setDetail("Menu Type", () -> this.menuType != null ? BuiltInRegistries.MENU.getKey(this.menuType).toString() : "<no type>");
          var7.setDetail("Menu Class", () -> this.getClass().getCanonicalName());
          var7.setDetail("Slot Count", this.slots.size());
          var7.setDetail("Slot", var1);
@@ -400,8 +401,7 @@ public abstract class AbstractContainerMenu {
             ItemStack var33 = var27.getItem();
             ItemStack var37 = this.getCarried();
             var4.updateTutorialInventoryAction(var37, var27.getItem(), var19);
-            if (!var37.overrideStackedOnOther(var27, var19, var4)
-               && !var33.overrideOtherStackedOnMe(var37, var27, var19, var4, this.createCarriedSlotAccess())) {
+            if (!this.tryItemClickBehaviourOverride(var4, var19, var27, var33, var37)) {
                if (var33.isEmpty()) {
                   if (!var37.isEmpty()) {
                      int var39 = var19 == ClickAction.PRIMARY ? var37.getCount() : 1;
@@ -504,6 +504,15 @@ public abstract class AbstractContainerMenu {
                }
             }
          }
+      }
+   }
+
+   private boolean tryItemClickBehaviourOverride(Player var1, ClickAction var2, Slot var3, ItemStack var4, ItemStack var5) {
+      FeatureFlagSet var6 = var1.getLevel().enabledFeatures();
+      if (var5.isItemEnabled(var6) && var5.overrideStackedOnOther(var3, var2, var1)) {
+         return true;
+      } else {
+         return var4.isItemEnabled(var6) && var4.overrideOtherStackedOnMe(var5, var3, var2, var1, this.createCarriedSlotAccess());
       }
    }
 

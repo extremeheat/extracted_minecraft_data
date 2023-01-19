@@ -276,12 +276,14 @@ public class Evoker extends SpellcasterIllager {
          for(int var2 = 0; var2 < 3; ++var2) {
             BlockPos var3 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
             Vex var4 = EntityType.VEX.create(Evoker.this.level);
-            var4.moveTo(var3, 0.0F, 0.0F);
-            var4.finalizeSpawn(var1, Evoker.this.level.getCurrentDifficultyAt(var3), MobSpawnType.MOB_SUMMONED, null, null);
-            var4.setOwner(Evoker.this);
-            var4.setBoundOrigin(var3);
-            var4.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
-            var1.addFreshEntityWithPassengers(var4);
+            if (var4 != null) {
+               var4.moveTo(var3, 0.0F, 0.0F);
+               var4.finalizeSpawn(var1, Evoker.this.level.getCurrentDifficultyAt(var3), MobSpawnType.MOB_SUMMONED, null, null);
+               var4.setOwner(Evoker.this);
+               var4.setBoundOrigin(var3);
+               var4.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
+               var1.addFreshEntityWithPassengers(var4);
+            }
          }
       }
 

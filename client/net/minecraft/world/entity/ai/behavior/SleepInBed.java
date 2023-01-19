@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
@@ -60,7 +61,19 @@ public class SleepInBed extends Behavior<LivingEntity> {
    @Override
    protected void start(ServerLevel var1, LivingEntity var2, long var3) {
       if (var3 > this.nextOkStartTime) {
-         InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, null, null);
+         Brain var5 = var2.getBrain();
+         if (var5.hasMemoryValue(MemoryModuleType.DOORS_TO_CLOSE)) {
+            Set var6 = var5.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
+            Optional var7;
+            if (var5.hasMemoryValue(MemoryModuleType.NEAREST_LIVING_ENTITIES)) {
+               var7 = var5.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+            } else {
+               var7 = Optional.empty();
+            }
+
+            InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, null, null, var6, var7);
+         }
+
          var2.startSleeping(var2.getBrain().getMemory(MemoryModuleType.HOME).get().pos());
       }
    }

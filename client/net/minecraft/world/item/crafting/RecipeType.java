@@ -1,6 +1,7 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 public interface RecipeType<T extends Recipe<?>> {
@@ -13,7 +14,7 @@ public interface RecipeType<T extends Recipe<?>> {
    RecipeType<UpgradeRecipe> SMITHING = register("smithing");
 
    static <T extends Recipe<?>> RecipeType<T> register(final String var0) {
-      return Registry.register(Registry.RECIPE_TYPE, new ResourceLocation(var0), new RecipeType<T>() {
+      return Registry.register(BuiltInRegistries.RECIPE_TYPE, new ResourceLocation(var0), new RecipeType<T>() {
          @Override
          public String toString() {
             return var0;

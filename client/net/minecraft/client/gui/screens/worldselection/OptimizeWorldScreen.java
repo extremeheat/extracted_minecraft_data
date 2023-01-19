@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
@@ -12,6 +11,9 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -20,7 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
@@ -39,22 +41,23 @@ public class OptimizeWorldScreen extends Screen {
    @Nullable
    public static OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
       try {
-         OptimizeWorldScreen var7;
+         OptimizeWorldScreen var8;
          try (WorldStem var5 = var0.createWorldOpenFlows().loadWorldStem(var3, false)) {
             WorldData var6 = var5.worldData();
-            var3.saveDataTag(var5.registryAccess(), var6);
-            var7 = new OptimizeWorldScreen(var1, var2, var3, var6.getLevelSettings(), var4, var6.worldGenSettings());
+            RegistryAccess.Frozen var7 = var5.registries().compositeAccess();
+            var3.saveDataTag(var7, var6);
+            var8 = new OptimizeWorldScreen(var1, var2, var3, var6.getLevelSettings(), var4, var7.registryOrThrow(Registries.LEVEL_STEM));
          }
 
-         return var7;
-      } catch (Exception var10) {
-         LOGGER.warn("Failed to load datapacks, can't optimize world", var10);
+         return var8;
+      } catch (Exception var11) {
+         LOGGER.warn("Failed to load datapacks, can't optimize world", var11);
          return null;
       }
    }
 
    private OptimizeWorldScreen(
-      BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, LevelSettings var4, boolean var5, WorldGenSettings var6
+      BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, LevelSettings var4, boolean var5, Registry<LevelStem> var6
    ) {
       super(Component.translatable("optimizeWorld.title", var4.levelName()));
       this.callback = var1;
@@ -64,10 +67,10 @@ public class OptimizeWorldScreen extends Screen {
    @Override
    protected void init() {
       super.init();
-      this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 4 + 150, 200, 20, CommonComponents.GUI_CANCEL, var1 -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
          this.upgrader.cancel();
          this.callback.accept(false);
-      }));
+      }).bounds(this.width / 2 - 100, this.height / 4 + 150, 200, 20).build());
    }
 
    @Override
@@ -103,11 +106,10 @@ public class OptimizeWorldScreen extends Screen {
          drawString(var1, this.font, Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks()), var5, 40 + (9 + 3) * 2, 10526880);
          int var9 = 0;
 
-         int var12;
-         for(UnmodifiableIterator var10 = this.upgrader.levels().iterator(); var10.hasNext(); var9 += var12) {
-            ResourceKey var11 = (ResourceKey)var10.next();
-            var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
+         for(ResourceKey var11 : this.upgrader.levels()) {
+            int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
             fill(var1, var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.getInt(var11));
+            var9 += var12;
          }
 
          int var13 = this.upgrader.getConverted() + this.upgrader.getSkipped();

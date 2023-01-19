@@ -79,7 +79,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Override
    protected void init() {
-      super.init();
       this.leftPos = (this.width - this.imageWidth) / 2;
       this.topPos = (this.height - this.imageHeight) / 2;
    }
@@ -93,7 +92,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       super.render(var1, var2, var3, var4);
       PoseStack var7 = RenderSystem.getModelViewStack();
       var7.pushPose();
-      var7.translate((double)var5, (double)var6, 0.0);
+      var7.translate((float)var5, (float)var6, 0.0F);
       RenderSystem.applyModelViewMatrix();
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       this.hoveredSlot = null;
@@ -169,7 +168,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void renderFloatingItem(ItemStack var1, int var2, int var3, String var4) {
       PoseStack var5 = RenderSystem.getModelViewStack();
-      var5.translate(0.0, 0.0, 32.0);
+      var5.translate(0.0F, 0.0F, 32.0F);
       RenderSystem.applyModelViewMatrix();
       this.setBlitOffset(200);
       this.itemRenderer.blitOffset = 200.0F;
@@ -225,7 +224,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          Pair var12 = var2.getNoItemIcon();
          if (var12 != null) {
             TextureAtlasSprite var11 = this.minecraft.getTextureAtlas((ResourceLocation)var12.getFirst()).apply((ResourceLocation)var12.getSecond());
-            RenderSystem.setShaderTexture(0, var11.atlas().location());
+            RenderSystem.setShaderTexture(0, var11.atlasLocation());
             blit(var1, var3, var4, this.getBlitOffset(), 16, 16, var11);
             var7 = true;
          }

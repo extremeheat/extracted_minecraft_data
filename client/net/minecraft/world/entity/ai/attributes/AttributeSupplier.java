@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class AttributeSupplier {
    private final Map<Attribute, AttributeInstance> instances;
@@ -19,7 +19,7 @@ public class AttributeSupplier {
    private AttributeInstance getAttributeInstance(Attribute var1) {
       AttributeInstance var2 = this.instances.get(var1);
       if (var2 == null) {
-         throw new IllegalArgumentException("Can't find attribute " + Registry.ATTRIBUTE.getKey(var1));
+         throw new IllegalArgumentException("Can't find attribute " + BuiltInRegistries.ATTRIBUTE.getKey(var1));
       } else {
          return var2;
       }
@@ -36,7 +36,7 @@ public class AttributeSupplier {
    public double getModifierValue(Attribute var1, UUID var2) {
       AttributeModifier var3 = this.getAttributeInstance(var1).getModifier(var2);
       if (var3 == null) {
-         throw new IllegalArgumentException("Can't find modifier " + var2 + " on attribute " + Registry.ATTRIBUTE.getKey(var1));
+         throw new IllegalArgumentException("Can't find modifier " + var2 + " on attribute " + BuiltInRegistries.ATTRIBUTE.getKey(var1));
       } else {
          return var3.getAmount();
       }
@@ -78,7 +78,7 @@ public class AttributeSupplier {
       private AttributeInstance create(Attribute var1) {
          AttributeInstance var2 = new AttributeInstance(var1, var2x -> {
             if (this.instanceFrozen) {
-               throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + Registry.ATTRIBUTE.getKey(var1));
+               throw new UnsupportedOperationException("Tried to change value for default attribute instance: " + BuiltInRegistries.ATTRIBUTE.getKey(var1));
             }
          });
          this.builder.put(var1, var2);

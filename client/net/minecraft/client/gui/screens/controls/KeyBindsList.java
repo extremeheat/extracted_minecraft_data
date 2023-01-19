@@ -111,27 +111,22 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       private final Button changeButton;
       private final Button resetButton;
 
-      KeyEntry(final KeyMapping var2, final Component var3) {
+      KeyEntry(KeyMapping var2, Component var3) {
          super();
          this.key = var2;
          this.name = var3;
-         this.changeButton = new Button(0, 0, 75, 20, var3, var2x -> KeyBindsList.this.keyBindsScreen.selectedKey = var2) {
-            @Override
-            protected MutableComponent createNarrationMessage() {
-               return var2.isUnbound()
-                  ? Component.translatable("narrator.controls.unbound", var3)
-                  : Component.translatable("narrator.controls.bound", var3, super.createNarrationMessage());
-            }
-         };
-         this.resetButton = new Button(0, 0, 50, 20, Component.translatable("controls.reset"), var2x -> {
+         this.changeButton = Button.builder(var3, var2x -> KeyBindsList.this.keyBindsScreen.selectedKey = var2)
+            .bounds(0, 0, 75, 20)
+            .createNarration(
+               var2x -> var2.isUnbound()
+                     ? Component.translatable("narrator.controls.unbound", var3)
+                     : Component.translatable("narrator.controls.bound", var3, var2x.get())
+            )
+            .build();
+         this.resetButton = Button.builder(Component.translatable("controls.reset"), var2x -> {
             KeyBindsList.this.minecraft.options.setKey(var2, var2.getDefaultKey());
             KeyMapping.resetMapping();
-         }) {
-            @Override
-            protected MutableComponent createNarrationMessage() {
-               return Component.translatable("narrator.controls.reset", var3);
-            }
-         };
+         }).bounds(0, 0, 50, 20).createNarration(var1x -> Component.translatable("narrator.controls.reset", var3)).build();
       }
 
       @Override
@@ -139,12 +134,12 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
          boolean var11 = KeyBindsList.this.keyBindsScreen.selectedKey == this.key;
          float var10003 = (float)(var4 + 90 - KeyBindsList.this.maxNameWidth);
          KeyBindsList.this.minecraft.font.draw(var1, this.name, var10003, (float)(var3 + var6 / 2 - 9 / 2), 16777215);
-         this.resetButton.x = var4 + 190;
-         this.resetButton.y = var3;
+         this.resetButton.setX(var4 + 190);
+         this.resetButton.setY(var3);
          this.resetButton.active = !this.key.isDefault();
          this.resetButton.render(var1, var7, var8, var10);
-         this.changeButton.x = var4 + 105;
-         this.changeButton.y = var3;
+         this.changeButton.setX(var4 + 105);
+         this.changeButton.setY(var3);
          this.changeButton.setMessage(this.key.getTranslatedKeyMessage());
          boolean var12 = false;
          if (!this.key.isUnbound()) {

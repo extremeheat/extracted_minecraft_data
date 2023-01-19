@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -78,6 +77,7 @@ public class Zombie extends Monster {
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
    public static final int REINFORCEMENT_RANGE_MIN = 7;
+   protected static final float BABY_EYE_HEIGHT_ADJUSTMENT = 0.81F;
    private static final float BREAK_DOOR_CHANCE = 0.1F;
    private static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = var0 -> var0 == Difficulty.HARD;
    private final BreakDoorGoal breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
@@ -403,26 +403,29 @@ public class Zombie extends Monster {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean wasKilled(ServerLevel var1, LivingEntity var2) {
       boolean var3 = super.wasKilled(var1, var2);
-      if ((var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) && var2 instanceof Villager) {
+      if ((var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) && var2 instanceof Villager var4) {
          if (var1.getDifficulty() != Difficulty.HARD && this.random.nextBoolean()) {
             return var3;
          }
 
-         Villager var4 = (Villager)var2;
          ZombieVillager var5 = var4.convertTo(EntityType.ZOMBIE_VILLAGER, false);
-         var5.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var5.blockPosition()), MobSpawnType.CONVERSION, new Zombie.ZombieGroupData(false, true), null);
-         var5.setVillagerData(var4.getVillagerData());
-         var5.setGossips((Tag)var4.getGossips().store(NbtOps.INSTANCE).getValue());
-         var5.setTradeOffers(var4.getOffers().createTag());
-         var5.setVillagerXp(var4.getVillagerXp());
-         if (!this.isSilent()) {
-            var1.levelEvent(null, 1026, this.blockPosition(), 0);
-         }
+         if (var5 != null) {
+            var5.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var5.blockPosition()), MobSpawnType.CONVERSION, new Zombie.ZombieGroupData(false, true), null);
+            var5.setVillagerData(var4.getVillagerData());
+            var5.setGossips(var4.getGossips().store(NbtOps.INSTANCE));
+            var5.setTradeOffers(var4.getOffers().createTag());
+            var5.setVillagerXp(var4.getVillagerXp());
+            if (!this.isSilent()) {
+               var1.levelEvent(null, 1026, this.blockPosition(), 0);
+            }
 
-         var3 = false;
+            var3 = false;
+         }
       }
 
       return var3;
@@ -469,11 +472,13 @@ public class Zombie extends Monster {
                   }
                } else if ((double)var6.nextFloat() < 0.05) {
                   Chicken var13 = EntityType.CHICKEN.create(this.level);
-                  var13.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-                  var13.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, null, null);
-                  var13.setChickenJockey(true);
-                  this.startRiding(var13);
-                  var1.addFreshEntity(var13);
+                  if (var13 != null) {
+                     var13.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                     var13.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, null, null);
+                     var13.setChickenJockey(true);
+                     this.startRiding(var13);
+                     var1.addFreshEntity(var13);
+                  }
                }
             }
          }

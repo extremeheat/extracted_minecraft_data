@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.animal.Animal;
@@ -49,7 +49,7 @@ public class SpawnPlacements {
    private static <T extends Mob> void register(EntityType<T> var0, SpawnPlacements.Type var1, Heightmap.Types var2, SpawnPlacements.SpawnPredicate<T> var3) {
       SpawnPlacements.Data var4 = DATA_BY_TYPE.put(var0, new SpawnPlacements.Data(var2, var1, var3));
       if (var4 != null) {
-         throw new IllegalStateException("Duplicate registration for type " + Registry.ENTITY_TYPE.getKey(var0));
+         throw new IllegalStateException("Duplicate registration for type " + BuiltInRegistries.ENTITY_TYPE.getKey(var0));
       }
    }
 

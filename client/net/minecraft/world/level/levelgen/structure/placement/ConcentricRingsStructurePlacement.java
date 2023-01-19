@@ -10,13 +10,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 
 public class ConcentricRingsStructurePlacement extends StructurePlacement {
    public static final Codec<ConcentricRingsStructurePlacement> CODEC = RecordCodecBuilder.create(
@@ -35,7 +34,7 @@ public class ConcentricRingsStructurePlacement extends StructurePlacement {
          Codec.intRange(0, 1023).fieldOf("distance").forGetter(ConcentricRingsStructurePlacement::distance),
          Codec.intRange(0, 1023).fieldOf("spread").forGetter(ConcentricRingsStructurePlacement::spread),
          Codec.intRange(1, 4095).fieldOf("count").forGetter(ConcentricRingsStructurePlacement::count),
-         RegistryCodecs.homogeneousList(Registry.BIOME_REGISTRY).fieldOf("preferred_biomes").forGetter(ConcentricRingsStructurePlacement::preferredBiomes)
+         RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("preferred_biomes").forGetter(ConcentricRingsStructurePlacement::preferredBiomes)
       );
       return new P9(var1.t1(), var1.t2(), var1.t3(), var1.t4(), var1.t5(), var2.t1(), var2.t2(), var2.t3(), var2.t4());
    }
@@ -79,9 +78,9 @@ public class ConcentricRingsStructurePlacement extends StructurePlacement {
    }
 
    @Override
-   protected boolean isPlacementChunk(ChunkGenerator var1, RandomState var2, long var3, int var5, int var6) {
-      List var7 = var1.getRingPositionsFor(this, var2);
-      return var7 == null ? false : var7.contains(new ChunkPos(var5, var6));
+   protected boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
+      List var4 = var1.getRingPositionsFor(this);
+      return var4 == null ? false : var4.contains(new ChunkPos(var2, var3));
    }
 
    @Override

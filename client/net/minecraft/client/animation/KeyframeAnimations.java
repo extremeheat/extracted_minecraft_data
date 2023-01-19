@@ -1,11 +1,11 @@
 package net.minecraft.client.animation;
 
-import com.mojang.math.Vector3f;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map.Entry;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.util.Mth;
+import org.joml.Vector3f;
 
 public class KeyframeAnimations {
    public KeyframeAnimations() {

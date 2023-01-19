@@ -21,6 +21,7 @@ import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
@@ -33,9 +34,7 @@ import org.slf4j.Logger;
 
 public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final String FILE_EXTENSION = ".mcfunction";
-   private static final int PATH_PREFIX_LENGTH = "functions/".length();
-   private static final int PATH_SUFFIX_LENGTH = ".mcfunction".length();
+   private static final FileToIdConverter LISTER = new FileToIdConverter("functions", ".mcfunction");
    private volatile Map<ResourceLocation, CommandFunction> functions = ImmutableMap.of();
    private final TagLoader<CommandFunction> tagsLoader = new TagLoader<>(this::getFunction, "tags/functions");
    private volatile Map<ResourceLocation, Collection<CommandFunction>> tags = Map.of();
@@ -69,9 +68,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
    ) {
       CompletableFuture var7 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var2), var5);
-      CompletableFuture var8 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(
-            () -> var2.listResources("functions", var0x -> var0x.getPath().endsWith(".mcfunction")), var5
-         )
+      CompletableFuture var8 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> LISTER.listMatchingResources(var2), var5)
          .thenCompose(
             var2x -> {
                HashMap var3x = Maps.newHashMap();
@@ -81,16 +78,15 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       
                for(Entry var6x : var2x.entrySet()) {
                   ResourceLocation var7x = (ResourceLocation)var6x.getKey();
-                  String var8x = var7x.getPath();
-                  ResourceLocation var9 = new ResourceLocation(var7x.getNamespace(), var8x.substring(PATH_PREFIX_LENGTH, var8x.length() - PATH_SUFFIX_LENGTH));
-                  var3x.put(var9, CompletableFuture.supplyAsync(() -> {
+                  ResourceLocation var8x = LISTER.fileToId(var7x);
+                  var3x.put(var8x, CompletableFuture.supplyAsync(() -> {
                      List var4xx = readLines((Resource)var6x.getValue());
-                     return CommandFunction.fromLines(var9, this.dispatcher, var4x, var4xx);
+                     return CommandFunction.fromLines(var8x, this.dispatcher, var4x, var4xx);
                   }, var5));
                }
       
-               CompletableFuture[] var10 = var3x.values().toArray(new CompletableFuture[0]);
-               return CompletableFuture.allOf(var10).handle((var1xx, var2xx) -> var3x);
+               CompletableFuture[] var9 = var3x.values().toArray(new CompletableFuture[0]);
+               return CompletableFuture.allOf(var9).handle((var1xx, var2xx) -> var3x);
             }
          );
       return var7.thenCombine(var8, Pair::of).thenCompose(var1::wait).thenAcceptAsync(var1x -> {

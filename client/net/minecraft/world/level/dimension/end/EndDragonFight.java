@@ -18,6 +18,7 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntTag;
@@ -260,9 +261,10 @@ public class EndDragonFight {
             this.respawnStage = null;
             this.dragonKilled = false;
             EnderDragon var2 = this.createNewDragon();
-
-            for(ServerPlayer var4 : this.dragonEvent.getPlayers()) {
-               CriteriaTriggers.SUMMONED_ENTITY.trigger(var4, var2);
+            if (var2 != null) {
+               for(ServerPlayer var4 : this.dragonEvent.getPlayers()) {
+                  CriteriaTriggers.SUMMONED_ENTITY.trigger(var4, var2);
+               }
             }
          } else {
             this.respawnStage = var1;
@@ -399,7 +401,11 @@ public class EndDragonFight {
 
    private void spawnNewGateway(BlockPos var1) {
       this.level.levelEvent(3000, var1, 0);
-      EndFeatures.END_GATEWAY_DELAYED.value().place(this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), var1);
+      this.level
+         .registryAccess()
+         .registry(Registries.CONFIGURED_FEATURE)
+         .flatMap(var0 -> var0.getHolder(EndFeatures.END_GATEWAY_DELAYED))
+         .ifPresent(var2 -> var2.value().place(this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), var1));
    }
 
    private void spawnExitPortal(boolean var1) {
@@ -415,13 +421,17 @@ public class EndDragonFight {
       var2.place(FeatureConfiguration.NONE, this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), this.portalLocation);
    }
 
+   @Nullable
    private EnderDragon createNewDragon() {
       this.level.getChunkAt(new BlockPos(0, 128, 0));
       EnderDragon var1 = EntityType.ENDER_DRAGON.create(this.level);
-      var1.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
-      var1.moveTo(0.0, 128.0, 0.0, this.level.random.nextFloat() * 360.0F, 0.0F);
-      this.level.addFreshEntity(var1);
-      this.dragonUUID = var1.getUUID();
+      if (var1 != null) {
+         var1.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
+         var1.moveTo(0.0, 128.0, 0.0, this.level.random.nextFloat() * 360.0F, 0.0F);
+         this.level.addFreshEntity(var1);
+         this.dragonUUID = var1.getUUID();
+      }
+
       return var1;
    }
 

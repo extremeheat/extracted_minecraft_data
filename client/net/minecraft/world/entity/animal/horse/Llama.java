@@ -1,6 +1,9 @@
 package net.minecraft.world.entity.animal.horse;
 
+import com.mojang.serialization.Codec;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -11,8 +14,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Container;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,6 +27,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
@@ -54,9 +60,8 @@ import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class Llama extends AbstractChestedHorse implements RangedAttackMob {
+public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.Variant>, RangedAttackMob {
    private static final int MAX_STRENGTH = 5;
-   private static final int VARIANTS = 4;
    private static final Ingredient FOOD_ITEMS = Ingredient.of(Items.WHEAT, Blocks.HAY_BLOCK.asItem());
    private static final EntityDataAccessor<Integer> DATA_STRENGTH_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_SWAG_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
@@ -91,7 +96,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant());
+      var1.putInt("Variant", this.getVariant().id);
       var1.putInt("Strength", this.getStrength());
       if (!this.inventory.getItem(1).isEmpty()) {
          var1.put("DecorItem", this.inventory.getItem(1).save(new CompoundTag()));
@@ -102,7 +107,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    public void readAdditionalSaveData(CompoundTag var1) {
       this.setStrength(var1.getInt("Strength"));
       super.readAdditionalSaveData(var1);
-      this.setVariant(var1.getInt("Variant"));
+      this.setVariant(Llama.Variant.byId(var1.getInt("Variant")));
       if (var1.contains("DecorItem", 10)) {
          this.inventory.setItem(1, ItemStack.of(var1.getCompound("DecorItem")));
       }
@@ -139,12 +144,12 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       this.entityData.define(DATA_VARIANT_ID, 0);
    }
 
-   public int getVariant() {
-      return Mth.clamp(this.entityData.get(DATA_VARIANT_ID), 0, 3);
+   public Llama.Variant getVariant() {
+      return Llama.Variant.byId(this.entityData.get(DATA_VARIANT_ID));
    }
 
-   public void setVariant(int var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   public void setVariant(Llama.Variant var1) {
+      this.entityData.set(DATA_VARIANT_ID, var1.id);
    }
 
    @Override
@@ -244,7 +249,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    @Override
-   protected boolean isImmobile() {
+   public boolean isImmobile() {
       return this.isDeadOrDying() || this.isEating();
    }
 
@@ -255,16 +260,21 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    ) {
       RandomSource var6 = var1.getRandom();
       this.setRandomStrength(var6);
-      int var7;
+      Llama.Variant var7;
       if (var4 instanceof Llama.LlamaGroupData) {
          var7 = ((Llama.LlamaGroupData)var4).variant;
       } else {
-         var7 = var6.nextInt(4);
+         var7 = Util.getRandom(Llama.Variant.values(), var6);
          var4 = new Llama.LlamaGroupData(var7);
       }
 
       this.setVariant(var7);
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+   }
+
+   @Override
+   protected boolean canPerformRearing() {
+      return false;
    }
 
    @Override
@@ -301,14 +311,6 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    @Override
    protected void playChestEquipsSound() {
       this.playSound(SoundEvents.LLAMA_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-   }
-
-   @Override
-   public void makeMad() {
-      SoundEvent var1 = this.getAngrySound();
-      if (var1 != null) {
-         this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-      }
    }
 
    @Override
@@ -380,21 +382,26 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return var1 != this && var1 instanceof Llama && this.canParent() && ((Llama)var1).canParent();
    }
 
+   @Nullable
    public Llama getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Llama var3 = this.makeBabyLlama();
-      this.setOffspringAttributes(var2, var3);
-      Llama var4 = (Llama)var2;
-      int var5 = this.random.nextInt(Math.max(this.getStrength(), var4.getStrength())) + 1;
-      if (this.random.nextFloat() < 0.03F) {
-         ++var5;
+      Llama var3 = this.makeNewLlama();
+      if (var3 != null) {
+         this.setOffspringAttributes(var2, var3);
+         Llama var4 = (Llama)var2;
+         int var5 = this.random.nextInt(Math.max(this.getStrength(), var4.getStrength())) + 1;
+         if (this.random.nextFloat() < 0.03F) {
+            ++var5;
+         }
+
+         var3.setStrength(var5);
+         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
       }
 
-      var3.setStrength(var5);
-      var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
       return var3;
    }
 
-   protected Llama makeBabyLlama() {
+   @Nullable
+   protected Llama makeNewLlama() {
       return EntityType.LLAMA.create(this.level);
    }
 
@@ -512,9 +519,9 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
    }
 
    static class LlamaGroupData extends AgeableMob.AgeableMobGroupData {
-      public final int variant;
+      public final Llama.Variant variant;
 
-      LlamaGroupData(int var1) {
+      LlamaGroupData(Llama.Variant var1) {
          super(true);
          this.variant = var1;
       }
@@ -535,6 +542,36 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
          }
 
          return super.canContinueToUse();
+      }
+   }
+
+   public static enum Variant implements StringRepresentable {
+      CREAMY(0, "creamy"),
+      WHITE(1, "white"),
+      BROWN(2, "brown"),
+      GRAY(3, "gray");
+
+      public static final Codec<Llama.Variant> CODEC = StringRepresentable.fromEnum(Llama.Variant::values);
+      private static final IntFunction<Llama.Variant> BY_ID = ByIdMap.continuous(Llama.Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      final int id;
+      private final String name;
+
+      private Variant(int var3, String var4) {
+         this.id = var3;
+         this.name = var4;
+      }
+
+      public int getId() {
+         return this.id;
+      }
+
+      public static Llama.Variant byId(int var0) {
+         return BY_ID.apply(var0);
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
    }
 }

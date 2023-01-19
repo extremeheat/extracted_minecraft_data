@@ -2,7 +2,6 @@ package net.minecraft.world.entity.boss.enderdragon.phases;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
@@ -59,13 +58,15 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
             return;
          }
 
-         double var3 = 64.0;
          Player var5 = this.dragon.level.getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+         double var3;
          if (var5 != null) {
             var3 = var1.distToCenterSqr(var5.position()) / 512.0;
+         } else {
+            var3 = 64.0;
          }
 
-         if (var5 != null && (this.dragon.getRandom().nextInt(Mth.abs((int)var3) + 2) == 0 || this.dragon.getRandom().nextInt(var2 + 2) == 0)) {
+         if (var5 != null && (this.dragon.getRandom().nextInt((int)(var3 + 2.0)) == 0 || this.dragon.getRandom().nextInt(var2 + 2) == 0)) {
             this.strafePlayer(var5);
             return;
          }

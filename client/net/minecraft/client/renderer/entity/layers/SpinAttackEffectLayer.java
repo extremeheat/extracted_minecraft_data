@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -44,10 +44,10 @@ public class SpinAttackEffectLayer<T extends LivingEntity> extends RenderLayer<T
          for(int var12 = 0; var12 < 3; ++var12) {
             var1.pushPose();
             float var13 = var8 * (float)(-(45 + var12 * 5));
-            var1.mulPose(Vector3f.YP.rotationDegrees(var13));
+            var1.mulPose(Axis.YP.rotationDegrees(var13));
             float var14 = 0.75F * (float)var12;
             var1.scale(var14, var14, var14);
-            var1.translate(0.0, (double)(-0.2F + 0.6F * (float)var12), 0.0);
+            var1.translate(0.0F, -0.2F + 0.6F * (float)var12, 0.0F);
             this.box.render(var1, var11, var3, OverlayTexture.NO_OVERLAY);
             var1.popPose();
          }

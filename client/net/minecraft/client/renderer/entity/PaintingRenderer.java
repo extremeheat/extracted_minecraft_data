@@ -2,9 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,6 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class PaintingRenderer extends EntityRenderer<Painting> {
    public PaintingRenderer(EntityRendererProvider.Context var1) {
@@ -26,7 +26,7 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
 
    public void render(Painting var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
-      var4.mulPose(Vector3f.YP.rotationDegrees(180.0F - var2));
+      var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
       PaintingVariant var7 = var1.getVariant().value();
       float var8 = 0.0625F;
       var4.scale(0.0625F, 0.0625F, 0.0625F);
@@ -38,7 +38,7 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
    }
 
    public ResourceLocation getTextureLocation(Painting var1) {
-      return Minecraft.getInstance().getPaintingTextures().getBackSprite().atlas().location();
+      return Minecraft.getInstance().getPaintingTextures().getBackSprite().atlasLocation();
    }
 
    private void renderPainting(PoseStack var1, VertexConsumer var2, Painting var3, int var4, int var5, TextureAtlasSprite var6, TextureAtlasSprite var7) {

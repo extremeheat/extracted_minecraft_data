@@ -29,7 +29,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
@@ -45,8 +45,8 @@ public abstract class AbstractSliderButton extends AbstractWidget {
       RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var5 = (this.isHoveredOrFocused() ? 2 : 1) * 20;
-      this.blit(var1, this.x + (int)(this.value * (double)(this.width - 8)), this.y, 0, 46 + var5, 4, 20);
-      this.blit(var1, this.x + (int)(this.value * (double)(this.width - 8)) + 4, this.y, 196, 46 + var5, 4, 20);
+      this.blit(var1, this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 0, 46 + var5, 4, 20);
+      this.blit(var1, this.getX() + (int)(this.value * (double)(this.width - 8)) + 4, this.getY(), 196, 46 + var5, 4, 20);
    }
 
    @Override
@@ -66,7 +66,7 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    private void setValueFromMouse(double var1) {
-      this.setValue((var1 - (double)(this.x + 4)) / (double)(this.width - 8));
+      this.setValue((var1 - (double)(this.getX() + 4)) / (double)(this.width - 8));
    }
 
    private void setValue(double var1) {

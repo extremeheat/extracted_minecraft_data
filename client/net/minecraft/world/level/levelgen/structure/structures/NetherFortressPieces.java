@@ -1071,6 +1071,8 @@ public class NetherFortressPieces {
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new NetherFortressPieces.MonsterThrone(var4, var6, var5) : null;
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void postProcess(
          WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
@@ -1144,15 +1146,15 @@ public class NetherFortressPieces {
                this.hasPlacedSpawner = true;
                var1.setBlock(var10, Blocks.SPAWNER.defaultBlockState(), 2);
                BlockEntity var11 = var1.getBlockEntity(var10);
-               if (var11 instanceof SpawnerBlockEntity) {
-                  ((SpawnerBlockEntity)var11).getSpawner().setEntityId(EntityType.BLAZE);
+               if (var11 instanceof SpawnerBlockEntity var12) {
+                  var12.setEntityId(EntityType.BLAZE, var4);
                }
             }
          }
 
-         for(int var12 = 0; var12 <= 6; ++var12) {
-            for(int var13 = 0; var13 <= 6; ++var13) {
-               this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var12, -1, var13, var5);
+         for(int var13 = 0; var13 <= 6; ++var13) {
+            for(int var14 = 0; var14 <= 6; ++var14) {
+               this.fillColumnDown(var1, Blocks.NETHER_BRICKS.defaultBlockState(), var13, -1, var14, var5);
             }
          }
       }

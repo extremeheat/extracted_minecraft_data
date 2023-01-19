@@ -3,7 +3,6 @@ package net.minecraft.server.network;
 import com.google.common.primitives.Ints;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.exceptions.AuthenticationUnavailableException;
-import com.mojang.authlib.minecraft.InsecurePublicKeyException.MissingException;
 import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -22,7 +21,6 @@ import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.ThrowingComponent;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.network.protocol.login.ClientboundHelloPacket;
@@ -37,20 +35,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.SignatureValidator;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
-public class ServerLoginPacketListenerImpl implements TickablePacketListener, ServerLoginPacketListener {
+public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener, TickablePacketListener {
    private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TICKS_BEFORE_LOGIN = 600;
    private static final RandomSource RANDOM = RandomSource.create();
-   private static final Component MISSING_PROFILE_PUBLIC_KEY = Component.translatable("multiplayer.disconnect.missing_public_key");
-   private static final Component INVALID_SIGNATURE = Component.translatable("multiplayer.disconnect.invalid_public_key_signature");
-   private static final Component INVALID_PUBLIC_KEY = Component.translatable("multiplayer.disconnect.invalid_public_key");
-   private final byte[] nonce;
+   private final byte[] challenge;
    final MinecraftServer server;
    public final Connection connection;
    ServerLoginPacketListenerImpl.State state = ServerLoginPacketListenerImpl.State.HELLO;
@@ -60,14 +53,12 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
    private final String serverId = "";
    @Nullable
    private ServerPlayer delayedAcceptPlayer;
-   @Nullable
-   private ProfilePublicKey.Data profilePublicKeyData;
 
    public ServerLoginPacketListenerImpl(MinecraftServer var1, Connection var2) {
       super();
       this.server = var1;
       this.connection = var2;
-      this.nonce = Ints.toByteArray(RANDOM.nextInt());
+      this.challenge = Ints.toByteArray(RANDOM.nextInt());
    }
 
    @Override
@@ -104,25 +95,13 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
    }
 
    public void handleAcceptedLogin() {
-      ProfilePublicKey var1 = null;
       if (!this.gameProfile.isComplete()) {
          this.gameProfile = this.createFakeProfile(this.gameProfile);
-      } else {
-         try {
-            SignatureValidator var2 = this.server.getServiceSignatureValidator();
-            var1 = validatePublicKey(this.profilePublicKeyData, this.gameProfile.getId(), var2, this.server.enforceSecureProfile());
-         } catch (ServerLoginPacketListenerImpl.PublicKeyValidationException var7) {
-            LOGGER.error(var7.getMessage(), var7.getCause());
-            if (!this.connection.isMemoryConnection()) {
-               this.disconnect(var7.getComponent());
-               return;
-            }
-         }
       }
 
-      Component var8 = this.server.getPlayerList().canPlayerLogin(this.connection.getRemoteAddress(), this.gameProfile);
-      if (var8 != null) {
-         this.disconnect(var8);
+      Component var1 = this.server.getPlayerList().canPlayerLogin(this.connection.getRemoteAddress(), this.gameProfile);
+      if (var1 != null) {
+         this.disconnect(var1);
       } else {
          this.state = ServerLoginPacketListenerImpl.State.ACCEPTED;
          if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
@@ -134,21 +113,21 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
          }
 
          this.connection.send(new ClientboundGameProfilePacket(this.gameProfile));
-         ServerPlayer var3 = this.server.getPlayerList().getPlayer(this.gameProfile.getId());
+         ServerPlayer var2 = this.server.getPlayerList().getPlayer(this.gameProfile.getId());
 
          try {
-            ServerPlayer var4 = this.server.getPlayerList().getPlayerForLogin(this.gameProfile, var1);
-            if (var3 != null) {
+            ServerPlayer var3 = this.server.getPlayerList().getPlayerForLogin(this.gameProfile);
+            if (var2 != null) {
                this.state = ServerLoginPacketListenerImpl.State.DELAY_ACCEPT;
-               this.delayedAcceptPlayer = var4;
+               this.delayedAcceptPlayer = var3;
             } else {
-               this.placeNewPlayer(var4);
+               this.placeNewPlayer(var3);
             }
-         } catch (Exception var6) {
-            LOGGER.error("Couldn't place player in world", var6);
-            MutableComponent var5 = Component.translatable("multiplayer.disconnect.invalid_player_data");
-            this.connection.send(new ClientboundDisconnectPacket(var5));
-            this.connection.disconnect(var5);
+         } catch (Exception var5) {
+            LOGGER.error("Couldn't place player in world", var5);
+            MutableComponent var4 = Component.translatable("multiplayer.disconnect.invalid_player_data");
+            this.connection.send(new ClientboundDisconnectPacket(var4));
+            this.connection.disconnect(var4);
          }
       }
    }
@@ -168,36 +147,10 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
          : String.valueOf(this.connection.getRemoteAddress());
    }
 
-   @Nullable
-   private static ProfilePublicKey validatePublicKey(@Nullable ProfilePublicKey.Data var0, UUID var1, SignatureValidator var2, boolean var3) throws ServerLoginPacketListenerImpl.PublicKeyValidationException {
-      try {
-         if (var0 == null) {
-            if (var3) {
-               throw new ServerLoginPacketListenerImpl.PublicKeyValidationException(MISSING_PROFILE_PUBLIC_KEY);
-            } else {
-               return null;
-            }
-         } else {
-            return ProfilePublicKey.createValidated(var2, var1, var0);
-         }
-      } catch (MissingException var5) {
-         if (var3) {
-            throw new ServerLoginPacketListenerImpl.PublicKeyValidationException(INVALID_SIGNATURE, var5);
-         } else {
-            return null;
-         }
-      } catch (CryptException var6) {
-         throw new ServerLoginPacketListenerImpl.PublicKeyValidationException(INVALID_PUBLIC_KEY, var6);
-      } catch (Exception var7) {
-         throw new ServerLoginPacketListenerImpl.PublicKeyValidationException(INVALID_SIGNATURE, var7);
-      }
-   }
-
    @Override
    public void handleHello(ServerboundHelloPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.HELLO, "Unexpected hello packet", new Object[0]);
       Validate.validState(isValidUsername(var1.name()), "Invalid characters in username", new Object[0]);
-      this.profilePublicKeyData = var1.publicKey().orElse(null);
       GameProfile var2 = this.server.getSingleplayerProfile();
       if (var2 != null && var1.name().equalsIgnoreCase(var2.getName())) {
          this.gameProfile = var2;
@@ -206,7 +159,7 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
          this.gameProfile = new GameProfile(null, var1.name());
          if (this.server.usesAuthentication() && !this.connection.isMemoryConnection()) {
             this.state = ServerLoginPacketListenerImpl.State.KEY;
-            this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.nonce));
+            this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.challenge));
          } else {
             this.state = ServerLoginPacketListenerImpl.State.READY_TO_ACCEPT;
          }
@@ -224,19 +177,14 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
       final String var2;
       try {
          PrivateKey var3 = this.server.getKeyPair().getPrivate();
-         if (this.profilePublicKeyData != null) {
-            ProfilePublicKey var4 = ProfilePublicKey.createTrusted(this.profilePublicKeyData);
-            if (!var1.isChallengeSignatureValid(this.nonce, var4)) {
-               throw new IllegalStateException("Protocol error");
-            }
-         } else if (!var1.isNonceValid(this.nonce, var3)) {
+         if (!var1.isChallengeValid(this.challenge, var3)) {
             throw new IllegalStateException("Protocol error");
          }
 
-         SecretKey var9 = var1.getSecretKey(var3);
-         Cipher var5 = Crypt.getCipher(2, var9);
-         Cipher var6 = Crypt.getCipher(1, var9);
-         var2 = new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), var9)).toString(16);
+         SecretKey var4 = var1.getSecretKey(var3);
+         Cipher var5 = Crypt.getCipher(2, var4);
+         Cipher var6 = Crypt.getCipher(1, var4);
+         var2 = new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), var4)).toString(16);
          this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
          this.connection.setEncryptionKey(var5, var6);
       } catch (CryptException var7) {
@@ -300,16 +248,6 @@ public class ServerLoginPacketListenerImpl implements TickablePacketListener, Se
    protected GameProfile createFakeProfile(GameProfile var1) {
       UUID var2 = UUIDUtil.createOfflinePlayerUUID(var1.getName());
       return new GameProfile(var2, var1.getName());
-   }
-
-   static class PublicKeyValidationException extends ThrowingComponent {
-      public PublicKeyValidationException(Component var1) {
-         super(var1);
-      }
-
-      public PublicKeyValidationException(Component var1, Throwable var2) {
-         super(var1, var2);
-      }
    }
 
    static enum State {

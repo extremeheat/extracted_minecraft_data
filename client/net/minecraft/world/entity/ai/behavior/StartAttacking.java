@@ -1,51 +1,44 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public class StartAttacking<E extends Mob> extends Behavior<E> {
-   private final Predicate<E> canAttackPredicate;
-   private final Function<E, Optional<? extends LivingEntity>> targetFinderFunction;
-
-   public StartAttacking(Predicate<E> var1, Function<E, Optional<? extends LivingEntity>> var2) {
-      this(var1, var2, 60);
+public class StartAttacking {
+   public StartAttacking() {
+      super();
    }
 
-   public StartAttacking(Predicate<E> var1, Function<E, Optional<? extends LivingEntity>> var2, int var3) {
-      super(
-         ImmutableMap.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryStatus.REGISTERED),
-         var3
+   public static <E extends Mob> BehaviorControl<E> create(Function<E, Optional<? extends LivingEntity>> var0) {
+      return create(var0x -> true, var0);
+   }
+
+   public static <E extends Mob> BehaviorControl<E> create(Predicate<E> var0, Function<E, Optional<? extends LivingEntity>> var1) {
+      return BehaviorBuilder.create(
+         var2 -> var2.group(var2.absent(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
+               .apply(var2, (var2x, var3) -> (var4, var5, var6) -> {
+                     if (!var0.test(var5)) {
+                        return false;
+                     } else {
+                        Optional var8 = (Optional)var1.apply(var5);
+                        if (var8.isEmpty()) {
+                           return false;
+                        } else {
+                           LivingEntity var9 = (LivingEntity)var8.get();
+                           if (!var5.canAttack(var9)) {
+                              return false;
+                           } else {
+                              var2x.set(var9);
+                              var3.erase();
+                              return true;
+                           }
+                        }
+                     }
+                  })
       );
-      this.canAttackPredicate = var1;
-      this.targetFinderFunction = var2;
-   }
-
-   public StartAttacking(Function<E, Optional<? extends LivingEntity>> var1) {
-      this(var0 -> true, var1);
-   }
-
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      if (!this.canAttackPredicate.test((E)var2)) {
-         return false;
-      } else {
-         Optional var3 = this.targetFinderFunction.apply((E)var2);
-         return var3.isPresent() ? var2.canAttack((LivingEntity)var3.get()) : false;
-      }
-   }
-
-   protected void start(ServerLevel var1, E var2, long var3) {
-      this.targetFinderFunction.apply((E)var2).ifPresent(var1x -> setAttackTarget(var2, var1x));
-   }
-
-   public static <E extends Mob> void setAttackTarget(E var0, LivingEntity var1) {
-      var0.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, var1);
-      var0.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
    }
 }

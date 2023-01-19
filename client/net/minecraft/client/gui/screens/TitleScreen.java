@@ -6,13 +6,12 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.gui.screens.RealmsNotificationsScreen;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -23,6 +22,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.PlainTextButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -33,13 +33,13 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -138,16 +138,13 @@ public class TitleScreen extends Screen {
          )
       );
       this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 100,
-            var4 + 72 + 12,
-            98,
-            20,
-            Component.translatable("menu.options"),
-            var1x -> this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options))
-         )
+         Button.builder(Component.translatable("menu.options"), var1x -> this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options)))
+            .bounds(this.width / 2 - 100, var4 + 72 + 12, 98, 20)
+            .build()
       );
-      this.addRenderableWidget(new Button(this.width / 2 + 2, var4 + 72 + 12, 98, 20, Component.translatable("menu.quit"), var1x -> this.minecraft.stop()));
+      this.addRenderableWidget(
+         Button.builder(Component.translatable("menu.quit"), var1x -> this.minecraft.stop()).bounds(this.width / 2 + 2, var4 + 72 + 12, 98, 20).build()
+      );
       this.addRenderableWidget(
          new ImageButton(
             this.width / 2 + 104,
@@ -187,29 +184,22 @@ public class TitleScreen extends Screen {
 
    private void createNormalMenuOptions(int var1, int var2) {
       this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 100, var1, 200, 20, Component.translatable("menu.singleplayer"), var1x -> this.minecraft.setScreen(new SelectWorldScreen(this))
-         )
+         Button.builder(Component.translatable("menu.singleplayer"), var1x -> this.minecraft.setScreen(new SelectWorldScreen(this)))
+            .bounds(this.width / 2 - 100, var1, 200, 20)
+            .build()
       );
-      final Component var3 = this.getMultiplayerDisabledReason();
+      Component var3 = this.getMultiplayerDisabledReason();
       boolean var4 = var3 == null;
-      Button.OnTooltip var5 = var3 == null ? Button.NO_TOOLTIP : new Button.OnTooltip() {
-         @Override
-         public void onTooltip(Button var1, PoseStack var2, int var3x, int var4) {
-            TitleScreen.this.renderTooltip(var2, TitleScreen.this.minecraft.font.split(var3, Math.max(TitleScreen.this.width / 2 - 43, 170)), var3x, var4);
-         }
-
-         @Override
-         public void narrateTooltip(Consumer<Component> var1) {
-            var1.accept(var3);
-         }
-      };
-      this.addRenderableWidget(new Button(this.width / 2 - 100, var1 + var2 * 1, 200, 20, Component.translatable("menu.multiplayer"), var1x -> {
+      Tooltip var5 = var3 != null ? Tooltip.create(var3) : null;
+      this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), var1x -> {
          Object var2x = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
          this.minecraft.setScreen((Screen)var2x);
-      }, var5)).active = var4;
+      }).bounds(this.width / 2 - 100, var1 + var2 * 1, 200, 20).tooltip(var5).build()).active = var4;
       this.addRenderableWidget(
-            new Button(this.width / 2 - 100, var1 + var2 * 2, 200, 20, Component.translatable("menu.online"), var1x -> this.realmsButtonClicked(), var5)
+            Button.builder(Component.translatable("menu.online"), var1x -> this.realmsButtonClicked())
+               .bounds(this.width / 2 - 100, var1 + var2 * 2, 200, 20)
+               .tooltip(var5)
+               .build()
          )
          .active = var4;
    }
@@ -232,44 +222,50 @@ public class TitleScreen extends Screen {
 
    private void createDemoMenuOptions(int var1, int var2) {
       boolean var3 = this.checkDemoWorldPresence();
-      this.addRenderableWidget(new Button(this.width / 2 - 100, var1, 200, 20, Component.translatable("menu.playdemo"), var2x -> {
-         if (var3) {
-            this.minecraft.createWorldOpenFlows().loadLevel(this, "Demo_World");
-         } else {
-            RegistryAccess.Frozen var3x = RegistryAccess.builtinCopy().freeze();
-            this.minecraft.createWorldOpenFlows().createFreshLevel("Demo_World", MinecraftServer.DEMO_SETTINGS, var3x, WorldPresets.demoSettings(var3x));
-         }
-      }));
-      this.resetDemoButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 100,
-            var1 + var2 * 1,
-            200,
-            20,
-            Component.translatable("menu.resetdemo"),
-            var1x -> {
-               LevelStorageSource var2x = this.minecraft.getLevelSource();
-      
-               try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
-                  LevelSummary var4 = var3x.getSummary();
-                  if (var4 != null) {
+      this.addRenderableWidget(
+         Button.builder(
+               Component.translatable("menu.playdemo"),
+               var2x -> {
+                  if (var3) {
+                     this.minecraft.createWorldOpenFlows().loadLevel(this, "Demo_World");
+                  } else {
                      this.minecraft
-                        .setScreen(
-                           new ConfirmScreen(
-                              this::confirmDemo,
-                              Component.translatable("selectWorld.deleteQuestion"),
-                              Component.translatable("selectWorld.deleteWarning", var4.getLevelName()),
-                              Component.translatable("selectWorld.deleteButton"),
-                              CommonComponents.GUI_CANCEL
-                           )
-                        );
+                        .createWorldOpenFlows()
+                        .createFreshLevel("Demo_World", MinecraftServer.DEMO_SETTINGS, WorldOptions.DEMO_OPTIONS, WorldPresets::createNormalWorldDimensions);
                   }
-               } catch (IOException var8) {
-                  SystemToast.onWorldAccessFailure(this.minecraft, "Demo_World");
-                  LOGGER.warn("Failed to access demo world", var8);
                }
-            }
-         )
+            )
+            .bounds(this.width / 2 - 100, var1, 200, 20)
+            .build()
+      );
+      this.resetDemoButton = this.addRenderableWidget(
+         Button.builder(
+               Component.translatable("menu.resetdemo"),
+               var1x -> {
+                  LevelStorageSource var2x = this.minecraft.getLevelSource();
+         
+                  try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
+                     LevelSummary var4 = var3x.getSummary();
+                     if (var4 != null) {
+                        this.minecraft
+                           .setScreen(
+                              new ConfirmScreen(
+                                 this::confirmDemo,
+                                 Component.translatable("selectWorld.deleteQuestion"),
+                                 Component.translatable("selectWorld.deleteWarning", var4.getLevelName()),
+                                 Component.translatable("selectWorld.deleteButton"),
+                                 CommonComponents.GUI_CANCEL
+                              )
+                           );
+                     }
+                  } catch (IOException var8) {
+                     SystemToast.onWorldAccessFailure(this.minecraft, "Demo_World");
+                     LOGGER.warn("Failed to access demo world", var8);
+                  }
+               }
+            )
+            .bounds(this.width / 2 - 100, var1 + var2 * 1, 200, 20)
+            .build()
       );
       this.resetDemoButton.active = var3;
    }
@@ -339,8 +335,8 @@ public class TitleScreen extends Screen {
 
          if (this.splash != null) {
             var1.pushPose();
-            var1.translate((double)(this.width / 2 + 90), 70.0, 0.0);
-            var1.mulPose(Vector3f.ZP.rotationDegrees(-20.0F));
+            var1.translate((float)(this.width / 2 + 90), 70.0F, 0.0F);
+            var1.mulPose(Axis.ZP.rotationDegrees(-20.0F));
             float var11 = 1.8F - Mth.abs(Mth.sin((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F) * 0.1F);
             var11 = var11 * 100.0F / (float)(this.font.width(this.splash) + 32);
             var1.scale(var11, var11, var11);

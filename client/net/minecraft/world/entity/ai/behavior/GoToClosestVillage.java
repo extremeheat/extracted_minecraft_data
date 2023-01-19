@@ -1,53 +1,50 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.phys.Vec3;
 
-public class GoToClosestVillage extends Behavior<Villager> {
-   private final float speedModifier;
-   private final int closeEnoughDistance;
-
-   public GoToClosestVillage(float var1, int var2) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
-      this.closeEnoughDistance = var2;
+public class GoToClosestVillage {
+   public GoToClosestVillage() {
+      super();
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      return !var1.isVillage(var2.blockPosition());
-   }
+   public static BehaviorControl<Villager> create(float var0, int var1) {
+      return BehaviorBuilder.create(var2 -> var2.group(var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, var2x -> (var3, var4, var5) -> {
+               if (var3.isVillage(var4.blockPosition())) {
+                  return false;
+               } else {
+                  PoiManager var7 = var3.getPoiManager();
+                  int var8 = var7.sectionsToVillage(SectionPos.of(var4.blockPosition()));
+                  Vec3 var9 = null;
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      PoiManager var5 = var1.getPoiManager();
-      int var6 = var5.sectionsToVillage(SectionPos.of(var2.blockPosition()));
-      Vec3 var7 = null;
+                  for(int var10 = 0; var10 < 5; ++var10) {
+                     Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, var1xxxx -> (double)(-var7.sectionsToVillage(SectionPos.of(var1xxxx))));
+                     if (var11 != null) {
+                        int var12 = var7.sectionsToVillage(SectionPos.of(new BlockPos(var11)));
+                        if (var12 < var8) {
+                           var9 = var11;
+                           break;
+                        }
 
-      for(int var8 = 0; var8 < 5; ++var8) {
-         Vec3 var9 = LandRandomPos.getPos(var2, 15, 7, var1x -> (double)(-var5.sectionsToVillage(SectionPos.of(var1x))));
-         if (var9 != null) {
-            int var10 = var5.sectionsToVillage(SectionPos.of(new BlockPos(var9)));
-            if (var10 < var6) {
-               var7 = var9;
-               break;
-            }
+                        if (var12 == var8) {
+                           var9 = var11;
+                        }
+                     }
+                  }
 
-            if (var10 == var6) {
-               var7 = var9;
-            }
-         }
-      }
+                  if (var9 != null) {
+                     var2x.set(new WalkTarget(var9, var0, var1));
+                  }
 
-      if (var7 != null) {
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var7, this.speedModifier, this.closeEnoughDistance));
-      }
+                  return true;
+               }
+            }));
    }
 }

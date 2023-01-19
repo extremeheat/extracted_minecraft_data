@@ -5,7 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
@@ -22,8 +22,7 @@ public class BannerPattern {
 
    public static ResourceLocation location(ResourceKey<BannerPattern> var0, boolean var1) {
       String var2 = var1 ? "banner" : "shield";
-      ResourceLocation var3 = var0.location();
-      return new ResourceLocation(var3.getNamespace(), "entity/" + var2 + "/" + var3.getPath());
+      return var0.location().withPrefix("entity/" + var2 + "/");
    }
 
    public String getHashname() {
@@ -32,7 +31,7 @@ public class BannerPattern {
 
    @Nullable
    public static Holder<BannerPattern> byHash(String var0) {
-      return Registry.BANNER_PATTERN.holders().filter(var1 -> var1.value().hashname.equals(var0)).findAny().orElse(null);
+      return BuiltInRegistries.BANNER_PATTERN.holders().filter(var1 -> var1.value().hashname.equals(var0)).findAny().orElse(null);
    }
 
    public static class Builder {
@@ -43,7 +42,7 @@ public class BannerPattern {
       }
 
       public BannerPattern.Builder addPattern(ResourceKey<BannerPattern> var1, DyeColor var2) {
-         return this.addPattern(Registry.BANNER_PATTERN.getHolderOrThrow(var1), var2);
+         return this.addPattern(BuiltInRegistries.BANNER_PATTERN.getHolderOrThrow(var1), var2);
       }
 
       public BannerPattern.Builder addPattern(Holder<BannerPattern> var1, DyeColor var2) {

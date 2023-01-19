@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.LlamaSpitModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -22,9 +22,9 @@ public class LlamaSpitRenderer extends EntityRenderer<LlamaSpit> {
 
    public void render(LlamaSpit var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       var4.pushPose();
-      var4.translate(0.0, 0.15000000596046448, 0.0);
-      var4.mulPose(Vector3f.YP.rotationDegrees(Mth.lerp(var3, var1.yRotO, var1.getYRot()) - 90.0F));
-      var4.mulPose(Vector3f.ZP.rotationDegrees(Mth.lerp(var3, var1.xRotO, var1.getXRot())));
+      var4.translate(0.0F, 0.15F, 0.0F);
+      var4.mulPose(Axis.YP.rotationDegrees(Mth.lerp(var3, var1.yRotO, var1.getYRot()) - 90.0F));
+      var4.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(var3, var1.xRotO, var1.getXRot())));
       this.model.setupAnim(var1, var3, 0.0F, -0.1F, 0.0F, 0.0F);
       VertexConsumer var7 = var5.getBuffer(this.model.renderType(LLAMA_SPIT_LOCATION));
       this.model.renderToBuffer(var4, var7, var6, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);

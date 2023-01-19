@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -101,7 +102,7 @@ public class BlockAgeProcessor extends StructureProcessor {
    private static BlockState getRandomFacingStairs(RandomSource var0, Block var1) {
       return var1.defaultBlockState()
          .setValue(StairBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var0))
-         .setValue(StairBlock.HALF, Half.values()[var0.nextInt(Half.values().length)]);
+         .setValue(StairBlock.HALF, Util.getRandom(Half.values(), var0));
    }
 
    private BlockState getRandomBlock(RandomSource var1, BlockState[] var2, BlockState[] var3) {

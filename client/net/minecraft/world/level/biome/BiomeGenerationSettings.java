@@ -18,7 +18,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
@@ -82,26 +84,47 @@ public class BiomeGenerationSettings {
       return this.featureSet.get().contains(var1);
    }
 
-   public static class Builder {
+   public static class Builder extends BiomeGenerationSettings.PlainBuilder {
+      private final HolderGetter<PlacedFeature> placedFeatures;
+      private final HolderGetter<ConfiguredWorldCarver<?>> worldCarvers;
+
+      public Builder(HolderGetter<PlacedFeature> var1, HolderGetter<ConfiguredWorldCarver<?>> var2) {
+         super();
+         this.placedFeatures = var1;
+         this.worldCarvers = var2;
+      }
+
+      public BiomeGenerationSettings.Builder addFeature(GenerationStep.Decoration var1, ResourceKey<PlacedFeature> var2) {
+         this.addFeature(var1.ordinal(), this.placedFeatures.getOrThrow(var2));
+         return this;
+      }
+
+      public BiomeGenerationSettings.Builder addCarver(GenerationStep.Carving var1, ResourceKey<ConfiguredWorldCarver<?>> var2) {
+         this.addCarver(var1, this.worldCarvers.getOrThrow(var2));
+         return this;
+      }
+   }
+
+   public static class PlainBuilder {
       private final Map<GenerationStep.Carving, List<Holder<ConfiguredWorldCarver<?>>>> carvers = Maps.newLinkedHashMap();
       private final List<List<Holder<PlacedFeature>>> features = Lists.newArrayList();
 
-      public Builder() {
+      public PlainBuilder() {
          super();
       }
 
-      public BiomeGenerationSettings.Builder addFeature(GenerationStep.Decoration var1, Holder<PlacedFeature> var2) {
+      public BiomeGenerationSettings.PlainBuilder addFeature(GenerationStep.Decoration var1, Holder<PlacedFeature> var2) {
          return this.addFeature(var1.ordinal(), var2);
       }
 
-      public BiomeGenerationSettings.Builder addFeature(int var1, Holder<PlacedFeature> var2) {
+      public BiomeGenerationSettings.PlainBuilder addFeature(int var1, Holder<PlacedFeature> var2) {
          this.addFeatureStepsUpTo(var1);
          this.features.get(var1).add(var2);
          return this;
       }
 
-      public BiomeGenerationSettings.Builder addCarver(GenerationStep.Carving var1, Holder<? extends ConfiguredWorldCarver<?>> var2) {
-         this.carvers.computeIfAbsent(var1, var0 -> Lists.newArrayList()).add(Holder.hackyErase(var2));
+      public BiomeGenerationSettings.PlainBuilder addCarver(GenerationStep.Carving var1, Holder<ConfiguredWorldCarver<?>> var2) {
+         this.carvers.computeIfAbsent(var1, var0 -> Lists.newArrayList()).add(var2);
          return this;
       }
 

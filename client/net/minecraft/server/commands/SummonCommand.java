@@ -5,16 +5,18 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.CompoundTagArgument;
-import net.minecraft.commands.arguments.EntitySummonArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -32,16 +34,16 @@ public class SummonCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires(var0x -> var0x.hasPermission(2)))
             .then(
-               ((RequiredArgumentBuilder)Commands.argument("entity", EntitySummonArgument.id())
+               ((RequiredArgumentBuilder)Commands.argument("entity", ResourceArgument.resource(var1, Registries.ENTITY_TYPE))
                      .suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
                      .executes(
                         var0x -> spawnEntity(
                               (CommandSourceStack)var0x.getSource(),
-                              EntitySummonArgument.getSummonableEntity(var0x, "entity"),
+                              ResourceArgument.getSummonableEntityType(var0x, "entity"),
                               ((CommandSourceStack)var0x.getSource()).getPosition(),
                               new CompoundTag(),
                               true
@@ -52,7 +54,7 @@ public class SummonCommand {
                            .executes(
                               var0x -> spawnEntity(
                                     (CommandSourceStack)var0x.getSource(),
-                                    EntitySummonArgument.getSummonableEntity(var0x, "entity"),
+                                    ResourceArgument.getSummonableEntityType(var0x, "entity"),
                                     Vec3Argument.getVec3(var0x, "pos"),
                                     new CompoundTag(),
                                     true
@@ -63,7 +65,7 @@ public class SummonCommand {
                               .executes(
                                  var0x -> spawnEntity(
                                        (CommandSourceStack)var0x.getSource(),
-                                       EntitySummonArgument.getSummonableEntity(var0x, "entity"),
+                                       ResourceArgument.getSummonableEntityType(var0x, "entity"),
                                        Vec3Argument.getVec3(var0x, "pos"),
                                        CompoundTagArgument.getCompoundTag(var0x, "nbt"),
                                        false
@@ -75,13 +77,13 @@ public class SummonCommand {
       );
    }
 
-   private static int spawnEntity(CommandSourceStack var0, ResourceLocation var1, Vec3 var2, CompoundTag var3, boolean var4) throws CommandSyntaxException {
+   private static int spawnEntity(CommandSourceStack var0, Holder.Reference<EntityType<?>> var1, Vec3 var2, CompoundTag var3, boolean var4) throws CommandSyntaxException {
       BlockPos var5 = new BlockPos(var2);
       if (!Level.isInSpawnableBounds(var5)) {
          throw INVALID_POSITION.create();
       } else {
          CompoundTag var6 = var3.copy();
-         var6.putString("id", var1.toString());
+         var6.putString("id", var1.key().location().toString());
          ServerLevel var7 = var0.getLevel();
          Entity var8 = EntityType.loadEntityRecursive(var6, var7, var1x -> {
             var1x.moveTo(var2.x, var2.y, var2.z, var1x.getYRot(), var1x.getXRot());

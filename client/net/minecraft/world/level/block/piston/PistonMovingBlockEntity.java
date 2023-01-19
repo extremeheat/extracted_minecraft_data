@@ -4,6 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerPlayer;
@@ -315,7 +318,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    @Override
    public void load(CompoundTag var1) {
       super.load(var1);
-      this.movedState = NbtUtils.readBlockState(var1.getCompound("blockState"));
+      Object var2 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+      this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var2, var1.getCompound("blockState"));
       this.direction = Direction.from3DDataValue(var1.getInt("facing"));
       this.progress = var1.getFloat("progress");
       this.progressO = this.progress;
@@ -365,5 +369,13 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    public long getLastTicked() {
       return this.lastTicked;
+   }
+
+   @Override
+   public void setLevel(Level var1) {
+      super.setLevel(var1);
+      if (var1.holderLookup(Registries.BLOCK).get(this.movedState.getBlock().builtInRegistryHolder().key()).isEmpty()) {
+         this.movedState = Blocks.AIR.defaultBlockState();
+      }
    }
 }

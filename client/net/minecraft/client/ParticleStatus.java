@@ -1,8 +1,7 @@
 package net.minecraft.client;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import net.minecraft.util.Mth;
+import java.util.function.IntFunction;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.OptionEnum;
 
 public enum ParticleStatus implements OptionEnum {
@@ -10,9 +9,7 @@ public enum ParticleStatus implements OptionEnum {
    DECREASED(1, "options.particles.decreased"),
    MINIMAL(2, "options.particles.minimal");
 
-   private static final ParticleStatus[] BY_ID = Arrays.stream(values())
-      .sorted(Comparator.comparingInt(ParticleStatus::getId))
-      .toArray(var0 -> new ParticleStatus[var0]);
+   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.continuous(ParticleStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
@@ -32,6 +29,6 @@ public enum ParticleStatus implements OptionEnum {
    }
 
    public static ParticleStatus byId(int var0) {
-      return BY_ID[Mth.positiveModulo(var0, BY_ID.length)];
+      return BY_ID.apply(var0);
    }
 }

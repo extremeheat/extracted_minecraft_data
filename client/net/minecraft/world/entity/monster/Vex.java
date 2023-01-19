@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -44,6 +46,7 @@ public class Vex extends Monster {
    public static final int TICKS_PER_FLAP = Mth.ceil(3.9269907F);
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Vex.class, EntityDataSerializers.BYTE);
    private static final int FLAG_IS_CHARGING = 1;
+   private static final double RIDING_OFFSET = 0.4;
    @Nullable
    Mob owner;
    @Nullable
@@ -55,6 +58,11 @@ public class Vex extends Monster {
       super(var1, var2);
       this.moveControl = new Vex.VexMoveControl(this);
       this.xpReward = 3;
+   }
+
+   @Override
+   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
+      return var2.height - 0.28125F;
    }
 
    @Override
@@ -211,6 +219,11 @@ public class Vex extends Monster {
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
       this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+   }
+
+   @Override
+   public double getMyRidingOffset() {
+      return 0.4;
    }
 
    class VexChargeAttackGoal extends Goal {

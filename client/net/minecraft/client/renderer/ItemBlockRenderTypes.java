@@ -110,6 +110,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.CRIMSON_TRAPDOOR, var3);
       var0.put(Blocks.WARPED_TRAPDOOR, var3);
       var0.put(Blocks.MANGROVE_TRAPDOOR, var3);
+      var0.put(Blocks.BAMBOO_TRAPDOOR, var3);
       var0.put(Blocks.ATTACHED_PUMPKIN_STEM, var3);
       var0.put(Blocks.ATTACHED_MELON_STEM, var3);
       var0.put(Blocks.PUMPKIN_STEM, var3);
@@ -166,6 +167,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.ACACIA_DOOR, var3);
       var0.put(Blocks.DARK_OAK_DOOR, var3);
       var0.put(Blocks.MANGROVE_DOOR, var3);
+      var0.put(Blocks.BAMBOO_DOOR, var3);
       var0.put(Blocks.END_ROD, var3);
       var0.put(Blocks.CHORUS_PLANT, var3);
       var0.put(Blocks.CHORUS_FLOWER, var3);
@@ -251,6 +253,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SCULK_SHRIEKER, var3);
       var0.put(Blocks.MANGROVE_PROPAGULE, var3);
       var0.put(Blocks.MANGROVE_LOG, var3);
+      var0.put(Blocks.FROGSPAWN, var3);
       RenderType var4 = RenderType.translucent();
       var0.put(Blocks.ICE, var4);
       var0.put(Blocks.NETHER_PORTAL, var4);
@@ -291,7 +294,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.FROSTED_ICE, var4);
       var0.put(Blocks.BUBBLE_COLUMN, var4);
       var0.put(Blocks.TINTED_GLASS, var4);
-      var0.put(Blocks.FROGSPAWN, var4);
    });
    private static final Map<Fluid, RenderType> TYPE_BY_FLUID = Util.make(Maps.newHashMap(), var0 -> {
       RenderType var1 = RenderType.translucent();

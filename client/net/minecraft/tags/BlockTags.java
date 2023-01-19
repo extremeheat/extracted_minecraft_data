@@ -1,6 +1,6 @@
 package net.minecraft.tags;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
@@ -33,6 +33,7 @@ public final class BlockTags {
    public static final TagKey<Block> MANGROVE_LOGS = create("mangrove_logs");
    public static final TagKey<Block> CRIMSON_STEMS = create("crimson_stems");
    public static final TagKey<Block> WARPED_STEMS = create("warped_stems");
+   public static final TagKey<Block> BAMBOO_BLOCKS = create("bamboo_blocks");
    public static final TagKey<Block> WART_BLOCKS = create("wart_blocks");
    public static final TagKey<Block> BANNERS = create("banners");
    public static final TagKey<Block> SAND = create("sand");
@@ -57,7 +58,6 @@ public final class BlockTags {
    public static final TagKey<Block> COAL_ORES = create("coal_ores");
    public static final TagKey<Block> EMERALD_ORES = create("emerald_ores");
    public static final TagKey<Block> COPPER_ORES = create("copper_ores");
-   public static final TagKey<Block> NON_FLAMMABLE_WOOD = create("non_flammable_wood");
    public static final TagKey<Block> CANDLES = create("candles");
    public static final TagKey<Block> DIRT = create("dirt");
    public static final TagKey<Block> TERRACOTTA = create("terracotta");
@@ -76,6 +76,10 @@ public final class BlockTags {
    public static final TagKey<Block> STANDING_SIGNS = create("standing_signs");
    public static final TagKey<Block> WALL_SIGNS = create("wall_signs");
    public static final TagKey<Block> SIGNS = create("signs");
+   public static final TagKey<Block> CEILING_HANGING_SIGNS = create("ceiling_hanging_signs");
+   public static final TagKey<Block> WALL_HANGING_SIGNS = create("wall_hanging_signs");
+   public static final TagKey<Block> ALL_HANGING_SIGNS = create("all_hanging_signs");
+   public static final TagKey<Block> ALL_SIGNS = create("all_signs");
    public static final TagKey<Block> DRAGON_IMMUNE = create("dragon_immune");
    public static final TagKey<Block> DRAGON_TRANSPARENT = create("dragon_transparent");
    public static final TagKey<Block> WITHER_IMMUNE = create("wither_immune");
@@ -157,12 +161,13 @@ public final class BlockTags {
    public static final TagKey<Block> SNAPS_GOAT_HORN = create("snaps_goat_horn");
    public static final TagKey<Block> SNOW_LAYER_CANNOT_SURVIVE_ON = create("snow_layer_cannot_survive_on");
    public static final TagKey<Block> SNOW_LAYER_CAN_SURVIVE_ON = create("snow_layer_can_survive_on");
+   public static final TagKey<Block> INVALID_SPAWN_INSIDE = create("invalid_spawn_inside");
 
    private BlockTags() {
       super();
    }
 
    private static TagKey<Block> create(String var0) {
-      return TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(var0));
+      return TagKey.create(Registries.BLOCK, new ResourceLocation(var0));
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 public record FrogVariant(ResourceLocation d) {
@@ -15,6 +16,6 @@ public record FrogVariant(ResourceLocation d) {
    }
 
    private static FrogVariant register(String var0, String var1) {
-      return Registry.register(Registry.FROG_VARIANT, var0, new FrogVariant(new ResourceLocation(var1)));
+      return Registry.register(BuiltInRegistries.FROG_VARIANT, var0, new FrogVariant(new ResourceLocation(var1)));
    }
 }

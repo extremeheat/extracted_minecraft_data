@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -44,8 +43,8 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -71,6 +70,7 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.joml.Matrix4f;
 
 public class DebugScreenOverlay extends GuiComponent {
    private static final int COLOR_GREY = 14737632;
@@ -458,7 +458,7 @@ public class DebugScreenOverlay extends GuiComponent {
             BlockState var11 = this.minecraft.level.getBlockState(var10);
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Block: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
-            var9.add(String.valueOf(Registry.BLOCK.getKey(var11.getBlock())));
+            var9.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var11.getBlock())));
             UnmodifiableIterator var12 = var11.getValues().entrySet().iterator();
 
             while(var12.hasNext()) {
@@ -474,7 +474,7 @@ public class DebugScreenOverlay extends GuiComponent {
             FluidState var16 = this.minecraft.level.getFluidState(var14);
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Fluid: " + var14.getX() + ", " + var14.getY() + ", " + var14.getZ());
-            var9.add(String.valueOf(Registry.FLUID.getKey(var16.getType())));
+            var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var16.getType())));
             UnmodifiableIterator var17 = var16.getValues().entrySet().iterator();
 
             while(var17.hasNext()) {
@@ -489,7 +489,7 @@ public class DebugScreenOverlay extends GuiComponent {
          if (var15 != null) {
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Entity");
-            var9.add(String.valueOf(Registry.ENTITY_TYPE.getKey(var15.getType())));
+            var9.add(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var15.getType())));
          }
 
          return var9;

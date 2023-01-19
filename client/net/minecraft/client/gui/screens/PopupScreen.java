@@ -54,7 +54,7 @@ public class PopupScreen extends Screen {
 
       for(UnmodifiableIterator var6 = this.buttonOptions.iterator(); var6.hasNext(); var5 += var8) {
          PopupScreen.ButtonOption var7 = (PopupScreen.ButtonOption)var6.next();
-         this.addRenderableWidget(new Button(var5, var4, this.buttonWidth, 20, var7.message, var7.onPress));
+         this.addRenderableWidget(Button.builder(var7.message, var7.onPress).bounds(var5, var4, this.buttonWidth, 20).build());
       }
    }
 

@@ -53,7 +53,7 @@ public class BlockEntitySignTextStrictJsonFix extends NamedEntityFix {
       if (!"null".equals(var3) && !StringUtils.isEmpty(var3)) {
          if (var3.charAt(0) == '"' && var3.charAt(var3.length() - 1) == '"' || var3.charAt(0) == '{' && var3.charAt(var3.length() - 1) == '}') {
             try {
-               var4 = GsonHelper.fromJson(GSON, var3, Component.class, true);
+               var4 = GsonHelper.fromNullableJson(GSON, var3, Component.class, true);
                if (var4 == null) {
                   var4 = CommonComponents.EMPTY;
                }

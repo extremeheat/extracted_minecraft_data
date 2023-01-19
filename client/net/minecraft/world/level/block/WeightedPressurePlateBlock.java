@@ -1,7 +1,7 @@
 package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -16,11 +16,15 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
    public static final IntegerProperty POWER = BlockStateProperties.POWER;
    private final int maxWeight;
+   private final SoundEvent soundOff;
+   private final SoundEvent soundOn;
 
-   protected WeightedPressurePlateBlock(int var1, BlockBehaviour.Properties var2) {
+   protected WeightedPressurePlateBlock(int var1, BlockBehaviour.Properties var2, SoundEvent var3, SoundEvent var4) {
       super(var2);
       this.registerDefaultState(this.stateDefinition.any().setValue(POWER, Integer.valueOf(0)));
       this.maxWeight = var1;
+      this.soundOff = var3;
+      this.soundOn = var4;
    }
 
    @Override
@@ -36,12 +40,12 @@ public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
 
    @Override
    protected void playOnSound(LevelAccessor var1, BlockPos var2) {
-      var1.playSound(null, var2, SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON, SoundSource.BLOCKS, 0.3F, 0.90000004F);
+      var1.playSound(null, var2, this.soundOn, SoundSource.BLOCKS);
    }
 
    @Override
    protected void playOffSound(LevelAccessor var1, BlockPos var2) {
-      var1.playSound(null, var2, SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF, SoundSource.BLOCKS, 0.3F, 0.75F);
+      var1.playSound(null, var2, this.soundOff, SoundSource.BLOCKS);
    }
 
    @Override

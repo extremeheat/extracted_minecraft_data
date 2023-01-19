@@ -9,6 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -21,7 +22,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,6 +36,8 @@ public class MapItem extends ComplexItem {
    public static final int IMAGE_HEIGHT = 128;
    private static final int DEFAULT_MAP_COLOR = -12173266;
    private static final String TAG_MAP = "map";
+   public static final String MAP_SCALE_TAG = "map_scale_direction";
+   public static final String MAP_LOCK_TAG = "map_to_lock";
 
    public MapItem(Item.Properties var1) {
       super(var1);
@@ -87,8 +89,8 @@ public class MapItem extends ComplexItem {
    public void update(Level var1, Entity var2, MapItemSavedData var3) {
       if (var1.dimension() == var3.dimension && var2 instanceof Player) {
          int var4 = 1 << var3.scale;
-         int var5 = var3.x;
-         int var6 = var3.z;
+         int var5 = var3.centerX;
+         int var6 = var3.centerZ;
          int var7 = Mth.floor(var2.getX() - (double)var5) / var4 + 64;
          int var8 = Mth.floor(var2.getZ() - (double)var6) / var4 + 64;
          int var9 = 128 / var4;
@@ -98,102 +100,98 @@ public class MapItem extends ComplexItem {
 
          MapItemSavedData.HoldingPlayer var10 = var3.getHoldingPlayer((Player)var2);
          ++var10.step;
-         boolean var11 = false;
+         BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+         BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
+         boolean var13 = false;
 
-         for(int var12 = var7 - var9 + 1; var12 < var7 + var9; ++var12) {
-            if ((var12 & 15) == (var10.step & 15) || var11) {
-               var11 = false;
-               double var13 = 0.0;
+         for(int var14 = var7 - var9 + 1; var14 < var7 + var9; ++var14) {
+            if ((var14 & 15) == (var10.step & 15) || var13) {
+               var13 = false;
+               double var15 = 0.0;
 
-               for(int var15 = var8 - var9 - 1; var15 < var8 + var9; ++var15) {
-                  if (var12 >= 0 && var15 >= -1 && var12 < 128 && var15 < 128) {
-                     int var16 = var12 - var7;
-                     int var17 = var15 - var8;
-                     boolean var18 = var16 * var16 + var17 * var17 > (var9 - 2) * (var9 - 2);
-                     int var19 = (var5 / var4 + var12 - 64) * var4;
-                     int var20 = (var6 / var4 + var15 - 64) * var4;
-                     LinkedHashMultiset var21 = LinkedHashMultiset.create();
-                     LevelChunk var22 = var1.getChunkAt(new BlockPos(var19, 0, var20));
-                     if (!var22.isEmpty()) {
-                        ChunkPos var23 = var22.getPos();
-                        int var24 = var19 & 15;
-                        int var25 = var20 & 15;
-                        int var26 = 0;
-                        double var27 = 0.0;
+               for(int var17 = var8 - var9 - 1; var17 < var8 + var9; ++var17) {
+                  if (var14 >= 0 && var17 >= -1 && var14 < 128 && var17 < 128) {
+                     int var18 = Mth.square(var14 - var7) + Mth.square(var17 - var8);
+                     boolean var19 = var18 > (var9 - 2) * (var9 - 2);
+                     int var20 = (var5 / var4 + var14 - 64) * var4;
+                     int var21 = (var6 / var4 + var17 - 64) * var4;
+                     LinkedHashMultiset var22 = LinkedHashMultiset.create();
+                     LevelChunk var23 = var1.getChunk(SectionPos.blockToSectionCoord(var20), SectionPos.blockToSectionCoord(var21));
+                     if (!var23.isEmpty()) {
+                        int var24 = 0;
+                        double var25 = 0.0;
                         if (var1.dimensionType().hasCeiling()) {
-                           int var29 = var19 + var20 * 231871;
-                           var29 = var29 * var29 * 31287121 + var29 * 11;
-                           if ((var29 >> 20 & 1) == 0) {
-                              var21.add(Blocks.DIRT.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 10);
+                           int var27 = var20 + var21 * 231871;
+                           var27 = var27 * var27 * 31287121 + var27 * 11;
+                           if ((var27 >> 20 & 1) == 0) {
+                              var22.add(Blocks.DIRT.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 10);
                            } else {
-                              var21.add(Blocks.STONE.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 100);
+                              var22.add(Blocks.STONE.defaultBlockState().getMapColor(var1, BlockPos.ZERO), 100);
                            }
 
-                           var27 = 100.0;
+                           var25 = 100.0;
                         } else {
-                           BlockPos.MutableBlockPos var39 = new BlockPos.MutableBlockPos();
-                           BlockPos.MutableBlockPos var30 = new BlockPos.MutableBlockPos();
-
-                           for(int var31 = 0; var31 < var4; ++var31) {
-                              for(int var32 = 0; var32 < var4; ++var32) {
-                                 int var33 = var22.getHeight(Heightmap.Types.WORLD_SURFACE, var31 + var24, var32 + var25) + 1;
-                                 BlockState var34;
-                                 if (var33 <= var1.getMinBuildHeight() + 1) {
-                                    var34 = Blocks.BEDROCK.defaultBlockState();
+                           for(int var35 = 0; var35 < var4; ++var35) {
+                              for(int var28 = 0; var28 < var4; ++var28) {
+                                 var11.set(var20 + var35, 0, var21 + var28);
+                                 int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
+                                 BlockState var30;
+                                 if (var29 <= var1.getMinBuildHeight() + 1) {
+                                    var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {
-                                       var39.set(var23.getMinBlockX() + var31 + var24, --var33, var23.getMinBlockZ() + var32 + var25);
-                                       var34 = var22.getBlockState(var39);
-                                    } while(var34.getMapColor(var1, var39) == MaterialColor.NONE && var33 > var1.getMinBuildHeight());
+                                       var11.setY(--var29);
+                                       var30 = var23.getBlockState(var11);
+                                    } while(var30.getMapColor(var1, var11) == MaterialColor.NONE && var29 > var1.getMinBuildHeight());
 
-                                    if (var33 > var1.getMinBuildHeight() && !var34.getFluidState().isEmpty()) {
-                                       int var35 = var33 - 1;
-                                       var30.set(var39);
+                                    if (var29 > var1.getMinBuildHeight() && !var30.getFluidState().isEmpty()) {
+                                       int var31 = var29 - 1;
+                                       var12.set(var11);
 
-                                       BlockState var36;
+                                       BlockState var32;
                                        do {
-                                          var30.setY(var35--);
-                                          var36 = var22.getBlockState(var30);
-                                          ++var26;
-                                       } while(var35 > var1.getMinBuildHeight() && !var36.getFluidState().isEmpty());
+                                          var12.setY(var31--);
+                                          var32 = var23.getBlockState(var12);
+                                          ++var24;
+                                       } while(var31 > var1.getMinBuildHeight() && !var32.getFluidState().isEmpty());
 
-                                       var34 = this.getCorrectStateForFluidBlock(var1, var34, var39);
+                                       var30 = this.getCorrectStateForFluidBlock(var1, var30, var11);
                                     }
                                  }
 
-                                 var3.checkBanners(var1, var23.getMinBlockX() + var31 + var24, var23.getMinBlockZ() + var32 + var25);
-                                 var27 += (double)var33 / (double)(var4 * var4);
-                                 var21.add(var34.getMapColor(var1, var39));
+                                 var3.checkBanners(var1, var11.getX(), var11.getZ());
+                                 var25 += (double)var29 / (double)(var4 * var4);
+                                 var22.add(var30.getMapColor(var1, var11));
                               }
                            }
                         }
 
-                        var26 /= var4 * var4;
-                        MaterialColor var40 = (MaterialColor)Iterables.getFirst(Multisets.copyHighestCountFirst(var21), MaterialColor.NONE);
-                        MaterialColor.Brightness var41;
-                        if (var40 == MaterialColor.WATER) {
-                           double var42 = (double)var26 * 0.1 + (double)(var12 + var15 & 1) * 0.2;
-                           if (var42 < 0.5) {
-                              var41 = MaterialColor.Brightness.HIGH;
-                           } else if (var42 > 0.9) {
-                              var41 = MaterialColor.Brightness.LOW;
+                        var24 /= var4 * var4;
+                        MaterialColor var36 = (MaterialColor)Iterables.getFirst(Multisets.copyHighestCountFirst(var22), MaterialColor.NONE);
+                        MaterialColor.Brightness var37;
+                        if (var36 == MaterialColor.WATER) {
+                           double var38 = (double)var24 * 0.1 + (double)(var14 + var17 & 1) * 0.2;
+                           if (var38 < 0.5) {
+                              var37 = MaterialColor.Brightness.HIGH;
+                           } else if (var38 > 0.9) {
+                              var37 = MaterialColor.Brightness.LOW;
                            } else {
-                              var41 = MaterialColor.Brightness.NORMAL;
+                              var37 = MaterialColor.Brightness.NORMAL;
                            }
                         } else {
-                           double var43 = (var27 - var13) * 4.0 / (double)(var4 + 4) + ((double)(var12 + var15 & 1) - 0.5) * 0.4;
-                           if (var43 > 0.6) {
-                              var41 = MaterialColor.Brightness.HIGH;
-                           } else if (var43 < -0.6) {
-                              var41 = MaterialColor.Brightness.LOW;
+                           double var39 = (var25 - var15) * 4.0 / (double)(var4 + 4) + ((double)(var14 + var17 & 1) - 0.5) * 0.4;
+                           if (var39 > 0.6) {
+                              var37 = MaterialColor.Brightness.HIGH;
+                           } else if (var39 < -0.6) {
+                              var37 = MaterialColor.Brightness.LOW;
                            } else {
-                              var41 = MaterialColor.Brightness.NORMAL;
+                              var37 = MaterialColor.Brightness.NORMAL;
                            }
                         }
 
-                        var13 = var27;
-                        if (var15 >= 0 && var16 * var16 + var17 * var17 < var9 * var9 && (!var18 || (var12 + var15 & 1) != 0)) {
-                           var11 |= var3.updateColor(var12, var15, var40.getPackedId(var41));
+                        var15 = var25;
+                        if (var17 >= 0 && var18 < var9 * var9 && (!var19 || (var14 + var17 & 1) != 0)) {
+                           var13 |= var3.updateColor(var14, var17, var36.getPackedId(var37));
                         }
                      }
                   }
@@ -217,8 +215,8 @@ public class MapItem extends ComplexItem {
       if (var2 != null) {
          if (var0.dimension() == var2.dimension) {
             int var3 = 1 << var2.scale;
-            int var4 = var2.x;
-            int var5 = var2.z;
+            int var4 = var2.centerX;
+            int var5 = var2.centerZ;
             boolean[] var6 = new boolean[16384];
             int var7 = var4 / var3 - 64;
             int var8 = var5 / var3 - 64;
@@ -347,15 +345,30 @@ public class MapItem extends ComplexItem {
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
       Integer var5 = getMapId(var1);
       MapItemSavedData var6 = var2 == null ? null : getSavedData(var5, var2);
-      if (var6 != null && var6.locked) {
+      CompoundTag var7 = var1.getTag();
+      boolean var8;
+      byte var9;
+      if (var7 != null) {
+         var8 = var7.getBoolean("map_to_lock");
+         var9 = var7.getByte("map_scale_direction");
+      } else {
+         var8 = false;
+         var9 = 0;
+      }
+
+      if (var6 != null && (var6.locked || var8)) {
          var3.add(Component.translatable("filled_map.locked", var5).withStyle(ChatFormatting.GRAY));
       }
 
       if (var4.isAdvanced()) {
          if (var6 != null) {
-            var3.add(Component.translatable("filled_map.id", var5).withStyle(ChatFormatting.GRAY));
-            var3.add(Component.translatable("filled_map.scale", 1 << var6.scale).withStyle(ChatFormatting.GRAY));
-            var3.add(Component.translatable("filled_map.level", var6.scale, 4).withStyle(ChatFormatting.GRAY));
+            if (!var8 && var9 == 0) {
+               var3.add(Component.translatable("filled_map.id", var5).withStyle(ChatFormatting.GRAY));
+            }
+
+            int var10 = Math.min(var6.scale + var9, 4);
+            var3.add(Component.translatable("filled_map.scale", 1 << var10).withStyle(ChatFormatting.GRAY));
+            var3.add(Component.translatable("filled_map.level", var10, 4).withStyle(ChatFormatting.GRAY));
          } else {
             var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
          }

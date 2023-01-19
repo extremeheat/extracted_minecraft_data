@@ -1,23 +1,31 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
+import java.util.Optional;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.level.GameRules;
 
-public class StopBeingAngryIfTargetDead<E extends Mob> extends Behavior<E> {
+public class StopBeingAngryIfTargetDead {
    public StopBeingAngryIfTargetDead() {
-      super(ImmutableMap.of(MemoryModuleType.ANGRY_AT, MemoryStatus.VALUE_PRESENT));
+      super();
    }
 
-   protected void start(ServerLevel var1, E var2, long var3) {
-      BehaviorUtils.getLivingEntityFromUUIDMemory(var2, MemoryModuleType.ANGRY_AT).ifPresent(var2x -> {
-         if (var2x.isDeadOrDying() && (var2x.getType() != EntityType.PLAYER || var1.getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS))) {
-            var2.getBrain().eraseMemory(MemoryModuleType.ANGRY_AT);
-         }
-      });
+   public static BehaviorControl<LivingEntity> create() {
+      return BehaviorBuilder.create(
+         var0 -> var0.group(var0.present(MemoryModuleType.ANGRY_AT))
+               .apply(
+                  var0,
+                  var1 -> (var2, var3, var4) -> {
+                        Optional.ofNullable(var2.getEntity(var0.get(var1)))
+                           .map(var0xxx -> var0xxx instanceof LivingEntity var1xx ? var1xx : null)
+                           .filter(LivingEntity::isDeadOrDying)
+                           .filter(var1xx -> var1xx.getType() != EntityType.PLAYER || var2.getGameRules().getBoolean(GameRules.RULE_FORGIVE_DEAD_PLAYERS))
+                           .ifPresent(var1xx -> var1.erase());
+                        return true;
+                     }
+               )
+      );
    }
 }

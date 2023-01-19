@@ -1,18 +1,20 @@
 package net.minecraft.data.tags;
 
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.decoration.PaintingVariants;
 
 public class PaintingVariantTagsProvider extends TagsProvider<PaintingVariant> {
-   public PaintingVariantTagsProvider(DataGenerator var1) {
-      super(var1, Registry.PAINTING_VARIANT);
+   public PaintingVariantTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.PAINTING_VARIANT, var2);
    }
 
    @Override
-   protected void addTags() {
+   protected void addTags(HolderLookup.Provider var1) {
       this.tag(PaintingVariantTags.PLACEABLE)
          .add(
             PaintingVariants.KEBAB,

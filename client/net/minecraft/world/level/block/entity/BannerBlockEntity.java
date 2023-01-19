@@ -7,7 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -127,7 +127,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
 
    public static List<Pair<Holder<BannerPattern>, DyeColor>> createPatterns(DyeColor var0, @Nullable ListTag var1) {
       ArrayList var2 = Lists.newArrayList();
-      var2.add(Pair.of(Registry.BANNER_PATTERN.getHolderOrThrow(BannerPatterns.BASE), var0));
+      var2.add(Pair.of(BuiltInRegistries.BANNER_PATTERN.getHolderOrThrow(BannerPatterns.BASE), var0));
       if (var1 != null) {
          for(int var3 = 0; var3 < var1.size(); ++var3) {
             CompoundTag var4 = var1.getCompound(var3);

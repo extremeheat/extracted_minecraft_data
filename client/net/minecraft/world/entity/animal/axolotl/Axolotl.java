@@ -2,14 +2,13 @@ package net.minecraft.world.entity.animal.axolotl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
-import com.mojang.math.Vector3f;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -23,7 +22,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -42,6 +43,7 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -62,10 +64,9 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
+import org.joml.Vector3f;
 
-public class Axolotl extends Animal implements LerpingModel, Bucketable {
-   private static final Logger LOGGER = LogUtils.getLogger();
+public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolotl.Variant>, Bucketable {
    public static final int TOTAL_PLAYDEAD_TIME = 200;
    protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Axolotl>>> SENSOR_TYPES = ImmutableList.of(
       SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.AXOLOTL_ATTACKABLES, SensorType.AXOLOTL_TEMPTATIONS
@@ -142,7 +143,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(Axolotl.Variant.BY_ID[var1.getInt("Variant")]);
+      this.setVariant(Axolotl.Variant.byId(var1.getInt("Variant")));
       this.setFromBucket(var1.getBoolean("FromBucket"));
    }
 
@@ -211,10 +212,10 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
    }
 
    public Axolotl.Variant getVariant() {
-      return Axolotl.Variant.BY_ID[this.entityData.get(DATA_VARIANT)];
+      return Axolotl.Variant.byId(this.entityData.get(DATA_VARIANT));
    }
 
-   private void setVariant(Axolotl.Variant var1) {
+   public void setVariant(Axolotl.Variant var1) {
       this.entityData.set(DATA_VARIANT, var1.getId());
    }
 
@@ -380,13 +381,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
    @Override
    public void loadFromBucketTag(CompoundTag var1) {
       Bucketable.loadDefaultDataFromBucketTag(this, var1);
-      int var2 = var1.getInt("Variant");
-      if (var2 >= 0 && var2 < Axolotl.Variant.BY_ID.length) {
-         this.setVariant(Axolotl.Variant.BY_ID[var2]);
-      } else {
-         LOGGER.error("Invalid variant: {}", var2);
-      }
-
+      this.setVariant(Axolotl.Variant.byId(var1.getInt("Variant")));
       if (var1.contains("Age")) {
          this.setAge(var1.getInt("Age"));
       }
@@ -565,16 +560,15 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
       }
    }
 
-   public static enum Variant {
+   public static enum Variant implements StringRepresentable {
       LUCY(0, "lucy", true),
       WILD(1, "wild", true),
       GOLD(2, "gold", true),
       CYAN(3, "cyan", true),
       BLUE(4, "blue", false);
 
-      public static final Axolotl.Variant[] BY_ID = Arrays.stream(values())
-         .sorted(Comparator.comparingInt(Axolotl.Variant::getId))
-         .toArray(var0 -> new Axolotl.Variant[var0]);
+      private static final IntFunction<Axolotl.Variant> BY_ID = ByIdMap.continuous(Axolotl.Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final Codec<Axolotl.Variant> CODEC = StringRepresentable.fromEnum(Axolotl.Variant::values);
       private final int id;
       private final String name;
       private final boolean common;
@@ -593,6 +587,15 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
          return this.name;
       }
 
+      @Override
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      public static Axolotl.Variant byId(int var0) {
+         return BY_ID.apply(var0);
+      }
+
       public static Axolotl.Variant getCommonSpawnVariant(RandomSource var0) {
          return getSpawnVariant(var0, true);
       }
@@ -602,7 +605,7 @@ public class Axolotl extends Animal implements LerpingModel, Bucketable {
       }
 
       private static Axolotl.Variant getSpawnVariant(RandomSource var0, boolean var1) {
-         Axolotl.Variant[] var2 = Arrays.stream(BY_ID).filter(var1x -> var1x.common == var1).toArray(var0x -> new Axolotl.Variant[var0x]);
+         Axolotl.Variant[] var2 = Arrays.stream(values()).filter(var1x -> var1x.common == var1).toArray(var0x -> new Axolotl.Variant[var0x]);
          return Util.getRandom(var2, var0);
       }
    }

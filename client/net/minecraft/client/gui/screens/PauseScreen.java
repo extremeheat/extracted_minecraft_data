@@ -1,25 +1,51 @@
 package net.minecraft.client.gui.screens;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.RealmsMainScreen;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CenteredStringWidget;
+import net.minecraft.client.gui.components.FrameWidget;
+import net.minecraft.client.gui.components.GridWidget;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
 public class PauseScreen extends Screen {
    private static final String URL_FEEDBACK_SNAPSHOT = "https://aka.ms/snapshotfeedback?ref=game";
    private static final String URL_FEEDBACK_RELEASE = "https://aka.ms/javafeedback?ref=game";
    private static final String URL_BUGS = "https://aka.ms/snapshotbugs?ref=game";
+   private static final int COLUMNS = 2;
+   private static final int MENU_PADDING_TOP = 50;
+   private static final int BUTTON_PADDING = 4;
+   private static final int BUTTON_WIDTH_FULL = 204;
+   private static final int BUTTON_WIDTH_HALF = 98;
+   private static final Component RETURN_TO_GAME = Component.translatable("menu.returnToGame");
+   private static final Component ADVANCEMENTS = Component.translatable("gui.advancements");
+   private static final Component STATS = Component.translatable("gui.stats");
+   private static final Component SEND_FEEDBACK = Component.translatable("menu.sendFeedback");
+   private static final Component REPORT_BUGS = Component.translatable("menu.reportBugs");
+   private static final Component OPTIONS = Component.translatable("menu.options");
+   private static final Component SHARE_TO_LAN = Component.translatable("menu.shareToLan");
+   private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
+   private static final Component RETURN_TO_MENU = Component.translatable("menu.returnToMenu");
+   private static final Component DISCONNECT = Component.translatable("menu.disconnect");
+   private static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
+   private static final Component GAME = Component.translatable("menu.game");
+   private static final Component PAUSED = Component.translatable("menu.paused");
    private final boolean showPauseMenu;
+   @Nullable
+   private Button disconnectButton;
 
    public PauseScreen(boolean var1) {
-      super(var1 ? Component.translatable("menu.game") : Component.translatable("menu.paused"));
+      super(var1 ? GAME : PAUSED);
       this.showPauseMenu = var1;
    }
 
@@ -28,124 +54,64 @@ public class PauseScreen extends Screen {
       if (this.showPauseMenu) {
          this.createPauseMenu();
       }
+
+      this.addRenderableWidget(new CenteredStringWidget(0, this.showPauseMenu ? 40 : 10, this.width, 9, this.title, this.font));
    }
 
    private void createPauseMenu() {
-      boolean var1 = true;
-      boolean var2 = true;
-      this.addRenderableWidget(new Button(this.width / 2 - 102, this.height / 4 + 24 + -16, 204, 20, Component.translatable("menu.returnToGame"), var1x -> {
+      GridWidget var1 = new GridWidget();
+      var1.defaultCellSetting().padding(4, 4, 4, 0);
+      GridWidget.RowHelper var2 = var1.createRowHelper(2);
+      var2.addChild(Button.builder(RETURN_TO_GAME, var1x -> {
          this.minecraft.setScreen(null);
          this.minecraft.mouseHandler.grabMouse();
-      }));
-      this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 102,
-            this.height / 4 + 48 + -16,
-            98,
-            20,
-            Component.translatable("gui.advancements"),
-            var1x -> this.minecraft.setScreen(new AdvancementsScreen(this.minecraft.player.connection.getAdvancements()))
+      }).width(204).build(), 2, var1.newCellSettings().paddingTop(50));
+      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements())));
+      var2.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
+      var2.addChild(
+         this.openLinkButton(
+            SEND_FEEDBACK,
+            SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"
          )
       );
-      this.addRenderableWidget(
-         new Button(
-            this.width / 2 + 4,
-            this.height / 4 + 48 + -16,
-            98,
-            20,
-            Component.translatable("gui.stats"),
-            var1x -> this.minecraft.setScreen(new StatsScreen(this, this.minecraft.player.getStats()))
-         )
-      );
-      String var3 = SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game";
-      this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 102,
-            this.height / 4 + 72 + -16,
-            98,
-            20,
-            Component.translatable("menu.sendFeedback"),
-            var2x -> this.minecraft.setScreen(new ConfirmLinkScreen(var2xx -> {
-                  if (var2xx) {
-                     Util.getPlatform().openUri(var3);
-                  }
-      
-                  this.minecraft.setScreen(this);
-               }, var3, true))
-         )
-      );
-      Button var4 = this.addRenderableWidget(
-         new Button(
-            this.width / 2 + 4,
-            this.height / 4 + 72 + -16,
-            98,
-            20,
-            Component.translatable("menu.reportBugs"),
-            var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-                  if (var1xx) {
-                     Util.getPlatform().openUri("https://aka.ms/snapshotbugs?ref=game");
-                  }
-      
-                  this.minecraft.setScreen(this);
-               }, "https://aka.ms/snapshotbugs?ref=game", true))
-         )
-      );
-      var4.active = !SharedConstants.getCurrentVersion().getDataVersion().isSideSeries();
-      this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 102,
-            this.height / 4 + 96 + -16,
-            98,
-            20,
-            Component.translatable("menu.options"),
-            var1x -> this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options))
-         )
-      );
+      var2.addChild(this.openLinkButton(REPORT_BUGS, "https://aka.ms/snapshotbugs?ref=game")).active = !SharedConstants.getCurrentVersion()
+         .getDataVersion()
+         .isSideSeries();
+      var2.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options)));
       if (this.minecraft.hasSingleplayerServer() && !this.minecraft.getSingleplayerServer().isPublished()) {
-         this.addRenderableWidget(
-            new Button(
-               this.width / 2 + 4,
-               this.height / 4 + 96 + -16,
-               98,
-               20,
-               Component.translatable("menu.shareToLan"),
-               var1x -> this.minecraft.setScreen(new ShareToLanScreen(this))
-            )
-         );
+         var2.addChild(this.openScreenButton(SHARE_TO_LAN, () -> new ShareToLanScreen(this)));
       } else {
-         this.addRenderableWidget(
-            new Button(
-               this.width / 2 + 4,
-               this.height / 4 + 96 + -16,
-               98,
-               20,
-               Component.translatable("menu.playerReporting"),
-               var1x -> this.minecraft.setScreen(new SocialInteractionsScreen())
-            )
-         );
+         var2.addChild(this.openScreenButton(PLAYER_REPORTING, SocialInteractionsScreen::new));
       }
 
-      MutableComponent var5 = this.minecraft.isLocalServer() ? Component.translatable("menu.returnToMenu") : Component.translatable("menu.disconnect");
-      this.addRenderableWidget(new Button(this.width / 2 - 102, this.height / 4 + 120 + -16, 204, 20, var5, var1x -> {
-         boolean var2x = this.minecraft.isLocalServer();
-         boolean var3x = this.minecraft.isConnectedToRealms();
+      Component var3 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : DISCONNECT;
+      this.disconnectButton = var2.addChild(Button.builder(var3, var1x -> {
          var1x.active = false;
-         this.minecraft.level.disconnect();
-         if (var2x) {
-            this.minecraft.clearLevel(new GenericDirtMessageScreen(Component.translatable("menu.savingLevel")));
-         } else {
-            this.minecraft.clearLevel();
-         }
+         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::onDisconnect, true);
+      }).width(204).build(), 2);
+      var1.pack();
+      FrameWidget.alignInRectangle(var1, 0, 0, this.width, this.height, 0.5F, 0.25F);
+      this.addRenderableWidget(var1);
+   }
 
-         TitleScreen var4x = new TitleScreen();
-         if (var2x) {
-            this.minecraft.setScreen(var4x);
-         } else if (var3x) {
-            this.minecraft.setScreen(new RealmsMainScreen(var4x));
-         } else {
-            this.minecraft.setScreen(new JoinMultiplayerScreen(var4x));
-         }
-      }));
+   private void onDisconnect() {
+      boolean var1 = this.minecraft.isLocalServer();
+      boolean var2 = this.minecraft.isConnectedToRealms();
+      this.minecraft.level.disconnect();
+      if (var1) {
+         this.minecraft.clearLevel(new GenericDirtMessageScreen(SAVING_LEVEL));
+      } else {
+         this.minecraft.clearLevel();
+      }
+
+      TitleScreen var3 = new TitleScreen();
+      if (var1) {
+         this.minecraft.setScreen(var3);
+      } else if (var2) {
+         this.minecraft.setScreen(new RealmsMainScreen(var3));
+      } else {
+         this.minecraft.setScreen(new JoinMultiplayerScreen(var3));
+      }
    }
 
    @Override
@@ -157,11 +123,27 @@ public class PauseScreen extends Screen {
    public void render(PoseStack var1, int var2, int var3, float var4) {
       if (this.showPauseMenu) {
          this.renderBackground(var1);
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 40, 16777215);
-      } else {
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 10, 16777215);
       }
 
       super.render(var1, var2, var3, var4);
+      if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
+         RenderSystem.setShaderTexture(0, AbstractWidget.WIDGETS_LOCATION);
+         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         this.blit(var1, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 182, 24, 15, 15);
+      }
+   }
+
+   private Button openScreenButton(Component var1, Supplier<Screen> var2) {
+      return Button.builder(var1, var2x -> this.minecraft.setScreen((Screen)var2.get())).width(98).build();
+   }
+
+   private Button openLinkButton(Component var1, String var2) {
+      return this.openScreenButton(var1, () -> new ConfirmLinkScreen(var2x -> {
+            if (var2x) {
+               Util.getPlatform().openUri(var2);
+            }
+
+            this.minecraft.setScreen(this);
+         }, var2, true));
    }
 }

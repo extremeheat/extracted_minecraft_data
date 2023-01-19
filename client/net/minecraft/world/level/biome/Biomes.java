@@ -1,6 +1,6 @@
 package net.minecraft.world.level.biome;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -74,6 +74,6 @@ public abstract class Biomes {
    }
 
    private static ResourceKey<Biome> register(String var0) {
-      return ResourceKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.BIOME, new ResourceLocation(var0));
    }
 }

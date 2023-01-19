@@ -1,7 +1,5 @@
 package net.minecraft.client;
 
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import java.util.Arrays;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +16,8 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class Camera {
    private boolean initialized;
@@ -30,7 +30,7 @@ public class Camera {
    private final Vector3f left = new Vector3f(1.0F, 0.0F, 0.0F);
    private float xRot;
    private float yRot;
-   private final Quaternion rotation = new Quaternion(0.0F, 0.0F, 0.0F, 1.0F);
+   private final Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
    private boolean detached;
    private float eyeHeight;
    private float eyeHeightOld;
@@ -81,7 +81,7 @@ public class Camera {
          var6 *= 0.1F;
          Vec3 var7 = this.position.add((double)var4, (double)var5, (double)var6);
          Vec3 var8 = new Vec3(
-            this.position.x - (double)this.forwards.x() * var1 + (double)var4 + (double)var6,
+            this.position.x - (double)this.forwards.x() * var1 + (double)var4,
             this.position.y - (double)this.forwards.y() * var1 + (double)var5,
             this.position.z - (double)this.forwards.z() * var1 + (double)var6
          );
@@ -107,15 +107,10 @@ public class Camera {
    protected void setRotation(float var1, float var2) {
       this.xRot = var2;
       this.yRot = var1;
-      this.rotation.set(0.0F, 0.0F, 0.0F, 1.0F);
-      this.rotation.mul(Vector3f.YP.rotationDegrees(-var1));
-      this.rotation.mul(Vector3f.XP.rotationDegrees(var2));
-      this.forwards.set(0.0F, 0.0F, 1.0F);
-      this.forwards.transform(this.rotation);
-      this.up.set(0.0F, 1.0F, 0.0F);
-      this.up.transform(this.rotation);
-      this.left.set(1.0F, 0.0F, 0.0F);
-      this.left.transform(this.rotation);
+      this.rotation.rotationYXZ(-var1 * 0.017453292F, var2 * 0.017453292F, 0.0F);
+      this.forwards.set(0.0F, 0.0F, 1.0F).rotate(this.rotation);
+      this.up.set(0.0F, 1.0F, 0.0F).rotate(this.rotation);
+      this.left.set(1.0F, 0.0F, 0.0F).rotate(this.rotation);
    }
 
    protected void setPosition(double var1, double var3, double var5) {
@@ -143,7 +138,7 @@ public class Camera {
       return this.yRot;
    }
 
-   public Quaternion rotation() {
+   public Quaternionf rotation() {
       return this.rotation;
    }
 

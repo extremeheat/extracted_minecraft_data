@@ -47,7 +47,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
                } else if (var12) {
                   var14.push(var6);
                } else {
-                  var14.pushFilterOnly(var6.getName(), var9);
+                  var14.pushFilterOnly(var6.packId(), var9);
                }
             }
          }
@@ -59,9 +59,9 @@ public class MultiPackResourceManager implements CloseableResourceManager {
    @Nullable
    private ResourceFilterSection getPackFilterSection(PackResources var1) {
       try {
-         return var1.getMetadataSection(ResourceFilterSection.SERIALIZER);
+         return var1.getMetadataSection(ResourceFilterSection.TYPE);
       } catch (IOException var3) {
-         LOGGER.error("Failed to get filter section from pack {}", var1.getName());
+         LOGGER.error("Failed to get filter section from pack {}", var1.packId());
          return null;
       }
    }
@@ -85,6 +85,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
 
    @Override
    public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
+      checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 
       for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
@@ -96,6 +97,7 @@ public class MultiPackResourceManager implements CloseableResourceManager {
 
    @Override
    public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
+      checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
 
       for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
@@ -103,6 +105,12 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       }
 
       return var3;
+   }
+
+   private static void checkTrailingDirectoryPath(String var0) {
+      if (var0.endsWith("/")) {
+         throw new IllegalArgumentException("Trailing slash in path " + var0);
+      }
    }
 
    @Override

@@ -1,6 +1,6 @@
 package net.minecraft.tags;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
@@ -15,12 +15,12 @@ public final class ItemTags {
    public static final TagKey<Item> WOODEN_STAIRS = bind("wooden_stairs");
    public static final TagKey<Item> WOODEN_SLABS = bind("wooden_slabs");
    public static final TagKey<Item> WOODEN_FENCES = bind("wooden_fences");
+   public static final TagKey<Item> FENCE_GATES = bind("fence_gates");
    public static final TagKey<Item> WOODEN_PRESSURE_PLATES = bind("wooden_pressure_plates");
    public static final TagKey<Item> WOODEN_TRAPDOORS = bind("wooden_trapdoors");
    public static final TagKey<Item> DOORS = bind("doors");
    public static final TagKey<Item> SAPLINGS = bind("saplings");
    public static final TagKey<Item> LOGS_THAT_BURN = bind("logs_that_burn");
-   public static final TagKey<Item> OVERWORLD_NATURAL_LOGS = bind("overworld_natural_logs");
    public static final TagKey<Item> LOGS = bind("logs");
    public static final TagKey<Item> DARK_OAK_LOGS = bind("dark_oak_logs");
    public static final TagKey<Item> OAK_LOGS = bind("oak_logs");
@@ -31,6 +31,7 @@ public final class ItemTags {
    public static final TagKey<Item> MANGROVE_LOGS = bind("mangrove_logs");
    public static final TagKey<Item> CRIMSON_STEMS = bind("crimson_stems");
    public static final TagKey<Item> WARPED_STEMS = bind("warped_stems");
+   public static final TagKey<Item> BAMBOO_BLOCKS = bind("bamboo_blocks");
    public static final TagKey<Item> WART_BLOCKS = bind("wart_blocks");
    public static final TagKey<Item> BANNERS = bind("banners");
    public static final TagKey<Item> SAND = bind("sand");
@@ -74,6 +75,7 @@ public final class ItemTags {
    public static final TagKey<Item> COALS = bind("coals");
    public static final TagKey<Item> ARROWS = bind("arrows");
    public static final TagKey<Item> LECTERN_BOOKS = bind("lectern_books");
+   public static final TagKey<Item> BOOKSHELF_BOOKS = bind("bookshelf_books");
    public static final TagKey<Item> BEACON_PAYMENT_ITEMS = bind("beacon_payment_items");
    public static final TagKey<Item> STONE_TOOL_MATERIALS = bind("stone_tool_materials");
    public static final TagKey<Item> STONE_CRAFTING_MATERIALS = bind("stone_crafting_materials");
@@ -82,12 +84,14 @@ public final class ItemTags {
    public static final TagKey<Item> DAMPENS_VIBRATIONS = bind("dampens_vibrations");
    public static final TagKey<Item> CLUSTER_MAX_HARVESTABLES = bind("cluster_max_harvestables");
    public static final TagKey<Item> COMPASSES = bind("compasses");
+   public static final TagKey<Item> HANGING_SIGNS = bind("hanging_signs");
+   public static final TagKey<Item> CREEPER_IGNITERS = bind("creeper_igniters");
 
    private ItemTags() {
       super();
    }
 
    private static TagKey<Item> bind(String var0) {
-      return TagKey.create(Registry.ITEM_REGISTRY, new ResourceLocation(var0));
+      return TagKey.create(Registries.ITEM, new ResourceLocation(var0));
    }
 }

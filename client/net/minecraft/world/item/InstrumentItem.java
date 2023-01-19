@@ -7,8 +7,8 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -26,7 +27,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 
 public class InstrumentItem extends Item {
    private static final String TAG_INSTRUMENT = "instrument";
-   private TagKey<Instrument> instruments;
+   private final TagKey<Instrument> instruments;
 
    public InstrumentItem(Item.Properties var1, TagKey<Instrument> var2) {
       super(var1);
@@ -50,24 +51,13 @@ public class InstrumentItem extends Item {
    }
 
    public static void setRandom(ItemStack var0, TagKey<Instrument> var1, RandomSource var2) {
-      Optional var3 = Registry.INSTRUMENT.getTag(var1).flatMap(var1x -> var1x.getRandomElement(var2));
-      if (var3.isPresent()) {
-         setSoundVariantId(var0, (Holder<Instrument>)var3.get());
-      }
+      Optional var3 = BuiltInRegistries.INSTRUMENT.getTag(var1).flatMap(var1x -> var1x.getRandomElement(var2));
+      var3.ifPresent(var1x -> setSoundVariantId(var0, var1x));
    }
 
    private static void setSoundVariantId(ItemStack var0, Holder<Instrument> var1) {
       CompoundTag var2 = var0.getOrCreateTag();
       var2.putString("instrument", ((ResourceKey)var1.unwrapKey().orElseThrow(() -> new IllegalStateException("Invalid instrument"))).location().toString());
-   }
-
-   @Override
-   public void fillItemCategory(CreativeModeTab var1, NonNullList<ItemStack> var2) {
-      if (this.allowedIn(var1)) {
-         for(Holder var4 : Registry.INSTRUMENT.getTagOrEmpty(this.instruments)) {
-            var2.add(create(Items.GOAT_HORN, var4));
-         }
-      }
    }
 
    @Override
@@ -79,6 +69,7 @@ public class InstrumentItem extends Item {
          var2.startUsingItem(var3);
          play(var1, var2, var6);
          var2.getCooldowns().addCooldown(this, var6.useDuration());
+         var2.awardStat(Stats.ITEM_USED.get(this));
          return InteractionResultHolder.consume(var4);
       } else {
          return InteractionResultHolder.fail(var4);
@@ -88,19 +79,19 @@ public class InstrumentItem extends Item {
    @Override
    public int getUseDuration(ItemStack var1) {
       Optional var2 = this.getInstrument(var1);
-      return var2.isPresent() ? ((Instrument)((Holder)var2.get()).value()).useDuration() : 0;
+      return var2.<Integer>map(var0 -> ((Instrument)var0.value()).useDuration()).orElse(0);
    }
 
-   private Optional<Holder<Instrument>> getInstrument(ItemStack var1) {
+   private Optional<? extends Holder<Instrument>> getInstrument(ItemStack var1) {
       CompoundTag var2 = var1.getTag();
       if (var2 != null) {
          ResourceLocation var3 = ResourceLocation.tryParse(var2.getString("instrument"));
          if (var3 != null) {
-            return Registry.INSTRUMENT.getHolder(ResourceKey.create(Registry.INSTRUMENT_REGISTRY, var3));
+            return BuiltInRegistries.INSTRUMENT.getHolder(ResourceKey.create(Registries.INSTRUMENT, var3));
          }
       }
 
-      Iterator var4 = Registry.INSTRUMENT.getTagOrEmpty(this.instruments).iterator();
+      Iterator var4 = BuiltInRegistries.INSTRUMENT.getTagOrEmpty(this.instruments).iterator();
       return var4.hasNext() ? Optional.of((Holder<Instrument>)var4.next()) : Optional.empty();
    }
 
@@ -110,7 +101,7 @@ public class InstrumentItem extends Item {
    }
 
    private static void play(Level var0, Player var1, Instrument var2) {
-      SoundEvent var3 = var2.soundEvent();
+      SoundEvent var3 = var2.soundEvent().value();
       float var4 = var2.range() / 16.0F;
       var0.playSound(var1, var1, var3, SoundSource.RECORDS, var4, 1.0F);
       var0.gameEvent(GameEvent.INSTRUMENT_PLAY, var1.position(), GameEvent.Context.of(var1));

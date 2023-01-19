@@ -2,36 +2,34 @@ package net.minecraft.data.worldgen;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class Pools {
-   public static final ResourceKey<StructureTemplatePool> EMPTY = ResourceKey.create(Registry.TEMPLATE_POOL_REGISTRY, new ResourceLocation("empty"));
-   private static final Holder<StructureTemplatePool> BUILTIN_EMPTY = register(
-      new StructureTemplatePool(EMPTY.location(), EMPTY.location(), ImmutableList.of(), StructureTemplatePool.Projection.RIGID)
-   );
+   public static final ResourceKey<StructureTemplatePool> EMPTY = createKey("empty");
 
    public Pools() {
       super();
    }
 
-   public static Holder<StructureTemplatePool> register(StructureTemplatePool var0) {
-      return BuiltinRegistries.register(BuiltinRegistries.TEMPLATE_POOL, var0.getName(), var0);
+   public static ResourceKey<StructureTemplatePool> createKey(String var0) {
+      return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var0));
    }
 
-   @Deprecated
-   public static void forceBootstrap() {
-      bootstrap(BuiltinRegistries.TEMPLATE_POOL);
+   public static void register(BootstapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {
+      var0.register(createKey(var1), var2);
    }
 
-   public static Holder<StructureTemplatePool> bootstrap(Registry<StructureTemplatePool> var0) {
-      BastionPieces.bootstrap();
-      PillagerOutpostPools.bootstrap();
-      VillagePools.bootstrap();
-      AncientCityStructurePieces.bootstrap();
-      return BUILTIN_EMPTY;
+   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+      HolderGetter var1 = var0.lookup(Registries.TEMPLATE_POOL);
+      Holder.Reference var2 = var1.getOrThrow(EMPTY);
+      var0.register(EMPTY, new StructureTemplatePool(var2, ImmutableList.of(), StructureTemplatePool.Projection.RIGID));
+      BastionPieces.bootstrap(var0);
+      PillagerOutpostPools.bootstrap(var0);
+      VillagePools.bootstrap(var0);
+      AncientCityStructurePieces.bootstrap(var0);
    }
 }

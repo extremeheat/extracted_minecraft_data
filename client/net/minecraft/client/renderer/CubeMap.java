@@ -6,13 +6,13 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
 
 public class CubeMap {
    private static final int SIDES = 6;
@@ -22,20 +22,20 @@ public class CubeMap {
       super();
 
       for(int var2 = 0; var2 < 6; ++var2) {
-         this.images[var2] = new ResourceLocation(var1.getNamespace(), var1.getPath() + "_" + var2 + ".png");
+         this.images[var2] = var1.withPath(var1.getPath() + "_" + var2 + ".png");
       }
    }
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
       Tesselator var5 = Tesselator.getInstance();
       BufferBuilder var6 = var5.getBuilder();
-      Matrix4f var7 = Matrix4f.perspective(85.0, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
+      Matrix4f var7 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
       RenderSystem.setProjectionMatrix(var7);
       PoseStack var8 = RenderSystem.getModelViewStack();
       var8.pushPose();
       var8.setIdentity();
-      var8.mulPose(Vector3f.XP.rotationDegrees(180.0F));
+      var8.mulPose(Axis.XP.rotationDegrees(180.0F));
       RenderSystem.applyModelViewMatrix();
       RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -50,9 +50,9 @@ public class CubeMap {
          float var11 = ((float)(var10 % 2) / 2.0F - 0.5F) / 256.0F;
          float var12 = ((float)(var10 / 2) / 2.0F - 0.5F) / 256.0F;
          float var13 = 0.0F;
-         var8.translate((double)var11, (double)var12, 0.0);
-         var8.mulPose(Vector3f.XP.rotationDegrees(var2));
-         var8.mulPose(Vector3f.YP.rotationDegrees(var3));
+         var8.translate(var11, var12, 0.0F);
+         var8.mulPose(Axis.XP.rotationDegrees(var2));
+         var8.mulPose(Axis.YP.rotationDegrees(var3));
          RenderSystem.applyModelViewMatrix();
 
          for(int var14 = 0; var14 < 6; ++var14) {

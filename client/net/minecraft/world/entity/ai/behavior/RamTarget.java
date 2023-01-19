@@ -83,21 +83,19 @@ public class RamTarget extends Behavior<Goat> {
          float var12 = var7.isDamageSourceBlocked(DamageSource.mobAttack(var2)) ? 0.5F : 1.0F;
          var7.knockback((double)(var12 * var11) * this.getKnockbackForce.applyAsDouble(var2), this.ramDirection.x(), this.ramDirection.z());
          this.finishRam(var1, var2);
-         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.HOSTILE, 1.0F, 1.0F);
+         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
       } else if (this.hasRammedHornBreakingBlock(var1, var2)) {
-         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.HOSTILE, 1.0F, 1.0F);
+         var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          boolean var13 = var2.dropHorn();
          if (var13) {
-            var1.playSound(null, var2, this.getHornBreakSound.apply(var2), SoundSource.HOSTILE, 1.0F, 1.0F);
+            var1.playSound(null, var2, this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
 
          this.finishRam(var1, var2);
       } else {
          Optional var14 = var6.getMemory(MemoryModuleType.WALK_TARGET);
          Optional var15 = var6.getMemory(MemoryModuleType.RAM_TARGET);
-         boolean var16 = !var14.isPresent()
-            || !var15.isPresent()
-            || ((WalkTarget)var14.get()).getTarget().currentPosition().closerThan((Position)var15.get(), 0.25);
+         boolean var16 = var14.isEmpty() || var15.isEmpty() || ((WalkTarget)var14.get()).getTarget().currentPosition().closerThan((Position)var15.get(), 0.25);
          if (var16) {
             this.finishRam(var1, var2);
          }

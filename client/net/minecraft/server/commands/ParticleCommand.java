@@ -8,13 +8,14 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ParticleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
@@ -26,11 +27,11 @@ public class ParticleCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("particle").requires(var0x -> var0x.hasPermission(2)))
             .then(
-               ((RequiredArgumentBuilder)Commands.argument("name", ParticleArgument.particle())
+               ((RequiredArgumentBuilder)Commands.argument("name", ParticleArgument.particle(var1))
                      .executes(
                         var0x -> sendParticles(
                               (CommandSourceStack)var0x.getSource(),
@@ -157,7 +158,7 @@ public class ParticleCommand {
       if (var8 == 0) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(Component.translatable("commands.particle.success", Registry.PARTICLE_TYPE.getKey(var1.getType()).toString()), true);
+         var0.sendSuccess(Component.translatable("commands.particle.success", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()).toString()), true);
          return var8;
       }
    }

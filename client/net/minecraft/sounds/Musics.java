@@ -1,5 +1,7 @@
 package net.minecraft.sounds;
 
+import net.minecraft.core.Holder;
+
 public class Musics {
    private static final int ONE_SECOND = 20;
    private static final int THIRTY_SECONDS = 600;
@@ -18,7 +20,7 @@ public class Musics {
       super();
    }
 
-   public static Music createGameMusic(SoundEvent var0) {
+   public static Music createGameMusic(Holder<SoundEvent> var0) {
       return new Music(var0, 12000, 24000, false);
    }
 }

@@ -9,40 +9,72 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import org.slf4j.Logger;
 
 public class NbtToSnbt implements DataProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final DataGenerator generator;
+   private final Iterable<Path> inputFolders;
+   private final PackOutput output;
 
-   public NbtToSnbt(DataGenerator var1) {
+   public NbtToSnbt(PackOutput var1, Collection<Path> var2) {
       super();
-      this.generator = var1;
+      this.inputFolders = var2;
+      this.output = var1;
    }
 
    @Override
-   public void run(CachedOutput var1) throws IOException {
-      Path var2 = this.generator.getOutputFolder();
+   public CompletableFuture<?> run(CachedOutput var1) {
+      Path var2 = this.output.getOutputFolder();
+      ArrayList var3 = new ArrayList();
 
-      for(Path var4 : this.generator.getInputFolders()) {
-         Files.walk(var4).filter(var0 -> var0.toString().endsWith(".nbt")).forEach(var4x -> convertStructure(var1, var4x, this.getName(var4, var4x), var2));
+      for(Path var5 : this.inputFolders) {
+         var3.add(
+            CompletableFuture.<CompletableFuture>supplyAsync(
+                  () -> {
+                     try {
+                        CompletableFuture var4;
+                        try (Stream var3x = Files.walk(var5)) {
+                           var4 = CompletableFuture.allOf(
+                              var3x.filter(var0x -> var0x.toString().endsWith(".nbt"))
+                                 .map(var3xx -> CompletableFuture.runAsync(() -> convertStructure(var1, var3xx, getName(var5, var3xx), var2), Util.ioPool()))
+                                 .toArray(var0x -> new CompletableFuture[var0x])
+                           );
+                        }
+         
+                        return var4;
+                     } catch (IOException var8) {
+                        LOGGER.error("Failed to read structure input directory", var8);
+                        return CompletableFuture.completedFuture(null);
+                     }
+                  },
+                  Util.backgroundExecutor()
+               )
+               .thenCompose(var0 -> var0)
+         );
       }
+
+      return CompletableFuture.allOf(var3.toArray(var0 -> new CompletableFuture[var0]));
    }
 
    @Override
-   public String getName() {
-      return "NBT to SNBT";
+   public final String getName() {
+      return "NBT -> SNBT";
    }
 
-   private String getName(Path var1, Path var2) {
-      String var3 = var1.relativize(var2).toString().replaceAll("\\\\", "/");
-      return var3.substring(0, var3.length() - ".nbt".length());
+   private static String getName(Path var0, Path var1) {
+      String var2 = var0.relativize(var1).toString().replaceAll("\\\\", "/");
+      return var2.substring(0, var2.length() - ".nbt".length());
    }
 
    @Nullable

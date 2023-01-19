@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 public interface HolderSet<T> extends Iterable<Holder<T>> {
    Stream<Holder<T>> stream();
@@ -27,7 +27,15 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    boolean contains(Holder<T> var1);
 
-   boolean isValidInRegistry(Registry<T> var1);
+   boolean canSerializeIn(HolderOwner<T> var1);
+
+   Optional<TagKey<T>> unwrapKey();
+
+   @Deprecated
+   @VisibleForTesting
+   static <T> HolderSet.Named<T> emptyNamed(HolderOwner<T> var0, TagKey<T> var1) {
+      return new HolderSet.Named<>(var0, var1);
+   }
 
    @SafeVarargs
    static <T> HolderSet.Direct<T> direct(Holder<T>... var0) {
@@ -68,6 +76,11 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       @Override
+      public Optional<TagKey<T>> unwrapKey() {
+         return Optional.empty();
+      }
+
+      @Override
       public boolean contains(Holder<T> var1) {
          if (this.contentsSet == null) {
             this.contentsSet = Set.copyOf(this.contents);
@@ -99,7 +112,6 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return this.contents().spliterator();
       }
 
-      @NotNull
       @Override
       public Iterator<Holder<T>> iterator() {
          return this.contents().iterator();
@@ -121,19 +133,19 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       @Override
-      public boolean isValidInRegistry(Registry<T> var1) {
+      public boolean canSerializeIn(HolderOwner<T> var1) {
          return true;
       }
    }
 
    public static class Named<T> extends HolderSet.ListBacked<T> {
-      private final Registry<T> registry;
+      private final HolderOwner<T> owner;
       private final TagKey<T> key;
       private List<Holder<T>> contents = List.of();
 
-      Named(Registry<T> var1, TagKey<T> var2) {
+      Named(HolderOwner<T> var1, TagKey<T> var2) {
          super();
-         this.registry = var1;
+         this.owner = var1;
          this.key = var2;
       }
 
@@ -156,6 +168,11 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       @Override
+      public Optional<TagKey<T>> unwrapKey() {
+         return Optional.of(this.key);
+      }
+
+      @Override
       public boolean contains(Holder<T> var1) {
          return var1.is(this.key);
       }
@@ -166,8 +183,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       @Override
-      public boolean isValidInRegistry(Registry<T> var1) {
-         return this.registry == var1;
+      public boolean canSerializeIn(HolderOwner<T> var1) {
+         return this.owner.canSerializeIn(var1);
       }
    }
 }

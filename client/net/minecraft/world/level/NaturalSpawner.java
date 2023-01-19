@@ -13,7 +13,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
@@ -232,15 +233,16 @@ public final class NaturalSpawner {
    private static Mob getMobForSpawn(ServerLevel var0, EntityType<?> var1) {
       try {
          Entity var3 = var1.create(var0);
-         if (!(var3 instanceof Mob)) {
-            throw new IllegalStateException("Trying to spawn a non-mob: " + Registry.ENTITY_TYPE.getKey(var1));
-         } else {
+         if (var3 instanceof Mob) {
             return (Mob)var3;
          }
+
+         LOGGER.warn("Can't spawn entity of type: {}", BuiltInRegistries.ENTITY_TYPE.getKey(var1));
       } catch (Exception var4) {
          LOGGER.warn("Failed to create mob", var4);
-         return null;
       }
+
+      return null;
    }
 
    private static boolean isValidPositionForMob(ServerLevel var0, Mob var1, double var2) {
@@ -277,7 +279,7 @@ public final class NaturalSpawner {
 
    public static boolean isInNetherFortressBounds(BlockPos var0, ServerLevel var1, MobCategory var2, StructureManager var3) {
       if (var2 == MobCategory.MONSTER && var1.getBlockState(var0.below()).is(Blocks.NETHER_BRICKS)) {
-         Structure var4 = var3.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).get(BuiltinStructures.FORTRESS);
+         Structure var4 = var3.registryAccess().registryOrThrow(Registries.STRUCTURE).get(BuiltinStructures.FORTRESS);
          return var4 == null ? false : var3.getStructureAt(var0, var4).isValid();
       } else {
          return false;
@@ -374,6 +376,10 @@ public final class NaturalSpawner {
                            var25 = var9.type.create(var0.getLevel());
                         } catch (Exception var27) {
                            LOGGER.warn("Failed to create mob", var27);
+                           continue;
+                        }
+
+                        if (var25 == null) {
                            continue;
                         }
 

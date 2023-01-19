@@ -1,6 +1,7 @@
 package net.minecraft.data.worldgen.biome;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
 import net.minecraft.data.worldgen.Carvers;
 import net.minecraft.data.worldgen.placement.AquaticPlacements;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class OverworldBiomes {
    protected static final int NORMAL_WATER_COLOR = 4159204;
@@ -80,238 +83,246 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addSurfaceFreezing(var0);
    }
 
-   public static Biome oldGrowthTaiga(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var1);
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4));
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
-      if (var0) {
-         BiomeDefaultFeatures.commonSpawns(var1);
+   public static Biome oldGrowthTaiga(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var3);
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4));
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
+      if (var2) {
+         BiomeDefaultFeatures.commonSpawns(var3);
       } else {
-         BiomeDefaultFeatures.caveSpawns(var1);
-         BiomeDefaultFeatures.monsters(var1, 100, 25, 100, false);
+         BiomeDefaultFeatures.caveSpawns(var3);
+         BiomeDefaultFeatures.monsters(var3, 100, 25, 100, false);
       }
 
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var2);
-      BiomeDefaultFeatures.addMossyStoneBlock(var2);
-      BiomeDefaultFeatures.addFerns(var2);
-      BiomeDefaultFeatures.addDefaultOres(var2);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      var2.addFeature(
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var4);
+      BiomeDefaultFeatures.addMossyStoneBlock(var4);
+      BiomeDefaultFeatures.addFerns(var4);
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var4);
+      var4.addFeature(
          GenerationStep.Decoration.VEGETAL_DECORATION,
-         var0 ? VegetationPlacements.TREES_OLD_GROWTH_SPRUCE_TAIGA : VegetationPlacements.TREES_OLD_GROWTH_PINE_TAIGA
+         var2 ? VegetationPlacements.TREES_OLD_GROWTH_SPRUCE_TAIGA : VegetationPlacements.TREES_OLD_GROWTH_PINE_TAIGA
       );
-      BiomeDefaultFeatures.addDefaultFlowers(var2);
-      BiomeDefaultFeatures.addGiantTaigaVegetation(var2);
-      BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
-      BiomeDefaultFeatures.addCommonBerryBushes(var2);
-      Music var3 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_OLD_GROWTH_TAIGA);
-      return biome(Biome.Precipitation.RAIN, var0 ? 0.25F : 0.3F, 0.8F, var1, var2, var3);
+      BiomeDefaultFeatures.addDefaultFlowers(var4);
+      BiomeDefaultFeatures.addGiantTaigaVegetation(var4);
+      BiomeDefaultFeatures.addDefaultMushrooms(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addCommonBerryBushes(var4);
+      Music var5 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_OLD_GROWTH_TAIGA);
+      return biome(Biome.Precipitation.RAIN, var2 ? 0.25F : 0.3F, 0.8F, var3, var4, var5);
    }
 
-   public static Biome sparseJungle() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.baseJungleSpawns(var0);
-      return baseJungle(0.8F, false, true, false, var0);
+   public static Biome sparseJungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.baseJungleSpawns(var2);
+      return baseJungle(var0, var1, 0.8F, false, true, false, var2);
    }
 
-   public static Biome jungle() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.baseJungleSpawns(var0);
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
+   public static Biome jungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.baseJungleSpawns(var2);
+      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.OCELOT, 2, 1, 3))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PANDA, 1, 1, 2));
-      return baseJungle(0.9F, false, false, true, var0);
+      return baseJungle(var0, var1, 0.9F, false, false, true, var2);
    }
 
-   public static Biome bambooJungle() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.baseJungleSpawns(var0);
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
+   public static Biome bambooJungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.baseJungleSpawns(var2);
+      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PANDA, 80, 1, 2))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.OCELOT, 2, 1, 1));
-      return baseJungle(0.9F, true, false, true, var0);
+      return baseJungle(var0, var1, 0.9F, true, false, true, var2);
    }
 
-   private static Biome baseJungle(float var0, boolean var1, boolean var2, boolean var3, MobSpawnSettings.Builder var4) {
-      BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var5);
-      BiomeDefaultFeatures.addDefaultOres(var5);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var5);
-      if (var1) {
-         BiomeDefaultFeatures.addBambooVegetation(var5);
+   private static Biome baseJungle(
+      HolderGetter<PlacedFeature> var0,
+      HolderGetter<ConfiguredWorldCarver<?>> var1,
+      float var2,
+      boolean var3,
+      boolean var4,
+      boolean var5,
+      MobSpawnSettings.Builder var6
+   ) {
+      BiomeGenerationSettings.Builder var7 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var7);
+      BiomeDefaultFeatures.addDefaultOres(var7);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var7);
+      if (var3) {
+         BiomeDefaultFeatures.addBambooVegetation(var7);
       } else {
-         if (var3) {
-            BiomeDefaultFeatures.addLightBambooVegetation(var5);
+         if (var5) {
+            BiomeDefaultFeatures.addLightBambooVegetation(var7);
          }
 
-         if (var2) {
-            BiomeDefaultFeatures.addSparseJungleTrees(var5);
+         if (var4) {
+            BiomeDefaultFeatures.addSparseJungleTrees(var7);
          } else {
-            BiomeDefaultFeatures.addJungleTrees(var5);
+            BiomeDefaultFeatures.addJungleTrees(var7);
          }
       }
 
-      BiomeDefaultFeatures.addWarmFlowers(var5);
-      BiomeDefaultFeatures.addJungleGrass(var5);
-      BiomeDefaultFeatures.addDefaultMushrooms(var5);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
-      BiomeDefaultFeatures.addJungleVines(var5);
-      if (var2) {
-         BiomeDefaultFeatures.addSparseJungleMelons(var5);
+      BiomeDefaultFeatures.addWarmFlowers(var7);
+      BiomeDefaultFeatures.addJungleGrass(var7);
+      BiomeDefaultFeatures.addDefaultMushrooms(var7);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var7);
+      BiomeDefaultFeatures.addJungleVines(var7);
+      if (var4) {
+         BiomeDefaultFeatures.addSparseJungleMelons(var7);
       } else {
-         BiomeDefaultFeatures.addJungleMelons(var5);
+         BiomeDefaultFeatures.addJungleMelons(var7);
       }
 
-      Music var6 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
-      return biome(Biome.Precipitation.RAIN, 0.95F, var0, var4, var5, var6);
+      Music var8 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
+      return biome(Biome.Precipitation.RAIN, 0.95F, var2, var6, var7, var8);
    }
 
-   public static Biome windsweptHills(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var1);
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 5, 4, 6));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var2);
-      BiomeDefaultFeatures.addDefaultOres(var2);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      if (var0) {
-         BiomeDefaultFeatures.addMountainForestTrees(var2);
-      } else {
-         BiomeDefaultFeatures.addMountainTrees(var2);
-      }
-
-      BiomeDefaultFeatures.addDefaultFlowers(var2);
-      BiomeDefaultFeatures.addDefaultGrass(var2);
-      BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
-      BiomeDefaultFeatures.addExtraEmeralds(var2);
-      BiomeDefaultFeatures.addInfestedStone(var2);
-      return biome(Biome.Precipitation.RAIN, 0.2F, 0.3F, var1, var2, NORMAL_MUSIC);
-   }
-
-   public static Biome desert() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.desertSpawns(var0);
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      BiomeDefaultFeatures.addFossilDecoration(var1);
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addDefaultFlowers(var1);
-      BiomeDefaultFeatures.addDefaultGrass(var1);
-      BiomeDefaultFeatures.addDesertVegetation(var1);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      BiomeDefaultFeatures.addDesertExtraVegetation(var1);
-      BiomeDefaultFeatures.addDesertExtraDecoration(var1);
-      return biome(Biome.Precipitation.NONE, 2.0F, 0.0F, var0, var1, NORMAL_MUSIC);
-   }
-
-   public static Biome plains(boolean var0, boolean var1, boolean var2) {
+   public static Biome windsweptHills(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
       MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
-      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var3);
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 5, 4, 6));
+      BiomeDefaultFeatures.commonSpawns(var3);
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
       globalOverworldGeneration(var4);
-      if (var1) {
-         var3.creatureGenerationProbability(0.07F);
-         BiomeDefaultFeatures.snowySpawns(var3);
-         if (var2) {
-            var4.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_SPIKE);
-            var4.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_PATCH);
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var4);
+      if (var2) {
+         BiomeDefaultFeatures.addMountainForestTrees(var4);
+      } else {
+         BiomeDefaultFeatures.addMountainTrees(var4);
+      }
+
+      BiomeDefaultFeatures.addDefaultFlowers(var4);
+      BiomeDefaultFeatures.addDefaultGrass(var4);
+      BiomeDefaultFeatures.addDefaultMushrooms(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addExtraEmeralds(var4);
+      BiomeDefaultFeatures.addInfestedStone(var4);
+      return biome(Biome.Precipitation.RAIN, 0.2F, 0.3F, var3, var4, NORMAL_MUSIC);
+   }
+
+   public static Biome desert(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.desertSpawns(var2);
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addFossilDecoration(var3);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addDefaultFlowers(var3);
+      BiomeDefaultFeatures.addDefaultGrass(var3);
+      BiomeDefaultFeatures.addDesertVegetation(var3);
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      BiomeDefaultFeatures.addDesertExtraVegetation(var3);
+      BiomeDefaultFeatures.addDesertExtraDecoration(var3);
+      return biome(Biome.Precipitation.NONE, 2.0F, 0.0F, var2, var3, NORMAL_MUSIC);
+   }
+
+   public static Biome plains(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3, boolean var4) {
+      MobSpawnSettings.Builder var5 = new MobSpawnSettings.Builder();
+      BiomeGenerationSettings.Builder var6 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var6);
+      if (var3) {
+         var5.creatureGenerationProbability(0.07F);
+         BiomeDefaultFeatures.snowySpawns(var5);
+         if (var4) {
+            var6.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_SPIKE);
+            var6.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, MiscOverworldPlacements.ICE_PATCH);
          }
       } else {
-         BiomeDefaultFeatures.plainsSpawns(var3);
-         BiomeDefaultFeatures.addPlainGrass(var4);
-         if (var0) {
-            var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUNFLOWER);
+         BiomeDefaultFeatures.plainsSpawns(var5);
+         BiomeDefaultFeatures.addPlainGrass(var6);
+         if (var2) {
+            var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUNFLOWER);
          }
+      }
+
+      BiomeDefaultFeatures.addDefaultOres(var6);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var6);
+      if (var3) {
+         BiomeDefaultFeatures.addSnowyTrees(var6);
+         BiomeDefaultFeatures.addDefaultFlowers(var6);
+         BiomeDefaultFeatures.addDefaultGrass(var6);
+      } else {
+         BiomeDefaultFeatures.addPlainVegetation(var6);
+      }
+
+      BiomeDefaultFeatures.addDefaultMushrooms(var6);
+      if (var2) {
+         var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
+         var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
+      } else {
+         BiomeDefaultFeatures.addDefaultExtraVegetation(var6);
+      }
+
+      float var7 = var3 ? 0.0F : 0.8F;
+      return biome(var3 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var7, var3 ? 0.5F : 0.4F, var5, var6, NORMAL_MUSIC);
+   }
+
+   public static Biome mushroomFields(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.mooshroomSpawns(var2);
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addMushroomFieldVegetation(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      return biome(Biome.Precipitation.RAIN, 0.9F, 1.0F, var2, var3, NORMAL_MUSIC);
+   }
+
+   public static Biome savanna(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3) {
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var4);
+      if (!var2) {
+         BiomeDefaultFeatures.addSavannaGrass(var4);
       }
 
       BiomeDefaultFeatures.addDefaultOres(var4);
       BiomeDefaultFeatures.addDefaultSoftDisks(var4);
-      if (var1) {
-         BiomeDefaultFeatures.addSnowyTrees(var4);
+      if (var2) {
+         BiomeDefaultFeatures.addShatteredSavannaTrees(var4);
          BiomeDefaultFeatures.addDefaultFlowers(var4);
-         BiomeDefaultFeatures.addDefaultGrass(var4);
+         BiomeDefaultFeatures.addShatteredSavannaGrass(var4);
       } else {
-         BiomeDefaultFeatures.addPlainVegetation(var4);
+         BiomeDefaultFeatures.addSavannaTrees(var4);
+         BiomeDefaultFeatures.addWarmFlowers(var4);
+         BiomeDefaultFeatures.addSavannaExtraGrass(var4);
       }
 
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
-      if (var0) {
-         var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
-         var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
-      } else {
-         BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
-      }
-
-      float var5 = var1 ? 0.0F : 0.8F;
-      return biome(var1 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var5, var1 ? 0.5F : 0.4F, var3, var4, NORMAL_MUSIC);
-   }
-
-   public static Biome mushroomFields() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.mooshroomSpawns(var0);
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addMushroomFieldVegetation(var1);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var1);
-      return biome(Biome.Precipitation.RAIN, 0.9F, 1.0F, var0, var1, NORMAL_MUSIC);
-   }
-
-   public static Biome savanna(boolean var0, boolean var1) {
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var2);
-      if (!var0) {
-         BiomeDefaultFeatures.addSavannaGrass(var2);
-      }
-
-      BiomeDefaultFeatures.addDefaultOres(var2);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      if (var0) {
-         BiomeDefaultFeatures.addShatteredSavannaTrees(var2);
-         BiomeDefaultFeatures.addDefaultFlowers(var2);
-         BiomeDefaultFeatures.addShatteredSavannaGrass(var2);
-      } else {
-         BiomeDefaultFeatures.addSavannaTrees(var2);
-         BiomeDefaultFeatures.addWarmFlowers(var2);
-         BiomeDefaultFeatures.addSavannaExtraGrass(var2);
-      }
-
-      BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
-      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var3);
-      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 1, 2, 6))
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      MobSpawnSettings.Builder var5 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var5);
+      var5.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 1, 2, 6))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 1));
-      BiomeDefaultFeatures.commonSpawns(var3);
-      if (var1) {
-         var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 8, 4, 4));
+      BiomeDefaultFeatures.commonSpawns(var5);
+      if (var3) {
+         var5.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 8, 4, 4));
       }
 
-      return biome(Biome.Precipitation.NONE, 2.0F, 0.0F, var3, var2, NORMAL_MUSIC);
+      return biome(Biome.Precipitation.NONE, 2.0F, 0.0F, var5, var4, NORMAL_MUSIC);
    }
 
-   public static Biome badlands(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.commonSpawns(var1);
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var2);
-      BiomeDefaultFeatures.addDefaultOres(var2);
-      BiomeDefaultFeatures.addExtraGold(var2);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      if (var0) {
-         BiomeDefaultFeatures.addBadlandsTrees(var2);
+   public static Biome badlands(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.commonSpawns(var3);
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var4);
+      BiomeDefaultFeatures.addDefaultOres(var4);
+      BiomeDefaultFeatures.addExtraGold(var4);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var4);
+      if (var2) {
+         BiomeDefaultFeatures.addBadlandsTrees(var4);
       }
 
-      BiomeDefaultFeatures.addBadlandGrass(var2);
-      BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addBadlandExtraVegetation(var2);
+      BiomeDefaultFeatures.addBadlandGrass(var4);
+      BiomeDefaultFeatures.addDefaultMushrooms(var4);
+      BiomeDefaultFeatures.addBadlandExtraVegetation(var4);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.NONE)
          .temperature(2.0F)
@@ -327,8 +338,8 @@ public class OverworldBiomes {
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
                .build()
          )
-         .mobSpawnSettings(var1.build())
-         .generationSettings(var2.build())
+         .mobSpawnSettings(var3.build())
+         .generationSettings(var4.build())
          .build();
    }
 
@@ -336,95 +347,95 @@ public class OverworldBiomes {
       return biome(Biome.Precipitation.RAIN, 0.5F, 0.5F, var1, var2, var0, var3, NORMAL_MUSIC);
    }
 
-   private static BiomeGenerationSettings.Builder baseOceanGeneration() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addWaterTrees(var0);
-      BiomeDefaultFeatures.addDefaultFlowers(var0);
-      BiomeDefaultFeatures.addDefaultGrass(var0);
-      BiomeDefaultFeatures.addDefaultMushrooms(var0);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var0);
-      return var0;
+   private static BiomeGenerationSettings.Builder baseOceanGeneration(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addWaterTrees(var2);
+      BiomeDefaultFeatures.addDefaultFlowers(var2);
+      BiomeDefaultFeatures.addDefaultGrass(var2);
+      BiomeDefaultFeatures.addDefaultMushrooms(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      return var2;
    }
 
-   public static Biome coldOcean(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.oceanSpawns(var1, 3, 4, 15);
-      var1.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 15, 1, 5));
-      BiomeGenerationSettings.Builder var2 = baseOceanGeneration();
-      var2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var0 ? AquaticPlacements.SEAGRASS_DEEP_COLD : AquaticPlacements.SEAGRASS_COLD);
-      BiomeDefaultFeatures.addDefaultSeagrass(var2);
-      BiomeDefaultFeatures.addColdOceanExtraVegetation(var2);
-      return baseOcean(var1, 4020182, 329011, var2);
+   public static Biome coldOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.oceanSpawns(var3, 3, 4, 15);
+      var3.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 15, 1, 5));
+      BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
+      var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP_COLD : AquaticPlacements.SEAGRASS_COLD);
+      BiomeDefaultFeatures.addDefaultSeagrass(var4);
+      BiomeDefaultFeatures.addColdOceanExtraVegetation(var4);
+      return baseOcean(var3, 4020182, 329011, var4);
    }
 
-   public static Biome ocean(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.oceanSpawns(var1, 1, 4, 10);
-      var1.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 1, 2));
-      BiomeGenerationSettings.Builder var2 = baseOceanGeneration();
-      var2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var0 ? AquaticPlacements.SEAGRASS_DEEP : AquaticPlacements.SEAGRASS_NORMAL);
-      BiomeDefaultFeatures.addDefaultSeagrass(var2);
-      BiomeDefaultFeatures.addColdOceanExtraVegetation(var2);
-      return baseOcean(var1, 4159204, 329011, var2);
+   public static Biome ocean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.oceanSpawns(var3, 1, 4, 10);
+      var3.addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 1, 1, 2));
+      BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
+      var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP : AquaticPlacements.SEAGRASS_NORMAL);
+      BiomeDefaultFeatures.addDefaultSeagrass(var4);
+      BiomeDefaultFeatures.addColdOceanExtraVegetation(var4);
+      return baseOcean(var3, 4159204, 329011, var4);
    }
 
-   public static Biome lukeWarmOcean(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      if (var0) {
-         BiomeDefaultFeatures.oceanSpawns(var1, 8, 4, 8);
+   public static Biome lukeWarmOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      if (var2) {
+         BiomeDefaultFeatures.oceanSpawns(var3, 8, 4, 8);
       } else {
-         BiomeDefaultFeatures.oceanSpawns(var1, 10, 2, 15);
+         BiomeDefaultFeatures.oceanSpawns(var3, 10, 2, 15);
       }
 
-      var1.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 5, 1, 3))
+      var3.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 5, 1, 3))
          .addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8))
          .addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DOLPHIN, 2, 1, 2));
-      BiomeGenerationSettings.Builder var2 = baseOceanGeneration();
-      var2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var0 ? AquaticPlacements.SEAGRASS_DEEP_WARM : AquaticPlacements.SEAGRASS_WARM);
-      if (var0) {
-         BiomeDefaultFeatures.addDefaultSeagrass(var2);
+      BiomeGenerationSettings.Builder var4 = baseOceanGeneration(var0, var1);
+      var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, var2 ? AquaticPlacements.SEAGRASS_DEEP_WARM : AquaticPlacements.SEAGRASS_WARM);
+      if (var2) {
+         BiomeDefaultFeatures.addDefaultSeagrass(var4);
       }
 
-      BiomeDefaultFeatures.addLukeWarmKelp(var2);
-      return baseOcean(var1, 4566514, 267827, var2);
+      BiomeDefaultFeatures.addLukeWarmKelp(var4);
+      return baseOcean(var3, 4566514, 267827, var4);
    }
 
-   public static Biome warmOcean() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder()
+   public static Biome warmOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.PUFFERFISH, 15, 1, 3));
-      BiomeDefaultFeatures.warmOceanSpawns(var0, 10, 4);
-      BiomeGenerationSettings.Builder var1 = baseOceanGeneration()
+      BiomeDefaultFeatures.warmOceanSpawns(var2, 10, 4);
+      BiomeGenerationSettings.Builder var3 = baseOceanGeneration(var0, var1)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.WARM_OCEAN_VEGETATION)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_WARM)
          .addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEA_PICKLE);
-      return baseOcean(var0, 4445678, 270131, var1);
+      return baseOcean(var2, 4445678, 270131, var3);
    }
 
-   public static Biome frozenOcean(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder()
+   public static Biome frozenOcean(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 1, 1, 4))
          .addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 15, 1, 5))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.POLAR_BEAR, 1, 1, 2));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      var1.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 5, 1, 1));
-      float var2 = var0 ? 0.5F : 0.0F;
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder();
-      BiomeDefaultFeatures.addIcebergs(var3);
-      globalOverworldGeneration(var3);
-      BiomeDefaultFeatures.addBlueIce(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
-      BiomeDefaultFeatures.addWaterTrees(var3);
-      BiomeDefaultFeatures.addDefaultFlowers(var3);
-      BiomeDefaultFeatures.addDefaultGrass(var3);
-      BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      var3.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, 5, 1, 1));
+      float var4 = var2 ? 0.5F : 0.0F;
+      BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addIcebergs(var5);
+      globalOverworldGeneration(var5);
+      BiomeDefaultFeatures.addBlueIce(var5);
+      BiomeDefaultFeatures.addDefaultOres(var5);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var5);
+      BiomeDefaultFeatures.addWaterTrees(var5);
+      BiomeDefaultFeatures.addDefaultFlowers(var5);
+      BiomeDefaultFeatures.addDefaultGrass(var5);
+      BiomeDefaultFeatures.addDefaultMushrooms(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
       return new Biome.BiomeBuilder()
-         .precipitation(var0 ? Biome.Precipitation.RAIN : Biome.Precipitation.SNOW)
-         .temperature(var2)
+         .precipitation(var2 ? Biome.Precipitation.RAIN : Biome.Precipitation.SNOW)
+         .temperature(var4)
          .temperatureAdjustment(Biome.TemperatureModifier.FROZEN)
          .downfall(0.5F)
          .specialEffects(
@@ -432,104 +443,104 @@ public class OverworldBiomes {
                .waterColor(3750089)
                .waterFogColor(329011)
                .fogColor(12638463)
-               .skyColor(calculateSkyColor(var2))
+               .skyColor(calculateSkyColor(var4))
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
                .build()
          )
-         .mobSpawnSettings(var1.build())
-         .generationSettings(var3.build())
+         .mobSpawnSettings(var3.build())
+         .generationSettings(var5.build())
          .build();
    }
 
-   public static Biome forest(boolean var0, boolean var1, boolean var2) {
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var3);
-      if (var2) {
-         var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_FOREST_FLOWERS);
+   public static Biome forest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3, boolean var4) {
+      BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var5);
+      if (var4) {
+         var5.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_FOREST_FLOWERS);
       } else {
-         BiomeDefaultFeatures.addForestFlowers(var3);
+         BiomeDefaultFeatures.addForestFlowers(var5);
       }
 
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
-      if (var2) {
-         var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_FLOWER_FOREST);
-         var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_FLOWER_FOREST);
-         BiomeDefaultFeatures.addDefaultGrass(var3);
+      BiomeDefaultFeatures.addDefaultOres(var5);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var5);
+      if (var4) {
+         var5.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.TREES_FLOWER_FOREST);
+         var5.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_FLOWER_FOREST);
+         BiomeDefaultFeatures.addDefaultGrass(var5);
       } else {
-         if (var0) {
-            if (var1) {
-               BiomeDefaultFeatures.addTallBirchTrees(var3);
+         if (var2) {
+            if (var3) {
+               BiomeDefaultFeatures.addTallBirchTrees(var5);
             } else {
-               BiomeDefaultFeatures.addBirchTrees(var3);
+               BiomeDefaultFeatures.addBirchTrees(var5);
             }
          } else {
-            BiomeDefaultFeatures.addOtherBirchTrees(var3);
+            BiomeDefaultFeatures.addOtherBirchTrees(var5);
          }
 
-         BiomeDefaultFeatures.addDefaultFlowers(var3);
-         BiomeDefaultFeatures.addForestGrass(var3);
+         BiomeDefaultFeatures.addDefaultFlowers(var5);
+         BiomeDefaultFeatures.addForestGrass(var5);
       }
 
-      BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
-      MobSpawnSettings.Builder var4 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var4);
-      BiomeDefaultFeatures.commonSpawns(var4);
-      if (var2) {
-         var4.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
-      } else if (!var0) {
-         var4.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 5, 4, 4));
+      BiomeDefaultFeatures.addDefaultMushrooms(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
+      MobSpawnSettings.Builder var6 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var6);
+      BiomeDefaultFeatures.commonSpawns(var6);
+      if (var4) {
+         var6.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+      } else if (!var2) {
+         var6.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 5, 4, 4));
       }
 
-      float var5 = var0 ? 0.6F : 0.7F;
-      Music var6 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
-      return biome(Biome.Precipitation.RAIN, var5, var0 ? 0.6F : 0.8F, var4, var3, var6);
+      float var7 = var2 ? 0.6F : 0.7F;
+      Music var8 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
+      return biome(Biome.Precipitation.RAIN, var7, var2 ? 0.6F : 0.8F, var6, var5, var8);
    }
 
-   public static Biome taiga(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var1);
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4))
+   public static Biome taiga(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var3);
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      float var2 = var0 ? -0.5F : 0.25F;
-      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var3);
-      BiomeDefaultFeatures.addFerns(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
-      BiomeDefaultFeatures.addTaigaTrees(var3);
-      BiomeDefaultFeatures.addDefaultFlowers(var3);
-      BiomeDefaultFeatures.addTaigaGrass(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
-      if (var0) {
-         BiomeDefaultFeatures.addRareBerryBushes(var3);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      float var4 = var2 ? -0.5F : 0.25F;
+      BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var5);
+      BiomeDefaultFeatures.addFerns(var5);
+      BiomeDefaultFeatures.addDefaultOres(var5);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var5);
+      BiomeDefaultFeatures.addTaigaTrees(var5);
+      BiomeDefaultFeatures.addDefaultFlowers(var5);
+      BiomeDefaultFeatures.addTaigaGrass(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
+      if (var2) {
+         BiomeDefaultFeatures.addRareBerryBushes(var5);
       } else {
-         BiomeDefaultFeatures.addCommonBerryBushes(var3);
+         BiomeDefaultFeatures.addCommonBerryBushes(var5);
       }
 
       return biome(
-         var0 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var2, var0 ? 0.4F : 0.8F, var0 ? 4020182 : 4159204, 329011, var1, var3, NORMAL_MUSIC
+         var2 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var4, var2 ? 0.4F : 0.8F, var2 ? 4020182 : 4159204, 329011, var3, var5, NORMAL_MUSIC
       );
    }
 
-   public static Biome darkForest() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var0);
-      BiomeDefaultFeatures.commonSpawns(var0);
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var1);
-      var1.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.DARK_FOREST_VEGETATION);
-      BiomeDefaultFeatures.addForestFlowers(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addDefaultFlowers(var1);
-      BiomeDefaultFeatures.addForestGrass(var1);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var1);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
+   public static Biome darkForest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var2);
+      BiomeDefaultFeatures.commonSpawns(var2);
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var3);
+      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.DARK_FOREST_VEGETATION);
+      BiomeDefaultFeatures.addForestFlowers(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addDefaultFlowers(var3);
+      BiomeDefaultFeatures.addForestGrass(var3);
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.RAIN)
          .temperature(0.7F)
@@ -542,30 +553,30 @@ public class OverworldBiomes {
                .skyColor(calculateSkyColor(0.7F))
                .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST)
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-               .backgroundMusic(var2)
+               .backgroundMusic(var4)
                .build()
          )
-         .mobSpawnSettings(var0.build())
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2.build())
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome swamp() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var0);
-      BiomeDefaultFeatures.commonSpawns(var0);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      BiomeDefaultFeatures.addFossilDecoration(var1);
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addSwampClayDisk(var1);
-      BiomeDefaultFeatures.addSwampVegetation(var1);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      BiomeDefaultFeatures.addSwampExtraVegetation(var1);
-      var1.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
+   public static Biome swamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var2);
+      BiomeDefaultFeatures.commonSpawns(var2);
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addFossilDecoration(var3);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addSwampClayDisk(var3);
+      BiomeDefaultFeatures.addSwampVegetation(var3);
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      BiomeDefaultFeatures.addSwampExtraVegetation(var3);
+      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.RAIN)
          .temperature(0.8F)
@@ -579,28 +590,28 @@ public class OverworldBiomes {
                .foliageColorOverride(6975545)
                .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP)
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-               .backgroundMusic(var2)
+               .backgroundMusic(var4)
                .build()
          )
-         .mobSpawnSettings(var0.build())
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2.build())
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome mangroveSwamp() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.commonSpawns(var0);
-      var0.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
-      var0.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
-      var0.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      BiomeDefaultFeatures.addFossilDecoration(var1);
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addMangroveSwampDisks(var1);
-      BiomeDefaultFeatures.addMangroveSwampVegetation(var1);
-      var1.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
+   public static Biome mangroveSwamp(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.commonSpawns(var2);
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
+      var2.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      BiomeDefaultFeatures.addFossilDecoration(var3);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addMangroveSwampDisks(var3);
+      BiomeDefaultFeatures.addMangroveSwampVegetation(var3);
+      var3.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SWAMP);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SWAMP);
       return new Biome.BiomeBuilder()
          .precipitation(Biome.Precipitation.RAIN)
          .temperature(0.8F)
@@ -614,221 +625,221 @@ public class OverworldBiomes {
                .foliageColorOverride(9285927)
                .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP)
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
-               .backgroundMusic(var2)
+               .backgroundMusic(var4)
                .build()
          )
-         .mobSpawnSettings(var0.build())
-         .generationSettings(var1.build())
+         .mobSpawnSettings(var2.build())
+         .generationSettings(var3.build())
          .build();
    }
 
-   public static Biome river(boolean var0) {
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder()
+   public static Biome river(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder()
          .addSpawn(MobCategory.WATER_CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SQUID, 2, 1, 4))
          .addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.SALMON, 5, 1, 5));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      var1.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, var0 ? 1 : 100, 1, 1));
-      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var2);
-      BiomeDefaultFeatures.addDefaultOres(var2);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      BiomeDefaultFeatures.addWaterTrees(var2);
-      BiomeDefaultFeatures.addDefaultFlowers(var2);
-      BiomeDefaultFeatures.addDefaultGrass(var2);
-      BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
-      if (!var0) {
-         var2.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
-      }
-
-      float var3 = var0 ? 0.0F : 0.5F;
-      return biome(var0 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var3, 0.5F, var0 ? 3750089 : 4159204, 329011, var1, var2, NORMAL_MUSIC);
-   }
-
-   public static Biome beach(boolean var0, boolean var1) {
-      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
-      boolean var3 = !var1 && !var0;
-      if (var3) {
-         var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.TURTLE, 5, 2, 5));
-      }
-
-      BiomeDefaultFeatures.commonSpawns(var2);
-      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder();
+      BiomeDefaultFeatures.commonSpawns(var3);
+      var3.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.DROWNED, var2 ? 1 : 100, 1, 1));
+      BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
       globalOverworldGeneration(var4);
       BiomeDefaultFeatures.addDefaultOres(var4);
       BiomeDefaultFeatures.addDefaultSoftDisks(var4);
+      BiomeDefaultFeatures.addWaterTrees(var4);
       BiomeDefaultFeatures.addDefaultFlowers(var4);
       BiomeDefaultFeatures.addDefaultGrass(var4);
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
       BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
-      float var5;
-      if (var0) {
-         var5 = 0.05F;
-      } else if (var1) {
-         var5 = 0.2F;
+      if (!var2) {
+         var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
+      }
+
+      float var5 = var2 ? 0.0F : 0.5F;
+      return biome(var2 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var5, 0.5F, var2 ? 3750089 : 4159204, 329011, var3, var4, NORMAL_MUSIC);
+   }
+
+   public static Biome beach(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3) {
+      MobSpawnSettings.Builder var4 = new MobSpawnSettings.Builder();
+      boolean var5 = !var3 && !var2;
+      if (var5) {
+         var4.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.TURTLE, 5, 2, 5));
+      }
+
+      BiomeDefaultFeatures.commonSpawns(var4);
+      BiomeGenerationSettings.Builder var6 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var6);
+      BiomeDefaultFeatures.addDefaultOres(var6);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var6);
+      BiomeDefaultFeatures.addDefaultFlowers(var6);
+      BiomeDefaultFeatures.addDefaultGrass(var6);
+      BiomeDefaultFeatures.addDefaultMushrooms(var6);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var6);
+      float var7;
+      if (var2) {
+         var7 = 0.05F;
+      } else if (var3) {
+         var7 = 0.2F;
       } else {
-         var5 = 0.8F;
+         var7 = 0.8F;
       }
 
       return biome(
-         var0 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var5, var3 ? 0.4F : 0.3F, var0 ? 4020182 : 4159204, 329011, var2, var4, NORMAL_MUSIC
+         var2 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN, var7, var5 ? 0.4F : 0.3F, var2 ? 4020182 : 4159204, 329011, var4, var6, NORMAL_MUSIC
       );
    }
 
-   public static Biome theVoid() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      var0.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.VOID_START_PLATFORM);
-      return biome(Biome.Precipitation.NONE, 0.5F, 0.5F, new MobSpawnSettings.Builder(), var0, NORMAL_MUSIC);
+   public static Biome theVoid(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      var2.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.VOID_START_PLATFORM);
+      return biome(Biome.Precipitation.NONE, 0.5F, 0.5F, new MobSpawnSettings.Builder(), var2, NORMAL_MUSIC);
    }
 
-   public static Biome meadow() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 2))
+   public static Biome meadow(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 2))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 2, 2, 6))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.SHEEP, 2, 2, 4));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addPlainGrass(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addMeadowVegetation(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_MEADOW);
-      return biome(Biome.Precipitation.RAIN, 0.5F, 0.8F, 937679, 329011, var1, var0, var2);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addPlainGrass(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addMeadowVegetation(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_MEADOW);
+      return biome(Biome.Precipitation.RAIN, 0.5F, 0.8F, 937679, 329011, var3, var2, var4);
    }
 
-   public static Biome frozenPeaks() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GOAT, 5, 1, 3));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addFrozenSprings(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FROZEN_PEAKS);
-      return biome(Biome.Precipitation.SNOW, -0.7F, 0.9F, var1, var0, var2);
+   public static Biome frozenPeaks(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GOAT, 5, 1, 3));
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addFrozenSprings(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FROZEN_PEAKS);
+      return biome(Biome.Precipitation.SNOW, -0.7F, 0.9F, var3, var2, var4);
    }
 
-   public static Biome jaggedPeaks() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GOAT, 5, 1, 3));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addFrozenSprings(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JAGGED_PEAKS);
-      return biome(Biome.Precipitation.SNOW, -0.7F, 0.9F, var1, var0, var2);
+   public static Biome jaggedPeaks(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GOAT, 5, 1, 3));
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addFrozenSprings(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JAGGED_PEAKS);
+      return biome(Biome.Precipitation.SNOW, -0.7F, 0.9F, var3, var2, var4);
    }
 
-   public static Biome stonyPeaks() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_STONY_PEAKS);
-      return biome(Biome.Precipitation.RAIN, 1.0F, 0.3F, var1, var0, var2);
+   public static Biome stonyPeaks(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_STONY_PEAKS);
+      return biome(Biome.Precipitation.RAIN, 1.0F, 0.3F, var3, var2, var4);
    }
 
-   public static Biome snowySlopes() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3))
+   public static Biome snowySlopes(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.GOAT, 5, 1, 3));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addFrozenSprings(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SNOWY_SLOPES);
-      return biome(Biome.Precipitation.SNOW, -0.3F, 0.9F, var1, var0, var2);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addFrozenSprings(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SNOWY_SLOPES);
+      return biome(Biome.Precipitation.SNOW, -0.3F, 0.9F, var3, var2, var4);
    }
 
-   public static Biome grove() {
-      BiomeGenerationSettings.Builder var0 = new BiomeGenerationSettings.Builder();
-      MobSpawnSettings.Builder var1 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var1);
-      var1.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4))
+   public static Biome grove(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
+      MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var3);
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
-      BiomeDefaultFeatures.commonSpawns(var1);
-      globalOverworldGeneration(var0);
-      BiomeDefaultFeatures.addFrozenSprings(var0);
-      BiomeDefaultFeatures.addDefaultOres(var0);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var0);
-      BiomeDefaultFeatures.addGroveTrees(var0);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var0);
-      BiomeDefaultFeatures.addExtraEmeralds(var0);
-      BiomeDefaultFeatures.addInfestedStone(var0);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_GROVE);
-      return biome(Biome.Precipitation.SNOW, -0.2F, 0.8F, var1, var0, var2);
+      BiomeDefaultFeatures.commonSpawns(var3);
+      globalOverworldGeneration(var2);
+      BiomeDefaultFeatures.addFrozenSprings(var2);
+      BiomeDefaultFeatures.addDefaultOres(var2);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var2);
+      BiomeDefaultFeatures.addGroveTrees(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      BiomeDefaultFeatures.addExtraEmeralds(var2);
+      BiomeDefaultFeatures.addInfestedStone(var2);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_GROVE);
+      return biome(Biome.Precipitation.SNOW, -0.2F, 0.8F, var3, var2, var4);
    }
 
-   public static Biome lushCaves() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      var0.addSpawn(MobCategory.AXOLOTLS, new MobSpawnSettings.SpawnerData(EntityType.AXOLOTL, 10, 4, 6));
-      var0.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
-      BiomeDefaultFeatures.commonSpawns(var0);
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addPlainGrass(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1);
-      BiomeDefaultFeatures.addLushCavesSpecialOres(var1);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addLushCavesVegetationFeatures(var1);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_LUSH_CAVES);
-      return biome(Biome.Precipitation.RAIN, 0.5F, 0.5F, var0, var1, var2);
+   public static Biome lushCaves(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      var2.addSpawn(MobCategory.AXOLOTLS, new MobSpawnSettings.SpawnerData(EntityType.AXOLOTL, 10, 4, 6));
+      var2.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
+      BiomeDefaultFeatures.commonSpawns(var2);
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addPlainGrass(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addLushCavesSpecialOres(var3);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addLushCavesVegetationFeatures(var3);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_LUSH_CAVES);
+      return biome(Biome.Precipitation.RAIN, 0.5F, 0.5F, var2, var3, var4);
    }
 
-   public static Biome dripstoneCaves() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.dripstoneCavesSpawns(var0);
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      globalOverworldGeneration(var1);
-      BiomeDefaultFeatures.addPlainGrass(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1, true);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addPlainVegetation(var1);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var1);
-      BiomeDefaultFeatures.addDripstone(var1);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DRIPSTONE_CAVES);
-      return biome(Biome.Precipitation.RAIN, 0.8F, 0.4F, var0, var1, var2);
+   public static Biome dripstoneCaves(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.dripstoneCavesSpawns(var2);
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var3);
+      BiomeDefaultFeatures.addPlainGrass(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3, true);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addPlainVegetation(var3);
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.addDripstone(var3);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DRIPSTONE_CAVES);
+      return biome(Biome.Precipitation.RAIN, 0.8F, 0.4F, var2, var3, var4);
    }
 
-   public static Biome deepDark() {
-      MobSpawnSettings.Builder var0 = new MobSpawnSettings.Builder();
-      BiomeGenerationSettings.Builder var1 = new BiomeGenerationSettings.Builder();
-      var1.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE);
-      var1.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE_EXTRA_UNDERGROUND);
-      var1.addCarver(GenerationStep.Carving.AIR, Carvers.CANYON);
-      BiomeDefaultFeatures.addDefaultCrystalFormations(var1);
-      BiomeDefaultFeatures.addDefaultMonsterRoom(var1);
-      BiomeDefaultFeatures.addDefaultUndergroundVariety(var1);
-      BiomeDefaultFeatures.addSurfaceFreezing(var1);
-      BiomeDefaultFeatures.addPlainGrass(var1);
-      BiomeDefaultFeatures.addDefaultOres(var1, true);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var1);
-      BiomeDefaultFeatures.addPlainVegetation(var1);
-      BiomeDefaultFeatures.addDefaultMushrooms(var1);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var1);
-      BiomeDefaultFeatures.addSculk(var1);
-      Music var2 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DEEP_DARK);
-      return biome(Biome.Precipitation.RAIN, 0.8F, 0.4F, var0, var1, var2);
+   public static Biome deepDark(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
+      MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
+      BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
+      var3.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE);
+      var3.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE_EXTRA_UNDERGROUND);
+      var3.addCarver(GenerationStep.Carving.AIR, Carvers.CANYON);
+      BiomeDefaultFeatures.addDefaultCrystalFormations(var3);
+      BiomeDefaultFeatures.addDefaultMonsterRoom(var3);
+      BiomeDefaultFeatures.addDefaultUndergroundVariety(var3);
+      BiomeDefaultFeatures.addSurfaceFreezing(var3);
+      BiomeDefaultFeatures.addPlainGrass(var3);
+      BiomeDefaultFeatures.addDefaultOres(var3);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var3);
+      BiomeDefaultFeatures.addPlainVegetation(var3);
+      BiomeDefaultFeatures.addDefaultMushrooms(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.addSculk(var3);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DEEP_DARK);
+      return biome(Biome.Precipitation.RAIN, 0.8F, 0.4F, var2, var3, var4);
    }
 }

@@ -112,12 +112,12 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
          float var9 = 1.5F;
          var1.pushPose();
          var1.scale(0.56666666F, 0.56666666F, 0.56666666F);
-         var1.translate(0.0, 1.375, 0.125);
+         var1.translate(0.0F, 1.375F, 0.125F);
          ImmutableList.of(this.head, this.leftEar, this.rightEar, this.nose).forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
          var1.popPose();
          var1.pushPose();
          var1.scale(0.4F, 0.4F, 0.4F);
-         var1.translate(0.0, 2.25, 0.0);
+         var1.translate(0.0F, 2.25F, 0.0F);
          ImmutableList.of(
                this.leftRearFoot, this.rightRearFoot, this.leftHaunch, this.rightHaunch, this.body, this.leftFrontLeg, this.rightFrontLeg, this.tail
             )
@@ -126,7 +126,7 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
       } else {
          var1.pushPose();
          var1.scale(0.6F, 0.6F, 0.6F);
-         var1.translate(0.0, 1.0, 0.0);
+         var1.translate(0.0F, 1.0F, 0.0F);
          ImmutableList.of(
                this.leftRearFoot,
                this.rightRearFoot,

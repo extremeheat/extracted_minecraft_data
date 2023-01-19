@@ -21,11 +21,12 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -33,13 +34,15 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.WorldPresetTags;
+import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
-public class WorldGenSettingsComponent implements Widget {
+public class WorldGenSettingsComponent implements Renderable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component CUSTOM_WORLD_DESCRIPTION = Component.translatable("generator.custom");
    private static final Component AMPLIFIED_HELP_TEXT = Component.translatable("generator.minecraft.amplified.info");
@@ -67,7 +70,7 @@ public class WorldGenSettingsComponent implements Widget {
    }
 
    private static Optional<Holder<WorldPreset>> findPreset(WorldCreationContext var0, Optional<ResourceKey<WorldPreset>> var1) {
-      return var1.flatMap(var1x -> var0.registryAccess().<WorldPreset>registryOrThrow(Registry.WORLD_PRESET_REGISTRY).getHolder(var1x));
+      return var1.flatMap(var1x -> var0.worldgenLoadContext().<WorldPreset>registryOrThrow(Registries.WORLD_PRESET).getHolder(var1x));
    }
 
    public void init(CreateWorldScreen var1, Minecraft var2, Font var3) {
@@ -75,12 +78,12 @@ public class WorldGenSettingsComponent implements Widget {
       this.width = var1.width;
       this.seedEdit = new EditBox(this.font, this.width / 2 - 100, 60, 200, 20, Component.translatable("selectWorld.enterSeed"));
       this.seedEdit.setValue(toString(this.seed));
-      this.seedEdit.setResponder(var1x -> this.seed = WorldGenSettings.parseSeed(this.seedEdit.getValue()));
+      this.seedEdit.setResponder(var1x -> this.seed = WorldOptions.parseSeed(this.seedEdit.getValue()));
       var1.addWidget(this.seedEdit);
       int var4 = this.width / 2 - 155;
       int var5 = this.width / 2 + 5;
       this.featuresButton = var1.addRenderableWidget(
-         CycleButton.onOffBuilder(this.settings.worldGenSettings().generateStructures())
+         CycleButton.onOffBuilder(this.settings.options().generateStructures())
             .withCustomNarration(
                var0 -> CommonComponents.joinForNarration(var0.createDefaultNarrationMessage(), Component.translatable("selectWorld.mapFeatures.info"))
             )
@@ -90,11 +93,11 @@ public class WorldGenSettingsComponent implements Widget {
                150,
                20,
                Component.translatable("selectWorld.mapFeatures"),
-               (var1x, var2x) -> this.updateSettings(WorldGenSettings::withStructuresToggled)
+               (var1x, var2x) -> this.updateSettings(var1xx -> var1xx.withStructures(var2x))
             )
       );
       this.featuresButton.visible = false;
-      Registry var6 = this.settings.registryAccess().registryOrThrow(Registry.WORLD_PRESET_REGISTRY);
+      Registry var6 = this.settings.worldgenLoadContext().registryOrThrow(Registries.WORLD_PRESET);
       List var7 = getNonEmptyList(var6, WorldPresetTags.NORMAL).orElseGet(() -> var6.holders().collect(Collectors.toUnmodifiableList()));
       List var8 = getNonEmptyList(var6, WorldPresetTags.EXTENDED).orElse(var7);
       this.typeButton = var1.addRenderableWidget(
@@ -107,71 +110,73 @@ public class WorldGenSettingsComponent implements Widget {
             )
             .create(var5, 100, 150, 20, Component.translatable("selectWorld.mapType"), (var2x, var3x) -> {
                this.preset = Optional.of(var3x);
-               this.updateSettings(var1xx -> ((WorldPreset)var3x.value()).recreateWorldGenSettings(var1xx));
+               this.updateSettings((var1xx, var2xx) -> ((WorldPreset)var3x.value()).createWorldDimensions());
                var1.refreshWorldGenSettingsVisibility();
             })
       );
       this.preset.ifPresent(this.typeButton::setValue);
       this.typeButton.visible = false;
       this.customWorldDummyButton = var1.addRenderableWidget(
-         new Button(var5, 100, 150, 20, CommonComponents.optionNameValue(Component.translatable("selectWorld.mapType"), CUSTOM_WORLD_DESCRIPTION), var0 -> {
-         })
+         Button.builder(CommonComponents.optionNameValue(Component.translatable("selectWorld.mapType"), CUSTOM_WORLD_DESCRIPTION), var0 -> {
+         }).bounds(var5, 100, 150, 20).build()
       );
       this.customWorldDummyButton.active = false;
       this.customWorldDummyButton.visible = false;
-      this.customizeTypeButton = var1.addRenderableWidget(new Button(var5, 120, 150, 20, Component.translatable("selectWorld.customizeType"), var3x -> {
+      this.customizeTypeButton = var1.addRenderableWidget(Button.builder(Component.translatable("selectWorld.customizeType"), var3x -> {
          PresetEditor var4x = PresetEditor.EDITORS.get(this.preset.flatMap(Holder::unwrapKey));
          if (var4x != null) {
             var2.setScreen(var4x.createEditScreen(var1, this.settings));
          }
-      }));
+      }).bounds(var5, 120, 150, 20).build());
       this.customizeTypeButton.visible = false;
       this.bonusItemsButton = var1.addRenderableWidget(
-         CycleButton.onOffBuilder(this.settings.worldGenSettings().generateBonusChest() && !var1.hardCore)
+         CycleButton.onOffBuilder(this.settings.options().generateBonusChest() && !var1.hardCore)
             .create(
                var4,
                151,
                150,
                20,
                Component.translatable("selectWorld.bonusItems"),
-               (var1x, var2x) -> this.updateSettings(WorldGenSettings::withBonusChestToggled)
+               (var1x, var2x) -> this.updateSettings(var1xx -> var1xx.withBonusChest(var2x))
             )
       );
       this.bonusItemsButton.visible = false;
       this.importSettingsButton = var1.addRenderableWidget(
-         new Button(
-            var4,
-            185,
-            150,
-            20,
-            Component.translatable("selectWorld.import_worldgen_settings"),
-            var3x -> {
-               String var4x = TinyFileDialogs.tinyfd_openFileDialog(SELECT_FILE_PROMPT.getString(), null, null, null, false);
-               if (var4x != null) {
-                  RegistryOps var5x = RegistryOps.create(JsonOps.INSTANCE, this.settings.registryAccess());
-      
-                  DataResult var6x;
-                  try (BufferedReader var7x = Files.newBufferedReader(Paths.get(var4x))) {
-                     JsonElement var8x = JsonParser.parseReader(var7x);
-                     var6x = WorldGenSettings.CODEC.parse(var5x, var8x);
-                  } catch (Exception var12) {
-                     var6x = DataResult.error("Failed to parse file: " + var12.getMessage());
-                  }
-      
-                  if (var6x.error().isPresent()) {
-                     MutableComponent var14 = Component.translatable("selectWorld.import_worldgen_settings.failure");
-                     String var15 = ((PartialResult)var6x.error().get()).message();
-                     LOGGER.error("Error parsing world settings: {}", var15);
-                     MutableComponent var9 = Component.literal(var15);
-                     var2.getToasts().addToast(SystemToast.multiline(var2, SystemToast.SystemToastIds.WORLD_GEN_SETTINGS_TRANSFER, var14, var9));
-                  } else {
-                     Lifecycle var13 = var6x.lifecycle();
-                     var6x.resultOrPartial(LOGGER::error)
-                        .ifPresent(var4xx -> WorldOpenFlows.confirmWorldCreation(var2, var1, var13, () -> this.importSettings(var4xx)));
+         Button.builder(
+               Component.translatable("selectWorld.import_worldgen_settings"),
+               var3x -> {
+                  String var4x = TinyFileDialogs.tinyfd_openFileDialog(SELECT_FILE_PROMPT.getString(), null, null, null, false);
+                  if (var4x != null) {
+                     RegistryOps var5x = RegistryOps.create(JsonOps.INSTANCE, this.settings.worldgenLoadContext());
+         
+                     DataResult var6x;
+                     try (BufferedReader var7x = Files.newBufferedReader(Paths.get(var4x))) {
+                        JsonElement var8x = JsonParser.parseReader(var7x);
+                        var6x = WorldGenSettings.CODEC.parse(var5x, var8x);
+                     } catch (Exception var12) {
+                        var6x = DataResult.error("Failed to parse file: " + var12.getMessage());
+                     }
+         
+                     if (var6x.error().isPresent()) {
+                        MutableComponent var14 = Component.translatable("selectWorld.import_worldgen_settings.failure");
+                        String var15 = ((PartialResult)var6x.error().get()).message();
+                        LOGGER.error("Error parsing world settings: {}", var15);
+                        MutableComponent var9 = Component.literal(var15);
+                        var2.getToasts().addToast(SystemToast.multiline(var2, SystemToast.SystemToastIds.WORLD_GEN_SETTINGS_TRANSFER, var14, var9));
+                     } else {
+                        Lifecycle var13 = var6x.lifecycle();
+                        var6x.resultOrPartial(LOGGER::error)
+                           .ifPresent(
+                              var4xx -> WorldOpenFlows.confirmWorldCreation(
+                                    var2, var1, var13, () -> this.importSettings(var4xx.options(), var4xx.dimensions())
+                                 )
+                           );
+                     }
                   }
                }
-            }
-         )
+            )
+            .bounds(var4, 185, 150, 20)
+            .build()
       );
       this.importSettingsButton.visible = false;
       this.amplifiedWorldInfo = MultiLineLabel.create(var3, AMPLIFIED_HELP_TEXT, this.typeButton.getWidth());
@@ -189,9 +194,9 @@ public class WorldGenSettingsComponent implements Widget {
       return var0.unwrapKey().map(var0x -> Component.translatable(var0x.location().toLanguageKey("generator"))).orElse(CUSTOM_WORLD_DESCRIPTION);
    }
 
-   private void importSettings(WorldGenSettings var1) {
-      this.settings = this.settings.withSettings(var1);
-      this.preset = findPreset(this.settings, WorldPresets.fromSettings(var1));
+   private void importSettings(WorldOptions var1, WorldDimensions var2) {
+      this.settings = this.settings.withSettings(var1, var2);
+      this.preset = findPreset(this.settings, WorldPresets.fromSettings(var2.dimensions()));
       this.selectWorldTypeButton(true);
       this.seed = OptionalLong.of(var1.seed());
       this.seedEdit.setValue(toString(this.seed));
@@ -209,16 +214,16 @@ public class WorldGenSettingsComponent implements Widget {
 
       this.seedEdit.render(var1, var2, var3, var4);
       if (this.preset.filter(WorldGenSettingsComponent::isAmplified).isPresent()) {
-         this.amplifiedWorldInfo.renderLeftAligned(var1, this.typeButton.x + 2, this.typeButton.y + 22, 9, 10526880);
+         this.amplifiedWorldInfo.renderLeftAligned(var1, this.typeButton.getX() + 2, this.typeButton.getY() + 22, 9, 10526880);
       }
    }
 
-   void updateSettings(WorldCreationContext.SimpleUpdater var1) {
-      this.settings = this.settings.withSettings(var1);
+   void updateSettings(WorldCreationContext.DimensionsUpdater var1) {
+      this.settings = this.settings.withDimensions(var1);
    }
 
-   void updateSettings(WorldCreationContext.Updater var1) {
-      this.settings = this.settings.withSettings(var1);
+   private void updateSettings(WorldCreationContext.OptionsModifier var1) {
+      this.settings = this.settings.withOptions(var1);
    }
 
    void updateSettings(WorldCreationContext var1) {
@@ -229,13 +234,22 @@ public class WorldGenSettingsComponent implements Widget {
       return var0.isPresent() ? Long.toString(var0.getAsLong()) : "";
    }
 
-   public WorldCreationContext createFinalSettings(boolean var1) {
-      OptionalLong var2 = WorldGenSettings.parseSeed(this.seedEdit.getValue());
-      return this.settings.withSettings(var2x -> var2x.withSeed(var1, var2));
+   public WorldOptions createFinalOptions(boolean var1, boolean var2) {
+      OptionalLong var3 = WorldOptions.parseSeed(this.seedEdit.getValue());
+      WorldOptions var4 = this.settings.options();
+      if (var1 || var2) {
+         var4 = var4.withBonusChest(false);
+      }
+
+      if (var1) {
+         var4 = var4.withStructures(false);
+      }
+
+      return var4.withSeed(var3);
    }
 
    public boolean isDebug() {
-      return this.settings.worldGenSettings().isDebug();
+      return this.settings.selectedDimensions().isDebug();
    }
 
    public void setVisibility(boolean var1) {
@@ -270,7 +284,7 @@ public class WorldGenSettingsComponent implements Widget {
    }
 
    public RegistryAccess registryHolder() {
-      return this.settings.registryAccess();
+      return this.settings.worldgenLoadContext();
    }
 
    public void switchToHardcore() {
@@ -280,6 +294,6 @@ public class WorldGenSettingsComponent implements Widget {
 
    public void switchOutOfHardcode() {
       this.bonusItemsButton.active = true;
-      this.bonusItemsButton.setValue(this.settings.worldGenSettings().generateBonusChest());
+      this.bonusItemsButton.setValue(this.settings.options().generateBonusChest());
    }
 }

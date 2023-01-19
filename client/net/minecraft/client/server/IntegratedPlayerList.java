@@ -2,9 +2,10 @@ package net.minecraft.client.server;
 
 import com.mojang.authlib.GameProfile;
 import java.net.SocketAddress;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
@@ -12,7 +13,7 @@ import net.minecraft.world.level.storage.PlayerDataStorage;
 public class IntegratedPlayerList extends PlayerList {
    private CompoundTag playerData;
 
-   public IntegratedPlayerList(IntegratedServer var1, RegistryAccess.Frozen var2, PlayerDataStorage var3) {
+   public IntegratedPlayerList(IntegratedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
       super(var1, var2, var3, 8);
       this.setViewDistance(10);
    }

@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.SkullModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.dragon.DragonHeadModel;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity> {
    private final Map<SkullBlock.Type, SkullModelBase> modelByType;
@@ -38,6 +40,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       var0.put(SkullBlock.Types.ZOMBIE, new ResourceLocation("textures/entity/zombie/zombie.png"));
       var0.put(SkullBlock.Types.CREEPER, new ResourceLocation("textures/entity/creeper/creeper.png"));
       var0.put(SkullBlock.Types.DRAGON, new ResourceLocation("textures/entity/enderdragon/dragon.png"));
+      var0.put(SkullBlock.Types.PIGLIN, new ResourceLocation("textures/entity/piglin/piglin.png"));
       var0.put(SkullBlock.Types.PLAYER, DefaultPlayerSkin.getDefaultSkin());
    });
 
@@ -49,6 +52,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       var1.put(SkullBlock.Types.ZOMBIE, new SkullModel(var0.bakeLayer(ModelLayers.ZOMBIE_HEAD)));
       var1.put(SkullBlock.Types.CREEPER, new SkullModel(var0.bakeLayer(ModelLayers.CREEPER_HEAD)));
       var1.put(SkullBlock.Types.DRAGON, new DragonHeadModel(var0.bakeLayer(ModelLayers.DRAGON_SKULL)));
+      var1.put(SkullBlock.Types.PIGLIN, new PiglinHeadModel(var0.bakeLayer(ModelLayers.PIGLIN_HEAD)));
       return var1.build();
    }
 
@@ -58,15 +62,16 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    }
 
    public void render(SkullBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      float var7 = var1.getMouthAnimation(var2);
+      float var7 = var1.getAnimation(var2);
       BlockState var8 = var1.getBlockState();
       boolean var9 = var8.getBlock() instanceof WallSkullBlock;
       Direction var10 = var9 ? var8.getValue(WallSkullBlock.FACING) : null;
-      float var11 = 22.5F * (float)(var9 ? (2 + var10.get2DDataValue()) * 4 : var8.getValue(SkullBlock.ROTATION));
-      SkullBlock.Type var12 = ((AbstractSkullBlock)var8.getBlock()).getType();
-      SkullModelBase var13 = this.modelByType.get(var12);
-      RenderType var14 = getRenderType(var12, var1.getOwnerProfile());
-      renderSkull(var10, var11, var7, var3, var4, var5, var13, var14);
+      int var11 = var9 ? RotationSegment.convertToSegment(var10) : var8.getValue(SkullBlock.ROTATION);
+      float var12 = RotationSegment.convertToDegrees(var11);
+      SkullBlock.Type var13 = ((AbstractSkullBlock)var8.getBlock()).getType();
+      SkullModelBase var14 = this.modelByType.get(var13);
+      RenderType var15 = getRenderType(var13, var1.getOwnerProfile());
+      renderSkull(var10, var12, var7, var3, var4, var5, var14, var15);
    }
 
    public static void renderSkull(
@@ -74,10 +79,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    ) {
       var3.pushPose();
       if (var0 == null) {
-         var3.translate(0.5, 0.0, 0.5);
+         var3.translate(0.5F, 0.0F, 0.5F);
       } else {
          float var8 = 0.25F;
-         var3.translate((double)(0.5F - (float)var0.getStepX() * 0.25F), 0.25, (double)(0.5F - (float)var0.getStepZ() * 0.25F));
+         var3.translate(0.5F - (float)var0.getStepX() * 0.25F, 0.25F, 0.5F - (float)var0.getStepZ() * 0.25F);
       }
 
       var3.scale(-1.0F, -1.0F, 1.0F);

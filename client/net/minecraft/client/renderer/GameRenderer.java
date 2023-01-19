@@ -16,15 +16,17 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -42,12 +44,16 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -67,14 +73,17 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 
-public class GameRenderer implements ResourceManagerReloadListener, AutoCloseable {
+public class GameRenderer implements AutoCloseable {
    private static final ResourceLocation NAUSEA_LOCATION = new ResourceLocation("textures/misc/nausea.png");
-   private static final Logger LOGGER = LogUtils.getLogger();
+   static final Logger LOGGER = LogUtils.getLogger();
    private static final boolean DEPTH_BUFFER_DEBUG = false;
    public static final float PROJECTION_Z_NEAR = 0.05F;
-   private final Minecraft minecraft;
+   final Minecraft minecraft;
    private final ResourceManager resourceManager;
    private final RandomSource random = RandomSource.create();
    private float renderDistance;
@@ -104,8 +113,8 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
    private float itemActivationOffX;
    private float itemActivationOffY;
    @Nullable
-   private PostChain postEffect;
-   private static final ResourceLocation[] EFFECTS = new ResourceLocation[]{
+   PostChain postEffect;
+   static final ResourceLocation[] EFFECTS = new ResourceLocation[]{
       new ResourceLocation("shaders/post/notch.json"),
       new ResourceLocation("shaders/post/fxaa.json"),
       new ResourceLocation("shaders/post/art.json"),
@@ -132,7 +141,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       new ResourceLocation("shaders/post/spider.json")
    };
    public static final int EFFECT_NONE = EFFECTS.length;
-   private int effectIndex = EFFECT_NONE;
+   int effectIndex = EFFECT_NONE;
    private boolean effectActive;
    private final Camera mainCamera = new Camera();
    public ShaderInstance blitShader;
@@ -330,7 +339,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       }
    }
 
-   private void loadEffect(ResourceLocation var1) {
+   void loadEffect(ResourceLocation var1) {
       if (this.postEffect != null) {
          this.postEffect.close();
       }
@@ -350,19 +359,50 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       }
    }
 
-   @Override
-   public void onResourceManagerReload(ResourceManager var1) {
-      this.reloadShaders(var1);
-      if (this.postEffect != null) {
-         this.postEffect.close();
-      }
+   public PreparableReloadListener createReloadListener() {
+      return new SimplePreparableReloadListener<GameRenderer.ResourceCache>() {
+         protected GameRenderer.ResourceCache prepare(ResourceManager var1, ProfilerFiller var2) {
+            Map var3 = var1.listResources(
+               "shaders",
+               var0 -> {
+                  String var1x = var0.getPath();
+                  return var1x.endsWith(".json")
+                     || var1x.endsWith(Program.Type.FRAGMENT.getExtension())
+                     || var1x.endsWith(Program.Type.VERTEX.getExtension())
+                     || var1x.endsWith(".glsl");
+               }
+            );
+            HashMap var4 = new HashMap();
+            var3.forEach((var1x, var2x) -> {
+               try (InputStream var3x = var2x.open()) {
+                  byte[] var4x = var3x.readAllBytes();
+                  var4.put(var1x, new Resource(var2x.source(), () -> new ByteArrayInputStream(var4x)));
+               } catch (Exception var8) {
+                  GameRenderer.LOGGER.warn("Failed to read resource {}", var1x, var8);
+               }
+            });
+            return new GameRenderer.ResourceCache(var1, var4);
+         }
 
-      this.postEffect = null;
-      if (this.effectIndex == EFFECT_NONE) {
-         this.checkEntityPostEffect(this.minecraft.getCameraEntity());
-      } else {
-         this.loadEffect(EFFECTS[this.effectIndex]);
-      }
+         protected void apply(GameRenderer.ResourceCache var1, ResourceManager var2, ProfilerFiller var3) {
+            GameRenderer.this.reloadShaders(var1);
+            if (GameRenderer.this.postEffect != null) {
+               GameRenderer.this.postEffect.close();
+            }
+
+            GameRenderer.this.postEffect = null;
+            if (GameRenderer.this.effectIndex == GameRenderer.EFFECT_NONE) {
+               GameRenderer.this.checkEntityPostEffect(GameRenderer.this.minecraft.getCameraEntity());
+            } else {
+               GameRenderer.this.loadEffect(GameRenderer.EFFECTS[GameRenderer.this.effectIndex]);
+            }
+         }
+
+         @Override
+         public String getName() {
+            return "Shader Loader";
+         }
+      };
    }
 
    public void preloadUiShader(ResourceProvider var1) {
@@ -394,7 +434,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       }
    }
 
-   public void reloadShaders(ResourceManager var1) {
+   void reloadShaders(ResourceProvider var1) {
       RenderSystem.assertOnRenderThread();
       ArrayList var2 = Lists.newArrayList();
       var2.addAll(Program.Type.FRAGMENT.getPrograms().values());
@@ -865,7 +905,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          float var4 = (float)var3.hurtTime - var2;
          if (var3.isDeadOrDying()) {
             float var5 = Math.min((float)var3.deathTime + var2, 20.0F);
-            var1.mulPose(Vector3f.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
+            var1.mulPose(Axis.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
          }
 
          if (var4 < 0.0F) {
@@ -875,9 +915,9 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          var4 /= (float)var3.hurtDuration;
          var4 = Mth.sin(var4 * var4 * var4 * var4 * 3.1415927F);
          float var8 = var3.hurtDir;
-         var1.mulPose(Vector3f.YP.rotationDegrees(-var8));
-         var1.mulPose(Vector3f.ZP.rotationDegrees(-var4 * 14.0F));
-         var1.mulPose(Vector3f.YP.rotationDegrees(var8));
+         var1.mulPose(Axis.YP.rotationDegrees(-var8));
+         var1.mulPose(Axis.ZP.rotationDegrees(-var4 * 14.0F));
+         var1.mulPose(Axis.YP.rotationDegrees(var8));
       }
    }
 
@@ -887,9 +927,9 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          float var4 = var3.walkDist - var3.walkDistO;
          float var5 = -(var3.walkDist + var4 * var2);
          float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
-         var1.translate((double)(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F), (double)(-Math.abs(Mth.cos(var5 * 3.1415927F) * var6)), 0.0);
-         var1.mulPose(Vector3f.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
-         var1.mulPose(Vector3f.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
+         var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
+         var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
       }
    }
 
@@ -906,18 +946,16 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
    private void renderItemInHand(PoseStack var1, Camera var2, float var3) {
       if (!this.panoramicMode) {
          this.resetProjectionMatrix(this.getProjectionMatrix(this.getFov(var2, var3, false)));
-         PoseStack.Pose var4 = var1.last();
-         var4.pose().setIdentity();
-         var4.normal().setIdentity();
+         var1.setIdentity();
          var1.pushPose();
          this.bobHurt(var1, var3);
          if (this.minecraft.options.bobView().get()) {
             this.bobView(var1, var3);
          }
 
-         boolean var5 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
+         boolean var4 = this.minecraft.getCameraEntity() instanceof LivingEntity && ((LivingEntity)this.minecraft.getCameraEntity()).isSleeping();
          if (this.minecraft.options.getCameraType().isFirstPerson()
-            && !var5
+            && !var4
             && !this.minecraft.options.hideGui
             && this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
             this.lightTexture.turnOnLightLayer();
@@ -933,7 +971,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          }
 
          var1.popPose();
-         if (this.minecraft.options.getCameraType().isFirstPerson() && !var5) {
+         if (this.minecraft.options.getCameraType().isFirstPerson() && !var4) {
             ScreenEffectRenderer.renderScreenEffect(this.minecraft, var1);
             this.bobHurt(var1, var3);
          }
@@ -950,16 +988,22 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
 
    public Matrix4f getProjectionMatrix(double var1) {
       PoseStack var3 = new PoseStack();
-      var3.last().pose().setIdentity();
+      var3.last().pose().identity();
       if (this.zoom != 1.0F) {
-         var3.translate((double)this.zoomX, (double)(-this.zoomY), 0.0);
+         var3.translate(this.zoomX, -this.zoomY, 0.0F);
          var3.scale(this.zoom, this.zoom, 1.0F);
       }
 
       var3.last()
          .pose()
-         .multiply(
-            Matrix4f.perspective(var1, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.getDepthFar())
+         .mul(
+            new Matrix4f()
+               .setPerspective(
+                  (float)(var1 * 0.01745329238474369),
+                  (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(),
+                  0.05F,
+                  this.getDepthFar()
+               )
          );
       return var3.last().pose();
    }
@@ -1012,13 +1056,14 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
 
          Window var7 = this.minecraft.getWindow();
          RenderSystem.clear(256, Minecraft.ON_OSX);
-         Matrix4f var8 = Matrix4f.orthographic(
-            0.0F, (float)((double)var7.getWidth() / var7.getGuiScale()), 0.0F, (float)((double)var7.getHeight() / var7.getGuiScale()), 1000.0F, 3000.0F
-         );
+         Matrix4f var8 = new Matrix4f()
+            .setOrtho(
+               0.0F, (float)((double)var7.getWidth() / var7.getGuiScale()), (float)((double)var7.getHeight() / var7.getGuiScale()), 0.0F, 1000.0F, 3000.0F
+            );
          RenderSystem.setProjectionMatrix(var8);
          PoseStack var9 = RenderSystem.getModelViewStack();
          var9.setIdentity();
-         var9.translate(0.0, 0.0, -2000.0);
+         var9.translate(0.0F, 0.0F, -2000.0F);
          RenderSystem.applyModelViewMatrix();
          Lighting.setupFor3DItems();
          PoseStack var10 = new PoseStack();
@@ -1052,7 +1097,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
             }
          } else if (this.minecraft.screen != null) {
             try {
-               this.minecraft.screen.render(var10, var5, var6, this.minecraft.getDeltaFrameTime());
+               this.minecraft.screen.renderWithTooltip(var10, var5, var6, this.minecraft.getDeltaFrameTime());
             } catch (Throwable var15) {
                CrashReport var18 = CrashReport.forThrowable(var15, "Rendering screen");
                CrashReportCategory var20 = var18.addCategory("Screen render details");
@@ -1160,7 +1205,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
                   var2 = var6.getMenuProvider(this.minecraft.level, var5) != null;
                } else {
                   BlockInWorld var7 = new BlockInWorld(this.minecraft.level, var5, false);
-                  Registry var8 = this.minecraft.level.registryAccess().registryOrThrow(Registry.BLOCK_REGISTRY);
+                  Registry var8 = this.minecraft.level.registryAccess().registryOrThrow(Registries.BLOCK);
                   var2 = !var3.isEmpty() && (var3.hasAdventureModeBreakTagForBlock(var8, var7) || var3.hasAdventureModePlaceTagForBlock(var8, var7));
                }
             }
@@ -1184,7 +1229,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
       this.renderDistance = (float)(this.minecraft.options.getEffectiveRenderDistance() * 16);
       PoseStack var7 = new PoseStack();
       double var8 = this.getFov(var6, var1, true);
-      var7.last().pose().multiply(this.getProjectionMatrix(var8));
+      var7.mulPoseMatrix(this.getProjectionMatrix(var8));
       this.bobHurt(var7, var1);
       if (this.minecraft.options.bobView().get()) {
          this.bobView(var7, var1);
@@ -1196,7 +1241,7 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          int var12 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
          float var13 = 5.0F / (var11 * var11 + 5.0F) - var11 * 0.04F;
          var13 *= var13;
-         Vector3f var14 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
+         Axis var14 = Axis.of(new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F));
          var7.mulPose(var14.rotationDegrees(((float)this.tick + var1) * (float)var12));
          var7.scale(1.0F / var13, 1.0F, 1.0F);
          float var15 = -((float)this.tick + var1) * (float)var12;
@@ -1212,13 +1257,10 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          this.minecraft.options.getCameraType().isMirrored(),
          var1
       );
-      var4.mulPose(Vector3f.XP.rotationDegrees(var6.getXRot()));
-      var4.mulPose(Vector3f.YP.rotationDegrees(var6.getYRot() + 180.0F));
-      Matrix3f var18 = var4.last().normal().copy();
-      if (var18.invert()) {
-         RenderSystem.setInverseViewRotationMatrix(var18);
-      }
-
+      var4.mulPose(Axis.XP.rotationDegrees(var6.getXRot()));
+      var4.mulPose(Axis.YP.rotationDegrees(var6.getYRot() + 180.0F));
+      Matrix3f var18 = new Matrix3f(var4.last().normal()).invert();
+      RenderSystem.setInverseViewRotationMatrix(var18);
       this.minecraft
          .levelRenderer
          .prepareCullFrustum(var4, var6.getPosition(), this.getProjectionMatrix(Math.max(var8, (double)this.minecraft.options.fov().get().intValue())));
@@ -1264,14 +1306,12 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
          RenderSystem.disableCull();
          PoseStack var12 = new PoseStack();
          var12.pushPose();
-         var12.translate(
-            (double)((float)(var1 / 2) + var10 * Mth.abs(Mth.sin(var9 * 2.0F))), (double)((float)(var2 / 2) + var11 * Mth.abs(Mth.sin(var9 * 2.0F))), -50.0
-         );
+         var12.translate((float)(var1 / 2) + var10 * Mth.abs(Mth.sin(var9 * 2.0F)), (float)(var2 / 2) + var11 * Mth.abs(Mth.sin(var9 * 2.0F)), -50.0F);
          float var13 = 50.0F + 175.0F * Mth.sin(var9);
          var12.scale(var13, -var13, var13);
-         var12.mulPose(Vector3f.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var9))));
-         var12.mulPose(Vector3f.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
-         var12.mulPose(Vector3f.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
+         var12.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var9))));
+         var12.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
+         var12.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var5 * 8.0F)));
          MultiBufferSource.BufferSource var14 = this.renderBuffers.bufferSource();
          this.minecraft
             .getItemRenderer()
@@ -1615,5 +1655,22 @@ public class GameRenderer implements ResourceManagerReloadListener, AutoCloseabl
    @Nullable
    public static ShaderInstance getRendertypeCrumblingShader() {
       return rendertypeCrumblingShader;
+   }
+
+   public static record ResourceCache(ResourceProvider a, Map<ResourceLocation, Resource> b) implements ResourceProvider {
+      private final ResourceProvider original;
+      private final Map<ResourceLocation, Resource> cache;
+
+      public ResourceCache(ResourceProvider var1, Map<ResourceLocation, Resource> var2) {
+         super();
+         this.original = var1;
+         this.cache = var2;
+      }
+
+      @Override
+      public Optional<Resource> getResource(ResourceLocation var1) {
+         Resource var2 = this.cache.get(var1);
+         return var2 != null ? Optional.of(var2) : this.original.getResource(var1);
+      }
    }
 }

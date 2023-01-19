@@ -44,9 +44,7 @@ public class ChatSelectionScreen extends Screen {
    private ChatSelectionScreen.ChatSelectionList chatSelectionList;
    final ChatReportBuilder report;
    private final Consumer<ChatReportBuilder> onSelected;
-   private ChatSelectionLogFiller<LoggedChatMessage.Player> chatLogFiller;
-   @Nullable
-   private List<FormattedCharSequence> tooltip;
+   private ChatSelectionLogFiller chatLogFiller;
 
    public ChatSelectionScreen(@Nullable Screen var1, ReportingContext var2, ChatReportBuilder var3, Consumer<ChatReportBuilder> var4) {
       super(TITLE);
@@ -58,18 +56,18 @@ public class ChatSelectionScreen extends Screen {
 
    @Override
    protected void init() {
-      this.chatLogFiller = new ChatSelectionLogFiller<>(this.reportingContext.chatLog(), this::canReport, LoggedChatMessage.Player.class);
+      this.chatLogFiller = new ChatSelectionLogFiller(this.reportingContext, this::canReport);
       this.contextInfoLabel = MultiLineLabel.create(this.font, CONTEXT_INFO, this.width - 16);
       this.chatSelectionList = new ChatSelectionScreen.ChatSelectionList(this.minecraft, (this.contextInfoLabel.getLineCount() + 1) * 9);
       this.chatSelectionList.setRenderBackground(false);
       this.addWidget(this.chatSelectionList);
-      this.addRenderableWidget(new Button(this.width / 2 - 155, this.height - 32, 150, 20, CommonComponents.GUI_BACK, var1 -> this.onClose()));
-      this.confirmSelectedButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 155 + 160, this.height - 32, 150, 20, CommonComponents.GUI_DONE, var1 -> {
-            this.onSelected.accept(this.report);
-            this.onClose();
-         })
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build()
       );
+      this.confirmSelectedButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
+         this.onSelected.accept(this.report);
+         this.onClose();
+      }).bounds(this.width / 2 - 155 + 160, this.height - 32, 150, 20).build());
       this.updateConfirmSelectedButton();
       this.extendLog();
       this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.getMaxScroll());
@@ -104,10 +102,6 @@ public class ChatSelectionScreen extends Screen {
       drawCenteredString(var1, this.font, var8, this.width / 2, 16 + 9 * 3 / 2, 10526880);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
       super.render(var1, var2, var3, var4);
-      if (this.tooltip != null) {
-         this.renderTooltip(var1, this.tooltip, var2, var3);
-         this.tooltip = null;
-      }
    }
 
    @Override
@@ -120,13 +114,7 @@ public class ChatSelectionScreen extends Screen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), CONTEXT_INFO);
    }
 
-   void setTooltip(@Nullable List<FormattedCharSequence> var1) {
-      this.tooltip = var1;
-   }
-
-   public class ChatSelectionList
-      extends ObjectSelectionList<ChatSelectionScreen.ChatSelectionList.Entry>
-      implements ChatSelectionLogFiller.Output<LoggedChatMessage.Player> {
+   public class ChatSelectionList extends ObjectSelectionList<ChatSelectionScreen.ChatSelectionList.Entry> implements ChatSelectionLogFiller.Output {
       @Nullable
       private ChatSelectionScreen.ChatSelectionList.Heading previousHeading;
 
@@ -143,6 +131,7 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
+      @Override
       public void acceptMessage(int var1, LoggedChatMessage.Player var2) {
          boolean var3 = var2.canReport(ChatSelectionScreen.this.report.reportedProfileId());
          ChatTrustLevel var4 = var2.trustLevel();
@@ -308,7 +297,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public class MessageEntry extends ChatSelectionScreen.ChatSelectionList.Entry {
-         private static final ResourceLocation CHECKMARK_TEXTURE = new ResourceLocation("realms", "textures/gui/realms/checkmark.png");
+         private static final ResourceLocation CHECKMARK_TEXTURE = new ResourceLocation("minecraft", "textures/gui/checkmark.png");
          private static final int CHECKMARK_WIDTH = 9;
          private static final int CHECKMARK_HEIGHT = 8;
          private static final int INDENT_AMOUNT = 11;
@@ -359,7 +348,7 @@ public class ChatSelectionScreen extends Screen {
                var1, ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var11, var12, this.canReport ? -1 : -1593835521
             );
             if (this.hoverText != null && var9) {
-               ChatSelectionScreen.this.setTooltip(this.hoverText);
+               ChatSelectionScreen.this.setTooltipForNextRenderPass(this.hoverText);
             }
 
             int var13 = ChatSelectionScreen.this.font.width(this.text);
@@ -371,7 +360,7 @@ public class ChatSelectionScreen extends Screen {
                int var7 = var3 + (var4 - this.tagIcon.height) / 2;
                this.tagIcon.draw(var1, var2, var7);
                if (this.tagHoverText != null && var5 >= var2 && var5 <= var2 + this.tagIcon.width && var6 >= var7 && var6 <= var7 + this.tagIcon.height) {
-                  ChatSelectionScreen.this.setTooltip(this.tagHoverText);
+                  ChatSelectionScreen.this.setTooltipForNextRenderPass(this.tagHoverText);
                }
             }
          }

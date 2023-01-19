@@ -7,7 +7,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import com.mojang.realmsclient.client.Ping;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.PingResult;
@@ -30,7 +30,6 @@ import com.mojang.realmsclient.util.RealmsPersistence;
 import com.mojang.realmsclient.util.RealmsTextureManager;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +45,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.CommonComponents;
@@ -94,7 +94,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final Component SERVER_OPEN_TOOLTIP = Component.translatable("mco.selectServer.open");
    private static final Component SERVER_CLOSED_TOOLTIP = Component.translatable("mco.selectServer.closed");
    private static final Component LEAVE_SERVER_TOOLTIP = Component.translatable("mco.selectServer.leave");
-   private static final Component CONFIGURE_SERVER_TOOLTIP = Component.translatable("mco.selectServer.configure");
+   private static final Component CONFIGURE_SERVER_TOOLTIP = Component.translatable("mco.selectServer.configureRealm");
    private static final Component NEWS_TOOLTIP = Component.translatable("mco.news");
    static final Component UNITIALIZED_WORLD_NARRATION = Component.translatable("gui.narrate.button", SERVER_UNITIALIZED_TEXT);
    static final Component TRIAL_TEXT = CommonComponents.joinLines(TRIAL_MESSAGE_LINES);
@@ -120,8 +120,6 @@ public class RealmsMainScreen extends RealmsScreen {
    private Button renewButton;
    private Button configureButton;
    private Button leaveButton;
-   @Nullable
-   private List<Component> toolTip;
    private List<RealmsServer> realmsServers = ImmutableList.of();
    volatile int numberOfPendingInvites;
    int animTick;
@@ -215,7 +213,6 @@ public class RealmsMainScreen extends RealmsScreen {
             this.minecraft.setConnectedToRealms(false);
          }
 
-         this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
          this.showingPopup = false;
          this.addButtons();
          this.realmSelectionList = new RealmsMainScreen.RealmSelectionList();
@@ -246,68 +243,48 @@ public class RealmsMainScreen extends RealmsScreen {
 
    public void addButtons() {
       this.leaveButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 202,
-            this.height - 32,
-            90,
-            20,
-            Component.translatable("mco.selectServer.leave"),
-            var1 -> this.leaveClicked(this.getSelectedServer())
-         )
+         Button.builder(Component.translatable("mco.selectServer.leave"), var1 -> this.leaveClicked(this.getSelectedServer()))
+            .bounds(this.width / 2 - 190, this.height - 32, 90, 20)
+            .build()
       );
       this.configureButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 190,
-            this.height - 32,
-            90,
-            20,
-            Component.translatable("mco.selectServer.configure"),
-            var1 -> this.configureClicked(this.getSelectedServer())
-         )
+         Button.builder(Component.translatable("mco.selectServer.configure"), var1 -> this.configureClicked(this.getSelectedServer()))
+            .bounds(this.width / 2 - 190, this.height - 32, 90, 20)
+            .build()
       );
       this.playButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 93, this.height - 32, 90, 20, Component.translatable("mco.selectServer.play"), var1 -> this.play(this.getSelectedServer(), this)
-         )
+         Button.builder(Component.translatable("mco.selectServer.play"), var1 -> this.play(this.getSelectedServer(), this))
+            .bounds(this.width / 2 - 93, this.height - 32, 90, 20)
+            .build()
       );
-      this.backButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 32, 90, 20, CommonComponents.GUI_BACK, var1 -> {
+      this.backButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, var1 -> {
          if (!this.justClosedPopup) {
             this.minecraft.setScreen(this.lastScreen);
          }
-      }));
+      }).bounds(this.width / 2 + 4, this.height - 32, 90, 20).build());
       this.renewButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 + 100,
-            this.height - 32,
-            90,
-            20,
-            Component.translatable("mco.selectServer.expiredRenew"),
-            var1 -> this.onRenew(this.getSelectedServer())
-         )
+         Button.builder(Component.translatable("mco.selectServer.expiredRenew"), var1 -> this.onRenew(this.getSelectedServer()))
+            .bounds(this.width / 2 + 100, this.height - 32, 90, 20)
+            .build()
       );
       this.newsButton = this.addRenderableWidget(new RealmsMainScreen.NewsButton());
       this.showPopupButton = this.addRenderableWidget(
-         new Button(this.width - 90, 6, 80, 20, Component.translatable("mco.selectServer.purchase"), var1 -> this.popupOpenedByUser = !this.popupOpenedByUser)
+         Button.builder(Component.translatable("mco.selectServer.purchase"), var1 -> this.popupOpenedByUser = !this.popupOpenedByUser)
+            .bounds(this.width - 90, 6, 80, 20)
+            .build()
       );
       this.pendingInvitesButton = this.addRenderableWidget(new RealmsMainScreen.PendingInvitesButton());
       this.closeButton = this.addRenderableWidget(new RealmsMainScreen.CloseButton());
-      this.createTrialButton = this.addRenderableWidget(
-         new Button(this.width / 2 + 52, this.popupY0() + 137 - 20, 98, 20, Component.translatable("mco.selectServer.trial"), var1 -> {
-            if (this.trialsAvailable && !this.createdTrial) {
-               Util.getPlatform().openUri("https://aka.ms/startjavarealmstrial");
-               this.minecraft.setScreen(this.lastScreen);
-            }
-         })
-      );
+      this.createTrialButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), var1 -> {
+         if (this.trialsAvailable && !this.createdTrial) {
+            Util.getPlatform().openUri("https://aka.ms/startjavarealmstrial");
+            this.minecraft.setScreen(this.lastScreen);
+         }
+      }).bounds(this.width / 2 + 52, this.popupY0() + 137 - 20, 98, 20).build());
       this.buyARealmButton = this.addRenderableWidget(
-         new Button(
-            this.width / 2 + 52,
-            this.popupY0() + 160 - 20,
-            98,
-            20,
-            Component.translatable("mco.selectServer.buy"),
-            var0 -> Util.getPlatform().openUri("https://aka.ms/BuyJavaRealms")
-         )
+         Button.builder(Component.translatable("mco.selectServer.buy"), var0 -> Util.getPlatform().openUri("https://aka.ms/BuyJavaRealms"))
+            .bounds(this.width / 2 + 52, this.popupY0() + 160 - 20, 98, 20)
+            .build()
       );
       this.updateButtonStates(null);
    }
@@ -512,11 +489,6 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       return var1;
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    public void setCreatedTrial(boolean var1) {
@@ -750,7 +722,6 @@ public class RealmsMainScreen extends RealmsScreen {
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       this.hoveredElement = RealmsMainScreen.HoveredElement.NONE;
-      this.toolTip = null;
       this.renderBackground(var1);
       this.realmSelectionList.render(var1, var2, var3, var4);
       this.drawRealmsLogo(var1, this.width / 2 - 50, 7);
@@ -779,10 +750,6 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       super.render(var1, var2, var3, var4);
-      if (this.toolTip != null) {
-         this.renderMousehoverTooltip(var1, this.toolTip, var2, var3);
-      }
-
       if (this.trialsAvailable && !this.createdTrial && this.shouldShowPopup()) {
          RenderSystem.setShaderTexture(0, TRIAL_ICON_LOCATION);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -795,8 +762,8 @@ public class RealmsMainScreen extends RealmsScreen {
 
          GuiComponent.blit(
             var1,
-            this.createTrialButton.x + this.createTrialButton.getWidth() - 8 - 4,
-            this.createTrialButton.y + this.createTrialButton.getHeight() / 2 - 4,
+            this.createTrialButton.getX() + this.createTrialButton.getWidth() - 8 - 4,
+            this.createTrialButton.getY() + this.createTrialButton.getHeight() / 2 - 4,
             0.0F,
             (float)var7,
             8,
@@ -976,7 +943,7 @@ public class RealmsMainScreen extends RealmsScreen {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27 && var5 < this.height - 40 && var5 > 32 && !this.shouldShowPopup()) {
-         this.setTooltip(SERVER_EXPIRED_TOOLTIP);
+         this.setTooltipForNextRenderPass(SERVER_EXPIRED_TOOLTIP);
       }
    }
 
@@ -991,11 +958,11 @@ public class RealmsMainScreen extends RealmsScreen {
 
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27 && var5 < this.height - 40 && var5 > 32 && !this.shouldShowPopup()) {
          if (var6 <= 0) {
-            this.setTooltip(SERVER_EXPIRES_SOON_TOOLTIP);
+            this.setTooltipForNextRenderPass(SERVER_EXPIRES_SOON_TOOLTIP);
          } else if (var6 == 1) {
-            this.setTooltip(SERVER_EXPIRES_IN_DAY_TOOLTIP);
+            this.setTooltipForNextRenderPass(SERVER_EXPIRES_IN_DAY_TOOLTIP);
          } else {
-            this.setTooltip(Component.translatable("mco.selectServer.expires.days", var6));
+            this.setTooltipForNextRenderPass(Component.translatable("mco.selectServer.expires.days", var6));
          }
       }
    }
@@ -1005,7 +972,7 @@ public class RealmsMainScreen extends RealmsScreen {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27 && var5 < this.height - 40 && var5 > 32 && !this.shouldShowPopup()) {
-         this.setTooltip(SERVER_OPEN_TOOLTIP);
+         this.setTooltipForNextRenderPass(SERVER_OPEN_TOOLTIP);
       }
    }
 
@@ -1014,7 +981,7 @@ public class RealmsMainScreen extends RealmsScreen {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27 && var5 < this.height - 40 && var5 > 32 && !this.shouldShowPopup()) {
-         this.setTooltip(SERVER_CLOSED_TOOLTIP);
+         this.setTooltipForNextRenderPass(SERVER_CLOSED_TOOLTIP);
       }
    }
 
@@ -1029,7 +996,7 @@ public class RealmsMainScreen extends RealmsScreen {
       float var7 = var6 ? 28.0F : 0.0F;
       GuiComponent.blit(var1, var2, var3, var7, 0.0F, 28, 28, 56, 28);
       if (var6) {
-         this.setTooltip(LEAVE_SERVER_TOOLTIP);
+         this.setTooltipForNextRenderPass(LEAVE_SERVER_TOOLTIP);
          this.hoveredElement = RealmsMainScreen.HoveredElement.LEAVE;
       }
    }
@@ -1045,35 +1012,8 @@ public class RealmsMainScreen extends RealmsScreen {
       float var7 = var6 ? 28.0F : 0.0F;
       GuiComponent.blit(var1, var2, var3, var7, 0.0F, 28, 28, 56, 28);
       if (var6) {
-         this.setTooltip(CONFIGURE_SERVER_TOOLTIP);
+         this.setTooltipForNextRenderPass(CONFIGURE_SERVER_TOOLTIP);
          this.hoveredElement = RealmsMainScreen.HoveredElement.CONFIGURE;
-      }
-   }
-
-   protected void renderMousehoverTooltip(PoseStack var1, List<Component> var2, int var3, int var4) {
-      if (!var2.isEmpty()) {
-         int var5 = 0;
-         int var6 = 0;
-
-         for(Component var8 : var2) {
-            int var9 = this.font.width(var8);
-            if (var9 > var6) {
-               var6 = var9;
-            }
-         }
-
-         int var12 = var3 - var6 - 5;
-         int var13 = var4;
-         if (var12 < 0) {
-            var12 = var3 + 12;
-         }
-
-         for(Component var10 : var2) {
-            int var11 = var13 - (var5 == 0 ? 3 : 0) + var5;
-            this.fillGradient(var1, var12 - 3, var11, var12 + var6 + 3, var13 + 8 + 3 + var5, -1073741824, -1073741824);
-            this.font.drawShadow(var1, var10, (float)var12, (float)(var13 + var5), 16777215);
-            var5 += 10;
-         }
       }
    }
 
@@ -1094,7 +1034,7 @@ public class RealmsMainScreen extends RealmsScreen {
       float var11 = var10 ? 20.0F : 0.0F;
       GuiComponent.blit(var1, var5, var6, var11, 0.0F, 20, 20, 40, 20);
       if (var9 && var8) {
-         this.setTooltip(NEWS_TOOLTIP);
+         this.setTooltipForNextRenderPass(NEWS_TOOLTIP);
       }
 
       if (var4 && var8) {
@@ -1109,8 +1049,8 @@ public class RealmsMainScreen extends RealmsScreen {
       String var2 = "LOCAL!";
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       var1.pushPose();
-      var1.translate((double)(this.width / 2 - 25), 20.0, 0.0);
-      var1.mulPose(Vector3f.ZP.rotationDegrees(-20.0F));
+      var1.translate((float)(this.width / 2 - 25), 20.0F, 0.0F);
+      var1.mulPose(Axis.ZP.rotationDegrees(-20.0F));
       var1.scale(1.5F, 1.5F, 1.5F);
       this.font.draw(var1, "LOCAL!", 0.0F, 0.0F, 8388479);
       var1.popPose();
@@ -1120,8 +1060,8 @@ public class RealmsMainScreen extends RealmsScreen {
       String var2 = "STAGE!";
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       var1.pushPose();
-      var1.translate((double)(this.width / 2 - 25), 20.0, 0.0);
-      var1.mulPose(Vector3f.ZP.rotationDegrees(-20.0F));
+      var1.translate((float)(this.width / 2 - 25), 20.0F, 0.0F);
+      var1.mulPose(Axis.ZP.rotationDegrees(-20.0F));
       var1.scale(1.5F, 1.5F, 1.5F);
       this.font.draw(var1, "STAGE!", 0.0F, 0.0F, -256);
       var1.popPose();
@@ -1138,10 +1078,6 @@ public class RealmsMainScreen extends RealmsScreen {
       teaserImages = var1.stream().filter(var0x -> var0x.getNamespace().equals("realms")).toList();
    }
 
-   void setTooltip(Component... var1) {
-      this.toolTip = Arrays.asList(var1);
-   }
-
    private void pendingButtonPress(Button var1) {
       this.minecraft.setScreen(new RealmsPendingInvitesScreen(this.lastScreen));
    }
@@ -1154,7 +1090,8 @@ public class RealmsMainScreen extends RealmsScreen {
             12,
             12,
             Component.translatable("mco.selectServer.close"),
-            var1x -> RealmsMainScreen.this.onClosePopup()
+            var1x -> RealmsMainScreen.this.onClosePopup(),
+            DEFAULT_NARRATION
          );
       }
 
@@ -1163,9 +1100,9 @@ public class RealmsMainScreen extends RealmsScreen {
          RenderSystem.setShaderTexture(0, RealmsMainScreen.CROSS_ICON_LOCATION);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          float var5 = this.isHoveredOrFocused() ? 12.0F : 0.0F;
-         blit(var1, this.x, this.y, 0.0F, var5, 12, 12, 12, 24);
+         blit(var1, this.getX(), this.getY(), 0.0F, var5, 12, 12, 12, 24);
          if (this.isMouseOver((double)var2, (double)var3)) {
-            RealmsMainScreen.this.setTooltip(this.getMessage());
+            RealmsMainScreen.this.setTooltipForNextRenderPass(this.getMessage());
          }
       }
    }
@@ -1193,7 +1130,13 @@ public class RealmsMainScreen extends RealmsScreen {
       public NewsButton() {
          super(RealmsMainScreen.this.width - 115, 6, 20, 20, Component.translatable("mco.news"), var1x -> {
             if (RealmsMainScreen.this.newsLink != null) {
-               Util.getPlatform().openUri(RealmsMainScreen.this.newsLink);
+               RealmsMainScreen.this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
+                  if (var1xx) {
+                     Util.getPlatform().openUri(RealmsMainScreen.this.newsLink);
+                  }
+
+                  RealmsMainScreen.this.minecraft.setScreen(RealmsMainScreen.this);
+               }, RealmsMainScreen.this.newsLink, true));
                if (RealmsMainScreen.this.hasUnreadNews) {
                   RealmsPersistence.RealmsPersistenceData var2 = RealmsPersistence.readFile();
                   var2.hasUnreadNews = false;
@@ -1201,18 +1144,20 @@ public class RealmsMainScreen extends RealmsScreen {
                   RealmsPersistence.writeFile(var2);
                }
             }
-         });
+         }, DEFAULT_NARRATION);
       }
 
       @Override
       public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-         RealmsMainScreen.this.renderNews(var1, var2, var3, RealmsMainScreen.this.hasUnreadNews, this.x, this.y, this.isHoveredOrFocused(), this.active);
+         RealmsMainScreen.this.renderNews(
+            var1, var2, var3, RealmsMainScreen.this.hasUnreadNews, this.getX(), this.getY(), this.isHoveredOrFocused(), this.active
+         );
       }
    }
 
    class PendingInvitesButton extends Button {
       public PendingInvitesButton() {
-         super(RealmsMainScreen.this.width / 2 + 47, 6, 22, 22, CommonComponents.EMPTY, RealmsMainScreen.this::pendingButtonPress);
+         super(RealmsMainScreen.this.width / 2 + 47, 6, 22, 22, CommonComponents.EMPTY, RealmsMainScreen.this::pendingButtonPress, DEFAULT_NARRATION);
       }
 
       public void tick() {
@@ -1221,7 +1166,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       @Override
       public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-         RealmsMainScreen.this.drawInvitationPendingIcon(var1, var2, var3, this.x, this.y, this.isHoveredOrFocused(), this.active);
+         RealmsMainScreen.this.drawInvitationPendingIcon(var1, var2, var3, this.getX(), this.getY(), this.isHoveredOrFocused(), this.active);
       }
    }
 
@@ -1376,7 +1321,7 @@ public class RealmsMainScreen extends RealmsScreen {
                   && var6 < RealmsMainScreen.this.height - 40
                   && var6 > 32
                   && !RealmsMainScreen.this.shouldShowPopup()) {
-                  RealmsMainScreen.this.setTooltip(Component.literal(var1.serverPing.playerList));
+                  RealmsMainScreen.this.setTooltipForNextRenderPass(Component.literal(var1.serverPing.playerList));
                }
             }
 

@@ -3,8 +3,8 @@ package net.minecraft.world.level.levelgen.feature.rootplacers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
@@ -17,8 +17,8 @@ public record MangroveRootPlacement(HolderSet<Block> b, HolderSet<Block> c, Bloc
    private final float randomSkewChance;
    public static final Codec<MangroveRootPlacement> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough),
-               RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY).fieldOf("muddy_roots_in").forGetter(var0x -> var0x.muddyRootsIn),
+               RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough),
+               RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("muddy_roots_in").forGetter(var0x -> var0x.muddyRootsIn),
                BlockStateProvider.CODEC.fieldOf("muddy_roots_provider").forGetter(var0x -> var0x.muddyRootsProvider),
                Codec.intRange(1, 12).fieldOf("max_root_width").forGetter(var0x -> var0x.maxRootWidth),
                Codec.intRange(1, 64).fieldOf("max_root_length").forGetter(var0x -> var0x.maxRootLength),

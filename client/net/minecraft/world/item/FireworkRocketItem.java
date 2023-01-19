@@ -2,9 +2,8 @@ package net.minecraft.world.item;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
@@ -12,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class FireworkRocketItem extends Item {
+   public static final byte[] CRAFTABLE_DURATIONS = new byte[]{1, 2, 3};
    public static final String TAG_FIREWORKS = "Fireworks";
    public static final String TAG_EXPLOSION = "Explosion";
    public static final String TAG_EXPLOSIONS = "Explosions";
@@ -110,10 +111,14 @@ public class FireworkRocketItem extends Item {
       }
    }
 
+   public static void setDuration(ItemStack var0, byte var1) {
+      var0.getOrCreateTagElement("Fireworks").putByte("Flight", var1);
+   }
+
    @Override
    public ItemStack getDefaultInstance() {
       ItemStack var1 = new ItemStack(this);
-      var1.getOrCreateTag().putByte("Flight", (byte)1);
+      setDuration(var1, (byte)1);
       return var1;
    }
 
@@ -124,9 +129,9 @@ public class FireworkRocketItem extends Item {
       CREEPER(3, "creeper"),
       BURST(4, "burst");
 
-      private static final FireworkRocketItem.Shape[] BY_ID = Arrays.stream(values())
-         .sorted(Comparator.comparingInt(var0 -> var0.id))
-         .toArray(var0 -> new FireworkRocketItem.Shape[var0]);
+      private static final IntFunction<FireworkRocketItem.Shape> BY_ID = ByIdMap.continuous(
+         FireworkRocketItem.Shape::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO
+      );
       private final int id;
       private final String name;
 
@@ -144,7 +149,7 @@ public class FireworkRocketItem extends Item {
       }
 
       public static FireworkRocketItem.Shape byId(int var0) {
-         return var0 >= 0 && var0 < BY_ID.length ? BY_ID[var0] : SMALL_BALL;
+         return BY_ID.apply(var0);
       }
    }
 }

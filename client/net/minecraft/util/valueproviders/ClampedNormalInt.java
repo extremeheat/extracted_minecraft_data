@@ -23,10 +23,10 @@ public class ClampedNormalInt extends IntProvider {
                : DataResult.success(var0),
          Function.identity()
       );
-   private float mean;
-   private float deviation;
-   private int min_inclusive;
-   private int max_inclusive;
+   private final float mean;
+   private final float deviation;
+   private final int min_inclusive;
+   private final int max_inclusive;
 
    public static ClampedNormalInt of(float var0, float var1, int var2, int var3) {
       return new ClampedNormalInt(var0, var1, var2, var3);

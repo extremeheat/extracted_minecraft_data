@@ -1,11 +1,12 @@
 package net.minecraft.world.entity.ai.gossip;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.serialization.DataResult;
+import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -21,13 +22,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.DoublePredicate;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
+import org.slf4j.Logger;
 
 public class GossipContainer {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int DISCARD_THRESHOLD = 2;
    private final Map<UUID, GossipContainer.EntityGossips> gossips = Maps.newHashMap();
 
@@ -62,7 +65,7 @@ public class GossipContainer {
    }
 
    private Collection<GossipContainer.GossipEntry> selectGossipsForTransfer(RandomSource var1, int var2) {
-      List var3 = this.unpack().collect(Collectors.toList());
+      List var3 = this.unpack().toList();
       if (var3.isEmpty()) {
          return Collections.emptyList();
       } else {
@@ -145,14 +148,19 @@ public class GossipContainer {
       }
    }
 
-   public <T> Dynamic<T> store(DynamicOps<T> var1) {
-      return new Dynamic(var1, var1.createList(this.unpack().map(var1x -> var1x.store(var1)).map(Dynamic::getValue)));
+   public <T> T store(DynamicOps<T> var1) {
+      return (T)GossipContainer.GossipEntry.LIST_CODEC
+         .encodeStart(var1, this.unpack().toList())
+         .resultOrPartial(var0 -> LOGGER.warn("Failed to serialize gossips: {}", var0))
+         .orElseGet(var1::emptyList);
    }
 
    public void update(Dynamic<?> var1) {
-      var1.asStream()
-         .map(GossipContainer.GossipEntry::load)
-         .flatMap(var0 -> var0.result().stream())
+      GossipContainer.GossipEntry.LIST_CODEC
+         .decode(var1)
+         .resultOrPartial(var0 -> LOGGER.warn("Failed to deserialize gossips: {}", var0))
+         .stream()
+         .flatMap(var0 -> ((List)var0.getFirst()).stream())
          .forEach(var1x -> this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value));
    }
 
@@ -222,15 +230,21 @@ public class GossipContainer {
       }
    }
 
-   static class GossipEntry {
-      public static final String TAG_TARGET = "Target";
-      public static final String TAG_TYPE = "Type";
-      public static final String TAG_VALUE = "Value";
-      public final UUID target;
-      public final GossipType type;
-      public final int value;
+   static record GossipEntry(UUID c, GossipType d, int e) {
+      final UUID target;
+      final GossipType type;
+      final int value;
+      public static final Codec<GossipContainer.GossipEntry> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipContainer.GossipEntry::target),
+                  GossipType.CODEC.fieldOf("Type").forGetter(GossipContainer.GossipEntry::type),
+                  ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipContainer.GossipEntry::value)
+               )
+               .apply(var0, GossipContainer.GossipEntry::new)
+      );
+      public static final Codec<List<GossipContainer.GossipEntry>> LIST_CODEC = CODEC.listOf();
 
-      public GossipEntry(UUID var1, GossipType var2, int var3) {
+      GossipEntry(UUID var1, GossipType var2, int var3) {
          super();
          this.target = var1;
          this.type = var2;
@@ -239,39 +253,6 @@ public class GossipContainer {
 
       public int weightedValue() {
          return this.value * this.type.weight;
-      }
-
-      @Override
-      public String toString() {
-         return "GossipEntry{target=" + this.target + ", type=" + this.type + ", value=" + this.value + "}";
-      }
-
-      public <T> Dynamic<T> store(DynamicOps<T> var1) {
-         return new Dynamic(
-            var1,
-            var1.createMap(
-               ImmutableMap.of(
-                  var1.createString("Target"),
-                  UUIDUtil.CODEC.encodeStart(var1, this.target).result().orElseThrow(RuntimeException::new),
-                  var1.createString("Type"),
-                  var1.createString(this.type.id),
-                  var1.createString("Value"),
-                  var1.createInt(this.value)
-               )
-            )
-         );
-      }
-
-      public static DataResult<GossipContainer.GossipEntry> load(Dynamic<?> var0) {
-         return DataResult.unbox(
-            DataResult.instance()
-               .group(
-                  var0.get("Target").read(UUIDUtil.CODEC),
-                  var0.get("Type").asString().map(GossipType::byId),
-                  var0.get("Value").asNumber().map(Number::intValue)
-               )
-               .apply(DataResult.instance(), GossipContainer.GossipEntry::new)
-         );
       }
    }
 }

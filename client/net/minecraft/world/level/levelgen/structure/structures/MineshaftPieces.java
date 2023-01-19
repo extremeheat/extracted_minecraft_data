@@ -322,6 +322,8 @@ public class MineshaftPieces {
          }
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void postProcess(
          WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
@@ -366,34 +368,34 @@ public class MineshaftPieces {
                      this.hasPlacedSpider = true;
                      var1.setBlock(var18, Blocks.SPAWNER.defaultBlockState(), 2);
                      BlockEntity var19 = var1.getBlockEntity(var18);
-                     if (var19 instanceof SpawnerBlockEntity) {
-                        ((SpawnerBlockEntity)var19).getSpawner().setEntityId(EntityType.CAVE_SPIDER);
+                     if (var19 instanceof SpawnerBlockEntity var20) {
+                        var20.setEntityId(EntityType.CAVE_SPIDER, var4);
                      }
                   }
                }
             }
 
-            for(int var20 = 0; var20 <= 2; ++var20) {
-               for(int var22 = 0; var22 <= var12; ++var22) {
-                  this.setPlanksBlock(var1, var5, var13, var20, -1, var22);
+            for(int var21 = 0; var21 <= 2; ++var21) {
+               for(int var23 = 0; var23 <= var12; ++var23) {
+                  this.setPlanksBlock(var1, var5, var13, var21, -1, var23);
                }
             }
 
-            boolean var21 = true;
+            boolean var22 = true;
             this.placeDoubleLowerOrUpperSupport(var1, var5, 0, -1, 2);
             if (this.numSections > 1) {
-               int var23 = var12 - 2;
-               this.placeDoubleLowerOrUpperSupport(var1, var5, 0, -1, var23);
+               int var24 = var12 - 2;
+               this.placeDoubleLowerOrUpperSupport(var1, var5, 0, -1, var24);
             }
 
             if (this.hasRails) {
-               BlockState var24 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, RailShape.NORTH_SOUTH);
+               BlockState var25 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, RailShape.NORTH_SOUTH);
 
-               for(int var25 = 0; var25 <= var12; ++var25) {
-                  BlockState var26 = this.getBlock(var1, 1, -1, var25, var5);
-                  if (!var26.isAir() && var26.isSolidRender(var1, this.getWorldPos(1, -1, var25))) {
-                     float var27 = this.isInterior(var1, 1, 0, var25, var5) ? 0.7F : 0.9F;
-                     this.maybeGenerateBlock(var1, var5, var4, var27, 1, 0, var25, var24);
+               for(int var26 = 0; var26 <= var12; ++var26) {
+                  BlockState var27 = this.getBlock(var1, 1, -1, var26, var5);
+                  if (!var27.isAir() && var27.isSolidRender(var1, this.getWorldPos(1, -1, var26))) {
+                     float var28 = this.isInterior(var1, 1, 0, var26, var5) ? 0.7F : 0.9F;
+                     this.maybeGenerateBlock(var1, var5, var4, var28, 1, 0, var26, var25);
                   }
                }
             }

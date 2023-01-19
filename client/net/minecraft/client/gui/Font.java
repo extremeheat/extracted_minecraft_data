@@ -8,9 +8,7 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -30,6 +28,8 @@ import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringDecomposer;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public class Font {
    private static final float EFFECT_DEPTH = 0.01F;
@@ -174,7 +174,7 @@ public class Font {
       }
 
       var4 = adjustColor(var4);
-      Matrix4f var12 = var6.copy();
+      Matrix4f var12 = new Matrix4f(var6);
       if (var5) {
          this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10);
          var12.translate(SHADOW_OFFSET);
@@ -188,7 +188,7 @@ public class Font {
       FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
    ) {
       var4 = adjustColor(var4);
-      Matrix4f var11 = var6.copy();
+      Matrix4f var11 = new Matrix4f(var6);
       if (var5) {
          this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10);
          var11.translate(SHADOW_OFFSET);

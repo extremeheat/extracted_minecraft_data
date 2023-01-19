@@ -1,55 +1,49 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.item.ItemEntity;
 
-public class GoToWantedItem<E extends LivingEntity> extends Behavior<E> {
-   private final Predicate<E> predicate;
-   private final int maxDistToWalk;
-   private final float speedModifier;
-
-   public GoToWantedItem(float var1, boolean var2, int var3) {
-      this(var0 -> true, var1, var2, var3);
+public class GoToWantedItem {
+   public GoToWantedItem() {
+      super();
    }
 
-   public GoToWantedItem(Predicate<E> var1, float var2, boolean var3, int var4) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.WALK_TARGET,
-            var3 ? MemoryStatus.REGISTERED : MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
-            MemoryStatus.VALUE_PRESENT
-         )
+   public static BehaviorControl<LivingEntity> create(float var0, boolean var1, int var2) {
+      return create(var0x -> true, var0, var1, var2);
+   }
+
+   public static <E extends LivingEntity> BehaviorControl<E> create(Predicate<E> var0, float var1, boolean var2, int var3) {
+      return BehaviorBuilder.create(
+         var4 -> {
+            BehaviorBuilder var5 = var2 ? var4.registered(MemoryModuleType.WALK_TARGET) : var4.absent(MemoryModuleType.WALK_TARGET);
+            return var4.group(
+                  var4.registered(MemoryModuleType.LOOK_TARGET),
+                  var5,
+                  var4.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM),
+                  var4.registered(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)
+               )
+               .apply(
+                  var4,
+                  (var4x, var5x, var6, var7) -> (var8, var9, var10) -> {
+                        ItemEntity var12 = var4.get(var6);
+                        if (var4.tryGet(var7).isEmpty()
+                           && var0.test(var9)
+                           && var12.closerThan(var9, (double)var3)
+                           && var9.level.getWorldBorder().isWithinBounds(var12.blockPosition())) {
+                           WalkTarget var13 = new WalkTarget(new EntityTracker(var12, false), var1, 0);
+                           var4x.set(new EntityTracker(var12, true));
+                           var5x.set(var13);
+                           return true;
+                        } else {
+                           return false;
+                        }
+                     }
+               );
+         }
       );
-      this.predicate = var1;
-      this.maxDistToWalk = var4;
-      this.speedModifier = var2;
-   }
-
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return !this.isOnPickupCooldown((E)var2)
-         && this.predicate.test((E)var2)
-         && this.getClosestLovedItem((E)var2).closerThan(var2, (double)this.maxDistToWalk);
-   }
-
-   @Override
-   protected void start(ServerLevel var1, E var2, long var3) {
-      BehaviorUtils.setWalkAndLookTargetMemories(var2, this.getClosestLovedItem((E)var2), this.speedModifier, 0);
-   }
-
-   private boolean isOnPickupCooldown(E var1) {
-      return var1.getBrain().checkMemory(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, MemoryStatus.VALUE_PRESENT);
-   }
-
-   private ItemEntity getClosestLovedItem(E var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM).get();
    }
 }

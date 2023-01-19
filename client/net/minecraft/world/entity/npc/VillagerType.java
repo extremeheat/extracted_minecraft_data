@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
@@ -62,7 +63,7 @@ public final class VillagerType {
    }
 
    private static VillagerType register(String var0) {
-      return Registry.register(Registry.VILLAGER_TYPE, new ResourceLocation(var0), new VillagerType(var0));
+      return Registry.register(BuiltInRegistries.VILLAGER_TYPE, new ResourceLocation(var0), new VillagerType(var0));
    }
 
    public static VillagerType byBiome(Holder<Biome> var0) {

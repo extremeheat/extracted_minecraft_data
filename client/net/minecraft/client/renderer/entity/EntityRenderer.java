@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
@@ -14,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 public abstract class EntityRenderer<T extends Entity> {
    protected static final float NAMETAG_SCALE = 0.025F;
@@ -83,7 +83,7 @@ public abstract class EntityRenderer<T extends Entity> {
          float var9 = var1.getBbHeight() + 0.5F;
          int var10 = "deadmau5".equals(var2.getString()) ? -10 : 0;
          var3.pushPose();
-         var3.translate(0.0, (double)var9, 0.0);
+         var3.translate(0.0F, var9, 0.0F);
          var3.mulPose(this.entityRenderDispatcher.cameraOrientation());
          var3.scale(-0.025F, -0.025F, 0.025F);
          Matrix4f var11 = var3.last().pose();

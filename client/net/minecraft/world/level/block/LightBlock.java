@@ -43,7 +43,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (!var2.isClientSide) {
+      if (!var2.isClientSide && var4.canUseGameMasterBlocks()) {
          var2.setBlock(var3, var1.cycle(LEVEL), 2);
          return InteractionResult.SUCCESS;
       } else {
@@ -87,13 +87,16 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
 
    @Override
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
-      if (var3.getValue(LEVEL) != 15) {
-         CompoundTag var5 = new CompoundTag();
-         var5.putString(LEVEL.getName(), String.valueOf(var3.getValue(LEVEL)));
-         var4.addTagElement("BlockStateTag", var5);
+      return setLightOnStack(super.getCloneItemStack(var1, var2, var3), var3.getValue(LEVEL));
+   }
+
+   public static ItemStack setLightOnStack(ItemStack var0, int var1) {
+      if (var1 != 15) {
+         CompoundTag var2 = new CompoundTag();
+         var2.putString(LEVEL.getName(), String.valueOf(var1));
+         var0.addTagElement("BlockStateTag", var2);
       }
 
-      return var4;
+      return var0;
    }
 }

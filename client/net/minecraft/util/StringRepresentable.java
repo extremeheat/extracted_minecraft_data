@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Keyable;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,8 +48,8 @@ public interface StringRepresentable {
 
    @Deprecated
    public static class EnumCodec<E extends Enum<E> & StringRepresentable> implements Codec<E> {
-      private Codec<E> codec;
-      private Function<String, E> resolver;
+      private final Codec<E> codec;
+      private final Function<String, E> resolver;
 
       public EnumCodec(E[] var1, Function<String, E> var2) {
          super();
@@ -70,6 +71,10 @@ public interface StringRepresentable {
       @Nullable
       public E byName(@Nullable String var1) {
          return this.resolver.apply(var1);
+      }
+
+      public E byName(@Nullable String var1, E var2) {
+         return Objects.requireNonNullElse(this.byName(var1), (E)var2);
       }
    }
 }

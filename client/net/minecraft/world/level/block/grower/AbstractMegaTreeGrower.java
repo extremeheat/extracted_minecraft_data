@@ -3,6 +3,8 @@ package net.minecraft.world.level.block.grower;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
@@ -31,27 +33,32 @@ public abstract class AbstractMegaTreeGrower extends AbstractTreeGrower {
    }
 
    @Nullable
-   protected abstract Holder<? extends ConfiguredFeature<?, ?>> getConfiguredMegaFeature(RandomSource var1);
+   protected abstract ResourceKey<ConfiguredFeature<?, ?>> getConfiguredMegaFeature(RandomSource var1);
 
    public boolean placeMega(ServerLevel var1, ChunkGenerator var2, BlockPos var3, BlockState var4, RandomSource var5, int var6, int var7) {
-      Holder var8 = this.getConfiguredMegaFeature(var5);
+      ResourceKey var8 = this.getConfiguredMegaFeature(var5);
       if (var8 == null) {
          return false;
       } else {
-         ConfiguredFeature var9 = (ConfiguredFeature)var8.value();
-         BlockState var10 = Blocks.AIR.defaultBlockState();
-         var1.setBlock(var3.offset(var6, 0, var7), var10, 4);
-         var1.setBlock(var3.offset(var6 + 1, 0, var7), var10, 4);
-         var1.setBlock(var3.offset(var6, 0, var7 + 1), var10, 4);
-         var1.setBlock(var3.offset(var6 + 1, 0, var7 + 1), var10, 4);
-         if (var9.place(var1, var2, var5, var3.offset(var6, 0, var7))) {
-            return true;
-         } else {
-            var1.setBlock(var3.offset(var6, 0, var7), var4, 4);
-            var1.setBlock(var3.offset(var6 + 1, 0, var7), var4, 4);
-            var1.setBlock(var3.offset(var6, 0, var7 + 1), var4, 4);
-            var1.setBlock(var3.offset(var6 + 1, 0, var7 + 1), var4, 4);
+         Holder var9 = var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(var8).orElse(null);
+         if (var9 == null) {
             return false;
+         } else {
+            ConfiguredFeature var10 = (ConfiguredFeature)var9.value();
+            BlockState var11 = Blocks.AIR.defaultBlockState();
+            var1.setBlock(var3.offset(var6, 0, var7), var11, 4);
+            var1.setBlock(var3.offset(var6 + 1, 0, var7), var11, 4);
+            var1.setBlock(var3.offset(var6, 0, var7 + 1), var11, 4);
+            var1.setBlock(var3.offset(var6 + 1, 0, var7 + 1), var11, 4);
+            if (var10.place(var1, var2, var5, var3.offset(var6, 0, var7))) {
+               return true;
+            } else {
+               var1.setBlock(var3.offset(var6, 0, var7), var4, 4);
+               var1.setBlock(var3.offset(var6 + 1, 0, var7), var4, 4);
+               var1.setBlock(var3.offset(var6, 0, var7 + 1), var4, 4);
+               var1.setBlock(var3.offset(var6 + 1, 0, var7 + 1), var4, 4);
+               return false;
+            }
          }
       }
    }

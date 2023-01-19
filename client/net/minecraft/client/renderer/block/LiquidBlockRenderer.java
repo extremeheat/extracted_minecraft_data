@@ -167,30 +167,28 @@ public class LiquidBlockRenderer {
 
             float var99 = (var48 + var49 + var50 + var51) / 4.0F;
             float var101 = (var52 + var53 + var54 + var55) / 4.0F;
-            float var102 = (float)var7[0].getWidth() / (var7[0].getU1() - var7[0].getU0());
-            float var104 = (float)var7[0].getHeight() / (var7[0].getV1() - var7[0].getV0());
-            float var105 = 4.0F / Math.max(var104, var102);
-            var48 = Mth.lerp(var105, var48, var99);
-            var49 = Mth.lerp(var105, var49, var99);
-            var50 = Mth.lerp(var105, var50, var99);
-            var51 = Mth.lerp(var105, var51, var99);
-            var52 = Mth.lerp(var105, var52, var101);
-            var53 = Mth.lerp(var105, var53, var101);
-            var54 = Mth.lerp(var105, var54, var101);
-            var55 = Mth.lerp(var105, var55, var101);
-            int var62 = this.getLightColor(var1, var2);
-            float var63 = var31 * var9;
-            float var64 = var31 * var10;
-            float var65 = var31 * var11;
-            this.vertex(var3, var73 + 0.0, var74 + (double)var36, var44 + 0.0, var63, var64, var65, var48, var52, var62);
-            this.vertex(var3, var73 + 0.0, var74 + (double)var38, var44 + 1.0, var63, var64, var65, var49, var53, var62);
-            this.vertex(var3, var73 + 1.0, var74 + (double)var37, var44 + 1.0, var63, var64, var65, var50, var54, var62);
-            this.vertex(var3, var73 + 1.0, var74 + (double)var35, var44 + 0.0, var63, var64, var65, var51, var55, var62);
+            float var102 = var7[0].uvShrinkRatio();
+            var48 = Mth.lerp(var102, var48, var99);
+            var49 = Mth.lerp(var102, var49, var99);
+            var50 = Mth.lerp(var102, var50, var99);
+            var51 = Mth.lerp(var102, var51, var99);
+            var52 = Mth.lerp(var102, var52, var101);
+            var53 = Mth.lerp(var102, var53, var101);
+            var54 = Mth.lerp(var102, var54, var101);
+            var55 = Mth.lerp(var102, var55, var101);
+            int var104 = this.getLightColor(var1, var2);
+            float var105 = var31 * var9;
+            float var62 = var31 * var10;
+            float var63 = var31 * var11;
+            this.vertex(var3, var73 + 0.0, var74 + (double)var36, var44 + 0.0, var105, var62, var63, var48, var52, var104);
+            this.vertex(var3, var73 + 0.0, var74 + (double)var38, var44 + 1.0, var105, var62, var63, var49, var53, var104);
+            this.vertex(var3, var73 + 1.0, var74 + (double)var37, var44 + 1.0, var105, var62, var63, var50, var54, var104);
+            this.vertex(var3, var73 + 1.0, var74 + (double)var35, var44 + 0.0, var105, var62, var63, var51, var55, var104);
             if (var5.shouldRenderBackwardUpFace(var1, var2.above())) {
-               this.vertex(var3, var73 + 0.0, var74 + (double)var36, var44 + 0.0, var63, var64, var65, var48, var52, var62);
-               this.vertex(var3, var73 + 1.0, var74 + (double)var35, var44 + 0.0, var63, var64, var65, var51, var55, var62);
-               this.vertex(var3, var73 + 1.0, var74 + (double)var37, var44 + 1.0, var63, var64, var65, var50, var54, var62);
-               this.vertex(var3, var73 + 0.0, var74 + (double)var38, var44 + 1.0, var63, var64, var65, var49, var53, var62);
+               this.vertex(var3, var73 + 0.0, var74 + (double)var36, var44 + 0.0, var105, var62, var63, var48, var52, var104);
+               this.vertex(var3, var73 + 1.0, var74 + (double)var35, var44 + 0.0, var105, var62, var63, var51, var55, var104);
+               this.vertex(var3, var73 + 1.0, var74 + (double)var37, var44 + 1.0, var105, var62, var63, var50, var54, var104);
+               this.vertex(var3, var73 + 0.0, var74 + (double)var38, var44 + 1.0, var105, var62, var63, var49, var53, var104);
             }
          }
 
@@ -261,14 +259,14 @@ public class LiquidBlockRenderer {
                BlockPos var107 = var2.relative(var83);
                TextureAtlasSprite var108 = var7[1];
                if (!var6) {
-                  Block var109 = var1.getBlockState(var107).getBlock();
-                  if (var109 instanceof HalfTransparentBlock || var109 instanceof LeavesBlock) {
+                  Block var64 = var1.getBlockState(var107).getBlock();
+                  if (var64 instanceof HalfTransparentBlock || var64 instanceof LeavesBlock) {
                      var108 = this.waterOverlay;
                   }
                }
 
-               float var110 = var108.getU(0.0);
-               float var111 = var108.getU(8.0);
+               float var109 = var108.getU(0.0);
+               float var65 = var108.getU(8.0);
                float var66 = var108.getV((double)((1.0F - var86) * 16.0F * 0.5F));
                float var67 = var108.getV((double)((1.0F - var89) * 16.0F * 0.5F));
                float var68 = var108.getV(8.0);
@@ -276,15 +274,15 @@ public class LiquidBlockRenderer {
                float var70 = var31 * var69 * var9;
                float var71 = var31 * var69 * var10;
                float var72 = var31 * var69 * var11;
-               this.vertex(var3, var92, var74 + (double)var86, var97, var70, var71, var72, var110, var66, var77);
-               this.vertex(var3, var100, var74 + (double)var89, var103, var70, var71, var72, var111, var67, var77);
-               this.vertex(var3, var100, var74 + (double)var47, var103, var70, var71, var72, var111, var68, var77);
-               this.vertex(var3, var92, var74 + (double)var47, var97, var70, var71, var72, var110, var68, var77);
+               this.vertex(var3, var92, var74 + (double)var86, var97, var70, var71, var72, var109, var66, var77);
+               this.vertex(var3, var100, var74 + (double)var89, var103, var70, var71, var72, var65, var67, var77);
+               this.vertex(var3, var100, var74 + (double)var47, var103, var70, var71, var72, var65, var68, var77);
+               this.vertex(var3, var92, var74 + (double)var47, var97, var70, var71, var72, var109, var68, var77);
                if (var108 != this.waterOverlay) {
-                  this.vertex(var3, var92, var74 + (double)var47, var97, var70, var71, var72, var110, var68, var77);
-                  this.vertex(var3, var100, var74 + (double)var47, var103, var70, var71, var72, var111, var68, var77);
-                  this.vertex(var3, var100, var74 + (double)var89, var103, var70, var71, var72, var111, var67, var77);
-                  this.vertex(var3, var92, var74 + (double)var86, var97, var70, var71, var72, var110, var66, var77);
+                  this.vertex(var3, var92, var74 + (double)var47, var97, var70, var71, var72, var109, var68, var77);
+                  this.vertex(var3, var100, var74 + (double)var47, var103, var70, var71, var72, var65, var68, var77);
+                  this.vertex(var3, var100, var74 + (double)var89, var103, var70, var71, var72, var65, var67, var77);
+                  this.vertex(var3, var92, var74 + (double)var86, var97, var70, var71, var72, var109, var66, var77);
                }
             }
          }

@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
@@ -20,7 +20,7 @@ public class CarverConfiguration extends ProbabilityFeatureConfiguration {
                FloatProvider.CODEC.fieldOf("yScale").forGetter(var0x -> var0x.yScale),
                VerticalAnchor.CODEC.fieldOf("lava_level").forGetter(var0x -> var0x.lavaLevel),
                CarverDebugSettings.CODEC.optionalFieldOf("debug_settings", CarverDebugSettings.DEFAULT).forGetter(var0x -> var0x.debugSettings),
-               RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY).fieldOf("replaceable").forGetter(var0x -> var0x.replaceable)
+               RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("replaceable").forGetter(var0x -> var0x.replaceable)
             )
             .apply(var0, CarverConfiguration::new)
    );

@@ -127,10 +127,13 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
          BlockPos var5 = var3.getBlockPos();
          if (var1.canSeeSky(var5)) {
             LightningBolt var6 = EntityType.LIGHTNING_BOLT.create(var1);
-            var6.moveTo(Vec3.atBottomCenterOf(var5.above()));
-            Entity var7 = var4.getOwner();
-            var6.setCause(var7 instanceof ServerPlayer ? (ServerPlayer)var7 : null);
-            var1.addFreshEntity(var6);
+            if (var6 != null) {
+               var6.moveTo(Vec3.atBottomCenterOf(var5.above()));
+               Entity var7 = var4.getOwner();
+               var6.setCause(var7 instanceof ServerPlayer ? (ServerPlayer)var7 : null);
+               var1.addFreshEntity(var6);
+            }
+
             var1.playSound(null, var5, SoundEvents.TRIDENT_THUNDER, SoundSource.WEATHER, 5.0F, 1.0F);
          }
       }

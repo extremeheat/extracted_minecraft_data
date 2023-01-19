@@ -14,6 +14,7 @@ import net.minecraft.Util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.GenericWaitingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.WarningScreen;
@@ -53,30 +54,37 @@ public class ChatReportScreen extends Screen {
    @Nullable
    private MultiLineEditBox commentBox;
    private Button sendButton;
-   private ChatReportBuilder report;
+   private ChatReportBuilder reportBuilder;
    @Nullable
-   ChatReportBuilder.CannotBuildReason cannotBuildReason;
+   private ChatReportBuilder.CannotBuildReason cannotBuildReason;
 
-   public ChatReportScreen(Screen var1, ReportingContext var2, UUID var3) {
+   private ChatReportScreen(@Nullable Screen var1, ReportingContext var2, ChatReportBuilder var3) {
       super(Component.translatable("gui.chatReport.title"));
       this.lastScreen = var1;
       this.reportingContext = var2;
-      this.report = new ChatReportBuilder(var3, var2.sender().reportLimits());
+      this.reportBuilder = var3;
+   }
+
+   public ChatReportScreen(@Nullable Screen var1, ReportingContext var2, UUID var3) {
+      this(var1, var2, new ChatReportBuilder(var3, var2.sender().reportLimits()));
+   }
+
+   public ChatReportScreen(@Nullable Screen var1, ReportingContext var2, ChatReportBuilder.ChatReport var3) {
+      this(var1, var2, new ChatReportBuilder(var3, var2.sender().reportLimits()));
    }
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       AbuseReportLimits var1 = this.reportingContext.sender().reportLimits();
       int var2 = this.width / 2;
-      ReportReason var3 = this.report.reason();
+      ReportReason var3 = this.reportBuilder.reason();
       if (var3 != null) {
          this.reasonDescriptionLabel = MultiLineLabel.create(this.font, var3.description(), 280);
       } else {
          this.reasonDescriptionLabel = null;
       }
 
-      IntSet var4 = this.report.reportedMessages();
+      IntSet var4 = this.reportBuilder.reportedMessages();
       Object var5;
       if (var4.isEmpty()) {
          var5 = SELECT_CHAT_MESSAGE;
@@ -85,31 +93,21 @@ public class ChatReportScreen extends Screen {
       }
 
       this.addRenderableWidget(
-         new Button(
-            this.contentLeft(),
-            this.selectChatTop(),
-            280,
-            20,
-            (Component)var5,
-            var1x -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.report, var1xx -> {
-                  this.report = var1xx;
-                  this.onReportChanged();
-               }))
-         )
+         Button.builder(
+               (Component)var5, var1x -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, var1xx -> {
+                     this.reportBuilder = var1xx;
+                     this.onReportChanged();
+                  }))
+            )
+            .bounds(this.contentLeft(), this.selectChatTop(), 280, 20)
+            .build()
       );
       Component var6 = Util.mapNullable(var3, ReportReason::title, SELECT_REASON);
       this.addRenderableWidget(
-         new Button(
-            this.contentLeft(),
-            this.selectInfoTop(),
-            280,
-            20,
-            var6,
-            var1x -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, this.report.reason(), var1xx -> {
-                  this.report.setReason(var1xx);
-                  this.onReportChanged();
-               }))
-         )
+         Button.builder(var6, var1x -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, this.reportBuilder.reason(), var1xx -> {
+               this.reportBuilder.setReason(var1xx);
+               this.onReportChanged();
+            }))).bounds(this.contentLeft(), this.selectInfoTop(), 280, 20).build()
       );
       this.commentBox = this.addRenderableWidget(
          new MultiLineEditBox(
@@ -122,34 +120,31 @@ public class ChatReportScreen extends Screen {
             Component.translatable("gui.chatReport.comments")
          )
       );
-      this.commentBox.setValue(this.report.comments());
+      this.commentBox.setValue(this.reportBuilder.comments());
       this.commentBox.setCharacterLimit(var1.maxOpinionCommentsLength());
       this.commentBox.setValueListener(var1x -> {
-         this.report.setComments(var1x);
+         this.reportBuilder.setComments(var1x);
          this.onReportChanged();
       });
-      this.addRenderableWidget(new Button(var2 - 120, this.completeButtonTop(), 120, 20, CommonComponents.GUI_BACK, var1x -> this.onClose()));
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).bounds(var2 - 120, this.completeButtonTop(), 120, 20).build()
+      );
       this.sendButton = this.addRenderableWidget(
-         new Button(
-            var2 + 10,
-            this.completeButtonTop(),
-            120,
-            20,
-            Component.translatable("gui.chatReport.send"),
-            var1x -> this.sendReport(),
-            new ChatReportScreen.SubmitButtonTooltip()
-         )
+         Button.builder(Component.translatable("gui.chatReport.send"), var1x -> this.sendReport())
+            .bounds(var2 + 10, this.completeButtonTop(), 120, 20)
+            .build()
       );
       this.onReportChanged();
    }
 
    private void onReportChanged() {
-      this.cannotBuildReason = this.report.checkBuildable();
+      this.cannotBuildReason = this.reportBuilder.checkBuildable();
       this.sendButton.active = this.cannotBuildReason == null;
+      this.sendButton.setTooltip(Util.mapNullable(this.cannotBuildReason, var0 -> Tooltip.create(var0.message())));
    }
 
    private void sendReport() {
-      this.report.build(this.reportingContext).ifLeft(var1 -> {
+      this.reportBuilder.build(this.reportingContext).ifLeft(var1 -> {
          CompletableFuture var2 = this.reportingContext.sender().send(var1.id(), var1.report());
          this.minecraft.setScreen(GenericWaitingScreen.createWaiting(REPORT_SENDING_TITLE, CommonComponents.GUI_CANCEL, () -> {
             this.minecraft.setScreen(this);
@@ -172,6 +167,7 @@ public class ChatReportScreen extends Screen {
    }
 
    private void onReportSendSuccess() {
+      this.clearDraft();
       this.minecraft
          .setScreen(
             GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.setScreen(null))
@@ -199,6 +195,16 @@ public class ChatReportScreen extends Screen {
          .setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
    }
 
+   void saveDraft() {
+      if (this.reportBuilder.hasContent()) {
+         this.reportingContext.setChatReportDraft(this.reportBuilder.report().copy());
+      }
+   }
+
+   void clearDraft() {
+      this.reportingContext.setChatReportDraft(null);
+   }
+
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       int var5 = this.width / 2;
@@ -223,11 +229,17 @@ public class ChatReportScreen extends Screen {
 
    @Override
    public void onClose() {
-      if (!this.commentBox.getValue().isEmpty()) {
+      if (this.reportBuilder.hasContent()) {
          this.minecraft.setScreen(new ChatReportScreen.DiscardReportWarningScreen());
       } else {
          this.minecraft.setScreen(this.lastScreen);
       }
+   }
+
+   @Override
+   public void removed() {
+      this.saveDraft();
+      super.removed();
    }
 
    @Override
@@ -280,6 +292,7 @@ public class ChatReportScreen extends Screen {
       private static final Component TITLE = Component.translatable("gui.chatReport.discard.title").withStyle(ChatFormatting.BOLD);
       private static final Component MESSAGE = Component.translatable("gui.chatReport.discard.content");
       private static final Component RETURN = Component.translatable("gui.chatReport.discard.return");
+      private static final Component DRAFT = Component.translatable("gui.chatReport.discard.draft");
       private static final Component DISCARD = Component.translatable("gui.chatReport.discard.discard");
 
       protected DiscardReportWarningScreen() {
@@ -288,10 +301,16 @@ public class ChatReportScreen extends Screen {
 
       @Override
       protected void initButtons(int var1) {
-         this.addRenderableWidget(new Button(this.width / 2 - 155, 100 + var1, 150, 20, RETURN, var1x -> this.onClose()));
-         this.addRenderableWidget(
-            new Button(this.width / 2 + 5, 100 + var1, 150, 20, DISCARD, var1x -> this.minecraft.setScreen(ChatReportScreen.this.lastScreen))
-         );
+         boolean var2 = true;
+         this.addRenderableWidget(Button.builder(RETURN, var1x -> this.onClose()).bounds(this.width / 2 - 155, 100 + var1, 150, 20).build());
+         this.addRenderableWidget(Button.builder(DRAFT, var1x -> {
+            ChatReportScreen.this.saveDraft();
+            this.minecraft.setScreen(ChatReportScreen.this.lastScreen);
+         }).bounds(this.width / 2 + 5, 100 + var1, 150, 20).build());
+         this.addRenderableWidget(Button.builder(DISCARD, var1x -> {
+            ChatReportScreen.this.clearDraft();
+            this.minecraft.setScreen(ChatReportScreen.this.lastScreen);
+         }).bounds(this.width / 2 - 75, 130 + var1, 150, 20).build());
       }
 
       @Override
@@ -307,20 +326,6 @@ public class ChatReportScreen extends Screen {
       @Override
       protected void renderTitle(PoseStack var1) {
          drawString(var1, this.font, this.title, this.width / 2 - 155, 30, 16777215);
-      }
-   }
-
-   class SubmitButtonTooltip implements Button.OnTooltip {
-      SubmitButtonTooltip() {
-         super();
-      }
-
-      @Override
-      public void onTooltip(Button var1, PoseStack var2, int var3, int var4) {
-         if (ChatReportScreen.this.cannotBuildReason != null) {
-            Component var5 = ChatReportScreen.this.cannotBuildReason.message();
-            ChatReportScreen.this.renderTooltip(var2, ChatReportScreen.this.font.split(var5, Math.max(ChatReportScreen.this.width / 2 - 43, 170)), var3, var4);
-         }
       }
    }
 }

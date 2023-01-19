@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import java.util.Set;
@@ -26,14 +27,14 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.timers.TimerCallbacks;
 import net.minecraft.world.level.timers.TimerQueue;
 import org.slf4j.Logger;
@@ -43,7 +44,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    protected static final String PLAYER = "Player";
    protected static final String WORLD_GEN_SETTINGS = "WorldGenSettings";
    private LevelSettings settings;
-   private final WorldGenSettings worldGenSettings;
+   private final WorldOptions worldOptions;
+   private final PrimaryLevelData.SpecialWorldProperty specialWorldProperty;
    private final Lifecycle worldGenSettingsLifecycle;
    private int xSpawn;
    private int ySpawn;
@@ -105,46 +107,44 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       @Nullable CompoundTag var27,
       CompoundTag var28,
       LevelSettings var29,
-      WorldGenSettings var30,
-      Lifecycle var31
+      WorldOptions var30,
+      PrimaryLevelData.SpecialWorldProperty var31,
+      Lifecycle var32
    ) {
       super();
-      if (!var30.dimensions().containsKey(LevelStem.OVERWORLD)) {
-         throw new IllegalStateException("Missing Overworld dimension data");
-      } else {
-         this.fixerUpper = var1;
-         this.wasModded = var4;
-         this.xSpawn = var5;
-         this.ySpawn = var6;
-         this.zSpawn = var7;
-         this.spawnAngle = var8;
-         this.gameTime = var9;
-         this.dayTime = var11;
-         this.version = var13;
-         this.clearWeatherTime = var14;
-         this.rainTime = var15;
-         this.raining = var16;
-         this.thunderTime = var17;
-         this.thundering = var18;
-         this.initialized = var19;
-         this.difficultyLocked = var20;
-         this.worldBorder = var21;
-         this.wanderingTraderSpawnDelay = var22;
-         this.wanderingTraderSpawnChance = var23;
-         this.wanderingTraderId = var24;
-         this.knownServerBrands = var25;
-         this.loadedPlayerTag = var3;
-         this.playerDataVersion = var2;
-         this.scheduledEvents = var26;
-         this.customBossEvents = var27;
-         this.endDragonFightData = var28;
-         this.settings = var29;
-         this.worldGenSettings = var30;
-         this.worldGenSettingsLifecycle = var31;
-      }
+      this.fixerUpper = var1;
+      this.wasModded = var4;
+      this.xSpawn = var5;
+      this.ySpawn = var6;
+      this.zSpawn = var7;
+      this.spawnAngle = var8;
+      this.gameTime = var9;
+      this.dayTime = var11;
+      this.version = var13;
+      this.clearWeatherTime = var14;
+      this.rainTime = var15;
+      this.raining = var16;
+      this.thunderTime = var17;
+      this.thundering = var18;
+      this.initialized = var19;
+      this.difficultyLocked = var20;
+      this.worldBorder = var21;
+      this.wanderingTraderSpawnDelay = var22;
+      this.wanderingTraderSpawnChance = var23;
+      this.wanderingTraderId = var24;
+      this.knownServerBrands = var25;
+      this.loadedPlayerTag = var3;
+      this.playerDataVersion = var2;
+      this.scheduledEvents = var26;
+      this.customBossEvents = var27;
+      this.endDragonFightData = var28;
+      this.settings = var29;
+      this.worldOptions = var30;
+      this.specialWorldProperty = var31;
+      this.worldGenSettingsLifecycle = var32;
    }
 
-   public PrimaryLevelData(LevelSettings var1, WorldGenSettings var2, Lifecycle var3) {
+   public PrimaryLevelData(LevelSettings var1, WorldOptions var2, PrimaryLevelData.SpecialWorldProperty var3, Lifecycle var4) {
       this(
          null,
          SharedConstants.getCurrentVersion().getWorldVersion(),
@@ -174,15 +174,24 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          new CompoundTag(),
          var1.copy(),
          var2,
-         var3
+         var3,
+         var4
       );
    }
 
    public static PrimaryLevelData parse(
-      Dynamic<Tag> var0, DataFixer var1, int var2, @Nullable CompoundTag var3, LevelSettings var4, LevelVersion var5, WorldGenSettings var6, Lifecycle var7
+      Dynamic<Tag> var0,
+      DataFixer var1,
+      int var2,
+      @Nullable CompoundTag var3,
+      LevelSettings var4,
+      LevelVersion var5,
+      PrimaryLevelData.SpecialWorldProperty var6,
+      WorldOptions var7,
+      Lifecycle var8
    ) {
-      long var8 = var0.get("Time").asLong(0L);
-      CompoundTag var10 = var0.get("DragonFight")
+      long var9 = var0.get("Time").asLong(0L);
+      CompoundTag var11 = var0.get("DragonFight")
          .result()
          .<CompoundTag>map(Dynamic::getValue)
          .orElseGet(() -> (Tag)var0.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap().getValue());
@@ -195,8 +204,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          var0.get("SpawnY").asInt(0),
          var0.get("SpawnZ").asInt(0),
          var0.get("SpawnAngle").asFloat(0.0F),
-         var8,
-         var0.get("DayTime").asLong(var8),
+         var9,
+         var0.get("DayTime").asLong(var9),
          var5.levelDataVersion(),
          var0.get("clearWeatherTime").asInt(0),
          var0.get("rainTime").asInt(0),
@@ -212,10 +221,11 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          var0.get("ServerBrands").asStream().flatMap(var0x -> var0x.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)),
          new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()),
          (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(),
-         var10,
+         var11,
          var4,
+         var7,
          var6,
-         var7
+         var8
       );
    }
 
@@ -244,8 +254,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var2.put("Version", var5);
       var2.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
       RegistryOps var6 = RegistryOps.create(NbtOps.INSTANCE, var1);
-      WorldGenSettings.CODEC
-         .encodeStart(var6, this.worldGenSettings)
+      WorldGenSettings.encode(var6, this.worldOptions, var1)
          .resultOrPartial(Util.prefix("WorldGenSettings: ", LOGGER::error))
          .ifPresent(var1x -> var2.put("WorldGenSettings", var1x));
       var2.putInt("GameType", this.settings.gameType().getId());
@@ -275,7 +284,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          var2.put("Player", var3);
       }
 
-      DataPackConfig.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataPackConfig()).result().ifPresent(var1x -> var2.put("DataPacks", var1x));
+      DataResult var7 = WorldDataConfiguration.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration());
+      var7.get().ifLeft(var1x -> var2.merge((CompoundTag)var1x)).ifRight(var0 -> LOGGER.warn("Failed to encode configuration {}", var0.message()));
       if (this.customBossEvents != null) {
          var2.put("CustomBossEvents", this.customBossEvents);
       }
@@ -515,8 +525,18 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    @Override
-   public WorldGenSettings worldGenSettings() {
-      return this.worldGenSettings;
+   public WorldOptions worldGenOptions() {
+      return this.worldOptions;
+   }
+
+   @Override
+   public boolean isFlatWorld() {
+      return this.specialWorldProperty == PrimaryLevelData.SpecialWorldProperty.FLAT;
+   }
+
+   @Override
+   public boolean isDebugWorld() {
+      return this.specialWorldProperty == PrimaryLevelData.SpecialWorldProperty.DEBUG;
    }
 
    @Override
@@ -535,13 +555,13 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    @Override
-   public DataPackConfig getDataPackConfig() {
-      return this.settings.getDataPackConfig();
+   public WorldDataConfiguration getDataConfiguration() {
+      return this.settings.getDataConfiguration();
    }
 
    @Override
-   public void setDataPackConfig(DataPackConfig var1) {
-      this.settings = this.settings.withDataPackConfig(var1);
+   public void setDataConfiguration(WorldDataConfiguration var1) {
+      this.settings = this.settings.withDataConfiguration(var1);
    }
 
    @Nullable
@@ -610,5 +630,15 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    @Override
    public LevelSettings getLevelSettings() {
       return this.settings.copy();
+   }
+
+   @Deprecated
+   public static enum SpecialWorldProperty {
+      NONE,
+      FLAT,
+      DEBUG;
+
+      private SpecialWorldProperty() {
+      }
    }
 }

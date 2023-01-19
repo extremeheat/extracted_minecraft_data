@@ -1,17 +1,15 @@
 package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 
 public class RemotePlayer extends AbstractClientPlayer {
-   public RemotePlayer(ClientLevel var1, GameProfile var2, @Nullable ProfilePublicKey var3) {
-      super(var1, var2, var3);
+   public RemotePlayer(ClientLevel var1, GameProfile var2) {
+      super(var1, var2);
       this.maxUpStep = 1.0F;
       this.noPhysics = true;
    }

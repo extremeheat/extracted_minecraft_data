@@ -2,6 +2,7 @@ package net.minecraft.sounds;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 
 public class Music {
    public static final Codec<Music> CODEC = RecordCodecBuilder.create(
@@ -13,12 +14,12 @@ public class Music {
             )
             .apply(var0, Music::new)
    );
-   private final SoundEvent event;
+   private final Holder<SoundEvent> event;
    private final int minDelay;
    private final int maxDelay;
    private final boolean replaceCurrentMusic;
 
-   public Music(SoundEvent var1, int var2, int var3, boolean var4) {
+   public Music(Holder<SoundEvent> var1, int var2, int var3, boolean var4) {
       super();
       this.event = var1;
       this.minDelay = var2;
@@ -26,7 +27,7 @@ public class Music {
       this.replaceCurrentMusic = var4;
    }
 
-   public SoundEvent getEvent() {
+   public Holder<SoundEvent> getEvent() {
       return this.event;
    }
 

@@ -1,27 +1,38 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.npc.Villager;
 
-public class VillagerCalmDown extends Behavior<Villager> {
+public class VillagerCalmDown {
    private static final int SAFE_DISTANCE_FROM_DANGER = 36;
 
    public VillagerCalmDown() {
-      super(ImmutableMap.of());
+      super();
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      boolean var5 = VillagerPanicTrigger.isHurt(var2) || VillagerPanicTrigger.hasHostile(var2) || isCloseToEntityThatHurtMe(var2);
-      if (!var5) {
-         var2.getBrain().eraseMemory(MemoryModuleType.HURT_BY);
-         var2.getBrain().eraseMemory(MemoryModuleType.HURT_BY_ENTITY);
-         var2.getBrain().updateActivityFromSchedule(var1.getDayTime(), var1.getGameTime());
-      }
-   }
-
-   private static boolean isCloseToEntityThatHurtMe(Villager var0) {
-      return var0.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY).filter(var1 -> var1.distanceToSqr(var0) <= 36.0).isPresent();
+   public static BehaviorControl<LivingEntity> create() {
+      return BehaviorBuilder.create(
+         var0 -> var0.group(
+                  var0.registered(MemoryModuleType.HURT_BY),
+                  var0.registered(MemoryModuleType.HURT_BY_ENTITY),
+                  var0.registered(MemoryModuleType.NEAREST_HOSTILE)
+               )
+               .apply(
+                  var0,
+                  (var1, var2, var3) -> (var4, var5, var6) -> {
+                        boolean var8 = var0.tryGet(var1).isPresent()
+                           || var0.tryGet(var3).isPresent()
+                           || var0.<LivingEntity>tryGet(var2).filter(var1xx -> var1xx.distanceToSqr(var5) <= 36.0).isPresent();
+                        if (!var8) {
+                           var1.erase();
+                           var2.erase();
+                           var5.getBrain().updateActivityFromSchedule(var4.getDayTime(), var4.getGameTime());
+                        }
+         
+                        return true;
+                     }
+               )
+      );
    }
 }

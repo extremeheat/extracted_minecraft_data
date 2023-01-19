@@ -1,37 +1,33 @@
 package net.minecraft.world.entity.monster.piglin;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.item.ItemEntity;
 
-public class StartAdmiringItemIfSeen<E extends Piglin> extends Behavior<E> {
-   private final int admireDuration;
+public class StartAdmiringItemIfSeen {
+   public StartAdmiringItemIfSeen() {
+      super();
+   }
 
-   public StartAdmiringItemIfSeen(int var1) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.ADMIRING_ITEM,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.ADMIRING_DISABLED,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM,
-            MemoryStatus.VALUE_ABSENT
-         )
+   public static BehaviorControl<LivingEntity> create(int var0) {
+      return BehaviorBuilder.create(
+         var1 -> var1.group(
+                  var1.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM),
+                  var1.absent(MemoryModuleType.ADMIRING_ITEM),
+                  var1.absent(MemoryModuleType.ADMIRING_DISABLED),
+                  var1.absent(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)
+               )
+               .apply(var1, (var2, var3, var4, var5) -> (var4x, var5x, var6) -> {
+                     ItemEntity var8 = var1.get(var2);
+                     if (!PiglinAi.isLovedItem(var8.getItem())) {
+                        return false;
+                     } else {
+                        var3.setWithExpiry(true, (long)var0);
+                        return true;
+                     }
+                  })
       );
-      this.admireDuration = var1;
-   }
-
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      ItemEntity var3 = var2.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM).get();
-      return PiglinAi.isLovedItem(var3.getItem());
-   }
-
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM, true, (long)this.admireDuration);
    }
 }

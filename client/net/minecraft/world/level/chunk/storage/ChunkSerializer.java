@@ -21,6 +21,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongArrayTag;
@@ -98,7 +100,7 @@ public class ChunkSerializer {
       boolean var10 = var0.dimensionType().hasSkyLight();
       ServerChunkCache var11 = var0.getChunkSource();
       LevelLightEngine var12 = var11.getLightEngine();
-      Registry var13 = var0.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+      Registry var13 = var0.registryAccess().registryOrThrow(Registries.BIOME);
       Codec var14 = makeBiomeCodec(var13);
       boolean var15 = false;
 
@@ -163,18 +165,18 @@ public class ChunkSerializer {
       Object var37;
       if (var34 == ChunkStatus.ChunkType.LEVELCHUNK) {
          LevelChunkTicks var39 = LevelChunkTicks.load(
-            var3.getList("block_ticks", 10), var0x -> Registry.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var2
+            var3.getList("block_ticks", 10), var0x -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var2
          );
          LevelChunkTicks var42 = LevelChunkTicks.load(
-            var3.getList("fluid_ticks", 10), var0x -> Registry.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var2
+            var3.getList("fluid_ticks", 10), var0x -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var2
          );
          var37 = new LevelChunk(var0.getLevel(), var2, var5, var39, var42, var33, var9, postLoadChunk(var0, var3), var35);
       } else {
          ProtoChunkTicks var40 = ProtoChunkTicks.load(
-            var3.getList("block_ticks", 10), var0x -> Registry.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var2
+            var3.getList("block_ticks", 10), var0x -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var2
          );
          ProtoChunkTicks var43 = ProtoChunkTicks.load(
-            var3.getList("fluid_ticks", 10), var0x -> Registry.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var2
+            var3.getList("fluid_ticks", 10), var0x -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0x)), var2
          );
          ProtoChunk var23 = new ProtoChunk(var2, var5, var9, var40, var43, var0, var13, var35);
          var37 = var23;
@@ -256,18 +258,21 @@ public class ChunkSerializer {
          ListTag var58 = var3.getList("Lights", 9);
 
          for(int var59 = 0; var59 < var58.size(); ++var59) {
-            ListTag var30 = var58.getList(var59);
+            LevelChunkSection var30 = var9[var59];
+            if (var30 != null && !var30.hasOnlyAir()) {
+               ListTag var31 = var58.getList(var59);
 
-            for(int var31 = 0; var31 < var30.size(); ++var31) {
-               var51.addLight(var30.getShort(var31), var59);
+               for(int var32 = 0; var32 < var31.size(); ++var32) {
+                  var51.addLight(var31.getShort(var32), var59);
+               }
             }
          }
 
          CompoundTag var60 = var3.getCompound("CarvingMasks");
 
          for(String var62 : var60.getAllKeys()) {
-            GenerationStep.Carving var32 = GenerationStep.Carving.valueOf(var62);
-            var51.setCarvingMask(var32, new CarvingMask(var60.getLongArray(var62), ((ChunkAccess)var37).getMinBuildHeight()));
+            GenerationStep.Carving var63 = GenerationStep.Carving.valueOf(var62);
+            var51.setCarvingMask(var63, new CarvingMask(var60.getLongArray(var62), ((ChunkAccess)var37).getMinBuildHeight()));
          }
 
          return var51;
@@ -312,7 +317,7 @@ public class ChunkSerializer {
       LevelChunkSection[] var7 = var1.getSections();
       ListTag var8 = new ListTag();
       ThreadedLevelLightEngine var9 = var0.getChunkSource().getLightEngine();
-      Registry var10 = var0.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY);
+      Registry var10 = var0.registryAccess().registryOrThrow(Registries.BIOME);
       Codec var11 = makeBiomeCodec(var10);
       boolean var12 = var1.isLightCorrect();
 
@@ -394,8 +399,8 @@ public class ChunkSerializer {
 
    private static void saveTicks(ServerLevel var0, CompoundTag var1, ChunkAccess.TicksToSave var2) {
       long var3 = var0.getLevelData().getGameTime();
-      var1.put("block_ticks", var2.blocks().save(var3, var0x -> Registry.BLOCK.getKey(var0x).toString()));
-      var1.put("fluid_ticks", var2.fluids().save(var3, var0x -> Registry.FLUID.getKey(var0x).toString()));
+      var1.put("block_ticks", var2.blocks().save(var3, var0x -> BuiltInRegistries.BLOCK.getKey(var0x).toString()));
+      var1.put("fluid_ticks", var2.fluids().save(var3, var0x -> BuiltInRegistries.FLUID.getKey(var0x).toString()));
    }
 
    public static ChunkStatus.ChunkType getChunkTypeFromTag(@Nullable CompoundTag var0) {
@@ -440,7 +445,7 @@ public class ChunkSerializer {
    ) {
       CompoundTag var4 = new CompoundTag();
       CompoundTag var5 = new CompoundTag();
-      Registry var6 = var0.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY);
+      Registry var6 = var0.registryAccess().registryOrThrow(Registries.STRUCTURE);
 
       for(Entry var8 : var2.entrySet()) {
          ResourceLocation var9 = var6.getKey((Structure)var8.getKey());
@@ -463,7 +468,7 @@ public class ChunkSerializer {
 
    private static Map<Structure, StructureStart> unpackStructureStart(StructurePieceSerializationContext var0, CompoundTag var1, long var2) {
       HashMap var4 = Maps.newHashMap();
-      Registry var5 = var0.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY);
+      Registry var5 = var0.registryAccess().registryOrThrow(Registries.STRUCTURE);
       CompoundTag var6 = var1.getCompound("starts");
 
       for(String var8 : var6.getAllKeys()) {
@@ -484,7 +489,7 @@ public class ChunkSerializer {
 
    private static Map<Structure, LongSet> unpackStructureReferences(RegistryAccess var0, ChunkPos var1, CompoundTag var2) {
       HashMap var3 = Maps.newHashMap();
-      Registry var4 = var0.registryOrThrow(Registry.STRUCTURE_REGISTRY);
+      Registry var4 = var0.registryOrThrow(Registries.STRUCTURE);
       CompoundTag var5 = var2.getCompound("References");
 
       for(String var7 : var5.getAllKeys()) {

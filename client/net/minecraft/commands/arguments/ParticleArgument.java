@@ -10,12 +10,16 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public class ParticleArgument implements ArgumentType<ParticleOptions> {
@@ -23,13 +27,15 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType(
       var0 -> Component.translatable("particle.notFound", var0)
    );
+   private final HolderLookup<ParticleType<?>> particles;
 
-   public ParticleArgument() {
+   public ParticleArgument(CommandBuildContext var1) {
       super();
+      this.particles = var1.holderLookup(Registries.PARTICLE_TYPE);
    }
 
-   public static ParticleArgument particle() {
-      return new ParticleArgument();
+   public static ParticleArgument particle(CommandBuildContext var0) {
+      return new ParticleArgument(var0);
    }
 
    public static ParticleOptions getParticle(CommandContext<CommandSourceStack> var0, String var1) {
@@ -37,17 +43,22 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    }
 
    public ParticleOptions parse(StringReader var1) throws CommandSyntaxException {
-      return readParticle(var1);
+      return readParticle(var1, this.particles);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   public static ParticleOptions readParticle(StringReader var0) throws CommandSyntaxException {
-      ResourceLocation var1 = ResourceLocation.read(var0);
-      ParticleType var2 = Registry.PARTICLE_TYPE.getOptional(var1).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.create(var1));
+   public static ParticleOptions readParticle(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
+      ParticleType var2 = readParticleType(var0, var1);
       return readParticle(var0, var2);
+   }
+
+   private static ParticleType<?> readParticleType(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
+      ResourceLocation var2 = ResourceLocation.read(var0);
+      ResourceKey var3 = ResourceKey.create(Registries.PARTICLE_TYPE, var2);
+      return (ParticleType<?>)((Holder.Reference)var1.get(var3).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.create(var2))).value();
    }
 
    private static <T extends ParticleOptions> T readParticle(StringReader var0, ParticleType<T> var1) throws CommandSyntaxException {
@@ -55,6 +66,6 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggestResource(Registry.PARTICLE_TYPE.keySet(), var2);
+      return SharedSuggestionProvider.suggestResource(this.particles.listElementIds().map(ResourceKey::location), var2);
    }
 }

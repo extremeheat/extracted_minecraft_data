@@ -18,13 +18,13 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.TooltipAccessor;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
 import org.slf4j.Logger;
@@ -32,8 +32,10 @@ import org.slf4j.Logger;
 public final class OptionInstance<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final OptionInstance.Enum<Boolean> BOOLEAN_VALUES = new OptionInstance.Enum<>(ImmutableList.of(Boolean.TRUE, Boolean.FALSE), Codec.BOOL);
-   private static final int TOOLTIP_WIDTH = 200;
-   private final OptionInstance.TooltipSupplierFactory<T> tooltip;
+   public static final OptionInstance.CaptionBasedToString<Boolean> BOOLEAN_TO_STRING = (var0, var1) -> var1
+         ? CommonComponents.OPTION_ON
+         : CommonComponents.OPTION_OFF;
+   private final OptionInstance.TooltipSupplier<T> tooltip;
    final Function<T, Component> toString;
    private final OptionInstance.ValueSet<T> values;
    private final Codec<T> codec;
@@ -51,18 +53,24 @@ public final class OptionInstance<T> {
       });
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, OptionInstance.TooltipSupplierFactory<Boolean> var1, boolean var2) {
+   public static OptionInstance<Boolean> createBoolean(String var0, OptionInstance.TooltipSupplier<Boolean> var1, boolean var2) {
       return createBoolean(var0, var1, var2, var0x -> {
       });
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, OptionInstance.TooltipSupplierFactory<Boolean> var1, boolean var2, Consumer<Boolean> var3) {
-      return new OptionInstance<>(var0, var1, (var0x, var1x) -> var1x ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF, BOOLEAN_VALUES, var2, var3);
+   public static OptionInstance<Boolean> createBoolean(String var0, OptionInstance.TooltipSupplier<Boolean> var1, boolean var2, Consumer<Boolean> var3) {
+      return createBoolean(var0, var1, BOOLEAN_TO_STRING, var2, var3);
+   }
+
+   public static OptionInstance<Boolean> createBoolean(
+      String var0, OptionInstance.TooltipSupplier<Boolean> var1, OptionInstance.CaptionBasedToString<Boolean> var2, boolean var3, Consumer<Boolean> var4
+   ) {
+      return new OptionInstance<>(var0, var1, var2, BOOLEAN_VALUES, var3, var4);
    }
 
    public OptionInstance(
       String var1,
-      OptionInstance.TooltipSupplierFactory<T> var2,
+      OptionInstance.TooltipSupplier<T> var2,
       OptionInstance.CaptionBasedToString<T> var3,
       OptionInstance.ValueSet<T> var4,
       T var5,
@@ -73,7 +81,7 @@ public final class OptionInstance<T> {
 
    public OptionInstance(
       String var1,
-      OptionInstance.TooltipSupplierFactory<T> var2,
+      OptionInstance.TooltipSupplier<T> var2,
       OptionInstance.CaptionBasedToString<T> var3,
       OptionInstance.ValueSet<T> var4,
       Codec<T> var5,
@@ -91,28 +99,25 @@ public final class OptionInstance<T> {
       this.value = this.initialValue;
    }
 
-   public static <T> OptionInstance.TooltipSupplierFactory<T> noTooltip() {
-      return var0 -> var0x -> ImmutableList.of();
+   public static <T> OptionInstance.TooltipSupplier<T> noTooltip() {
+      return var0 -> null;
    }
 
-   public static <T> OptionInstance.TooltipSupplierFactory<T> cachedConstantTooltip(Component var0) {
-      return var1 -> {
-         List var2 = splitTooltip(var1, var0);
-         return var1x -> var2;
-      };
+   public static <T> OptionInstance.TooltipSupplier<T> cachedConstantTooltip(Component var0) {
+      return var1 -> Tooltip.create(var0);
    }
 
    public static <T extends OptionEnum> OptionInstance.CaptionBasedToString<T> forOptionEnum() {
       return (var0, var1) -> var1.getCaption();
    }
 
-   protected static List<FormattedCharSequence> splitTooltip(Minecraft var0, Component var1) {
-      return var0.font.split(var1, 200);
+   public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
+      return this.createButton(var1, var2, var3, var4, var0 -> {
+      });
    }
 
-   public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
-      OptionInstance.TooltipSupplier var5 = this.tooltip.apply((T)Minecraft.getInstance());
-      return this.values.createButton(var5, var1, var2, var3, var4).apply(this);
+   public AbstractWidget createButton(Options var1, int var2, int var3, int var4, Consumer<T> var5) {
+      return this.values.createButton(this.tooltip, var1, var2, var3, var4, var5).apply(this);
    }
 
    public T get() {
@@ -230,14 +235,17 @@ public final class OptionInstance<T> {
       }
 
       @Override
-      default Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5) {
-         return var6 -> CycleButton.builder(var6.toString)
+      default Function<OptionInstance<T>, AbstractWidget> createButton(
+         OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
+      ) {
+         return var7 -> CycleButton.builder(var7.toString)
                .withValues(this.valueListSupplier())
                .withTooltip(var1)
-               .withInitialValue(var6.value)
-               .create(var3, var4, var5, 20, var6.caption, (var3xx, var4xx) -> {
-                  this.valueSetter().set(var6, var4xx);
+               .withInitialValue(var7.value)
+               .create(var3, var4, var5, 20, var7.caption, (var4xx, var5xx) -> {
+                  this.valueSetter().set(var7, var5xx);
                   var2.save();
+                  var6.accept(var5xx);
                });
       }
 
@@ -348,10 +356,11 @@ public final class OptionInstance<T> {
       }
    }
 
-   static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton implements TooltipAccessor {
+   static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
       private final OptionInstance<N> instance;
       private final OptionInstance.SliderableValueSet<N> values;
-      private final OptionInstance.TooltipSupplier<N> tooltip;
+      private final OptionInstance.TooltipSupplier<N> tooltipSupplier;
+      private final Consumer<N> onValueChanged;
 
       OptionInstanceSliderButton(
          Options var1,
@@ -361,29 +370,28 @@ public final class OptionInstance<T> {
          int var5,
          OptionInstance<N> var6,
          OptionInstance.SliderableValueSet<N> var7,
-         OptionInstance.TooltipSupplier<N> var8
+         OptionInstance.TooltipSupplier<N> var8,
+         Consumer<N> var9
       ) {
          super(var1, var2, var3, var4, var5, var7.toSliderValue((T)var6.get()));
          this.instance = var6;
          this.values = var7;
-         this.tooltip = var8;
+         this.tooltipSupplier = var8;
+         this.onValueChanged = var9;
          this.updateMessage();
       }
 
       @Override
       protected void updateMessage() {
          this.setMessage(this.instance.toString.apply(this.instance.get()));
+         this.setTooltip(this.tooltipSupplier.apply(this.values.fromSliderValue(this.value)));
       }
 
       @Override
       protected void applyValue() {
          this.instance.set(this.values.fromSliderValue(this.value));
          this.options.save();
-      }
-
-      @Override
-      public List<FormattedCharSequence> getTooltip() {
-         return this.tooltip.apply(this.values.fromSliderValue(this.value));
+         this.onValueChanged.accept(this.instance.get());
       }
    }
 
@@ -391,10 +399,12 @@ public final class OptionInstance<T> {
       boolean createCycleButton();
 
       @Override
-      default Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5) {
+      default Function<OptionInstance<T>, AbstractWidget> createButton(
+         OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
+      ) {
          return this.createCycleButton()
-            ? OptionInstance.CycleableValueSet.super.createButton(var1, var2, var3, var4, var5)
-            : OptionInstance.SliderableValueSet.super.createButton(var1, var2, var3, var4, var5);
+            ? OptionInstance.CycleableValueSet.super.createButton(var1, var2, var3, var4, var5, var6)
+            : OptionInstance.SliderableValueSet.super.createButton(var1, var2, var3, var4, var5, var6);
       }
    }
 
@@ -404,16 +414,17 @@ public final class OptionInstance<T> {
       T fromSliderValue(double var1);
 
       @Override
-      default Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5) {
-         return var6 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var6, this, var1);
+      default Function<OptionInstance<T>, AbstractWidget> createButton(
+         OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
+      ) {
+         return var7 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var7, this, var1, var6);
       }
    }
 
    @FunctionalInterface
-   public interface TooltipSupplier<T> extends Function<T, List<FormattedCharSequence>> {
-   }
-
-   public interface TooltipSupplierFactory<T> extends Function<Minecraft, OptionInstance.TooltipSupplier<T>> {
+   public interface TooltipSupplier<T> {
+      @Nullable
+      Tooltip apply(T var1);
    }
 
    public static enum UnitDouble implements OptionInstance.SliderableValueSet<Double> {
@@ -465,7 +476,9 @@ public final class OptionInstance<T> {
    }
 
    interface ValueSet<T> {
-      Function<OptionInstance<T>, AbstractWidget> createButton(OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5);
+      Function<OptionInstance<T>, AbstractWidget> createButton(
+         OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
+      );
 
       Optional<T> validateValue(T var1);
 

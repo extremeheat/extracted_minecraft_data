@@ -68,6 +68,7 @@ import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
@@ -337,6 +338,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.DARK_OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK));
       DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA));
       DispenserBlock.registerBehavior(Items.MANGROVE_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE));
+      DispenserBlock.registerBehavior(Items.BAMBOO_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO));
       DispenserBlock.registerBehavior(Items.OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK, true));
       DispenserBlock.registerBehavior(Items.SPRUCE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.SPRUCE, true));
       DispenserBlock.registerBehavior(Items.BIRCH_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.BIRCH, true));
@@ -344,6 +346,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.DARK_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK, true));
       DispenserBlock.registerBehavior(Items.ACACIA_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA, true));
       DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE, true));
+      DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO, true));
       DefaultDispenseItemBehavior var9 = new DefaultDispenseItemBehavior() {
          private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
@@ -468,6 +471,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.ZOMBIE_HEAD, var3);
       DispenserBlock.registerBehavior(Items.DRAGON_HEAD, var3);
       DispenserBlock.registerBehavior(Items.SKELETON_SKULL, var3);
+      DispenserBlock.registerBehavior(Items.PIGLIN_HEAD, var3);
       DispenserBlock.registerBehavior(Items.PLAYER_HEAD, var3);
       DispenserBlock.registerBehavior(
          Items.WITHER_SKELETON_SKULL,
@@ -480,9 +484,7 @@ public interface DispenseItemBehavior {
                if (var3.isEmptyBlock(var5) && WitherSkullBlock.canSpawnMob(var3, var5, var2)) {
                   var3.setBlock(
                      var5,
-                     Blocks.WITHER_SKELETON_SKULL
-                        .defaultBlockState()
-                        .setValue(SkullBlock.ROTATION, Integer.valueOf(var4.getAxis() == Direction.Axis.Y ? 0 : var4.getOpposite().get2DDataValue() * 4)),
+                     Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var4))),
                      3
                   );
                   var3.gameEvent(null, GameEvent.BLOCK_PLACE, var5);

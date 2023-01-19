@@ -33,7 +33,6 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.seedEdit = new EditBox(this.minecraft.font, this.width / 2 - 100, row(2), 200, 20, null, Component.translatable("mco.reset.world.seed"));
       this.seedEdit.setMaxLength(32);
       this.addWidget(this.seedEdit);
@@ -51,21 +50,13 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
             )
       );
       this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 102,
-            row(12),
-            97,
-            20,
-            this.buttonTitle,
-            var1 -> this.callback.accept(new WorldGenerationInfo(this.seedEdit.getValue(), this.levelType, this.generateStructures))
-         )
+         Button.builder(
+               this.buttonTitle, var1 -> this.callback.accept(new WorldGenerationInfo(this.seedEdit.getValue(), this.levelType, this.generateStructures))
+            )
+            .bounds(this.width / 2 - 102, row(12), 97, 20)
+            .build()
       );
-      this.addRenderableWidget(new Button(this.width / 2 + 8, row(12), 97, 20, CommonComponents.GUI_BACK, var1 -> this.onClose()));
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).bounds(this.width / 2 + 8, row(12), 97, 20).build());
    }
 
    @Override

@@ -1,13 +1,13 @@
 package net.minecraft.client.renderer.block.model;
 
-import com.mojang.math.Vector3f;
 import net.minecraft.core.Direction;
+import org.joml.Vector3f;
 
-public class BlockElementRotation {
-   public final Vector3f origin;
-   public final Direction.Axis axis;
-   public final float angle;
-   public final boolean rescale;
+public record BlockElementRotation(Vector3f a, Direction.Axis b, float c, boolean d) {
+   private final Vector3f origin;
+   private final Direction.Axis axis;
+   private final float angle;
+   private final boolean rescale;
 
    public BlockElementRotation(Vector3f var1, Direction.Axis var2, float var3, boolean var4) {
       super();

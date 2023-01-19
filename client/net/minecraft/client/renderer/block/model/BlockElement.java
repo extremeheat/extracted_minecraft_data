@@ -7,7 +7,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.math.Vector3f;
 import java.lang.reflect.Type;
 import java.util.EnumMap;
 import java.util.Locale;
@@ -17,6 +16,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
+import org.joml.Vector3f;
 
 public class BlockElement {
    private static final boolean DEFAULT_RESCALE = false;

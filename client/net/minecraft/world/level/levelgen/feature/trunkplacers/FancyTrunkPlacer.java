@@ -101,7 +101,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
          for(int var13 = 0; var13 <= var9; ++var13) {
             BlockPos var14 = var4.offset((double)(0.5F + (float)var13 * var10), (double)(0.5F + (float)var13 * var11), (double)(0.5F + (float)var13 * var12));
             if (var6) {
-               this.placeLog(var1, var2, var3, var14, var7, var3x -> var3x.setValue(RotatedPillarBlock.AXIS, this.getLogAxis(var4, var14)));
+               this.placeLog(var1, var2, var3, var14, var7, var3x -> var3x.trySetValue(RotatedPillarBlock.AXIS, this.getLogAxis(var4, var14)));
             } else if (!this.isFree(var1, var14)) {
                return false;
             }

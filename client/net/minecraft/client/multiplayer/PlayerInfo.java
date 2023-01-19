@@ -3,63 +3,36 @@ package net.minecraft.client.multiplayer;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.InsecurePublicKeyException;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
-import com.mojang.logging.LogUtils;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.RemoteChatSession;
 import net.minecraft.network.chat.SignedMessageValidator;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.CryptException;
-import net.minecraft.util.SignatureValidator;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
-import org.slf4j.Logger;
 
 public class PlayerInfo {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private final GameProfile profile;
    private final Map<Type, ResourceLocation> textureLocations = Maps.newEnumMap(Type.class);
-   private GameType gameMode;
+   private GameType gameMode = GameType.DEFAULT_MODE;
    private int latency;
    private boolean pendingTextures;
    @Nullable
    private String skinModel;
    @Nullable
    private Component tabListDisplayName;
-   private int lastHealth;
-   private int displayHealth;
-   private long lastHealthTime;
-   private long healthBlinkTime;
-   private long renderVisibilityId;
    @Nullable
-   private final ProfilePublicKey profilePublicKey;
-   private final SignedMessageValidator messageValidator;
+   private RemoteChatSession chatSession;
+   private SignedMessageValidator messageValidator;
 
-   public PlayerInfo(ClientboundPlayerInfoPacket.PlayerUpdate var1, SignatureValidator var2, boolean var3) {
+   public PlayerInfo(GameProfile var1, boolean var2) {
       super();
-      this.profile = var1.getProfile();
-      this.gameMode = var1.getGameMode();
-      this.latency = var1.getLatency();
-      this.tabListDisplayName = var1.getDisplayName();
-      ProfilePublicKey var4 = null;
-
-      try {
-         ProfilePublicKey.Data var5 = var1.getProfilePublicKey();
-         if (var5 != null) {
-            var4 = ProfilePublicKey.createValidated(var2, this.profile.getId(), var5);
-         }
-      } catch (InsecurePublicKeyException | CryptException var6) {
-         LOGGER.error("Failed to retrieve publicKey property for profile {}", this.profile.getId(), var6);
-      }
-
-      this.profilePublicKey = var4;
-      this.messageValidator = SignedMessageValidator.create(var4, var3);
+      this.profile = var1;
+      this.messageValidator = fallbackMessageValidator(var2);
    }
 
    public GameProfile getProfile() {
@@ -67,15 +40,32 @@ public class PlayerInfo {
    }
 
    @Nullable
-   public ProfilePublicKey getProfilePublicKey() {
-      return this.profilePublicKey;
+   public RemoteChatSession getChatSession() {
+      return this.chatSession;
    }
 
    public SignedMessageValidator getMessageValidator() {
       return this.messageValidator;
    }
 
-   @Nullable
+   public boolean hasVerifiableChat() {
+      return this.chatSession != null;
+   }
+
+   protected void setChatSession(RemoteChatSession var1) {
+      this.chatSession = var1;
+      this.messageValidator = var1.createMessageValidator();
+   }
+
+   protected void clearChatSession(boolean var1) {
+      this.chatSession = null;
+      this.messageValidator = fallbackMessageValidator(var1);
+   }
+
+   private static SignedMessageValidator fallbackMessageValidator(boolean var0) {
+      return var0 ? SignedMessageValidator.REJECT_ALL : SignedMessageValidator.ACCEPT_UNSIGNED;
+   }
+
    public GameType getGameMode() {
       return this.gameMode;
    }
@@ -150,45 +140,5 @@ public class PlayerInfo {
    @Nullable
    public Component getTabListDisplayName() {
       return this.tabListDisplayName;
-   }
-
-   public int getLastHealth() {
-      return this.lastHealth;
-   }
-
-   public void setLastHealth(int var1) {
-      this.lastHealth = var1;
-   }
-
-   public int getDisplayHealth() {
-      return this.displayHealth;
-   }
-
-   public void setDisplayHealth(int var1) {
-      this.displayHealth = var1;
-   }
-
-   public long getLastHealthTime() {
-      return this.lastHealthTime;
-   }
-
-   public void setLastHealthTime(long var1) {
-      this.lastHealthTime = var1;
-   }
-
-   public long getHealthBlinkTime() {
-      return this.healthBlinkTime;
-   }
-
-   public void setHealthBlinkTime(long var1) {
-      this.healthBlinkTime = var1;
-   }
-
-   public long getRenderVisibilityId() {
-      return this.renderVisibilityId;
-   }
-
-   public void setRenderVisibilityId(long var1) {
-      this.renderVisibilityId = var1;
    }
 }

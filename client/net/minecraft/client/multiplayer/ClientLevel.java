@@ -32,11 +32,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -51,6 +52,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -257,7 +259,7 @@ public class ClientLevel extends Level {
    public void tickNonPassenger(Entity var1) {
       var1.setOldPosAndRot();
       ++var1.tickCount;
-      this.getProfiler().push(() -> Registry.ENTITY_TYPE.getKey(var1.getType()).toString());
+      this.getProfiler().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
       var1.tick();
       this.getProfiler().pop();
 
@@ -463,22 +465,18 @@ public class ClientLevel extends Level {
 
    @Override
    public void playSeededSound(
-      @Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12
+      @Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12
    ) {
       if (var1 == this.minecraft.player) {
-         this.playSound(var2, var4, var6, var8, var9, var10, var11, false, var12);
+         this.playSound(var2, var4, var6, (SoundEvent)var8.value(), var9, var10, var11, false, var12);
       }
    }
 
    @Override
-   public void playSeededSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6, long var7) {
+   public void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
       if (var1 == this.minecraft.player) {
-         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var3, var4, var5, var6, var2, var7));
+         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance((SoundEvent)var3.value(), var4, var5, var6, var2, var7));
       }
-   }
-
-   public void playLocalSound(BlockPos var1, SoundEvent var2, SoundSource var3, float var4, float var5, boolean var6) {
-      this.playLocalSound((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, var2, var3, var4, var5, var6);
    }
 
    @Override
@@ -536,9 +534,12 @@ public class ClientLevel extends Level {
       return this.mapData.get(var1);
    }
 
+   public void overrideMapData(String var1, MapItemSavedData var2) {
+      this.mapData.put(var1, var2);
+   }
+
    @Override
    public void setMapData(String var1, MapItemSavedData var2) {
-      this.mapData.put(var1, var2);
    }
 
    @Override
@@ -629,7 +630,7 @@ public class ClientLevel extends Level {
 
    @Override
    public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
-      return this.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getHolderOrThrow(Biomes.PLAINS);
+      return this.registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS);
    }
 
    public float getSkyDarken(float var1) {
@@ -832,6 +833,11 @@ public class ClientLevel extends Level {
 
    public int getServerSimulationDistance() {
       return this.serverSimulationDistance;
+   }
+
+   @Override
+   public FeatureFlagSet enabledFeatures() {
+      return this.connection.enabledFeatures();
    }
 
    public static class ClientLevelData implements WritableLevelData {

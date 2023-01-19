@@ -5,7 +5,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -28,16 +27,7 @@ public class LargeFireball extends Fireball {
       super.onHit(var1);
       if (!this.level.isClientSide) {
          boolean var2 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
-         this.level
-            .explode(
-               null,
-               this.getX(),
-               this.getY(),
-               this.getZ(),
-               (float)this.explosionPower,
-               var2,
-               var2 ? Explosion.BlockInteraction.DESTROY : Explosion.BlockInteraction.NONE
-            );
+         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionPower, var2, Level.ExplosionInteraction.MOB);
          this.discard();
       }
    }

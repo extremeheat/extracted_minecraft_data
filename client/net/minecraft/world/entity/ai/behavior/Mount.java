@@ -1,49 +1,38 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 
-public class Mount<E extends LivingEntity> extends Behavior<E> {
+public class Mount {
    private static final int CLOSE_ENOUGH_TO_START_RIDING_DIST = 1;
-   private final float speedModifier;
 
-   public Mount(float var1) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.RIDE_TARGET,
-            MemoryStatus.VALUE_PRESENT
-         )
+   public Mount() {
+      super();
+   }
+
+   public static BehaviorControl<LivingEntity> create(float var0) {
+      return BehaviorBuilder.create(
+         var1 -> var1.group(
+                  var1.registered(MemoryModuleType.LOOK_TARGET), var1.absent(MemoryModuleType.WALK_TARGET), var1.present(MemoryModuleType.RIDE_TARGET)
+               )
+               .apply(var1, (var2, var3, var4) -> (var5, var6, var7) -> {
+                     if (var6.isPassenger()) {
+                        return false;
+                     } else {
+                        Entity var9 = var1.get(var4);
+                        if (var9.closerThan(var6, 1.0)) {
+                           var6.startRiding(var9);
+                        } else {
+                           var2.set(new EntityTracker(var9, true));
+                           var3.set(new WalkTarget(new EntityTracker(var9, false), var0, 1));
+                        }
+      
+                        return true;
+                     }
+                  })
       );
-      this.speedModifier = var1;
-   }
-
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return !var2.isPassenger();
-   }
-
-   @Override
-   protected void start(ServerLevel var1, E var2, long var3) {
-      if (this.isCloseEnoughToStartRiding((E)var2)) {
-         var2.startRiding(this.getRidableEntity((E)var2));
-      } else {
-         BehaviorUtils.setWalkAndLookTargetMemories(var2, this.getRidableEntity((E)var2), this.speedModifier, 1);
-      }
-   }
-
-   private boolean isCloseEnoughToStartRiding(E var1) {
-      return this.getRidableEntity((E)var1).closerThan(var1, 1.0);
-   }
-
-   private Entity getRidableEntity(E var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.RIDE_TARGET).get();
    }
 }

@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -9,71 +7,76 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.level.pathfinder.Path;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableLong;
 
-public class SetClosestHomeAsWalkTarget extends Behavior<LivingEntity> {
+public class SetClosestHomeAsWalkTarget {
    private static final int CACHE_TIMEOUT = 40;
    private static final int BATCH_SIZE = 5;
    private static final int RATE = 20;
    private static final int OK_DISTANCE_SQR = 4;
-   private final float speedModifier;
-   private final Long2LongMap batchCache = new Long2LongOpenHashMap();
-   private int triedCount;
-   private long lastUpdate;
 
-   public SetClosestHomeAsWalkTarget(float var1) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.HOME, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
+   public SetClosestHomeAsWalkTarget() {
+      super();
    }
 
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      if (var1.getGameTime() - this.lastUpdate < 20L) {
-         return false;
-      } else {
-         PathfinderMob var3 = (PathfinderMob)var2;
-         PoiManager var4 = var1.getPoiManager();
-         Optional var5 = var4.findClosest(var0 -> var0.is(PoiTypes.HOME), var2.blockPosition(), 48, PoiManager.Occupancy.ANY);
-         return var5.isPresent() && !(((BlockPos)var5.get()).distSqr(var3.blockPosition()) <= 4.0);
-      }
-   }
-
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      this.triedCount = 0;
-      this.lastUpdate = var1.getGameTime() + (long)var1.getRandom().nextInt(20);
-      PathfinderMob var5 = (PathfinderMob)var2;
-      PoiManager var6 = var1.getPoiManager();
-      Predicate var7 = var1x -> {
-         long var2x = var1x.asLong();
-         if (this.batchCache.containsKey(var2x)) {
-            return false;
-         } else if (++this.triedCount >= 5) {
-            return false;
-         } else {
-            this.batchCache.put(var2x, this.lastUpdate + 40L);
-            return true;
-         }
-      };
-      Set var8 = var6.findAllWithType(var0 -> var0.is(PoiTypes.HOME), var7, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
-      Path var9 = AcquirePoi.findPathToPois(var5, var8);
-      if (var9 != null && var9.canReach()) {
-         BlockPos var10 = var9.getTarget();
-         Optional var11 = var6.getType(var10);
-         if (var11.isPresent()) {
-            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var10, this.speedModifier, 1));
-            DebugPackets.sendPoiTicketCountPacket(var1, var10);
-         }
-      } else if (this.triedCount < 5) {
-         this.batchCache.long2LongEntrySet().removeIf(var1x -> var1x.getLongValue() < this.lastUpdate);
-      }
+   public static BehaviorControl<PathfinderMob> create(float var0) {
+      Long2LongOpenHashMap var1 = new Long2LongOpenHashMap();
+      MutableLong var2 = new MutableLong(0L);
+      return BehaviorBuilder.create(
+         var3 -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.absent(MemoryModuleType.HOME))
+               .apply(
+                  var3,
+                  (var3x, var4) -> (var4x, var5, var6) -> {
+                        if (var4x.getGameTime() - var2.getValue() < 20L) {
+                           return false;
+                        } else {
+                           PoiManager var8 = var4x.getPoiManager();
+                           Optional var9 = var8.findClosest(var0xxxx -> var0xxxx.is(PoiTypes.HOME), var5.blockPosition(), 48, PoiManager.Occupancy.ANY);
+                           if (!var9.isEmpty() && !(((BlockPos)var9.get()).distSqr(var5.blockPosition()) <= 4.0)) {
+                              MutableInt var10 = new MutableInt(0);
+                              var2.setValue(var4x.getGameTime() + (long)var4x.getRandom().nextInt(20));
+                              Predicate var11 = var3xxx -> {
+                                 long var4xx = var3xxx.asLong();
+                                 if (var1.containsKey(var4xx)) {
+                                    return false;
+                                 } else if (var10.incrementAndGet() >= 5) {
+                                    return false;
+                                 } else {
+                                    var1.put(var4xx, var2.getValue() + 40L);
+                                    return true;
+                                 }
+                              };
+                              Set var12 = var8.findAllWithType(
+                                    var0xxxx -> var0xxxx.is(PoiTypes.HOME), var11, var5.blockPosition(), 48, PoiManager.Occupancy.ANY
+                                 )
+                                 .collect(Collectors.toSet());
+                              Path var13 = AcquirePoi.findPathToPois(var5, var12);
+                              if (var13 != null && var13.canReach()) {
+                                 BlockPos var14 = var13.getTarget();
+                                 Optional var15 = var8.getType(var14);
+                                 if (var15.isPresent()) {
+                                    var3x.set(new WalkTarget(var14, var0, 1));
+                                    DebugPackets.sendPoiTicketCountPacket(var4x, var14);
+                                 }
+                              } else if (var10.getValue() < 5) {
+                                 var1.long2LongEntrySet().removeIf(var1xxxx -> var1xxxx.getLongValue() < var2.getValue());
+                              }
+         
+                              return true;
+                           } else {
+                              return false;
+                           }
+                        }
+                     }
+               )
+      );
    }
 }

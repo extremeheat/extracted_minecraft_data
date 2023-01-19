@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
@@ -105,7 +105,7 @@ public class GsonHelper {
    public static Item convertToItem(JsonElement var0, String var1) {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
-         return Registry.ITEM
+         return BuiltInRegistries.ITEM
             .getOptional(new ResourceLocation(var2))
             .orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
       } else {
@@ -420,7 +420,27 @@ public class GsonHelper {
    }
 
    @Nullable
+   public static <T> T fromNullableJson(Gson var0, Reader var1, Class<T> var2, boolean var3) {
+      try {
+         JsonReader var4 = new JsonReader(var1);
+         var4.setLenient(var3);
+         return (T)var0.getAdapter(var2).read(var4);
+      } catch (IOException var5) {
+         throw new JsonParseException(var5);
+      }
+   }
+
    public static <T> T fromJson(Gson var0, Reader var1, Class<T> var2, boolean var3) {
+      Object var4 = fromNullableJson(var0, var1, var2, var3);
+      if (var4 == null) {
+         throw new JsonParseException("JSON data was null or empty");
+      } else {
+         return (T)var4;
+      }
+   }
+
+   @Nullable
+   public static <T> T fromNullableJson(Gson var0, Reader var1, TypeToken<T> var2, boolean var3) {
       try {
          JsonReader var4 = new JsonReader(var1);
          var4.setLenient(var3);
@@ -430,43 +450,42 @@ public class GsonHelper {
       }
    }
 
-   @Nullable
    public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2, boolean var3) {
-      try {
-         JsonReader var4 = new JsonReader(var1);
-         var4.setLenient(var3);
-         return (T)var0.getAdapter(var2).read(var4);
-      } catch (IOException var5) {
-         throw new JsonParseException(var5);
+      Object var4 = fromNullableJson(var0, var1, var2, var3);
+      if (var4 == null) {
+         throw new JsonParseException("JSON data was null or empty");
+      } else {
+         return (T)var4;
       }
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, String var1, TypeToken<T> var2, boolean var3) {
-      return fromJson(var0, new StringReader(var1), var2, var3);
+   public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2, boolean var3) {
+      return fromNullableJson(var0, new StringReader(var1), var2, var3);
    }
 
-   @Nullable
    public static <T> T fromJson(Gson var0, String var1, Class<T> var2, boolean var3) {
       return fromJson(var0, new StringReader(var1), var2, var3);
    }
 
    @Nullable
+   public static <T> T fromNullableJson(Gson var0, String var1, Class<T> var2, boolean var3) {
+      return fromNullableJson(var0, new StringReader(var1), var2, var3);
+   }
+
    public static <T> T fromJson(Gson var0, Reader var1, TypeToken<T> var2) {
       return fromJson(var0, var1, var2, false);
    }
 
    @Nullable
-   public static <T> T fromJson(Gson var0, String var1, TypeToken<T> var2) {
-      return fromJson(var0, var1, var2, false);
+   public static <T> T fromNullableJson(Gson var0, String var1, TypeToken<T> var2) {
+      return fromNullableJson(var0, var1, var2, false);
    }
 
-   @Nullable
    public static <T> T fromJson(Gson var0, Reader var1, Class<T> var2) {
       return fromJson(var0, var1, var2, false);
    }
 
-   @Nullable
    public static <T> T fromJson(Gson var0, String var1, Class<T> var2) {
       return fromJson(var0, var1, var2, false);
    }

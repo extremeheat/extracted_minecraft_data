@@ -1,8 +1,11 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.collect.Maps;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -48,6 +51,21 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
+   private static final float OPEN_AABB_SIZE = 1.0F;
+   private static final VoxelShape UP_OPEN_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
+   private static final VoxelShape DOWN_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
+   private static final VoxelShape WES_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
+   private static final VoxelShape EAST_OPEN_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+   private static final VoxelShape NORTH_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
+   private static final VoxelShape SOUTH_OPEN_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
+   private static final Map<Direction, VoxelShape> OPEN_SHAPE_BY_DIRECTION = Util.make(Maps.newEnumMap(Direction.class), var0 -> {
+      var0.put(Direction.NORTH, NORTH_OPEN_AABB);
+      var0.put(Direction.EAST, EAST_OPEN_AABB);
+      var0.put(Direction.SOUTH, SOUTH_OPEN_AABB);
+      var0.put(Direction.WEST, WES_OPEN_AABB);
+      var0.put(Direction.UP, UP_OPEN_AABB);
+      var0.put(Direction.DOWN, DOWN_OPEN_AABB);
+   });
    public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
    public static final ResourceLocation CONTENTS = new ResourceLocation("contents");
    @Nullable
@@ -213,6 +231,16 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    @Override
    public PushReaction getPistonPushReaction(BlockState var1) {
       return PushReaction.DESTROY;
+   }
+
+   @Override
+   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+      BlockEntity var4 = var2.getBlockEntity(var3);
+      if (var4 instanceof ShulkerBoxBlockEntity var5 && !var5.isClosed()) {
+         return OPEN_SHAPE_BY_DIRECTION.get(var1.getValue(FACING).getOpposite());
+      }
+
+      return Shapes.block();
    }
 
    @Override

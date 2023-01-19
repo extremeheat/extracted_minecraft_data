@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
@@ -55,6 +56,8 @@ public class ServerEntity {
    private List<Entity> lastPassengers = Collections.emptyList();
    private boolean wasRiding;
    private boolean wasOnGround;
+   @Nullable
+   private List<SynchedEntityData.DataValue<?>> trackedDataValues;
 
    public ServerEntity(ServerLevel var1, Entity var2, int var3, boolean var4, Consumer<Packet<?>> var5) {
       super();
@@ -68,6 +71,7 @@ public class ServerEntity {
       this.xRotp = Mth.floor(var2.getXRot() * 256.0F / 360.0F);
       this.yHeadRotp = Mth.floor(var2.getYHeadRot() * 256.0F / 360.0F);
       this.wasOnGround = var2.isOnGround();
+      this.trackedDataValues = var2.getEntityData().getNonDefaultValues();
    }
 
    // $QF: Could not properly define all variable types!
@@ -207,8 +211,8 @@ public class ServerEntity {
       Packet var2 = this.entity.getAddEntityPacket();
       this.yHeadRotp = Mth.floor(this.entity.getYHeadRot() * 256.0F / 360.0F);
       var1.accept(var2);
-      if (!this.entity.getEntityData().isEmpty()) {
-         var1.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.entity.getEntityData(), true));
+      if (this.trackedDataValues != null) {
+         var1.accept(new ClientboundSetEntityDataPacket(this.entity.getId(), this.trackedDataValues));
       }
 
       boolean var3 = this.trackDelta;
@@ -264,17 +268,19 @@ public class ServerEntity {
 
    private void sendDirtyEntityData() {
       SynchedEntityData var1 = this.entity.getEntityData();
-      if (var1.isDirty()) {
-         this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), var1, false));
+      List var2 = var1.packDirty();
+      if (var2 != null) {
+         this.trackedDataValues = var1.getNonDefaultValues();
+         this.broadcastAndSend(new ClientboundSetEntityDataPacket(this.entity.getId(), var2));
       }
 
       if (this.entity instanceof LivingEntity) {
-         Set var2 = ((LivingEntity)this.entity).getAttributes().getDirtyAttributes();
-         if (!var2.isEmpty()) {
-            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), var2));
+         Set var3 = ((LivingEntity)this.entity).getAttributes().getDirtyAttributes();
+         if (!var3.isEmpty()) {
+            this.broadcastAndSend(new ClientboundUpdateAttributesPacket(this.entity.getId(), var3));
          }
 
-         var2.clear();
+         var3.clear();
       }
    }
 

@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Services;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.StringUtil;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class SkullBlockEntity extends BlockEntity {
    public static final String TAG_SKULL_OWNER = "SkullOwner";
+   public static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    @Nullable
    private static GameProfileCache profileCache;
    @Nullable
@@ -28,8 +30,10 @@ public class SkullBlockEntity extends BlockEntity {
    private static Executor mainThreadExecutor;
    @Nullable
    private GameProfile owner;
-   private int mouthTickCount;
-   private boolean isMovingMouth;
+   @Nullable
+   private ResourceLocation noteBlockSound;
+   private int animationTickCount;
+   private boolean isAnimating;
 
    public SkullBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SKULL, var1, var2);
@@ -55,6 +59,10 @@ public class SkullBlockEntity extends BlockEntity {
          NbtUtils.writeGameProfile(var2, this.owner);
          var1.put("SkullOwner", var2);
       }
+
+      if (this.noteBlockSound != null) {
+         var1.putString("note_block_sound", this.noteBlockSound.toString());
+      }
    }
 
    @Override
@@ -68,24 +76,33 @@ public class SkullBlockEntity extends BlockEntity {
             this.setOwner(new GameProfile(null, var2));
          }
       }
-   }
 
-   public static void dragonHeadAnimation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
-      if (var0.hasNeighborSignal(var1)) {
-         var3.isMovingMouth = true;
-         ++var3.mouthTickCount;
-      } else {
-         var3.isMovingMouth = false;
+      if (var1.contains("note_block_sound", 8)) {
+         this.noteBlockSound = ResourceLocation.tryParse(var1.getString("note_block_sound"));
       }
    }
 
-   public float getMouthAnimation(float var1) {
-      return this.isMovingMouth ? (float)this.mouthTickCount + var1 : (float)this.mouthTickCount;
+   public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
+      if (var0.hasNeighborSignal(var1)) {
+         var3.isAnimating = true;
+         ++var3.animationTickCount;
+      } else {
+         var3.isAnimating = false;
+      }
+   }
+
+   public float getAnimation(float var1) {
+      return this.isAnimating ? (float)this.animationTickCount + var1 : (float)this.animationTickCount;
    }
 
    @Nullable
    public GameProfile getOwnerProfile() {
       return this.owner;
+   }
+
+   @Nullable
+   public ResourceLocation getNoteBlockSound() {
+      return this.noteBlockSound;
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

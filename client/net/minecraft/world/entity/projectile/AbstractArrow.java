@@ -7,8 +7,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
@@ -454,7 +455,7 @@ public abstract class AbstractArrow extends Projectile {
       var1.putDouble("damage", this.baseDamage);
       var1.putBoolean("crit", this.isCritArrow());
       var1.putByte("PierceLevel", this.getPierceLevel());
-      var1.putString("SoundEvent", Registry.SOUND_EVENT.getKey(this.soundEvent).toString());
+      var1.putString("SoundEvent", BuiltInRegistries.SOUND_EVENT.getKey(this.soundEvent).toString());
       var1.putBoolean("ShotFromCrossbow", this.shotFromCrossbow());
    }
 
@@ -463,7 +464,7 @@ public abstract class AbstractArrow extends Projectile {
       super.readAdditionalSaveData(var1);
       this.life = var1.getShort("life");
       if (var1.contains("inBlockState", 10)) {
-         this.lastState = NbtUtils.readBlockState(var1.getCompound("inBlockState"));
+         this.lastState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("inBlockState"));
       }
 
       this.shakeTime = var1.getByte("shake") & 255;
@@ -476,7 +477,9 @@ public abstract class AbstractArrow extends Projectile {
       this.setCritArrow(var1.getBoolean("crit"));
       this.setPierceLevel(var1.getByte("PierceLevel"));
       if (var1.contains("SoundEvent", 8)) {
-         this.soundEvent = Registry.SOUND_EVENT.getOptional(new ResourceLocation(var1.getString("SoundEvent"))).orElse(this.getDefaultHitGroundSoundEvent());
+         this.soundEvent = BuiltInRegistries.SOUND_EVENT
+            .getOptional(new ResourceLocation(var1.getString("SoundEvent")))
+            .orElse(this.getDefaultHitGroundSoundEvent());
       }
 
       this.setShotFromCrossbow(var1.getBoolean("ShotFromCrossbow"));

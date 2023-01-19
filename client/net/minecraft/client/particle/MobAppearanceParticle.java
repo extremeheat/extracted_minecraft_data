@@ -2,7 +2,7 @@ package net.minecraft.client.particle;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.GuardianModel;
@@ -38,9 +38,9 @@ public class MobAppearanceParticle extends Particle {
       float var5 = 0.05F + 0.5F * Mth.sin(var4 * 3.1415927F);
       PoseStack var6 = new PoseStack();
       var6.mulPose(var2.rotation());
-      var6.mulPose(Vector3f.XP.rotationDegrees(150.0F * var4 - 60.0F));
+      var6.mulPose(Axis.XP.rotationDegrees(150.0F * var4 - 60.0F));
       var6.scale(-1.0F, -1.0F, 1.0F);
-      var6.translate(0.0, -1.1009999513626099, 1.5);
+      var6.translate(0.0F, -1.101F, 1.5F);
       MultiBufferSource.BufferSource var7 = Minecraft.getInstance().renderBuffers().bufferSource();
       VertexConsumer var8 = var7.getBuffer(this.renderType);
       this.model.renderToBuffer(var6, var8, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, var5);

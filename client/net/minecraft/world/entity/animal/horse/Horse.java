@@ -21,18 +21,18 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HorseArmorItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
 
-public class Horse extends AbstractHorse {
+public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    private static final UUID ARMOR_MODIFIER_UUID = UUID.fromString("556E1665-8B10-40C8-8F9D-CF9B1667F295");
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(Horse.class, EntityDataSerializers.INT);
 
@@ -101,6 +101,10 @@ public class Horse extends AbstractHorse {
       return Variant.byId(this.getTypeVariant() & 0xFF);
    }
 
+   public void setVariant(Variant var1) {
+      this.setTypeVariant(var1.getId() & 0xFF | this.getTypeVariant() & -256);
+   }
+
    public Markings getMarkings() {
       return Markings.byId((this.getTypeVariant() & 0xFF00) >> 8);
    }
@@ -148,13 +152,11 @@ public class Horse extends AbstractHorse {
 
    @Override
    protected SoundEvent getAmbientSound() {
-      super.getAmbientSound();
       return SoundEvents.HORSE_AMBIENT;
    }
 
    @Override
    protected SoundEvent getDeathSound() {
-      super.getDeathSound();
       return SoundEvents.HORSE_DEATH;
    }
 
@@ -166,57 +168,33 @@ public class Horse extends AbstractHorse {
 
    @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
-      super.getHurtSound(var1);
       return SoundEvents.HORSE_HURT;
    }
 
    @Override
    protected SoundEvent getAngrySound() {
-      super.getAngrySound();
       return SoundEvents.HORSE_ANGRY;
    }
 
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (!this.isBaby()) {
-         if (this.isTamed() && var1.isSecondaryUseActive()) {
-            this.openCustomInventoryScreen(var1);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+      boolean var3 = !this.isBaby() && this.isTamed() && var1.isSecondaryUseActive();
+      if (!this.isVehicle() && !var3) {
+         ItemStack var4 = var1.getItemInHand(var2);
+         if (!var4.isEmpty()) {
+            if (this.isFood(var4)) {
+               return this.fedFood(var1, var4);
+            }
+
+            if (!this.isTamed()) {
+               this.makeMad();
+               return InteractionResult.sidedSuccess(this.level.isClientSide);
+            }
          }
 
-         if (this.isVehicle()) {
-            return super.mobInteract(var1, var2);
-         }
-      }
-
-      if (!var3.isEmpty()) {
-         if (this.isFood(var3)) {
-            return this.fedFood(var1, var3);
-         }
-
-         InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-         if (var4.consumesAction()) {
-            return var4;
-         }
-
-         if (!this.isTamed()) {
-            this.makeMad();
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-
-         boolean var5 = !this.isBaby() && !this.isSaddled() && var3.is(Items.SADDLE);
-         if (this.isArmor(var3) || var5) {
-            this.openCustomInventoryScreen(var1);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
-         }
-      }
-
-      if (this.isBaby()) {
          return super.mobInteract(var1, var2);
       } else {
-         this.doPlayerRide(var1);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return super.mobInteract(var1, var2);
       }
    }
 
@@ -231,39 +209,46 @@ public class Horse extends AbstractHorse {
       }
    }
 
+   @Nullable
    @Override
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      AbstractHorse var3;
       if (var2 instanceof Donkey) {
-         var3 = EntityType.MULE.create(var1);
+         Mule var9 = EntityType.MULE.create(var1);
+         if (var9 != null) {
+            this.setOffspringAttributes(var2, var9);
+         }
+
+         return var9;
       } else {
-         Horse var4 = (Horse)var2;
-         var3 = EntityType.HORSE.create(var1);
-         int var6 = this.random.nextInt(9);
-         Variant var5;
-         if (var6 < 4) {
-            var5 = this.getVariant();
-         } else if (var6 < 8) {
-            var5 = var4.getVariant();
-         } else {
-            var5 = Util.getRandom(Variant.values(), this.random);
+         Horse var3 = (Horse)var2;
+         Horse var4 = EntityType.HORSE.create(var1);
+         if (var4 != null) {
+            int var6 = this.random.nextInt(9);
+            Variant var5;
+            if (var6 < 4) {
+               var5 = this.getVariant();
+            } else if (var6 < 8) {
+               var5 = var3.getVariant();
+            } else {
+               var5 = Util.getRandom(Variant.values(), this.random);
+            }
+
+            int var8 = this.random.nextInt(5);
+            Markings var7;
+            if (var8 < 2) {
+               var7 = this.getMarkings();
+            } else if (var8 < 4) {
+               var7 = var3.getMarkings();
+            } else {
+               var7 = Util.getRandom(Markings.values(), this.random);
+            }
+
+            var4.setVariantAndMarkings(var5, var7);
+            this.setOffspringAttributes(var2, var4);
          }
 
-         int var8 = this.random.nextInt(5);
-         Markings var7;
-         if (var8 < 2) {
-            var7 = this.getMarkings();
-         } else if (var8 < 4) {
-            var7 = var4.getMarkings();
-         } else {
-            var7 = Util.getRandom(Markings.values(), this.random);
-         }
-
-         ((Horse)var3).setVariantAndMarkings(var5, var7);
+         return var4;
       }
-
-      this.setOffspringAttributes(var2, var3);
-      return var3;
    }
 
    @Override

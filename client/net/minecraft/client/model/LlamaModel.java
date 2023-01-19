@@ -95,18 +95,18 @@ public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
          var1.pushPose();
          float var10 = 0.7F;
          var1.scale(0.71428573F, 0.64935064F, 0.7936508F);
-         var1.translate(0.0, 1.3125, 0.2199999988079071);
+         var1.translate(0.0F, 1.3125F, 0.22F);
          this.head.render(var1, var2, var3, var4, var5, var6, var7, var8);
          var1.popPose();
          var1.pushPose();
          float var11 = 1.1F;
          var1.scale(0.625F, 0.45454544F, 0.45454544F);
-         var1.translate(0.0, 2.0625, 0.0);
+         var1.translate(0.0F, 2.0625F, 0.0F);
          this.body.render(var1, var2, var3, var4, var5, var6, var7, var8);
          var1.popPose();
          var1.pushPose();
          var1.scale(0.45454544F, 0.41322312F, 0.45454544F);
-         var1.translate(0.0, 2.0625, 0.0);
+         var1.translate(0.0F, 2.0625F, 0.0F);
          ImmutableList.of(this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightChest, this.leftChest)
             .forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
          var1.popPose();
