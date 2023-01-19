@@ -2,10 +2,9 @@ package net.minecraft.util.profiling;
 
 import com.mojang.logging.LogUtils;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.function.LongSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import org.slf4j.Logger;
 
 public class SingleTickProfiler {
@@ -34,7 +33,7 @@ public class SingleTickProfiler {
          ProfileResults var1 = this.profiler.getResults();
          this.profiler = InactiveProfiler.INSTANCE;
          if (var1.getNanoDuration() >= this.saveThreshold) {
-            File var2 = new File(this.location, "tick-results-" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()) + ".txt");
+            File var2 = new File(this.location, "tick-results-" + Util.getFilenameFormattedDateTime() + ".txt");
             var1.saveResults(var2.toPath());
             LOGGER.info("Recorded long tick -- wrote info to: {}", var2.getAbsolutePath());
          }

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -335,7 +336,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%02X", var20[var28] & 255));
+                  var0.append(String.format(Locale.ROOT, "0x%02X", var20[var28] & 255));
                }
             } else {
                indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
@@ -404,7 +405,7 @@ public final class NbtUtils {
             int var21 = 0;
 
             for(int var37 : var17) {
-               var21 = Math.max(var21, String.format("%X", var37).length());
+               var21 = Math.max(var21, String.format(Locale.ROOT, "%X", var37).length());
             }
 
             int var25 = var17.length;
@@ -426,7 +427,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%0" + var21 + "X", var17[var31]));
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var21 + "X", var17[var31]));
                }
             } else {
                indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");
@@ -441,7 +442,7 @@ public final class NbtUtils {
             long var6 = 0L;
 
             for(long var11 : var5) {
-               var6 = Math.max(var6, (long)String.format("%X", var11).length());
+               var6 = Math.max(var6, (long)String.format(Locale.ROOT, "%X", var11).length());
             }
 
             long var29 = (long)var5.length;
@@ -463,7 +464,7 @@ public final class NbtUtils {
                      var0.append(' ');
                   }
 
-                  var0.append(String.format("0x%0" + var6 + "X", var5[var36]));
+                  var0.append(String.format(Locale.ROOT, "0x%0" + var6 + "X", var5[var36]));
                }
             } else {
                indent(var2 + 1, var0).append(" // Skipped, supply withBinaryBlobs true");

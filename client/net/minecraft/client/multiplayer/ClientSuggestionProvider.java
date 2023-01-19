@@ -7,6 +7,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -18,6 +20,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -33,6 +36,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    private int pendingSuggestionsId = -1;
    @Nullable
    private CompletableFuture<Suggestions> pendingSuggestionsFuture;
+   private final Set<String> customCompletionSuggestions = new HashSet<>();
 
    public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2) {
       super();
@@ -49,6 +53,17 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       }
 
       return var1;
+   }
+
+   @Override
+   public Collection<String> getCustomTabSugggestions() {
+      if (this.customCompletionSuggestions.isEmpty()) {
+         return this.getOnlinePlayerNames();
+      } else {
+         HashSet var1 = new HashSet<>(this.getOnlinePlayerNames());
+         var1.addAll(this.customCompletionSuggestions);
+         return var1;
+      }
    }
 
    @Override
@@ -148,6 +163,20 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
          this.pendingSuggestionsFuture.complete(var2);
          this.pendingSuggestionsFuture = null;
          this.pendingSuggestionsId = -1;
+      }
+   }
+
+   public void modifyCustomCompletions(ClientboundCustomChatCompletionsPacket.Action var1, List<String> var2) {
+      switch(var1) {
+         case ADD:
+            this.customCompletionSuggestions.addAll(var2);
+            break;
+         case REMOVE:
+            var2.forEach(this.customCompletionSuggestions::remove);
+            break;
+         case SET:
+            this.customCompletionSuggestions.clear();
+            this.customCompletionSuggestions.addAll(var2);
       }
    }
 }

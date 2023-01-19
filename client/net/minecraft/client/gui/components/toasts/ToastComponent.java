@@ -3,8 +3,10 @@ package net.minecraft.client.gui.components.toasts;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Deque;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -12,9 +14,11 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.util.Mth;
 
 public class ToastComponent extends GuiComponent {
-   private static final int VISIBLE_TOASTS = 5;
+   private static final int SLOT_COUNT = 5;
+   private static final int NO_SPACE = -1;
    final Minecraft minecraft;
-   private final ToastComponent.ToastInstance<?>[] visible = new ToastComponent.ToastInstance[5];
+   private final List<ToastComponent.ToastInstance<?>> visible = new ArrayList<>();
+   private final BitSet occupiedSlots = new BitSet(5);
    private final Deque<Toast> queued = Queues.newArrayDeque();
 
    public ToastComponent(Minecraft var1) {
@@ -24,30 +28,62 @@ public class ToastComponent extends GuiComponent {
 
    public void render(PoseStack var1) {
       if (!this.minecraft.options.hideGui) {
-         for(int var2 = 0; var2 < this.visible.length; ++var2) {
-            ToastComponent.ToastInstance var3 = this.visible[var2];
-            if (var3 != null && var3.render(this.minecraft.getWindow().getGuiScaledWidth(), var2, var1)) {
-               this.visible[var2] = null;
+         int var2 = this.minecraft.getWindow().getGuiScaledWidth();
+         this.visible.removeIf(var3 -> {
+            if (var3 != null && var3.render(var2, var1)) {
+               this.occupiedSlots.clear(var3.index, var3.index + var3.slotCount);
+               return true;
+            } else {
+               return false;
             }
-
-            if (this.visible[var2] == null && !this.queued.isEmpty()) {
-               this.visible[var2] = new ToastComponent.ToastInstance<>(this.queued.removeFirst());
-            }
+         });
+         if (!this.queued.isEmpty() && this.freeSlots() > 0) {
+            this.queued.removeIf(var1x -> {
+               int var2x = var1x.slotCount();
+               int var3 = this.findFreeIndex(var2x);
+               if (var3 != -1) {
+                  this.visible.add(new ToastComponent.ToastInstance<>(var1x, var3, var2x));
+                  this.occupiedSlots.set(var3, var3 + var2x);
+                  return true;
+               } else {
+                  return false;
+               }
+            });
          }
       }
    }
 
-   @Nullable
-   public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
-      for(ToastComponent.ToastInstance var6 : this.visible) {
-         if (var6 != null && var1.isAssignableFrom(var6.getToast().getClass()) && var6.getToast().getToken().equals(var2)) {
-            return (T)var6.getToast();
+   private int findFreeIndex(int var1) {
+      if (this.freeSlots() >= var1) {
+         int var2 = 0;
+
+         for(int var3 = 0; var3 < 5; ++var3) {
+            if (this.occupiedSlots.get(var3)) {
+               var2 = 0;
+            } else if (++var2 == var1) {
+               return var3 + 1 - var2;
+            }
          }
       }
 
-      for(Toast var8 : this.queued) {
-         if (var1.isAssignableFrom(var8.getClass()) && var8.getToken().equals(var2)) {
-            return (T)var8;
+      return -1;
+   }
+
+   private int freeSlots() {
+      return 5 - this.occupiedSlots.cardinality();
+   }
+
+   @Nullable
+   public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
+      for(ToastComponent.ToastInstance var4 : this.visible) {
+         if (var4 != null && var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
+            return (T)var4.getToast();
+         }
+      }
+
+      for(Toast var6 : this.queued) {
+         if (var1.isAssignableFrom(var6.getClass()) && var6.getToken().equals(var2)) {
+            return (T)var6;
          }
       }
 
@@ -55,7 +91,8 @@ public class ToastComponent extends GuiComponent {
    }
 
    public void clear() {
-      Arrays.fill(this.visible, null);
+      this.occupiedSlots.clear();
+      this.visible.clear();
       this.queued.clear();
    }
 
@@ -70,13 +107,17 @@ public class ToastComponent extends GuiComponent {
    class ToastInstance<T extends Toast> {
       private static final long ANIMATION_TIME = 600L;
       private final T toast;
+      final int index;
+      final int slotCount;
       private long animationTime = -1L;
       private long visibleTime = -1L;
       private Toast.Visibility visibility = Toast.Visibility.SHOW;
 
-      ToastInstance(T var2) {
+      ToastInstance(T var2, int var3, int var4) {
          super();
          this.toast = var2;
+         this.index = var3;
+         this.slotCount = var4;
       }
 
       public T getToast() {
@@ -89,33 +130,31 @@ public class ToastComponent extends GuiComponent {
          return this.visibility == Toast.Visibility.HIDE ? 1.0F - var3 : var3;
       }
 
-      public boolean render(int var1, int var2, PoseStack var3) {
-         long var4 = Util.getMillis();
+      public boolean render(int var1, PoseStack var2) {
+         long var3 = Util.getMillis();
          if (this.animationTime == -1L) {
-            this.animationTime = var4;
+            this.animationTime = var3;
             this.visibility.playSound(ToastComponent.this.minecraft.getSoundManager());
          }
 
-         if (this.visibility == Toast.Visibility.SHOW && var4 - this.animationTime <= 600L) {
-            this.visibleTime = var4;
+         if (this.visibility == Toast.Visibility.SHOW && var3 - this.animationTime <= 600L) {
+            this.visibleTime = var3;
          }
 
-         PoseStack var6 = RenderSystem.getModelViewStack();
-         var6.pushPose();
-         var6.translate(
-            (double)((float)var1 - (float)this.toast.width() * this.getVisibility(var4)), (double)(var2 * this.toast.height()), (double)(800 + var2)
-         );
+         PoseStack var5 = RenderSystem.getModelViewStack();
+         var5.pushPose();
+         var5.translate((double)((float)var1 - (float)this.toast.width() * this.getVisibility(var3)), (double)(this.index * 32), 800.0);
          RenderSystem.applyModelViewMatrix();
-         Toast.Visibility var7 = this.toast.render(var3, ToastComponent.this, var4 - this.visibleTime);
-         var6.popPose();
+         Toast.Visibility var6 = this.toast.render(var2, ToastComponent.this, var3 - this.visibleTime);
+         var5.popPose();
          RenderSystem.applyModelViewMatrix();
-         if (var7 != this.visibility) {
-            this.animationTime = var4 - (long)((int)((1.0F - this.getVisibility(var4)) * 600.0F));
-            this.visibility = var7;
+         if (var6 != this.visibility) {
+            this.animationTime = var3 - (long)((int)((1.0F - this.getVisibility(var3)) * 600.0F));
+            this.visibility = var6;
             this.visibility.playSound(ToastComponent.this.minecraft.getSoundManager());
          }
 
-         return this.visibility == Toast.Visibility.HIDE && var4 - this.animationTime > 600L;
+         return this.visibility == Toast.Visibility.HIDE && var3 - this.animationTime > 600L;
       }
    }
 }

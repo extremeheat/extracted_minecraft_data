@@ -250,18 +250,18 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       DedicatedServerProperties var2 = this.getProperties();
 
       try (BufferedWriter var3 = Files.newBufferedWriter(var1)) {
-         var3.write(String.format("sync-chunk-writes=%s%n", var2.syncChunkWrites));
-         var3.write(String.format("gamemode=%s%n", var2.gamemode));
-         var3.write(String.format("spawn-monsters=%s%n", var2.spawnMonsters));
-         var3.write(String.format("entity-broadcast-range-percentage=%d%n", var2.entityBroadcastRangePercentage));
-         var3.write(String.format("max-world-size=%d%n", var2.maxWorldSize));
-         var3.write(String.format("spawn-npcs=%s%n", var2.spawnNpcs));
-         var3.write(String.format("view-distance=%d%n", var2.viewDistance));
-         var3.write(String.format("simulation-distance=%d%n", var2.simulationDistance));
-         var3.write(String.format("spawn-animals=%s%n", var2.spawnAnimals));
-         var3.write(String.format("generate-structures=%s%n", var2.getWorldGenSettings(this.registryAccess()).generateStructures()));
-         var3.write(String.format("use-native=%s%n", var2.useNativeTransport));
-         var3.write(String.format("rate-limit=%d%n", var2.rateLimitPacketsPerSecond));
+         var3.write(String.format(Locale.ROOT, "sync-chunk-writes=%s%n", var2.syncChunkWrites));
+         var3.write(String.format(Locale.ROOT, "gamemode=%s%n", var2.gamemode));
+         var3.write(String.format(Locale.ROOT, "spawn-monsters=%s%n", var2.spawnMonsters));
+         var3.write(String.format(Locale.ROOT, "entity-broadcast-range-percentage=%d%n", var2.entityBroadcastRangePercentage));
+         var3.write(String.format(Locale.ROOT, "max-world-size=%d%n", var2.maxWorldSize));
+         var3.write(String.format(Locale.ROOT, "spawn-npcs=%s%n", var2.spawnNpcs));
+         var3.write(String.format(Locale.ROOT, "view-distance=%d%n", var2.viewDistance));
+         var3.write(String.format(Locale.ROOT, "simulation-distance=%d%n", var2.simulationDistance));
+         var3.write(String.format(Locale.ROOT, "spawn-animals=%s%n", var2.spawnAnimals));
+         var3.write(String.format(Locale.ROOT, "generate-structures=%s%n", var2.getWorldGenSettings(this.registryAccess()).generateStructures()));
+         var3.write(String.format(Locale.ROOT, "use-native=%s%n", var2.useNativeTransport));
+         var3.write(String.format(Locale.ROOT, "rate-limit=%d%n", var2.rateLimitPacketsPerSecond));
       }
    }
 
@@ -438,7 +438,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    @Override
    public boolean enforceSecureProfile() {
-      return this.getProperties().enforceSecureProfile;
+      return this.getProperties().enforceSecureProfile && this.getProperties().onlineMode;
    }
 
    protected boolean convertOldUsers() {

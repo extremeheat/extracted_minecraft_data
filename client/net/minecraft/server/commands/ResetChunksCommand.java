@@ -11,6 +11,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
@@ -169,7 +170,9 @@ public class ResetChunksCommand {
       long var37 = System.currentTimeMillis() - var31;
       var0.sendSuccess(
          Component.literal(
-            String.format("%d chunks have been reset. This took %d ms for %d chunks, or %02f ms per chunk", var32, var37, var32, (float)var37 / (float)var32)
+            String.format(
+               Locale.ROOT, "%d chunks have been reset. This took %d ms for %d chunks, or %02f ms per chunk", var32, var37, var32, (float)var37 / (float)var32
+            )
          ),
          true
       );

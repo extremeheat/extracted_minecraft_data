@@ -8,13 +8,12 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -71,10 +70,7 @@ public class PerfCommand {
 
    private static void saveResults(CommandSourceStack var0, Path var1, MinecraftServer var2) {
       String var3 = String.format(
-         "%s-%s-%s",
-         new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date()),
-         var2.getWorldData().getLevelName(),
-         SharedConstants.getCurrentVersion().getId()
+         Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var2.getWorldData().getLevelName(), SharedConstants.getCurrentVersion().getId()
       );
 
       String var4;

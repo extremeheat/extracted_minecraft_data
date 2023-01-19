@@ -32,6 +32,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -56,7 +58,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-import java.util.function.LongSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
@@ -69,9 +70,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeSource;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.block.state.properties.Property;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public class Util {
@@ -82,7 +83,8 @@ public class Util {
    private static final ExecutorService BOOTSTRAP_EXECUTOR = makeExecutor("Bootstrap");
    private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
    private static final ExecutorService IO_POOL = makeIoExecutor();
-   public static LongSupplier timeSource = System::nanoTime;
+   private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+   public static TimeSource.NanoTimeSource timeSource = System::nanoTime;
    public static final Ticker TICKER = new Ticker() {
       public long read() {
          return Util.timeSource.getAsLong();
@@ -123,6 +125,10 @@ public class Util {
 
    public static long getEpochMillis() {
       return Instant.now().toEpochMilli();
+   }
+
+   public static String getFilenameFormattedDateTime() {
+      return FILENAME_DATE_TIME_FORMATTER.format(ZonedDateTime.now());
    }
 
    private static ExecutorService makeExecutor(String var0) {
@@ -232,7 +238,7 @@ public class Util {
          System.exit(-1);
       }
 
-      LOGGER.error(String.format("Caught exception in thread %s", var0), var1);
+      LOGGER.error(String.format(Locale.ROOT, "Caught exception in thread %s", var0), var1);
    }
 
    @Nullable
@@ -839,16 +845,11 @@ public class Util {
       public void openUrl(URL var1) {
          try {
             Process var2 = AccessController.doPrivileged((PrivilegedExceptionAction<Process>)(() -> Runtime.getRuntime().exec(this.getOpenUrlArguments(var1))));
-
-            for(String var4 : IOUtils.readLines(var2.getErrorStream())) {
-               Util.LOGGER.error(var4);
-            }
-
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();
-         } catch (IOException | PrivilegedActionException var5) {
-            Util.LOGGER.error("Couldn't open url '{}'", var1, var5);
+         } catch (IOException | PrivilegedActionException var3) {
+            Util.LOGGER.error("Couldn't open url '{}'", var1, var3);
          }
       }
 

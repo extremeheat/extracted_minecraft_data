@@ -392,26 +392,30 @@ public class MultiPlayerGameMode {
 
    public void handleInventoryMouseClick(int var1, int var2, int var3, ClickType var4, Player var5) {
       AbstractContainerMenu var6 = var5.containerMenu;
-      NonNullList var7 = var6.slots;
-      int var8 = var7.size();
-      ArrayList var9 = Lists.newArrayListWithCapacity(var8);
+      if (var1 != var6.containerId) {
+         LOGGER.warn("Ignoring click in mismatching container. Click in {}, player has {}.", var1, var6.containerId);
+      } else {
+         NonNullList var7 = var6.slots;
+         int var8 = var7.size();
+         ArrayList var9 = Lists.newArrayListWithCapacity(var8);
 
-      for(Slot var11 : var7) {
-         var9.add(var11.getItem().copy());
-      }
-
-      var6.clicked(var2, var3, var4, var5);
-      Int2ObjectOpenHashMap var14 = new Int2ObjectOpenHashMap();
-
-      for(int var15 = 0; var15 < var8; ++var15) {
-         ItemStack var12 = (ItemStack)var9.get(var15);
-         ItemStack var13 = ((Slot)var7.get(var15)).getItem();
-         if (!ItemStack.matches(var12, var13)) {
-            var14.put(var15, var13.copy());
+         for(Slot var11 : var7) {
+            var9.add(var11.getItem().copy());
          }
-      }
 
-      this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), var2, var3, var4, var6.getCarried().copy(), var14));
+         var6.clicked(var2, var3, var4, var5);
+         Int2ObjectOpenHashMap var14 = new Int2ObjectOpenHashMap();
+
+         for(int var15 = 0; var15 < var8; ++var15) {
+            ItemStack var12 = (ItemStack)var9.get(var15);
+            ItemStack var13 = ((Slot)var7.get(var15)).getItem();
+            if (!ItemStack.matches(var12, var13)) {
+               var14.put(var15, var13.copy());
+            }
+         }
+
+         this.connection.send(new ServerboundContainerClickPacket(var1, var6.getStateId(), var2, var3, var4, var6.getCarried().copy(), var14));
+      }
    }
 
    public void handlePlaceRecipe(int var1, Recipe<?> var2, boolean var3) {

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
+import java.util.Locale;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -98,7 +99,7 @@ public class PoolElementStructurePiece extends StructurePiece {
 
    @Override
    public String toString() {
-      return String.format("<%s | %s | %s | %s>", this.getClass().getSimpleName(), this.position, this.rotation, this.element);
+      return String.format(Locale.ROOT, "<%s | %s | %s | %s>", this.getClass().getSimpleName(), this.position, this.rotation, this.element);
    }
 
    public StructurePoolElement getElement() {

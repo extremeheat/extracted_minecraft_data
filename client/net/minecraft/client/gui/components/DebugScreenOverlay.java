@@ -180,9 +180,9 @@ public class DebugScreenOverlay extends GuiComponent {
       float var5 = var3.getAverageReceivedPackets();
       String var1;
       if (var2 != null) {
-         var1 = String.format("Integrated server @ %.0f ms ticks, %.0f tx, %.0f rx", var2.getAverageTickTime(), var4, var5);
+         var1 = String.format(Locale.ROOT, "Integrated server @ %.0f ms ticks, %.0f tx, %.0f rx", var2.getAverageTickTime(), var4, var5);
       } else {
-         var1 = String.format("\"%s\" server, %.0f tx, %.0f rx", this.minecraft.player.getServerBrand(), var4, var5);
+         var1 = String.format(Locale.ROOT, "\"%s\" server, %.0f tx, %.0f rx", this.minecraft.player.getServerBrand(), var4, var5);
       }
 
       BlockPos var6 = this.minecraft.getCameraEntity().blockPosition();
@@ -203,7 +203,7 @@ public class DebugScreenOverlay extends GuiComponent {
                "P: " + this.minecraft.particleEngine.countParticles() + ". T: " + this.minecraft.level.getEntityCount(),
                this.minecraft.level.gatherChunkSourceStats(),
                "",
-               String.format("Chunk-relative: %d %d %d", var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15)
+               String.format(Locale.ROOT, "Chunk-relative: %d %d %d", var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15)
             }
          );
       } else {
@@ -259,9 +259,14 @@ public class DebugScreenOverlay extends GuiComponent {
                this.minecraft.getCameraEntity().getZ()
             )
          );
-         var13.add(String.format("Block: %d %d %d [%d %d %d]", var6.getX(), var6.getY(), var6.getZ(), var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15));
          var13.add(
             String.format(
+               Locale.ROOT, "Block: %d %d %d [%d %d %d]", var6.getX(), var6.getY(), var6.getZ(), var6.getX() & 15, var6.getY() & 15, var6.getZ() & 15
+            )
+         );
+         var13.add(
+            String.format(
+               Locale.ROOT,
                "Chunk: %d %d %d [%d %d in r.%d.%d.mca]",
                var10.x,
                SectionPos.blockToSectionCoord(var6.getY()),
@@ -327,8 +332,8 @@ public class DebugScreenOverlay extends GuiComponent {
                );
             }
 
-            if (var19 != null) {
-               var13.add(String.format("Blending: %s", var19.isOldNoiseGeneration() ? "Old" : "New"));
+            if (var19 != null && var19.isOldNoiseGeneration()) {
+               var13.add("Blending: Old");
             }
          }
 
@@ -364,7 +369,8 @@ public class DebugScreenOverlay extends GuiComponent {
          }
 
          var13.add(
-            this.minecraft.getSoundManager().getDebugString() + String.format(" (Mood %d%%)", Math.round(this.minecraft.player.getCurrentMood() * 100.0F))
+            this.minecraft.getSoundManager().getDebugString()
+               + String.format(Locale.ROOT, " (Mood %d%%)", Math.round(this.minecraft.player.getCurrentMood() * 100.0F))
          );
          return var13;
       }
@@ -426,15 +432,19 @@ public class DebugScreenOverlay extends GuiComponent {
       long var7 = var3 - var5;
       ArrayList var9 = Lists.newArrayList(
          new String[]{
-            String.format("Java: %s %dbit", System.getProperty("java.version"), this.minecraft.is64Bit() ? 64 : 32),
-            String.format("Mem: % 2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
-            String.format("Allocation rate: %03dMB /s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
-            String.format("Allocated: % 2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
+            String.format(Locale.ROOT, "Java: %s %dbit", System.getProperty("java.version"), this.minecraft.is64Bit() ? 64 : 32),
+            String.format(Locale.ROOT, "Mem: % 2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
+            String.format(Locale.ROOT, "Allocation rate: %03dMB /s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
+            String.format(Locale.ROOT, "Allocated: % 2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
             "",
-            String.format("CPU: %s", GlUtil.getCpuInfo()),
+            String.format(Locale.ROOT, "CPU: %s", GlUtil.getCpuInfo()),
             "",
             String.format(
-               "Display: %dx%d (%s)", Minecraft.getInstance().getWindow().getWidth(), Minecraft.getInstance().getWindow().getHeight(), GlUtil.getVendor()
+               Locale.ROOT,
+               "Display: %dx%d (%s)",
+               Minecraft.getInstance().getWindow().getWidth(),
+               Minecraft.getInstance().getWindow().getHeight(),
+               GlUtil.getVendor()
             ),
             GlUtil.getRenderer(),
             GlUtil.getOpenGLVersion()

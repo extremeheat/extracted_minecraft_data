@@ -5,10 +5,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
+import com.mojang.realmsclient.gui.task.DataFetcher;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -17,7 +18,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    private static final ResourceLocation INVITE_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/invite_icon.png");
    private static final ResourceLocation TRIAL_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/trial_icon.png");
    private static final ResourceLocation NEWS_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/news_notification_mainscreen.png");
-   private static final RealmsDataFetcher REALMS_DATA_FETCHER = new RealmsDataFetcher(Minecraft.getInstance(), RealmsClient.create());
+   @Nullable
+   private DataFetcher.Subscription realmsDataSubscription;
    private volatile int numberOfPendingInvites;
    static boolean checkedMcoAvailability;
    private static boolean trialAvailable;
@@ -25,35 +27,41 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    private static boolean hasUnreadNews;
 
    public RealmsNotificationsScreen() {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
    }
 
    @Override
    public void init() {
       this.checkIfMcoEnabled();
       this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
+      if (this.realmsDataSubscription != null) {
+         this.realmsDataSubscription.forceUpdate();
+      }
    }
 
    @Override
    public void tick() {
-      if ((!this.getRealmsNotificationsEnabled() || !this.inTitleScreen() || !validClient) && !REALMS_DATA_FETCHER.isStopped()) {
-         REALMS_DATA_FETCHER.stop();
-      } else if (validClient && this.getRealmsNotificationsEnabled()) {
-         REALMS_DATA_FETCHER.initWithSpecificTaskList();
-         if (REALMS_DATA_FETCHER.isFetchedSinceLastTry(RealmsDataFetcher.Task.PENDING_INVITE)) {
-            this.numberOfPendingInvites = REALMS_DATA_FETCHER.getPendingInvitesCount();
-         }
-
-         if (REALMS_DATA_FETCHER.isFetchedSinceLastTry(RealmsDataFetcher.Task.TRIAL_AVAILABLE)) {
-            trialAvailable = REALMS_DATA_FETCHER.isTrialAvailable();
-         }
-
-         if (REALMS_DATA_FETCHER.isFetchedSinceLastTry(RealmsDataFetcher.Task.UNREAD_NEWS)) {
-            hasUnreadNews = REALMS_DATA_FETCHER.hasUnreadNews();
-         }
-
-         REALMS_DATA_FETCHER.markClean();
+      boolean var1 = this.getRealmsNotificationsEnabled() && this.inTitleScreen() && validClient;
+      if (this.realmsDataSubscription == null && var1) {
+         this.realmsDataSubscription = this.initDataFetcher(this.minecraft.realmsDataFetcher());
+      } else if (this.realmsDataSubscription != null && !var1) {
+         this.realmsDataSubscription = null;
       }
+
+      if (this.realmsDataSubscription != null) {
+         this.realmsDataSubscription.tick();
+      }
+   }
+
+   private DataFetcher.Subscription initDataFetcher(RealmsDataFetcher var1) {
+      DataFetcher.Subscription var2 = var1.dataFetcher.createSubscription();
+      var2.subscribe(var1.pendingInvitesTask, var1x -> this.numberOfPendingInvites = var1x);
+      var2.subscribe(var1.trialAvailabilityTask, var0 -> trialAvailable = var0);
+      var2.subscribe(var1.newsTask, var1x -> {
+         var1.newsManager.updateUnreadNews(var1x);
+         hasUnreadNews = var1.newsManager.hasUnreadNews();
+      });
+      return var2;
    }
 
    private boolean getRealmsNotificationsEnabled() {
@@ -134,10 +142,5 @@ public class RealmsNotificationsScreen extends RealmsScreen {
 
          GuiComponent.blit(var1, var7 + 4 - var9, var8 + 4, 0.0F, (float)var10, 8, 8, 8, 16);
       }
-   }
-
-   @Override
-   public void removed() {
-      REALMS_DATA_FETCHER.stop();
    }
 }

@@ -16,6 +16,8 @@ import net.minecraft.world.item.RecordItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,6 +49,7 @@ public class JukeboxBlock extends BaseEntityBlock {
       if (var1.getValue(HAS_RECORD)) {
          this.dropRecording(var2, var3);
          var1 = var1.setValue(HAS_RECORD, Boolean.valueOf(false));
+         var2.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, var3, GameEvent.Context.of(var1));
          var2.setBlock(var3, var1, 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var1));
          return InteractionResult.sidedSuccess(var2.isClientSide);
@@ -55,10 +58,13 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void setRecord(@Nullable Entity var1, LevelAccessor var2, BlockPos var3, BlockState var4, ItemStack var5) {
       BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity) {
-         ((JukeboxBlockEntity)var6).setRecord(var5.copy());
+      if (var6 instanceof JukeboxBlockEntity var7) {
+         var7.setRecord(var5.copy());
+         var7.playRecord();
          var2.setBlock(var3, var4.setValue(HAS_RECORD, Boolean.valueOf(true)), 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1, var4));
       }
@@ -125,5 +131,11 @@ public class JukeboxBlock extends BaseEntityBlock {
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(HAS_RECORD);
+   }
+
+   @Nullable
+   @Override
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return var2.getValue(HAS_RECORD) ? createTickerHelper(var3, BlockEntityType.JUKEBOX, JukeboxBlockEntity::playRecordTick) : null;
    }
 }

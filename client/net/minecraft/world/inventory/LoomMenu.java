@@ -149,6 +149,10 @@ public class LoomMenu extends AbstractContainerMenu {
       }
    }
 
+   private boolean isValidPatternIndex(int var1) {
+      return var1 >= 0 && var1 < this.selectablePatterns.size();
+   }
+
    @Override
    public void slotsChanged(Container var1) {
       ItemStack var2 = this.bannerSlot.getItem();
@@ -156,35 +160,36 @@ public class LoomMenu extends AbstractContainerMenu {
       ItemStack var4 = this.patternSlot.getItem();
       if (!var2.isEmpty() && !var3.isEmpty()) {
          int var5 = this.selectedBannerPatternIndex.get();
-         List var6 = this.selectablePatterns;
+         boolean var6 = this.isValidPatternIndex(var5);
+         List var7 = this.selectablePatterns;
          this.selectablePatterns = this.getSelectablePatterns(var4);
-         Holder var7;
+         Holder var8;
          if (this.selectablePatterns.size() == 1) {
             this.selectedBannerPatternIndex.set(0);
-            var7 = this.selectablePatterns.get(0);
-         } else if (var5 == -1) {
+            var8 = this.selectablePatterns.get(0);
+         } else if (!var6) {
             this.selectedBannerPatternIndex.set(-1);
-            var7 = null;
+            var8 = null;
          } else {
-            Holder var8 = (Holder)var6.get(var5);
-            int var9 = this.selectablePatterns.indexOf(var8);
-            if (var9 != -1) {
-               var7 = var8;
-               this.selectedBannerPatternIndex.set(var9);
+            Holder var9 = (Holder)var7.get(var5);
+            int var10 = this.selectablePatterns.indexOf(var9);
+            if (var10 != -1) {
+               var8 = var9;
+               this.selectedBannerPatternIndex.set(var10);
             } else {
-               var7 = null;
+               var8 = null;
                this.selectedBannerPatternIndex.set(-1);
             }
          }
 
-         if (var7 != null) {
-            CompoundTag var10 = BlockItem.getBlockEntityData(var2);
-            boolean var11 = var10 != null && var10.contains("Patterns", 9) && !var2.isEmpty() && var10.getList("Patterns", 10).size() >= 6;
-            if (var11) {
+         if (var8 != null) {
+            CompoundTag var11 = BlockItem.getBlockEntityData(var2);
+            boolean var12 = var11 != null && var11.contains("Patterns", 9) && !var2.isEmpty() && var11.getList("Patterns", 10).size() >= 6;
+            if (var12) {
                this.selectedBannerPatternIndex.set(-1);
                this.resultSlot.set(ItemStack.EMPTY);
             } else {
-               this.setupResultSlot(var7);
+               this.setupResultSlot(var8);
             }
          } else {
             this.resultSlot.set(ItemStack.EMPTY);

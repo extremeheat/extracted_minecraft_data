@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
@@ -201,9 +202,9 @@ public final class NativeImage implements AutoCloseable {
 
    public int getPixelRGBA(int var1, int var2) {
       if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format("getPixelRGBA only works on RGBA images; have %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          this.checkAllocated();
          long var3 = ((long)var1 + (long)var2 * (long)this.width) * 4L;
@@ -213,9 +214,9 @@ public final class NativeImage implements AutoCloseable {
 
    public void setPixelRGBA(int var1, int var2, int var3) {
       if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format("getPixelRGBA only works on RGBA images; have %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          this.checkAllocated();
          long var4 = ((long)var1 + (long)var2 * (long)this.width) * 4L;
@@ -226,9 +227,9 @@ public final class NativeImage implements AutoCloseable {
    public void setPixelLuminance(int var1, int var2, byte var3) {
       RenderSystem.assertOnRenderThread();
       if (!this.format.hasLuminance()) {
-         throw new IllegalArgumentException(String.format("setPixelLuminance only works on image with luminance; have %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelLuminance only works on image with luminance; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          this.checkAllocated();
          long var4 = ((long)var1 + (long)var2 * (long)this.width) * (long)this.format.components() + (long)(this.format.luminanceOffset() / 8);
@@ -239,9 +240,9 @@ public final class NativeImage implements AutoCloseable {
    public byte getRedOrLuminance(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
       if (!this.format.hasLuminanceOrRed()) {
-         throw new IllegalArgumentException(String.format("no red or luminance in %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "no red or luminance in %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrRedOffset() / 8;
          return MemoryUtil.memGetByte(this.pixels + (long)var3);
@@ -251,9 +252,9 @@ public final class NativeImage implements AutoCloseable {
    public byte getGreenOrLuminance(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
       if (!this.format.hasLuminanceOrGreen()) {
-         throw new IllegalArgumentException(String.format("no green or luminance in %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "no green or luminance in %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrGreenOffset() / 8;
          return MemoryUtil.memGetByte(this.pixels + (long)var3);
@@ -263,9 +264,9 @@ public final class NativeImage implements AutoCloseable {
    public byte getBlueOrLuminance(int var1, int var2) {
       RenderSystem.assertOnRenderThread();
       if (!this.format.hasLuminanceOrBlue()) {
-         throw new IllegalArgumentException(String.format("no blue or luminance in %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "no blue or luminance in %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrBlueOffset() / 8;
          return MemoryUtil.memGetByte(this.pixels + (long)var3);
@@ -274,9 +275,9 @@ public final class NativeImage implements AutoCloseable {
 
    public byte getLuminanceOrAlpha(int var1, int var2) {
       if (!this.format.hasLuminanceOrAlpha()) {
-         throw new IllegalArgumentException(String.format("no luminance or alpha in %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "no luminance or alpha in %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
-         throw new IllegalArgumentException(String.format("(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
          int var3 = (var1 + var2 * this.width) * this.format.components() + this.format.luminanceOrAlphaOffset() / 8;
          return MemoryUtil.memGetByte(this.pixels + (long)var3);
@@ -431,7 +432,7 @@ public final class NativeImage implements AutoCloseable {
    public void copyFromFont(STBTTFontinfo var1, int var2, int var3, int var4, float var5, float var6, float var7, float var8, int var9, int var10) {
       if (var9 < 0 || var9 + var3 > this.getWidth() || var10 < 0 || var10 + var4 > this.getHeight()) {
          throw new IllegalArgumentException(
-            String.format("Out of bounds: start: (%s, %s) (size: %sx%s); size: %sx%s", var9, var10, var3, var4, this.getWidth(), this.getHeight())
+            String.format(Locale.ROOT, "Out of bounds: start: (%s, %s) (size: %sx%s); size: %sx%s", var9, var10, var3, var4, this.getWidth(), this.getHeight())
          );
       } else if (this.format.components() != 1) {
          throw new IllegalArgumentException("Can only write fonts into 1-component images.");

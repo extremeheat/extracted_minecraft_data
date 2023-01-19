@@ -2,6 +2,7 @@ package net.minecraft.client.player;
 
 import com.google.common.hash.Hashing;
 import com.mojang.authlib.GameProfile;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -24,16 +25,6 @@ import net.minecraft.world.level.GameType;
 
 public abstract class AbstractClientPlayer extends Player {
    private static final String SKIN_URL_TEMPLATE = "http://skins.minecraft.net/MinecraftSkins/%s.png";
-   public static final int SKIN_HEAD_U = 8;
-   public static final int SKIN_HEAD_V = 8;
-   public static final int SKIN_HEAD_WIDTH = 8;
-   public static final int SKIN_HEAD_HEIGHT = 8;
-   public static final int SKIN_HAT_U = 40;
-   public static final int SKIN_HAT_V = 8;
-   public static final int SKIN_HAT_WIDTH = 8;
-   public static final int SKIN_HAT_HEIGHT = 8;
-   public static final int SKIN_TEX_WIDTH = 64;
-   public static final int SKIN_TEX_HEIGHT = 64;
    @Nullable
    private PlayerInfo playerInfo;
    public float elytraRotX;
@@ -103,7 +94,7 @@ public abstract class AbstractClientPlayer extends Player {
       if (var3 == MissingTextureAtlasSprite.getTexture()) {
          HttpTexture var4 = new HttpTexture(
             null,
-            String.format("http://skins.minecraft.net/MinecraftSkins/%s.png", StringUtil.stripColor(var1)),
+            String.format(Locale.ROOT, "http://skins.minecraft.net/MinecraftSkins/%s.png", StringUtil.stripColor(var1)),
             DefaultPlayerSkin.getDefaultSkin(UUIDUtil.createOfflinePlayerUUID(var1)),
             true,
             null

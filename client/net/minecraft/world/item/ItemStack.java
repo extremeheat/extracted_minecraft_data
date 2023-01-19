@@ -635,7 +635,7 @@ public final class ItemStack {
             CompoundTag var6 = this.tag.getCompound("display");
             if (shouldShowInTooltip(var20, ItemStack.TooltipPart.DYE) && var6.contains("color", 99)) {
                if (var2.isAdvanced()) {
-                  var3.add(Component.translatable("item.color", String.format("#%06X", var6.getInt("color"))).withStyle(ChatFormatting.GRAY));
+                  var3.add(Component.translatable("item.color", String.format(Locale.ROOT, "#%06X", var6.getInt("color"))).withStyle(ChatFormatting.GRAY));
                } else {
                   var3.add(Component.translatable("item.dyed").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
                }

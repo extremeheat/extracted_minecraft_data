@@ -25,6 +25,7 @@ import net.minecraft.util.datafix.fixes.BedItemColorFix;
 import net.minecraft.util.datafix.fixes.BiomeFix;
 import net.minecraft.util.datafix.fixes.BitStorageAlignFix;
 import net.minecraft.util.datafix.fixes.BlendingDataFix;
+import net.minecraft.util.datafix.fixes.BlendingDataRemoveFromNetherEndFix;
 import net.minecraft.util.datafix.fixes.BlockEntityBannerColorFix;
 import net.minecraft.util.datafix.fixes.BlockEntityBlockStateFix;
 import net.minecraft.util.datafix.fixes.BlockEntityCustomNameToComponentFix;
@@ -103,6 +104,7 @@ import net.minecraft.util.datafix.fixes.ItemCustomNameToComponentFix;
 import net.minecraft.util.datafix.fixes.ItemIdFix;
 import net.minecraft.util.datafix.fixes.ItemLoreFix;
 import net.minecraft.util.datafix.fixes.ItemPotionFix;
+import net.minecraft.util.datafix.fixes.ItemRemoveBlockEntityTagFix;
 import net.minecraft.util.datafix.fixes.ItemRenameFix;
 import net.minecraft.util.datafix.fixes.ItemShulkerBoxColorFix;
 import net.minecraft.util.datafix.fixes.ItemSpawnEggFix;
@@ -369,6 +371,37 @@ public class DataFixers {
       var0.addFixer(new BlockNameFlatteningFix(var42, true));
       var0.addFixer(new ItemStackTheFlatteningFix(var42, false));
       Schema var43 = var0.addSchema(1451, 5, V1451_5::new);
+      var0.addFixer(
+         new ItemRemoveBlockEntityTagFix(
+            var43,
+            false,
+            Set.of(
+               "minecraft:note_block",
+               "minecraft:flower_pot",
+               "minecraft:dandelion",
+               "minecraft:poppy",
+               "minecraft:blue_orchid",
+               "minecraft:allium",
+               "minecraft:azure_bluet",
+               "minecraft:red_tulip",
+               "minecraft:orange_tulip",
+               "minecraft:white_tulip",
+               "minecraft:pink_tulip",
+               "minecraft:oxeye_daisy",
+               "minecraft:cactus",
+               "minecraft:brown_mushroom",
+               "minecraft:red_mushroom",
+               "minecraft:oak_sapling",
+               "minecraft:spruce_sapling",
+               "minecraft:birch_sapling",
+               "minecraft:jungle_sapling",
+               "minecraft:acacia_sapling",
+               "minecraft:dark_oak_sapling",
+               "minecraft:dead_bush",
+               "minecraft:fern"
+            )
+         )
+      );
       var0.addFixer(new AddNewChoices(var43, "RemoveNoteBlockFlowerPotFix", References.BLOCK_ENTITY));
       var0.addFixer(new ItemStackSpawnEggFix(var43, false));
       var0.addFixer(new EntityWolfColorFix(var43, false));
@@ -997,6 +1030,8 @@ public class DataFixers {
          )
       );
       var0.addFixer(new PoiTypeRemoveFix(var174, "Remove unpopulated villager PoI types", Set.of("minecraft:unemployed", "minecraft:nitwit")::contains));
+      Schema var176 = var0.addSchema(3108, SAME_NAMESPACED);
+      var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var176));
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {

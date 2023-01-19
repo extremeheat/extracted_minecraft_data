@@ -9,9 +9,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -23,7 +20,6 @@ import org.slf4j.Logger;
 
 public class Screenshot {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
    private int rowHeight;
    private final DataOutputStream outputStream;
    private final byte[] bytes;
@@ -84,7 +80,7 @@ public class Screenshot {
    }
 
    private static File getFile(File var0) {
-      String var1 = DATE_FORMAT.format(new Date());
+      String var1 = Util.getFilenameFormattedDateTime();
       int var2 = 1;
 
       while(true) {
@@ -104,7 +100,7 @@ public class Screenshot {
       this.rowHeight = var4;
       File var5 = new File(var1, "screenshots");
       var5.mkdir();
-      String var6 = "huge_" + DATE_FORMAT.format(new Date());
+      String var6 = "huge_" + Util.getFilenameFormattedDateTime();
       int var7 = 1;
 
       while((this.file = new File(var5, var6 + (var7 == 1 ? "" : "_" + var7) + ".tga")).exists()) {

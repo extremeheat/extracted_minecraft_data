@@ -10,6 +10,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -207,7 +208,13 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       if (var8) {
          int var10 = var1.health < var1.maxHealth ? -23296 : -1;
-         renderTextOverMob(var1.pos, var9, "health: " + String.format("%.1f", var1.health) + " / " + String.format("%.1f", var1.maxHealth), var10, 0.02F);
+         renderTextOverMob(
+            var1.pos,
+            var9,
+            "health: " + String.format(Locale.ROOT, "%.1f", var1.health) + " / " + String.format(Locale.ROOT, "%.1f", var1.maxHealth),
+            var10,
+            0.02F
+         );
          ++var9;
       }
 

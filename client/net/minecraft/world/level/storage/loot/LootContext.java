@@ -100,6 +100,7 @@ public class LootContext {
       return this.lootTables.apply(var1);
    }
 
+   @Nullable
    public LootItemCondition getCondition(ResourceLocation var1) {
       return this.conditions.apply(var1);
    }

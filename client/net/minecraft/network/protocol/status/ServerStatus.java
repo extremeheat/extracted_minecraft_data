@@ -27,6 +27,7 @@ public class ServerStatus {
    @Nullable
    private String favicon;
    private boolean previewsChat;
+   private boolean enforcesSecureChat;
 
    public ServerStatus() {
       super();
@@ -74,6 +75,14 @@ public class ServerStatus {
 
    public boolean previewsChat() {
       return this.previewsChat;
+   }
+
+   public void setEnforcesSecureChat(boolean var1) {
+      this.enforcesSecureChat = var1;
+   }
+
+   public boolean enforcesSecureChat() {
+      return this.enforcesSecureChat;
    }
 
    public static class Players {
@@ -183,12 +192,17 @@ public class ServerStatus {
             var5.setPreviewsChat(GsonHelper.getAsBoolean(var4, "previewsChat"));
          }
 
+         if (var4.has("enforcesSecureChat")) {
+            var5.setEnforcesSecureChat(GsonHelper.getAsBoolean(var4, "enforcesSecureChat"));
+         }
+
          return var5;
       }
 
       public JsonElement serialize(ServerStatus var1, Type var2, JsonSerializationContext var3) {
          JsonObject var4 = new JsonObject();
          var4.addProperty("previewsChat", var1.previewsChat());
+         var4.addProperty("enforcesSecureChat", var1.enforcesSecureChat());
          if (var1.getDescription() != null) {
             var4.add("description", var3.serialize(var1.getDescription()));
          }

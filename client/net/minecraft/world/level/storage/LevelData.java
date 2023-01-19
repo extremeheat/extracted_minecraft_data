@@ -1,5 +1,6 @@
 package net.minecraft.world.level.storage;
 
+import java.util.Locale;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
@@ -34,6 +35,6 @@ public interface LevelData {
 
    default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
       var1.setDetail("Level spawn location", () -> CrashReportCategory.formatLocation(var2, this.getXSpawn(), this.getYSpawn(), this.getZSpawn()));
-      var1.setDetail("Level time", () -> String.format("%d game time, %d day time", this.getGameTime(), this.getDayTime()));
+      var1.setDetail("Level time", () -> String.format(Locale.ROOT, "%d game time, %d day time", this.getGameTime(), this.getDayTime()));
    }
 }

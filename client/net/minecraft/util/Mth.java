@@ -1,5 +1,6 @@
 package net.minecraft.util;
 
+import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
@@ -832,9 +833,9 @@ public class Mth {
 
    public static IntStream outFromOrigin(int var0, int var1, int var2, int var3) {
       if (var1 > var2) {
-         throw new IllegalArgumentException("upperbound %d expected to be > lowerBound %d".formatted(var2, var1));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "upperbound %d expected to be > lowerBound %d", var2, var1));
       } else if (var3 < 1) {
-         throw new IllegalArgumentException("steps expected to be >= 1, was %d".formatted(var3));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "steps expected to be >= 1, was %d", var3));
       } else {
          return var0 >= var1 && var0 <= var2 ? IntStream.iterate(var0, var3x -> {
             int var4 = Math.abs(var0 - var3x);

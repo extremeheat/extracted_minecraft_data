@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 
 public class SkinManager {
@@ -62,7 +63,7 @@ public class SkinManager {
 
    private ResourceLocation registerTexture(MinecraftProfileTexture var1, Type var2, @Nullable SkinManager.SkinTextureCallback var3) {
       String var4 = Hashing.sha1().hashUnencodedChars(var1.getHash()).toString();
-      ResourceLocation var5 = new ResourceLocation("skins/" + var4);
+      ResourceLocation var5 = getTextureLocation(var2, var4);
       AbstractTexture var6 = this.textureManager.getTexture(var5, MissingTextureAtlasSprite.getTexture());
       if (var6 == MissingTextureAtlasSprite.getTexture()) {
          File var7 = new File(this.skinsDirectory, var4.length() > 2 ? var4.substring(0, 2) : "xx");
@@ -78,6 +79,16 @@ public class SkinManager {
       }
 
       return var5;
+   }
+
+   private static ResourceLocation getTextureLocation(Type var0, String var1) {
+      String var2 = switch(var0) {
+         case SKIN -> "skins";
+         case CAPE -> "capes";
+         case ELYTRA -> "elytra";
+         default -> throw new IncompatibleClassChangeError();
+      };
+      return new ResourceLocation(var2 + "/" + var1);
    }
 
    public void registerSkins(GameProfile var1, SkinManager.SkinTextureCallback var2, boolean var3) {
@@ -116,6 +127,11 @@ public class SkinManager {
    public Map<Type, MinecraftProfileTexture> getInsecureSkinInformation(GameProfile var1) {
       Property var2 = (Property)Iterables.getFirst(var1.getProperties().get("textures"), null);
       return (Map<Type, MinecraftProfileTexture>)(var2 == null ? ImmutableMap.of() : (Map)this.insecureSkinCache.getUnchecked(var2.getValue()));
+   }
+
+   public ResourceLocation getInsecureSkinLocation(GameProfile var1) {
+      MinecraftProfileTexture var2 = (MinecraftProfileTexture)this.getInsecureSkinInformation(var1).get(Type.SKIN);
+      return var2 != null ? this.registerTexture(var2, Type.SKIN) : DefaultPlayerSkin.getDefaultSkin(UUIDUtil.getOrCreatePlayerUUID(var1));
    }
 
    public interface SkinTextureCallback {

@@ -116,47 +116,44 @@ public class ClientPackSource implements RepositorySource {
 
       CompletableFuture var14;
       try {
-         this.clearServerPack();
-         this.clearOldDownloads();
-         File var6 = new File(this.serverPackDir, var4);
-         CompletableFuture var7;
-         if (var6.exists()) {
-            var7 = CompletableFuture.completedFuture("");
+         Minecraft var6 = Minecraft.getInstance();
+         File var7 = new File(this.serverPackDir, var4);
+         CompletableFuture var8;
+         if (var7.exists()) {
+            var8 = CompletableFuture.completedFuture("");
          } else {
-            ProgressScreen var8 = new ProgressScreen(var3);
-            Map var9 = getDownloadHeaders();
-            Minecraft var10 = Minecraft.getInstance();
-            var10.executeBlocking(() -> var10.setScreen(var8));
-            var7 = HttpUtil.downloadTo(var6, var1, var9, 262144000, var8, var10.getProxy());
+            ProgressScreen var9 = new ProgressScreen(var3);
+            Map var10 = getDownloadHeaders();
+            var6.executeBlocking(() -> var6.setScreen(var9));
+            var8 = HttpUtil.downloadTo(var7, var1, var10, 262144000, var9, var6.getProxy());
          }
 
-         this.currentDownload = var7.<Void>thenCompose(var4x -> {
-               if (!this.checkHash(var5, var6)) {
-                  return Util.failedFuture(new RuntimeException("Hash check failure for file " + var6 + ", see log"));
+         this.currentDownload = var8.<Void>thenCompose(var5x -> {
+               if (!this.checkHash(var5, var7)) {
+                  return Util.failedFuture(new RuntimeException("Hash check failure for file " + var7 + ", see log"));
                } else {
-                  Minecraft var5x = Minecraft.getInstance();
-                  var5x.execute(() -> {
+                  var6.execute(() -> {
                      if (!var3) {
-                        var5x.setScreen(new GenericDirtMessageScreen(APPLYING_PACK_TEXT));
+                        var6.setScreen(new GenericDirtMessageScreen(APPLYING_PACK_TEXT));
                      }
                   });
-                  return this.setServerPack(var6, PackSource.SERVER);
+                  return this.setServerPack(var7, PackSource.SERVER);
                }
             })
-            .whenComplete(
-               (var1x, var2x) -> {
-                  if (var2x != null) {
-                     LOGGER.warn("Pack application failed: {}, deleting file {}", var2x.getMessage(), var6);
-                     deleteQuietly(var6);
-                     Minecraft var3x = Minecraft.getInstance();
-                     var3x.execute(
-                        () -> var3x.setScreen(
+            .exceptionallyCompose(
+               var3x -> this.clearServerPack()
+                     .thenAcceptAsync(var2xx -> {
+                        LOGGER.warn("Pack application failed: {}, deleting file {}", var3x.getMessage(), var7);
+                        deleteQuietly(var7);
+                     }, Util.ioPool())
+                     .thenAcceptAsync(
+                        var1xx -> var6.setScreen(
                               new ConfirmScreen(
-                                 var1xx -> {
-                                    if (var1xx) {
-                                       var3x.setScreen(null);
+                                 var1xxx -> {
+                                    if (var1xxx) {
+                                       var6.setScreen(null);
                                     } else {
-                                       ClientPacketListener var2xx = var3x.getConnection();
+                                       ClientPacketListener var2xx = var6.getConnection();
                                        if (var2xx != null) {
                                           var2xx.getConnection().disconnect(Component.translatable("connect.aborted"));
                                        }
@@ -167,11 +164,11 @@ public class ClientPackSource implements RepositorySource {
                                  CommonComponents.GUI_PROCEED,
                                  Component.translatable("menu.disconnect")
                               )
-                           )
-                     );
-                  }
-               }
-            );
+                           ),
+                        var6
+                     )
+            )
+            .thenAcceptAsync(var1x -> this.clearOldDownloads(), Util.ioPool());
          var14 = this.currentDownload;
       } finally {
          this.downloadLock.unlock();
@@ -188,7 +185,7 @@ public class ClientPackSource implements RepositorySource {
       }
    }
 
-   public CompletableFuture<?> clearServerPack() {
+   public CompletableFuture<Void> clearServerPack() {
       this.downloadLock.lock();
 
       try {
@@ -258,7 +255,7 @@ public class ClientPackSource implements RepositorySource {
       try (FilePackResources var4 = new FilePackResources(var1)) {
          var3 = var4.getMetadataSection(PackMetadataSection.SERIALIZER);
       } catch (IOException var9) {
-         return Util.failedFuture(new IOException(String.format("Invalid resourcepack at %s", var1), var9));
+         return Util.failedFuture(new IOException(String.format(Locale.ROOT, "Invalid resourcepack at %s", var1), var9));
       }
 
       LOGGER.info("Applying server pack {}", var1);

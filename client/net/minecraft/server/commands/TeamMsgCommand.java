@@ -9,15 +9,15 @@ import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.chat.OutgoingPlayerChatMessage;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.PlayerTeam;
 
@@ -33,11 +33,16 @@ public class TeamMsgCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralCommandNode var1 = var0.register(
-         (LiteralArgumentBuilder)Commands.literal("teammsg")
-            .then(
-               Commands.argument("message", MessageArgument.message())
-                  .executes(var0x -> sendMessage((CommandSourceStack)var0x.getSource(), MessageArgument.getChatMessage(var0x, "message")))
-            )
+         (LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
+            MessageArgument.ChatMessage var1x = MessageArgument.getChatMessage(var0x, "message");
+   
+            try {
+               return sendMessage((CommandSourceStack)var0x.getSource(), var1x);
+            } catch (Exception var3) {
+               var1x.consume((CommandSourceStack)var0x.getSource());
+               throw var3;
+            }
+         }))
       );
       var0.register((LiteralArgumentBuilder)Commands.literal("tm").redirect(var1));
    }
@@ -49,25 +54,28 @@ public class TeamMsgCommand {
          throw ERROR_NOT_ON_TEAM.create();
       } else {
          MutableComponent var4 = var3.getFormattedDisplayName().withStyle(SUGGEST_STYLE);
-         ChatSender var5 = var0.asChatSender().withTeamName(var4);
-         List var6 = var0.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
-         if (var6.isEmpty()) {
-            return 0;
-         } else {
-            var1.resolve(var0).thenAcceptAsync(var5x -> {
-               for(ServerPlayer var7 : var6) {
-                  if (var7 == var2) {
-                     var7.sendSystemMessage(Component.translatable("chat.type.team.sent", var4, var0.getDisplayName(), var5x.raw().serverContent()));
-                  } else {
-                     PlayerChatMessage var8 = var5x.filter(var0, var7);
-                     if (var8 != null) {
-                        var7.sendChatMessage(var8, var5, ChatType.TEAM_MSG_COMMAND);
-                     }
-                  }
-               }
-            }, var0.getServer());
-            return var6.size();
-         }
+         ChatType.Bound var5 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_INCOMING, var0).withTargetName(var4);
+         ChatType.Bound var6 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_OUTGOING, var0).withTargetName(var4);
+         List var7 = var0.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
+         var1.resolve(var0, var5x -> {
+            OutgoingPlayerChatMessage var6x = OutgoingPlayerChatMessage.create(var5x);
+            boolean var7x = var5x.isFullyFiltered();
+            boolean var8 = false;
+
+            for(ServerPlayer var10 : var7) {
+               ChatType.Bound var11 = var10 == var2 ? var6 : var5;
+               boolean var12 = var0.shouldFilterMessageTo(var10);
+               var10.sendChatMessage(var6x, var12, var11);
+               var8 |= var7x && var12 && var10 != var2;
+            }
+
+            if (var8) {
+               var0.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
+            }
+
+            var6x.sendHeadersToRemainingPlayers(var0.getServer().getPlayerList());
+         });
+         return var7.size();
       }
    }
 }

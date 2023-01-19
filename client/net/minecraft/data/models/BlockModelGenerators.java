@@ -8,6 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -4488,7 +4489,7 @@ public class BlockModelGenerators {
       PropertyDispatch.C1 var1 = PropertyDispatch.property(BlockStateProperties.LEVEL);
 
       for(int var2 = 0; var2 < 16; ++var2) {
-         String var3 = String.format("_%02d", var2);
+         String var3 = String.format(Locale.ROOT, "_%02d", var2);
          ResourceLocation var4 = TextureMapping.getItemTexture(Items.LIGHT, var3);
          var1.select(
             var2,

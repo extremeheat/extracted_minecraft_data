@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.Util;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerData;
@@ -37,7 +37,7 @@ public class ConnectScreen extends Screen {
    private long lastNarration = -1L;
 
    private ConnectScreen(Screen var1) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.parent = var1;
    }
 
@@ -84,7 +84,11 @@ public class ConnectScreen extends Screen {
                   );
                ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
                ConnectScreen.this.connection
-                  .send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getProfileKeyPairManager().profilePublicKeyData()));
+                  .send(
+                     new ServerboundHelloPacket(
+                        var1.getUser().getName(), var1.getProfileKeyPairManager().profilePublicKeyData(), Optional.ofNullable(var1.getUser().getProfileId())
+                     )
+                  );
             } catch (Exception var6) {
                if (ConnectScreen.this.aborted) {
                   return;
@@ -154,7 +158,7 @@ public class ConnectScreen extends Screen {
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;
-         NarratorChatListener.INSTANCE.sayNow(Component.translatable("narrator.joining"));
+         this.minecraft.getNarrator().sayNow(Component.translatable("narrator.joining"));
       }
 
       drawCenteredString(var1, this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);

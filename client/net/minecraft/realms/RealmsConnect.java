@@ -3,9 +3,10 @@ package net.minecraft.realms;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.net.InetSocketAddress;
+import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
@@ -33,7 +34,7 @@ public class RealmsConnect {
       final Minecraft var3 = Minecraft.getInstance();
       var3.setConnectedToRealms(true);
       var3.prepareForMultiplayer();
-      NarratorChatListener.INSTANCE.sayNow(Component.translatable("mco.connect.success"));
+      var3.getNarrator().sayNow(Component.translatable("mco.connect.success"));
       final String var4 = var2.getHost();
       final int var5 = var2.getPort();
       (new Thread("Realms-connect-task") {
@@ -65,8 +66,10 @@ public class RealmsConnect {
                   }
    
                   String var2 = var3.getUser().getName();
-                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var2, var3.getProfileKeyPairManager().profilePublicKeyData()));
-                  var3.setCurrentServer(var1.toServerData(var4));
+                  UUID var6 = var3.getUser().getProfileId();
+                  RealmsConnect.this.connection
+                     .send(new ServerboundHelloPacket(var2, var3.getProfileKeyPairManager().profilePublicKeyData(), Optional.ofNullable(var6)));
+                  var3.setCurrentServer(var1, var4);
                } catch (Exception var5x) {
                   var3.getClientPackSource().clearServerPack();
                   if (RealmsConnect.this.aborted) {
@@ -80,10 +83,10 @@ public class RealmsConnect {
                      var3x = var3x.replaceAll(var4x, "");
                   }
    
-                  DisconnectedRealmsScreen var6 = new DisconnectedRealmsScreen(
+                  DisconnectedRealmsScreen var7 = new DisconnectedRealmsScreen(
                      RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x)
                   );
-                  var3.execute(() -> var3.setScreen(var6));
+                  var3.execute(() -> var3.setScreen(var7));
                }
             }
          })

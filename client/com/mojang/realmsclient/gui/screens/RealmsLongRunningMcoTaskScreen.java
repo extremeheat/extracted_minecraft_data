@@ -7,7 +7,7 @@ import com.mojang.realmsclient.gui.ErrorCallback;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.time.Duration;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -52,7 +52,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen implements Erro
    };
 
    public RealmsLongRunningMcoTaskScreen(Screen var1, LongRunningTask var2) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.lastScreen = var1;
       this.task = var2;
       var2.setScreen(this);
@@ -64,7 +64,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen implements Erro
    @Override
    public void tick() {
       super.tick();
-      REPEATED_NARRATOR.narrate(this.title);
+      REPEATED_NARRATOR.narrate(this.minecraft.getNarrator(), this.title);
       ++this.animTicks;
       this.task.tick();
    }
@@ -110,7 +110,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen implements Erro
    @Override
    public void error(Component var1) {
       this.errorMessage = var1;
-      NarratorChatListener.INSTANCE.sayNow(var1);
+      this.minecraft.getNarrator().sayNow(var1);
       this.minecraft
          .execute(
             () -> {

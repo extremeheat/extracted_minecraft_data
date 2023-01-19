@@ -38,12 +38,16 @@ public class Font {
    public final int lineHeight = 9;
    public final RandomSource random = RandomSource.create();
    private final Function<ResourceLocation, FontSet> fonts;
+   final boolean filterFishyGlyphs;
    private final StringSplitter splitter;
 
-   public Font(Function<ResourceLocation, FontSet> var1) {
+   public Font(Function<ResourceLocation, FontSet> var1, boolean var2) {
       super();
       this.fonts = var1;
-      this.splitter = new StringSplitter((var1x, var2) -> this.getFontSet(var2.getFont()).getGlyphInfo(var1x).getAdvance(var2.isBold()));
+      this.filterFishyGlyphs = var2;
+      this.splitter = new StringSplitter(
+         (var1x, var2x) -> this.getFontSet(var2x.getFont()).getGlyphInfo(var1x, this.filterFishyGlyphs).getAdvance(var2x.isBold())
+      );
    }
 
    FontSet getFontSet(ResourceLocation var1) {
@@ -143,7 +147,7 @@ public class Font {
                var1.accept((var7x, var8x, var9x) -> {
                   boolean var10x = var8x.isBold();
                   FontSet var11x = this.getFontSet(var8x.getFont());
-                  GlyphInfo var12x = var11x.getGlyphInfo(var9x);
+                  GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
                   var10.x = var13[0] + (float)var14 * var12x.getShadowOffset();
                   var10.y = var3 + (float)var15 * var12x.getShadowOffset();
                   var13[0] += var12x.getAdvance(var10x);
@@ -268,6 +272,10 @@ public class Font {
       return 9 * this.splitter.splitLines(var1, var2, Style.EMPTY).size();
    }
 
+   public int wordWrapHeight(FormattedText var1, int var2) {
+      return 9 * this.splitter.splitLines(var1, var2, Style.EMPTY).size();
+   }
+
    public List<FormattedCharSequence> split(FormattedText var1, int var2) {
       return Language.getInstance().getVisualOrder(this.splitter.splitLines(var1, var2, Style.EMPTY));
    }
@@ -336,7 +344,7 @@ public class Font {
       @Override
       public boolean accept(int var1, Style var2, int var3) {
          FontSet var4 = Font.this.getFontSet(var2.getFont());
-         GlyphInfo var5 = var4.getGlyphInfo(var3);
+         GlyphInfo var5 = var4.getGlyphInfo(var3, Font.this.filterFishyGlyphs);
          BakedGlyph var6 = var2.isObfuscated() && var3 != 32 ? var4.getRandomGlyph(var5) : var4.getGlyph(var3);
          boolean var7 = var2.isBold();
          float var11 = this.a;

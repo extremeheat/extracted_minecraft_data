@@ -21,13 +21,14 @@ import net.minecraft.util.RandomSource;
 
 public class FontSet implements AutoCloseable {
    private static final RandomSource RANDOM = RandomSource.create();
+   private static final float LARGE_FORWARD_ADVANCE = 32.0F;
    private final TextureManager textureManager;
    private final ResourceLocation name;
    private BakedGlyph missingGlyph;
    private BakedGlyph whiteGlyph;
    private final List<GlyphProvider> providers = Lists.newArrayList();
    private final Int2ObjectMap<BakedGlyph> glyphs = new Int2ObjectOpenHashMap();
-   private final Int2ObjectMap<GlyphInfo> glyphInfos = new Int2ObjectOpenHashMap();
+   private final Int2ObjectMap<FontSet.GlyphInfoFilter> glyphInfos = new Int2ObjectOpenHashMap();
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
 
@@ -89,19 +90,37 @@ public class FontSet implements AutoCloseable {
       this.textures.clear();
    }
 
-   private GlyphInfo computeGlyphInfo(int var1) {
-      for(GlyphProvider var3 : this.providers) {
-         GlyphInfo var4 = var3.getGlyph(var1);
-         if (var4 != null) {
-            return var4;
+   private static boolean hasFishyAdvance(GlyphInfo var0) {
+      float var1 = var0.getAdvance(false);
+      if (!(var1 < 0.0F) && !(var1 > 32.0F)) {
+         float var2 = var0.getAdvance(true);
+         return var2 < 0.0F || var2 > 32.0F;
+      } else {
+         return true;
+      }
+   }
+
+   private FontSet.GlyphInfoFilter computeGlyphInfo(int var1) {
+      GlyphInfo var2 = null;
+
+      for(GlyphProvider var4 : this.providers) {
+         GlyphInfo var5 = var4.getGlyph(var1);
+         if (var5 != null) {
+            if (var2 == null) {
+               var2 = var5;
+            }
+
+            if (!hasFishyAdvance(var5)) {
+               return new FontSet.GlyphInfoFilter(var2, var5);
+            }
          }
       }
 
-      return SpecialGlyphs.MISSING;
+      return var2 != null ? new FontSet.GlyphInfoFilter(var2, SpecialGlyphs.MISSING) : FontSet.GlyphInfoFilter.MISSING;
    }
 
-   public GlyphInfo getGlyphInfo(int var1) {
-      return (GlyphInfo)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo);
+   public GlyphInfo getGlyphInfo(int var1, boolean var2) {
+      return ((FontSet.GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo)).select(var2);
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
@@ -141,5 +160,21 @@ public class FontSet implements AutoCloseable {
 
    public BakedGlyph whiteGlyph() {
       return this.whiteGlyph;
+   }
+
+   static record GlyphInfoFilter(GlyphInfo a, GlyphInfo b) {
+      private final GlyphInfo glyphInfo;
+      private final GlyphInfo glyphInfoNotFishy;
+      static final FontSet.GlyphInfoFilter MISSING = new FontSet.GlyphInfoFilter(SpecialGlyphs.MISSING, SpecialGlyphs.MISSING);
+
+      GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
+         super();
+         this.glyphInfo = var1;
+         this.glyphInfoNotFishy = var2;
+      }
+
+      GlyphInfo select(boolean var1) {
+         return var1 ? this.glyphInfoNotFishy : this.glyphInfo;
+      }
    }
 }

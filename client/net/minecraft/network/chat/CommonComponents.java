@@ -13,12 +13,26 @@ public class CommonComponents {
    public static final Component GUI_NO = Component.translatable("gui.no");
    public static final Component GUI_PROCEED = Component.translatable("gui.proceed");
    public static final Component GUI_BACK = Component.translatable("gui.back");
+   public static final Component GUI_ACKNOWLEDGE = Component.translatable("gui.acknowledge");
    public static final Component CONNECT_FAILED = Component.translatable("connect.failed");
    public static final Component NEW_LINE = Component.literal("\n");
    public static final Component NARRATION_SEPARATOR = Component.literal(". ");
+   public static final Component ELLIPSIS = Component.literal("...");
 
    public CommonComponents() {
       super();
+   }
+
+   public static MutableComponent days(long var0) {
+      return Component.translatable("gui.days", var0);
+   }
+
+   public static MutableComponent hours(long var0) {
+      return Component.translatable("gui.hours", var0);
+   }
+
+   public static MutableComponent minutes(long var0) {
+      return Component.translatable("gui.minutes", var0);
    }
 
    public static Component optionStatus(boolean var0) {

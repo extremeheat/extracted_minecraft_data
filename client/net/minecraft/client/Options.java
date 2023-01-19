@@ -34,6 +34,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -43,8 +44,8 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.multiplayer.chat.ChatPreviewStatus;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
@@ -328,12 +329,11 @@ public class Options {
       OptionInstance.noTooltip(),
       (var0, var1x) -> var1x <= 0.0
             ? Component.translatable("options.chat.delay_none")
-            : Component.translatable("options.chat.delay", String.format("%.1f", var1x)),
+            : Component.translatable("options.chat.delay", String.format(Locale.ROOT, "%.1f", var1x)),
       new OptionInstance.IntRange(0, 60).xmap(var0 -> (double)var0 / 10.0, var0 -> (int)(var0 * 10.0)),
       Codec.doubleRange(0.0, 6.0),
       0.0,
-      var0 -> {
-      }
+      var0 -> Minecraft.getInstance().getChatListener().setMessageDelay(var0)
    );
    private final OptionInstance<Integer> mipmapLevels = new OptionInstance<>(
       "options.mipmapLevels",
@@ -365,7 +365,7 @@ public class Options {
    private final OptionInstance<Double> mouseWheelSensitivity = new OptionInstance<>(
       "options.mouseWheelSensitivity",
       OptionInstance.noTooltip(),
-      (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format("%.2f", var1x))),
+      (var0, var1x) -> genericValueLabel(var0, Component.literal(String.format(Locale.ROOT, "%.2f", var1x))),
       new OptionInstance.IntRange(-200, 100).xmap(Options::logMouse, Options::unlogMouse),
       Codec.doubleRange(logMouse(-200), logMouse(100)),
       logMouse(0),
@@ -454,9 +454,23 @@ public class Options {
       "options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true
    );
    private final OptionInstance<Boolean> showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
-   private static final Component CHAT_TOOLTIP_PREVIEW = Component.translatable("options.chatPreview.tooltip");
-   private final OptionInstance<Boolean> chatPreview = OptionInstance.createBoolean(
-      "options.chatPreview", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_PREVIEW), true
+   private static final Component CHAT_PREVIEW_OFF_TOOLTIP = Component.translatable("options.chatPreview.tooltip.off");
+   private static final Component CHAT_PREVIEW_LIVE_TOOLTIP = Component.translatable("options.chatPreview.tooltip.live");
+   private static final Component CHAT_PREVIEW_CONFIRM_TOOLTIP = Component.translatable("options.chatPreview.tooltip.confirm");
+   private final OptionInstance<ChatPreviewStatus> chatPreview = new OptionInstance<>(
+      "options.chatPreview",
+      var0 -> var1x -> {
+            return switch(var1x) {
+               case OFF -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_OFF_TOOLTIP);
+               case LIVE -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_LIVE_TOOLTIP);
+               case CONFIRM -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_CONFIRM_TOOLTIP);
+            };
+         },
+      OptionInstance.forOptionEnum(),
+      new OptionInstance.Enum<>(Arrays.asList(ChatPreviewStatus.values()), Codec.INT.xmap(ChatPreviewStatus::byId, ChatPreviewStatus::getId)),
+      ChatPreviewStatus.LIVE,
+      var0 -> {
+      }
    );
    private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
    private final OptionInstance<Boolean> onlyShowSecureChat = OptionInstance.createBoolean(
@@ -618,10 +632,10 @@ public class Options {
    private final OptionInstance<NarratorStatus> narrator = new OptionInstance<>(
       "options.narrator",
       OptionInstance.noTooltip(),
-      (var0, var1x) -> (Component)(NarratorChatListener.INSTANCE.isActive() ? var1x.getName() : Component.translatable("options.narrator.notavailable")),
+      (var1x, var2x) -> (Component)(this.minecraft.getNarrator().isActive() ? var2x.getName() : Component.translatable("options.narrator.notavailable")),
       new OptionInstance.Enum<>(Arrays.asList(NarratorStatus.values()), Codec.INT.xmap(NarratorStatus::byId, NarratorStatus::getId)),
       NarratorStatus.OFF,
-      var0 -> NarratorChatListener.INSTANCE.updateNarratorStatus(var0)
+      var1x -> this.minecraft.getNarrator().updateNarratorStatus(var1x)
    );
    public String languageCode = "en_us";
    private final OptionInstance<String> soundDevice = new OptionInstance<>(
@@ -854,7 +868,7 @@ public class Options {
       return this.showAutosaveIndicator;
    }
 
-   public OptionInstance<Boolean> chatPreview() {
+   public OptionInstance<ChatPreviewStatus> chatPreview() {
       return this.chatPreview;
    }
 

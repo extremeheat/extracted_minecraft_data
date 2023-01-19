@@ -1,17 +1,17 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -155,31 +155,35 @@ public class SocialInteractionsScreen extends Screen {
       this.allButton.setMessage(TAB_ALL);
       this.hiddenButton.setMessage(TAB_HIDDEN);
       this.blockedButton.setMessage(TAB_BLOCKED);
-
-      Object var2 = switch(var1) {
-         case ALL -> {
+      boolean var2 = false;
+      switch(var1) {
+         case ALL:
             this.allButton.setMessage(TAB_ALL_SELECTED);
-            yield this.minecraft.player.connection.getOnlinePlayerIds();
-         }
-         case HIDDEN -> {
+            Collection var6 = this.minecraft.player.connection.getOnlinePlayerIds();
+            this.socialInteractionsPlayerList.updatePlayerList(var6, this.socialInteractionsPlayerList.getScrollAmount(), true);
+            break;
+         case HIDDEN:
             this.hiddenButton.setMessage(TAB_HIDDEN_SELECTED);
-            yield this.minecraft.getPlayerSocialManager().getHiddenPlayers();
-         }
-         case BLOCKED -> {
+            Set var5 = this.minecraft.getPlayerSocialManager().getHiddenPlayers();
+            var2 = var5.isEmpty();
+            this.socialInteractionsPlayerList.updatePlayerList(var5, this.socialInteractionsPlayerList.getScrollAmount(), false);
+            break;
+         case BLOCKED:
             this.blockedButton.setMessage(TAB_BLOCKED_SELECTED);
             PlayerSocialManager var3 = this.minecraft.getPlayerSocialManager();
-            yield this.minecraft.player.connection.getOnlinePlayerIds().stream().filter(var3::isBlocked).collect(Collectors.toSet());
-         }
-         default -> ImmutableList.of();
-      };
-      this.socialInteractionsPlayerList.updatePlayerList((Collection<UUID>)var2, this.socialInteractionsPlayerList.getScrollAmount());
+            Set var4 = this.minecraft.player.connection.getOnlinePlayerIds().stream().filter(var3::isBlocked).collect(Collectors.toSet());
+            var2 = var4.isEmpty();
+            this.socialInteractionsPlayerList.updatePlayerList(var4, this.socialInteractionsPlayerList.getScrollAmount(), false);
+      }
+
+      GameNarrator var7 = this.minecraft.getNarrator();
       if (!this.searchBox.getValue().isEmpty() && this.socialInteractionsPlayerList.isEmpty() && !this.searchBox.isFocused()) {
-         NarratorChatListener.INSTANCE.sayNow(EMPTY_SEARCH);
-      } else if (var2.isEmpty()) {
+         var7.sayNow(EMPTY_SEARCH);
+      } else if (var2) {
          if (var1 == SocialInteractionsScreen.Page.HIDDEN) {
-            NarratorChatListener.INSTANCE.sayNow(EMPTY_HIDDEN);
+            var7.sayNow(EMPTY_HIDDEN);
          } else if (var1 == SocialInteractionsScreen.Page.BLOCKED) {
-            NarratorChatListener.INSTANCE.sayNow(EMPTY_BLOCKED);
+            var7.sayNow(EMPTY_BLOCKED);
          }
       }
    }

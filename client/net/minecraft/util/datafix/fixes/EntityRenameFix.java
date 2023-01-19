@@ -8,6 +8,7 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DynamicOps;
+import java.util.Locale;
 
 public abstract class EntityRenameFix extends DataFix {
    protected final String name;
@@ -20,17 +21,24 @@ public abstract class EntityRenameFix extends DataFix {
    public TypeRewriteRule makeRule() {
       TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.ENTITY);
       TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.ENTITY);
-      return this.fixTypeEverywhere(this.name, var1, var2, var3 -> var4 -> {
-            String var5 = (String)var4.getFirst();
-            Type var6 = (Type)var1.types().get(var5);
-            Pair var7 = this.fix(var5, this.getEntity(var4.getSecond(), var3, var6));
-            Type var8 = (Type)var2.types().get(var7.getFirst());
-            if (!var8.equals(((Typed)var7.getSecond()).getType(), true, true)) {
-               throw new IllegalStateException(String.format("Dynamic type check failed: %s not equal to %s", var8, ((Typed)var7.getSecond()).getType()));
-            } else {
-               return Pair.of((String)var7.getFirst(), ((Typed)var7.getSecond()).getValue());
+      return this.fixTypeEverywhere(
+         this.name,
+         var1,
+         var2,
+         var3 -> var4 -> {
+               String var5 = (String)var4.getFirst();
+               Type var6 = (Type)var1.types().get(var5);
+               Pair var7 = this.fix(var5, this.getEntity(var4.getSecond(), var3, var6));
+               Type var8 = (Type)var2.types().get(var7.getFirst());
+               if (!var8.equals(((Typed)var7.getSecond()).getType(), true, true)) {
+                  throw new IllegalStateException(
+                     String.format(Locale.ROOT, "Dynamic type check failed: %s not equal to %s", var8, ((Typed)var7.getSecond()).getType())
+                  );
+               } else {
+                  return Pair.of((String)var7.getFirst(), ((Typed)var7.getSecond()).getValue());
+               }
             }
-         });
+      );
    }
 
    private <A> Typed<A> getEntity(Object var1, DynamicOps<?> var2, Type<A> var3) {

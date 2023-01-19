@@ -7,6 +7,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class ListTag extends CollectionTag<Tag> {
@@ -274,7 +275,7 @@ public class ListTag extends CollectionTag<Tag> {
    public Tag set(int var1, Tag var2) {
       Tag var3 = this.get(var1);
       if (!this.setTag(var1, var2)) {
-         throw new UnsupportedOperationException(String.format("Trying to add tag of type %d to list of %d", var2.getId(), this.type));
+         throw new UnsupportedOperationException(String.format(Locale.ROOT, "Trying to add tag of type %d to list of %d", var2.getId(), this.type));
       } else {
          return var3;
       }
@@ -283,7 +284,7 @@ public class ListTag extends CollectionTag<Tag> {
    @Override
    public void add(int var1, Tag var2) {
       if (!this.addTag(var1, var2)) {
-         throw new UnsupportedOperationException(String.format("Trying to add tag of type %d to list of %d", var2.getId(), this.type));
+         throw new UnsupportedOperationException(String.format(Locale.ROOT, "Trying to add tag of type %d to list of %d", var2.getId(), this.type));
       }
    }
 

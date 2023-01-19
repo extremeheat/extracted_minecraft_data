@@ -6,7 +6,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -97,7 +96,7 @@ public class DebugStickItem extends Item {
    }
 
    private static void message(Player var0, Component var1) {
-      ((ServerPlayer)var0).sendSystemMessage(var1, ChatType.GAME_INFO);
+      ((ServerPlayer)var0).sendSystemMessage(var1, true);
    }
 
    private static <T extends Comparable<T>> String getNameHelper(BlockState var0, Property<T> var1) {

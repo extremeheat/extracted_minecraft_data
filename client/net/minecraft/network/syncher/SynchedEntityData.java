@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -246,6 +247,7 @@ public class SynchedEntityData {
       if (!Objects.equals(var2.accessor.getSerializer(), var1.accessor.getSerializer())) {
          throw new IllegalStateException(
             String.format(
+               Locale.ROOT,
                "Invalid entity data item type for field %d on entity %s: old=%s(%s), new=%s(%s)",
                var1.accessor.getId(),
                this.entity,

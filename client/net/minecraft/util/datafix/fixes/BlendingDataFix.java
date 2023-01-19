@@ -6,6 +6,7 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.OptionalDynamic;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,21 +26,22 @@ public class BlendingDataFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.CHUNK);
-      return this.fixTypeEverywhereTyped(this.name, var1, var0 -> var0.update(DSL.remainderFinder(), BlendingDataFix::updateChunkTag));
+      return this.fixTypeEverywhereTyped(this.name, var1, var0 -> var0.update(DSL.remainderFinder(), var0x -> updateChunkTag(var0x, var0x.get("__context"))));
    }
 
-   private static Dynamic<?> updateChunkTag(Dynamic<?> var0) {
+   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, OptionalDynamic<?> var1) {
       var0 = var0.remove("blending_data");
-      Optional var1 = var0.get("Status").result();
-      if (var1.isPresent()) {
-         String var2 = NamespacedSchema.ensureNamespaced(((Dynamic)var1.get()).asString("empty"));
-         Optional var3 = var0.get("below_zero_retrogen").result();
-         if (!STATUSES_TO_SKIP_BLENDING.contains(var2)) {
+      boolean var2 = "minecraft:overworld".equals(var1.get("dimension").asString().result().orElse(""));
+      Optional var3 = var0.get("Status").result();
+      if (var2 && var3.isPresent()) {
+         String var4 = NamespacedSchema.ensureNamespaced(((Dynamic)var3.get()).asString("empty"));
+         Optional var5 = var0.get("below_zero_retrogen").result();
+         if (!STATUSES_TO_SKIP_BLENDING.contains(var4)) {
             var0 = updateBlendingData(var0, 384, -64);
-         } else if (var3.isPresent()) {
-            Dynamic var4 = (Dynamic)var3.get();
-            String var5 = NamespacedSchema.ensureNamespaced(var4.get("target_status").asString("empty"));
-            if (!STATUSES_TO_SKIP_BLENDING.contains(var5)) {
+         } else if (var5.isPresent()) {
+            Dynamic var6 = (Dynamic)var5.get();
+            String var7 = NamespacedSchema.ensureNamespaced(var6.get("target_status").asString("empty"));
+            if (!STATUSES_TO_SKIP_BLENDING.contains(var7)) {
                var0 = updateBlendingData(var0, 256, 0);
             }
          }

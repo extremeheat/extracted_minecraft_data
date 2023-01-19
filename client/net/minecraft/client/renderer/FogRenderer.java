@@ -88,55 +88,55 @@ public class FogRenderer {
          Vec3 var8 = var2.getSkyColor(var0.getPosition(), var1);
          float var25 = (float)var8.x;
          float var28 = (float)var8.y;
-         float var30 = (float)var8.z;
-         float var31 = Mth.clamp(Mth.cos(var2.getTimeOfDay(var1) * 6.2831855F) * 2.0F + 0.5F, 0.0F, 1.0F);
-         BiomeManager var32 = var2.getBiomeManager();
-         Vec3 var33 = var0.getPosition().subtract(2.0, 2.0, 2.0).scale(0.25);
-         Vec3 var34 = CubicSampler.gaussianSampleVec3(
-            var33,
+         float var31 = (float)var8.z;
+         float var32 = Mth.clamp(Mth.cos(var2.getTimeOfDay(var1) * 6.2831855F) * 2.0F + 0.5F, 0.0F, 1.0F);
+         BiomeManager var33 = var2.getBiomeManager();
+         Vec3 var34 = var0.getPosition().subtract(2.0, 2.0, 2.0).scale(0.25);
+         Vec3 var35 = CubicSampler.gaussianSampleVec3(
+            var34,
             (var3x, var4x, var5x) -> var2.effects()
-                  .getBrightnessDependentFogColor(Vec3.fromRGB24(var32.getNoiseBiomeAtQuart(var3x, var4x, var5x).value().getFogColor()), var31)
+                  .getBrightnessDependentFogColor(Vec3.fromRGB24(var33.getNoiseBiomeAtQuart(var3x, var4x, var5x).value().getFogColor()), var32)
          );
-         fogRed = (float)var34.x();
-         fogGreen = (float)var34.y();
-         fogBlue = (float)var34.z();
+         fogRed = (float)var35.x();
+         fogGreen = (float)var35.y();
+         fogBlue = (float)var35.z();
          if (var3 >= 4) {
-            float var35 = Mth.sin(var2.getSunAngle(var1)) > 0.0F ? -1.0F : 1.0F;
-            Vector3f var37 = new Vector3f(var35, 0.0F, 0.0F);
-            float var40 = var0.getLookVector().dot(var37);
-            if (var40 < 0.0F) {
-               var40 = 0.0F;
+            float var36 = Mth.sin(var2.getSunAngle(var1)) > 0.0F ? -1.0F : 1.0F;
+            Vector3f var38 = new Vector3f(var36, 0.0F, 0.0F);
+            float var41 = var0.getLookVector().dot(var38);
+            if (var41 < 0.0F) {
+               var41 = 0.0F;
             }
 
-            if (var40 > 0.0F) {
-               float[] var44 = var2.effects().getSunriseColor(var2.getTimeOfDay(var1), var1);
-               if (var44 != null) {
-                  var40 *= var44[3];
-                  fogRed = fogRed * (1.0F - var40) + var44[0] * var40;
-                  fogGreen = fogGreen * (1.0F - var40) + var44[1] * var40;
-                  fogBlue = fogBlue * (1.0F - var40) + var44[2] * var40;
+            if (var41 > 0.0F) {
+               float[] var45 = var2.effects().getSunriseColor(var2.getTimeOfDay(var1), var1);
+               if (var45 != null) {
+                  var41 *= var45[3];
+                  fogRed = fogRed * (1.0F - var41) + var45[0] * var41;
+                  fogGreen = fogGreen * (1.0F - var41) + var45[1] * var41;
+                  fogBlue = fogBlue * (1.0F - var41) + var45[2] * var41;
                }
             }
          }
 
          fogRed += (var25 - fogRed) * var20;
          fogGreen += (var28 - fogGreen) * var20;
-         fogBlue += (var30 - fogBlue) * var20;
-         float var36 = var2.getRainLevel(var1);
-         if (var36 > 0.0F) {
-            float var38 = 1.0F - var36 * 0.5F;
-            float var42 = 1.0F - var36 * 0.4F;
-            fogRed *= var38;
-            fogGreen *= var38;
-            fogBlue *= var42;
+         fogBlue += (var31 - fogBlue) * var20;
+         float var37 = var2.getRainLevel(var1);
+         if (var37 > 0.0F) {
+            float var39 = 1.0F - var37 * 0.5F;
+            float var43 = 1.0F - var37 * 0.4F;
+            fogRed *= var39;
+            fogGreen *= var39;
+            fogBlue *= var43;
          }
 
-         float var39 = var2.getThunderLevel(var1);
-         if (var39 > 0.0F) {
-            float var43 = 1.0F - var39 * 0.5F;
-            fogRed *= var43;
-            fogGreen *= var43;
-            fogBlue *= var43;
+         float var40 = var2.getThunderLevel(var1);
+         if (var40 > 0.0F) {
+            float var44 = 1.0F - var40 * 0.5F;
+            fogRed *= var44;
+            fogGreen *= var44;
+            fogBlue *= var44;
          }
 
          biomeChangedTime = -1L;
@@ -173,17 +173,24 @@ public class FogRenderer {
          } else {
             var27 = 1.0F;
          }
-      } else if (var6 instanceof LivingEntity && ((LivingEntity)var6).hasEffect(MobEffects.NIGHT_VISION)) {
-         var27 = GameRenderer.getNightVisionScale((LivingEntity)var6, var1);
       } else {
-         var27 = 0.0F;
+         label86: {
+            if (var6 instanceof LivingEntity var29
+               && ((LivingEntity)var29).hasEffect(MobEffects.NIGHT_VISION)
+               && !((LivingEntity)var29).hasEffect(MobEffects.DARKNESS)) {
+               var27 = GameRenderer.getNightVisionScale((LivingEntity)var29, var1);
+               break label86;
+            }
+
+            var27 = 0.0F;
+         }
       }
 
       if (fogRed != 0.0F && fogGreen != 0.0F && fogBlue != 0.0F) {
-         float var29 = Math.min(1.0F / fogRed, Math.min(1.0F / fogGreen, 1.0F / fogBlue));
-         fogRed = fogRed * (1.0F - var27) + fogRed * var29 * var27;
-         fogGreen = fogGreen * (1.0F - var27) + fogGreen * var29 * var27;
-         fogBlue = fogBlue * (1.0F - var27) + fogBlue * var29 * var27;
+         float var30 = Math.min(1.0F / fogRed, Math.min(1.0F / fogGreen, 1.0F / fogBlue));
+         fogRed = fogRed * (1.0F - var27) + fogRed * var30 * var27;
+         fogGreen = fogGreen * (1.0F - var27) + fogGreen * var30 * var27;
+         fogBlue = fogBlue * (1.0F - var27) + fogBlue * var30 * var27;
       }
 
       RenderSystem.clearColor(fogRed, fogGreen, fogBlue, 0.0F);

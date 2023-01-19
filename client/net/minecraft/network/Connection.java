@@ -24,8 +24,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Queue;
@@ -40,8 +38,6 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
 import net.minecraft.server.RunningOnDifferentThreadException;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.server.network.ServerLoginPacketListenerImpl;
 import net.minecraft.util.LazyLoadedValue;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
@@ -124,7 +120,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                   LOGGER.debug("Failed to sent packet", var2);
                   ConnectionProtocol var5 = this.getCurrentProtocol();
                   Object var6 = var5 == ConnectionProtocol.LOGIN ? new ClientboundLoginDisconnectPacket(var4) : new ClientboundDisconnectPacket(var4);
-                  this.send((Packet<?>)var6, var2x -> this.disconnect(var4));
+                  this.send((Packet<?>)var6, PacketSendListener.thenRun(() -> this.disconnect(var4)));
                   this.setReadOnly();
                } else {
                   LOGGER.debug("Double fault", var2);
@@ -164,7 +160,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       this.send(var1, null);
    }
 
-   public void send(Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2) {
+   public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
       if (this.isConnected()) {
          this.flushQueue();
          this.sendPacket(var1, var2);
@@ -173,7 +169,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   private void sendPacket(Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2) {
+   private void sendPacket(Packet<?> var1, @Nullable PacketSendListener var2) {
       ConnectionProtocol var3 = ConnectionProtocol.getProtocolForPacket(var1);
       ConnectionProtocol var4 = this.getCurrentProtocol();
       ++this.sentPackets;
@@ -189,16 +185,24 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   private void doSendPacket(
-      Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2, ConnectionProtocol var3, ConnectionProtocol var4
-   ) {
+   private void doSendPacket(Packet<?> var1, @Nullable PacketSendListener var2, ConnectionProtocol var3, ConnectionProtocol var4) {
       if (var3 != var4) {
          this.setProtocol(var3);
       }
 
       ChannelFuture var5 = this.channel.writeAndFlush(var1);
       if (var2 != null) {
-         var5.addListener(var2);
+         var5.addListener(var2x -> {
+            if (var2x.isSuccess()) {
+               var2.onSuccess();
+            } else {
+               Packet var3x = var2.onFailure();
+               if (var3x != null) {
+                  ChannelFuture var4x = this.channel.writeAndFlush(var3x);
+                  var4x.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+               }
+            }
+         });
       }
 
       var5.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
@@ -219,14 +223,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void tick() {
       this.flushQueue();
-      if (this.packetListener instanceof ServerLoginPacketListenerImpl) {
-         ((ServerLoginPacketListenerImpl)this.packetListener).tick();
-      }
-
-      if (this.packetListener instanceof ServerGamePacketListenerImpl) {
-         ((ServerGamePacketListenerImpl)this.packetListener).tick();
+      PacketListener var2 = this.packetListener;
+      if (var2 instanceof TickablePacketListener var1) {
+         var1.tick();
       }
 
       if (!this.isConnected() && !this.disconnectionHandled) {
@@ -400,9 +403,9 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    static class PacketHolder {
       final Packet<?> packet;
       @Nullable
-      final GenericFutureListener<? extends Future<? super Void>> listener;
+      final PacketSendListener listener;
 
-      public PacketHolder(Packet<?> var1, @Nullable GenericFutureListener<? extends Future<? super Void>> var2) {
+      public PacketHolder(Packet<?> var1, @Nullable PacketSendListener var2) {
          super();
          this.packet = var1;
          this.listener = var2;

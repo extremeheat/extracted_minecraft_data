@@ -28,10 +28,10 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.chat.NarratorChatListener;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
@@ -214,10 +214,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Wi
             var24 = this.height - var6 - 6;
          }
 
-         if (var4 - var6 - 8 < 0) {
-            var24 = var4 + 8;
-         }
-
          var1.pushPose();
          int var11 = -267386864;
          int var12 = 1347420415;
@@ -334,13 +330,15 @@ public abstract class Screen extends AbstractContainerEventHandler implements Wi
                URI var6 = new File(var2.getValue()).toURI();
                this.openLink(var6);
             } else if (var2.getAction() == ClickEvent.Action.SUGGEST_COMMAND) {
-               this.insertText(var2.getValue(), true);
+               this.insertText(SharedConstants.filterText(var2.getValue()), true);
             } else if (var2.getAction() == ClickEvent.Action.RUN_COMMAND) {
-               String var7 = var2.getValue();
+               String var7 = SharedConstants.filterText(var2.getValue());
                if (var7.startsWith("/")) {
-                  this.minecraft.player.command(var7.substring(1));
+                  if (!this.minecraft.player.commandUnsigned(var7.substring(1))) {
+                     LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", var7);
+                  }
                } else {
-                  this.minecraft.player.chat(var7);
+                  LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", var7);
                }
             } else if (var2.getAction() == ClickEvent.Action.COPY_TO_CLIPBOARD) {
                this.minecraft.keyboardHandler.setClipboard(var2.getValue());
@@ -528,7 +526,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Wi
    }
 
    private boolean shouldRunNarration() {
-      return NarratorChatListener.INSTANCE.isActive();
+      return this.minecraft.getNarrator().isActive();
    }
 
    public void handleDelayedNarration() {
@@ -551,7 +549,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Wi
       this.narrationState.update(this::updateNarrationState);
       String var2 = this.narrationState.collectNarrationText(!var1);
       if (!var2.isEmpty()) {
-         NarratorChatListener.INSTANCE.sayNow(var2);
+         this.minecraft.getNarrator().sayNow(var2);
       }
    }
 

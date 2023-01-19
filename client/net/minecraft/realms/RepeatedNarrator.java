@@ -3,7 +3,7 @@ package net.minecraft.realms;
 import com.google.common.util.concurrent.RateLimiter;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
-import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.network.chat.Component;
 
 public class RepeatedNarrator {
@@ -15,15 +15,15 @@ public class RepeatedNarrator {
       this.permitsPerSecond = 1000.0F / (float)var1.toMillis();
    }
 
-   public void narrate(Component var1) {
-      RepeatedNarrator.Params var2 = this.params
+   public void narrate(GameNarrator var1, Component var2) {
+      RepeatedNarrator.Params var3 = this.params
          .updateAndGet(
-            var2x -> var2x != null && var1.equals(var2x.narration)
+            var2x -> var2x != null && var2.equals(var2x.narration)
                   ? var2x
-                  : new RepeatedNarrator.Params(var1, RateLimiter.create((double)this.permitsPerSecond))
+                  : new RepeatedNarrator.Params(var2, RateLimiter.create((double)this.permitsPerSecond))
          );
-      if (var2.rateLimiter.tryAcquire(1)) {
-         NarratorChatListener.INSTANCE.sayNow(var1);
+      if (var3.rateLimiter.tryAcquire(1)) {
+         var1.sayNow(var2);
       }
    }
 

@@ -12,6 +12,8 @@ import net.minecraft.util.FormattedCharSequence;
 
 public class SystemToast implements Toast {
    private static final int MAX_LINE_SIZE = 200;
+   private static final int LINE_SPACING = 12;
+   private static final int MARGIN = 10;
    private final SystemToast.SystemToastIds id;
    private Component title;
    private List<FormattedCharSequence> messageLines;
@@ -53,6 +55,11 @@ public class SystemToast implements Toast {
    }
 
    @Override
+   public int height() {
+      return 20 + this.messageLines.size() * 12;
+   }
+
+   @Override
    public Toast.Visibility render(PoseStack var1, ToastComponent var2, long var3) {
       if (this.changed) {
          this.lastChanged = var3;
@@ -62,20 +69,19 @@ public class SystemToast implements Toast {
       RenderSystem.setShaderTexture(0, TEXTURE);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var5 = this.width();
-      boolean var6 = true;
       if (var5 == 160 && this.messageLines.size() <= 1) {
          var2.blit(var1, 0, 0, 0, 64, var5, this.height());
       } else {
-         int var7 = this.height() + Math.max(0, this.messageLines.size() - 1) * 12;
-         boolean var8 = true;
-         int var9 = Math.min(4, var7 - 28);
+         int var6 = this.height();
+         boolean var7 = true;
+         int var8 = Math.min(4, var6 - 28);
          this.renderBackgroundRow(var1, var2, var5, 0, 0, 28);
 
-         for(int var10 = 28; var10 < var7 - var9; var10 += 10) {
-            this.renderBackgroundRow(var1, var2, var5, 16, var10, Math.min(16, var7 - var10 - var9));
+         for(int var9 = 28; var9 < var6 - var8; var9 += 10) {
+            this.renderBackgroundRow(var1, var2, var5, 16, var9, Math.min(16, var6 - var9 - var8));
          }
 
-         this.renderBackgroundRow(var1, var2, var5, 32 - var9, var7 - var9, var9);
+         this.renderBackgroundRow(var1, var2, var5, 32 - var8, var6 - var8, var8);
       }
 
       if (this.messageLines == null) {
@@ -83,8 +89,8 @@ public class SystemToast implements Toast {
       } else {
          var2.getMinecraft().font.draw(var1, this.title, 18.0F, 7.0F, -256);
 
-         for(int var11 = 0; var11 < this.messageLines.size(); ++var11) {
-            var2.getMinecraft().font.draw(var1, this.messageLines.get(var11), 18.0F, (float)(18 + var11 * 12), -1);
+         for(int var10 = 0; var10 < this.messageLines.size(); ++var10) {
+            var2.getMinecraft().font.draw(var1, this.messageLines.get(var10), 18.0F, (float)(18 + var10 * 12), -1);
          }
       }
 
@@ -147,7 +153,8 @@ public class SystemToast implements Toast {
       WORLD_ACCESS_FAILURE,
       PACK_COPY_FAILURE,
       PERIODIC_NOTIFICATION,
-      CHAT_PREVIEW_WARNING(10000L);
+      CHAT_PREVIEW_WARNING(10000L),
+      UNSECURE_SERVER_WARNING(10000L);
 
       final long displayTime;
 

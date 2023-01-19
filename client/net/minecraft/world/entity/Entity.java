@@ -658,7 +658,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
                      }
 
                      if (var11.emitsEvents() && (this.onGround || var2.y == 0.0 || this.isInPowderSnow || var18)) {
-                        this.level.gameEvent(GameEvent.STEP, this.position, GameEvent.Context.of(this.getResponsibleEntity(), this.getBlockStateOn()));
+                        this.level.gameEvent(GameEvent.STEP, this.position, GameEvent.Context.of(this, this.getBlockStateOn()));
                      }
                   }
                } else if (var9.isAir()) {
@@ -1002,18 +1002,13 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       if (var3) {
          if (this.fallDistance > 0.0F) {
             var4.getBlock().fallOn(this.level, var4, var5, this, this.fallDistance);
-            this.level.gameEvent(GameEvent.HIT_GROUND, this.position, GameEvent.Context.of(this.getResponsibleEntity(), this.getBlockStateOn()));
+            this.level.gameEvent(GameEvent.HIT_GROUND, this.position, GameEvent.Context.of(this, this.getBlockStateOn()));
          }
 
          this.resetFallDistance();
       } else if (var1 < 0.0) {
          this.fallDistance -= (float)var1;
       }
-   }
-
-   @Nullable
-   public Entity getResponsibleEntity() {
-      return this;
    }
 
    public boolean fireImmune() {
@@ -1060,7 +1055,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    public ChatSender asChatSender() {
-      return new ChatSender(this.getUUID(), this.getDisplayName());
+      return ChatSender.SYSTEM;
    }
 
    public void updateSwimming() {
@@ -1539,15 +1534,20 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    public void load(CompoundTag var1) {
       try {
          ListTag var2 = var1.getList("Pos", 6);
-         ListTag var16 = var1.getList("Motion", 6);
-         ListTag var17 = var1.getList("Rotation", 5);
-         double var5 = var16.getDouble(0);
-         double var7 = var16.getDouble(1);
-         double var9 = var16.getDouble(2);
+         ListTag var18 = var1.getList("Motion", 6);
+         ListTag var19 = var1.getList("Rotation", 5);
+         double var5 = var18.getDouble(0);
+         double var7 = var18.getDouble(1);
+         double var9 = var18.getDouble(2);
          this.setDeltaMovement(Math.abs(var5) > 10.0 ? 0.0 : var5, Math.abs(var7) > 10.0 ? 0.0 : var7, Math.abs(var9) > 10.0 ? 0.0 : var9);
-         this.setPosRaw(var2.getDouble(0), Mth.clamp(var2.getDouble(1), -2.0E7, 2.0E7), var2.getDouble(2));
-         this.setYRot(var17.getFloat(0));
-         this.setXRot(var17.getFloat(1));
+         double var11 = 3.0000512E7;
+         this.setPosRaw(
+            Mth.clamp(var2.getDouble(0), -3.0000512E7, 3.0000512E7),
+            Mth.clamp(var2.getDouble(1), -2.0E7, 2.0E7),
+            Mth.clamp(var2.getDouble(2), -3.0000512E7, 3.0000512E7)
+         );
+         this.setYRot(var19.getFloat(0));
+         this.setXRot(var19.getFloat(1));
          this.setOldPosAndRot();
          this.setYHeadRot(this.getYRot());
          this.setYBodyRot(this.getYRot());
@@ -1571,12 +1571,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
             this.reapplyPosition();
             this.setRot(this.getYRot(), this.getXRot());
             if (var1.contains("CustomName", 8)) {
-               String var11 = var1.getString("CustomName");
+               String var13 = var1.getString("CustomName");
 
                try {
-                  this.setCustomName(Component.Serializer.fromJson(var11));
-               } catch (Exception var14) {
-                  LOGGER.warn("Failed to parse entity custom name {}", var11, var14);
+                  this.setCustomName(Component.Serializer.fromJson(var13));
+               } catch (Exception var16) {
+                  LOGGER.warn("Failed to parse entity custom name {}", var13, var16);
                }
             }
 
@@ -1588,11 +1588,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
             this.hasVisualFire = var1.getBoolean("HasVisualFire");
             if (var1.contains("Tags", 9)) {
                this.tags.clear();
-               ListTag var18 = var1.getList("Tags", 8);
-               int var12 = Math.min(var18.size(), 1024);
+               ListTag var20 = var1.getList("Tags", 8);
+               int var14 = Math.min(var20.size(), 1024);
 
-               for(int var13 = 0; var13 < var12; ++var13) {
-                  this.tags.add(var18.getString(var13));
+               for(int var15 = 0; var15 < var14; ++var15) {
+                  this.tags.add(var20.getString(var15));
                }
             }
 
@@ -1603,8 +1603,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
          } else {
             throw new IllegalStateException("Entity has invalid rotation");
          }
-      } catch (Throwable var15) {
-         CrashReport var3 = CrashReport.forThrowable(var15, "Loading entity NBT");
+      } catch (Throwable var17) {
+         CrashReport var3 = CrashReport.forThrowable(var17, "Loading entity NBT");
          CrashReportCategory var4 = var3.addCategory("Entity being loaded");
          this.fillCrashReportCategory(var4);
          throw new ReportedException(var3);

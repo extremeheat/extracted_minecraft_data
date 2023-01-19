@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import java.util.Locale;
 import java.util.Map;
 import net.minecraft.SharedConstants;
 import net.minecraft.commands.arguments.AngleArgument;
@@ -141,7 +142,7 @@ public class ArgumentTypeInfos {
    public static <A extends ArgumentType<?>> ArgumentTypeInfo<A, ?> byClass(A var0) {
       ArgumentTypeInfo var1 = BY_CLASS.get(var0.getClass());
       if (var1 == null) {
-         throw new IllegalArgumentException("Unrecognized argument type %s (%s)".formatted(var0, var0.getClass()));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Unrecognized argument type %s (%s)", var0, var0.getClass()));
       } else {
          return var1;
       }

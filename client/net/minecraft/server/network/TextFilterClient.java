@@ -2,6 +2,7 @@ package net.minecraft.server.network;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.network.chat.FilterMask;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.thread.ProcessorMailbox;
 import org.slf4j.Logger;
@@ -165,8 +167,8 @@ public class TextFilterClient implements AutoCloseable {
       });
    }
 
-   CompletableFuture<FilteredText<String>> requestMessageProcessing(GameProfile var1, String var2, TextFilterClient.IgnoreStrategy var3, Executor var4) {
-      return var2.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY_STRING) : CompletableFuture.supplyAsync(() -> {
+   CompletableFuture<FilteredText> requestMessageProcessing(GameProfile var1, String var2, TextFilterClient.IgnoreStrategy var3, Executor var4) {
+      return var2.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY) : CompletableFuture.supplyAsync(() -> {
          JsonObject var4x = this.chatEncoder.encode(var1, var2);
 
          try {
@@ -179,15 +181,32 @@ public class TextFilterClient implements AutoCloseable {
                if (var7 == null) {
                   return FilteredText.fullyFiltered(var2);
                } else {
-                  int var8 = GsonHelper.getAsJsonArray(var5, "hashes").size();
-                  return var3.shouldIgnore(var7, var8) ? FilteredText.fullyFiltered(var2) : new FilteredText<>(var2, var7);
+                  JsonArray var8 = GsonHelper.getAsJsonArray(var5, "hashes");
+                  FilterMask var9 = this.parseMask(var2, var8, var3);
+                  return new FilteredText(var2, var9);
                }
             }
-         } catch (Exception var9) {
-            LOGGER.warn("Failed to validate message '{}'", var2, var9);
+         } catch (Exception var10) {
+            LOGGER.warn("Failed to validate message '{}'", var2, var10);
             return FilteredText.fullyFiltered(var2);
          }
       }, var4);
+   }
+
+   private FilterMask parseMask(String var1, JsonArray var2, TextFilterClient.IgnoreStrategy var3) {
+      if (var2.isEmpty()) {
+         return FilterMask.PASS_THROUGH;
+      } else if (var3.shouldIgnore(var1, var2.size())) {
+         return FilterMask.FULLY_FILTERED;
+      } else {
+         FilterMask var4 = new FilterMask(var1.length());
+
+         for(int var5 = 0; var5 < var2.size(); ++var5) {
+            var4.setFiltered(var2.get(var5).getAsInt());
+         }
+
+         return var4;
+      }
    }
 
    @Override
@@ -334,15 +353,15 @@ public class TextFilterClient implements AutoCloseable {
       }
 
       @Override
-      public CompletableFuture<List<FilteredText<String>>> processMessageBundle(List<String> var1) {
+      public CompletableFuture<List<FilteredText>> processMessageBundle(List<String> var1) {
          List var2 = var1.stream()
             .map(var1x -> TextFilterClient.this.requestMessageProcessing(this.profile, var1x, TextFilterClient.this.chatIgnoreStrategy, this.streamExecutor))
             .collect(ImmutableList.toImmutableList());
-         return Util.<FilteredText<String>>sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
+         return Util.<FilteredText>sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
       }
 
       @Override
-      public CompletableFuture<FilteredText<String>> processStreamMessage(String var1) {
+      public CompletableFuture<FilteredText> processStreamMessage(String var1) {
          return TextFilterClient.this.requestMessageProcessing(this.profile, var1, TextFilterClient.this.chatIgnoreStrategy, this.streamExecutor);
       }
    }

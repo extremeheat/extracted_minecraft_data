@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +43,7 @@ public class ScaffoldingBlockItem extends BlockItem {
                Player var9 = var1.getPlayer();
                int var10 = var3.getMaxBuildHeight();
                if (var9 instanceof ServerPlayer && var8.getY() >= var10) {
-                  ((ServerPlayer)var9).sendSystemMessage(Component.translatable("build.tooHigh", var10 - 1).withStyle(ChatFormatting.RED), ChatType.GAME_INFO);
+                  ((ServerPlayer)var9).sendSystemMessage(Component.translatable("build.tooHigh", var10 - 1).withStyle(ChatFormatting.RED), true);
                }
                break;
             }

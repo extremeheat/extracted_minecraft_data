@@ -88,12 +88,12 @@ public class PlayerTabOverlay extends GuiComponent {
       }
 
       var6 = var6.subList(0, Math.min(var6.size(), 80));
-      int var35 = var6.size();
-      int var36 = var35;
+      int var32 = var6.size();
+      int var33 = var32;
 
-      int var38;
-      for(var38 = 1; var36 > 20; var36 = (var35 + var38 - 1) / var38) {
-         ++var38;
+      int var35;
+      for(var35 = 1; var33 > 20; var33 = (var32 + var35 - 1) / var35) {
+         ++var35;
       }
 
       boolean var12 = this.minecraft.isLocalServer() || this.minecraft.getConnection().getConnection().isEncrypted();
@@ -108,10 +108,10 @@ public class PlayerTabOverlay extends GuiComponent {
          var13 = 0;
       }
 
-      int var14 = Math.min(var38 * ((var12 ? 9 : 0) + var7 + var13 + 13), var2 - 50) / var38;
-      int var15 = var2 / 2 - (var14 * var38 + (var38 - 1) * 5) / 2;
+      int var14 = Math.min(var35 * ((var12 ? 9 : 0) + var7 + var13 + 13), var2 - 50) / var35;
+      int var15 = var2 / 2 - (var14 * var35 + (var35 - 1) * 5) / 2;
       int var16 = 10;
-      int var17 = var14 * var38 + (var38 - 1) * 5;
+      int var17 = var14 * var35 + (var35 - 1) * 5;
       List var18 = null;
       if (this.header != null) {
          var18 = this.minecraft.font.split(this.header, var2 - 50);
@@ -121,11 +121,11 @@ public class PlayerTabOverlay extends GuiComponent {
          }
       }
 
-      List var40 = null;
+      List var37 = null;
       if (this.footer != null) {
-         var40 = this.minecraft.font.split(this.footer, var2 - 50);
+         var37 = this.minecraft.font.split(this.footer, var2 - 50);
 
-         for(FormattedCharSequence var21 : var40) {
+         for(FormattedCharSequence var21 : var37) {
             var17 = Math.max(var17, this.minecraft.font.width(var21));
          }
       }
@@ -133,43 +133,36 @@ public class PlayerTabOverlay extends GuiComponent {
       if (var18 != null) {
          fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var18.size() * 9, -2147483648);
 
-         for(FormattedCharSequence var44 : var18) {
-            int var22 = this.minecraft.font.width(var44);
-            this.minecraft.font.drawShadow(var1, var44, (float)(var2 / 2 - var22 / 2), (float)var16, -1);
+         for(FormattedCharSequence var41 : var18) {
+            int var22 = this.minecraft.font.width(var41);
+            this.minecraft.font.drawShadow(var1, var41, (float)(var2 / 2 - var22 / 2), (float)var16, -1);
             var16 += 9;
          }
 
          ++var16;
       }
 
-      fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var36 * 9, -2147483648);
-      int var43 = this.minecraft.options.getBackgroundColor(553648127);
+      fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var33 * 9, -2147483648);
+      int var40 = this.minecraft.options.getBackgroundColor(553648127);
 
-      for(int var45 = 0; var45 < var35; ++var45) {
-         int var47 = var45 / var36;
-         int var23 = var45 % var36;
-         int var24 = var15 + var47 * var14 + var47 * 5;
+      for(int var42 = 0; var42 < var32; ++var42) {
+         int var44 = var42 / var33;
+         int var23 = var42 % var33;
+         int var24 = var15 + var44 * var14 + var44 * 5;
          int var25 = var16 + var23 * 9;
-         fill(var1, var24, var25, var24 + var14, var25 + 8, var43);
+         fill(var1, var24, var25, var24 + var14, var25 + 8, var40);
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
-         if (var45 < var6.size()) {
-            PlayerInfo var26 = (PlayerInfo)var6.get(var45);
+         if (var42 < var6.size()) {
+            PlayerInfo var26 = (PlayerInfo)var6.get(var42);
             GameProfile var27 = var26.getProfile();
             if (var12) {
                Player var28 = this.minecraft.level.getPlayerByUUID(var27.getId());
                boolean var29 = var28 != null && LivingEntityRenderer.isEntityUpsideDown(var28);
+               boolean var30 = var28 != null && var28.isModelPartShown(PlayerModelPart.HAT);
                RenderSystem.setShaderTexture(0, var26.getSkinLocation());
-               int var30 = 8 + (var29 ? 8 : 0);
-               int var31 = 8 * (var29 ? -1 : 1);
-               GuiComponent.blit(var1, var24, var25, 8, 8, 8.0F, (float)var30, 8, var31, 64, 64);
-               if (var28 != null && var28.isModelPartShown(PlayerModelPart.HAT)) {
-                  int var32 = 8 + (var29 ? 8 : 0);
-                  int var33 = 8 * (var29 ? -1 : 1);
-                  GuiComponent.blit(var1, var24, var25, 8, 8, 40.0F, (float)var32, 8, var33, 64, 64);
-               }
-
+               PlayerFaceRenderer.draw(var1, var24, var25, 8, var30, var29);
                var24 += 9;
             }
 
@@ -177,10 +170,10 @@ public class PlayerTabOverlay extends GuiComponent {
                .font
                .drawShadow(var1, this.getNameForDisplay(var26), (float)var24, (float)var25, var26.getGameMode() == GameType.SPECTATOR ? -1862270977 : -1);
             if (var4 != null && var26.getGameMode() != GameType.SPECTATOR) {
-               int var50 = var24 + var7 + 1;
-               int var51 = var50 + var13;
-               if (var51 - var50 > 5) {
-                  this.renderTablistScore(var4, var25, var27.getName(), var50, var51, var26, var1);
+               int var47 = var24 + var7 + 1;
+               int var48 = var47 + var13;
+               if (var48 - var47 > 5) {
+                  this.renderTablistScore(var4, var25, var27.getName(), var47, var48, var26, var1);
                }
             }
 
@@ -188,13 +181,13 @@ public class PlayerTabOverlay extends GuiComponent {
          }
       }
 
-      if (var40 != null) {
-         var16 += var36 * 9 + 1;
-         fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var40.size() * 9, -2147483648);
+      if (var37 != null) {
+         var16 += var33 * 9 + 1;
+         fill(var1, var2 / 2 - var17 / 2 - 1, var16 - 1, var2 / 2 + var17 / 2 + 1, var16 + var37.size() * 9, -2147483648);
 
-         for(FormattedCharSequence var48 : var40) {
-            int var49 = this.minecraft.font.width(var48);
-            this.minecraft.font.drawShadow(var1, var48, (float)(var2 / 2 - var49 / 2), (float)var16, -1);
+         for(FormattedCharSequence var45 : var37) {
+            int var46 = this.minecraft.font.width(var45);
+            this.minecraft.font.drawShadow(var1, var45, (float)(var2 / 2 - var46 / 2), (float)var16, -1);
             var16 += 9;
          }
       }

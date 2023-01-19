@@ -1,19 +1,23 @@
 package net.minecraft.network.chat;
 
-import java.security.SignatureException;
 import java.time.Instant;
 import java.util.UUID;
+import net.minecraft.Util;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Crypt;
-import net.minecraft.util.Signer;
 
 public record MessageSigner(UUID a, Instant b, long c) {
-   private final UUID sender;
+   private final UUID profileId;
    private final Instant timeStamp;
    private final long salt;
 
+   public MessageSigner(FriendlyByteBuf var1) {
+      this(var1.readUUID(), var1.readInstant(), var1.readLong());
+   }
+
    public MessageSigner(UUID var1, Instant var2, long var3) {
       super();
-      this.sender = var1;
+      this.profileId = var1;
       this.timeStamp = var2;
       this.salt = var3;
    }
@@ -22,12 +26,17 @@ public record MessageSigner(UUID a, Instant b, long c) {
       return new MessageSigner(var0, Instant.now(), Crypt.SaltSupplier.getLong());
    }
 
-   public MessageSignature sign(Signer var1, Component var2) {
-      byte[] var3 = var1.sign(var2x -> MessageSignature.updateSignature(var2x, var2, this.sender, this.timeStamp, this.salt));
-      return new MessageSignature(this.sender, this.timeStamp, new Crypt.SaltSignaturePair(this.salt, var3));
+   public static MessageSigner system() {
+      return create(Util.NIL_UUID);
    }
 
-   public MessageSignature sign(Signer var1, String var2) throws SignatureException {
-      return this.sign(var1, Component.literal(var2));
+   public void write(FriendlyByteBuf var1) {
+      var1.writeUUID(this.profileId);
+      var1.writeInstant(this.timeStamp);
+      var1.writeLong(this.salt);
+   }
+
+   public boolean isSystem() {
+      return this.profileId.equals(Util.NIL_UUID);
    }
 }

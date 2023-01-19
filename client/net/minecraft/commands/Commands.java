@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -27,6 +29,7 @@ import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.gametest.framework.TestCommand;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
@@ -205,30 +208,37 @@ public class Commands {
       this.dispatcher.setConsumer((var0, var1x, var2x) -> ((CommandSourceStack)var0.getSource()).onCommandComplete(var0, var1x, var2x));
    }
 
-   public int performPrefixedCommand(CommandSourceStack var1, String var2) {
-      return this.performCommand(var1, var2.startsWith("/") ? var2.substring(1) : var2);
+   public static <S> ParseResults<S> mapSource(ParseResults<S> var0, UnaryOperator<S> var1) {
+      CommandContextBuilder var2 = var0.getContext();
+      CommandContextBuilder var3 = var2.withSource(var1.apply(var2.getSource()));
+      return new ParseResults(var3, var0.getReader(), var0.getExceptions());
    }
 
-   public int performCommand(CommandSourceStack var1, String var2) {
-      StringReader var3 = new StringReader(var2);
-      var1.getServer().getProfiler().push(() -> "/" + var2);
+   public int performPrefixedCommand(CommandSourceStack var1, String var2) {
+      var2 = var2.startsWith("/") ? var2.substring(1) : var2;
+      return this.performCommand(this.dispatcher.parse(var2, var1), var2);
+   }
+
+   public int performCommand(ParseResults<CommandSourceStack> var1, String var2) {
+      CommandSourceStack var3 = (CommandSourceStack)var1.getContext().getSource();
+      var3.getServer().getProfiler().push(() -> "/" + var2);
 
       int var18;
       try {
          try {
-            return this.dispatcher.execute(var3, var1);
+            return this.dispatcher.execute(var1);
          } catch (CommandRuntimeException var13) {
-            var1.sendFailure(var13.getComponent());
+            var3.sendFailure(var13.getComponent());
             return 0;
          } catch (CommandSyntaxException var14) {
-            var1.sendFailure(ComponentUtils.fromMessage(var14.getRawMessage()));
+            var3.sendFailure(ComponentUtils.fromMessage(var14.getRawMessage()));
             if (var14.getInput() != null && var14.getCursor() >= 0) {
                var18 = Math.min(var14.getInput().length(), var14.getCursor());
                MutableComponent var21 = Component.empty()
                   .withStyle(ChatFormatting.GRAY)
                   .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var2)));
                if (var18 > 10) {
-                  var21.append("...");
+                  var21.append(CommonComponents.ELLIPSIS);
                }
 
                var21.append(var14.getInput().substring(Math.max(0, var18 - 10), var18));
@@ -238,7 +248,7 @@ public class Commands {
                }
 
                var21.append(Component.translatable("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-               var1.sendFailure(var21);
+               var3.sendFailure(var21);
             }
          } catch (Exception var15) {
             MutableComponent var5 = Component.literal(var15.getMessage() == null ? var15.getClass().getName() : var15.getMessage());
@@ -256,11 +266,11 @@ public class Commands {
                }
             }
 
-            var1.sendFailure(
+            var3.sendFailure(
                Component.translatable("command.failed").withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var5)))
             );
             if (SharedConstants.IS_RUNNING_IN_IDE) {
-               var1.sendFailure(Component.literal(Util.describeError(var15)));
+               var3.sendFailure(Component.literal(Util.describeError(var15)));
                LOGGER.error("'/{}' threw an exception", var2, var15);
             }
 
@@ -269,7 +279,7 @@ public class Commands {
 
          var18 = 0;
       } finally {
-         var1.getServer().getProfiler().pop();
+         var3.getServer().getProfiler().pop();
       }
 
       return var18;

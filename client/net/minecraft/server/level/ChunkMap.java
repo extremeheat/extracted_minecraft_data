@@ -29,6 +29,7 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
@@ -636,7 +637,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                      var9.getStackTrace();
                      CrashReport var7 = CrashReport.forThrowable(var9, "Exception generating new chunk");
                      CrashReportCategory var8 = var7.addCategory("Chunk to be generated");
-                     var8.setDetail("Location", String.format("%d,%d", var3.x, var3.z));
+                     var8.setDetail("Location", String.format(Locale.ROOT, "%d,%d", var3.x, var3.z));
                      var8.setDetail("Position hash", ChunkPos.asLong(var3.x, var3.z));
                      var8.setDetail("Generator", this.generator);
                      this.mainThreadExecutor.execute(() -> {

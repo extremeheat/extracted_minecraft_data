@@ -85,8 +85,6 @@ public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
 
    public void setupAnim(Allay var1, float var2, float var3, float var4, float var5, float var6) {
       this.root().getAllParts().forEach(ModelPart::resetPose);
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
       float var7 = var4 * 20.0F * 0.017453292F + var3;
       float var8 = Mth.cos(var7) * 3.1415927F * 0.15F;
       float var9 = var4 - (float)var1.tickCount;
@@ -94,20 +92,35 @@ public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
       float var11 = Math.min(var3 / 0.3F, 1.0F);
       float var12 = 1.0F - var11;
       float var13 = var1.getHoldingItemAnimationProgress(var9);
+      if (var1.isDancing()) {
+         float var14 = var4 * 8.0F * 0.017453292F + var3;
+         float var15 = Mth.cos(var14) * 16.0F * 0.017453292F;
+         float var16 = var1.getSpinningProgress(var9);
+         float var17 = Mth.cos(var14) * 14.0F * 0.017453292F;
+         float var18 = Mth.cos(var14) * 30.0F * 0.017453292F;
+         this.root.yRot = var1.isSpinning() ? 12.566371F * var16 : this.root.yRot;
+         this.root.zRot = var15 * (1.0F - var16);
+         this.head.yRot = var18 * (1.0F - var16);
+         this.head.zRot = var17 * (1.0F - var16);
+      } else {
+         this.head.xRot = var6 * 0.017453292F;
+         this.head.yRot = var5 * 0.017453292F;
+      }
+
       this.right_wing.xRot = 0.43633232F;
       this.right_wing.yRot = -0.61086524F + var8;
       this.left_wing.xRot = 0.43633232F;
       this.left_wing.yRot = 0.61086524F - var8;
-      float var14 = var11 * 0.6981317F;
-      this.body.xRot = var14;
-      float var15 = Mth.lerp(var13, var14, Mth.lerp(var11, -1.0471976F, -0.7853982F));
+      float var19 = var11 * 0.6981317F;
+      this.body.xRot = var19;
+      float var20 = Mth.lerp(var13, var19, Mth.lerp(var11, -1.0471976F, -0.7853982F));
       this.root.y += (float)Math.cos((double)var10) * 0.25F * var12;
-      this.right_arm.xRot = var15;
-      this.left_arm.xRot = var15;
-      float var16 = var12 * (1.0F - var13);
-      float var17 = 0.43633232F - Mth.cos(var10 + 4.712389F) * 3.1415927F * 0.075F * var16;
-      this.left_arm.zRot = -var17;
-      this.right_arm.zRot = var17;
+      this.right_arm.xRot = var20;
+      this.left_arm.xRot = var20;
+      float var21 = var12 * (1.0F - var13);
+      float var22 = 0.43633232F - Mth.cos(var10 + 4.712389F) * 3.1415927F * 0.075F * var21;
+      this.left_arm.zRot = -var22;
+      this.right_arm.zRot = var22;
       this.right_arm.yRot = 0.27925268F * var13;
       this.left_arm.yRot = -0.27925268F * var13;
    }

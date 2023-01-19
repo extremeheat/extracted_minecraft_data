@@ -43,6 +43,6 @@ public enum Unit {
    }
 
    public static String humanReadable(long var0, Unit var2) {
-      return String.format("%." + (var2 == GB ? "1" : "0") + "f %s", convertTo(var0, var2), var2.name());
+      return String.format(Locale.ROOT, "%." + (var2 == GB ? "1" : "0") + "f %s", convertTo(var0, var2), var2.name());
    }
 }

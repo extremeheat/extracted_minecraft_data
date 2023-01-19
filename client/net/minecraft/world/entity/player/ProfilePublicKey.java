@@ -5,9 +5,11 @@ import com.mojang.authlib.minecraft.InsecurePublicKeyException.InvalidException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.PublicKey;
 import java.time.Instant;
+import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
@@ -33,13 +35,13 @@ public record ProfilePublicKey(ProfilePublicKey.Data b) {
       return new ProfilePublicKey(var0);
    }
 
-   public static ProfilePublicKey createValidated(SignatureValidator var0, ProfilePublicKey.Data var1) throws InsecurePublicKeyException, CryptException {
-      if (var1.hasExpired()) {
+   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, ProfilePublicKey.Data var2) throws InsecurePublicKeyException, CryptException {
+      if (var2.hasExpired()) {
          throw new InvalidException("Expired profile public key");
-      } else if (!var1.validateSignature(var0)) {
+      } else if (!var2.validateSignature(var0, var1)) {
          throw new InvalidException("Invalid profile public key signature");
       } else {
-         return createTrusted(var1);
+         return createTrusted(var2);
       }
    }
 
@@ -56,7 +58,7 @@ public record ProfilePublicKey(ProfilePublicKey.Data b) {
          var0 -> var0.group(
                   ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(ProfilePublicKey.Data::expiresAt),
                   Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(ProfilePublicKey.Data::key),
-                  ExtraCodecs.BASE64_STRING.fieldOf("signature").forGetter(ProfilePublicKey.Data::keySignature)
+                  ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(ProfilePublicKey.Data::keySignature)
                )
                .apply(var0, ProfilePublicKey.Data::new)
       );
@@ -78,13 +80,16 @@ public record ProfilePublicKey(ProfilePublicKey.Data b) {
          var1.writeByteArray(this.keySignature);
       }
 
-      boolean validateSignature(SignatureValidator var1) {
-         return var1.validate(this.signedPayload().getBytes(StandardCharsets.US_ASCII), this.keySignature);
+      boolean validateSignature(SignatureValidator var1, UUID var2) {
+         return var1.validate(this.signedPayload(var2), this.keySignature);
       }
 
-      private String signedPayload() {
-         String var1 = Crypt.rsaPublicKeyToString(this.key);
-         return this.expiresAt.toEpochMilli() + var1;
+      private byte[] signedPayload(UUID var1) {
+         byte[] var2 = this.key.getEncoded();
+         byte[] var3 = new byte[24 + var2.length];
+         ByteBuffer var4 = ByteBuffer.wrap(var3).order(ByteOrder.BIG_ENDIAN);
+         var4.putLong(var1.getMostSignificantBits()).putLong(var1.getLeastSignificantBits()).putLong(this.expiresAt.toEpochMilli()).put(var2);
+         return var3;
       }
 
       public boolean hasExpired() {

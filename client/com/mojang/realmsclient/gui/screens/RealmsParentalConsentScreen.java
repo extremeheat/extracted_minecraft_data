@@ -2,7 +2,7 @@ package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
-import net.minecraft.client.gui.chat.NarratorChatListener;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,7 +17,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
    private MultiLineLabel messageLines = MultiLineLabel.EMPTY;
 
    public RealmsParentalConsentScreen(Screen var1) {
-      super(NarratorChatListener.NO_TITLE);
+      super(GameNarrator.NO_TITLE);
       this.nextScreen = var1;
    }
 

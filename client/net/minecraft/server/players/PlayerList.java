@@ -11,13 +11,16 @@ import java.io.File;
 import java.net.SocketAddress;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
@@ -33,6 +36,7 @@ import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.OutgoingPlayerChatMessage;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
@@ -66,7 +70,6 @@ import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.FilteredText;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -102,6 +105,7 @@ public abstract class PlayerList {
    public static final File IPBANLIST_FILE = new File("banned-ips.json");
    public static final File OPLIST_FILE = new File("ops.json");
    public static final File WHITELIST_FILE = new File("whitelist.json");
+   public static final Component CHAT_FILTERED_FULL = Component.translatable("chat.filtered_full");
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int SEND_PLAYER_INFO_INTERVAL = 600;
    private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
@@ -210,7 +214,7 @@ public abstract class PlayerList {
          var17 = Component.translatable("multiplayer.player.joined.renamed", var2.getDisplayName(), var6);
       }
 
-      this.broadcastSystemMessage(var17.withStyle(ChatFormatting.YELLOW), ChatType.SYSTEM);
+      this.broadcastSystemMessage(var17.withStyle(ChatFormatting.YELLOW), false);
       var13.teleport(var2.getX(), var2.getY(), var2.getZ(), var2.getYRot(), var2.getXRot());
       this.players.add(var2);
       this.playersByUUID.put(var2.getUUID(), var2);
@@ -565,7 +569,7 @@ public abstract class PlayerList {
    public void broadcastSystemToAllExceptTeam(Player var1, Component var2) {
       Team var3 = var1.getTeam();
       if (var3 == null) {
-         this.broadcastSystemMessage(var2, ChatType.SYSTEM);
+         this.broadcastSystemMessage(var2, false);
       } else {
          for(int var4 = 0; var4 < this.players.size(); ++var4) {
             ServerPlayer var5 = this.players.get(var4);
@@ -760,11 +764,11 @@ public abstract class PlayerList {
       }
    }
 
-   public void broadcastSystemMessage(Component var1, ResourceKey<ChatType> var2) {
+   public void broadcastSystemMessage(Component var1, boolean var2) {
       this.broadcastSystemMessage(var1, var1x -> var1, var2);
    }
 
-   public void broadcastSystemMessage(Component var1, Function<ServerPlayer, Component> var2, ResourceKey<ChatType> var3) {
+   public void broadcastSystemMessage(Component var1, Function<ServerPlayer, Component> var2, boolean var3) {
       this.server.sendSystemMessage(var1);
 
       for(ServerPlayer var5 : this.players) {
@@ -775,32 +779,48 @@ public abstract class PlayerList {
       }
    }
 
-   public void broadcastChatMessage(FilteredText<PlayerChatMessage> var1, CommandSourceStack var2, ResourceKey<ChatType> var3) {
-      ServerPlayer var4 = var2.getPlayer();
-      if (var4 != null) {
-         this.broadcastChatMessage(var1, var4, var3);
-      } else {
-         this.broadcastChatMessage((PlayerChatMessage)var1.raw(), var2.asChatSender(), var3);
-      }
+   public void broadcastChatMessage(PlayerChatMessage var1, CommandSourceStack var2, ChatType.Bound var3) {
+      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2.getPlayer(), var2.asChatSender(), var3);
    }
 
-   public void broadcastChatMessage(FilteredText<PlayerChatMessage> var1, ServerPlayer var2, ResourceKey<ChatType> var3) {
-      this.broadcastChatMessage((PlayerChatMessage)var1.raw(), var2x -> (PlayerChatMessage)var1.filter(var2, var2x), var2.asChatSender(), var3);
+   public void broadcastChatMessage(PlayerChatMessage var1, ServerPlayer var2, ChatType.Bound var3) {
+      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2, var2.asChatSender(), var3);
    }
 
-   public void broadcastChatMessage(PlayerChatMessage var1, ChatSender var2, ResourceKey<ChatType> var3) {
-      this.broadcastChatMessage(var1, var1x -> var1, var2, var3);
-   }
+   private void broadcastChatMessage(PlayerChatMessage var1, Predicate<ServerPlayer> var2, @Nullable ServerPlayer var3, ChatSender var4, ChatType.Bound var5) {
+      boolean var6 = this.verifyChatTrusted(var1, var4);
+      this.server.logChatMessage(var1.serverContent(), var5, var6 ? null : "Not Secure");
+      OutgoingPlayerChatMessage var7 = OutgoingPlayerChatMessage.create(var1);
+      boolean var8 = var1.isFullyFiltered();
+      boolean var9 = false;
 
-   public void broadcastChatMessage(PlayerChatMessage var1, Function<ServerPlayer, PlayerChatMessage> var2, ChatSender var3, ResourceKey<ChatType> var4) {
-      this.server.logMessageFrom(var3, var1.serverContent());
-
-      for(ServerPlayer var6 : this.players) {
-         PlayerChatMessage var7 = (PlayerChatMessage)var2.apply(var6);
-         if (var7 != null) {
-            var6.sendChatMessage(var7, var3, var4);
+      for(ServerPlayer var11 : this.players) {
+         boolean var12 = var2.test(var11);
+         var11.sendChatMessage(var7, var12, var5);
+         if (var3 != var11) {
+            var9 |= var8 && var12;
          }
       }
+
+      if (var9 && var3 != null) {
+         var3.sendSystemMessage(CHAT_FILTERED_FULL);
+      }
+
+      var7.sendHeadersToRemainingPlayers(this);
+   }
+
+   public void broadcastMessageHeader(PlayerChatMessage var1, Set<ServerPlayer> var2) {
+      byte[] var3 = var1.signedBody().hash().asBytes();
+
+      for(ServerPlayer var5 : this.players) {
+         if (!var2.contains(var5)) {
+            var5.sendChatHeader(var1.signedHeader(), var1.headerSignature(), var3);
+         }
+      }
+   }
+
+   private boolean verifyChatTrusted(PlayerChatMessage var1, ChatSender var2) {
+      return !var1.hasExpiredServer(Instant.now()) && var1.verify(var2);
    }
 
    public ServerStatsCounter getPlayerStats(Player var1) {

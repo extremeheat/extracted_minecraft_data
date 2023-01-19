@@ -28,6 +28,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -755,13 +756,15 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
          var4.inventoryMenu.broadcastChanges();
       } else if (var3) {
-         for(int var9 = 0; var9 < Inventory.getSelectionSize(); ++var9) {
-            var6.set(var9, var4.getInventory().getItem(var9).copy());
+         for(int var10 = 0; var10 < Inventory.getSelectionSize(); ++var10) {
+            var6.set(var10, var4.getInventory().getItem(var10).copy());
          }
 
-         Component var10 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
-         Component var11 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
-         var0.gui.setOverlayMessage(Component.translatable("inventory.hotbarSaved", var11, var10), false);
+         Component var11 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
+         Component var12 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
+         MutableComponent var9 = Component.translatable("inventory.hotbarSaved", var12, var11);
+         var0.gui.setOverlayMessage(var9, false);
+         var0.getNarrator().sayNow(var9);
          var5.save();
       }
    }

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage;
 
 import com.mojang.serialization.Lifecycle;
+import java.util.Locale;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
@@ -32,7 +33,7 @@ public interface WorldData {
       var1.setDetail("Level was modded", () -> Boolean.toString(this.wasModded()));
       var1.setDetail("Level storage version", () -> {
          int var1x = this.getVersion();
-         return String.format("0x%05X - %s", var1x, this.getStorageVersionName(var1x));
+         return String.format(Locale.ROOT, "0x%05X - %s", var1x, this.getStorageVersionName(var1x));
       });
    }
 
