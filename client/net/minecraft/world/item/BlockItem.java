@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -16,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -31,7 +31,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
-   private static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
+   public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
    public static final String BLOCK_STATE_TAG = "BlockStateTag";
    @Deprecated
    private final Block block;
@@ -53,7 +53,9 @@ public class BlockItem extends Item {
    }
 
    public InteractionResult place(BlockPlaceContext var1) {
-      if (!var1.canPlace()) {
+      if (!this.getBlock().isEnabled(var1.getLevel().enabledFeatures())) {
+         return InteractionResult.FAIL;
+      } else if (!var1.canPlace()) {
          return InteractionResult.FAIL;
       } else {
          BlockPlaceContext var2 = this.updatePlacementContext(var1);
@@ -188,13 +190,6 @@ public class BlockItem extends Item {
    }
 
    @Override
-   public void fillItemCategory(CreativeModeTab var1, NonNullList<ItemStack> var2) {
-      if (this.allowedIn(var1)) {
-         this.getBlock().fillItemCategory(var1, var2);
-      }
-   }
-
-   @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.getBlock().appendHoverText(var1, var2, var3, var4);
@@ -237,5 +232,10 @@ public class BlockItem extends Item {
          BlockEntity.addEntityType(var2, var1);
          var0.addTagElement("BlockEntityTag", var2);
       }
+   }
+
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.getBlock().requiredFeatures();
    }
 }

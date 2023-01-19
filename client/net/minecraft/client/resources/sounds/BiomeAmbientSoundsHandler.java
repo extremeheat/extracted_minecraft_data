@@ -54,7 +54,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
          this.loopSounds.values().forEach(BiomeAmbientSoundsHandler.LoopSoundInstance::fadeOut);
          var1.getAmbientLoop().ifPresent(var2 -> this.loopSounds.compute(var1, (var2x, var3) -> {
                if (var3 == null) {
-                  var3 = new BiomeAmbientSoundsHandler.LoopSoundInstance(var2);
+                  var3 = new BiomeAmbientSoundsHandler.LoopSoundInstance((SoundEvent)var2.value());
                   this.soundManager.play(var3);
                }
 
@@ -65,7 +65,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
 
       this.additionsSettings.ifPresent(var1x -> {
          if (this.random.nextDouble() < var1x.getTickChance()) {
-            this.soundManager.play(SimpleSoundInstance.forAmbientAddition(var1x.getSoundEvent()));
+            this.soundManager.play(SimpleSoundInstance.forAmbientAddition(var1x.getSoundEvent().value()));
          }
       });
       this.moodSettings
@@ -95,7 +95,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
                   double var18 = Math.sqrt(var12 * var12 + var14 * var14 + var16 * var16);
                   double var20 = var18 + var1x.getSoundPositionOffset();
                   SimpleSoundInstance var22 = SimpleSoundInstance.forAmbientMood(
-                     var1x.getSoundEvent(),
+                     var1x.getSoundEvent().value(),
                      this.random,
                      this.player.getX() + var12 / var18 * var20,
                      this.player.getEyeY() + var14 / var18 * var20,

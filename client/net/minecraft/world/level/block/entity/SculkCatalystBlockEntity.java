@@ -19,6 +19,7 @@ import net.minecraft.world.level.gameevent.BlockPositionSource;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
+import net.minecraft.world.phys.Vec3;
 
 public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener {
    private final BlockPositionSource blockPosSource = new BlockPositionSource(this.worldPosition);
@@ -26,11 +27,6 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
 
    public SculkCatalystBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SCULK_CATALYST, var1, var2);
-   }
-
-   @Override
-   public boolean handleEventsImmediately() {
-      return true;
    }
 
    @Override
@@ -43,37 +39,39 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
       return 8;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public boolean handleGameEvent(ServerLevel var1, GameEvent.Message var2) {
-      if (this.isRemoved()) {
-         return false;
-      } else {
-         GameEvent.Context var3 = var2.context();
-         if (var2.gameEvent() == GameEvent.ENTITY_DIE) {
-            Entity var5 = var3.sourceEntity();
-            if (var5 instanceof LivingEntity var4) {
-               if (!var4.wasExperienceConsumed()) {
-                  int var9 = var4.getExperienceReward();
-                  if (var4.shouldDropExperience() && var9 > 0) {
-                     this.sculkSpreader.addCursors(new BlockPos(var2.source().relative(Direction.UP, 0.5)), var9);
-                     LivingEntity var6 = var4.getLastHurtByMob();
-                     if (var6 instanceof ServerPlayer var7) {
-                        DamageSource var8 = var4.getLastDamageSource() == null ? DamageSource.playerAttack((Player)var7) : var4.getLastDamageSource();
-                        CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger((ServerPlayer)var7, var3.sourceEntity(), var8);
-                     }
-                  }
+   public GameEventListener.DeliveryMode getDeliveryMode() {
+      return GameEventListener.DeliveryMode.BY_DISTANCE;
+   }
 
-                  var4.skipDropExperience();
-                  SculkCatalystBlock.bloom(var1, this.worldPosition, this.getBlockState(), var1.getRandom());
+   @Override
+   public boolean handleGameEvent(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
+      if (var2 == GameEvent.ENTITY_DIE) {
+         Entity var6 = var3.sourceEntity();
+         if (var6 instanceof LivingEntity var5) {
+            if (!((LivingEntity)var5).wasExperienceConsumed()) {
+               int var7 = ((LivingEntity)var5).getExperienceReward();
+               if (((LivingEntity)var5).shouldDropExperience() && var7 > 0) {
+                  this.sculkSpreader.addCursors(new BlockPos(var4.relative(Direction.UP, 0.5)), var7);
+                  this.tryAwardItSpreadsAdvancement((LivingEntity)var5);
                }
 
-               return true;
+               ((LivingEntity)var5).skipDropExperience();
+               SculkCatalystBlock.bloom(var1, this.worldPosition, this.getBlockState(), var1.getRandom());
             }
-         }
 
-         return false;
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   private void tryAwardItSpreadsAdvancement(LivingEntity var1) {
+      LivingEntity var2 = var1.getLastHurtByMob();
+      if (var2 instanceof ServerPlayer var3) {
+         DamageSource var4 = var1.getLastDamageSource() == null ? DamageSource.playerAttack((Player)var3) : var1.getLastDamageSource();
+         CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger((ServerPlayer)var3, var1, var4);
       }
    }
 

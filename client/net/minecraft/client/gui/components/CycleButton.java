@@ -13,10 +13,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
-public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
+public class CycleButton<T> extends AbstractButton {
    static final BooleanSupplier DEFAULT_ALT_LIST_SELECTOR = Screen::hasAltDown;
    private static final List<Boolean> BOOLEAN_OPTIONS = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
    private final Component name;
@@ -26,8 +25,8 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
    private final Function<T, Component> valueStringifier;
    private final Function<CycleButton<T>, MutableComponent> narrationProvider;
    private final CycleButton.OnValueChange<T> onValueChange;
-   private final OptionInstance.TooltipSupplier<T> tooltipSupplier;
    private final boolean displayOnlyValue;
+   private final OptionInstance.TooltipSupplier<T> tooltipSupplier;
 
    CycleButton(
       int var1,
@@ -53,8 +52,13 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
       this.valueStringifier = var10;
       this.narrationProvider = var11;
       this.onValueChange = var12;
-      this.tooltipSupplier = var13;
       this.displayOnlyValue = var14;
+      this.tooltipSupplier = var13;
+      this.updateTooltip();
+   }
+
+   private void updateTooltip() {
+      this.setTooltip(this.tooltipSupplier.apply(this.value));
    }
 
    @Override
@@ -104,6 +108,7 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
       Component var2 = this.createLabelForValue((T)var1);
       this.setMessage(var2);
       this.value = (T)var1;
+      this.updateTooltip();
    }
 
    private Component createLabelForValue(T var1) {
@@ -124,7 +129,7 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
       if (this.active) {
          Object var2 = this.getCycledValue(1);
@@ -139,11 +144,6 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
 
    public MutableComponent createDefaultNarrationMessage() {
       return wrapDefaultNarrationMessage((Component)(this.displayOnlyValue ? this.createFullName(this.value) : this.getMessage()));
-   }
-
-   @Override
-   public List<FormattedCharSequence> getTooltip() {
-      return this.tooltipSupplier.apply(this.value);
    }
 
    public static <T> CycleButton.Builder<T> builder(Function<T, Component> var0) {
@@ -167,7 +167,7 @@ public class CycleButton<T> extends AbstractButton implements TooltipAccessor {
       @Nullable
       private T initialValue;
       private final Function<T, Component> valueStringifier;
-      private OptionInstance.TooltipSupplier<T> tooltipSupplier = var0 -> ImmutableList.of();
+      private OptionInstance.TooltipSupplier<T> tooltipSupplier = var0 -> null;
       private Function<CycleButton<T>, MutableComponent> narrationProvider = CycleButton::createDefaultNarrationMessage;
       private CycleButton.ValueListSupplier<T> values = CycleButton.ValueListSupplier.create(ImmutableList.of());
       private boolean displayOnlyValue;

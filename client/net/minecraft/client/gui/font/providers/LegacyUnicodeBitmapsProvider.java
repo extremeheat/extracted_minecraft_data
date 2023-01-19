@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.font.providers;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.blaze3d.font.GlyphInfo;
@@ -12,17 +11,23 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IllegalFormatException;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
@@ -31,65 +36,94 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
    private static final int CODEPOINTS_PER_SHEET = 256;
    private static final int TEXTURE_SIZE = 256;
    private static final byte NO_GLYPH = 0;
-   private final ResourceManager resourceManager;
+   private static final int TOTAL_CODEPOINTS = 65536;
    private final byte[] sizes;
-   private final String texturePattern;
-   private final Map<ResourceLocation, NativeImage> textures = Maps.newHashMap();
+   private final LegacyUnicodeBitmapsProvider.Sheet[] sheets = new LegacyUnicodeBitmapsProvider.Sheet[256];
 
    public LegacyUnicodeBitmapsProvider(ResourceManager var1, byte[] var2, String var3) {
       super();
-      this.resourceManager = var1;
       this.sizes = var2;
-      this.texturePattern = var3;
+      HashSet var4 = new HashSet();
 
-      for(int var4 = 0; var4 < 256; ++var4) {
-         int var5 = var4 * 256;
-         ResourceLocation var6 = this.getSheetLocation(var5);
+      for(int var5 = 0; var5 < 256; ++var5) {
+         int var6 = var5 * 256;
+         var4.add(getSheetLocation(var3, var6));
+      }
 
-         try (
-            InputStream var7 = this.resourceManager.open(var6);
-            NativeImage var8 = NativeImage.read(NativeImage.Format.RGBA, var7);
-         ) {
-            if (var8.getWidth() == 256 && var8.getHeight() == 256) {
-               for(int var9 = 0; var9 < 256; ++var9) {
-                  byte var10 = var2[var5 + var9];
-                  if (var10 != 0 && getLeft(var10) > getRight(var10)) {
-                     var2[var5 + var9] = 0;
+      String var13 = getCommonSearchPrefix(var4);
+      HashMap var14 = new HashMap();
+      var1.listResources(var13, var4::contains).forEach((var1x, var2x) -> var14.put(var1x, CompletableFuture.supplyAsync(() -> {
+            try {
+               NativeImage var3x;
+               try (InputStream var2xx = var2x.open()) {
+                  var3x = NativeImage.read(NativeImage.Format.RGBA, var2xx);
+               }
+
+               return var3x;
+            } catch (IOException var7x) {
+               LOGGER.error("Failed to read resource {} from pack {}", var1x, var2x.sourcePackId());
+               return null;
+            }
+         }, Util.backgroundExecutor())));
+      ArrayList var7 = new ArrayList(256);
+
+      for(int var8 = 0; var8 < 256; ++var8) {
+         int var9 = var8 * 256;
+         int var10 = var8;
+         ResourceLocation var11 = getSheetLocation(var3, var9);
+         CompletableFuture var12 = (CompletableFuture)var14.get(var11);
+         if (var12 != null) {
+            var7.add(var12.thenAcceptAsync(var4x -> {
+               if (var4x != null) {
+                  if (var4x.getWidth() == 256 && var4x.getHeight() == 256) {
+                     for(int var5x = 0; var5x < 256; ++var5x) {
+                        byte var6x = var2[var9 + var5x];
+                        if (var6x != 0 && getLeft(var6x) > getRight(var6x)) {
+                           var2[var9 + var5x] = 0;
+                        }
+                     }
+
+                     this.sheets[var10] = new LegacyUnicodeBitmapsProvider.Sheet(var2, var4x);
+                  } else {
+                     var4x.close();
+                     Arrays.fill(var2, var9, var9 + 256, (byte)0);
                   }
                }
-               continue;
-            }
-         } catch (IOException var15) {
+            }, Util.backgroundExecutor()));
          }
-
-         Arrays.fill(var2, var5, var5 + 256, (byte)0);
       }
+
+      CompletableFuture.allOf(var7.toArray(var0 -> new CompletableFuture[var0])).join();
+   }
+
+   private static String getCommonSearchPrefix(Set<ResourceLocation> var0) {
+      String var1 = StringUtils.getCommonPrefix(var0.stream().map(ResourceLocation::getPath).toArray(var0x -> new String[var0x]));
+      int var2 = var1.lastIndexOf("/");
+      return var2 == -1 ? "" : var1.substring(0, var2);
    }
 
    @Override
    public void close() {
-      this.textures.values().forEach(NativeImage::close);
+      for(LegacyUnicodeBitmapsProvider.Sheet var4 : this.sheets) {
+         if (var4 != null) {
+            var4.close();
+         }
+      }
    }
 
-   private ResourceLocation getSheetLocation(int var1) {
-      ResourceLocation var2 = new ResourceLocation(String.format(Locale.ROOT, this.texturePattern, String.format(Locale.ROOT, "%02x", var1 / 256)));
-      return new ResourceLocation(var2.getNamespace(), "textures/" + var2.getPath());
+   private static ResourceLocation getSheetLocation(String var0, int var1) {
+      String var2 = String.format(Locale.ROOT, "%02x", var1 / 256);
+      ResourceLocation var3 = new ResourceLocation(String.format(Locale.ROOT, var0, var2));
+      return var3.withPrefix("textures/");
    }
 
    @Nullable
    @Override
    public GlyphInfo getGlyph(int var1) {
       if (var1 >= 0 && var1 < this.sizes.length) {
-         byte var2 = this.sizes[var1];
-         if (var2 != 0) {
-            NativeImage var3 = this.textures.computeIfAbsent(this.getSheetLocation(var1), this::loadTexture);
-            if (var3 != null) {
-               int var4 = getLeft(var2);
-               return new LegacyUnicodeBitmapsProvider.Glyph(var1 % 16 * 16 + var4, (var1 & 0xFF) / 16 * 16, getRight(var2) - var4, 16, var3);
-            }
-         }
-
-         return null;
+         int var2 = var1 / 256;
+         LegacyUnicodeBitmapsProvider.Sheet var3 = this.sheets[var2];
+         return var3 != null ? var3.getGlyph(var1) : null;
       } else {
          return null;
       }
@@ -108,26 +142,11 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
       return var1;
    }
 
-   @Nullable
-   private NativeImage loadTexture(ResourceLocation var1) {
-      try {
-         NativeImage var3;
-         try (InputStream var2 = this.resourceManager.open(var1)) {
-            var3 = NativeImage.read(NativeImage.Format.RGBA, var2);
-         }
-
-         return var3;
-      } catch (IOException var7) {
-         LOGGER.error("Couldn't load texture {}", var1, var7);
-         return null;
-      }
-   }
-
-   private static int getLeft(byte var0) {
+   static int getLeft(byte var0) {
       return var0 >> 4 & 15;
    }
 
-   private static int getRight(byte var0) {
+   static int getRight(byte var0) {
       return (var0 & 15) + 1;
    }
 
@@ -233,6 +252,35 @@ public class LegacyUnicodeBitmapsProvider implements GlyphProvider {
                return Glyph.this.source.format().components() > 1;
             }
          });
+      }
+   }
+
+   static class Sheet implements AutoCloseable {
+      private final byte[] sizes;
+      private final NativeImage source;
+
+      Sheet(byte[] var1, NativeImage var2) {
+         super();
+         this.sizes = var1;
+         this.source = var2;
+      }
+
+      @Override
+      public void close() {
+         this.source.close();
+      }
+
+      @Nullable
+      public GlyphInfo getGlyph(int var1) {
+         byte var2 = this.sizes[var1];
+         if (var2 != 0) {
+            int var3 = LegacyUnicodeBitmapsProvider.getLeft(var2);
+            return new LegacyUnicodeBitmapsProvider.Glyph(
+               var1 % 16 * 16 + var3, (var1 & 0xFF) / 16 * 16, LegacyUnicodeBitmapsProvider.getRight(var2) - var3, 16, this.source
+            );
+         } else {
+            return null;
+         }
       }
    }
 }

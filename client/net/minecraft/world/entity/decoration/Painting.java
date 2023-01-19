@@ -2,14 +2,17 @@ package net.minecraft.world.entity.decoration;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,6 +23,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,14 +31,14 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class Painting extends HangingEntity {
+public class Painting extends HangingEntity implements VariantHolder<Holder<PaintingVariant>> {
    private static final EntityDataAccessor<Holder<PaintingVariant>> DATA_PAINTING_VARIANT_ID = SynchedEntityData.defineId(
       Painting.class, EntityDataSerializers.PAINTING_VARIANT
    );
    private static final ResourceKey<PaintingVariant> DEFAULT_VARIANT = PaintingVariants.KEBAB;
 
    private static Holder<PaintingVariant> getDefaultVariant() {
-      return Registry.PAINTING_VARIANT.getHolderOrThrow(DEFAULT_VARIANT);
+      return BuiltInRegistries.PAINTING_VARIANT.getHolderOrThrow(DEFAULT_VARIANT);
    }
 
    public Painting(EntityType<? extends Painting> var1, Level var2) {
@@ -53,7 +57,7 @@ public class Painting extends HangingEntity {
       }
    }
 
-   private void setVariant(Holder<PaintingVariant> var1) {
+   public void setVariant(Holder<PaintingVariant> var1) {
       this.entityData.set(DATA_PAINTING_VARIANT_ID, var1);
    }
 
@@ -64,7 +68,7 @@ public class Painting extends HangingEntity {
    public static Optional<Painting> create(Level var0, BlockPos var1, Direction var2) {
       Painting var3 = new Painting(var0, var1);
       ArrayList var4 = new ArrayList();
-      Registry.PAINTING_VARIANT.getTagOrEmpty(PaintingVariantTags.PLACEABLE).forEach(var4::add);
+      BuiltInRegistries.PAINTING_VARIANT.getTagOrEmpty(PaintingVariantTags.PLACEABLE).forEach(var4::add);
       if (var4.isEmpty()) {
          return Optional.empty();
       } else {
@@ -113,8 +117,12 @@ public class Painting extends HangingEntity {
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
-      ResourceKey var2 = ResourceKey.create(Registry.PAINTING_VARIANT_REGISTRY, ResourceLocation.tryParse(var1.getString("variant")));
-      this.setVariant(Registry.PAINTING_VARIANT.getHolder(var2).orElseGet(Painting::getDefaultVariant));
+      Holder var2 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
+         .map(var0 -> ResourceKey.create(Registries.PAINTING_VARIANT, var0))
+         .flatMap(BuiltInRegistries.PAINTING_VARIANT::getHolder)
+         .map((Function<? super Holder.Reference<PaintingVariant>, ? extends Holder.Reference<PaintingVariant>>)(var0 -> var0))
+         .orElseGet(Painting::getDefaultVariant);
+      this.setVariant(var2);
       this.direction = Direction.from2DDataValue(var1.getByte("facing"));
       super.readAdditionalSaveData(var1);
       this.setDirection(this.direction);
@@ -163,7 +171,7 @@ public class Painting extends HangingEntity {
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
    }
 

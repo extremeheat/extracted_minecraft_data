@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.providers.score;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.GsonAdapterFactory;
 import net.minecraft.world.level.storage.loot.Serializer;
@@ -14,11 +15,11 @@ public class ScoreboardNameProviders {
    }
 
    private static LootScoreProviderType register(String var0, Serializer<? extends ScoreboardNameProvider> var1) {
-      return Registry.register(Registry.LOOT_SCORE_PROVIDER_TYPE, new ResourceLocation(var0), new LootScoreProviderType(var1));
+      return Registry.register(BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE, new ResourceLocation(var0), new LootScoreProviderType(var1));
    }
 
    public static Object createGsonAdapter() {
-      return GsonAdapterFactory.builder(Registry.LOOT_SCORE_PROVIDER_TYPE, "provider", "type", ScoreboardNameProvider::getType)
+      return GsonAdapterFactory.builder(BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE, "provider", "type", ScoreboardNameProvider::getType)
          .withInlineSerializer(CONTEXT, new ContextScoreboardNameProvider.InlineSerializer())
          .build();
    }

@@ -1,21 +1,14 @@
 package net.minecraft.client.multiplayer;
 
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
-import org.slf4j.Logger;
 
 public class ServerData {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public String name;
    public String ip;
    public Component status;
@@ -29,9 +22,6 @@ public class ServerData {
    @Nullable
    private String iconB64;
    private boolean lan;
-   @Nullable
-   private ServerData.ChatPreview chatPreview;
-   private boolean chatPreviewEnabled = true;
    private boolean enforcesSecureChat;
 
    public ServerData(String var1, String var2, boolean var3) {
@@ -53,10 +43,6 @@ public class ServerData {
          var1.putBoolean("acceptTextures", true);
       } else if (this.packStatus == ServerData.ServerPackStatus.DISABLED) {
          var1.putBoolean("acceptTextures", false);
-      }
-
-      if (this.chatPreview != null) {
-         ServerData.ChatPreview.CODEC.encodeStart(NbtOps.INSTANCE, this.chatPreview).result().ifPresent(var1x -> var1.put("chatPreview", var1x));
       }
 
       return var1;
@@ -86,13 +72,6 @@ public class ServerData {
          var1.setResourcePackStatus(ServerData.ServerPackStatus.PROMPT);
       }
 
-      if (var0.contains("chatPreview", 10)) {
-         ServerData.ChatPreview.CODEC
-            .parse(NbtOps.INSTANCE, var0.getCompound("chatPreview"))
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> var1.chatPreview = var1x);
-      }
-
       return var1;
    }
 
@@ -117,27 +96,6 @@ public class ServerData {
       return this.lan;
    }
 
-   public void setPreviewsChat(boolean var1) {
-      if (var1 && this.chatPreview == null) {
-         this.chatPreview = new ServerData.ChatPreview(false, false);
-      } else if (!var1 && this.chatPreview != null) {
-         this.chatPreview = null;
-      }
-   }
-
-   @Nullable
-   public ServerData.ChatPreview getChatPreview() {
-      return this.chatPreview;
-   }
-
-   public void setChatPreviewEnabled(boolean var1) {
-      this.chatPreviewEnabled = var1;
-   }
-
-   public boolean previewsChat() {
-      return this.chatPreviewEnabled && this.chatPreview != null;
-   }
-
    public void setEnforcesSecureChat(boolean var1) {
       this.enforcesSecureChat = var1;
    }
@@ -156,47 +114,7 @@ public class ServerData {
       this.copyNameIconFrom(var1);
       this.setResourcePackStatus(var1.getResourcePackStatus());
       this.lan = var1.lan;
-      this.chatPreview = Util.mapNullable(var1.chatPreview, ServerData.ChatPreview::copy);
       this.enforcesSecureChat = var1.enforcesSecureChat;
-   }
-
-   public static class ChatPreview {
-      public static final Codec<ServerData.ChatPreview> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  Codec.BOOL.optionalFieldOf("acknowledged", false).forGetter(var0x -> var0x.acknowledged),
-                  Codec.BOOL.optionalFieldOf("toastShown", false).forGetter(var0x -> var0x.toastShown)
-               )
-               .apply(var0, ServerData.ChatPreview::new)
-      );
-      private boolean acknowledged;
-      private boolean toastShown;
-
-      ChatPreview(boolean var1, boolean var2) {
-         super();
-         this.acknowledged = var1;
-         this.toastShown = var2;
-      }
-
-      public void acknowledge() {
-         this.acknowledged = true;
-      }
-
-      public boolean showToast() {
-         if (!this.toastShown) {
-            this.toastShown = true;
-            return true;
-         } else {
-            return false;
-         }
-      }
-
-      public boolean isAcknowledged() {
-         return this.acknowledged;
-      }
-
-      private ServerData.ChatPreview copy() {
-         return new ServerData.ChatPreview(this.acknowledged, this.toastShown);
-      }
    }
 
    public static enum ServerPackStatus {

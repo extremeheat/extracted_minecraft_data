@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -28,7 +28,7 @@ public class ItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & 
          var1.pushPose();
          if (this.getParentModel().young) {
             float var14 = 0.5F;
-            var1.translate(0.0, 0.75, 0.0);
+            var1.translate(0.0F, 0.75F, 0.0F);
             var1.scale(0.5F, 0.5F, 0.5F);
          }
 
@@ -44,10 +44,10 @@ public class ItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & 
       if (!var2.isEmpty()) {
          var5.pushPose();
          this.getParentModel().translateToHand(var4, var5);
-         var5.mulPose(Vector3f.XP.rotationDegrees(-90.0F));
-         var5.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+         var5.mulPose(Axis.XP.rotationDegrees(-90.0F));
+         var5.mulPose(Axis.YP.rotationDegrees(180.0F));
          boolean var8 = var4 == HumanoidArm.LEFT;
-         var5.translate((double)((float)(var8 ? -1 : 1) / 16.0F), 0.125, -0.625);
+         var5.translate((float)(var8 ? -1 : 1) / 16.0F, 0.125F, -0.625F);
          this.itemInHandRenderer.renderItem(var1, var2, var3, var8, var5, var6, var7);
          var5.popPose();
       }

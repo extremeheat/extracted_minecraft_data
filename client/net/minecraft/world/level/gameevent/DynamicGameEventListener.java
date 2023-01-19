@@ -53,11 +53,11 @@ public class DynamicGameEventListener<T extends GameEventListener> {
       });
    }
 
-   private static void ifChunkExists(LevelReader var0, @Nullable SectionPos var1, Consumer<GameEventDispatcher> var2) {
+   private static void ifChunkExists(LevelReader var0, @Nullable SectionPos var1, Consumer<GameEventListenerRegistry> var2) {
       if (var1 != null) {
          ChunkAccess var3 = var0.getChunk(var1.x(), var1.z(), ChunkStatus.FULL, false);
          if (var3 != null) {
-            var2.accept(var3.getEventDispatcher(var1.y()));
+            var2.accept(var3.getListenerRegistry(var1.y()));
          }
       }
    }

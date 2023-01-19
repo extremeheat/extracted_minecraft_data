@@ -9,8 +9,8 @@ import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
@@ -27,7 +27,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
                   IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter(var0x -> var0x.extraBranchSteps),
                   Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter(var0x -> var0x.placeBranchPerLogProbability),
                   IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter(var0x -> var0x.extraBranchLength),
-                  RegistryCodecs.homogeneousList(Registry.BLOCK_REGISTRY).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough)
+                  RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough)
                )
             )
             .apply(var0, UpwardsBranchingTrunkPlacer::new)

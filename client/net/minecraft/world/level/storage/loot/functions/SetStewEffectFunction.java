@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
@@ -103,7 +103,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
 
             for(MobEffect var6 : var2.effectDurationMap.keySet()) {
                JsonObject var7 = new JsonObject();
-               ResourceLocation var8 = Registry.MOB_EFFECT.getKey(var6);
+               ResourceLocation var8 = BuiltInRegistries.MOB_EFFECT.getKey(var6);
                if (var8 == null) {
                   throw new IllegalArgumentException("Don't know how to serialize mob effect " + var6);
                }
@@ -122,7 +122,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          if (var1.has("effects")) {
             for(JsonElement var7 : GsonHelper.getAsJsonArray(var1, "effects")) {
                String var8 = GsonHelper.getAsString(var7.getAsJsonObject(), "type");
-               MobEffect var9 = Registry.MOB_EFFECT
+               MobEffect var9 = BuiltInRegistries.MOB_EFFECT
                   .getOptional(new ResourceLocation(var8))
                   .orElseThrow(() -> new JsonSyntaxException("Unknown mob effect '" + var8 + "'"));
                NumberProvider var10 = GsonHelper.getAsObject(var7.getAsJsonObject(), "duration", var2, NumberProvider.class);

@@ -22,18 +22,24 @@ public interface ContainerEventHandler extends GuiEventListener {
 
    @Override
    default boolean mouseClicked(double var1, double var3, int var5) {
-      for(GuiEventListener var7 : this.children()) {
-         if (var7.mouseClicked(var1, var3, var5)) {
-            this.setFocused(var7);
-            if (var5 == 0) {
-               this.setDragging(true);
-            }
+      GuiEventListener var6 = null;
 
-            return true;
+      for(GuiEventListener var9 : List.copyOf(this.children())) {
+         if (var9.mouseClicked(var1, var3, var5)) {
+            var6 = var9;
          }
       }
 
-      return false;
+      if (var6 != null) {
+         this.setFocused(var6);
+         if (var5 == 0) {
+            this.setDragging(true);
+         }
+
+         return true;
+      } else {
+         return false;
+      }
    }
 
    @Override

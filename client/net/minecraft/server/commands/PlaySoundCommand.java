@@ -13,11 +13,14 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundCustomSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 public class PlaySoundCommand {
@@ -119,32 +122,33 @@ public class PlaySoundCommand {
    private static int playSound(
       CommandSourceStack var0, Collection<ServerPlayer> var1, ResourceLocation var2, SoundSource var3, Vec3 var4, float var5, float var6, float var7
    ) throws CommandSyntaxException {
-      double var8 = Math.pow(var5 > 1.0F ? (double)(var5 * 16.0F) : 16.0, 2.0);
-      int var10 = 0;
-      long var11 = var0.getLevel().getRandom().nextLong();
+      Holder var8 = Holder.direct(SoundEvent.createVariableRangeEvent(var2));
+      double var9 = (double)Mth.square(((SoundEvent)var8.value()).getRange(var5));
+      int var11 = 0;
+      long var12 = var0.getLevel().getRandom().nextLong();
 
-      for(ServerPlayer var14 : var1) {
-         double var15 = var4.x - var14.getX();
-         double var17 = var4.y - var14.getY();
-         double var19 = var4.z - var14.getZ();
-         double var21 = var15 * var15 + var17 * var17 + var19 * var19;
-         Vec3 var23 = var4;
-         float var24 = var5;
-         if (var21 > var8) {
+      for(ServerPlayer var15 : var1) {
+         double var16 = var4.x - var15.getX();
+         double var18 = var4.y - var15.getY();
+         double var20 = var4.z - var15.getZ();
+         double var22 = var16 * var16 + var18 * var18 + var20 * var20;
+         Vec3 var24 = var4;
+         float var25 = var5;
+         if (var22 > var9) {
             if (var7 <= 0.0F) {
                continue;
             }
 
-            double var25 = Math.sqrt(var21);
-            var23 = new Vec3(var14.getX() + var15 / var25 * 2.0, var14.getY() + var17 / var25 * 2.0, var14.getZ() + var19 / var25 * 2.0);
-            var24 = var7;
+            double var26 = Math.sqrt(var22);
+            var24 = new Vec3(var15.getX() + var16 / var26 * 2.0, var15.getY() + var18 / var26 * 2.0, var15.getZ() + var20 / var26 * 2.0);
+            var25 = var7;
          }
 
-         var14.connection.send(new ClientboundCustomSoundPacket(var2, var3, var23, var24, var6, var11));
-         ++var10;
+         var15.connection.send(new ClientboundSoundPacket(var8, var3, var24.x(), var24.y(), var24.z(), var25, var6, var12));
+         ++var11;
       }
 
-      if (var10 == 0) {
+      if (var11 == 0) {
          throw ERROR_TOO_FAR.create();
       } else {
          if (var1.size() == 1) {
@@ -153,7 +157,7 @@ public class PlaySoundCommand {
             var0.sendSuccess(Component.translatable("commands.playsound.success.multiple", var2, var1.size()), true);
          }
 
-         return var10;
+         return var11;
       }
    }
 }

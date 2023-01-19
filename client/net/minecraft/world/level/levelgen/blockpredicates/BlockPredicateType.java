@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.blockpredicates;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface BlockPredicateType<P extends BlockPredicate> {
    BlockPredicateType<MatchingBlocksPredicate> MATCHING_BLOCKS = register("matching_blocks", MatchingBlocksPredicate.CODEC);
@@ -20,6 +21,6 @@ public interface BlockPredicateType<P extends BlockPredicate> {
    Codec<P> codec();
 
    private static <P extends BlockPredicate> BlockPredicateType<P> register(String var0, Codec<P> var1) {
-      return Registry.register(Registry.BLOCK_PREDICATE_TYPES, var0, () -> var1);
+      return Registry.register(BuiltInRegistries.BLOCK_PREDICATE_TYPE, var0, () -> var1);
    }
 }

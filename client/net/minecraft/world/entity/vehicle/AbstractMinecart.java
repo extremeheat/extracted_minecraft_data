@@ -13,10 +13,9 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -675,7 +674,7 @@ public abstract class AbstractMinecart extends Entity {
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.getBoolean("CustomDisplayTile")) {
-         this.setDisplayBlockState(NbtUtils.readBlockState(var1.getCompound("DisplayState")));
+         this.setDisplayBlockState(NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("DisplayState")));
          this.setDisplayOffset(var1.getInt("DisplayOffset"));
       }
    }
@@ -829,11 +828,6 @@ public abstract class AbstractMinecart extends Entity {
 
    public void setCustomDisplay(boolean var1) {
       this.getEntityData().set(DATA_ID_CUSTOM_DISPLAY, var1);
-   }
-
-   @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
    }
 
    @Override

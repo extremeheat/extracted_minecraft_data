@@ -9,22 +9,19 @@ import net.minecraft.network.protocol.Packet;
 public class ClientboundServerDataPacket implements Packet<ClientGamePacketListener> {
    private final Optional<Component> motd;
    private final Optional<String> iconBase64;
-   private final boolean previewsChat;
    private final boolean enforcesSecureChat;
 
-   public ClientboundServerDataPacket(@Nullable Component var1, @Nullable String var2, boolean var3, boolean var4) {
+   public ClientboundServerDataPacket(@Nullable Component var1, @Nullable String var2, boolean var3) {
       super();
       this.motd = Optional.ofNullable(var1);
       this.iconBase64 = Optional.ofNullable(var2);
-      this.previewsChat = var3;
-      this.enforcesSecureChat = var4;
+      this.enforcesSecureChat = var3;
    }
 
    public ClientboundServerDataPacket(FriendlyByteBuf var1) {
       super();
       this.motd = var1.readOptional(FriendlyByteBuf::readComponent);
       this.iconBase64 = var1.readOptional(FriendlyByteBuf::readUtf);
-      this.previewsChat = var1.readBoolean();
       this.enforcesSecureChat = var1.readBoolean();
    }
 
@@ -32,7 +29,6 @@ public class ClientboundServerDataPacket implements Packet<ClientGamePacketListe
    public void write(FriendlyByteBuf var1) {
       var1.writeOptional(this.motd, FriendlyByteBuf::writeComponent);
       var1.writeOptional(this.iconBase64, FriendlyByteBuf::writeUtf);
-      var1.writeBoolean(this.previewsChat);
       var1.writeBoolean(this.enforcesSecureChat);
    }
 
@@ -46,10 +42,6 @@ public class ClientboundServerDataPacket implements Packet<ClientGamePacketListe
 
    public Optional<String> getIconBase64() {
       return this.iconBase64;
-   }
-
-   public boolean previewsChat() {
-      return this.previewsChat;
    }
 
    public boolean enforcesSecureChat() {

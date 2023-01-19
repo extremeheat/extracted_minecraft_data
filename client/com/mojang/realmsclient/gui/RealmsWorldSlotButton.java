@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 public class RealmsWorldSlotButton extends Button {
    public static final ResourceLocation SLOT_FRAME_LOCATION = new ResourceLocation("realms", "textures/gui/realms/slot_frame.png");
    public static final ResourceLocation EMPTY_SLOT_LOCATION = new ResourceLocation("realms", "textures/gui/realms/empty_frame.png");
-   public static final ResourceLocation CHECK_MARK_LOCATION = new ResourceLocation("realms", "textures/gui/realms/checkmark.png");
+   public static final ResourceLocation CHECK_MARK_LOCATION = new ResourceLocation("minecraft", "textures/gui/checkmark.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_1 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_0.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_2 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_2.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_3 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_3.png");
@@ -33,7 +33,7 @@ public class RealmsWorldSlotButton extends Button {
    private RealmsWorldSlotButton.State state;
 
    public RealmsWorldSlotButton(int var1, int var2, int var3, int var4, Supplier<RealmsServer> var5, Consumer<Component> var6, int var7, Button.OnPress var8) {
-      super(var1, var2, var3, var4, CommonComponents.EMPTY, var8);
+      super(var1, var2, var3, var4, CommonComponents.EMPTY, var8, DEFAULT_NARRATION);
       this.serverDataProvider = var5;
       this.slotIndex = var7;
       this.toolTipSetter = var6;
@@ -125,8 +125,8 @@ public class RealmsWorldSlotButton extends Button {
       if (this.state != null) {
          this.drawSlotFrame(
             var1,
-            this.x,
-            this.y,
+            this.getX(),
+            this.getY(),
             var2,
             var3,
             this.state.isCurrentlyActiveSlot,

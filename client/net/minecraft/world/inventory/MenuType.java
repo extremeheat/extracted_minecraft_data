@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
 
 public class MenuType<T extends AbstractContainerMenu> {
@@ -31,7 +32,7 @@ public class MenuType<T extends AbstractContainerMenu> {
    private final MenuType.MenuSupplier<T> constructor;
 
    private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuType.MenuSupplier<T> var1) {
-      return Registry.register(Registry.MENU, var0, new MenuType<>(var1));
+      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1));
    }
 
    private MenuType(MenuType.MenuSupplier<T> var1) {

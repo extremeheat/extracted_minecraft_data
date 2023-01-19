@@ -1,18 +1,20 @@
 package net.minecraft.data.tags;
 
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 
 public class PoiTypeTagsProvider extends TagsProvider<PoiType> {
-   public PoiTypeTagsProvider(DataGenerator var1) {
-      super(var1, Registry.POINT_OF_INTEREST_TYPE);
+   public PoiTypeTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.POINT_OF_INTEREST_TYPE, var2);
    }
 
    @Override
-   protected void addTags() {
+   protected void addTags(HolderLookup.Provider var1) {
       this.tag(PoiTypeTags.ACQUIRABLE_JOB_SITE)
          .add(
             PoiTypes.ARMORER,

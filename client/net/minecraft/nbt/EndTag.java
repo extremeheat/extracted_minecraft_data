@@ -5,10 +5,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public class EndTag implements Tag {
-   private static final int SELF_SIZE_IN_BITS = 64;
+   private static final int SELF_SIZE_IN_BYTES = 8;
    public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
       public EndTag load(DataInput var1, int var2, NbtAccounter var3) {
-         var3.accountBits(64L);
+         var3.accountBytes(8L);
          return EndTag.INSTANCE;
       }
 
@@ -48,6 +48,11 @@ public class EndTag implements Tag {
 
    @Override
    public void write(DataOutput var1) throws IOException {
+   }
+
+   @Override
+   public int sizeInBytes() {
+      return 8;
    }
 
    @Override

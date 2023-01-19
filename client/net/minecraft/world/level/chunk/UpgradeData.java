@@ -16,8 +16,8 @@ import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction8;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -84,13 +84,13 @@ public class UpgradeData {
       loadTicks(
          var1,
          "neighbor_block_ticks",
-         var0 -> Registry.BLOCK.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Blocks.AIR)),
+         var0 -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Blocks.AIR)),
          this.neighborBlockTicks
       );
       loadTicks(
          var1,
          "neighbor_fluid_ticks",
-         var0 -> Registry.FLUID.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Fluids.EMPTY)),
+         var0 -> BuiltInRegistries.FLUID.getOptional(ResourceLocation.tryParse(var0)).or(() -> Optional.of(Fluids.EMPTY)),
          this.neighborFluidTicks
       );
    }
@@ -236,13 +236,13 @@ public class UpgradeData {
       var1.putByte("Sides", (byte)var6);
       if (!this.neighborBlockTicks.isEmpty()) {
          ListTag var8 = new ListTag();
-         this.neighborBlockTicks.forEach(var1x -> var8.add(var1x.save(var0x -> Registry.BLOCK.getKey(var0x).toString())));
+         this.neighborBlockTicks.forEach(var1x -> var8.add(var1x.save(var0x -> BuiltInRegistries.BLOCK.getKey(var0x).toString())));
          var1.put("neighbor_block_ticks", var8);
       }
 
       if (!this.neighborFluidTicks.isEmpty()) {
          ListTag var9 = new ListTag();
-         this.neighborFluidTicks.forEach(var1x -> var9.add(var1x.save(var0x -> Registry.FLUID.getKey(var0x).toString())));
+         this.neighborFluidTicks.forEach(var1x -> var9.add(var1x.save(var0x -> BuiltInRegistries.FLUID.getKey(var0x).toString())));
          var1.put("neighbor_fluid_ticks", var9);
       }
 
@@ -294,7 +294,19 @@ public class UpgradeData {
          Blocks.BIRCH_WALL_SIGN,
          Blocks.ACACIA_WALL_SIGN,
          Blocks.JUNGLE_WALL_SIGN,
-         Blocks.DARK_OAK_WALL_SIGN
+         Blocks.DARK_OAK_WALL_SIGN,
+         Blocks.OAK_HANGING_SIGN,
+         Blocks.SPRUCE_HANGING_SIGN,
+         Blocks.BIRCH_HANGING_SIGN,
+         Blocks.ACACIA_HANGING_SIGN,
+         Blocks.JUNGLE_HANGING_SIGN,
+         Blocks.DARK_OAK_HANGING_SIGN,
+         Blocks.OAK_WALL_HANGING_SIGN,
+         Blocks.SPRUCE_WALL_HANGING_SIGN,
+         Blocks.BIRCH_WALL_HANGING_SIGN,
+         Blocks.ACACIA_WALL_HANGING_SIGN,
+         Blocks.JUNGLE_WALL_HANGING_SIGN,
+         Blocks.DARK_OAK_WALL_HANGING_SIGN
       ) {
          @Override
          public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {

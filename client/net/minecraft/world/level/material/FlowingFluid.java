@@ -117,7 +117,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   protected void spread(LevelAccessor var1, BlockPos var2, FluidState var3) {
+   protected void spread(Level var1, BlockPos var2, FluidState var3) {
       if (!var3.isEmpty()) {
          BlockState var4 = var1.getBlockState(var2);
          BlockPos var5 = var2.below();
@@ -134,7 +134,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   private void spreadToSides(LevelAccessor var1, BlockPos var2, FluidState var3, BlockState var4) {
+   private void spreadToSides(Level var1, BlockPos var2, FluidState var3, BlockState var4) {
       int var5 = var3.getAmount() - this.getDropOff(var1);
       if (var3.getValue(FALLING)) {
          var5 = 7;
@@ -155,7 +155,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   protected FluidState getNewLiquid(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected FluidState getNewLiquid(Level var1, BlockPos var2, BlockState var3) {
       int var4 = 0;
       int var5 = 0;
 
@@ -172,7 +172,7 @@ public abstract class FlowingFluid extends Fluid {
          }
       }
 
-      if (this.canConvertToSource() && var5 >= 2) {
+      if (this.canConvertToSource(var1) && var5 >= 2) {
          BlockState var11 = var1.getBlockState(var2.below());
          FluidState var13 = var11.getFluidState();
          if (var11.getMaterial().isSolid() || this.isSourceBlockOfThisType(var13)) {
@@ -236,7 +236,7 @@ public abstract class FlowingFluid extends Fluid {
       return this.getSource().defaultFluidState().setValue(FALLING, Boolean.valueOf(var1));
    }
 
-   protected abstract boolean canConvertToSource();
+   protected abstract boolean canConvertToSource(Level var1);
 
    protected void spreadTo(LevelAccessor var1, BlockPos var2, BlockState var3, Direction var4, FluidState var5) {
       if (var3.getBlock() instanceof LiquidBlockContainer) {
@@ -337,7 +337,7 @@ public abstract class FlowingFluid extends Fluid {
       return var3;
    }
 
-   protected Map<Direction, FluidState> getSpread(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected Map<Direction, FluidState> getSpread(Level var1, BlockPos var2, BlockState var3) {
       int var4 = 1000;
       EnumMap var5 = Maps.newEnumMap(Direction.class);
       Short2ObjectOpenHashMap var6 = new Short2ObjectOpenHashMap();

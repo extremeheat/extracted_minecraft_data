@@ -2,12 +2,14 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.Collection;
 import java.util.Collections;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,17 +24,23 @@ public class GameModeCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("gamemode").requires(var0x -> var0x.hasPermission(2));
-
-      for(GameType var5 : GameType.values()) {
-         var1.then(
-            ((LiteralArgumentBuilder)Commands.literal(var5.getName())
-                  .executes(var1x -> setMode(var1x, Collections.singleton(((CommandSourceStack)var1x.getSource()).getPlayerOrException()), var5)))
-               .then(Commands.argument("target", EntityArgument.players()).executes(var1x -> setMode(var1x, EntityArgument.getPlayers(var1x, "target"), var5)))
-         );
-      }
-
-      var0.register(var1);
+      var0.register(
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(var0x -> var0x.hasPermission(2)))
+            .then(
+               ((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode())
+                     .executes(
+                        var0x -> setMode(
+                              var0x,
+                              Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()),
+                              GameModeArgument.getGameMode(var0x, "gamemode")
+                           )
+                     ))
+                  .then(
+                     Commands.argument("target", EntityArgument.players())
+                        .executes(var0x -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode")))
+                  )
+            )
+      );
    }
 
    private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {

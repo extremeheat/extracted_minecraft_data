@@ -1,6 +1,6 @@
 package net.minecraft.tags;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 
@@ -12,6 +12,6 @@ public class PaintingVariantTags {
    }
 
    private static TagKey<PaintingVariant> create(String var0) {
-      return TagKey.create(Registry.PAINTING_VARIANT_REGISTRY, new ResourceLocation(var0));
+      return TagKey.create(Registries.PAINTING_VARIANT, new ResourceLocation(var0));
    }
 }

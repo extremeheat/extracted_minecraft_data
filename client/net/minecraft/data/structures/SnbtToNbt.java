@@ -13,11 +13,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
@@ -28,12 +29,14 @@ public class SnbtToNbt implements DataProvider {
    @Nullable
    private static final Path DUMP_SNBT_TO = null;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final DataGenerator generator;
+   private final PackOutput output;
+   private final Iterable<Path> inputFolders;
    private final List<SnbtToNbt.Filter> filters = Lists.newArrayList();
 
-   public SnbtToNbt(DataGenerator var1) {
+   public SnbtToNbt(PackOutput var1, Iterable<Path> var2) {
       super();
-      this.generator = var1;
+      this.output = var1;
+      this.inputFolders = var2;
    }
 
    public SnbtToNbt addFilter(SnbtToNbt.Filter var1) {
@@ -52,34 +55,33 @@ public class SnbtToNbt implements DataProvider {
    }
 
    @Override
-   public void run(CachedOutput var1) throws IOException {
-      Path var2 = this.generator.getOutputFolder();
+   public CompletableFuture<?> run(CachedOutput var1) {
+      Path var2 = this.output.getOutputFolder();
       ArrayList var3 = Lists.newArrayList();
 
-      for(Path var5 : this.generator.getInputFolders()) {
-         Files.walk(var5)
-            .filter(var0 -> var0.toString().endsWith(".snbt"))
-            .forEach(var3x -> var3.add(CompletableFuture.supplyAsync(() -> this.readStructure(var3x, this.getName(var5, var3x)), Util.backgroundExecutor())));
+      for(Path var5 : this.inputFolders) {
+         var3.add(CompletableFuture.<CompletableFuture>supplyAsync(() -> {
+            try {
+               CompletableFuture var5x;
+               try (Stream var4 = Files.walk(var5)) {
+                  var5x = CompletableFuture.allOf(var4.filter(var0 -> var0.toString().endsWith(".snbt")).map(var4x -> CompletableFuture.runAsync(() -> {
+                        SnbtToNbt.TaskResult var5xx = this.readStructure(var4x, this.getName(var5, var4x));
+                        this.storeStructureIfChanged(var1, var5xx, var2);
+                     }, Util.backgroundExecutor())).toArray(var0 -> new CompletableFuture[var0]));
+               }
+
+               return var5x;
+            } catch (Exception var9) {
+               throw new RuntimeException("Failed to read structure input directory, aborting", var9);
+            }
+         }, Util.backgroundExecutor()).thenCompose(var0 -> var0));
       }
 
-      boolean var9 = false;
-
-      for(CompletableFuture var6 : var3) {
-         try {
-            this.storeStructureIfChanged(var1, (SnbtToNbt.TaskResult)var6.get(), var2);
-         } catch (Exception var8) {
-            LOGGER.error("Failed to process structure", var8);
-            var9 = true;
-         }
-      }
-
-      if (var9) {
-         throw new IllegalStateException("Failed to convert all structures, aborting");
-      }
+      return Util.sequenceFailFast(var3);
    }
 
    @Override
-   public String getName() {
+   public final String getName() {
       return "SNBT -> NBT";
    }
 

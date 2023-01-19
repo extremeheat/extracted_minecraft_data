@@ -16,12 +16,8 @@ public final class MobEffectUtil {
    }
 
    public static String formatDuration(MobEffectInstance var0, float var1) {
-      if (var0.isNoCounter()) {
-         return "**:**";
-      } else {
-         int var2 = Mth.floor((float)var0.getDuration() * var1);
-         return StringUtil.formatTickDuration(var2);
-      }
+      int var2 = Mth.floor((float)var0.getDuration() * var1);
+      return StringUtil.formatTickDuration(var2);
    }
 
    public static boolean hasDigSpeed(LivingEntity var0) {

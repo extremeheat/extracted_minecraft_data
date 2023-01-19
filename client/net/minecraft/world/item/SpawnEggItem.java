@@ -20,8 +20,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -48,6 +48,8 @@ public class SpawnEggItem extends Item {
       BY_ID.put(var1, this);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
@@ -60,10 +62,9 @@ public class SpawnEggItem extends Item {
          BlockState var6 = var2.getBlockState(var4);
          if (var6.is(Blocks.SPAWNER)) {
             BlockEntity var7 = var2.getBlockEntity(var4);
-            if (var7 instanceof SpawnerBlockEntity) {
-               BaseSpawner var11 = ((SpawnerBlockEntity)var7).getSpawner();
+            if (var7 instanceof SpawnerBlockEntity var11) {
                EntityType var9 = this.getType(var3.getTag());
-               var11.setEntityId(var9);
+               var11.setEntityId(var9, var2.getRandom());
                var7.setChanged();
                var2.sendBlockUpdated(var4, var6, var6, 3);
                var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
@@ -149,6 +150,11 @@ public class SpawnEggItem extends Item {
       }
 
       return this.defaultType;
+   }
+
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.defaultType.requiredFeatures();
    }
 
    public Optional<Mob> spawnOffspringFromSpawnEgg(Player var1, Mob var2, EntityType<? extends Mob> var3, ServerLevel var4, Vec3 var5, ItemStack var6) {

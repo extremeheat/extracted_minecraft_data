@@ -2,7 +2,7 @@ package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,8 +22,8 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
    }
 
    public ChangeDimensionTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      ResourceKey var4 = var1.has("from") ? ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(GsonHelper.getAsString(var1, "from"))) : null;
-      ResourceKey var5 = var1.has("to") ? ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(GsonHelper.getAsString(var1, "to"))) : null;
+      ResourceKey var4 = var1.has("from") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "from"))) : null;
+      ResourceKey var5 = var1.has("to") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "to"))) : null;
       return new ChangeDimensionTrigger.TriggerInstance(var2, var4, var5);
    }
 

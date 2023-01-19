@@ -33,6 +33,7 @@ public class TemptingSensor extends Sensor<PathfinderMob> {
          .filter(var1x -> TEMPT_TARGETING.test(var2, var1x))
          .filter(var1x -> var2.closerThan(var1x, 10.0))
          .filter(this::playerHoldingTemptation)
+         .filter(var1x -> !var2.hasPassenger(var1x))
          .sorted(Comparator.comparingDouble(var2::distanceToSqr))
          .collect(Collectors.toList());
       if (!var4.isEmpty()) {

@@ -16,15 +16,17 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 
-public class ShapedRecipeBuilder implements RecipeBuilder {
+public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements RecipeBuilder {
+   private final RecipeCategory category;
    private final Item result;
    private final int count;
    private final List<String> rows = Lists.newArrayList();
@@ -33,18 +35,19 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
    @Nullable
    private String group;
 
-   public ShapedRecipeBuilder(ItemLike var1, int var2) {
+   public ShapedRecipeBuilder(RecipeCategory var1, ItemLike var2, int var3) {
       super();
-      this.result = var1.asItem();
-      this.count = var2;
+      this.category = var1;
+      this.result = var2.asItem();
+      this.count = var3;
    }
 
-   public static ShapedRecipeBuilder shaped(ItemLike var0) {
-      return shaped(var0, 1);
+   public static ShapedRecipeBuilder shaped(RecipeCategory var0, ItemLike var1) {
+      return shaped(var0, var1, 1);
    }
 
-   public static ShapedRecipeBuilder shaped(ItemLike var0, int var1) {
-      return new ShapedRecipeBuilder(var0, var1);
+   public static ShapedRecipeBuilder shaped(RecipeCategory var0, ItemLike var1, int var2) {
+      return new ShapedRecipeBuilder(var0, var1, var2);
    }
 
    public ShapedRecipeBuilder define(Character var1, TagKey<Item> var2) {
@@ -104,10 +107,11 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
             this.result,
             this.count,
             this.group == null ? "" : this.group,
+            determineBookCategory(this.category),
             this.rows,
             this.key,
             this.advancement,
-            new ResourceLocation(var2.getNamespace(), "recipes/" + this.result.getItemCategory().getRecipeFolderName() + "/" + var2.getPath())
+            var2.withPrefix("recipes/" + this.category.getFolderName() + "/")
          )
       );
    }
@@ -140,7 +144,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
       }
    }
 
-   static class Result implements FinishedRecipe {
+   static class Result extends CraftingRecipeBuilder.CraftingResult {
       private final ResourceLocation id;
       private final Item result;
       private final int count;
@@ -155,24 +159,26 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
          Item var2,
          int var3,
          String var4,
-         List<String> var5,
-         Map<Character, Ingredient> var6,
-         Advancement.Builder var7,
-         ResourceLocation var8
+         CraftingBookCategory var5,
+         List<String> var6,
+         Map<Character, Ingredient> var7,
+         Advancement.Builder var8,
+         ResourceLocation var9
       ) {
-         super();
+         super(var5);
          this.id = var1;
          this.result = var2;
          this.count = var3;
          this.group = var4;
-         this.pattern = var5;
-         this.key = var6;
-         this.advancement = var7;
-         this.advancementId = var8;
+         this.pattern = var6;
+         this.key = var7;
+         this.advancement = var8;
+         this.advancementId = var9;
       }
 
       @Override
       public void serializeRecipeData(JsonObject var1) {
+         super.serializeRecipeData(var1);
          if (!this.group.isEmpty()) {
             var1.addProperty("group", this.group);
          }
@@ -192,7 +198,7 @@ public class ShapedRecipeBuilder implements RecipeBuilder {
 
          var1.add("key", var6);
          JsonObject var8 = new JsonObject();
-         var8.addProperty("item", Registry.ITEM.getKey(this.result).toString());
+         var8.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result).toString());
          if (this.count > 1) {
             var8.addProperty("count", this.count);
          }

@@ -5,10 +5,12 @@ import net.minecraft.world.item.ItemStack;
 
 public abstract class CustomRecipe implements CraftingRecipe {
    private final ResourceLocation id;
+   private final CraftingBookCategory category;
 
-   public CustomRecipe(ResourceLocation var1) {
+   public CustomRecipe(ResourceLocation var1, CraftingBookCategory var2) {
       super();
       this.id = var1;
+      this.category = var2;
    }
 
    @Override
@@ -24,5 +26,10 @@ public abstract class CustomRecipe implements CraftingRecipe {
    @Override
    public ItemStack getResultItem() {
       return ItemStack.EMPTY;
+   }
+
+   @Override
+   public CraftingBookCategory category() {
+      return this.category;
    }
 }

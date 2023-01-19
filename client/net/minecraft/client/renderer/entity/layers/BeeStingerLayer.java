@@ -2,9 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -14,6 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> extends StuckInBodyLayer<T, M> {
    private static final ResourceLocation BEE_STINGER_LOCATION = new ResourceLocation("textures/entity/bee/bee_stinger.png");
@@ -32,21 +32,21 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
       float var9 = Mth.sqrt(var5 * var5 + var7 * var7);
       float var10 = (float)(Math.atan2((double)var5, (double)var7) * 57.2957763671875);
       float var11 = (float)(Math.atan2((double)var6, (double)var9) * 57.2957763671875);
-      var1.translate(0.0, 0.0, 0.0);
-      var1.mulPose(Vector3f.YP.rotationDegrees(var10 - 90.0F));
-      var1.mulPose(Vector3f.ZP.rotationDegrees(var11));
+      var1.translate(0.0F, 0.0F, 0.0F);
+      var1.mulPose(Axis.YP.rotationDegrees(var10 - 90.0F));
+      var1.mulPose(Axis.ZP.rotationDegrees(var11));
       float var12 = 0.0F;
       float var13 = 0.125F;
       float var14 = 0.0F;
       float var15 = 0.0625F;
       float var16 = 0.03125F;
-      var1.mulPose(Vector3f.XP.rotationDegrees(45.0F));
+      var1.mulPose(Axis.XP.rotationDegrees(45.0F));
       var1.scale(0.03125F, 0.03125F, 0.03125F);
-      var1.translate(2.5, 0.0, 0.0);
+      var1.translate(2.5F, 0.0F, 0.0F);
       VertexConsumer var17 = var2.getBuffer(RenderType.entityCutoutNoCull(BEE_STINGER_LOCATION));
 
       for(int var18 = 0; var18 < 4; ++var18) {
-         var1.mulPose(Vector3f.XP.rotationDegrees(90.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(90.0F));
          PoseStack.Pose var19 = var1.last();
          Matrix4f var20 = var19.pose();
          Matrix3f var21 = var19.normal();

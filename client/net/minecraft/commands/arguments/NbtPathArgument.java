@@ -31,8 +31,15 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
    public static final SimpleCommandExceptionType ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
+   public static final SimpleCommandExceptionType ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
    public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND = new DynamicCommandExceptionType(
       var0 -> Component.translatable("arguments.nbtpath.nothing_found", var0)
+   );
+   static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType(
+      var0 -> Component.translatable("commands.data.modify.expected_list", var0)
+   );
+   static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType(
+      var0 -> Component.translatable("commands.data.modify.invalid_index", var0)
    );
    private static final char INDEX_MATCH_START = '[';
    private static final char INDEX_MATCH_END = ']';
@@ -621,14 +628,98 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return var0.stream().<Integer>map(var1).reduce(0, (var0x, var1x) -> var0x + var1x);
       }
 
-      public int set(Tag var1, Tag var2) throws CommandSyntaxException {
-         return this.set(var1, var2::copy);
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      public static boolean isTooDeep(Tag var0, int var1) {
+         if (var1 >= 512) {
+            return true;
+         } else {
+            if (var0 instanceof CompoundTag var2) {
+               for(String var5 : var2.getAllKeys()) {
+                  Tag var6 = var2.get(var5);
+                  if (var6 != null && isTooDeep(var6, var1 + 1)) {
+                     return true;
+                  }
+               }
+            } else if (var0 instanceof ListTag) {
+               for(Tag var8 : (ListTag)var0) {
+                  if (isTooDeep(var8, var1 + 1)) {
+                     return true;
+                  }
+               }
+            }
+
+            return false;
+         }
       }
 
-      public int set(Tag var1, Supplier<Tag> var2) throws CommandSyntaxException {
-         List var3 = this.getOrCreateParents(var1);
-         NbtPathArgument.Node var4 = this.nodes[this.nodes.length - 1];
-         return apply(var3, var2x -> var4.setTag(var2x, var2));
+      public int set(Tag var1, Tag var2) throws CommandSyntaxException {
+         if (isTooDeep(var2, this.estimatePathDepth())) {
+            throw NbtPathArgument.ERROR_DATA_TOO_DEEP.create();
+         } else {
+            Tag var3 = var2.copy();
+            List var4 = this.getOrCreateParents(var1);
+            if (var4.isEmpty()) {
+               return 0;
+            } else {
+               NbtPathArgument.Node var5 = this.nodes[this.nodes.length - 1];
+               MutableBoolean var6 = new MutableBoolean(false);
+               return apply(var4, var3x -> var5.setTag(var3x, () -> {
+                     if (var6.isFalse()) {
+                        var6.setTrue();
+                        return var3;
+                     } else {
+                        return var3.copy();
+                     }
+                  }));
+            }
+         }
+      }
+
+      private int estimatePathDepth() {
+         return this.nodes.length;
+      }
+
+      public int insert(int var1, CompoundTag var2, List<Tag> var3) throws CommandSyntaxException {
+         ArrayList var4 = new ArrayList(var3.size());
+
+         for(Tag var6 : var3) {
+            Tag var7 = var6.copy();
+            var4.add(var7);
+            if (isTooDeep(var7, this.estimatePathDepth())) {
+               throw NbtPathArgument.ERROR_DATA_TOO_DEEP.create();
+            }
+         }
+
+         List var17 = this.getOrCreate(var2, ListTag::new);
+         int var18 = 0;
+         boolean var19 = false;
+
+         for(Tag var9 : var17) {
+            if (!(var9 instanceof CollectionTag)) {
+               throw NbtPathArgument.ERROR_EXPECTED_LIST.create(var9);
+            }
+
+            CollectionTag var10 = (CollectionTag)var9;
+            boolean var11 = false;
+            int var12 = var1 < 0 ? var10.size() + var1 + 1 : var1;
+
+            for(Tag var14 : var4) {
+               try {
+                  if (var10.addTag(var12, var19 ? var14.copy() : var14)) {
+                     ++var12;
+                     var11 = true;
+                  }
+               } catch (IndexOutOfBoundsException var16) {
+                  throw NbtPathArgument.ERROR_INVALID_INDEX.create(var12);
+               }
+            }
+
+            var19 = true;
+            var18 += var11 ? 1 : 0;
+         }
+
+         return var18;
       }
 
       public int remove(Tag var1) {

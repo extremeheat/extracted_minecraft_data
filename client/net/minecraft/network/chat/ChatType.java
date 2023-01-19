@@ -5,10 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -40,37 +40,31 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
    }
 
    private static ResourceKey<ChatType> create(String var0) {
-      return ResourceKey.create(Registry.CHAT_TYPE_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.CHAT_TYPE, new ResourceLocation(var0));
    }
 
-   public static Holder<ChatType> bootstrap(Registry<ChatType> var0) {
-      BuiltinRegistries.register(var0, CHAT, new ChatType(DEFAULT_CHAT_DECORATION, ChatTypeDecoration.withSender("chat.type.text.narrate")));
-      BuiltinRegistries.register(
-         var0, SAY_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.announcement"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
+   public static void bootstrap(BootstapContext<ChatType> var0) {
+      var0.register(CHAT, new ChatType(DEFAULT_CHAT_DECORATION, ChatTypeDecoration.withSender("chat.type.text.narrate")));
+      var0.register(
+         SAY_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.announcement"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
       );
-      BuiltinRegistries.register(
-         var0,
+      var0.register(
          MSG_COMMAND_INCOMING,
          new ChatType(ChatTypeDecoration.incomingDirectMessage("commands.message.display.incoming"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
       );
-      BuiltinRegistries.register(
-         var0,
+      var0.register(
          MSG_COMMAND_OUTGOING,
          new ChatType(ChatTypeDecoration.outgoingDirectMessage("commands.message.display.outgoing"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
       );
-      BuiltinRegistries.register(
-         var0,
+      var0.register(
          TEAM_MSG_COMMAND_INCOMING,
          new ChatType(ChatTypeDecoration.teamMessage("chat.type.team.text"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
       );
-      BuiltinRegistries.register(
-         var0,
+      var0.register(
          TEAM_MSG_COMMAND_OUTGOING,
          new ChatType(ChatTypeDecoration.teamMessage("chat.type.team.sent"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
       );
-      return BuiltinRegistries.register(
-         var0, EMOTE_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.emote"), ChatTypeDecoration.withSender("chat.type.emote"))
-      );
+      var0.register(EMOTE_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.emote"), ChatTypeDecoration.withSender("chat.type.emote")));
    }
 
    public static ChatType.Bound bind(ResourceKey<ChatType> var0, Entity var1) {
@@ -82,7 +76,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
    }
 
    public static ChatType.Bound bind(ResourceKey<ChatType> var0, RegistryAccess var1, Component var2) {
-      Registry var3 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+      Registry var3 = var1.registryOrThrow(Registries.CHAT_TYPE);
       return ((ChatType)var3.getOrThrow(var0)).bind(var2);
    }
 
@@ -120,7 +114,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       }
 
       public ChatType.BoundNetwork toNetwork(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+         Registry var2 = var1.registryOrThrow(Registries.CHAT_TYPE);
          return new ChatType.BoundNetwork(var2.getId(this.chatType), this.name, this.targetName);
       }
    }
@@ -149,7 +143,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       }
 
       public Optional<ChatType.Bound> resolve(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registry.CHAT_TYPE_REGISTRY);
+         Registry var2 = var1.registryOrThrow(Registries.CHAT_TYPE);
          ChatType var3 = (ChatType)var2.byId(this.chatType);
          return Optional.ofNullable(var3).map(var1x -> new ChatType.Bound(var1x, this.name, this.targetName));
       }

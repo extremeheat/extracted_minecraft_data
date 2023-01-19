@@ -21,10 +21,10 @@ public class ClampedNormalFloat extends FloatProvider {
          var0 -> var0.max < var0.min ? DataResult.error("Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0),
          Function.identity()
       );
-   private float mean;
-   private float deviation;
-   private float min;
-   private float max;
+   private final float mean;
+   private final float deviation;
+   private final float min;
+   private final float max;
 
    public static ClampedNormalFloat of(float var0, float var1, float var2, float var3) {
       return new ClampedNormalFloat(var0, var1, var2, var3);

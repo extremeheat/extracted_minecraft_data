@@ -31,11 +31,7 @@ public interface ClientGamePacketListener extends PacketListener {
 
    void handlePlayerChat(ClientboundPlayerChatPacket var1);
 
-   void handlePlayerChatHeader(ClientboundPlayerChatHeaderPacket var1);
-
-   void handleChatPreview(ClientboundChatPreviewPacket var1);
-
-   void handleSetDisplayChatPreview(ClientboundSetDisplayChatPreviewPacket var1);
+   void handleDisguisedChat(ClientboundDisguisedChatPacket var1);
 
    void handleDeleteChat(ClientboundDeleteChatPacket var1);
 
@@ -87,7 +83,9 @@ public interface ClientGamePacketListener extends PacketListener {
 
    void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket var1);
 
-   void handlePlayerInfo(ClientboundPlayerInfoPacket var1);
+   void handlePlayerInfoRemove(ClientboundPlayerInfoRemovePacket var1);
+
+   void handlePlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket var1);
 
    void handleRemoveEntities(ClientboundRemoveEntitiesPacket var1);
 
@@ -122,8 +120,6 @@ public interface ClientGamePacketListener extends PacketListener {
    void handleSoundEvent(ClientboundSoundPacket var1);
 
    void handleSoundEntityEvent(ClientboundSoundEntityPacket var1);
-
-   void handleCustomSoundEvent(ClientboundCustomSoundPacket var1);
 
    void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1);
 
@@ -214,4 +210,6 @@ public interface ClientGamePacketListener extends PacketListener {
    void handleServerData(ClientboundServerDataPacket var1);
 
    void handleCustomChatCompletions(ClientboundCustomChatCompletionsPacket var1);
+
+   void handleEnabledFeatures(ClientboundUpdateEnabledFeaturesPacket var1);
 }

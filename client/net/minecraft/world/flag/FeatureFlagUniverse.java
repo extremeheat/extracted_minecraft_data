@@ -1,0 +1,15 @@
+package net.minecraft.world.flag;
+
+public class FeatureFlagUniverse {
+   private final String id;
+
+   public FeatureFlagUniverse(String var1) {
+      super();
+      this.id = var1;
+   }
+
+   @Override
+   public String toString() {
+      return this.id;
+   }
+}

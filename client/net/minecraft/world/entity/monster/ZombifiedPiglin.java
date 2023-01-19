@@ -13,12 +13,14 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -52,6 +54,8 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private static final int ALERT_RANGE_Y = 10;
    private static final UniformInt ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
    private int ticksUntilNextAlert;
+   private static final float ZOMBIFIED_PIGLIN_EYE_HEIGHT = 1.79F;
+   private static final float ZOMBIFIED_PIGLIN_BABY_EYE_HEIGHT_ADJUSTMENT = 0.82F;
 
    public ZombifiedPiglin(EntityType<? extends ZombifiedPiglin> var1, Level var2) {
       super(var1, var2);
@@ -82,6 +86,11 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
          .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, 0.0)
          .add(Attributes.MOVEMENT_SPEED, 0.23000000417232513)
          .add(Attributes.ATTACK_DAMAGE, 5.0);
+   }
+
+   @Override
+   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
+      return this.isBaby() ? 0.96999997F : 1.79F;
    }
 
    @Override

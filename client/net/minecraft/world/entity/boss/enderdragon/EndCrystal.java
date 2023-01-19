@@ -5,8 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,7 +14,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
@@ -96,7 +93,8 @@ public class EndCrystal extends Entity {
          if (!this.isRemoved() && !this.level.isClientSide) {
             this.remove(Entity.RemovalReason.KILLED);
             if (!var1.isExplosion()) {
-               this.level.explode(null, this.getX(), this.getY(), this.getZ(), 6.0F, Explosion.BlockInteraction.DESTROY);
+               DamageSource var3 = var1.getEntity() != null ? DamageSource.explosion(this, var1.getEntity()) : null;
+               this.level.explode(this, var3, null, this.getX(), this.getY(), this.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
             }
 
             this.onDestroyedBy(var1);
@@ -146,10 +144,5 @@ public class EndCrystal extends Entity {
    @Override
    public ItemStack getPickResult() {
       return new ItemStack(Items.END_CRYSTAL);
-   }
-
-   @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
    }
 }

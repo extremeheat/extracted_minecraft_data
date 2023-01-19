@@ -11,8 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 public class ShulkerBoxColoring extends CustomRecipe {
-   public ShulkerBoxColoring(ResourceLocation var1) {
-      super(var1);
+   public ShulkerBoxColoring(ResourceLocation var1, CraftingBookCategory var2) {
+      super(var1, var2);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

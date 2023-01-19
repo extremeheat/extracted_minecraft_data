@@ -15,6 +15,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerLevel;
@@ -48,8 +49,8 @@ public class ChunkStatus {
    public static final ChunkStatus STRUCTURE_STARTS = register(
       "structure_starts", EMPTY, 0, PRE_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> {
          if (!var8.getStatus().isOrAfter(var0)) {
-            if (var2.getServer().getWorldData().worldGenSettings().generateStructures()) {
-               var3.createStructures(var2.registryAccess(), var2.getChunkSource().randomState(), var2.structureManager(), var8, var4, var2.getSeed());
+            if (var2.getServer().getWorldData().worldGenOptions().generateStructures()) {
+               var3.createStructures(var2.registryAccess(), var2.getChunkSource().getGeneratorState(), var2.structureManager(), var8, var4);
             }
    
             if (var8 instanceof ProtoChunk var10) {
@@ -89,14 +90,7 @@ public class ChunkStatus {
             return CompletableFuture.completedFuture(Either.left(var8));
          } else {
             WorldGenRegion var10 = new WorldGenRegion(var2, var7, var0, -1);
-            return var3.createBiomes(
-                  var2.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY),
-                  var1,
-                  var2.getChunkSource().randomState(),
-                  Blender.of(var10),
-                  var2.structureManager().forWorldGenRegion(var10),
-                  var8
-               )
+            return var3.createBiomes(var1, var2.getChunkSource().randomState(), Blender.of(var10), var2.structureManager().forWorldGenRegion(var10), var8)
                .thenApply(var1x -> {
                   if (var1x instanceof ProtoChunk) {
                      ((ProtoChunk)var1x).setStatus(var0);
@@ -292,7 +286,7 @@ public class ChunkStatus {
       ChunkStatus.GenerationTask var5,
       ChunkStatus.LoadingTask var6
    ) {
-      return Registry.register(Registry.CHUNK_STATUS, var0, new ChunkStatus(var0, var1, var2, var3, var4, var5, var6));
+      return Registry.register(BuiltInRegistries.CHUNK_STATUS, var0, new ChunkStatus(var0, var1, var2, var3, var4, var5, var6));
    }
 
    public static List<ChunkStatus> getStatusList() {
@@ -398,7 +392,7 @@ public class ChunkStatus {
    }
 
    public static ChunkStatus byName(String var0) {
-      return Registry.CHUNK_STATUS.get(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.CHUNK_STATUS.get(ResourceLocation.tryParse(var0));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {
@@ -411,7 +405,7 @@ public class ChunkStatus {
 
    @Override
    public String toString() {
-      return Registry.CHUNK_STATUS.getKey(this).toString();
+      return BuiltInRegistries.CHUNK_STATUS.getKey(this).toString();
    }
 
    public static enum ChunkType {

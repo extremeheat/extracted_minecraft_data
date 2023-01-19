@@ -1,11 +1,6 @@
 package net.minecraft.client.renderer.block.model;
 
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -15,6 +10,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class FaceBakery {
    public static final int VERTEX_INT_SIZE = 8;
@@ -67,14 +67,12 @@ public class FaceBakery {
       Matrix4f var4 = BlockMath.getUVLockTransform(var2, var1, () -> "Unable to resolve UVLock for model: " + var3).getMatrix();
       float var5 = var0.getU(var0.getReverseIndex(0));
       float var6 = var0.getV(var0.getReverseIndex(0));
-      Vector4f var7 = new Vector4f(var5 / 16.0F, var6 / 16.0F, 0.0F, 1.0F);
-      var7.transform(var4);
+      Vector4f var7 = var4.transform(new Vector4f(var5 / 16.0F, var6 / 16.0F, 0.0F, 1.0F));
       float var8 = 16.0F * var7.x();
       float var9 = 16.0F * var7.y();
       float var10 = var0.getU(var0.getReverseIndex(2));
       float var11 = var0.getV(var0.getReverseIndex(2));
-      Vector4f var12 = new Vector4f(var10 / 16.0F, var11 / 16.0F, 0.0F, 1.0F);
-      var12.transform(var4);
+      Vector4f var12 = var4.transform(new Vector4f(var10 / 16.0F, var11 / 16.0F, 0.0F, 1.0F));
       float var13 = 16.0F * var12.x();
       float var14 = 16.0F * var12.y();
       float var15;
@@ -98,10 +96,9 @@ public class FaceBakery {
       }
 
       float var19 = (float)Math.toRadians((double)var0.rotation);
-      Vector3f var20 = new Vector3f(Mth.cos(var19), Mth.sin(var19), 0.0F);
-      Matrix3f var21 = new Matrix3f(var4);
-      var20.transform(var21);
-      int var22 = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)var20.y(), (double)var20.x())) / 90.0)) * 90, 360);
+      Matrix3f var20 = new Matrix3f(var4);
+      Vector3f var21 = var20.transform(new Vector3f(Mth.cos(var19), Mth.sin(var19), 0.0F));
+      int var22 = Math.floorMod(-((int)Math.round(Math.toDegrees(Math.atan2((double)var21.y(), (double)var21.x())) / 90.0)) * 90, 360);
       return new BlockFaceUV(new float[]{var15, var17, var16, var18}, var22);
    }
 
@@ -160,26 +157,26 @@ public class FaceBakery {
       if (var2 != null) {
          Vector3f var3;
          Vector3f var4;
-         switch(var2.axis) {
+         switch(var2.axis()) {
             case X:
-               var3 = Vector3f.XP;
+               var3 = new Vector3f(1.0F, 0.0F, 0.0F);
                var4 = new Vector3f(0.0F, 1.0F, 1.0F);
                break;
             case Y:
-               var3 = Vector3f.YP;
+               var3 = new Vector3f(0.0F, 1.0F, 0.0F);
                var4 = new Vector3f(1.0F, 0.0F, 1.0F);
                break;
             case Z:
-               var3 = Vector3f.ZP;
+               var3 = new Vector3f(0.0F, 0.0F, 1.0F);
                var4 = new Vector3f(1.0F, 1.0F, 0.0F);
                break;
             default:
                throw new IllegalArgumentException("There are only 3 axes");
          }
 
-         Quaternion var5 = var3.rotationDegrees(var2.angle);
-         if (var2.rescale) {
-            if (Math.abs(var2.angle) == 22.5F) {
+         Quaternionf var5 = new Quaternionf().rotationAxis(var2.angle() * 0.017453292F, var3);
+         if (var2.rescale()) {
+            if (Math.abs(var2.angle()) == 22.5F) {
                var4.mul(RESCALE_22_5);
             } else {
                var4.mul(RESCALE_45);
@@ -190,7 +187,7 @@ public class FaceBakery {
             var4.set(1.0F, 1.0F, 1.0F);
          }
 
-         this.rotateVertexBy(var1, var2.origin.copy(), new Matrix4f(var5), var4);
+         this.rotateVertexBy(var1, new Vector3f(var2.origin()), new Matrix4f().rotation(var5), var4);
       }
    }
 
@@ -201,9 +198,8 @@ public class FaceBakery {
    }
 
    private void rotateVertexBy(Vector3f var1, Vector3f var2, Matrix4f var3, Vector3f var4) {
-      Vector4f var5 = new Vector4f(var1.x() - var2.x(), var1.y() - var2.y(), var1.z() - var2.z(), 1.0F);
-      var5.transform(var3);
-      var5.mul(var4);
+      Vector4f var5 = var3.transform(new Vector4f(var1.x() - var2.x(), var1.y() - var2.y(), var1.z() - var2.z(), 1.0F));
+      var5.mul(new Vector4f(var4, 1.0F));
       var1.set(var5.x() + var2.x(), var5.y() + var2.y(), var5.z() + var2.z());
    }
 
@@ -211,27 +207,27 @@ public class FaceBakery {
       Vector3f var1 = new Vector3f(Float.intBitsToFloat(var0[0]), Float.intBitsToFloat(var0[1]), Float.intBitsToFloat(var0[2]));
       Vector3f var2 = new Vector3f(Float.intBitsToFloat(var0[8]), Float.intBitsToFloat(var0[9]), Float.intBitsToFloat(var0[10]));
       Vector3f var3 = new Vector3f(Float.intBitsToFloat(var0[16]), Float.intBitsToFloat(var0[17]), Float.intBitsToFloat(var0[18]));
-      Vector3f var4 = var1.copy();
-      var4.sub(var2);
-      Vector3f var5 = var3.copy();
-      var5.sub(var2);
-      Vector3f var6 = var5.copy();
-      var6.cross(var4);
-      var6.normalize();
-      Direction var7 = null;
-      float var8 = 0.0F;
+      Vector3f var4 = new Vector3f(var1).sub(var2);
+      Vector3f var5 = new Vector3f(var3).sub(var2);
+      Vector3f var6 = new Vector3f(var5).cross(var4).normalize();
+      if (!var6.isFinite()) {
+         return Direction.UP;
+      } else {
+         Direction var7 = null;
+         float var8 = 0.0F;
 
-      for(Direction var12 : Direction.values()) {
-         Vec3i var13 = var12.getNormal();
-         Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
-         float var15 = var6.dot(var14);
-         if (var15 >= 0.0F && var15 > var8) {
-            var8 = var15;
-            var7 = var12;
+         for(Direction var12 : Direction.values()) {
+            Vec3i var13 = var12.getNormal();
+            Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
+            float var15 = var6.dot(var14);
+            if (var15 >= 0.0F && var15 > var8) {
+               var8 = var15;
+               var7 = var12;
+            }
          }
-      }
 
-      return var7 == null ? Direction.UP : var7;
+         return var7 == null ? Direction.UP : var7;
+      }
    }
 
    private void recalculateWinding(int[] var1, Direction var2) {

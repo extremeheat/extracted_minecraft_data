@@ -1,6 +1,6 @@
 package net.minecraft.world.level.dimension;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -18,6 +18,6 @@ public class BuiltinDimensionTypes {
    }
 
    private static ResourceKey<DimensionType> register(String var0) {
-      return ResourceKey.create(Registry.DIMENSION_TYPE_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.DIMENSION_TYPE, new ResourceLocation(var0));
    }
 }

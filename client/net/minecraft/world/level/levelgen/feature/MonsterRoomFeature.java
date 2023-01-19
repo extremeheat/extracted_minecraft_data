@@ -30,6 +30,8 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
       super(var1);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
       Predicate var2 = Feature.isReplaceable(BlockTags.FEATURES_CANNOT_REPLACE);
@@ -74,21 +76,21 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
       if (var15 >= 1 && var15 <= 5) {
          for(int var25 = var8; var25 <= var9; ++var25) {
             for(int var28 = 3; var28 >= -1; --var28) {
-               for(int var30 = var13; var30 <= var14; ++var30) {
-                  BlockPos var32 = var3.offset(var25, var28, var30);
-                  BlockState var34 = var5.getBlockState(var32);
-                  if (var25 == var8 || var28 == -1 || var30 == var13 || var25 == var9 || var28 == 4 || var30 == var14) {
-                     if (var32.getY() >= var5.getMinBuildHeight() && !var5.getBlockState(var32.below()).getMaterial().isSolid()) {
-                        var5.setBlock(var32, AIR, 2);
-                     } else if (var34.getMaterial().isSolid() && !var34.is(Blocks.CHEST)) {
+               for(int var31 = var13; var31 <= var14; ++var31) {
+                  BlockPos var33 = var3.offset(var25, var28, var31);
+                  BlockState var35 = var5.getBlockState(var33);
+                  if (var25 == var8 || var28 == -1 || var31 == var13 || var25 == var9 || var28 == 4 || var31 == var14) {
+                     if (var33.getY() >= var5.getMinBuildHeight() && !var5.getBlockState(var33.below()).getMaterial().isSolid()) {
+                        var5.setBlock(var33, AIR, 2);
+                     } else if (var35.getMaterial().isSolid() && !var35.is(Blocks.CHEST)) {
                         if (var28 == -1 && var4.nextInt(4) != 0) {
-                           this.safeSetBlock(var5, var32, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), var2);
+                           this.safeSetBlock(var5, var33, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), var2);
                         } else {
-                           this.safeSetBlock(var5, var32, Blocks.COBBLESTONE.defaultBlockState(), var2);
+                           this.safeSetBlock(var5, var33, Blocks.COBBLESTONE.defaultBlockState(), var2);
                         }
                      }
-                  } else if (!var34.is(Blocks.CHEST) && !var34.is(Blocks.SPAWNER)) {
-                     this.safeSetBlock(var5, var32, AIR, var2);
+                  } else if (!var35.is(Blocks.CHEST) && !var35.is(Blocks.SPAWNER)) {
+                     this.safeSetBlock(var5, var33, AIR, var2);
                   }
                }
             }
@@ -96,22 +98,22 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
 
          for(int var26 = 0; var26 < 2; ++var26) {
             for(int var29 = 0; var29 < 3; ++var29) {
-               int var31 = var3.getX() + var4.nextInt(var7 * 2 + 1) - var7;
-               int var33 = var3.getY();
-               int var35 = var3.getZ() + var4.nextInt(var12 * 2 + 1) - var12;
-               BlockPos var36 = new BlockPos(var31, var33, var35);
-               if (var5.isEmptyBlock(var36)) {
+               int var32 = var3.getX() + var4.nextInt(var7 * 2 + 1) - var7;
+               int var34 = var3.getY();
+               int var36 = var3.getZ() + var4.nextInt(var12 * 2 + 1) - var12;
+               BlockPos var37 = new BlockPos(var32, var34, var36);
+               if (var5.isEmptyBlock(var37)) {
                   int var22 = 0;
 
                   for(Direction var24 : Direction.Plane.HORIZONTAL) {
-                     if (var5.getBlockState(var36.relative(var24)).getMaterial().isSolid()) {
+                     if (var5.getBlockState(var37.relative(var24)).getMaterial().isSolid()) {
                         ++var22;
                      }
                   }
 
                   if (var22 == 1) {
-                     this.safeSetBlock(var5, var36, StructurePiece.reorient(var5, var36, Blocks.CHEST.defaultBlockState()), var2);
-                     RandomizableContainerBlockEntity.setLootTable(var5, var4, var36, BuiltInLootTables.SIMPLE_DUNGEON);
+                     this.safeSetBlock(var5, var37, StructurePiece.reorient(var5, var37, Blocks.CHEST.defaultBlockState()), var2);
+                     RandomizableContainerBlockEntity.setLootTable(var5, var4, var37, BuiltInLootTables.SIMPLE_DUNGEON);
                      break;
                   }
                }
@@ -120,8 +122,8 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
 
          this.safeSetBlock(var5, var3, Blocks.SPAWNER.defaultBlockState(), var2);
          BlockEntity var27 = var5.getBlockEntity(var3);
-         if (var27 instanceof SpawnerBlockEntity) {
-            ((SpawnerBlockEntity)var27).getSpawner().setEntityId(this.randomEntityId(var4));
+         if (var27 instanceof SpawnerBlockEntity var30) {
+            var30.setEntityId(this.randomEntityId(var4), var4);
          } else {
             LOGGER.error("Failed to fetch mob spawner entity at ({}, {}, {})", new Object[]{var3.getX(), var3.getY(), var3.getZ()});
          }

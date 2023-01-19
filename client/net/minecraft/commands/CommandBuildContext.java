@@ -1,45 +1,57 @@
 package net.minecraft.commands;
 
-import java.util.Optional;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagKey;
+import net.minecraft.world.flag.FeatureFlagSet;
 
-public final class CommandBuildContext {
-   private final RegistryAccess registryAccess;
-   CommandBuildContext.MissingTagAccessPolicy missingTagAccessPolicy = CommandBuildContext.MissingTagAccessPolicy.FAIL;
+public interface CommandBuildContext {
+   <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1);
 
-   public CommandBuildContext(RegistryAccess var1) {
-      super();
-      this.registryAccess = var1;
-   }
-
-   public void missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy var1) {
-      this.missingTagAccessPolicy = var1;
-   }
-
-   public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1) {
-      return new HolderLookup.RegistryLookup<T>(this.registryAccess.registryOrThrow(var1)) {
+   static CommandBuildContext simple(final HolderLookup.Provider var0, final FeatureFlagSet var1) {
+      return new CommandBuildContext() {
          @Override
-         public Optional<? extends HolderSet<T>> get(TagKey<T> var1) {
-            return switch(CommandBuildContext.this.missingTagAccessPolicy) {
-               case FAIL -> this.registry.getTag(var1);
-               case CREATE_NEW -> Optional.of(this.registry.getOrCreateTag(var1));
-               case RETURN_EMPTY -> {
-                  Optional var2 = this.registry.getTag(var1);
-                  yield Optional.of(var2.isPresent() ? (HolderSet)var2.get() : HolderSet.direct());
-               }
-            };
+         public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1x) {
+            return var0.<T>lookupOrThrow(var1x).filterFeatures(var1);
          }
       };
    }
 
+   static CommandBuildContext.Configurable configurable(final RegistryAccess var0, final FeatureFlagSet var1) {
+      return new CommandBuildContext.Configurable() {
+         CommandBuildContext.MissingTagAccessPolicy missingTagAccessPolicy = CommandBuildContext.MissingTagAccessPolicy.FAIL;
+
+         @Override
+         public void missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy var1x) {
+            this.missingTagAccessPolicy = var1x;
+         }
+
+         @Override
+         public <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<T>> var1x) {
+            Registry var2 = var0.registryOrThrow(var1x);
+            final HolderLookup.RegistryLookup var3 = var2.asLookup();
+            final HolderLookup.RegistryLookup var4 = var2.asTagAddingLookup();
+            HolderLookup.RegistryLookup.Delegate var5 = new HolderLookup.RegistryLookup.Delegate<T>() {
+               @Override
+               protected HolderLookup.RegistryLookup<T> parent() {
+                  return switch(missingTagAccessPolicy) {
+                     case FAIL -> var3;
+                     case CREATE_NEW -> var4;
+                  };
+               }
+            };
+            return var5.filterFeatures(var1);
+         }
+      };
+   }
+
+   public interface Configurable extends CommandBuildContext {
+      void missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy var1);
+   }
+
    public static enum MissingTagAccessPolicy {
       CREATE_NEW,
-      RETURN_EMPTY,
       FAIL;
 
       private MissingTagAccessPolicy() {

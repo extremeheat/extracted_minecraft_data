@@ -2,9 +2,10 @@ package net.minecraft.world.item;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.material.MaterialColor;
 import org.jetbrains.annotations.Contract;
@@ -27,10 +28,11 @@ public enum DyeColor implements StringRepresentable {
    RED(14, "red", 11546150, MaterialColor.COLOR_RED, 11743532, 16711680),
    BLACK(15, "black", 1908001, MaterialColor.COLOR_BLACK, 1973019, 0);
 
-   private static final DyeColor[] BY_ID = Arrays.stream(values()).sorted(Comparator.comparingInt(DyeColor::getId)).toArray(var0 -> new DyeColor[var0]);
+   private static final IntFunction<DyeColor> BY_ID = ByIdMap.continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap(
       Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.fireworkColor, var0 -> var0))
    );
+   public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.fromEnum(DyeColor::values);
    private final int id;
    private final String name;
    private final MaterialColor color;
@@ -75,23 +77,14 @@ public enum DyeColor implements StringRepresentable {
    }
 
    public static DyeColor byId(int var0) {
-      if (var0 < 0 || var0 >= BY_ID.length) {
-         var0 = 0;
-      }
-
-      return BY_ID[var0];
+      return BY_ID.apply(var0);
    }
 
    @Nullable
    @Contract("_,!null->!null;_,null->_")
    public static DyeColor byName(String var0, @Nullable DyeColor var1) {
-      for(DyeColor var5 : values()) {
-         if (var5.name.equals(var0)) {
-            return var5;
-         }
-      }
-
-      return var1;
+      DyeColor var2 = CODEC.byName(var0);
+      return var2 != null ? var2 : var1;
    }
 
    @Nullable

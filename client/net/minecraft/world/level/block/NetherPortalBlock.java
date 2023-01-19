@@ -54,7 +54,7 @@ public class NetherPortalBlock extends Block {
          }
 
          if (var2.getBlockState(var3).isValidSpawn(var2, var3, EntityType.ZOMBIFIED_PIGLIN)) {
-            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, null, null, null, var3.above(), MobSpawnType.STRUCTURE, false, false);
+            Entity var5 = EntityType.ZOMBIFIED_PIGLIN.spawn(var2, var3.above(), MobSpawnType.STRUCTURE);
             if (var5 != null) {
                var5.setPortalCooldown();
             }

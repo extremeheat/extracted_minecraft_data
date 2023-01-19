@@ -1,22 +1,37 @@
 package net.minecraft.server.packs.repository;
 
+import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public interface PackSource {
-   PackSource DEFAULT = passThrough();
-   PackSource BUILT_IN = decorating("pack.source.builtin");
-   PackSource WORLD = decorating("pack.source.world");
-   PackSource SERVER = decorating("pack.source.server");
+   UnaryOperator<Component> NO_DECORATION = UnaryOperator.identity();
+   PackSource DEFAULT = create(NO_DECORATION, true);
+   PackSource BUILT_IN = create(decorateWithSource("pack.source.builtin"), true);
+   PackSource FEATURE = create(decorateWithSource("pack.source.feature"), false);
+   PackSource WORLD = create(decorateWithSource("pack.source.world"), true);
+   PackSource SERVER = create(decorateWithSource("pack.source.server"), true);
 
    Component decorate(Component var1);
 
-   static PackSource passThrough() {
-      return var0 -> var0;
+   boolean shouldAddAutomatically();
+
+   static PackSource create(final UnaryOperator<Component> var0, final boolean var1) {
+      return new PackSource() {
+         @Override
+         public Component decorate(Component var1x) {
+            return var0.apply(var1x);
+         }
+
+         @Override
+         public boolean shouldAddAutomatically() {
+            return var1;
+         }
+      };
    }
 
-   static PackSource decorating(String var0) {
+   private static UnaryOperator<Component> decorateWithSource(String var0) {
       MutableComponent var1 = Component.translatable(var0);
       return var1x -> Component.translatable("pack.nameAndSource", var1x, var1).withStyle(ChatFormatting.GRAY);
    }

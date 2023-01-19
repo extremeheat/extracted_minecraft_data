@@ -1,16 +1,15 @@
 package net.minecraft.world.scores.criteria;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.StatType;
+import net.minecraft.util.StringRepresentable;
 
 public class ObjectiveCriteria {
    private static final Map<String, ObjectiveCriteria> CUSTOM_CRITERIA = Maps.newHashMap();
@@ -100,7 +99,7 @@ public class ObjectiveCriteria {
          int var2 = var0.indexOf(58);
          return var2 < 0
             ? Optional.empty()
-            : Registry.STAT_TYPE
+            : BuiltInRegistries.STAT_TYPE
                .getOptional(ResourceLocation.of(var0.substring(0, var2), '.'))
                .flatMap(var2x -> getStat(var2x, ResourceLocation.of(var0.substring(var2 + 1), '.')));
       }
@@ -122,12 +121,14 @@ public class ObjectiveCriteria {
       return this.renderType;
    }
 
-   public static enum RenderType {
+   public static enum RenderType implements StringRepresentable {
       INTEGER("integer"),
       HEARTS("hearts");
 
       private final String id;
-      private static final Map<String, ObjectiveCriteria.RenderType> BY_ID;
+      public static final StringRepresentable.EnumCodec<ObjectiveCriteria.RenderType> CODEC = StringRepresentable.fromEnum(
+         ObjectiveCriteria.RenderType::values
+      );
 
       private RenderType(String var3) {
          this.id = var3;
@@ -137,18 +138,13 @@ public class ObjectiveCriteria {
          return this.id;
       }
 
-      public static ObjectiveCriteria.RenderType byId(String var0) {
-         return BY_ID.getOrDefault(var0, INTEGER);
+      @Override
+      public String getSerializedName() {
+         return this.id;
       }
 
-      static {
-         Builder var0 = ImmutableMap.builder();
-
-         for(ObjectiveCriteria.RenderType var4 : values()) {
-            var0.put(var4.id, var4);
-         }
-
-         BY_ID = var0.build();
+      public static ObjectiveCriteria.RenderType byId(String var0) {
+         return CODEC.byName(var0, INTEGER);
       }
    }
 }

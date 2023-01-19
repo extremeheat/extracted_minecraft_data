@@ -387,6 +387,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       }
    }
 
+   @Nullable
    public Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.STRIDER.create(var1);
    }
@@ -449,24 +450,27 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
    ) {
       if (this.isBaby()) {
-         return super.finalizeSpawn(var1, var2, var3, var4, var5);
+         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
       } else {
          RandomSource var6 = var1.getRandom();
-         Object var8;
          if (var6.nextInt(30) == 0) {
             Mob var7 = EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel());
-            var8 = this.spawnJockey(var1, var2, var7, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var6), false));
-            var7.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
-            this.equipSaddle(null);
+            if (var7 != null) {
+               var4 = this.spawnJockey(var1, var2, var7, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var6), false));
+               var7.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
+               this.equipSaddle(null);
+            }
          } else if (var6.nextInt(10) == 0) {
-            AgeableMob var9 = EntityType.STRIDER.create(var1.getLevel());
-            var9.setAge(-24000);
-            var8 = this.spawnJockey(var1, var2, var9, null);
+            AgeableMob var8 = EntityType.STRIDER.create(var1.getLevel());
+            if (var8 != null) {
+               var8.setAge(-24000);
+               var4 = this.spawnJockey(var1, var2, var8, null);
+            }
          } else {
-            var8 = new AgeableMob.AgeableMobGroupData(0.5F);
+            var4 = new AgeableMob.AgeableMobGroupData(0.5F);
          }
 
-         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var8, var5);
+         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
       }
    }
 

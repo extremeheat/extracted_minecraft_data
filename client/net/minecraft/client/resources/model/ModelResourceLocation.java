@@ -2,6 +2,7 @@ package net.minecraft.client.resources.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
 public class ModelResourceLocation extends ResourceLocation {
@@ -9,40 +10,26 @@ public class ModelResourceLocation extends ResourceLocation {
    static final char VARIANT_SEPARATOR = '#';
    private final String variant;
 
-   protected ModelResourceLocation(String[] var1) {
-      super(var1);
-      this.variant = var1[2].toLowerCase(Locale.ROOT);
+   private ModelResourceLocation(String var1, String var2, String var3, @Nullable ResourceLocation.Dummy var4) {
+      super(var1, var2, var4);
+      this.variant = var3;
    }
 
    public ModelResourceLocation(String var1, String var2, String var3) {
-      this(new String[]{var1, var2, var3});
-   }
-
-   public ModelResourceLocation(String var1) {
-      this(decompose(var1));
+      super(var1, var2);
+      this.variant = lowercaseVariant(var3);
    }
 
    public ModelResourceLocation(ResourceLocation var1, String var2) {
-      this(var1.toString(), var2);
+      this(var1.getNamespace(), var1.getPath(), lowercaseVariant(var2), null);
    }
 
-   public ModelResourceLocation(String var1, String var2) {
-      this(decompose(var1 + "#" + var2));
+   public static ModelResourceLocation vanilla(String var0, String var1) {
+      return new ModelResourceLocation("minecraft", var0, var1);
    }
 
-   protected static String[] decompose(String var0) {
-      String[] var1 = new String[]{null, var0, ""};
-      int var2 = var0.indexOf(35);
-      String var3 = var0;
-      if (var2 >= 0) {
-         var1[2] = var0.substring(var2 + 1, var0.length());
-         if (var2 > 1) {
-            var3 = var0.substring(0, var2);
-         }
-      }
-
-      System.arraycopy(ResourceLocation.decompose(var3, ':'), 0, var1, 0, 2);
-      return var1;
+   private static String lowercaseVariant(String var0) {
+      return var0.toLowerCase(Locale.ROOT);
    }
 
    public String getVariant() {

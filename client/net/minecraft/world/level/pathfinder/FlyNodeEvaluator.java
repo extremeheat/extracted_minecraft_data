@@ -3,6 +3,7 @@ package net.minecraft.world.level.pathfinder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.EnumSet;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -11,9 +12,12 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 public class FlyNodeEvaluator extends WalkNodeEvaluator {
    private final Long2ObjectMap<BlockPathTypes> pathTypeByPosCache = new Long2ObjectOpenHashMap();
+   private static final float SMALL_MOB_INFLATED_START_NODE_BOUNDING_BOX = 1.5F;
+   private static final int MAX_START_NODE_CANDIDATES = 10;
 
    public FlyNodeEvaluator() {
       super();
@@ -33,7 +37,6 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
       super.done();
    }
 
-   @Nullable
    @Override
    public Node getStart() {
       int var1;
@@ -48,119 +51,123 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1 = Mth.floor(this.mob.getY() + 0.5);
       }
 
-      BlockPos var7 = this.mob.blockPosition();
-      BlockPathTypes var8 = this.getCachedBlockPathType(var7.getX(), var1, var7.getZ());
-      if (this.mob.getPathfindingMalus(var8) < 0.0F) {
-         for(BlockPos var5 : this.mob.iteratePathfindingStartNodeCandidatePositions()) {
-            BlockPathTypes var6 = this.getCachedBlockPathType(var5.getX(), var5.getY(), var5.getZ());
-            if (this.mob.getPathfindingMalus(var6) >= 0.0F) {
-               return super.getStartNode(var5);
+      BlockPos var5 = new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ());
+      if (!this.canStartAt(var5)) {
+         for(BlockPos var4 : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
+            if (this.canStartAt(var4)) {
+               return super.getStartNode(var4);
             }
          }
       }
 
-      return super.getStartNode(new BlockPos(var7.getX(), var1, var7.getZ()));
+      return super.getStartNode(var5);
+   }
+
+   @Override
+   protected boolean canStartAt(BlockPos var1) {
+      BlockPathTypes var2 = this.getBlockPathType(this.mob, var1);
+      return this.mob.getPathfindingMalus(var2) >= 0.0F;
    }
 
    @Override
    public Target getGoal(double var1, double var3, double var5) {
-      return this.getTargetFromNode(super.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
+      return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
    }
 
    @Override
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = 0;
-      Node var4 = this.getNode(var2.x, var2.y, var2.z + 1);
+      Node var4 = this.findAcceptedNode(var2.x, var2.y, var2.z + 1);
       if (this.isOpen(var4)) {
          var1[var3++] = var4;
       }
 
-      Node var5 = this.getNode(var2.x - 1, var2.y, var2.z);
+      Node var5 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z);
       if (this.isOpen(var5)) {
          var1[var3++] = var5;
       }
 
-      Node var6 = this.getNode(var2.x + 1, var2.y, var2.z);
+      Node var6 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z);
       if (this.isOpen(var6)) {
          var1[var3++] = var6;
       }
 
-      Node var7 = this.getNode(var2.x, var2.y, var2.z - 1);
+      Node var7 = this.findAcceptedNode(var2.x, var2.y, var2.z - 1);
       if (this.isOpen(var7)) {
          var1[var3++] = var7;
       }
 
-      Node var8 = this.getNode(var2.x, var2.y + 1, var2.z);
+      Node var8 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z);
       if (this.isOpen(var8)) {
          var1[var3++] = var8;
       }
 
-      Node var9 = this.getNode(var2.x, var2.y - 1, var2.z);
+      Node var9 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z);
       if (this.isOpen(var9)) {
          var1[var3++] = var9;
       }
 
-      Node var10 = this.getNode(var2.x, var2.y + 1, var2.z + 1);
+      Node var10 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z + 1);
       if (this.isOpen(var10) && this.hasMalus(var4) && this.hasMalus(var8)) {
          var1[var3++] = var10;
       }
 
-      Node var11 = this.getNode(var2.x - 1, var2.y + 1, var2.z);
+      Node var11 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z);
       if (this.isOpen(var11) && this.hasMalus(var5) && this.hasMalus(var8)) {
          var1[var3++] = var11;
       }
 
-      Node var12 = this.getNode(var2.x + 1, var2.y + 1, var2.z);
+      Node var12 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z);
       if (this.isOpen(var12) && this.hasMalus(var6) && this.hasMalus(var8)) {
          var1[var3++] = var12;
       }
 
-      Node var13 = this.getNode(var2.x, var2.y + 1, var2.z - 1);
+      Node var13 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z - 1);
       if (this.isOpen(var13) && this.hasMalus(var7) && this.hasMalus(var8)) {
          var1[var3++] = var13;
       }
 
-      Node var14 = this.getNode(var2.x, var2.y - 1, var2.z + 1);
+      Node var14 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z + 1);
       if (this.isOpen(var14) && this.hasMalus(var4) && this.hasMalus(var9)) {
          var1[var3++] = var14;
       }
 
-      Node var15 = this.getNode(var2.x - 1, var2.y - 1, var2.z);
+      Node var15 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z);
       if (this.isOpen(var15) && this.hasMalus(var5) && this.hasMalus(var9)) {
          var1[var3++] = var15;
       }
 
-      Node var16 = this.getNode(var2.x + 1, var2.y - 1, var2.z);
+      Node var16 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z);
       if (this.isOpen(var16) && this.hasMalus(var6) && this.hasMalus(var9)) {
          var1[var3++] = var16;
       }
 
-      Node var17 = this.getNode(var2.x, var2.y - 1, var2.z - 1);
+      Node var17 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z - 1);
       if (this.isOpen(var17) && this.hasMalus(var7) && this.hasMalus(var9)) {
          var1[var3++] = var17;
       }
 
-      Node var18 = this.getNode(var2.x + 1, var2.y, var2.z - 1);
+      Node var18 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z - 1);
       if (this.isOpen(var18) && this.hasMalus(var7) && this.hasMalus(var6)) {
          var1[var3++] = var18;
       }
 
-      Node var19 = this.getNode(var2.x + 1, var2.y, var2.z + 1);
+      Node var19 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z + 1);
       if (this.isOpen(var19) && this.hasMalus(var4) && this.hasMalus(var6)) {
          var1[var3++] = var19;
       }
 
-      Node var20 = this.getNode(var2.x - 1, var2.y, var2.z - 1);
+      Node var20 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z - 1);
       if (this.isOpen(var20) && this.hasMalus(var7) && this.hasMalus(var5)) {
          var1[var3++] = var20;
       }
 
-      Node var21 = this.getNode(var2.x - 1, var2.y, var2.z + 1);
+      Node var21 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z + 1);
       if (this.isOpen(var21) && this.hasMalus(var4) && this.hasMalus(var5)) {
          var1[var3++] = var21;
       }
 
-      Node var22 = this.getNode(var2.x + 1, var2.y + 1, var2.z - 1);
+      Node var22 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z - 1);
       if (this.isOpen(var22)
          && this.hasMalus(var18)
          && this.hasMalus(var7)
@@ -171,7 +178,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var22;
       }
 
-      Node var23 = this.getNode(var2.x + 1, var2.y + 1, var2.z + 1);
+      Node var23 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z + 1);
       if (this.isOpen(var23)
          && this.hasMalus(var19)
          && this.hasMalus(var4)
@@ -182,7 +189,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var23;
       }
 
-      Node var24 = this.getNode(var2.x - 1, var2.y + 1, var2.z - 1);
+      Node var24 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z - 1);
       if (this.isOpen(var24)
          && this.hasMalus(var20)
          && this.hasMalus(var7)
@@ -193,7 +200,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var24;
       }
 
-      Node var25 = this.getNode(var2.x - 1, var2.y + 1, var2.z + 1);
+      Node var25 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z + 1);
       if (this.isOpen(var25)
          && this.hasMalus(var21)
          && this.hasMalus(var4)
@@ -204,7 +211,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var25;
       }
 
-      Node var26 = this.getNode(var2.x + 1, var2.y - 1, var2.z - 1);
+      Node var26 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z - 1);
       if (this.isOpen(var26)
          && this.hasMalus(var18)
          && this.hasMalus(var7)
@@ -215,7 +222,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var26;
       }
 
-      Node var27 = this.getNode(var2.x + 1, var2.y - 1, var2.z + 1);
+      Node var27 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z + 1);
       if (this.isOpen(var27)
          && this.hasMalus(var19)
          && this.hasMalus(var4)
@@ -226,7 +233,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var27;
       }
 
-      Node var28 = this.getNode(var2.x - 1, var2.y - 1, var2.z - 1);
+      Node var28 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z - 1);
       if (this.isOpen(var28)
          && this.hasMalus(var20)
          && this.hasMalus(var7)
@@ -237,7 +244,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1[var3++] = var28;
       }
 
-      Node var29 = this.getNode(var2.x - 1, var2.y - 1, var2.z + 1);
+      Node var29 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z + 1);
       if (this.isOpen(var29)
          && this.hasMalus(var21)
          && this.hasMalus(var4)
@@ -260,19 +267,16 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    }
 
    @Nullable
-   @Override
-   protected Node getNode(int var1, int var2, int var3) {
+   protected Node findAcceptedNode(int var1, int var2, int var3) {
       Node var4 = null;
       BlockPathTypes var5 = this.getCachedBlockPathType(var1, var2, var3);
       float var6 = this.mob.getPathfindingMalus(var5);
       if (var6 >= 0.0F) {
-         var4 = super.getNode(var1, var2, var3);
-         if (var4 != null) {
-            var4.type = var5;
-            var4.costMalus = Math.max(var4.costMalus, var6);
-            if (var5 == BlockPathTypes.WALKABLE) {
-               ++var4.costMalus;
-            }
+         var4 = this.getNode(var1, var2, var3);
+         var4.type = var5;
+         var4.costMalus = Math.max(var4.costMalus, var6);
+         if (var5 == BlockPathTypes.WALKABLE) {
+            ++var4.costMalus;
          }
       }
 
@@ -344,5 +348,34 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
       }
 
       return var6;
+   }
+
+   private Iterable<BlockPos> iteratePathfindingStartNodeCandidatePositions(Mob var1) {
+      float var2 = 1.0F;
+      AABB var3 = var1.getBoundingBox();
+      boolean var4 = var3.getSize() < 1.0;
+      if (!var4) {
+         return List.of(
+            new BlockPos(var3.minX, (double)var1.getBlockY(), var3.minZ),
+            new BlockPos(var3.minX, (double)var1.getBlockY(), var3.maxZ),
+            new BlockPos(var3.maxX, (double)var1.getBlockY(), var3.minZ),
+            new BlockPos(var3.maxX, (double)var1.getBlockY(), var3.maxZ)
+         );
+      } else {
+         double var5 = Math.max(0.0, (1.5 - var3.getZsize()) / 2.0);
+         double var7 = Math.max(0.0, (1.5 - var3.getXsize()) / 2.0);
+         double var9 = Math.max(0.0, (1.5 - var3.getYsize()) / 2.0);
+         AABB var11 = var3.inflate(var7, var9, var5);
+         return BlockPos.randomBetweenClosed(
+            var1.getRandom(),
+            10,
+            Mth.floor(var11.minX),
+            Mth.floor(var11.minY),
+            Mth.floor(var11.minZ),
+            Mth.floor(var11.maxX),
+            Mth.floor(var11.maxY),
+            Mth.floor(var11.maxZ)
+         );
+      }
    }
 }

@@ -35,8 +35,8 @@ public class MapItemSavedData extends SavedData {
    private static final int HALF_MAP_SIZE = 64;
    public static final int MAX_SCALE = 4;
    public static final int TRACKED_DECORATION_LIMIT = 256;
-   public final int x;
-   public final int z;
+   public final int centerX;
+   public final int centerZ;
    public final ResourceKey<Level> dimension;
    private final boolean trackingPosition;
    private final boolean unlimitedTracking;
@@ -53,8 +53,8 @@ public class MapItemSavedData extends SavedData {
    private MapItemSavedData(int var1, int var2, byte var3, boolean var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
       super();
       this.scale = var3;
-      this.x = var1;
-      this.z = var2;
+      this.centerX = var1;
+      this.centerZ = var2;
       this.dimension = var7;
       this.trackingPosition = var4;
       this.unlimitedTracking = var5;
@@ -124,8 +124,8 @@ public class MapItemSavedData extends SavedData {
          .encodeStart(NbtOps.INSTANCE, this.dimension.location())
          .resultOrPartial(LOGGER::error)
          .ifPresent(var1x -> var1.put("dimension", var1x));
-      var1.putInt("xCenter", this.x);
-      var1.putInt("zCenter", this.z);
+      var1.putInt("xCenter", this.centerX);
+      var1.putInt("zCenter", this.centerZ);
       var1.putByte("scale", this.scale);
       var1.putByteArray("colors", this.colors);
       var1.putBoolean("trackingPosition", this.trackingPosition);
@@ -149,7 +149,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    public MapItemSavedData locked() {
-      MapItemSavedData var1 = new MapItemSavedData(this.x, this.z, this.scale, this.trackingPosition, this.unlimitedTracking, true, this.dimension);
+      MapItemSavedData var1 = new MapItemSavedData(this.centerX, this.centerZ, this.scale, this.trackingPosition, this.unlimitedTracking, true, this.dimension);
       var1.bannerMarkers.putAll(this.bannerMarkers);
       var1.decorations.putAll(this.decorations);
       var1.trackedDecorationCount = this.trackedDecorationCount;
@@ -160,7 +160,7 @@ public class MapItemSavedData extends SavedData {
 
    public MapItemSavedData scaled(int var1) {
       return createFresh(
-         (double)this.x, (double)this.z, (byte)Mth.clamp(this.scale + var1, 0, 4), this.trackingPosition, this.unlimitedTracking, this.dimension
+         (double)this.centerX, (double)this.centerZ, (byte)Mth.clamp(this.scale + var1, 0, 4), this.trackingPosition, this.unlimitedTracking, this.dimension
       );
    }
 
@@ -268,8 +268,8 @@ public class MapItemSavedData extends SavedData {
       MapDecoration.Type var1, @Nullable LevelAccessor var2, String var3, double var4, double var6, double var8, @Nullable Component var10
    ) {
       int var11 = 1 << this.scale;
-      float var12 = (float)(var4 - (double)this.x) / (float)var11;
-      float var13 = (float)(var6 - (double)this.z) / (float)var11;
+      float var12 = (float)(var4 - (double)this.centerX) / (float)var11;
+      float var13 = (float)(var6 - (double)this.centerZ) / (float)var11;
       byte var14 = (byte)((int)((double)(var12 * 2.0F) + 0.5));
       byte var15 = (byte)((int)((double)(var13 * 2.0F) + 0.5));
       boolean var17 = true;
@@ -366,8 +366,8 @@ public class MapItemSavedData extends SavedData {
       double var3 = (double)var2.getX() + 0.5;
       double var5 = (double)var2.getZ() + 0.5;
       int var7 = 1 << this.scale;
-      double var8 = (var3 - (double)this.x) / (double)var7;
-      double var10 = (var5 - (double)this.z) / (double)var7;
+      double var8 = (var3 - (double)this.centerX) / (double)var7;
+      double var10 = (var5 - (double)this.centerZ) / (double)var7;
       boolean var12 = true;
       if (var8 >= -63.0 && var10 >= -63.0 && var8 <= 63.0 && var10 <= 63.0) {
          MapBanner var13 = MapBanner.fromWorld(var1, var2);

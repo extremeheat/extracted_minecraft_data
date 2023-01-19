@@ -13,11 +13,11 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -26,17 +26,18 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.OutgoingPlayerChatMessage;
+import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
@@ -46,7 +47,8 @@ import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderCenterPacket;
 import net.minecraft.network.protocol.game.ClientboundSetBorderLerpSizePacket;
@@ -61,12 +63,14 @@ import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetSimulationDistancePacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundUpdateEnabledFeaturesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateTagsPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -82,7 +86,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ProfilePublicKey;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -120,7 +124,8 @@ public abstract class PlayerList {
    private final Map<UUID, PlayerAdvancements> advancements = Maps.newHashMap();
    private final PlayerDataStorage playerIo;
    private boolean doWhiteList;
-   private final RegistryAccess.Frozen registryHolder;
+   private final LayeredRegistryAccess<RegistryLayer> registries;
+   private final RegistryAccess.Frozen synchronizedRegistries;
    protected final int maxPlayers;
    private int viewDistance;
    private int simulationDistance;
@@ -128,10 +133,11 @@ public abstract class PlayerList {
    private static final boolean ALLOW_LOGOUTIVATOR = false;
    private int sendAllPlayerInfoIn;
 
-   public PlayerList(MinecraftServer var1, RegistryAccess.Frozen var2, PlayerDataStorage var3, int var4) {
+   public PlayerList(MinecraftServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3, int var4) {
       super();
       this.server = var1;
-      this.registryHolder = var2;
+      this.registries = var2;
+      this.synchronizedRegistries = new RegistryAccess.ImmutableRegistryAccess(RegistrySynchronization.networkedRegistries(var2)).freeze();
       this.maxPlayers = var4;
       this.playerIo = var3;
    }
@@ -178,7 +184,7 @@ public abstract class PlayerList {
             var2.gameMode.getGameModeForPlayer(),
             var2.gameMode.getPreviousGameModeForPlayer(),
             this.server.levelKeys(),
-            this.registryHolder,
+            this.synchronizedRegistries,
             var10.dimensionTypeId(),
             var10.dimension(),
             BiomeManager.obfuscateSeed(var10.getSeed()),
@@ -192,6 +198,7 @@ public abstract class PlayerList {
             var2.getLastDeathLocation()
          )
       );
+      var13.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(var10.enabledFeatures())));
       var13.send(
          new ClientboundCustomPayloadPacket(
             ClientboundCustomPayloadPacket.BRAND, new FriendlyByteBuf(Unpooled.buffer()).writeUtf(this.getServer().getServerModName())
@@ -201,7 +208,7 @@ public abstract class PlayerList {
       var13.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
       var13.send(new ClientboundSetCarriedItemPacket(var2.getInventory().selected));
       var13.send(new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes()));
-      var13.send(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registryHolder)));
+      var13.send(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
       this.sendPlayerPermissionLevel(var2);
       var2.getStats().markAllDirty();
       var2.getRecipeBook().sendInitialRecipeBook(var2);
@@ -216,39 +223,35 @@ public abstract class PlayerList {
 
       this.broadcastSystemMessage(var17.withStyle(ChatFormatting.YELLOW), false);
       var13.teleport(var2.getX(), var2.getY(), var2.getZ(), var2.getYRot(), var2.getXRot());
+      var2.sendServerStatus(this.server.getStatus());
+      var2.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players));
       this.players.add(var2);
       this.playersByUUID.put(var2.getUUID(), var2);
-      this.broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, var2));
-
-      for(int var18 = 0; var18 < this.players.size(); ++var18) {
-         var2.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, this.players.get(var18)));
-      }
-
+      this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(var2)));
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendLevelInfo(var2, var10);
       this.server.getServerResourcePack().ifPresent(var1x -> var2.sendTexturePack(var1x.url(), var1x.hash(), var1x.isRequired(), var1x.prompt()));
-      var2.sendServerStatus(this.server.getStatus());
 
       for(MobEffectInstance var19 : var2.getActiveEffects()) {
          var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var19));
       }
 
       if (var7 != null && var7.contains("RootVehicle", 10)) {
-         CompoundTag var24 = var7.getCompound("RootVehicle");
-         Entity var25 = EntityType.loadEntityRecursive(var24.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
-         if (var25 != null) {
+         CompoundTag var23 = var7.getCompound("RootVehicle");
+         Entity var24 = EntityType.loadEntityRecursive(var23.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
+         if (var24 != null) {
             UUID var20;
-            if (var24.hasUUID("Attach")) {
-               var20 = var24.getUUID("Attach");
+            if (var23.hasUUID("Attach")) {
+               var20 = var23.getUUID("Attach");
             } else {
                var20 = null;
             }
 
-            if (var25.getUUID().equals(var20)) {
-               var2.startRiding(var25, true);
+            if (var24.getUUID().equals(var20)) {
+               var2.startRiding(var24, true);
             } else {
-               for(Entity var22 : var25.getIndirectPassengers()) {
+               for(Entity var22 : var24.getIndirectPassengers()) {
                   if (var22.getUUID().equals(var20)) {
                      var2.startRiding(var22, true);
                      break;
@@ -258,10 +261,10 @@ public abstract class PlayerList {
 
             if (!var2.isPassenger()) {
                LOGGER.warn("Couldn't reattach entity to player");
-               var25.discard();
+               var24.discard();
 
-               for(Entity var27 : var25.getIndirectPassengers()) {
-                  var27.discard();
+               for(Entity var26 : var24.getIndirectPassengers()) {
+                  var26.discard();
                }
             }
          }
@@ -380,7 +383,7 @@ public abstract class PlayerList {
          this.advancements.remove(var5);
       }
 
-      this.broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, var1));
+      this.broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(var1.getUUID())));
    }
 
    @Nullable
@@ -410,27 +413,27 @@ public abstract class PlayerList {
       }
    }
 
-   public ServerPlayer getPlayerForLogin(GameProfile var1, @Nullable ProfilePublicKey var2) {
-      UUID var3 = UUIDUtil.getOrCreatePlayerUUID(var1);
-      ArrayList var4 = Lists.newArrayList();
+   public ServerPlayer getPlayerForLogin(GameProfile var1) {
+      UUID var2 = UUIDUtil.getOrCreatePlayerUUID(var1);
+      ArrayList var3 = Lists.newArrayList();
 
-      for(int var5 = 0; var5 < this.players.size(); ++var5) {
-         ServerPlayer var6 = this.players.get(var5);
-         if (var6.getUUID().equals(var3)) {
-            var4.add(var6);
+      for(int var4 = 0; var4 < this.players.size(); ++var4) {
+         ServerPlayer var5 = this.players.get(var4);
+         if (var5.getUUID().equals(var2)) {
+            var3.add(var5);
          }
       }
 
-      ServerPlayer var8 = this.playersByUUID.get(var1.getId());
-      if (var8 != null && !var4.contains(var8)) {
-         var4.add(var8);
+      ServerPlayer var7 = this.playersByUUID.get(var1.getId());
+      if (var7 != null && !var3.contains(var7)) {
+         var3.add(var7);
       }
 
-      for(ServerPlayer var7 : var4) {
-         var7.connection.disconnect(Component.translatable("multiplayer.disconnect.duplicate_login"));
+      for(ServerPlayer var6 : var3) {
+         var6.connection.disconnect(Component.translatable("multiplayer.disconnect.duplicate_login"));
       }
 
-      return new ServerPlayer(this.server, this.server.overworld(), var1, var2);
+      return new ServerPlayer(this.server, this.server.overworld(), var1);
    }
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2) {
@@ -448,7 +451,7 @@ public abstract class PlayerList {
       }
 
       ServerLevel var8 = var6 != null && var7.isPresent() ? var6 : this.server.overworld();
-      ServerPlayer var9 = new ServerPlayer(this.server, var8, var1.getGameProfile(), var1.getProfilePublicKey());
+      ServerPlayer var9 = new ServerPlayer(this.server, var8, var1.getGameProfile());
       var9.connection = var1.connection;
       var9.restoreFrom(var1, var2);
       var9.setId(var1.getId());
@@ -482,7 +485,8 @@ public abstract class PlayerList {
          var9.setPos(var9.getX(), var9.getY() + 1.0, var9.getZ());
       }
 
-      LevelData var18 = var9.level.getLevelData();
+      int var18 = var2 ? 1 : 0;
+      LevelData var19 = var9.level.getLevelData();
       var9.connection
          .send(
             new ClientboundRespawnPacket(
@@ -493,13 +497,13 @@ public abstract class PlayerList {
                var9.gameMode.getPreviousGameModeForPlayer(),
                var9.getLevel().isDebug(),
                var9.getLevel().isFlat(),
-               var2,
+               (byte)var18,
                var9.getLastDeathLocation()
             )
          );
       var9.connection.teleport(var9.getX(), var9.getY(), var9.getZ(), var9.getYRot(), var9.getXRot());
       var9.connection.send(new ClientboundSetDefaultSpawnPositionPacket(var8.getSharedSpawnPos(), var8.getSharedSpawnAngle()));
-      var9.connection.send(new ClientboundChangeDifficultyPacket(var18.getDifficulty(), var18.isDifficultyLocked()));
+      var9.connection.send(new ClientboundChangeDifficultyPacket(var19.getDifficulty(), var19.isDifficultyLocked()));
       var9.connection.send(new ClientboundSetExperiencePacket(var9.experienceProgress, var9.totalExperience, var9.experienceLevel));
       this.sendLevelInfo(var9, var8);
       this.sendPlayerPermissionLevel(var9);
@@ -535,7 +539,7 @@ public abstract class PlayerList {
 
    public void tick() {
       if (++this.sendAllPlayerInfoIn > 600) {
-         this.broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.UPDATE_LATENCY, this.players));
+         this.broadcastAll(new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY), this.players));
          this.sendAllPlayerInfoIn = 0;
       }
    }
@@ -780,47 +784,32 @@ public abstract class PlayerList {
    }
 
    public void broadcastChatMessage(PlayerChatMessage var1, CommandSourceStack var2, ChatType.Bound var3) {
-      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2.getPlayer(), var2.asChatSender(), var3);
+      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2.getPlayer(), var3);
    }
 
    public void broadcastChatMessage(PlayerChatMessage var1, ServerPlayer var2, ChatType.Bound var3) {
-      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2, var2.asChatSender(), var3);
+      this.broadcastChatMessage(var1, var2::shouldFilterMessageTo, var2, var3);
    }
 
-   private void broadcastChatMessage(PlayerChatMessage var1, Predicate<ServerPlayer> var2, @Nullable ServerPlayer var3, ChatSender var4, ChatType.Bound var5) {
-      boolean var6 = this.verifyChatTrusted(var1, var4);
-      this.server.logChatMessage(var1.serverContent(), var5, var6 ? null : "Not Secure");
-      OutgoingPlayerChatMessage var7 = OutgoingPlayerChatMessage.create(var1);
-      boolean var8 = var1.isFullyFiltered();
-      boolean var9 = false;
+   private void broadcastChatMessage(PlayerChatMessage var1, Predicate<ServerPlayer> var2, @Nullable ServerPlayer var3, ChatType.Bound var4) {
+      boolean var5 = this.verifyChatTrusted(var1);
+      this.server.logChatMessage(var1.decoratedContent(), var4, var5 ? null : "Not Secure");
+      OutgoingChatMessage var6 = OutgoingChatMessage.create(var1);
+      boolean var7 = false;
 
-      for(ServerPlayer var11 : this.players) {
-         boolean var12 = var2.test(var11);
-         var11.sendChatMessage(var7, var12, var5);
-         if (var3 != var11) {
-            var9 |= var8 && var12;
-         }
+      for(ServerPlayer var9 : this.players) {
+         boolean var10 = var2.test(var9);
+         var9.sendChatMessage(var6, var10, var4);
+         var7 |= var10 && var1.isFullyFiltered();
       }
 
-      if (var9 && var3 != null) {
+      if (var7 && var3 != null) {
          var3.sendSystemMessage(CHAT_FILTERED_FULL);
       }
-
-      var7.sendHeadersToRemainingPlayers(this);
    }
 
-   public void broadcastMessageHeader(PlayerChatMessage var1, Set<ServerPlayer> var2) {
-      byte[] var3 = var1.signedBody().hash().asBytes();
-
-      for(ServerPlayer var5 : this.players) {
-         if (!var2.contains(var5)) {
-            var5.sendChatHeader(var1.signedHeader(), var1.headerSignature(), var3);
-         }
-      }
-   }
-
-   private boolean verifyChatTrusted(PlayerChatMessage var1, ChatSender var2) {
-      return !var1.hasExpiredServer(Instant.now()) && var1.verify(var2);
+   private boolean verifyChatTrusted(PlayerChatMessage var1) {
+      return var1.hasSignature() && !var1.hasExpiredServer(Instant.now());
    }
 
    public ServerStatsCounter getPlayerStats(Player var1) {
@@ -898,7 +887,7 @@ public abstract class PlayerList {
          var2.reload(this.server.getAdvancements());
       }
 
-      this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registryHolder)));
+      this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
       ClientboundUpdateRecipesPacket var4 = new ClientboundUpdateRecipesPacket(this.server.getRecipeManager().getRecipes());
 
       for(ServerPlayer var3 : this.players) {

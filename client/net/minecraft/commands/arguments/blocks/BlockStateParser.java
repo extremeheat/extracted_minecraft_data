@@ -22,7 +22,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
@@ -91,12 +91,8 @@ public class BlockStateParser {
       this.allowNbt = var4;
    }
 
-   public static BlockStateParser.BlockResult parseForBlock(Registry<Block> var0, String var1, boolean var2) throws CommandSyntaxException {
+   public static BlockStateParser.BlockResult parseForBlock(HolderLookup<Block> var0, String var1, boolean var2) throws CommandSyntaxException {
       return parseForBlock(var0, new StringReader(var1), var2);
-   }
-
-   public static BlockStateParser.BlockResult parseForBlock(Registry<Block> var0, StringReader var1, boolean var2) throws CommandSyntaxException {
-      return parseForBlock(HolderLookup.forRegistry(var0), var1, var2);
    }
 
    public static BlockStateParser.BlockResult parseForBlock(HolderLookup<Block> var0, StringReader var1, boolean var2) throws CommandSyntaxException {
@@ -112,12 +108,8 @@ public class BlockStateParser {
       }
    }
 
-   public static Either<BlockStateParser.BlockResult, BlockStateParser.TagResult> parseForTesting(Registry<Block> var0, String var1, boolean var2) throws CommandSyntaxException {
+   public static Either<BlockStateParser.BlockResult, BlockStateParser.TagResult> parseForTesting(HolderLookup<Block> var0, String var1, boolean var2) throws CommandSyntaxException {
       return parseForTesting(var0, new StringReader(var1), var2);
-   }
-
-   public static Either<BlockStateParser.BlockResult, BlockStateParser.TagResult> parseForTesting(Registry<Block> var0, StringReader var1, boolean var2) throws CommandSyntaxException {
-      return parseForTesting(HolderLookup.forRegistry(var0), new StringReader(var1), var2);
    }
 
    public static Either<BlockStateParser.BlockResult, BlockStateParser.TagResult> parseForTesting(HolderLookup<Block> var0, StringReader var1, boolean var2) throws CommandSyntaxException {
@@ -348,11 +340,11 @@ public class BlockStateParser {
    }
 
    private CompletableFuture<Suggestions> suggestTag(SuggestionsBuilder var1) {
-      return SharedSuggestionProvider.suggestResource(this.blocks.listTags().map(TagKey::location), var1, String.valueOf('#'));
+      return SharedSuggestionProvider.suggestResource(this.blocks.listTagIds().map(TagKey::location), var1, String.valueOf('#'));
    }
 
    private CompletableFuture<Suggestions> suggestItem(SuggestionsBuilder var1) {
-      return SharedSuggestionProvider.suggestResource(this.blocks.listElements().map(ResourceKey::location), var1);
+      return SharedSuggestionProvider.suggestResource(this.blocks.listElementIds().map(ResourceKey::location), var1);
    }
 
    private CompletableFuture<Suggestions> suggestBlockIdOrTag(SuggestionsBuilder var1) {
@@ -364,7 +356,7 @@ public class BlockStateParser {
    private void readBlock() throws CommandSyntaxException {
       int var1 = this.reader.getCursor();
       this.id = ResourceLocation.read(this.reader);
-      Block var2 = this.blocks.get(ResourceKey.create(Registry.BLOCK_REGISTRY, this.id)).orElseThrow(() -> {
+      Block var2 = this.blocks.get(ResourceKey.create(Registries.BLOCK, this.id)).orElseThrow(() -> {
          this.reader.setCursor(var1);
          return ERROR_UNKNOWN_BLOCK.createWithContext(this.reader, this.id.toString());
       }).value();
@@ -380,7 +372,7 @@ public class BlockStateParser {
          this.reader.expect('#');
          this.suggestions = this::suggestTag;
          ResourceLocation var2 = ResourceLocation.read(this.reader);
-         this.tag = this.blocks.get(TagKey.create(Registry.BLOCK_REGISTRY, var2)).orElseThrow(() -> {
+         this.tag = this.blocks.get(TagKey.create(Registries.BLOCK, var2)).orElseThrow(() -> {
             this.reader.setCursor(var1);
             return ERROR_UNKNOWN_TAG.createWithContext(this.reader, var2.toString());
          });

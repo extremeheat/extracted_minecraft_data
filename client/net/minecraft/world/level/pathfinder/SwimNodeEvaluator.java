@@ -36,18 +36,16 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       this.pathTypesByPosCache.clear();
    }
 
-   @Nullable
    @Override
    public Node getStart() {
-      return super.getNode(
+      return this.getNode(
          Mth.floor(this.mob.getBoundingBox().minX), Mth.floor(this.mob.getBoundingBox().minY + 0.5), Mth.floor(this.mob.getBoundingBox().minZ)
       );
    }
 
-   @Nullable
    @Override
    public Target getGoal(double var1, double var3, double var5) {
-      return this.getTargetFromNode(super.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
+      return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
    }
 
    @Override
@@ -56,7 +54,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
       EnumMap var4 = Maps.newEnumMap(Direction.class);
 
       for(Direction var8 : Direction.values()) {
-         Node var9 = this.getNode(var2.x + var8.getStepX(), var2.y + var8.getStepY(), var2.z + var8.getStepZ());
+         Node var9 = this.findAcceptedNode(var2.x + var8.getStepX(), var2.y + var8.getStepY(), var2.z + var8.getStepZ());
          var4.put(var8, var9);
          if (this.isNodeValid(var9)) {
             var1[var3++] = var9;
@@ -65,7 +63,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
 
       for(Direction var11 : Direction.Plane.HORIZONTAL) {
          Direction var12 = var11.getClockWise();
-         Node var13 = this.getNode(var2.x + var11.getStepX() + var12.getStepX(), var2.y, var2.z + var11.getStepZ() + var12.getStepZ());
+         Node var13 = this.findAcceptedNode(var2.x + var11.getStepX() + var12.getStepX(), var2.y, var2.z + var11.getStepZ() + var12.getStepZ());
          if (this.isDiagonalNodeValid(var13, (Node)var4.get(var11), (Node)var4.get(var12))) {
             var1[var3++] = var13;
          }
@@ -83,20 +81,17 @@ public class SwimNodeEvaluator extends NodeEvaluator {
    }
 
    @Nullable
-   @Override
-   protected Node getNode(int var1, int var2, int var3) {
+   protected Node findAcceptedNode(int var1, int var2, int var3) {
       Node var4 = null;
       BlockPathTypes var5 = this.getCachedBlockType(var1, var2, var3);
       if (this.allowBreaching && var5 == BlockPathTypes.BREACH || var5 == BlockPathTypes.WATER) {
          float var6 = this.mob.getPathfindingMalus(var5);
          if (var6 >= 0.0F) {
-            var4 = super.getNode(var1, var2, var3);
-            if (var4 != null) {
-               var4.type = var5;
-               var4.costMalus = Math.max(var4.costMalus, var6);
-               if (this.level.getFluidState(new BlockPos(var1, var2, var3)).isEmpty()) {
-                  var4.costMalus += 8.0F;
-               }
+            var4 = this.getNode(var1, var2, var3);
+            var4.type = var5;
+            var4.costMalus = Math.max(var4.costMalus, var6);
+            if (this.level.getFluidState(new BlockPos(var1, var2, var3)).isEmpty()) {
+               var4.costMalus += 8.0F;
             }
          }
       }

@@ -4,28 +4,24 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 
-public record ServerboundHelloPacket(String a, Optional<ProfilePublicKey.Data> b, Optional<UUID> c) implements Packet<ServerLoginPacketListener> {
+public record ServerboundHelloPacket(String a, Optional<UUID> b) implements Packet<ServerLoginPacketListener> {
    private final String name;
-   private final Optional<ProfilePublicKey.Data> publicKey;
    private final Optional<UUID> profileId;
 
    public ServerboundHelloPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(16), var1.readOptional(ProfilePublicKey.Data::new), var1.readOptional(FriendlyByteBuf::readUUID));
+      this(var1.readUtf(16), var1.readOptional(FriendlyByteBuf::readUUID));
    }
 
-   public ServerboundHelloPacket(String var1, Optional<ProfilePublicKey.Data> var2, Optional<UUID> var3) {
+   public ServerboundHelloPacket(String var1, Optional<UUID> var2) {
       super();
       this.name = var1;
-      this.publicKey = var2;
-      this.profileId = var3;
+      this.profileId = var2;
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeUtf(this.name, 16);
-      var1.writeOptional(this.publicKey, (var1x, var2) -> var2.write(var1));
       var1.writeOptional(this.profileId, FriendlyByteBuf::writeUUID);
    }
 

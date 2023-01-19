@@ -3,6 +3,7 @@ package net.minecraft.world.level.gameevent;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,7 +59,7 @@ public class GameEvent {
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
    private final String name;
    private final int notificationRadius;
-   private final Holder.Reference<GameEvent> builtInRegistryHolder = Registry.GAME_EVENT.createIntrusiveHolder(this);
+   private final Holder.Reference<GameEvent> builtInRegistryHolder = BuiltInRegistries.GAME_EVENT.createIntrusiveHolder(this);
 
    public GameEvent(String var1, int var2) {
       super();
@@ -79,7 +80,7 @@ public class GameEvent {
    }
 
    private static GameEvent register(String var0, int var1) {
-      return Registry.register(Registry.GAME_EVENT, var0, new GameEvent(var0, var1));
+      return Registry.register(BuiltInRegistries.GAME_EVENT, var0, new GameEvent(var0, var1));
    }
 
    @Override
@@ -121,14 +122,14 @@ public class GameEvent {
       }
    }
 
-   public static final class Message implements Comparable<GameEvent.Message> {
+   public static final class ListenerInfo implements Comparable<GameEvent.ListenerInfo> {
       private final GameEvent gameEvent;
       private final Vec3 source;
       private final GameEvent.Context context;
       private final GameEventListener recipient;
       private final double distanceToRecipient;
 
-      public Message(GameEvent var1, Vec3 var2, GameEvent.Context var3, GameEventListener var4, Vec3 var5) {
+      public ListenerInfo(GameEvent var1, Vec3 var2, GameEvent.Context var3, GameEventListener var4, Vec3 var5) {
          super();
          this.gameEvent = var1;
          this.source = var2;
@@ -137,7 +138,7 @@ public class GameEvent {
          this.distanceToRecipient = var2.distanceToSqr(var5);
       }
 
-      public int compareTo(GameEvent.Message var1) {
+      public int compareTo(GameEvent.ListenerInfo var1) {
          return Double.compare(this.distanceToRecipient, var1.distanceToRecipient);
       }
 

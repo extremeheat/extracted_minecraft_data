@@ -29,9 +29,14 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock implements Wear
    @Nullable
    @Override
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide || !var2.is(Blocks.DRAGON_HEAD) && !var2.is(Blocks.DRAGON_WALL_HEAD)
-         ? null
-         : createTickerHelper(var3, BlockEntityType.SKULL, SkullBlockEntity::dragonHeadAnimation);
+      if (var1.isClientSide) {
+         boolean var4 = var2.is(Blocks.DRAGON_HEAD) || var2.is(Blocks.DRAGON_WALL_HEAD) || var2.is(Blocks.PIGLIN_HEAD) || var2.is(Blocks.PIGLIN_WALL_HEAD);
+         if (var4) {
+            return createTickerHelper(var3, BlockEntityType.SKULL, SkullBlockEntity::animation);
+         }
+      }
+
+      return null;
    }
 
    public SkullBlock.Type getType() {

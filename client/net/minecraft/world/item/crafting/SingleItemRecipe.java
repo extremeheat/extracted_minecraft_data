@@ -2,7 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -88,7 +88,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
 
          String var5 = GsonHelper.getAsString(var2, "result");
          int var6 = GsonHelper.getAsInt(var2, "count");
-         ItemStack var7 = new ItemStack(Registry.ITEM.get(new ResourceLocation(var5)), var6);
+         ItemStack var7 = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(var5)), var6);
          return this.factory.create(var1, var3, var4, var7);
       }
 

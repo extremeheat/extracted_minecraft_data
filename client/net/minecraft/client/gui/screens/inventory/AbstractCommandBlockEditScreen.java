@@ -39,12 +39,11 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.doneButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20, CommonComponents.GUI_DONE, var1x -> this.onDone())
+         Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build()
       );
       this.cancelButton = this.addRenderableWidget(
-         new Button(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20, CommonComponents.GUI_CANCEL, var1x -> this.onClose())
+         Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build()
       );
       boolean var1 = this.getCommandBlock().isTrackOutput();
       this.outputButton = this.addRenderableWidget(
@@ -72,7 +71,6 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       this.previousEdit.setValue("-");
       this.addWidget(this.previousEdit);
       this.setInitialFocus(this.commandEdit);
-      this.commandEdit.setFocus(true);
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.commandEdit, this.font, true, true, 0, 7, false, -2147483648);
       this.commandSuggestions.setAllowSuggestions(true);
       this.commandSuggestions.updateCommandInfo();
@@ -99,11 +97,6 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       }
 
       this.minecraft.setScreen(null);
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    protected abstract void populateAndSendPacket(BaseCommandBlock var1);

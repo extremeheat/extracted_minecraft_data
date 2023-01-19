@@ -51,8 +51,9 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
@@ -77,6 +78,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -118,7 +120,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    private final ThreadedLevelLightEngine lightEngine;
    private final BlockableEventLoop<Runnable> mainThreadExecutor;
    private ChunkGenerator generator;
-   private RandomState randomState;
+   private final RandomState randomState;
+   private final ChunkGeneratorStructureState chunkGeneratorState;
    private final Supplier<DimensionDataStorage> overworldDataStorage;
    private final PoiManager poiManager;
    final LongSet toDrop = new LongOpenHashSet();
@@ -162,32 +165,37 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       this.storageName = var14.getFileName().toString();
       this.level = var1;
       this.generator = var8;
-      if (var8 instanceof NoiseBasedChunkGenerator var15) {
-         this.randomState = RandomState.create(
-            var15.generatorSettings().value(), var1.registryAccess().registryOrThrow(Registry.NOISE_REGISTRY), var1.getSeed()
-         );
+      RegistryAccess var15 = var1.registryAccess();
+      long var16 = var1.getSeed();
+      if (var8 instanceof NoiseBasedChunkGenerator var18) {
+         this.randomState = RandomState.create(var18.generatorSettings().value(), var15.lookupOrThrow(Registries.NOISE), var16);
       } else {
-         this.randomState = RandomState.create(NoiseGeneratorSettings.dummy(), var1.registryAccess().registryOrThrow(Registry.NOISE_REGISTRY), var1.getSeed());
+         this.randomState = RandomState.create(NoiseGeneratorSettings.dummy(), var15.lookupOrThrow(Registries.NOISE), var16);
       }
 
+      this.chunkGeneratorState = var8.createState(var15.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, var16);
       this.mainThreadExecutor = var6;
-      ProcessorMailbox var18 = ProcessorMailbox.create(var5, "worldgen");
-      ProcessorHandle var16 = ProcessorHandle.of("main", var6::tell);
+      ProcessorMailbox var21 = ProcessorMailbox.create(var5, "worldgen");
+      ProcessorHandle var19 = ProcessorHandle.of("main", var6::tell);
       this.progressListener = var9;
       this.chunkStatusListener = var10;
-      ProcessorMailbox var17 = ProcessorMailbox.create(var5, "light");
-      this.queueSorter = new ChunkTaskPriorityQueueSorter(ImmutableList.of(var18, var16, var17), var5, 2147483647);
-      this.worldgenMailbox = this.queueSorter.getProcessor(var18, false);
-      this.mainThreadMailbox = this.queueSorter.getProcessor(var16, false);
-      this.lightEngine = new ThreadedLevelLightEngine(var7, this, this.level.dimensionType().hasSkyLight(), var17, this.queueSorter.getProcessor(var17, false));
+      ProcessorMailbox var20 = ProcessorMailbox.create(var5, "light");
+      this.queueSorter = new ChunkTaskPriorityQueueSorter(ImmutableList.of(var21, var19, var20), var5, 2147483647);
+      this.worldgenMailbox = this.queueSorter.getProcessor(var21, false);
+      this.mainThreadMailbox = this.queueSorter.getProcessor(var19, false);
+      this.lightEngine = new ThreadedLevelLightEngine(var7, this, this.level.dimensionType().hasSkyLight(), var20, this.queueSorter.getProcessor(var20, false));
       this.distanceManager = new ChunkMap.DistanceManager(var5, var6);
       this.overworldDataStorage = var11;
-      this.poiManager = new PoiManager(var14.resolve("poi"), var3, var13, var1.registryAccess(), var1);
+      this.poiManager = new PoiManager(var14.resolve("poi"), var3, var13, var15, var1);
       this.setViewDistance(var12);
    }
 
    protected ChunkGenerator generator() {
       return this.generator;
+   }
+
+   protected ChunkGeneratorStructureState generatorState() {
+      return this.chunkGeneratorState;
    }
 
    protected RandomState randomState() {
@@ -601,7 +609,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    private ChunkAccess createEmptyChunk(ChunkPos var1) {
       this.markPositionReplaceable(var1);
-      return new ProtoChunk(var1, UpgradeData.EMPTY, this.level, this.level.registryAccess().registryOrThrow(Registry.BIOME_REGISTRY), null);
+      return new ProtoChunk(var1, UpgradeData.EMPTY, this.level, this.level.registryAccess().registryOrThrow(Registries.BIOME), null);
    }
 
    private void markPositionReplaceable(ChunkPos var1) {
@@ -1215,6 +1223,26 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       ChunkMap.TrackedEntity var3 = (ChunkMap.TrackedEntity)this.entityMap.get(var1.getId());
       if (var3 != null) {
          var3.broadcastAndSend(var2);
+      }
+   }
+
+   public void resendChunk(ChunkAccess var1) {
+      ChunkPos var2 = var1.getPos();
+      LevelChunk var3;
+      if (var1 instanceof LevelChunk var4) {
+         var3 = (LevelChunk)var4;
+      } else {
+         var3 = this.level.getChunk(var2.x, var2.z);
+      }
+
+      MutableObject var7 = new MutableObject();
+
+      for(ServerPlayer var6 : this.getPlayers(var2, false)) {
+         if (var7.getValue() == null) {
+            var7.setValue(new ClientboundLevelChunkWithLightPacket(var3, this.lightEngine, null, null, true));
+         }
+
+         var6.trackChunk(var2, (Packet<?>)var7.getValue());
       }
    }
 

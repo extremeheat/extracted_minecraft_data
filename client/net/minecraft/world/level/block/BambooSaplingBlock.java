@@ -65,7 +65,7 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return var1.getBlockState(var2.above()).isAir();
    }
 
@@ -85,6 +85,6 @@ public class BambooSaplingBlock extends Block implements BonemealableBlock {
    }
 
    protected void growBamboo(Level var1, BlockPos var2) {
-      var1.setBlock(var2.above(), Blocks.BAMBOO.defaultBlockState().setValue(BambooBlock.LEAVES, BambooLeaves.SMALL), 3);
+      var1.setBlock(var2.above(), Blocks.BAMBOO.defaultBlockState().setValue(BambooStalkBlock.LEAVES, BambooLeaves.SMALL), 3);
    }
 }

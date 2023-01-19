@@ -6,7 +6,8 @@ import net.minecraft.util.Mth;
 public class PanoramaRenderer {
    private final Minecraft minecraft;
    private final CubeMap cubeMap;
-   private float time;
+   private float spin;
+   private float bob;
 
    public PanoramaRenderer(CubeMap var1) {
       super();
@@ -15,7 +16,13 @@ public class PanoramaRenderer {
    }
 
    public void render(float var1, float var2) {
-      this.time += var1;
-      this.cubeMap.render(this.minecraft, Mth.sin(this.time * 0.001F) * 5.0F + 25.0F, -this.time * 0.1F, var2);
+      float var3 = (float)((double)var1 * this.minecraft.options.panoramaSpeed().get());
+      this.spin = wrap(this.spin + var3 * 0.1F, 360.0F);
+      this.bob = wrap(this.bob + var3 * 0.001F, 6.2831855F);
+      this.cubeMap.render(this.minecraft, Mth.sin(this.bob) * 5.0F + 25.0F, -this.spin, var2);
+   }
+
+   private static float wrap(float var0, float var1) {
+      return var0 > var1 ? var0 - var1 : var0;
    }
 }

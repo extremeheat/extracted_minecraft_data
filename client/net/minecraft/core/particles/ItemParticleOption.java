@@ -5,8 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.commands.arguments.item.ItemParser;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
@@ -14,7 +13,7 @@ public class ItemParticleOption implements ParticleOptions {
    public static final ParticleOptions.Deserializer<ItemParticleOption> DESERIALIZER = new ParticleOptions.Deserializer<ItemParticleOption>() {
       public ItemParticleOption fromCommand(ParticleType<ItemParticleOption> var1, StringReader var2) throws CommandSyntaxException {
          var2.expect(' ');
-         ItemParser.ItemResult var3 = ItemParser.parseForItem(HolderLookup.forRegistry(Registry.ITEM), var2);
+         ItemParser.ItemResult var3 = ItemParser.parseForItem(BuiltInRegistries.ITEM.asLookup(), var2);
          ItemStack var4 = new ItemInput(var3.item(), var3.nbt()).createItemStack(1, false);
          return new ItemParticleOption(var1, var4);
       }
@@ -43,7 +42,7 @@ public class ItemParticleOption implements ParticleOptions {
 
    @Override
    public String writeToString() {
-      return Registry.PARTICLE_TYPE.getKey(this.getType()) + " " + new ItemInput(this.itemStack.getItemHolder(), this.itemStack.getTag()).serialize();
+      return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()) + " " + new ItemInput(this.itemStack.getItemHolder(), this.itemStack.getTag()).serialize();
    }
 
    @Override

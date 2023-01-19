@@ -3,10 +3,12 @@ package net.minecraft.world.entity.animal;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -21,8 +23,10 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -39,6 +43,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -66,7 +71,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
-public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
+public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot.Variant>, FlyingAnimal {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID = SynchedEntityData.defineId(Parrot.class, EntityDataSerializers.INT);
    private static final Predicate<Mob> NOT_PARROT_PREDICATE = new Predicate<Mob>() {
       public boolean test(@Nullable Mob var1) {
@@ -75,7 +80,6 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    };
    private static final Item POISONOUS_FOOD = Items.COOKIE;
    private static final Set<Item> TAME_FOOD = Sets.newHashSet(new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS});
-   private static final int VARIANTS = 5;
    static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
       var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
@@ -135,7 +139,7 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    public SpawnGroupData finalizeSpawn(
       ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
    ) {
-      this.setVariant(var1.getRandom().nextInt(5));
+      this.setVariant(Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
@@ -414,12 +418,12 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
       }
    }
 
-   public int getVariant() {
-      return Mth.clamp(this.entityData.get(DATA_VARIANT_ID), 0, 4);
+   public Parrot.Variant getVariant() {
+      return Parrot.Variant.byId(this.entityData.get(DATA_VARIANT_ID));
    }
 
-   public void setVariant(int var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   public void setVariant(Parrot.Variant var1) {
+      this.entityData.set(DATA_VARIANT_ID, var1.id);
    }
 
    @Override
@@ -431,13 +435,13 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("Variant", this.getVariant());
+      var1.putInt("Variant", this.getVariant().id);
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setVariant(var1.getInt("Variant"));
+      this.setVariant(Parrot.Variant.byId(var1.getInt("Variant")));
    }
 
    @Override
@@ -494,6 +498,37 @@ public class Parrot extends ShoulderRidingEntity implements FlyingAnimal {
          }
 
          return null;
+      }
+   }
+
+   public static enum Variant implements StringRepresentable {
+      RED_BLUE(0, "red_blue"),
+      BLUE(1, "blue"),
+      GREEN(2, "green"),
+      YELLOW_BLUE(3, "yellow_blue"),
+      GRAY(4, "gray");
+
+      public static final Codec<Parrot.Variant> CODEC = StringRepresentable.fromEnum(Parrot.Variant::values);
+      private static final IntFunction<Parrot.Variant> BY_ID = ByIdMap.continuous(Parrot.Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      final int id;
+      private final String name;
+
+      private Variant(int var3, String var4) {
+         this.id = var3;
+         this.name = var4;
+      }
+
+      public int getId() {
+         return this.id;
+      }
+
+      public static Parrot.Variant byId(int var0) {
+         return BY_ID.apply(var0);
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
    }
 }

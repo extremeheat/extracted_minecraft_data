@@ -38,11 +38,13 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -69,7 +71,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    private static final float CHANCE_OF_WEARING_EACH_ARMOUR_ITEM = 0.1F;
    private static final int MAX_PASSENGERS_ON_ONE_HOGLIN = 3;
    private static final float PROBABILITY_OF_SPAWNING_AS_BABY = 0.2F;
-   private static final float BABY_EYE_HEIGHT_ADJUSTMENT = 0.81F;
+   private static final float BABY_EYE_HEIGHT_ADJUSTMENT = 0.82F;
    private static final double PROBABILITY_OF_SPAWNING_WITH_CROSSBOW_INSTEAD_OF_SWORD = 0.5;
    private final SimpleContainer inventory = new SimpleContainer(8);
    private boolean cannotHunt;
@@ -86,10 +88,11 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLINS,
       MemoryModuleType.NEARBY_ADULT_PIGLINS,
       MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
+      MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS,
       MemoryModuleType.HURT_BY,
       MemoryModuleType.HURT_BY_ENTITY,
-      MemoryModuleType.WALK_TARGET,
       new MemoryModuleType[]{
+         MemoryModuleType.WALK_TARGET,
          MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
          MemoryModuleType.ATTACK_TARGET,
          MemoryModuleType.ATTACK_COOLING_DOWN,
@@ -135,7 +138,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
          var1.putBoolean("CannotHunt", true);
       }
 
-      var1.put("Inventory", this.inventory.createTag());
+      this.writeInventoryToTag(var1);
    }
 
    @Override
@@ -143,7 +146,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       super.readAdditionalSaveData(var1);
       this.setBaby(var1.getBoolean("IsBaby"));
       this.setCannotHunt(var1.getBoolean("CannotHunt"));
-      this.inventory.fromTag(var1.getList("Inventory", 10));
+      this.readInventoryFromTag(var1);
    }
 
    @VisibleForDebug
@@ -152,9 +155,20 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return this.inventory;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
+      if (this.getLevel().enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
+         Entity var4 = var1.getEntity();
+         if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+            ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
+            var5.increaseDroppedSkulls();
+            this.spawnAtLocation(var6);
+         }
+      }
+
       this.inventory.removeAllItems().forEach(this::spawnAtLocation);
    }
 
@@ -269,7 +283,8 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? 0.93F : 1.74F;
+      float var3 = super.getStandingEyeHeight(var1, var2);
+      return this.isBaby() ? var3 - 0.82F : var3;
    }
 
    @Override

@@ -2,6 +2,7 @@ package net.minecraft.world.level.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 
@@ -16,12 +17,12 @@ public class AmbientMoodSettings {
             .apply(var0, AmbientMoodSettings::new)
    );
    public static final AmbientMoodSettings LEGACY_CAVE_SETTINGS = new AmbientMoodSettings(SoundEvents.AMBIENT_CAVE, 6000, 8, 2.0);
-   private final SoundEvent soundEvent;
+   private final Holder<SoundEvent> soundEvent;
    private final int tickDelay;
    private final int blockSearchExtent;
    private final double soundPositionOffset;
 
-   public AmbientMoodSettings(SoundEvent var1, int var2, int var3, double var4) {
+   public AmbientMoodSettings(Holder<SoundEvent> var1, int var2, int var3, double var4) {
       super();
       this.soundEvent = var1;
       this.tickDelay = var2;
@@ -29,7 +30,7 @@ public class AmbientMoodSettings {
       this.soundPositionOffset = var4;
    }
 
-   public SoundEvent getSoundEvent() {
+   public Holder<SoundEvent> getSoundEvent() {
       return this.soundEvent;
    }
 

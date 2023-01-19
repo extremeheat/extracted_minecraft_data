@@ -2,6 +2,8 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -32,16 +34,22 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    protected static final VoxelShape X_SHAPE_LOW = Block.box(6.0, 0.0, 0.0, 10.0, 13.0, 16.0);
    protected static final VoxelShape Z_COLLISION_SHAPE = Block.box(0.0, 0.0, 6.0, 16.0, 24.0, 10.0);
    protected static final VoxelShape X_COLLISION_SHAPE = Block.box(6.0, 0.0, 0.0, 10.0, 24.0, 16.0);
+   protected static final VoxelShape Z_SUPPORT_SHAPE = Block.box(0.0, 5.0, 6.0, 16.0, 24.0, 10.0);
+   protected static final VoxelShape X_SUPPORT_SHAPE = Block.box(6.0, 5.0, 0.0, 10.0, 24.0, 16.0);
    protected static final VoxelShape Z_OCCLUSION_SHAPE = Shapes.or(Block.box(0.0, 5.0, 7.0, 2.0, 16.0, 9.0), Block.box(14.0, 5.0, 7.0, 16.0, 16.0, 9.0));
    protected static final VoxelShape X_OCCLUSION_SHAPE = Shapes.or(Block.box(7.0, 5.0, 0.0, 9.0, 16.0, 2.0), Block.box(7.0, 5.0, 14.0, 9.0, 16.0, 16.0));
    protected static final VoxelShape Z_OCCLUSION_SHAPE_LOW = Shapes.or(Block.box(0.0, 2.0, 7.0, 2.0, 13.0, 9.0), Block.box(14.0, 2.0, 7.0, 16.0, 13.0, 9.0));
    protected static final VoxelShape X_OCCLUSION_SHAPE_LOW = Shapes.or(Block.box(7.0, 2.0, 0.0, 9.0, 13.0, 2.0), Block.box(7.0, 2.0, 14.0, 9.0, 13.0, 16.0));
+   private final SoundEvent closeSound;
+   private final SoundEvent openSound;
 
-   public FenceGateBlock(BlockBehaviour.Properties var1) {
+   public FenceGateBlock(BlockBehaviour.Properties var1, SoundEvent var2, SoundEvent var3) {
       super(var1);
       this.registerDefaultState(
          this.stateDefinition.any().setValue(OPEN, Boolean.valueOf(false)).setValue(POWERED, Boolean.valueOf(false)).setValue(IN_WALL, Boolean.valueOf(false))
       );
+      this.closeSound = var2;
+      this.openSound = var3;
    }
 
    @Override
@@ -61,6 +69,15 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       } else {
          boolean var8 = this.isWall(var3) || this.isWall(var4.getBlockState(var5.relative(var2.getOpposite())));
          return var1.setValue(IN_WALL, Boolean.valueOf(var8));
+      }
+   }
+
+   @Override
+   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+      if (var1.getValue(OPEN)) {
+         return Shapes.empty();
+      } else {
+         return var1.getValue(FACING).getAxis() == Direction.Axis.Z ? Z_SUPPORT_SHAPE : X_SUPPORT_SHAPE;
       }
    }
 
@@ -132,7 +149,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       }
 
       boolean var9 = var1.getValue(OPEN);
-      var2.levelEvent(var4, var9 ? 1008 : 1014, var3, 0);
+      var2.playSound(var4, var3, var9 ? this.openSound : this.closeSound, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
       var2.gameEvent(var4, var9 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
       return InteractionResult.sidedSuccess(var2.isClientSide);
    }
@@ -144,7 +161,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
          if (var1.getValue(POWERED) != var7) {
             var2.setBlock(var3, var1.setValue(POWERED, Boolean.valueOf(var7)).setValue(OPEN, Boolean.valueOf(var7)), 2);
             if (var1.getValue(OPEN) != var7) {
-               var2.levelEvent(null, var7 ? 1008 : 1014, var3, 0);
+               var2.playSound(null, var3, var7 ? this.openSound : this.closeSound, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
                var2.gameEvent(null, var7 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
             }
          }

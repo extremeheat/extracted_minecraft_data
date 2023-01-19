@@ -1,22 +1,22 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.schedule.Activity;
 
-public class WakeUp extends Behavior<LivingEntity> {
+public class WakeUp {
    public WakeUp() {
-      super(ImmutableMap.of());
+      super();
    }
 
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      return !var2.getBrain().isActive(Activity.REST) && var2.isSleeping();
-   }
-
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      var2.stopSleeping();
+   public static BehaviorControl<LivingEntity> create() {
+      return BehaviorBuilder.create(var0 -> var0.point((var0x, var1, var2) -> {
+            if (!var1.getBrain().isActive(Activity.REST) && var1.isSleeping()) {
+               var1.stopSleeping();
+               return true;
+            } else {
+               return false;
+            }
+         }));
    }
 }

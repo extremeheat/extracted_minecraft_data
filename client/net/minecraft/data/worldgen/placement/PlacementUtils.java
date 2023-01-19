@@ -1,12 +1,12 @@
 package net.minecraft.data.worldgen.placement;
 
 import java.util.List;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.data.BuiltinRegistries;
-import net.minecraft.util.RandomSource;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.WeightedListInt;
@@ -42,27 +42,32 @@ public class PlacementUtils {
       super();
    }
 
-   public static Holder<PlacedFeature> bootstrap(Registry<PlacedFeature> var0) {
-      List var1 = List.of(
-         AquaticPlacements.KELP_COLD,
-         CavePlacements.CAVE_VINES,
-         EndPlacements.CHORUS_PLANT,
-         MiscOverworldPlacements.BLUE_ICE,
-         NetherPlacements.BASALT_BLOBS,
-         OrePlacements.ORE_ANCIENT_DEBRIS_LARGE,
-         TreePlacements.ACACIA_CHECKED,
-         VegetationPlacements.BAMBOO_VEGETATION,
-         VillagePlacements.PILE_HAY_VILLAGE
-      );
-      return Util.getRandom(var1, RandomSource.create());
+   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+      AquaticPlacements.bootstrap(var0);
+      CavePlacements.bootstrap(var0);
+      EndPlacements.bootstrap(var0);
+      MiscOverworldPlacements.bootstrap(var0);
+      NetherPlacements.bootstrap(var0);
+      OrePlacements.bootstrap(var0);
+      TreePlacements.bootstrap(var0);
+      VegetationPlacements.bootstrap(var0);
+      VillagePlacements.bootstrap(var0);
    }
 
-   public static Holder<PlacedFeature> register(String var0, Holder<? extends ConfiguredFeature<?, ?>> var1, List<PlacementModifier> var2) {
-      return BuiltinRegistries.register(BuiltinRegistries.PLACED_FEATURE, var0, new PlacedFeature(Holder.hackyErase(var1), List.copyOf(var2)));
+   public static ResourceKey<PlacedFeature> createKey(String var0) {
+      return ResourceKey.create(Registries.PLACED_FEATURE, new ResourceLocation(var0));
    }
 
-   public static Holder<PlacedFeature> register(String var0, Holder<? extends ConfiguredFeature<?, ?>> var1, PlacementModifier... var2) {
-      return register(var0, var1, List.of(var2));
+   public static void register(
+      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3
+   ) {
+      var0.register(var1, new PlacedFeature(var2, List.copyOf(var3)));
+   }
+
+   public static void register(
+      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3
+   ) {
+      register(var0, var1, var2, List.of(var3));
    }
 
    public static PlacementModifier countExtra(int var0, float var1, int var2) {
@@ -86,8 +91,8 @@ public class PlacementUtils {
       return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(var0.defaultBlockState(), BlockPos.ZERO));
    }
 
-   public static Holder<PlacedFeature> inlinePlaced(Holder<? extends ConfiguredFeature<?, ?>> var0, PlacementModifier... var1) {
-      return Holder.direct(new PlacedFeature(Holder.hackyErase(var0), List.of(var1)));
+   public static Holder<PlacedFeature> inlinePlaced(Holder<ConfiguredFeature<?, ?>> var0, PlacementModifier... var1) {
+      return Holder.direct(new PlacedFeature(var0, List.of(var1)));
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(F var0, FC var1, PlacementModifier... var2) {

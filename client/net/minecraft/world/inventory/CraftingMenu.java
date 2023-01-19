@@ -62,7 +62,10 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
          if (var7.isPresent()) {
             CraftingRecipe var8 = (CraftingRecipe)var7.get();
             if (var4.setRecipeUsed(var1, var5, var8)) {
-               var6 = var8.assemble(var3);
+               ItemStack var9 = var8.assemble(var3);
+               if (var9.isItemEnabled(var1.enabledFeatures())) {
+                  var6 = var9;
+               }
             }
          }
 

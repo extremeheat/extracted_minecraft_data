@@ -16,8 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +34,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -66,7 +64,7 @@ import org.slf4j.Logger;
 
 public class Block extends BlockBehaviour implements ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Holder.Reference<Block> builtInRegistryHolder = Registry.BLOCK.createIntrusiveHolder(this);
+   private final Holder.Reference<Block> builtInRegistryHolder = BuiltInRegistries.BLOCK.createIntrusiveHolder(this);
    public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<>();
    private static final LoadingCache<VoxelShape, Boolean> SHAPE_FULL_BLOCK_CACHE = CacheBuilder.newBuilder()
       .maximumSize(512L)
@@ -132,7 +130,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       } else {
          for(Entity var7 : var2.getEntities(null, var4.bounds())) {
             double var8 = Shapes.collide(Direction.Axis.Y, var7.getBoundingBox().move(0.0, 1.0, 0.0), List.of(var4), -1.0);
-            var7.teleportTo(var7.getX(), var7.getY() + 1.0 + var8, var7.getZ());
+            var7.teleportRelative(0.0, 1.0 + var8, 0.0);
          }
 
          return var1;
@@ -377,7 +375,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public String getDescriptionId() {
       if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("block", Registry.BLOCK.getKey(this));
+         this.descriptionId = Util.makeDescriptionId("block", BuiltInRegistries.BLOCK.getKey(this));
       }
 
       return this.descriptionId;
@@ -393,10 +391,6 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
       return new ItemStack(this);
-   }
-
-   public void fillItemCategory(CreativeModeTab var1, NonNullList<ItemStack> var2) {
-      var2.add(new ItemStack(this));
    }
 
    public float getFriction() {
@@ -481,7 +475,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    @Override
    public String toString() {
-      return "Block{" + Registry.BLOCK.getKey(this) + "}";
+      return "Block{" + BuiltInRegistries.BLOCK.getKey(this) + "}";
    }
 
    public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {

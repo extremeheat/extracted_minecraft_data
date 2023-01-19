@@ -8,12 +8,12 @@ import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class ByteArrayTag extends CollectionTag<ByteTag> {
-   private static final int SELF_SIZE_IN_BITS = 192;
+   private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<ByteArrayTag> TYPE = new TagType.VariableSize<ByteArrayTag>() {
       public ByteArrayTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(192L);
+         var3.accountBytes(24L);
          int var4 = var1.readInt();
-         var3.accountBits(8L * (long)var4);
+         var3.accountBytes(1L * (long)var4);
          byte[] var5 = new byte[var4];
          var1.readFully(var5);
          return new ByteArrayTag(var5);
@@ -68,6 +68,11 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
       var1.write(this.data);
+   }
+
+   @Override
+   public int sizeInBytes() {
+      return 24 + 1 * this.data.length;
    }
 
    @Override

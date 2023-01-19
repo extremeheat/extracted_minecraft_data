@@ -2,9 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.GuardianModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -18,6 +16,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
    private static final ResourceLocation GUARDIAN_LOCATION = new ResourceLocation("textures/entity/guardian.png");
@@ -65,7 +65,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
          float var10 = var9 * 0.5F % 1.0F;
          float var11 = var1.getEyeHeight();
          var4.pushPose();
-         var4.translate(0.0, (double)var11, 0.0);
+         var4.translate(0.0F, var11, 0.0F);
          Vec3 var12 = this.getPosition(var7, (double)var7.getBbHeight() * 0.5, var3);
          Vec3 var13 = this.getPosition(var1, (double)var11, var3);
          Vec3 var14 = var12.subtract(var13);
@@ -73,8 +73,8 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
          var14 = var14.normalize();
          float var16 = (float)Math.acos(var14.y);
          float var17 = (float)Math.atan2(var14.z, var14.x);
-         var4.mulPose(Vector3f.YP.rotationDegrees((1.5707964F - var17) * 57.295776F));
-         var4.mulPose(Vector3f.XP.rotationDegrees(var16 * 57.295776F));
+         var4.mulPose(Axis.YP.rotationDegrees((1.5707964F - var17) * 57.295776F));
+         var4.mulPose(Axis.XP.rotationDegrees(var16 * 57.295776F));
          boolean var18 = true;
          float var19 = var9 * 0.05F * -1.5F;
          float var20 = var8 * var8;

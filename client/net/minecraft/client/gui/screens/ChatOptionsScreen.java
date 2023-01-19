@@ -27,7 +27,6 @@ public class ChatOptionsScreen extends SimpleOptionsSubScreen {
             var2.autoSuggestions(),
             var2.hideMatchedNames(),
             var2.reducedDebugInfo(),
-            var2.chatPreview(),
             var2.onlyShowSecureChat()
          }
       );

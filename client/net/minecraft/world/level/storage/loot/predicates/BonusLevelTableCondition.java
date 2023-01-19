@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import java.util.Set;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
@@ -53,13 +53,13 @@ public class BonusLevelTableCondition implements LootItemCondition {
       }
 
       public void serialize(JsonObject var1, BonusLevelTableCondition var2, JsonSerializationContext var3) {
-         var1.addProperty("enchantment", Registry.ENCHANTMENT.getKey(var2.enchantment).toString());
+         var1.addProperty("enchantment", BuiltInRegistries.ENCHANTMENT.getKey(var2.enchantment).toString());
          var1.add("chances", var3.serialize(var2.values));
       }
 
       public BonusLevelTableCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
          ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var1, "enchantment"));
-         Enchantment var4 = Registry.ENCHANTMENT.getOptional(var3).orElseThrow(() -> new JsonParseException("Invalid enchantment id: " + var3));
+         Enchantment var4 = BuiltInRegistries.ENCHANTMENT.getOptional(var3).orElseThrow(() -> new JsonParseException("Invalid enchantment id: " + var3));
          float[] var5 = (float[])GsonHelper.getAsObject(var1, "chances", var2, float[].class);
          return new BonusLevelTableCondition(var4, var5);
       }

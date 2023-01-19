@@ -171,23 +171,27 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    public CompletableFuture<Void> reload(
       PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6
    ) {
-      return CompletableFuture.allOf(TitleScreen.preloadResources(this, var5), this.preload(AbstractWidget.WIDGETS_LOCATION, var5))
+      CompletableFuture var7 = new CompletableFuture();
+      CompletableFuture.allOf(TitleScreen.preloadResources(this, var5), this.preload(AbstractWidget.WIDGETS_LOCATION, var5))
          .thenCompose(var1::wait)
-         .thenAcceptAsync(var3x -> {
+         .thenAcceptAsync(var4x -> {
             MissingTextureAtlasSprite.getTexture();
             RealmsMainScreen.updateTeaserImages(this.resourceManager);
-            Iterator var4x = this.byPath.entrySet().iterator();
+            Iterator var5x = this.byPath.entrySet().iterator();
    
-            while(var4x.hasNext()) {
-               Entry var5x = (Entry)var4x.next();
-               ResourceLocation var6x = (ResourceLocation)var5x.getKey();
-               AbstractTexture var7 = (AbstractTexture)var5x.getValue();
-               if (var7 == MissingTextureAtlasSprite.getTexture() && !var6x.equals(MissingTextureAtlasSprite.getLocation())) {
-                  var4x.remove();
+            while(var5x.hasNext()) {
+               Entry var6x = (Entry)var5x.next();
+               ResourceLocation var7x = (ResourceLocation)var6x.getKey();
+               AbstractTexture var8 = (AbstractTexture)var6x.getValue();
+               if (var8 == MissingTextureAtlasSprite.getTexture() && !var7x.equals(MissingTextureAtlasSprite.getLocation())) {
+                  var5x.remove();
                } else {
-                  var7.reset(this, var2, var6x, var6);
+                  var8.reset(this, var2, var7x, var6);
                }
             }
+   
+            Minecraft.getInstance().tell(() -> var7.complete(null));
          }, var0 -> RenderSystem.recordRenderCall(var0::run));
+      return var7;
    }
 }

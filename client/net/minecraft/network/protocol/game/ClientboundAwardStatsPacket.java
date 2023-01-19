@@ -3,7 +3,7 @@ package net.minecraft.network.protocol.game;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.stats.Stat;
@@ -20,7 +20,7 @@ public class ClientboundAwardStatsPacket implements Packet<ClientGamePacketListe
    public ClientboundAwardStatsPacket(FriendlyByteBuf var1) {
       super();
       this.stats = var1.readMap(Object2IntOpenHashMap::new, var1x -> {
-         StatType var2 = var1x.readById(Registry.STAT_TYPE);
+         StatType var2 = var1x.readById(BuiltInRegistries.STAT_TYPE);
          return readStatCap(var1, var2);
       }, FriendlyByteBuf::readVarInt);
    }
@@ -39,7 +39,7 @@ public class ClientboundAwardStatsPacket implements Packet<ClientGamePacketListe
    }
 
    private static <T> void writeStatCap(FriendlyByteBuf var0, Stat<T> var1) {
-      var0.writeId(Registry.STAT_TYPE, var1.getType());
+      var0.writeId(BuiltInRegistries.STAT_TYPE, var1.getType());
       var0.writeId(var1.getType().getRegistry(), (T)var1.getValue());
    }
 

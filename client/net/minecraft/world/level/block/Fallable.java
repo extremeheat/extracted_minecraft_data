@@ -16,8 +16,8 @@ public interface Fallable {
    default void onBrokenAfterFall(Level var1, BlockPos var2, FallingBlockEntity var3) {
    }
 
-   default DamageSource getFallDamageSource() {
-      return DamageSource.FALLING_BLOCK;
+   default DamageSource getFallDamageSource(Entity var1) {
+      return DamageSource.fallingBlock(var1);
    }
 
    default Predicate<Entity> getHurtsEntitySelector() {

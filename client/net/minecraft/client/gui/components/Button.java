@@ -1,28 +1,27 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.function.Consumer;
-import net.minecraft.client.gui.narration.NarratedElementType;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 public class Button extends AbstractButton {
-   public static final Button.OnTooltip NO_TOOLTIP = (var0, var1, var2, var3) -> {
-   };
    public static final int SMALL_WIDTH = 120;
    public static final int DEFAULT_WIDTH = 150;
    public static final int DEFAULT_HEIGHT = 20;
+   protected static final Button.CreateNarration DEFAULT_NARRATION = var0 -> var0.get();
    protected final Button.OnPress onPress;
-   protected final Button.OnTooltip onTooltip;
+   protected final Button.CreateNarration createNarration;
 
-   public Button(int var1, int var2, int var3, int var4, Component var5, Button.OnPress var6) {
-      this(var1, var2, var3, var4, var5, var6, NO_TOOLTIP);
+   public static Button.Builder builder(Component var0, Button.OnPress var1) {
+      return new Button.Builder(var0, var1);
    }
 
-   public Button(int var1, int var2, int var3, int var4, Component var5, Button.OnPress var6, Button.OnTooltip var7) {
+   protected Button(int var1, int var2, int var3, int var4, Component var5, Button.OnPress var6, Button.CreateNarration var7) {
       super(var1, var2, var3, var4, var5);
       this.onPress = var6;
-      this.onTooltip = var7;
+      this.createNarration = var7;
    }
 
    @Override
@@ -31,32 +30,75 @@ public class Button extends AbstractButton {
    }
 
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-      super.renderButton(var1, var2, var3, var4);
-      if (this.isHoveredOrFocused()) {
-         this.renderToolTip(var1, var2, var3);
+   protected MutableComponent createNarrationMessage() {
+      return this.createNarration.createNarrationMessage(() -> super.createNarrationMessage());
+   }
+
+   @Override
+   public void updateWidgetNarration(NarrationElementOutput var1) {
+      this.defaultButtonNarrationText(var1);
+   }
+
+   public static class Builder {
+      private final Component message;
+      private final Button.OnPress onPress;
+      @Nullable
+      private Tooltip tooltip;
+      private int x;
+      private int y;
+      private int width = 150;
+      private int height = 20;
+      private Button.CreateNarration createNarration = Button.DEFAULT_NARRATION;
+
+      public Builder(Component var1, Button.OnPress var2) {
+         super();
+         this.message = var1;
+         this.onPress = var2;
+      }
+
+      public Button.Builder pos(int var1, int var2) {
+         this.x = var1;
+         this.y = var2;
+         return this;
+      }
+
+      public Button.Builder width(int var1) {
+         this.width = var1;
+         return this;
+      }
+
+      public Button.Builder size(int var1, int var2) {
+         this.width = var1;
+         this.height = var2;
+         return this;
+      }
+
+      public Button.Builder bounds(int var1, int var2, int var3, int var4) {
+         return this.pos(var1, var2).size(var3, var4);
+      }
+
+      public Button.Builder tooltip(@Nullable Tooltip var1) {
+         this.tooltip = var1;
+         return this;
+      }
+
+      public Button.Builder createNarration(Button.CreateNarration var1) {
+         this.createNarration = var1;
+         return this;
+      }
+
+      public Button build() {
+         Button var1 = new Button(this.x, this.y, this.width, this.height, this.message, this.onPress, this.createNarration);
+         var1.setTooltip(this.tooltip);
+         return var1;
       }
    }
 
-   @Override
-   public void renderToolTip(PoseStack var1, int var2, int var3) {
-      this.onTooltip.onTooltip(this, var1, var2, var3);
-   }
-
-   @Override
-   public void updateNarration(NarrationElementOutput var1) {
-      this.defaultButtonNarrationText(var1);
-      this.onTooltip.narrateTooltip(var1x -> var1.add(NarratedElementType.HINT, var1x));
+   public interface CreateNarration {
+      MutableComponent createNarrationMessage(Supplier<MutableComponent> var1);
    }
 
    public interface OnPress {
       void onPress(Button var1);
-   }
-
-   public interface OnTooltip {
-      void onTooltip(Button var1, PoseStack var2, int var3, int var4);
-
-      default void narrateTooltip(Consumer<Component> var1) {
-      }
    }
 }

@@ -1,40 +1,32 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 
-public class SetWalkTargetFromLookTarget extends Behavior<LivingEntity> {
-   private final Function<LivingEntity, Float> speedModifier;
-   private final int closeEnoughDistance;
-   private final Predicate<LivingEntity> canSetWalkTargetPredicate;
-
-   public SetWalkTargetFromLookTarget(float var1, int var2) {
-      this(var0 -> true, var1x -> var1, var2);
+public class SetWalkTargetFromLookTarget {
+   public SetWalkTargetFromLookTarget() {
+      super();
    }
 
-   public SetWalkTargetFromLookTarget(Predicate<LivingEntity> var1, Function<LivingEntity, Float> var2, int var3) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.LOOK_TARGET, MemoryStatus.VALUE_PRESENT));
-      this.speedModifier = var2;
-      this.closeEnoughDistance = var3;
-      this.canSetWalkTargetPredicate = var1;
+   public static OneShot<LivingEntity> create(float var0, int var1) {
+      return create(var0x -> true, var1x -> var0, var1);
    }
 
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      return this.canSetWalkTargetPredicate.test(var2);
-   }
-
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      Brain var5 = var2.getBrain();
-      PositionTracker var6 = var5.getMemory(MemoryModuleType.LOOK_TARGET).get();
-      var5.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var6, this.speedModifier.apply(var2), this.closeEnoughDistance));
+   public static OneShot<LivingEntity> create(Predicate<LivingEntity> var0, Function<LivingEntity, Float> var1, int var2) {
+      return BehaviorBuilder.create(
+         var3 -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.present(MemoryModuleType.LOOK_TARGET))
+               .apply(var3, (var4, var5) -> (var6, var7, var8) -> {
+                     if (!var0.test(var7)) {
+                        return false;
+                     } else {
+                        var4.set(new WalkTarget(var3.get(var5), var1.apply(var7), var2));
+                        return true;
+                     }
+                  })
+      );
    }
 }

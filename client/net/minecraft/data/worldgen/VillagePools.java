@@ -1,15 +1,17 @@
 package net.minecraft.data.worldgen;
 
+import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+
 public class VillagePools {
    public VillagePools() {
       super();
    }
 
-   public static void bootstrap() {
-      PlainVillagePools.bootstrap();
-      SnowyVillagePools.bootstrap();
-      SavannaVillagePools.bootstrap();
-      DesertVillagePools.bootstrap();
-      TaigaVillagePools.bootstrap();
+   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+      PlainVillagePools.bootstrap(var0);
+      SnowyVillagePools.bootstrap(var0);
+      SavannaVillagePools.bootstrap(var0);
+      DesertVillagePools.bootstrap(var0);
+      TaigaVillagePools.bootstrap(var0);
    }
 }

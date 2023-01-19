@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface PlacementModifierType<P extends PlacementModifier> {
    PlacementModifierType<BlockPredicateFilter> BLOCK_PREDICATE_FILTER = register("block_predicate_filter", BlockPredicateFilter.CODEC);
@@ -25,6 +26,6 @@ public interface PlacementModifierType<P extends PlacementModifier> {
    Codec<P> codec();
 
    private static <P extends PlacementModifier> PlacementModifierType<P> register(String var0, Codec<P> var1) {
-      return Registry.register(Registry.PLACEMENT_MODIFIERS, var0, () -> var1);
+      return Registry.register(BuiltInRegistries.PLACEMENT_MODIFIER_TYPE, var0, () -> var1);
    }
 }

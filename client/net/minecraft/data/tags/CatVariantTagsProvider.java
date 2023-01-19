@@ -1,17 +1,19 @@
 package net.minecraft.data.tags;
 
-import net.minecraft.core.Registry;
-import net.minecraft.data.DataGenerator;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
 import net.minecraft.tags.CatVariantTags;
 import net.minecraft.world.entity.animal.CatVariant;
 
 public class CatVariantTagsProvider extends TagsProvider<CatVariant> {
-   public CatVariantTagsProvider(DataGenerator var1) {
-      super(var1, Registry.CAT_VARIANT);
+   public CatVariantTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, Registries.CAT_VARIANT, var2);
    }
 
    @Override
-   protected void addTags() {
+   protected void addTags(HolderLookup.Provider var1) {
       this.tag(CatVariantTags.DEFAULT_SPAWNS)
          .add(
             CatVariant.TABBY,

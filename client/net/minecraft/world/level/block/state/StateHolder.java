@@ -122,6 +122,20 @@ public abstract class StateHolder<O, S> {
       }
    }
 
+   public <T extends Comparable<T>, V extends T> S trySetValue(Property<T> var1, V var2) {
+      Comparable var3 = (Comparable)this.values.get(var1);
+      if (var3 != null && var3 != var2) {
+         Object var4 = this.neighbours.get(var1, var2);
+         if (var4 == null) {
+            throw new IllegalArgumentException("Cannot set property " + var1 + " to " + var2 + " on " + this.owner + ", it is not an allowed value");
+         } else {
+            return (S)var4;
+         }
+      } else {
+         return (S)this;
+      }
+   }
+
    public void populateNeighbours(Map<Map<Property<?>, Comparable<?>>, S> var1) {
       if (this.neighbours != null) {
          throw new IllegalStateException();

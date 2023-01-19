@@ -7,7 +7,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -26,7 +25,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -36,30 +35,31 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.WorldLoader;
-import net.minecraft.server.WorldStem;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.FolderRepositorySource;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldGenSettings;
+import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.storage.WorldData;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 
@@ -84,7 +84,7 @@ public class CreateWorldScreen extends Screen {
    private boolean commands;
    private boolean commandsChanged;
    public boolean hardCore;
-   protected DataPackConfig dataPacks;
+   protected WorldDataConfiguration dataConfiguration;
    @Nullable
    private Path tempDataPackDir;
    @Nullable
@@ -105,58 +105,62 @@ public class CreateWorldScreen extends Screen {
 
    public static void openFresh(Minecraft var0, @Nullable Screen var1) {
       queueLoadScreen(var0, PREPARING_WORLD_DATA);
-      PackRepository var2 = new PackRepository(PackType.SERVER_DATA, new ServerPacksSource());
-      WorldLoader.InitConfig var3 = createDefaultLoadConfig(var2, DataPackConfig.DEFAULT);
-      CompletableFuture var4 = WorldLoader.load(var3, (var0x, var1x) -> {
-         RegistryAccess.Frozen var2x = RegistryAccess.builtinCopy().freeze();
-         WorldGenSettings var3x = WorldPresets.createNormalWorldFromPreset(var2x);
-         return Pair.of(var3x, var2x);
-      }, (var0x, var1x, var2x, var3x) -> {
-         var0x.close();
-         return new WorldCreationContext(var3x, Lifecycle.stable(), var2x, var1x);
-      }, Util.backgroundExecutor(), var0);
+      PackRepository var2 = new PackRepository(new ServerPacksSource());
+      WorldLoader.InitConfig var3 = createDefaultLoadConfig(var2, WorldDataConfiguration.DEFAULT);
+      CompletableFuture var4 = WorldLoader.load(
+         var3,
+         var0x -> new WorldLoader.DataLoadOutput<>(
+               new CreateWorldScreen.DataPackReloadCookie(
+                  new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen())),
+                  var0x.dataConfiguration()
+               ),
+               var0x.datapackDimensions()
+            ),
+         (var0x, var1x, var2x, var3x) -> {
+            var0x.close();
+            return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
+         },
+         Util.backgroundExecutor(),
+         var0
+      );
       var0.managedBlock(var4::isDone);
       var0.setScreen(
          new CreateWorldScreen(
             var1,
-            DataPackConfig.DEFAULT,
+            WorldDataConfiguration.DEFAULT,
             new WorldGenSettingsComponent((WorldCreationContext)var4.join(), Optional.of(WorldPresets.NORMAL), OptionalLong.empty())
          )
       );
    }
 
-   public static CreateWorldScreen createFromExisting(@Nullable Screen var0, WorldStem var1, @Nullable Path var2) {
-      WorldData var3 = var1.worldData();
-      LevelSettings var4 = var3.getLevelSettings();
-      WorldGenSettings var5 = var3.worldGenSettings();
-      RegistryAccess.Frozen var6 = var1.registryAccess();
-      WorldCreationContext var7 = new WorldCreationContext(var5, var3.worldGenSettingsLifecycle(), var6, var1.dataPackResources());
-      DataPackConfig var8 = var4.getDataPackConfig();
-      CreateWorldScreen var9 = new CreateWorldScreen(
-         var0, var8, new WorldGenSettingsComponent(var7, WorldPresets.fromSettings(var5), OptionalLong.of(var5.seed()))
+   public static CreateWorldScreen createFromExisting(@Nullable Screen var0, LevelSettings var1, WorldCreationContext var2, @Nullable Path var3) {
+      CreateWorldScreen var4 = new CreateWorldScreen(
+         var0,
+         var2.dataConfiguration(),
+         new WorldGenSettingsComponent(var2, WorldPresets.fromSettings(var2.selectedDimensions().dimensions()), OptionalLong.of(var2.options().seed()))
       );
-      var9.initName = var4.levelName();
-      var9.commands = var4.allowCommands();
-      var9.commandsChanged = true;
-      var9.difficulty = var4.difficulty();
-      var9.gameRules.assignFrom(var4.gameRules(), null);
-      if (var4.hardcore()) {
-         var9.gameMode = CreateWorldScreen.SelectedGameMode.HARDCORE;
-      } else if (var4.gameType().isSurvival()) {
-         var9.gameMode = CreateWorldScreen.SelectedGameMode.SURVIVAL;
-      } else if (var4.gameType().isCreative()) {
-         var9.gameMode = CreateWorldScreen.SelectedGameMode.CREATIVE;
+      var4.initName = var1.levelName();
+      var4.commands = var1.allowCommands();
+      var4.commandsChanged = true;
+      var4.difficulty = var1.difficulty();
+      var4.gameRules.assignFrom(var1.gameRules(), null);
+      if (var1.hardcore()) {
+         var4.gameMode = CreateWorldScreen.SelectedGameMode.HARDCORE;
+      } else if (var1.gameType().isSurvival()) {
+         var4.gameMode = CreateWorldScreen.SelectedGameMode.SURVIVAL;
+      } else if (var1.gameType().isCreative()) {
+         var4.gameMode = CreateWorldScreen.SelectedGameMode.CREATIVE;
       }
 
-      var9.tempDataPackDir = var2;
-      return var9;
+      var4.tempDataPackDir = var3;
+      return var4;
    }
 
-   private CreateWorldScreen(@Nullable Screen var1, DataPackConfig var2, WorldGenSettingsComponent var3) {
+   private CreateWorldScreen(@Nullable Screen var1, WorldDataConfiguration var2, WorldGenSettingsComponent var3) {
       super(Component.translatable("selectWorld.create"));
       this.lastScreen = var1;
       this.initName = I18n.get("selectWorld.newWorld");
-      this.dataPacks = var2;
+      this.dataConfiguration = var2;
       this.worldGenSettingsComponent = var3;
    }
 
@@ -168,7 +172,6 @@ public class CreateWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 60, 200, 20, Component.translatable("selectWorld.enterName")) {
          @Override
          protected MutableComponent createNarrationMessage() {
@@ -216,30 +219,29 @@ public class CreateWorldScreen extends Screen {
             })
       );
       this.dataPacksButton = this.addRenderableWidget(
-         new Button(var2, 151, 150, 20, Component.translatable("selectWorld.dataPacks"), var1x -> this.openDataPackSelectionScreen())
+         Button.builder(Component.translatable("selectWorld.dataPacks"), var1x -> this.openDataPackSelectionScreen()).bounds(var2, 151, 150, 20).build()
       );
       this.gameRulesButton = this.addRenderableWidget(
-         new Button(
-            var1,
-            185,
-            150,
-            20,
-            Component.translatable("selectWorld.gameRules"),
-            var1x -> this.minecraft.setScreen(new EditGameRulesScreen(this.gameRules.copy(), var1xx -> {
-                  this.minecraft.setScreen(this);
-                  var1xx.ifPresent(var1xxx -> this.gameRules = var1xxx);
-               }))
-         )
+         Button.builder(
+               Component.translatable("selectWorld.gameRules"), var1x -> this.minecraft.setScreen(new EditGameRulesScreen(this.gameRules.copy(), var1xx -> {
+                     this.minecraft.setScreen(this);
+                     var1xx.ifPresent(var1xxx -> this.gameRules = var1xxx);
+                  }))
+            )
+            .bounds(var1, 185, 150, 20)
+            .build()
       );
       this.worldGenSettingsComponent.init(this, this.minecraft, this.font);
       this.moreOptionsButton = this.addRenderableWidget(
-         new Button(var2, 185, 150, 20, Component.translatable("selectWorld.moreWorldOptions"), var1x -> this.toggleWorldGenSettingsVisibility())
+         Button.builder(Component.translatable("selectWorld.moreWorldOptions"), var1x -> this.toggleWorldGenSettingsVisibility())
+            .bounds(var2, 185, 150, 20)
+            .build()
       );
       this.createButton = this.addRenderableWidget(
-         new Button(var1, this.height - 28, 150, 20, Component.translatable("selectWorld.create"), var1x -> this.onCreate())
+         Button.builder(Component.translatable("selectWorld.create"), var1x -> this.onCreate()).bounds(var1, this.height - 28, 150, 20).build()
       );
       this.createButton.active = !this.initName.isEmpty();
-      this.addRenderableWidget(new Button(var2, this.height - 28, 150, 20, CommonComponents.GUI_CANCEL, var1x -> this.popScreen()));
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.popScreen()).bounds(var2, this.height - 28, 150, 20).build());
       this.refreshWorldGenSettingsVisibility();
       this.setInitialFocus(this.nameEdit);
       this.setGameMode(this.gameMode);
@@ -274,30 +276,33 @@ public class CreateWorldScreen extends Screen {
       }
    }
 
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
-   }
-
    private static void queueLoadScreen(Minecraft var0, Component var1) {
       var0.forceSetScreen(new GenericDirtMessageScreen(var1));
    }
 
    private void onCreate() {
-      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, this.worldGenSettingsComponent.settings().worldSettingsStability(), this::createNewWorld);
+      WorldCreationContext var1 = this.worldGenSettingsComponent.settings();
+      WorldDimensions.Complete var2 = var1.selectedDimensions().bake(var1.datapackDimensions());
+      LayeredRegistryAccess var3 = var1.worldgenRegistries().replaceFrom(RegistryLayer.DIMENSIONS, var2.dimensionsRegistryAccess());
+      Lifecycle var4 = FeatureFlags.isExperimental(var1.dataConfiguration().enabledFeatures()) ? Lifecycle.experimental() : Lifecycle.stable();
+      Lifecycle var5 = var3.compositeAccess().allRegistriesLifecycle();
+      Lifecycle var6 = var5.add(var4);
+      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, var6, () -> this.createNewWorld(var2.specialWorldProperty(), var3, var6));
    }
 
-   private void createNewWorld() {
+   private void createNewWorld(PrimaryLevelData.SpecialWorldProperty var1, LayeredRegistryAccess<RegistryLayer> var2, Lifecycle var3) {
       queueLoadScreen(this.minecraft, PREPARING_WORLD_DATA);
-      Optional var1 = this.createNewWorldDirectory();
-      if (!var1.isEmpty()) {
+      Optional var4 = this.createNewWorldDirectory();
+      if (!var4.isEmpty()) {
          this.removeTempDataPackDir();
-         WorldCreationContext var2 = this.worldGenSettingsComponent.createFinalSettings(this.hardCore);
-         LevelSettings var3 = this.createLevelSettings(var2.worldGenSettings().isDebug());
-         PrimaryLevelData var4 = new PrimaryLevelData(var3, var2.worldGenSettings(), var2.worldSettingsStability());
+         boolean var5 = var1 == PrimaryLevelData.SpecialWorldProperty.DEBUG;
+         WorldCreationContext var6 = this.worldGenSettingsComponent.settings();
+         WorldOptions var7 = this.worldGenSettingsComponent.createFinalOptions(var5, this.hardCore);
+         LevelSettings var8 = this.createLevelSettings(var5);
+         PrimaryLevelData var9 = new PrimaryLevelData(var8, var7, var1, var3);
          this.minecraft
             .createWorldOpenFlows()
-            .createLevelFromExistingSettings((LevelStorageSource.LevelStorageAccess)var1.get(), var2.dataPackResources(), var2.registryAccess(), var4);
+            .createLevelFromExistingSettings((LevelStorageSource.LevelStorageAccess)var4.get(), var6.dataPackResources(), var2, var9);
       }
    }
 
@@ -306,10 +311,16 @@ public class CreateWorldScreen extends Screen {
       if (var1) {
          GameRules var3 = new GameRules();
          var3.getRule(GameRules.RULE_DAYLIGHT).set(false, null);
-         return new LevelSettings(var2, GameType.SPECTATOR, false, Difficulty.PEACEFUL, true, var3, DataPackConfig.DEFAULT);
+         return new LevelSettings(var2, GameType.SPECTATOR, false, Difficulty.PEACEFUL, true, var3, WorldDataConfiguration.DEFAULT);
       } else {
          return new LevelSettings(
-            var2, this.gameMode.gameType, this.hardCore, this.getEffectiveDifficulty(), this.commands && !this.hardCore, this.gameRules, this.dataPacks
+            var2,
+            this.gameMode.gameType,
+            this.hardCore,
+            this.getEffectiveDifficulty(),
+            this.commands && !this.hardCore,
+            this.gameRules,
+            this.dataConfiguration
          );
       }
    }
@@ -436,7 +447,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    @Override
-   protected <T extends GuiEventListener & Widget & NarratableEntry> T addRenderableWidget(T var1) {
+   protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T var1) {
       return super.addRenderableWidget((T)var1);
    }
 
@@ -461,7 +472,7 @@ public class CreateWorldScreen extends Screen {
          this.minecraft
             .setScreen(
                new PackSelectionScreen(
-                  this, (PackRepository)var1.getSecond(), this::tryApplyNewDataPacks, (File)var1.getFirst(), Component.translatable("dataPack.title")
+                  this, (PackRepository)var1.getSecond(), this::tryApplyNewDataPacks, (Path)var1.getFirst(), Component.translatable("dataPack.title")
                )
             );
       }
@@ -470,83 +481,94 @@ public class CreateWorldScreen extends Screen {
    private void tryApplyNewDataPacks(PackRepository var1) {
       ImmutableList var2 = ImmutableList.copyOf(var1.getSelectedIds());
       List var3 = var1.getAvailableIds().stream().filter(var1x -> !var2.contains(var1x)).collect(ImmutableList.toImmutableList());
-      DataPackConfig var4 = new DataPackConfig(var2, var3);
-      if (var2.equals(this.dataPacks.getEnabled())) {
-         this.dataPacks = var4;
+      WorldDataConfiguration var4 = new WorldDataConfiguration(new DataPackConfig(var2, var3), this.dataConfiguration.enabledFeatures());
+      if (var2.equals(this.dataConfiguration.dataPacks().getEnabled())) {
+         this.dataConfiguration = var4;
       } else {
-         this.minecraft.tell(() -> this.minecraft.setScreen(new GenericDirtMessageScreen(Component.translatable("dataPack.validation.working"))));
-         WorldLoader.InitConfig var5 = createDefaultLoadConfig(var1, var4);
-         WorldLoader.load(
-               var5,
-               (var1x, var2x) -> {
-                  WorldCreationContext var3x = this.worldGenSettingsComponent.settings();
-                  RegistryAccess.Frozen var4x = var3x.registryAccess();
-                  RegistryAccess.Writable var5x = RegistryAccess.builtinCopy();
-                  RegistryOps var6 = RegistryOps.create(JsonOps.INSTANCE, var4x);
-                  RegistryOps var7 = RegistryOps.createAndLoad(JsonOps.INSTANCE, var5x, var1x);
-                  DataResult var8 = WorldGenSettings.CODEC.encodeStart(var6, var3x.worldGenSettings()).setLifecycle(Lifecycle.stable());
-                  DataResult var9 = var8.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var7, var1xx));
-                  RegistryAccess.Frozen var10 = var5x.freeze();
-                  Lifecycle var11 = var9.lifecycle().add(var10.allElementsLifecycle());
-                  WorldGenSettings var12 = (WorldGenSettings)var9.getOrThrow(
-                     false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error)
-                  );
-                  if (var10.registryOrThrow(Registry.WORLD_PRESET_REGISTRY).size() == 0) {
-                     throw new IllegalStateException("Needs at least one world preset to continue");
-                  } else if (var10.registryOrThrow(Registry.BIOME_REGISTRY).size() == 0) {
-                     throw new IllegalStateException("Needs at least one biome continue");
+         FeatureFlagSet var5 = var1.getRequestedFeatureFlags();
+         if (FeatureFlags.isExperimental(var5)) {
+            this.minecraft.tell(() -> this.minecraft.setScreen(new ConfirmExperimentalFeaturesScreen(var1.getSelectedPacks(), var3x -> {
+                  if (var3x) {
+                     this.applyNewPackConfig(var1, var4);
                   } else {
-                     return Pair.of(Pair.of(var12, var11), var10);
+                     this.openDataPackSelectionScreen();
                   }
-               },
-               (var0, var1x, var2x, var3x) -> {
-                  var0.close();
-                  return new WorldCreationContext((WorldGenSettings)var3x.getFirst(), (Lifecycle)var3x.getSecond(), var2x, var1x);
-               },
-               Util.backgroundExecutor(),
-               this.minecraft
-            )
-            .thenAcceptAsync(var2x -> {
-               this.dataPacks = var4;
-               this.worldGenSettingsComponent.updateSettings(var2x);
-               this.rebuildWidgets();
-            }, this.minecraft)
-            .handle(
-               (var1x, var2x) -> {
-                  if (var2x != null) {
-                     LOGGER.warn("Failed to validate datapack", var2x);
-                     this.minecraft
-                        .tell(
-                           () -> this.minecraft
-                                 .setScreen(
-                                    new ConfirmScreen(
-                                       var1xx -> {
-                                          if (var1xx) {
-                                             this.openDataPackSelectionScreen();
-                                          } else {
-                                             this.dataPacks = DataPackConfig.DEFAULT;
-                                             this.minecraft.setScreen(this);
-                                          }
-                                       },
-                                       Component.translatable("dataPack.validation.failed"),
-                                       CommonComponents.EMPTY,
-                                       Component.translatable("dataPack.validation.back"),
-                                       Component.translatable("dataPack.validation.reset")
-                                    )
-                                 )
-                        );
-                  } else {
-                     this.minecraft.tell(() -> this.minecraft.setScreen(this));
-                  }
-      
-                  return null;
-               }
-            );
+               })));
+         } else {
+            this.applyNewPackConfig(var1, var4);
+         }
       }
    }
 
-   private static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository var0, DataPackConfig var1) {
-      WorldLoader.PackConfig var2 = new WorldLoader.PackConfig(var0, var1, false);
+   private void applyNewPackConfig(PackRepository var1, WorldDataConfiguration var2) {
+      this.minecraft.tell(() -> this.minecraft.setScreen(new GenericDirtMessageScreen(Component.translatable("dataPack.validation.working"))));
+      WorldLoader.InitConfig var3 = createDefaultLoadConfig(var1, var2);
+      WorldLoader.<CreateWorldScreen.DataPackReloadCookie, WorldCreationContext>load(
+            var3,
+            var1x -> {
+               if (var1x.datapackWorldgen().registryOrThrow(Registries.WORLD_PRESET).size() == 0) {
+                  throw new IllegalStateException("Needs at least one world preset to continue");
+               } else if (var1x.datapackWorldgen().registryOrThrow(Registries.BIOME).size() == 0) {
+                  throw new IllegalStateException("Needs at least one biome continue");
+               } else {
+                  WorldCreationContext var2x = this.worldGenSettingsComponent.settings();
+                  RegistryOps var3x = RegistryOps.create(JsonOps.INSTANCE, var2x.worldgenLoadContext());
+                  DataResult var4 = WorldGenSettings.encode(var3x, var2x.options(), var2x.selectedDimensions()).setLifecycle(Lifecycle.stable());
+                  RegistryOps var5 = RegistryOps.create(JsonOps.INSTANCE, var1x.datapackWorldgen());
+                  WorldGenSettings var6 = (WorldGenSettings)var4.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
+                     .getOrThrow(false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error));
+                  return new WorldLoader.DataLoadOutput<>(
+                     new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions()
+                  );
+               }
+            },
+            (var0, var1x, var2x, var3x) -> {
+               var0.close();
+               return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
+            },
+            Util.backgroundExecutor(),
+            this.minecraft
+         )
+         .thenAcceptAsync(var1x -> {
+            this.dataConfiguration = var1x.dataConfiguration();
+            this.worldGenSettingsComponent.updateSettings(var1x);
+            this.rebuildWidgets();
+         }, this.minecraft)
+         .handle(
+            (var1x, var2x) -> {
+               if (var2x != null) {
+                  LOGGER.warn("Failed to validate datapack", var2x);
+                  this.minecraft
+                     .tell(
+                        () -> this.minecraft
+                              .setScreen(
+                                 new ConfirmScreen(
+                                    var1xx -> {
+                                       if (var1xx) {
+                                          this.openDataPackSelectionScreen();
+                                       } else {
+                                          this.dataConfiguration = WorldDataConfiguration.DEFAULT;
+                                          this.minecraft.setScreen(this);
+                                       }
+                                    },
+                                    Component.translatable("dataPack.validation.failed"),
+                                    CommonComponents.EMPTY,
+                                    Component.translatable("dataPack.validation.back"),
+                                    Component.translatable("dataPack.validation.reset")
+                                 )
+                              )
+                     );
+               } else {
+                  this.minecraft.tell(() -> this.minecraft.setScreen(this));
+               }
+      
+               return null;
+            }
+         );
+   }
+
+   private static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository var0, WorldDataConfiguration var1) {
+      WorldLoader.PackConfig var2 = new WorldLoader.PackConfig(var0, var1, false, true);
       return new WorldLoader.InitConfig(var2, Commands.CommandSelection.INTEGRATED, 2);
    }
 
@@ -588,7 +610,7 @@ public class CreateWorldScreen extends Screen {
             Optional var4;
             try (Stream var2 = Files.walk(this.tempDataPackDir)) {
                Path var3 = var1.getLevelPath(LevelResource.DATAPACK_DIR);
-               Files.createDirectories(var3);
+               FileUtil.createDirectoriesSafe(var3);
                var2.filter(var1x -> !var1x.equals(this.tempDataPackDir)).forEach(var2x -> copyBetweenDirs(this.tempDataPackDir, var3, var2x));
                var4 = Optional.of(var1);
             }
@@ -637,21 +659,29 @@ public class CreateWorldScreen extends Screen {
    }
 
    @Nullable
-   private Pair<File, PackRepository> getDataPackSelectionSettings() {
+   private Pair<Path, PackRepository> getDataPackSelectionSettings() {
       Path var1 = this.getTempDataPackDir();
       if (var1 != null) {
-         File var2 = var1.toFile();
          if (this.tempDataPackRepository == null) {
-            this.tempDataPackRepository = new PackRepository(
-               PackType.SERVER_DATA, new ServerPacksSource(), new FolderRepositorySource(var2, PackSource.DEFAULT)
-            );
+            this.tempDataPackRepository = ServerPacksSource.createPackRepository(var1);
             this.tempDataPackRepository.reload();
          }
 
-         this.tempDataPackRepository.setSelected(this.dataPacks.getEnabled());
-         return Pair.of(var2, this.tempDataPackRepository);
+         this.tempDataPackRepository.setSelected(this.dataConfiguration.dataPacks().getEnabled());
+         return Pair.of(var1, this.tempDataPackRepository);
       } else {
          return null;
+      }
+   }
+
+   static record DataPackReloadCookie(WorldGenSettings a, WorldDataConfiguration b) {
+      private final WorldGenSettings worldGenSettings;
+      private final WorldDataConfiguration dataConfiguration;
+
+      DataPackReloadCookie(WorldGenSettings var1, WorldDataConfiguration var2) {
+         super();
+         this.worldGenSettings = var1;
+         this.dataConfiguration = var2;
       }
    }
 

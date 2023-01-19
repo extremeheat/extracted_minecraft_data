@@ -39,7 +39,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
 
    @Override
    protected boolean canMoveDirectly(Vec3 var1, Vec3 var2) {
-      return isClearForMovementBetween(this.mob, var1, var2);
+      return isClearForMovementBetween(this.mob, var1, var2, false);
    }
 
    @Override

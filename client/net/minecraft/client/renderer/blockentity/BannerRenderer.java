@@ -3,7 +3,7 @@ package net.minecraft.client.renderer.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.List;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
 
 public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
    private static final int BANNER_WIDTH = 20;
@@ -63,21 +64,21 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity> {
       long var10;
       if (var9) {
          var10 = 0L;
-         var3.translate(0.5, 0.5, 0.5);
+         var3.translate(0.5F, 0.5F, 0.5F);
          this.pole.visible = true;
       } else {
          var10 = var1.getLevel().getGameTime();
          BlockState var12 = var1.getBlockState();
          if (var12.getBlock() instanceof BannerBlock) {
-            var3.translate(0.5, 0.5, 0.5);
-            float var13 = (float)(-var12.getValue(BannerBlock.ROTATION) * 360) / 16.0F;
-            var3.mulPose(Vector3f.YP.rotationDegrees(var13));
+            var3.translate(0.5F, 0.5F, 0.5F);
+            float var13 = -RotationSegment.convertToDegrees(var12.getValue(BannerBlock.ROTATION));
+            var3.mulPose(Axis.YP.rotationDegrees(var13));
             this.pole.visible = true;
          } else {
-            var3.translate(0.5, -0.1666666716337204, 0.5);
+            var3.translate(0.5F, -0.16666667F, 0.5F);
             float var16 = -var12.getValue(WallBannerBlock.FACING).toYRot();
-            var3.mulPose(Vector3f.YP.rotationDegrees(var16));
-            var3.translate(0.0, -0.3125, -0.4375);
+            var3.mulPose(Axis.YP.rotationDegrees(var16));
+            var3.translate(0.0F, -0.3125F, -0.4375F);
             this.pole.visible = false;
          }
       }

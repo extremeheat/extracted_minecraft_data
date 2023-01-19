@@ -16,7 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -121,27 +121,20 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       add(var0, Items.COAL, 1600);
       add(var0, Items.CHARCOAL, 1600);
       add(var0, ItemTags.LOGS, 300);
+      add(var0, ItemTags.BAMBOO_BLOCKS, 300);
       add(var0, ItemTags.PLANKS, 300);
+      add(var0, Blocks.BAMBOO_MOSAIC, 300);
       add(var0, ItemTags.WOODEN_STAIRS, 300);
+      add(var0, Blocks.BAMBOO_MOSAIC_STAIRS, 300);
       add(var0, ItemTags.WOODEN_SLABS, 150);
+      add(var0, Blocks.BAMBOO_MOSAIC_SLAB, 150);
       add(var0, ItemTags.WOODEN_TRAPDOORS, 300);
       add(var0, ItemTags.WOODEN_PRESSURE_PLATES, 300);
-      add(var0, Blocks.OAK_FENCE, 300);
-      add(var0, Blocks.BIRCH_FENCE, 300);
-      add(var0, Blocks.SPRUCE_FENCE, 300);
-      add(var0, Blocks.JUNGLE_FENCE, 300);
-      add(var0, Blocks.DARK_OAK_FENCE, 300);
-      add(var0, Blocks.ACACIA_FENCE, 300);
-      add(var0, Blocks.MANGROVE_FENCE, 300);
-      add(var0, Blocks.OAK_FENCE_GATE, 300);
-      add(var0, Blocks.BIRCH_FENCE_GATE, 300);
-      add(var0, Blocks.SPRUCE_FENCE_GATE, 300);
-      add(var0, Blocks.JUNGLE_FENCE_GATE, 300);
-      add(var0, Blocks.DARK_OAK_FENCE_GATE, 300);
-      add(var0, Blocks.ACACIA_FENCE_GATE, 300);
-      add(var0, Blocks.MANGROVE_FENCE_GATE, 300);
+      add(var0, ItemTags.WOODEN_FENCES, 300);
+      add(var0, ItemTags.FENCE_GATES, 300);
       add(var0, Blocks.NOTE_BLOCK, 300);
       add(var0, Blocks.BOOKSHELF, 300);
+      add(var0, Blocks.CHISELED_BOOKSHELF, 300);
       add(var0, Blocks.LECTERN, 300);
       add(var0, Blocks.JUKEBOX, 300);
       add(var0, Blocks.CHEST, 300);
@@ -153,6 +146,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       add(var0, Items.FISHING_ROD, 300);
       add(var0, Blocks.LADDER, 300);
       add(var0, ItemTags.SIGNS, 200);
+      add(var0, ItemTags.HANGING_SIGNS, 800);
       add(var0, Items.WOODEN_SHOVEL, 200);
       add(var0, Items.WOODEN_SWORD, 200);
       add(var0, Items.WOODEN_HOE, 200);
@@ -188,7 +182,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    private static void add(Map<Item, Integer> var0, TagKey<Item> var1, int var2) {
-      for(Holder var4 : Registry.ITEM.getTagOrEmpty(var1)) {
+      for(Holder var4 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
          if (!isNeverAFurnaceFuel((Item)var4.value())) {
             var0.put((Item)var4.value(), var2);
          }

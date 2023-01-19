@@ -3,13 +3,13 @@ package net.minecraft.data.info;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,19 +17,19 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class BlockListReport implements DataProvider {
-   private final DataGenerator generator;
+   private final PackOutput output;
 
-   public BlockListReport(DataGenerator var1) {
+   public BlockListReport(PackOutput var1) {
       super();
-      this.generator = var1;
+      this.output = var1;
    }
 
    @Override
-   public void run(CachedOutput var1) throws IOException {
+   public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
 
-      for(Block var4 : Registry.BLOCK) {
-         ResourceLocation var5 = Registry.BLOCK.getKey(var4);
+      for(Block var4 : BuiltInRegistries.BLOCK) {
+         ResourceLocation var5 = BuiltInRegistries.BLOCK.getKey(var4);
          JsonObject var6 = new JsonObject();
          StateDefinition var7 = var4.getStateDefinition();
          if (!var7.getProperties().isEmpty()) {
@@ -74,12 +74,12 @@ public class BlockListReport implements DataProvider {
          var2.add(var5.toString(), var6);
       }
 
-      Path var15 = this.generator.getOutputFolder(DataGenerator.Target.REPORTS).resolve("blocks.json");
-      DataProvider.saveStable(var1, var2, var15);
+      Path var15 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("blocks.json");
+      return DataProvider.saveStable(var1, var2, var15);
    }
 
    @Override
-   public String getName() {
+   public final String getName() {
       return "Block List";
    }
 }

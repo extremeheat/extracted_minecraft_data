@@ -2,7 +2,6 @@ package net.minecraft.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.animation.AnimationDefinition;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
+import org.joml.Vector3f;
 
 public abstract class HierarchicalModel<E extends Entity> extends EntityModel<E> {
    private static final Vector3f ANIMATION_VECTOR_CACHE = new Vector3f();
@@ -32,7 +32,9 @@ public abstract class HierarchicalModel<E extends Entity> extends EntityModel<E>
    public abstract ModelPart root();
 
    public Optional<ModelPart> getAnyDescendantWithName(String var1) {
-      return this.root().getAllParts().filter(var1x -> var1x.hasChild(var1)).findFirst().map(var1x -> var1x.getChild(var1));
+      return var1.equals("root")
+         ? Optional.of(this.root())
+         : this.root().getAllParts().filter(var1x -> var1x.hasChild(var1)).findFirst().map(var1x -> var1x.getChild(var1));
    }
 
    protected void animate(AnimationState var1, AnimationDefinition var2, float var3) {

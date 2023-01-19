@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -25,6 +25,6 @@ public interface BuiltinStructureSets {
    ResourceKey<StructureSet> STRONGHOLDS = register("strongholds");
 
    private static ResourceKey<StructureSet> register(String var0) {
-      return ResourceKey.create(Registry.STRUCTURE_SET_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.STRUCTURE_SET, new ResourceLocation(var0));
    }
 }

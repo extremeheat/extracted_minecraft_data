@@ -4,7 +4,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 
 public enum PackCompatibility {
    TOO_OLD("old"),
@@ -30,10 +29,6 @@ public enum PackCompatibility {
       } else {
          return var0 > var2 ? TOO_NEW : COMPATIBLE;
       }
-   }
-
-   public static PackCompatibility forMetadata(PackMetadataSection var0, PackType var1) {
-      return forFormat(var0.getPackFormat(), var1);
    }
 
    public Component getDescription() {

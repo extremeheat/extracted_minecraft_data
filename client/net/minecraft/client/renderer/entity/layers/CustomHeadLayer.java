@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.Map;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
@@ -57,9 +57,9 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
          if (var4.isBaby() && !(var4 instanceof Villager)) {
             float var14 = 2.0F;
             float var15 = 1.4F;
-            var1.translate(0.0, 0.03125, 0.0);
+            var1.translate(0.0F, 0.03125F, 0.0F);
             var1.scale(0.7F, 0.7F, 0.7F);
-            var1.translate(0.0, 1.0, 0.0);
+            var1.translate(0.0F, 1.0F, 0.0F);
          }
 
          this.getParentModel().getHead().translateAndRotate(var1);
@@ -67,7 +67,7 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
             float var19 = 1.1875F;
             var1.scale(1.1875F, -1.1875F, -1.1875F);
             if (var13) {
-               var1.translate(0.0, 0.0625, 0.0);
+               var1.translate(0.0F, 0.0625F, 0.0F);
             }
 
             GameProfile var20 = null;
@@ -94,11 +94,11 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
 
    public static void translateToHead(PoseStack var0, boolean var1) {
       float var2 = 0.625F;
-      var0.translate(0.0, -0.25, 0.0);
-      var0.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+      var0.translate(0.0F, -0.25F, 0.0F);
+      var0.mulPose(Axis.YP.rotationDegrees(180.0F));
       var0.scale(0.625F, -0.625F, -0.625F);
       if (var1) {
-         var0.translate(0.0, 0.1875, 0.0);
+         var0.translate(0.0F, 0.1875F, 0.0F);
       }
    }
 }

@@ -15,7 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +30,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -68,7 +72,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public abstract class BlockBehaviour {
+public abstract class BlockBehaviour implements FeatureElement {
    protected static final Direction[] UPDATE_SHAPE_ORDER = new Direction[]{
       Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP
    };
@@ -81,6 +85,7 @@ public abstract class BlockBehaviour {
    protected final float speedFactor;
    protected final float jumpFactor;
    protected final boolean dynamicShape;
+   protected final FeatureFlagSet requiredFeatures;
    protected final BlockBehaviour.Properties properties;
    @Nullable
    protected ResourceLocation drops;
@@ -97,6 +102,7 @@ public abstract class BlockBehaviour {
       this.speedFactor = var1.speedFactor;
       this.jumpFactor = var1.jumpFactor;
       this.dynamicShape = var1.dynamicShape;
+      this.requiredFeatures = var1.requiredFeatures;
       this.properties = var1;
    }
 
@@ -190,6 +196,11 @@ public abstract class BlockBehaviour {
 
    public float getMaxVerticalOffset() {
       return 0.2F;
+   }
+
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.requiredFeatures;
    }
 
    @Deprecated
@@ -344,8 +355,8 @@ public abstract class BlockBehaviour {
 
    public final ResourceLocation getLootTable() {
       if (this.drops == null) {
-         ResourceLocation var1 = Registry.BLOCK.getKey(this.asBlock());
-         this.drops = new ResourceLocation(var1.getNamespace(), "blocks/" + var1.getPath());
+         ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(this.asBlock());
+         this.drops = var1.withPrefix("blocks/");
       }
 
       return this.drops;
@@ -382,8 +393,11 @@ public abstract class BlockBehaviour {
       private final BlockBehaviour.StatePredicate hasPostProcess;
       private final BlockBehaviour.StatePredicate emissiveRendering;
       private final BlockBehaviour.OffsetType offsetType;
+      private final boolean spawnParticlesOnBreak;
       @Nullable
       protected BlockBehaviour.BlockStateBase.Cache cache;
+      private FluidState fluidState = Fluids.EMPTY.defaultFluidState();
+      private boolean isRandomlyTicking;
 
       protected BlockStateBase(Block var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<BlockState> var3) {
          super(var1, var2, var3);
@@ -402,9 +416,12 @@ public abstract class BlockBehaviour {
          this.hasPostProcess = var4.hasPostProcess;
          this.emissiveRendering = var4.emissiveRendering;
          this.offsetType = var4.offsetType.apply(this.asState());
+         this.spawnParticlesOnBreak = var4.spawnParticlesOnBreak;
       }
 
       public void initCache() {
+         this.fluidState = this.owner.getFluidState(this.asState());
+         this.isRandomlyTicking = this.owner.isRandomlyTicking(this.asState());
          if (!this.getBlock().hasDynamicShape()) {
             this.cache = new BlockBehaviour.BlockStateBase.Cache(this.asState());
          }
@@ -680,6 +697,10 @@ public abstract class BlockBehaviour {
          return this.getBlock().canBeReplaced(this.asState(), var1);
       }
 
+      public boolean canBeReplaced() {
+         return this.getMaterial().isReplaceable();
+      }
+
       public boolean canSurvive(LevelReader var1, BlockPos var2) {
          return this.getBlock().canSurvive(this.asState(), var1, var2);
       }
@@ -723,11 +744,11 @@ public abstract class BlockBehaviour {
       }
 
       public FluidState getFluidState() {
-         return this.getBlock().getFluidState(this.asState());
+         return this.fluidState;
       }
 
       public boolean isRandomlyTicking() {
-         return this.getBlock().isRandomlyTicking(this.asState());
+         return this.isRandomlyTicking;
       }
 
       public long getSeed(BlockPos var1) {
@@ -762,6 +783,10 @@ public abstract class BlockBehaviour {
 
       public BlockBehaviour.OffsetType getOffsetType() {
          return this.offsetType;
+      }
+
+      public boolean shouldSpawnParticlesOnBreak() {
+         return this.spawnParticlesOnBreak;
       }
 
       static final class Cache {
@@ -800,7 +825,7 @@ public abstract class BlockBehaviour {
                   String.format(
                      Locale.ROOT,
                      "%s has a collision shape and an offset type, but is not marked as dynamicShape in its properties.",
-                     Registry.BLOCK.getKey(var2)
+                     BuiltInRegistries.BLOCK.getKey(var2)
                   )
                );
             } else {
@@ -853,6 +878,7 @@ public abstract class BlockBehaviour {
       ResourceLocation drops;
       boolean canOcclude = true;
       boolean isAir;
+      boolean spawnParticlesOnBreak = true;
       BlockBehaviour.StateArgumentPredicate<EntityType<?>> isValidSpawn = (var0, var1x, var2x, var3) -> var0.isFaceSturdy(var1x, var2x, Direction.UP)
             && var0.getLightEmission() < 14;
       BlockBehaviour.StatePredicate isRedstoneConductor = (var0, var1x, var2x) -> var0.getMaterial().isSolidBlocking()
@@ -862,6 +888,7 @@ public abstract class BlockBehaviour {
       BlockBehaviour.StatePredicate hasPostProcess = (var0, var1x, var2x) -> false;
       BlockBehaviour.StatePredicate emissiveRendering = (var0, var1x, var2x) -> false;
       boolean dynamicShape;
+      FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
       Function<BlockState, BlockBehaviour.OffsetType> offsetType = var0 -> BlockBehaviour.OffsetType.NONE;
 
       private Properties(Material var1, MaterialColor var2) {
@@ -907,6 +934,8 @@ public abstract class BlockBehaviour {
          var1.isAir = var0.properties.isAir;
          var1.requiresCorrectToolForDrops = var0.properties.requiresCorrectToolForDrops;
          var1.offsetType = var0.properties.offsetType;
+         var1.spawnParticlesOnBreak = var0.properties.spawnParticlesOnBreak;
+         var1.requiredFeatures = var0.properties.requiredFeatures;
          return var1;
       }
 
@@ -1040,6 +1069,16 @@ public abstract class BlockBehaviour {
 
       public BlockBehaviour.Properties offsetType(Function<BlockState, BlockBehaviour.OffsetType> var1) {
          this.offsetType = var1;
+         return this;
+      }
+
+      public BlockBehaviour.Properties noParticlesOnBreak() {
+         this.spawnParticlesOnBreak = false;
+         return this;
+      }
+
+      public BlockBehaviour.Properties requiredFeatures(FeatureFlag... var1) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
       }
    }

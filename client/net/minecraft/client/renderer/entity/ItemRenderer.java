@@ -13,6 +13,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
+import com.mojang.math.MatrixUtil;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -40,7 +41,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -65,6 +66,11 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    public static final int ITEM_COUNT_BLIT_OFFSET = 200;
    public static final float COMPASS_FOIL_UI_SCALE = 0.5F;
    public static final float COMPASS_FOIL_FIRST_PERSON_SCALE = 0.75F;
+   public static final float COMPASS_FOIL_TEXTURE_SCALE = 0.0078125F;
+   private static final ModelResourceLocation TRIDENT_MODEL = ModelResourceLocation.vanilla("trident", "inventory");
+   public static final ModelResourceLocation TRIDENT_IN_HAND_MODEL = ModelResourceLocation.vanilla("trident_in_hand", "inventory");
+   private static final ModelResourceLocation SPYGLASS_MODEL = ModelResourceLocation.vanilla("spyglass", "inventory");
+   public static final ModelResourceLocation SPYGLASS_IN_HAND_MODEL = ModelResourceLocation.vanilla("spyglass_in_hand", "inventory");
    public float blitOffset;
    private final ItemModelShaper itemModelShaper;
    private final TextureManager textureManager;
@@ -77,9 +83,9 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       this.itemModelShaper = new ItemModelShaper(var2);
       this.blockEntityRenderer = var4;
 
-      for(Item var6 : Registry.ITEM) {
+      for(Item var6 : BuiltInRegistries.ITEM) {
          if (!IGNORED.contains(var6)) {
-            this.itemModelShaper.register(var6, new ModelResourceLocation(Registry.ITEM.getKey(var6), "inventory"));
+            this.itemModelShaper.register(var6, new ModelResourceLocation(BuiltInRegistries.ITEM.getKey(var6), "inventory"));
          }
       }
 
@@ -111,14 +117,14 @@ public class ItemRenderer implements ResourceManagerReloadListener {
          boolean var9 = var2 == ItemTransforms.TransformType.GUI || var2 == ItemTransforms.TransformType.GROUND || var2 == ItemTransforms.TransformType.FIXED;
          if (var9) {
             if (var1.is(Items.TRIDENT)) {
-               var8 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:trident#inventory"));
+               var8 = this.itemModelShaper.getModelManager().getModel(TRIDENT_MODEL);
             } else if (var1.is(Items.SPYGLASS)) {
-               var8 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:spyglass#inventory"));
+               var8 = this.itemModelShaper.getModelManager().getModel(SPYGLASS_MODEL);
             }
          }
 
          var8.getTransforms().getTransform(var2).apply(var3, var4);
-         var4.translate(-0.5, -0.5, -0.5);
+         var4.translate(-0.5F, -0.5F, -0.5F);
          if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
             boolean var10;
             if (var2 != ItemTransforms.TransformType.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem) {
@@ -134,9 +140,9 @@ public class ItemRenderer implements ResourceManagerReloadListener {
                var4.pushPose();
                PoseStack.Pose var13 = var4.last();
                if (var2 == ItemTransforms.TransformType.GUI) {
-                  var13.pose().multiply(0.5F);
+                  MatrixUtil.mulComponentWise(var13.pose(), 0.5F);
                } else if (var2.firstPerson()) {
-                  var13.pose().multiply(0.75F);
+                  MatrixUtil.mulComponentWise(var13.pose(), 0.75F);
                }
 
                if (var10) {
@@ -168,12 +174,14 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    }
 
    public static VertexConsumer getCompassFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2.pose(), var2.normal()), var0.getBuffer(var1));
+      return VertexMultiConsumer.create(
+         new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2.pose(), var2.normal(), 0.0078125F), var0.getBuffer(var1)
+      );
    }
 
    public static VertexConsumer getCompassFoilBufferDirect(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
       return VertexMultiConsumer.create(
-         new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glintDirect()), var2.pose(), var2.normal()), var0.getBuffer(var1)
+         new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glintDirect()), var2.pose(), var2.normal(), 0.0078125F), var0.getBuffer(var1)
       );
    }
 
@@ -213,9 +221,9 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    public BakedModel getModel(ItemStack var1, @Nullable Level var2, @Nullable LivingEntity var3, int var4) {
       BakedModel var5;
       if (var1.is(Items.TRIDENT)) {
-         var5 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:trident_in_hand#inventory"));
+         var5 = this.itemModelShaper.getModelManager().getModel(TRIDENT_IN_HAND_MODEL);
       } else if (var1.is(Items.SPYGLASS)) {
-         var5 = this.itemModelShaper.getModelManager().getModel(new ModelResourceLocation("minecraft:spyglass_in_hand#inventory"));
+         var5 = this.itemModelShaper.getModelManager().getModel(SPYGLASS_IN_HAND_MODEL);
       } else {
          var5 = this.itemModelShaper.getItemModel(var1);
       }
@@ -259,8 +267,8 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       PoseStack var5 = RenderSystem.getModelViewStack();
       var5.pushPose();
-      var5.translate((double)var2, (double)var3, (double)(100.0F + this.blitOffset));
-      var5.translate(8.0, 8.0, 0.0);
+      var5.translate((float)var2, (float)var3, 100.0F + this.blitOffset);
+      var5.translate(8.0F, 8.0F, 0.0F);
       var5.scale(1.0F, -1.0F, 1.0F);
       var5.scale(16.0F, 16.0F, 16.0F);
       RenderSystem.applyModelViewMatrix();
@@ -336,7 +344,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
          PoseStack var6 = new PoseStack();
          if (var2.getCount() != 1 || var5 != null) {
             String var7 = var5 == null ? String.valueOf(var2.getCount()) : var5;
-            var6.translate(0.0, 0.0, (double)(this.blitOffset + 200.0F));
+            var6.translate(0.0F, 0.0F, this.blitOffset + 200.0F);
             MultiBufferSource.BufferSource var8 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
             var1.drawInBatch(
                var7, (float)(var3 + 19 - 2 - var1.width(var7)), (float)(var4 + 6 + 3), 16777215, true, var6.last().pose(), var8, false, 0, 15728880

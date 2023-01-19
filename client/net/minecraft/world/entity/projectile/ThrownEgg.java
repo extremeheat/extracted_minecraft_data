@@ -63,9 +63,11 @@ public class ThrownEgg extends ThrowableItemProjectile {
 
             for(int var3 = 0; var3 < var2; ++var3) {
                Chicken var4 = EntityType.CHICKEN.create(this.level);
-               var4.setAge(-24000);
-               var4.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-               this.level.addFreshEntity(var4);
+               if (var4 != null) {
+                  var4.setAge(-24000);
+                  var4.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                  this.level.addFreshEntity(var4);
+               }
             }
          }
 

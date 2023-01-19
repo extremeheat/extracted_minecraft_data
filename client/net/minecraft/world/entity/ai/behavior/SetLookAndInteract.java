@@ -1,64 +1,40 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
+import java.util.Optional;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 
-public class SetLookAndInteract extends Behavior<LivingEntity> {
-   private final EntityType<?> type;
-   private final int interactionRangeSqr;
-   private final Predicate<LivingEntity> targetFilter;
-   private final Predicate<LivingEntity> selfFilter;
+public class SetLookAndInteract {
+   public SetLookAndInteract() {
+      super();
+   }
 
-   public SetLookAndInteract(EntityType<?> var1, int var2, Predicate<LivingEntity> var3, Predicate<LivingEntity> var4) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.INTERACTION_TARGET,
-            MemoryStatus.VALUE_ABSENT,
-            MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-            MemoryStatus.VALUE_PRESENT
-         )
+   public static BehaviorControl<LivingEntity> create(EntityType<?> var0, int var1) {
+      int var2 = var1 * var1;
+      return BehaviorBuilder.create(
+         var2x -> var2x.group(
+                  var2x.registered(MemoryModuleType.LOOK_TARGET),
+                  var2x.absent(MemoryModuleType.INTERACTION_TARGET),
+                  var2x.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+               )
+               .apply(
+                  var2x,
+                  (var3, var4, var5) -> (var6, var7, var8) -> {
+                        Optional var10 = var2x.<NearestVisibleLivingEntities>get(var5)
+                           .findClosest(var3xx -> var3xx.distanceToSqr(var7) <= (double)var2 && var0.equals(var3xx.getType()));
+                        if (var10.isEmpty()) {
+                           return false;
+                        } else {
+                           LivingEntity var11 = (LivingEntity)var10.get();
+                           var4.set(var11);
+                           var3.set(new EntityTracker(var11, true));
+                           return true;
+                        }
+                     }
+               )
       );
-      this.type = var1;
-      this.interactionRangeSqr = var2 * var2;
-      this.targetFilter = var4;
-      this.selfFilter = var3;
-   }
-
-   public SetLookAndInteract(EntityType<?> var1, int var2) {
-      this(var1, var2, var0 -> true, var0 -> true);
-   }
-
-   @Override
-   public boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      return this.selfFilter.test(var2) && this.getVisibleEntities(var2).contains(this::isMatchingTarget);
-   }
-
-   @Override
-   public void start(ServerLevel var1, LivingEntity var2, long var3) {
-      super.start(var1, var2, var3);
-      Brain var5 = var2.getBrain();
-      var5.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-         .flatMap(var2x -> var2x.findClosest(var2xx -> var2xx.distanceToSqr(var2) <= (double)this.interactionRangeSqr && this.isMatchingTarget(var2xx)))
-         .ifPresent(var1x -> {
-            var5.setMemory(MemoryModuleType.INTERACTION_TARGET, var1x);
-            var5.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1x, true));
-         });
-   }
-
-   private boolean isMatchingTarget(LivingEntity var1) {
-      return this.type.equals(var1.getType()) && this.targetFilter.test(var1);
-   }
-
-   private NearestVisibleLivingEntities getVisibleEntities(LivingEntity var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get();
    }
 }

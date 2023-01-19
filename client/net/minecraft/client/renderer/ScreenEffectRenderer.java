@@ -7,8 +7,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -21,6 +20,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Matrix4f;
 
 public class ScreenEffectRenderer {
    private static final ResourceLocation UNDERWATER_LOCATION = new ResourceLocation("textures/misc/underwater.png");
@@ -68,7 +68,7 @@ public class ScreenEffectRenderer {
    }
 
    private static void renderTex(TextureAtlasSprite var0, PoseStack var1) {
-      RenderSystem.setShaderTexture(0, var0.atlas().location());
+      RenderSystem.setShaderTexture(0, var0.atlasLocation());
       RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
       BufferBuilder var2 = Tesselator.getInstance().getBuilder();
       float var3 = 0.1F;
@@ -127,7 +127,7 @@ public class ScreenEffectRenderer {
       RenderSystem.defaultBlendFunc();
       RenderSystem.enableTexture();
       TextureAtlasSprite var3 = ModelBakery.FIRE_1.sprite();
-      RenderSystem.setShaderTexture(0, var3.atlas().location());
+      RenderSystem.setShaderTexture(0, var3.atlasLocation());
       float var4 = var3.getU0();
       float var5 = var3.getU1();
       float var6 = (var4 + var5) / 2.0F;
@@ -148,8 +148,8 @@ public class ScreenEffectRenderer {
          float var19 = -0.5F;
          float var20 = 0.5F;
          float var21 = -0.5F;
-         var1.translate((double)((float)(-(var16 * 2 - 1)) * 0.24F), -0.30000001192092896, 0.0);
-         var1.mulPose(Vector3f.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
+         var1.translate((float)(-(var16 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
+         var1.mulPose(Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
          Matrix4f var22 = var1.last().pose();
          var2.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
          var2.vertex(var22, -0.5F, -0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(var12, var14).endVertex();

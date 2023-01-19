@@ -12,6 +12,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.KeyDispatchDataCodec;
@@ -26,7 +27,7 @@ import net.minecraft.world.level.levelgen.synth.SimplexNoise;
 import org.slf4j.Logger;
 
 public final class DensityFunctions {
-   private static final Codec<DensityFunction> CODEC = Registry.DENSITY_FUNCTION_TYPES
+   private static final Codec<DensityFunction> CODEC = BuiltInRegistries.DENSITY_FUNCTION_TYPE
       .byNameCodec()
       .dispatch(var0 -> var0.codec().codec(), Function.identity());
    protected static final double MAX_REASONABLE_NOISE_VALUE = 1000000.0;
@@ -625,12 +626,12 @@ public final class DensityFunctions {
 
       @Override
       public double minValue() {
-         return this.function.value().minValue();
+         return this.function.isBound() ? this.function.value().minValue() : -1.0 / 0.0;
       }
 
       @Override
       public double maxValue() {
-         return this.function.value().maxValue();
+         return this.function.isBound() ? this.function.value().maxValue() : 1.0 / 0.0;
       }
 
       @Override
@@ -1259,12 +1260,12 @@ public final class DensityFunctions {
 
          @Override
          public float minValue() {
-            return (float)this.function.value().minValue();
+            return this.function.isBound() ? (float)this.function.value().minValue() : -1.0F / 0.0F;
          }
 
          @Override
          public float maxValue() {
-            return (float)this.function.value().maxValue();
+            return this.function.isBound() ? (float)this.function.value().maxValue() : 1.0F / 0.0F;
          }
 
          public DensityFunctions.Spline.Coordinate mapAll(DensityFunction.Visitor var1) {

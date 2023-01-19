@@ -4,7 +4,7 @@ import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
@@ -79,7 +79,7 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      for(Holder var2 : Registry.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
          Block var3 = (Block)var2.value();
          if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
             return true;

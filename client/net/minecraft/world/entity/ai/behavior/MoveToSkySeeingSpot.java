@@ -1,48 +1,43 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
-public class MoveToSkySeeingSpot extends Behavior<LivingEntity> {
-   private final float speedModifier;
-
-   public MoveToSkySeeingSpot(float var1) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-      this.speedModifier = var1;
+public class MoveToSkySeeingSpot {
+   public MoveToSkySeeingSpot() {
+      super();
    }
 
-   @Override
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      Optional var5 = Optional.ofNullable(this.getOutdoorPosition(var1, var2));
-      if (var5.isPresent()) {
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var5.map(var1x -> new WalkTarget(var1x, this.speedModifier, 0)));
-      }
-   }
-
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      return !var1.canSeeSky(var2.blockPosition());
+   public static OneShot<LivingEntity> create(float var0) {
+      return BehaviorBuilder.create(var1 -> var1.group(var1.absent(MemoryModuleType.WALK_TARGET)).apply(var1, var1x -> (var2, var3, var4) -> {
+               if (var2.canSeeSky(var3.blockPosition())) {
+                  return false;
+               } else {
+                  Optional var6 = Optional.ofNullable(getOutdoorPosition(var2, var3));
+                  var6.ifPresent(var2x -> var1x.set(new WalkTarget(var2x, var0, 0)));
+                  return true;
+               }
+            }));
    }
 
    @Nullable
-   private Vec3 getOutdoorPosition(ServerLevel var1, LivingEntity var2) {
-      RandomSource var3 = var2.getRandom();
-      BlockPos var4 = var2.blockPosition();
+   private static Vec3 getOutdoorPosition(ServerLevel var0, LivingEntity var1) {
+      RandomSource var2 = var1.getRandom();
+      BlockPos var3 = var1.blockPosition();
 
-      for(int var5 = 0; var5 < 10; ++var5) {
-         BlockPos var6 = var4.offset(var3.nextInt(20) - 10, var3.nextInt(6) - 3, var3.nextInt(20) - 10);
-         if (hasNoBlocksAbove(var1, var2, var6)) {
-            return Vec3.atBottomCenterOf(var6);
+      for(int var4 = 0; var4 < 10; ++var4) {
+         BlockPos var5 = var3.offset(var2.nextInt(20) - 10, var2.nextInt(6) - 3, var2.nextInt(20) - 10);
+         if (hasNoBlocksAbove(var0, var1, var5)) {
+            return Vec3.atBottomCenterOf(var5);
          }
       }
 

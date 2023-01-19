@@ -15,10 +15,11 @@ public class EmoteCommands {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register((LiteralArgumentBuilder)Commands.literal("me").then(Commands.argument("action", MessageArgument.message()).executes(var0x -> {
-         MessageArgument.ChatMessage var1 = MessageArgument.getChatMessage(var0x, "action");
-         CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-         PlayerList var3 = var2.getServer().getPlayerList();
-         var1.resolve(var2, var2x -> var3.broadcastChatMessage(var2x, var2, ChatType.bind(ChatType.EMOTE_COMMAND, var2)));
+         MessageArgument.resolveChatMessage(var0x, "action", var1 -> {
+            CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
+            PlayerList var3 = var2.getServer().getPlayerList();
+            var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.EMOTE_COMMAND, var2));
+         });
          return 1;
       })));
    }

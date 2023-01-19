@@ -10,10 +10,13 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import javax.annotation.Nullable;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.MobEffectArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -33,7 +36,7 @@ public class EffectCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("effect").requires(var0x -> var0x.hasPermission(2)))
                .then(
@@ -47,12 +50,12 @@ public class EffectCommands {
                         ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities())
                               .executes(var0x -> clearEffects((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"))))
                            .then(
-                              Commands.argument("effect", MobEffectArgument.effect())
+                              Commands.argument("effect", ResourceArgument.resource(var1, Registries.MOB_EFFECT))
                                  .executes(
                                     var0x -> clearEffect(
                                           (CommandSourceStack)var0x.getSource(),
                                           EntityArgument.getEntities(var0x, "targets"),
-                                          MobEffectArgument.getEffect(var0x, "effect")
+                                          ResourceArgument.getMobEffect(var0x, "effect")
                                        )
                                  )
                            )
@@ -63,12 +66,12 @@ public class EffectCommands {
                   .then(
                      Commands.argument("targets", EntityArgument.entities())
                         .then(
-                           ((RequiredArgumentBuilder)Commands.argument("effect", MobEffectArgument.effect())
+                           ((RequiredArgumentBuilder)Commands.argument("effect", ResourceArgument.resource(var1, Registries.MOB_EFFECT))
                                  .executes(
                                     var0x -> giveEffect(
                                           (CommandSourceStack)var0x.getSource(),
                                           EntityArgument.getEntities(var0x, "targets"),
-                                          MobEffectArgument.getEffect(var0x, "effect"),
+                                          ResourceArgument.getMobEffect(var0x, "effect"),
                                           null,
                                           0,
                                           true
@@ -80,7 +83,7 @@ public class EffectCommands {
                                           var0x -> giveEffect(
                                                 (CommandSourceStack)var0x.getSource(),
                                                 EntityArgument.getEntities(var0x, "targets"),
-                                                MobEffectArgument.getEffect(var0x, "effect"),
+                                                ResourceArgument.getMobEffect(var0x, "effect"),
                                                 IntegerArgumentType.getInteger(var0x, "seconds"),
                                                 0,
                                                 true
@@ -92,7 +95,7 @@ public class EffectCommands {
                                                 var0x -> giveEffect(
                                                       (CommandSourceStack)var0x.getSource(),
                                                       EntityArgument.getEntities(var0x, "targets"),
-                                                      MobEffectArgument.getEffect(var0x, "effect"),
+                                                      ResourceArgument.getMobEffect(var0x, "effect"),
                                                       IntegerArgumentType.getInteger(var0x, "seconds"),
                                                       IntegerArgumentType.getInteger(var0x, "amplifier"),
                                                       true
@@ -104,7 +107,7 @@ public class EffectCommands {
                                                    var0x -> giveEffect(
                                                          (CommandSourceStack)var0x.getSource(),
                                                          EntityArgument.getEntities(var0x, "targets"),
-                                                         MobEffectArgument.getEffect(var0x, "effect"),
+                                                         ResourceArgument.getMobEffect(var0x, "effect"),
                                                          IntegerArgumentType.getInteger(var0x, "seconds"),
                                                          IntegerArgumentType.getInteger(var0x, "amplifier"),
                                                          !BoolArgumentType.getBool(var0x, "hideParticles")
@@ -119,45 +122,48 @@ public class EffectCommands {
       );
    }
 
-   private static int giveEffect(CommandSourceStack var0, Collection<? extends Entity> var1, MobEffect var2, @Nullable Integer var3, int var4, boolean var5) throws CommandSyntaxException {
-      int var6 = 0;
-      int var7;
+   private static int giveEffect(
+      CommandSourceStack var0, Collection<? extends Entity> var1, Holder<MobEffect> var2, @Nullable Integer var3, int var4, boolean var5
+   ) throws CommandSyntaxException {
+      MobEffect var6 = (MobEffect)var2.value();
+      int var7 = 0;
+      int var8;
       if (var3 != null) {
-         if (var2.isInstantenous()) {
-            var7 = var3;
+         if (var6.isInstantenous()) {
+            var8 = var3;
          } else {
-            var7 = var3 * 20;
+            var8 = var3 * 20;
          }
-      } else if (var2.isInstantenous()) {
-         var7 = 1;
+      } else if (var6.isInstantenous()) {
+         var8 = 1;
       } else {
-         var7 = 600;
+         var8 = 600;
       }
 
-      for(Entity var9 : var1) {
-         if (var9 instanceof LivingEntity) {
-            MobEffectInstance var10 = new MobEffectInstance(var2, var7, var4, false, var5);
-            if (((LivingEntity)var9).addEffect(var10, var0.getEntity())) {
-               ++var6;
+      for(Entity var10 : var1) {
+         if (var10 instanceof LivingEntity) {
+            MobEffectInstance var11 = new MobEffectInstance(var6, var8, var4, false, var5);
+            if (((LivingEntity)var10).addEffect(var11, var0.getEntity())) {
+               ++var7;
             }
          }
       }
 
-      if (var6 == 0) {
+      if (var7 == 0) {
          throw ERROR_GIVE_FAILED.create();
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
                Component.translatable(
-                  "commands.effect.give.success.single", var2.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName(), var7 / 20
+                  "commands.effect.give.success.single", var6.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName(), var8 / 20
                ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.effect.give.success.multiple", var2.getDisplayName(), var1.size(), var7 / 20), true);
+            var0.sendSuccess(Component.translatable("commands.effect.give.success.multiple", var6.getDisplayName(), var1.size(), var8 / 20), true);
          }
 
-         return var6;
+         return var7;
       }
    }
 
@@ -185,30 +191,31 @@ public class EffectCommands {
       }
    }
 
-   private static int clearEffect(CommandSourceStack var0, Collection<? extends Entity> var1, MobEffect var2) throws CommandSyntaxException {
-      int var3 = 0;
+   private static int clearEffect(CommandSourceStack var0, Collection<? extends Entity> var1, Holder<MobEffect> var2) throws CommandSyntaxException {
+      MobEffect var3 = (MobEffect)var2.value();
+      int var4 = 0;
 
-      for(Entity var5 : var1) {
-         if (var5 instanceof LivingEntity && ((LivingEntity)var5).removeEffect(var2)) {
-            ++var3;
+      for(Entity var6 : var1) {
+         if (var6 instanceof LivingEntity && ((LivingEntity)var6).removeEffect(var3)) {
+            ++var4;
          }
       }
 
-      if (var3 == 0) {
+      if (var4 == 0) {
          throw ERROR_CLEAR_SPECIFIC_FAILED.create();
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
                Component.translatable(
-                  "commands.effect.clear.specific.success.single", var2.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName()
+                  "commands.effect.clear.specific.success.single", var3.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName()
                ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.effect.clear.specific.success.multiple", var2.getDisplayName(), var1.size()), true);
+            var0.sendSuccess(Component.translatable("commands.effect.clear.specific.success.multiple", var3.getDisplayName(), var1.size()), true);
          }
 
-         return var3;
+         return var4;
       }
    }
 }

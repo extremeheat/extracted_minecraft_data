@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -48,9 +49,11 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -59,6 +62,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -198,7 +203,7 @@ public class EnderMan extends Monster implements NeutralMob {
       super.readAdditionalSaveData(var1);
       BlockState var2 = null;
       if (var1.contains("carriedBlockState", 10)) {
-         var2 = NbtUtils.readBlockState(var1.getCompound("carriedBlockState"));
+         var2 = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("carriedBlockState"));
          if (var2.isAir()) {
             var2 = null;
          }
@@ -338,7 +343,17 @@ public class EnderMan extends Monster implements NeutralMob {
       super.dropCustomDeathLoot(var1, var2, var3);
       BlockState var4 = this.getCarriedBlock();
       if (var4 != null) {
-         this.spawnAtLocation(var4.getBlock());
+         ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
+         var5.enchant(Enchantments.SILK_TOUCH, 1);
+         LootContext.Builder var6 = new LootContext.Builder((ServerLevel)this.level)
+            .withRandom(this.level.getRandom())
+            .withParameter(LootContextParams.ORIGIN, this.position())
+            .withParameter(LootContextParams.TOOL, var5)
+            .withOptionalParameter(LootContextParams.THIS_ENTITY, this);
+
+         for(ItemStack var9 : var4.getDrops(var6)) {
+            this.spawnAtLocation(var9);
+         }
       }
    }
 
@@ -498,13 +513,13 @@ public class EnderMan extends Monster implements NeutralMob {
       private int teleportTime;
       private final TargetingConditions startAggroTargetConditions;
       private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
+      private final Predicate<LivingEntity> isAngerInducing;
 
       public EndermanLookForPlayerGoal(EnderMan var1, @Nullable Predicate<LivingEntity> var2) {
          super(var1, Player.class, 10, false, false, var2);
          this.enderman = var1;
-         this.startAggroTargetConditions = TargetingConditions.forCombat()
-            .range(this.getFollowDistance())
-            .selector(var1x -> var1.isLookingAtMe((Player)var1x));
+         this.isAngerInducing = var1x -> var1.isLookingAtMe((Player)var1x) || var1.isAngryAt(var1x);
+         this.startAggroTargetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(this.isAngerInducing);
       }
 
       @Override
@@ -529,7 +544,7 @@ public class EnderMan extends Monster implements NeutralMob {
       @Override
       public boolean canContinueToUse() {
          if (this.pendingTarget != null) {
-            if (!this.enderman.isLookingAtMe(this.pendingTarget)) {
+            if (!this.isAngerInducing.test(this.pendingTarget)) {
                return false;
             } else {
                this.enderman.lookAt(this.pendingTarget, 10.0F, 10.0F);

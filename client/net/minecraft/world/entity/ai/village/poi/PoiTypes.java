@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.village.poi;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +10,7 @@ import java.util.Set;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.BedBlock;
@@ -64,7 +64,6 @@ public class PoiTypes {
       .flatMap(var0 -> var0.getStateDefinition().getPossibleStates().stream())
       .collect(ImmutableSet.toImmutableSet());
    private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE = Maps.newHashMap();
-   protected static final Set<BlockState> ALL_STATES = new ObjectOpenHashSet(TYPE_BY_STATE.keySet());
 
    public PoiTypes() {
       super();
@@ -75,33 +74,35 @@ public class PoiTypes {
    }
 
    private static ResourceKey<PoiType> createKey(String var0) {
-      return ResourceKey.create(Registry.POINT_OF_INTEREST_TYPE_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.POINT_OF_INTEREST_TYPE, new ResourceLocation(var0));
    }
 
    private static PoiType register(Registry<PoiType> var0, ResourceKey<PoiType> var1, Set<BlockState> var2, int var3, int var4) {
       PoiType var5 = new PoiType(var2, var3, var4);
       Registry.register(var0, var1, var5);
-      registerBlockStates(var0.getHolderOrThrow(var1));
+      registerBlockStates(var0.getHolderOrThrow(var1), var2);
       return var5;
    }
 
-   private static void registerBlockStates(Holder<PoiType> var0) {
-      ((PoiType)var0.value())
-         .matchingStates()
-         .forEach(
-            var1 -> {
-               Holder var2 = TYPE_BY_STATE.put(var1, var0);
-               if (var2 != null) {
-                  throw (IllegalStateException)Util.pauseInIde(
-                     new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", var1))
-                  );
-               }
+   private static void registerBlockStates(Holder<PoiType> var0, Set<BlockState> var1) {
+      var1.forEach(
+         var1x -> {
+            Holder var2 = TYPE_BY_STATE.put(var1x, var0);
+            if (var2 != null) {
+               throw (IllegalStateException)Util.pauseInIde(
+                  new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", var1x))
+               );
             }
-         );
+         }
+      );
    }
 
    public static Optional<Holder<PoiType>> forState(BlockState var0) {
       return Optional.ofNullable(TYPE_BY_STATE.get(var0));
+   }
+
+   public static boolean hasPoi(BlockState var0) {
+      return TYPE_BY_STATE.containsKey(var0);
    }
 
    public static PoiType bootstrap(Registry<PoiType> var0) {

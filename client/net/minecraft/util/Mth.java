@@ -45,6 +45,11 @@ public class Mth {
       super();
    }
 
+   public static float truncate(float var0, float var1) {
+      float var2 = (float)Math.pow(10.0, (double)var1);
+      return (float)((int)(var0 * var2)) / var2;
+   }
+
    public static float sin(float var0) {
       return SIN[(int)(var0 * 10430.378F) & 65535];
    }
@@ -210,6 +215,10 @@ public class Mth {
 
    public static double positiveModulo(double var0, double var2) {
       return (var0 % var2 + var2) % var2;
+   }
+
+   public static boolean isDivisionInteger(int var0, int var1) {
+      return var0 / var1 * var1 == var0;
    }
 
    public static int wrapDegrees(int var0) {

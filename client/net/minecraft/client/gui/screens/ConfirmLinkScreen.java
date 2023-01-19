@@ -43,12 +43,12 @@ public class ConfirmLinkScreen extends ConfirmScreen {
 
    @Override
    protected void addButtons(int var1) {
-      this.addRenderableWidget(new Button(this.width / 2 - 50 - 105, var1, 100, 20, this.yesButton, var1x -> this.callback.accept(true)));
-      this.addRenderableWidget(new Button(this.width / 2 - 50, var1, 100, 20, COPY_BUTTON_TEXT, var1x -> {
+      this.addRenderableWidget(Button.builder(this.yesButton, var1x -> this.callback.accept(true)).bounds(this.width / 2 - 50 - 105, var1, 100, 20).build());
+      this.addRenderableWidget(Button.builder(COPY_BUTTON_TEXT, var1x -> {
          this.copyToClipboard();
          this.callback.accept(false);
-      }));
-      this.addRenderableWidget(new Button(this.width / 2 - 50 + 105, var1, 100, 20, this.noButton, var1x -> this.callback.accept(false)));
+      }).bounds(this.width / 2 - 50, var1, 100, 20).build());
+      this.addRenderableWidget(Button.builder(this.noButton, var1x -> this.callback.accept(false)).bounds(this.width / 2 - 50 + 105, var1, 100, 20).build());
    }
 
    public void copyToClipboard() {

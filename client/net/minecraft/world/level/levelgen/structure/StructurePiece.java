@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
@@ -92,7 +92,7 @@ public abstract class StructurePiece {
 
    public final CompoundTag createTag(StructurePieceSerializationContext var1) {
       CompoundTag var2 = new CompoundTag();
-      var2.putString("id", Registry.STRUCTURE_PIECE.getKey(this.getType()).toString());
+      var2.putString("id", BuiltInRegistries.STRUCTURE_PIECE.getKey(this.getType()).toString());
       BoundingBox.CODEC.encodeStart(NbtOps.INSTANCE, this.boundingBox).resultOrPartial(LOGGER::error).ifPresent(var1x -> var2.put("BB", var1x));
       Direction var3 = this.getOrientation();
       var2.putInt("O", var3 == null ? -1 : var3.get2DDataValue());

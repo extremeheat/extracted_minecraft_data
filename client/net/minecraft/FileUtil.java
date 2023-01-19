@@ -1,5 +1,6 @@
 package net.minecraft;
 
+import com.mojang.serialization.DataResult;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -7,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
@@ -15,6 +19,7 @@ public class FileUtil {
    private static final Pattern COPY_COUNTER_PATTERN = Pattern.compile("(<name>.*) \\((<count>\\d*)\\)", 66);
    private static final int MAX_FILE_NAME = 255;
    private static final Pattern RESERVED_WINDOWS_FILENAMES = Pattern.compile(".*\\.|(?:COM|CLOCK\\$|CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\..*)?", 2);
+   private static final Pattern STRICT_PATH_SEGMENT_CHECK = Pattern.compile("[-._a-z0-9]+");
 
    public FileUtil() {
       super();
@@ -97,5 +102,67 @@ public class FileUtil {
 
    public static String normalizeResourcePath(String var0) {
       return FilenameUtils.normalize(var0).replace(File.separator, "/");
+   }
+
+   public static DataResult<List<String>> decomposePath(String var0) {
+      int var1 = var0.indexOf(47);
+      if (var1 == -1) {
+         return switch(var0) {
+            case "", ".", ".." -> DataResult.error("Invalid path '" + var0 + "'");
+            default -> !isValidStrictPathSegment(var0) ? DataResult.error("Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
+         };
+      } else {
+         ArrayList var2 = new ArrayList();
+         int var3 = 0;
+         boolean var4 = false;
+
+         while(true) {
+            String var5 = var0.substring(var3, var1);
+            switch(var5) {
+               case "":
+               case ".":
+               case "..":
+                  return DataResult.error("Invalid segment '" + var5 + "' in path '" + var0 + "'");
+            }
+         }
+      }
+   }
+
+   public static Path resolvePath(Path var0, List<String> var1) {
+      int var2 = var1.size();
+
+      return switch(var2) {
+         case 0 -> var0;
+         case 1 -> var0.resolve((String)var1.get(0));
+         default -> {
+            String[] var3 = new String[var2 - 1];
+
+            for(int var4 = 1; var4 < var2; ++var4) {
+               var3[var4 - 1] = (String)var1.get(var4);
+            }
+
+            yield var0.resolve(var0.getFileSystem().getPath((String)var1.get(0), var3));
+         }
+      };
+   }
+
+   public static boolean isValidStrictPathSegment(String var0) {
+      return STRICT_PATH_SEGMENT_CHECK.matcher(var0).matches();
+   }
+
+   public static void validatePath(String... var0) {
+      if (var0.length == 0) {
+         throw new IllegalArgumentException("Path must have at least one element");
+      } else {
+         for(String var4 : var0) {
+            if (var4.equals("..") || var4.equals(".") || !isValidStrictPathSegment(var4)) {
+               throw new IllegalArgumentException("Illegal segment " + var4 + " in path " + Arrays.toString((Object[])var0));
+            }
+         }
+      }
+   }
+
+   public static void createDirectoriesSafe(Path var0) throws IOException {
+      Files.createDirectories(Files.exists(var0) ? var0.toRealPath() : var0);
    }
 }

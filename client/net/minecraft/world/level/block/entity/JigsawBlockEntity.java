@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -25,7 +26,7 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String FINAL_STATE = "final_state";
    private ResourceLocation name = new ResourceLocation("empty");
    private ResourceLocation target = new ResourceLocation("empty");
-   private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registry.TEMPLATE_POOL_REGISTRY, new ResourceLocation("empty"));
+   private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
    private JigsawBlockEntity.JointType joint = JigsawBlockEntity.JointType.ROLLABLE;
    private String finalState = "minecraft:air";
 
@@ -88,7 +89,7 @@ public class JigsawBlockEntity extends BlockEntity {
       super.load(var1);
       this.name = new ResourceLocation(var1.getString("name"));
       this.target = new ResourceLocation(var1.getString("target"));
-      this.pool = ResourceKey.create(Registry.TEMPLATE_POOL_REGISTRY, new ResourceLocation(var1.getString("pool")));
+      this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
       this.finalState = var1.getString("final_state");
       this.joint = JigsawBlockEntity.JointType.byName(var1.getString("joint"))
          .orElseGet(
@@ -109,8 +110,8 @@ public class JigsawBlockEntity extends BlockEntity {
 
    public void generate(ServerLevel var1, int var2, boolean var3) {
       BlockPos var4 = this.getBlockPos().relative(this.getBlockState().getValue(JigsawBlock.ORIENTATION).front());
-      Registry var5 = var1.registryAccess().registryOrThrow(Registry.TEMPLATE_POOL_REGISTRY);
-      Holder var6 = var5.getHolderOrThrow(this.pool);
+      Registry var5 = var1.registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
+      Holder.Reference var6 = var5.getHolderOrThrow(this.pool);
       JigsawPlacement.generateJigsaw(var1, var6, this.target, var2, var4, var3);
    }
 

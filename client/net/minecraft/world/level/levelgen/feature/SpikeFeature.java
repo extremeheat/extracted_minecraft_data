@@ -108,11 +108,13 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       }
 
       EndCrystal var20 = EntityType.END_CRYSTAL.create(var1.getLevel());
-      var20.setBeamTarget(var3.getCrystalBeamTarget());
-      var20.setInvulnerable(var3.isCrystalInvulnerable());
-      var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
-      var1.addFreshEntity(var20);
-      this.setBlock(var1, new BlockPos(var4.getCenterX(), var4.getHeight(), var4.getCenterZ()), Blocks.BEDROCK.defaultBlockState());
+      if (var20 != null) {
+         var20.setBeamTarget(var3.getCrystalBeamTarget());
+         var20.setInvulnerable(var3.isCrystalInvulnerable());
+         var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
+         var1.addFreshEntity(var20);
+         this.setBlock(var1, new BlockPos(var4.getCenterX(), var4.getHeight(), var4.getCenterZ()), Blocks.BEDROCK.defaultBlockState());
+      }
    }
 
    public static class EndSpike {

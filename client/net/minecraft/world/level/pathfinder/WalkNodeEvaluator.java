@@ -31,6 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WalkNodeEvaluator extends NodeEvaluator {
    public static final double SPACE_BETWEEN_WALL_POSTS = 0.5;
+   private static final double DEFAULT_MOB_JUMP_HEIGHT = 1.125;
    protected float oldWaterCost;
    private final Long2ObjectMap<BlockPathTypes> pathTypesByPosCache = new Long2ObjectOpenHashMap();
    private final Object2BooleanMap<AABB> collisionCache = new Object2BooleanOpenHashMap();
@@ -53,7 +54,6 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       super.done();
    }
 
-   @Nullable
    @Override
    public Node getStart() {
       BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
@@ -91,38 +91,32 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          --var1;
       }
 
-      BlockPos var8 = this.mob.blockPosition();
-      BlockPathTypes var5 = this.getCachedBlockType(this.mob, var8.getX(), var1, var8.getZ());
-      if (this.mob.getPathfindingMalus(var5) < 0.0F) {
-         AABB var6 = this.mob.getBoundingBox();
-         if (this.hasPositiveMalus(var2.set(var6.minX, (double)var1, var6.minZ))
-            || this.hasPositiveMalus(var2.set(var6.minX, (double)var1, var6.maxZ))
-            || this.hasPositiveMalus(var2.set(var6.maxX, (double)var1, var6.minZ))
-            || this.hasPositiveMalus(var2.set(var6.maxX, (double)var1, var6.maxZ))) {
+      BlockPos var7 = this.mob.blockPosition();
+      if (!this.canStartAt(var2.set(var7.getX(), var1, var7.getZ()))) {
+         AABB var5 = this.mob.getBoundingBox();
+         if (this.canStartAt(var2.set(var5.minX, (double)var1, var5.minZ))
+            || this.canStartAt(var2.set(var5.minX, (double)var1, var5.maxZ))
+            || this.canStartAt(var2.set(var5.maxX, (double)var1, var5.minZ))
+            || this.canStartAt(var2.set(var5.maxX, (double)var1, var5.maxZ))) {
             return this.getStartNode(var2);
          }
       }
 
-      return this.getStartNode(new BlockPos(var8.getX(), var1, var8.getZ()));
+      return this.getStartNode(new BlockPos(var7.getX(), var1, var7.getZ()));
    }
 
-   @Nullable
    protected Node getStartNode(BlockPos var1) {
       Node var2 = this.getNode(var1);
-      if (var2 != null) {
-         var2.type = this.getBlockPathType(this.mob, var2.asBlockPos());
-         var2.costMalus = this.mob.getPathfindingMalus(var2.type);
-      }
-
+      var2.type = this.getBlockPathType(this.mob, var2.asBlockPos());
+      var2.costMalus = this.mob.getPathfindingMalus(var2.type);
       return var2;
    }
 
-   private boolean hasPositiveMalus(BlockPos var1) {
+   protected boolean canStartAt(BlockPos var1) {
       BlockPathTypes var2 = this.getBlockPathType(this.mob, var1);
-      return this.mob.getPathfindingMalus(var2) >= 0.0F;
+      return var2 != BlockPathTypes.OPEN && this.mob.getPathfindingMalus(var2) >= 0.0F;
    }
 
-   @Nullable
    @Override
    public Target getGoal(double var1, double var3, double var5) {
       return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
@@ -226,7 +220,9 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    protected double getFloorLevel(BlockPos var1) {
-      return getFloorLevel(this.level, var1);
+      return (this.canFloat() || this.isAmphibious()) && this.level.getFluidState(var1).is(FluidTags.WATER)
+         ? (double)var1.getY() + 0.5
+         : getFloorLevel(this.level, var1);
    }
 
    public static double getFloorLevel(BlockGetter var0, BlockPos var1) {
@@ -244,7 +240,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       Node var9 = null;
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
       double var11 = this.getFloorLevel(var10.set(var1, var2, var3));
-      if (var11 - var5 > 1.125) {
+      if (var11 - var5 > this.getMobJumpHeight()) {
          return null;
       } else {
          BlockPathTypes var13 = this.getCachedBlockType(this.mob, var1, var2, var3);
@@ -261,7 +257,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          if (var13 != BlockPathTypes.WALKABLE && (!this.isAmphibious() || var13 != BlockPathTypes.WATER)) {
             if ((var9 == null || var9.costMalus < 0.0F)
                && var4 > 0
-               && var13 != BlockPathTypes.FENCE
+               && (var13 != BlockPathTypes.FENCE || this.canWalkOverFences())
                && var13 != BlockPathTypes.UNPASSABLE_RAIL
                && var13 != BlockPathTypes.TRAPDOOR
                && var13 != BlockPathTypes.POWDER_SNOW) {
@@ -271,10 +267,10 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   double var19 = (double)(var3 - var7.getStepZ()) + 0.5;
                   AABB var21 = new AABB(
                      var17 - var15,
-                     getFloorLevel(this.level, var10.set(var17, (double)(var2 + 1), var19)) + 0.001,
+                     this.getFloorLevel(var10.set(var17, (double)(var2 + 1), var19)) + 0.001,
                      var19 - var15,
                      var17 + var15,
-                     (double)this.mob.getBbHeight() + getFloorLevel(this.level, var10.set((double)var9.x, (double)var9.y, (double)var9.z)) - 0.002,
+                     (double)this.mob.getBbHeight() + this.getFloorLevel(var10.set((double)var9.x, (double)var9.y, (double)var9.z)) - 0.002,
                      var19 + var15
                   );
                   if (this.hasCollisions(var21)) {
@@ -324,13 +320,11 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                }
             }
 
-            if (doesBlockHavePartialCollision(var13)) {
+            if (doesBlockHavePartialCollision(var13) && var9 == null) {
                var9 = this.getNode(var1, var2, var3);
-               if (var9 != null) {
-                  var9.closed = true;
-                  var9.type = var13;
-                  var9.costMalus = var13.getMalus();
-               }
+               var9.closed = true;
+               var9.type = var13;
+               var9.costMalus = var13.getMalus();
             }
 
             return var9;
@@ -340,25 +334,21 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       }
    }
 
-   @Nullable
+   private double getMobJumpHeight() {
+      return Math.max(1.125, (double)this.mob.maxUpStep);
+   }
+
    private Node getNodeAndUpdateCostToMax(int var1, int var2, int var3, BlockPathTypes var4, float var5) {
       Node var6 = this.getNode(var1, var2, var3);
-      if (var6 != null) {
-         var6.type = var4;
-         var6.costMalus = Math.max(var6.costMalus, var5);
-      }
-
+      var6.type = var4;
+      var6.costMalus = Math.max(var6.costMalus, var5);
       return var6;
    }
 
-   @Nullable
    private Node getBlockedNode(int var1, int var2, int var3) {
       Node var4 = this.getNode(var1, var2, var3);
-      if (var4 != null) {
-         var4.type = BlockPathTypes.BLOCKED;
-         var4.costMalus = -1.0F;
-      }
-
+      var4.type = BlockPathTypes.BLOCKED;
+      var4.costMalus = -1.0F;
       return var4;
    }
 
@@ -449,7 +439,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return var5;
    }
 
-   private BlockPathTypes getBlockPathType(Mob var1, BlockPos var2) {
+   protected BlockPathTypes getBlockPathType(Mob var1, BlockPos var2) {
       return this.getCachedBlockType(var1, var2.getX(), var2.getY(), var2.getZ());
    }
 

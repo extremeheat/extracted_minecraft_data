@@ -307,21 +307,26 @@ public class MultiPlayerGameMode {
          boolean var6 = !var1.getMainHandItem().isEmpty() || !var1.getOffhandItem().isEmpty();
          boolean var7 = var1.isSecondaryUseActive() && var6;
          if (!var7) {
-            InteractionResult var8 = this.minecraft.level.getBlockState(var4).use(this.minecraft.level, var1, var2, var3);
-            if (var8.consumesAction()) {
-               return var8;
+            BlockState var8 = this.minecraft.level.getBlockState(var4);
+            if (!this.connection.isFeatureEnabled(var8.getBlock().requiredFeatures())) {
+               return InteractionResult.FAIL;
+            }
+
+            InteractionResult var9 = var8.use(this.minecraft.level, var1, var2, var3);
+            if (var9.consumesAction()) {
+               return var9;
             }
          }
 
          if (!var5.isEmpty() && !var1.getCooldowns().isOnCooldown(var5.getItem())) {
-            UseOnContext var9 = new UseOnContext(var1, var2, var3);
+            UseOnContext var12 = new UseOnContext(var1, var2, var3);
             InteractionResult var11;
             if (this.localPlayerMode.isCreative()) {
                int var10 = var5.getCount();
-               var11 = var5.useOn(var9);
+               var11 = var5.useOn(var12);
                var5.setCount(var10);
             } else {
-               var11 = var5.useOn(var9);
+               var11 = var5.useOn(var12);
             }
 
             return var11;
@@ -427,13 +432,13 @@ public class MultiPlayerGameMode {
    }
 
    public void handleCreativeModeItemAdd(ItemStack var1, int var2) {
-      if (this.localPlayerMode.isCreative()) {
+      if (this.localPlayerMode.isCreative() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(var2, var1));
       }
    }
 
    public void handleCreativeModeItemDrop(ItemStack var1) {
-      if (this.localPlayerMode.isCreative() && !var1.isEmpty()) {
+      if (this.localPlayerMode.isCreative() && !var1.isEmpty() && this.connection.isFeatureEnabled(var1.getItem().requiredFeatures())) {
          this.connection.send(new ServerboundSetCreativeModeSlotPacket(-1, var1));
       }
    }

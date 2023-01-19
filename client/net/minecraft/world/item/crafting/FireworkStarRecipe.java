@@ -25,7 +25,8 @@ public class FireworkStarRecipe extends CustomRecipe {
       Items.CREEPER_HEAD,
       Items.PLAYER_HEAD,
       Items.DRAGON_HEAD,
-      Items.ZOMBIE_HEAD
+      Items.ZOMBIE_HEAD,
+      Items.PIGLIN_HEAD
    );
    private static final Ingredient TRAIL_INGREDIENT = Ingredient.of(Items.DIAMOND);
    private static final Ingredient FLICKER_INGREDIENT = Ingredient.of(Items.GLOWSTONE_DUST);
@@ -39,11 +40,12 @@ public class FireworkStarRecipe extends CustomRecipe {
       var0.put(Items.PLAYER_HEAD, FireworkRocketItem.Shape.CREEPER);
       var0.put(Items.DRAGON_HEAD, FireworkRocketItem.Shape.CREEPER);
       var0.put(Items.ZOMBIE_HEAD, FireworkRocketItem.Shape.CREEPER);
+      var0.put(Items.PIGLIN_HEAD, FireworkRocketItem.Shape.CREEPER);
    });
    private static final Ingredient GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
 
-   public FireworkStarRecipe(ResourceLocation var1) {
-      super(var1);
+   public FireworkStarRecipe(ResourceLocation var1, CraftingBookCategory var2) {
+      super(var1, var2);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

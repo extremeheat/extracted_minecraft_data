@@ -2,7 +2,6 @@ package net.minecraft.world.level.pathfinder;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
@@ -19,6 +18,7 @@ public abstract class NodeEvaluator {
    protected boolean canPassDoors;
    protected boolean canOpenDoors;
    protected boolean canFloat;
+   protected boolean canWalkOverFences;
 
    public NodeEvaluator() {
       super();
@@ -38,25 +38,20 @@ public abstract class NodeEvaluator {
       this.mob = null;
    }
 
-   @Nullable
    protected Node getNode(BlockPos var1) {
       return this.getNode(var1.getX(), var1.getY(), var1.getZ());
    }
 
-   @Nullable
    protected Node getNode(int var1, int var2, int var3) {
       return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), var3x -> new Node(var1, var2, var3));
    }
 
-   @Nullable
    public abstract Node getStart();
 
-   @Nullable
    public abstract Target getGoal(double var1, double var3, double var5);
 
-   @Nullable
-   protected Target getTargetFromNode(@Nullable Node var1) {
-      return var1 != null ? new Target(var1) : null;
+   protected Target getTargetFromNode(Node var1) {
+      return new Target(var1);
    }
 
    public abstract int getNeighbors(Node[] var1, Node var2);
@@ -79,6 +74,10 @@ public abstract class NodeEvaluator {
       this.canFloat = var1;
    }
 
+   public void setCanWalkOverFences(boolean var1) {
+      this.canWalkOverFences = var1;
+   }
+
    public boolean canPassDoors() {
       return this.canPassDoors;
    }
@@ -89,5 +88,9 @@ public abstract class NodeEvaluator {
 
    public boolean canFloat() {
       return this.canFloat;
+   }
+
+   public boolean canWalkOverFences() {
+      return this.canWalkOverFences;
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import java.util.function.BiFunction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.GsonAdapterFactory;
@@ -41,11 +42,11 @@ public class LootItemFunctions {
    }
 
    private static LootItemFunctionType register(String var0, Serializer<? extends LootItemFunction> var1) {
-      return Registry.register(Registry.LOOT_FUNCTION_TYPE, new ResourceLocation(var0), new LootItemFunctionType(var1));
+      return Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, new ResourceLocation(var0), new LootItemFunctionType(var1));
    }
 
    public static Object createGsonAdapter() {
-      return GsonAdapterFactory.builder(Registry.LOOT_FUNCTION_TYPE, "function", "function", LootItemFunction::getType).build();
+      return GsonAdapterFactory.builder(BuiltInRegistries.LOOT_FUNCTION_TYPE, "function", "function", LootItemFunction::getType).build();
    }
 
    public static BiFunction<ItemStack, LootContext, ItemStack> compose(BiFunction<ItemStack, LootContext, ItemStack>[] var0) {

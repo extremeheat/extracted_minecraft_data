@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PhantomModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PhantomEyesLayer;
@@ -24,11 +24,11 @@ public class PhantomRenderer extends MobRenderer<Phantom, PhantomModel<Phantom>>
       int var4 = var1.getPhantomSize();
       float var5 = 1.0F + 0.15F * (float)var4;
       var2.scale(var5, var5, var5);
-      var2.translate(0.0, 1.3125, 0.1875);
+      var2.translate(0.0F, 1.3125F, 0.1875F);
    }
 
    protected void setupRotations(Phantom var1, PoseStack var2, float var3, float var4, float var5) {
       super.setupRotations(var1, var2, var3, var4, var5);
-      var2.mulPose(Vector3f.XP.rotationDegrees(var1.getXRot()));
+      var2.mulPose(Axis.XP.rotationDegrees(var1.getXRot()));
    }
 }

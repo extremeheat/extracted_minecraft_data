@@ -11,7 +11,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -47,13 +48,26 @@ public class AttributeMap {
       return this.attributes.computeIfAbsent(var1, var1x -> this.supplier.createInstance(this::onAttributeModified, var1x));
    }
 
+   @Nullable
+   public AttributeInstance getInstance(Holder<Attribute> var1) {
+      return this.getInstance((Attribute)var1.value());
+   }
+
    public boolean hasAttribute(Attribute var1) {
       return this.attributes.get(var1) != null || this.supplier.hasAttribute(var1);
+   }
+
+   public boolean hasAttribute(Holder<Attribute> var1) {
+      return this.hasAttribute((Attribute)var1.value());
    }
 
    public boolean hasModifier(Attribute var1, UUID var2) {
       AttributeInstance var3 = this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2) != null : this.supplier.hasModifier(var1, var2);
+   }
+
+   public boolean hasModifier(Holder<Attribute> var1, UUID var2) {
+      return this.hasModifier((Attribute)var1.value(), var2);
    }
 
    public double getValue(Attribute var1) {
@@ -69,6 +83,10 @@ public class AttributeMap {
    public double getModifierValue(Attribute var1, UUID var2) {
       AttributeInstance var3 = this.attributes.get(var1);
       return var3 != null ? var3.getModifier(var2).getAmount() : this.supplier.getModifierValue(var1, var2);
+   }
+
+   public double getModifierValue(Holder<Attribute> var1, UUID var2) {
+      return this.getModifierValue((Attribute)var1.value(), var2);
    }
 
    public void removeAttributeModifiers(Multimap<Attribute, AttributeModifier> var1) {
@@ -113,7 +131,7 @@ public class AttributeMap {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          CompoundTag var3 = var1.getCompound(var2);
          String var4 = var3.getString("Name");
-         Util.ifElse(Registry.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var4)), var2x -> {
+         Util.ifElse(BuiltInRegistries.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var4)), var2x -> {
             AttributeInstance var3x = this.getInstance(var2x);
             if (var3x != null) {
                var3x.load(var3);

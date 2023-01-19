@@ -1,6 +1,7 @@
 package net.minecraft.world.item.alchemy;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
@@ -81,6 +82,6 @@ public class Potions {
    }
 
    private static Potion register(String var0, Potion var1) {
-      return Registry.register(Registry.POTION, var0, var1);
+      return Registry.register(BuiltInRegistries.POTION, var0, var1);
    }
 }

@@ -20,12 +20,11 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    int duration;
    private int amplifier;
    private boolean ambient;
-   private boolean noCounter;
    private boolean visible;
    private boolean showIcon;
    @Nullable
    private MobEffectInstance hiddenEffect;
-   private Optional<MobEffectInstance.FactorData> factorData;
+   private final Optional<MobEffectInstance.FactorData> factorData;
 
    public MobEffectInstance(MobEffect var1) {
       this(var1, 0, 0);
@@ -301,14 +300,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
 
       return new MobEffectInstance(var0, var3, Math.max(var2, 0), var4, var5, var6, var7, var8);
-   }
-
-   public void setNoCounter(boolean var1) {
-      this.noCounter = var1;
-   }
-
-   public boolean isNoCounter() {
-      return this.noCounter;
    }
 
    public int compareTo(MobEffectInstance var1) {

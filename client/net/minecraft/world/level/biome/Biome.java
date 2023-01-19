@@ -11,8 +11,8 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
@@ -48,8 +48,8 @@ public final class Biome {
             )
             .apply(var0, (var0x, var1) -> new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY))
    );
-   public static final Codec<Holder<Biome>> CODEC = RegistryFileCodec.create(Registry.BIOME_REGISTRY, DIRECT_CODEC);
-   public static final Codec<HolderSet<Biome>> LIST_CODEC = RegistryCodecs.homogeneousList(Registry.BIOME_REGISTRY, DIRECT_CODEC);
+   public static final Codec<Holder<Biome>> CODEC = RegistryFileCodec.create(Registries.BIOME, DIRECT_CODEC);
+   public static final Codec<HolderSet<Biome>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.BIOME, DIRECT_CODEC);
    private static final PerlinSimplexNoise TEMPERATURE_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(1234L)), ImmutableList.of(0));
    static final PerlinSimplexNoise FROZEN_TEMPERATURE_NOISE = new PerlinSimplexNoise(
       new WorldgenRandom(new LegacyRandomSource(3456L)), ImmutableList.of(-2, -1, 0)
@@ -173,7 +173,7 @@ public final class Biome {
       } else {
          if (var2.getY() >= var1.getMinBuildHeight() && var2.getY() < var1.getMaxBuildHeight() && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
             BlockState var3 = var1.getBlockState(var2);
-            if (var3.isAir() && Blocks.SNOW.defaultBlockState().canSurvive(var1, var2)) {
+            if ((var3.isAir() || var3.is(Blocks.SNOW)) && Blocks.SNOW.defaultBlockState().canSurvive(var1, var2)) {
                return true;
             }
          }
@@ -235,7 +235,7 @@ public final class Biome {
       return this.specialEffects.getAmbientParticleSettings();
    }
 
-   public Optional<SoundEvent> getAmbientLoop() {
+   public Optional<Holder<SoundEvent>> getAmbientLoop() {
       return this.specialEffects.getAmbientLoopSoundEvent();
    }
 

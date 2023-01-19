@@ -1,9 +1,19 @@
 package net.minecraft.world.level.block;
 
+import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -44,7 +54,28 @@ public class SpawnerBlock extends BaseEntityBlock {
    }
 
    @Override
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return ItemStack.EMPTY;
+   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {
+      super.appendHoverText(var1, var2, var3, var4);
+      Optional var5 = this.getSpawnEntityDisplayName(var1);
+      if (var5.isPresent()) {
+         var3.add((Component)var5.get());
+      } else {
+         var3.add(CommonComponents.EMPTY);
+         var3.add(Component.translatable("block.minecraft.spawner.desc1").withStyle(ChatFormatting.GRAY));
+         var3.add(Component.literal(" ").append(Component.translatable("block.minecraft.spawner.desc2").withStyle(ChatFormatting.BLUE)));
+      }
+   }
+
+   private Optional<Component> getSpawnEntityDisplayName(ItemStack var1) {
+      CompoundTag var2 = BlockItem.getBlockEntityData(var1);
+      if (var2 != null && var2.contains("SpawnData", 10)) {
+         String var3 = var2.getCompound("SpawnData").getCompound("entity").getString("id");
+         ResourceLocation var4 = ResourceLocation.tryParse(var3);
+         if (var4 != null) {
+            return BuiltInRegistries.ENTITY_TYPE.getOptional(var4).map(var0 -> Component.translatable(var0.getDescriptionId()).withStyle(ChatFormatting.GRAY));
+         }
+      }
+
+      return Optional.empty();
    }
 }

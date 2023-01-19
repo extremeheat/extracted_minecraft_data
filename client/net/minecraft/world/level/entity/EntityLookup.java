@@ -8,8 +8,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.util.AbortableIterationConsumer;
 import org.slf4j.Logger;
 
 public class EntityLookup<T extends EntityAccess> {
@@ -21,14 +21,14 @@ public class EntityLookup<T extends EntityAccess> {
       super();
    }
 
-   public <U extends T> void getEntities(EntityTypeTest<T, U> var1, Consumer<U> var2) {
+   public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AbortableIterationConsumer<U> var2) {
       ObjectIterator var3 = this.byId.values().iterator();
 
       while(var3.hasNext()) {
          EntityAccess var4 = (EntityAccess)var3.next();
          EntityAccess var5 = (EntityAccess)var1.tryCast(var4);
-         if (var5 != null) {
-            var2.accept(var5);
+         if (var5 != null && var2.accept(var5).shouldAbort()) {
+            return;
          }
       }
    }

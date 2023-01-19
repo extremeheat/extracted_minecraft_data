@@ -2,11 +2,12 @@ package net.minecraft.world.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 
-public record Instrument(SoundEvent b, int c, float d) {
-   private final SoundEvent soundEvent;
+public record Instrument(Holder<SoundEvent> b, int c, float d) {
+   private final Holder<SoundEvent> soundEvent;
    private final int useDuration;
    private final float range;
    public static final Codec<Instrument> CODEC = RecordCodecBuilder.create(
@@ -18,7 +19,7 @@ public record Instrument(SoundEvent b, int c, float d) {
             .apply(var0, Instrument::new)
    );
 
-   public Instrument(SoundEvent var1, int var2, float var3) {
+   public Instrument(Holder<SoundEvent> var1, int var2, float var3) {
       super();
       this.soundEvent = var1;
       this.useDuration = var2;

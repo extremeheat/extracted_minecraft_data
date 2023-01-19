@@ -53,7 +53,7 @@ public class DragonHeadModel extends SkullModelBase {
    @Override
    public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
       var1.pushPose();
-      var1.translate(0.0, -0.37437498569488525, 0.0);
+      var1.translate(0.0F, -0.374375F, 0.0F);
       var1.scale(0.75F, 0.75F, 0.75F);
       this.head.render(var1, var2, var3, var4, var5, var6, var7, var8);
       var1.popPose();

@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
@@ -117,7 +117,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       public JsonObject serialize(JsonSerializationContext var1) {
          JsonObject var2 = new JsonObject();
          var2.addProperty("name", this.name);
-         var2.addProperty("attribute", Registry.ATTRIBUTE.getKey(this.attribute).toString());
+         var2.addProperty("attribute", BuiltInRegistries.ATTRIBUTE.getKey(this.attribute).toString());
          var2.addProperty("operation", operationToString(this.operation));
          var2.add("amount", var1.serialize(this.amount));
          if (this.id != null) {
@@ -142,7 +142,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       public static SetAttributesFunction.Modifier deserialize(JsonObject var0, JsonDeserializationContext var1) {
          String var2 = GsonHelper.getAsString(var0, "name");
          ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var0, "attribute"));
-         Attribute var4 = Registry.ATTRIBUTE.get(var3);
+         Attribute var4 = BuiltInRegistries.ATTRIBUTE.get(var3);
          if (var4 == null) {
             throw new JsonSyntaxException("Unknown attribute: " + var3);
          } else {

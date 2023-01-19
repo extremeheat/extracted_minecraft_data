@@ -1,29 +1,23 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public class EraseMemoryIf<E extends LivingEntity> extends Behavior<E> {
-   private final Predicate<E> predicate;
-   private final MemoryModuleType<?> memoryType;
-
-   public EraseMemoryIf(Predicate<E> var1, MemoryModuleType<?> var2) {
-      super(ImmutableMap.of(var2, MemoryStatus.VALUE_PRESENT));
-      this.predicate = var1;
-      this.memoryType = var2;
+public class EraseMemoryIf {
+   public EraseMemoryIf() {
+      super();
    }
 
-   @Override
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return this.predicate.test((E)var2);
-   }
-
-   @Override
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().eraseMemory(this.memoryType);
+   public static <E extends LivingEntity> BehaviorControl<E> create(Predicate<E> var0, MemoryModuleType<?> var1) {
+      return BehaviorBuilder.create(var2 -> var2.group(var2.present(var1)).apply(var2, var1xx -> (var2x, var3, var4) -> {
+               if (var0.test(var3)) {
+                  var1xx.erase();
+                  return true;
+               } else {
+                  return false;
+               }
+            }));
    }
 }

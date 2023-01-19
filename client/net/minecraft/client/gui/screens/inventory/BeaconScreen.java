@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -114,13 +115,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    protected void renderLabels(PoseStack var1, int var2, int var3) {
       drawCenteredString(var1, this.font, PRIMARY_EFFECT_LABEL, 62, 10, 14737632);
       drawCenteredString(var1, this.font, SECONDARY_EFFECT_LABEL, 169, 10, 14737632);
-
-      for(BeaconScreen.BeaconButton var5 : this.beaconButtons) {
-         if (var5.isShowingTooltip()) {
-            var5.renderToolTip(var1, var2 - this.leftPos, var3 - this.topPos);
-            break;
-         }
-      }
    }
 
    @Override
@@ -148,10 +142,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    interface BeaconButton {
-      boolean isShowingTooltip();
-
-      void renderToolTip(PoseStack var1, int var2, int var3);
-
       void updateStatus(int var1);
    }
 
@@ -194,7 +184,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       protected final int tier;
       private MobEffect effect;
       private TextureAtlasSprite sprite;
-      private Component tooltip;
 
       public BeaconPowerButton(int var2, int var3, MobEffect var4, boolean var5, int var6) {
          super(var2, var3);
@@ -206,7 +195,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       protected void setEffect(MobEffect var1) {
          this.effect = var1;
          this.sprite = Minecraft.getInstance().getMobEffectTextures().get(var1);
-         this.tooltip = this.createEffectDescription(var1);
+         this.setTooltip(Tooltip.create(this.createEffectDescription(var1), null));
       }
 
       protected MutableComponent createEffectDescription(MobEffect var1) {
@@ -227,14 +216,9 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       @Override
-      public void renderToolTip(PoseStack var1, int var2, int var3) {
-         BeaconScreen.this.renderTooltip(var1, this.tooltip, var2, var3);
-      }
-
-      @Override
       protected void renderIcon(PoseStack var1) {
-         RenderSystem.setShaderTexture(0, this.sprite.atlas().location());
-         blit(var1, this.x + 2, this.y + 2, this.getBlitOffset(), 18, 18, this.sprite);
+         RenderSystem.setShaderTexture(0, this.sprite.atlasLocation());
+         blit(var1, this.getX() + 2, this.getY() + 2, this.getBlitOffset(), 18, 18, this.sprite);
       }
 
       @Override
@@ -275,7 +259,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             var6 += this.width * 3;
          }
 
-         this.blit(var1, this.x, this.y, var6, 219, this.width, this.height);
+         this.blit(var1, this.getX(), this.getY(), var6, 219, this.width, this.height);
          this.renderIcon(var1);
       }
 
@@ -290,34 +274,24 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       @Override
-      public boolean isShowingTooltip() {
-         return this.isHovered;
-      }
-
-      @Override
-      public void updateNarration(NarrationElementOutput var1) {
+      public void updateWidgetNarration(NarrationElementOutput var1) {
          this.defaultButtonNarrationText(var1);
       }
    }
 
-   abstract class BeaconSpriteScreenButton extends BeaconScreen.BeaconScreenButton {
+   abstract static class BeaconSpriteScreenButton extends BeaconScreen.BeaconScreenButton {
       private final int iconX;
       private final int iconY;
 
-      protected BeaconSpriteScreenButton(int var2, int var3, int var4, int var5, Component var6) {
-         super(var2, var3, var6);
-         this.iconX = var4;
-         this.iconY = var5;
+      protected BeaconSpriteScreenButton(int var1, int var2, int var3, int var4, Component var5) {
+         super(var1, var2, var5);
+         this.iconX = var3;
+         this.iconY = var4;
       }
 
       @Override
       protected void renderIcon(PoseStack var1) {
-         this.blit(var1, this.x + 2, this.y + 2, this.iconX, this.iconY, 18, 18);
-      }
-
-      @Override
-      public void renderToolTip(PoseStack var1, int var2, int var3) {
-         BeaconScreen.this.renderTooltip(var1, BeaconScreen.this.title, var2, var3);
+         this.blit(var1, this.getX() + 2, this.getY() + 2, this.iconX, this.iconY, 18, 18);
       }
    }
 

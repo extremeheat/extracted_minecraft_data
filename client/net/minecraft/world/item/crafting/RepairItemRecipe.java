@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
@@ -15,8 +15,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 public class RepairItemRecipe extends CustomRecipe {
-   public RepairItemRecipe(ResourceLocation var1) {
-      super(var1);
+   public RepairItemRecipe(ResourceLocation var1, CraftingBookCategory var2) {
+      super(var1, var2);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {
@@ -72,7 +72,7 @@ public class RepairItemRecipe extends CustomRecipe {
             HashMap var11 = Maps.newHashMap();
             Map var12 = EnchantmentHelper.getEnchantments(var14);
             Map var13 = EnchantmentHelper.getEnchantments(var15);
-            Registry.ENCHANTMENT.stream().filter(Enchantment::isCurse).forEach(var3x -> {
+            BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isCurse).forEach(var3x -> {
                int var4x = Math.max(var12.getOrDefault(var3x, 0), var13.getOrDefault(var3x, 0));
                if (var4x > 0) {
                   var11.put(var3x, var4x);

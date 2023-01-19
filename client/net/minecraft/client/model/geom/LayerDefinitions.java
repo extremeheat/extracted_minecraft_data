@@ -14,6 +14,9 @@ import net.minecraft.client.model.BeeModel;
 import net.minecraft.client.model.BlazeModel;
 import net.minecraft.client.model.BoatModel;
 import net.minecraft.client.model.BookModel;
+import net.minecraft.client.model.CamelModel;
+import net.minecraft.client.model.ChestBoatModel;
+import net.minecraft.client.model.ChestRaftModel;
 import net.minecraft.client.model.ChestedHorseModel;
 import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.CodModel;
@@ -45,6 +48,7 @@ import net.minecraft.client.model.PandaModel;
 import net.minecraft.client.model.ParrotModel;
 import net.minecraft.client.model.PhantomModel;
 import net.minecraft.client.model.PigModel;
+import net.minecraft.client.model.PiglinHeadModel;
 import net.minecraft.client.model.PiglinModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.PolarBearModel;
@@ -52,6 +56,7 @@ import net.minecraft.client.model.PufferfishBigModel;
 import net.minecraft.client.model.PufferfishMidModel;
 import net.minecraft.client.model.PufferfishSmallModel;
 import net.minecraft.client.model.RabbitModel;
+import net.minecraft.client.model.RaftModel;
 import net.minecraft.client.model.RavagerModel;
 import net.minecraft.client.model.SalmonModel;
 import net.minecraft.client.model.SheepFurModel;
@@ -87,6 +92,7 @@ import net.minecraft.client.renderer.blockentity.BedRenderer;
 import net.minecraft.client.renderer.blockentity.BellRenderer;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
+import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.client.renderer.entity.EndCrystalRenderer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
@@ -117,13 +123,14 @@ public class LayerDefinitions {
       LayerDefinition var9 = CowModel.createBodyLayer();
       LayerDefinition var10 = LayerDefinition.create(OcelotModel.createBodyMesh(CubeDeformation.NONE), 64, 32);
       LayerDefinition var11 = LayerDefinition.create(PiglinModel.createMesh(CubeDeformation.NONE), 64, 64);
-      LayerDefinition var12 = SkullModel.createHumanoidHeadLayer();
-      LayerDefinition var13 = LlamaModel.createBodyLayer(CubeDeformation.NONE);
-      LayerDefinition var14 = StriderModel.createBodyLayer();
-      LayerDefinition var15 = HoglinModel.createBodyLayer();
-      LayerDefinition var16 = SkeletonModel.createBodyLayer();
-      LayerDefinition var17 = LayerDefinition.create(VillagerModel.createBodyModel(), 64, 64);
-      LayerDefinition var18 = SpiderModel.createSpiderBodyLayer();
+      LayerDefinition var12 = LayerDefinition.create(PiglinHeadModel.createHeadModel(), 64, 64);
+      LayerDefinition var13 = SkullModel.createHumanoidHeadLayer();
+      LayerDefinition var14 = LlamaModel.createBodyLayer(CubeDeformation.NONE);
+      LayerDefinition var15 = StriderModel.createBodyLayer();
+      LayerDefinition var16 = HoglinModel.createBodyLayer();
+      LayerDefinition var17 = SkeletonModel.createBodyLayer();
+      LayerDefinition var18 = LayerDefinition.create(VillagerModel.createBodyModel(), 64, 64);
+      LayerDefinition var19 = SpiderModel.createSpiderBodyLayer();
       var0.put(ModelLayers.ALLAY, AllayModel.createBodyLayer());
       var0.put(ModelLayers.ARMOR_STAND, ArmorStandModel.createBodyLayer());
       var0.put(ModelLayers.ARMOR_STAND_INNER_ARMOR, ArmorStandArmorModel.createBodyLayer(INNER_ARMOR_DEFORMATION));
@@ -139,7 +146,8 @@ public class LayerDefinitions {
       var0.put(ModelLayers.BOOK, BookModel.createBodyLayer());
       var0.put(ModelLayers.CAT, var10);
       var0.put(ModelLayers.CAT_COLLAR, LayerDefinition.create(OcelotModel.createBodyMesh(new CubeDeformation(0.01F)), 64, 32));
-      var0.put(ModelLayers.CAVE_SPIDER, var18);
+      var0.put(ModelLayers.CAMEL, CamelModel.createBodyLayer());
+      var0.put(ModelLayers.CAVE_SPIDER, var19);
       var0.put(ModelLayers.CHEST, ChestRenderer.createSingleBodyLayer());
       var0.put(ModelLayers.DOUBLE_CHEST_LEFT, ChestRenderer.createDoubleBodyLeftLayer());
       var0.put(ModelLayers.DOUBLE_CHEST_RIGHT, ChestRenderer.createDoubleBodyRightLayer());
@@ -180,7 +188,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.GLOW_SQUID, SquidModel.createBodyLayer());
       var0.put(ModelLayers.GOAT, GoatModel.createBodyLayer());
       var0.put(ModelLayers.GUARDIAN, GuardianModel.createBodyLayer());
-      var0.put(ModelLayers.HOGLIN, var15);
+      var0.put(ModelLayers.HOGLIN, var16);
       var0.put(ModelLayers.HOPPER_MINECART, var5);
       var0.put(ModelLayers.HORSE, var7);
       var0.put(ModelLayers.HORSE_ARMOR, LayerDefinition.create(HorseModel.createBodyMesh(new CubeDeformation(0.1F)), 64, 64));
@@ -190,7 +198,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.ILLUSIONER, var8);
       var0.put(ModelLayers.IRON_GOLEM, IronGolemModel.createBodyLayer());
       var0.put(ModelLayers.LEASH_KNOT, LeashKnotModel.createBodyLayer());
-      var0.put(ModelLayers.LLAMA, var13);
+      var0.put(ModelLayers.LLAMA, var14);
       var0.put(ModelLayers.LLAMA_DECOR, LlamaModel.createBodyLayer(new CubeDeformation(0.5F)));
       var0.put(ModelLayers.LLAMA_SPIT, LlamaSpitModel.createBodyLayer());
       var0.put(ModelLayers.MAGMA_CUBE, LavaSlimeModel.createBodyLayer());
@@ -209,9 +217,10 @@ public class LayerDefinitions {
       var0.put(ModelLayers.PIGLIN_BRUTE, var11);
       var0.put(ModelLayers.PIGLIN_BRUTE_INNER_ARMOR, var4);
       var0.put(ModelLayers.PIGLIN_BRUTE_OUTER_ARMOR, var3);
+      var0.put(ModelLayers.PIGLIN_HEAD, var12);
       var0.put(ModelLayers.PILLAGER, var8);
       var0.put(ModelLayers.PLAYER, LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, false), 64, 64));
-      var0.put(ModelLayers.PLAYER_HEAD, var12);
+      var0.put(ModelLayers.PLAYER_HEAD, var13);
       var0.put(ModelLayers.PLAYER_INNER_ARMOR, var4);
       var0.put(ModelLayers.PLAYER_OUTER_ARMOR, var2);
       var0.put(ModelLayers.PLAYER_SLIM, LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, true), 64, 64));
@@ -231,7 +240,7 @@ public class LayerDefinitions {
       var0.put(ModelLayers.SHULKER, ShulkerModel.createBodyLayer());
       var0.put(ModelLayers.SHULKER_BULLET, ShulkerBulletModel.createBodyLayer());
       var0.put(ModelLayers.SILVERFISH, SilverfishModel.createBodyLayer());
-      var0.put(ModelLayers.SKELETON, var16);
+      var0.put(ModelLayers.SKELETON, var17);
       var0.put(ModelLayers.SKELETON_INNER_ARMOR, var4);
       var0.put(ModelLayers.SKELETON_OUTER_ARMOR, var2);
       var0.put(ModelLayers.SKELETON_HORSE, var7);
@@ -240,17 +249,17 @@ public class LayerDefinitions {
       var0.put(ModelLayers.SLIME_OUTER, SlimeModel.createOuterBodyLayer());
       var0.put(ModelLayers.SNOW_GOLEM, SnowGolemModel.createBodyLayer());
       var0.put(ModelLayers.SPAWNER_MINECART, var5);
-      var0.put(ModelLayers.SPIDER, var18);
+      var0.put(ModelLayers.SPIDER, var19);
       var0.put(ModelLayers.SQUID, SquidModel.createBodyLayer());
-      var0.put(ModelLayers.STRAY, var16);
+      var0.put(ModelLayers.STRAY, var17);
       var0.put(ModelLayers.STRAY_INNER_ARMOR, var4);
       var0.put(ModelLayers.STRAY_OUTER_ARMOR, var2);
       var0.put(ModelLayers.STRAY_OUTER_LAYER, LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32));
-      var0.put(ModelLayers.STRIDER, var14);
-      var0.put(ModelLayers.STRIDER_SADDLE, var14);
+      var0.put(ModelLayers.STRIDER, var15);
+      var0.put(ModelLayers.STRIDER_SADDLE, var15);
       var0.put(ModelLayers.TADPOLE, TadpoleModel.createBodyLayer());
       var0.put(ModelLayers.TNT_MINECART, var5);
-      var0.put(ModelLayers.TRADER_LLAMA, var13);
+      var0.put(ModelLayers.TRADER_LLAMA, var14);
       var0.put(ModelLayers.TRIDENT, TridentModel.createLayer());
       var0.put(ModelLayers.TROPICAL_FISH_LARGE, TropicalFishModelB.createBodyLayer(CubeDeformation.NONE));
       var0.put(ModelLayers.TROPICAL_FISH_LARGE_PATTERN, TropicalFishModelB.createBodyLayer(FISH_PATTERN_DEFORMATION));
@@ -258,24 +267,24 @@ public class LayerDefinitions {
       var0.put(ModelLayers.TROPICAL_FISH_SMALL_PATTERN, TropicalFishModelA.createBodyLayer(FISH_PATTERN_DEFORMATION));
       var0.put(ModelLayers.TURTLE, TurtleModel.createBodyLayer());
       var0.put(ModelLayers.VEX, VexModel.createBodyLayer());
-      var0.put(ModelLayers.VILLAGER, var17);
+      var0.put(ModelLayers.VILLAGER, var18);
       var0.put(ModelLayers.VINDICATOR, var8);
       var0.put(ModelLayers.WARDEN, WardenModel.createBodyLayer());
-      var0.put(ModelLayers.WANDERING_TRADER, var17);
+      var0.put(ModelLayers.WANDERING_TRADER, var18);
       var0.put(ModelLayers.WITCH, WitchModel.createBodyLayer());
       var0.put(ModelLayers.WITHER, WitherBossModel.createBodyLayer(CubeDeformation.NONE));
       var0.put(ModelLayers.WITHER_ARMOR, WitherBossModel.createBodyLayer(INNER_ARMOR_DEFORMATION));
       var0.put(ModelLayers.WITHER_SKULL, WitherSkullRenderer.createSkullLayer());
-      var0.put(ModelLayers.WITHER_SKELETON, var16);
+      var0.put(ModelLayers.WITHER_SKELETON, var17);
       var0.put(ModelLayers.WITHER_SKELETON_INNER_ARMOR, var4);
       var0.put(ModelLayers.WITHER_SKELETON_OUTER_ARMOR, var2);
       var0.put(ModelLayers.WITHER_SKELETON_SKULL, var6);
       var0.put(ModelLayers.WOLF, WolfModel.createBodyLayer());
-      var0.put(ModelLayers.ZOGLIN, var15);
+      var0.put(ModelLayers.ZOGLIN, var16);
       var0.put(ModelLayers.ZOMBIE, var1);
       var0.put(ModelLayers.ZOMBIE_INNER_ARMOR, var4);
       var0.put(ModelLayers.ZOMBIE_OUTER_ARMOR, var2);
-      var0.put(ModelLayers.ZOMBIE_HEAD, var12);
+      var0.put(ModelLayers.ZOMBIE_HEAD, var13);
       var0.put(ModelLayers.ZOMBIE_HORSE, var7);
       var0.put(ModelLayers.ZOMBIE_VILLAGER, ZombieVillagerModel.createBodyLayer());
       var0.put(ModelLayers.ZOMBIE_VILLAGER_INNER_ARMOR, ZombieVillagerModel.createArmorLayer(INNER_ARMOR_DEFORMATION));
@@ -283,22 +292,31 @@ public class LayerDefinitions {
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN, var11);
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_INNER_ARMOR, var4);
       var0.put(ModelLayers.ZOMBIFIED_PIGLIN_OUTER_ARMOR, var3);
-      LayerDefinition var19 = BoatModel.createBodyModel(false);
-      LayerDefinition var20 = BoatModel.createBodyModel(true);
+      LayerDefinition var20 = BoatModel.createBodyModel();
+      LayerDefinition var21 = ChestBoatModel.createBodyModel();
+      LayerDefinition var22 = RaftModel.createBodyModel();
+      LayerDefinition var23 = ChestRaftModel.createBodyModel();
 
-      for(Boat.Type var24 : Boat.Type.values()) {
-         var0.put(ModelLayers.createBoatModelName(var24), var19);
-         var0.put(ModelLayers.createChestBoatModelName(var24), var20);
+      for(Boat.Type var27 : Boat.Type.values()) {
+         if (var27 == Boat.Type.BAMBOO) {
+            var0.put(ModelLayers.createBoatModelName(var27), var22);
+            var0.put(ModelLayers.createChestBoatModelName(var27), var23);
+         } else {
+            var0.put(ModelLayers.createBoatModelName(var27), var20);
+            var0.put(ModelLayers.createChestBoatModelName(var27), var21);
+         }
       }
 
-      LayerDefinition var25 = SignRenderer.createSignLayer();
-      WoodType.values().forEach(var2x -> var0.put(ModelLayers.createSignModelName(var2x), var25));
-      ImmutableMap var26 = var0.build();
-      List var27 = ModelLayers.getKnownLocations().filter(var1x -> !var26.containsKey(var1x)).collect(Collectors.toList());
-      if (!var27.isEmpty()) {
-         throw new IllegalStateException("Missing layer definitions: " + var27);
+      LayerDefinition var28 = SignRenderer.createSignLayer();
+      WoodType.values().forEach(var2x -> var0.put(ModelLayers.createSignModelName(var2x), var28));
+      LayerDefinition var29 = HangingSignRenderer.createHangingSignLayer();
+      WoodType.values().forEach(var2x -> var0.put(ModelLayers.createHangingSignModelName(var2x), var29));
+      ImmutableMap var30 = var0.build();
+      List var31 = ModelLayers.getKnownLocations().filter(var1x -> !var30.containsKey(var1x)).collect(Collectors.toList());
+      if (!var31.isEmpty()) {
+         throw new IllegalStateException("Missing layer definitions: " + var31);
       } else {
-         return var26;
+         return var30;
       }
    }
 }

@@ -9,7 +9,7 @@ public record GuiMessage(int a, Component b, @Nullable MessageSignature c, @Null
    private final int addedTime;
    private final Component content;
    @Nullable
-   private final MessageSignature headerSignature;
+   private final MessageSignature signature;
    @Nullable
    private final GuiMessageTag tag;
 
@@ -17,7 +17,7 @@ public record GuiMessage(int a, Component b, @Nullable MessageSignature c, @Null
       super();
       this.addedTime = var1;
       this.content = var2;
-      this.headerSignature = var3;
+      this.signature = var3;
       this.tag = var4;
    }
 

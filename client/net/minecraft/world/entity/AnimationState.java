@@ -23,6 +23,14 @@ public class AnimationState {
       }
    }
 
+   public void animateWhen(boolean var1, int var2) {
+      if (var1) {
+         this.startIfStopped(var2);
+      } else {
+         this.stop();
+      }
+   }
+
    public void stop() {
       this.lastTime = 9223372036854775807L;
    }

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.decoration;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -74,6 +75,6 @@ public class PaintingVariants {
    }
 
    private static ResourceKey<PaintingVariant> create(String var0) {
-      return ResourceKey.create(Registry.PAINTING_VARIANT_REGISTRY, new ResourceLocation(var0));
+      return ResourceKey.create(Registries.PAINTING_VARIANT, new ResourceLocation(var0));
    }
 }

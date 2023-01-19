@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 
 public class ItemArgument implements ArgumentType<ItemInput> {
@@ -20,7 +20,7 @@ public class ItemArgument implements ArgumentType<ItemInput> {
 
    public ItemArgument(CommandBuildContext var1) {
       super();
-      this.items = var1.holderLookup(Registry.ITEM_REGISTRY);
+      this.items = var1.holderLookup(Registries.ITEM);
    }
 
    public static ItemArgument item(CommandBuildContext var0) {

@@ -319,6 +319,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_PLANKS, 5, 20);
       var0.setFlammable(Blocks.DARK_OAK_PLANKS, 5, 20);
       var0.setFlammable(Blocks.MANGROVE_PLANKS, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_PLANKS, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_MOSAIC, 5, 20);
       var0.setFlammable(Blocks.OAK_SLAB, 5, 20);
       var0.setFlammable(Blocks.SPRUCE_SLAB, 5, 20);
       var0.setFlammable(Blocks.BIRCH_SLAB, 5, 20);
@@ -326,6 +328,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_SLAB, 5, 20);
       var0.setFlammable(Blocks.DARK_OAK_SLAB, 5, 20);
       var0.setFlammable(Blocks.MANGROVE_SLAB, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_SLAB, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_MOSAIC_SLAB, 5, 20);
       var0.setFlammable(Blocks.OAK_FENCE_GATE, 5, 20);
       var0.setFlammable(Blocks.SPRUCE_FENCE_GATE, 5, 20);
       var0.setFlammable(Blocks.BIRCH_FENCE_GATE, 5, 20);
@@ -333,6 +337,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_FENCE_GATE, 5, 20);
       var0.setFlammable(Blocks.DARK_OAK_FENCE_GATE, 5, 20);
       var0.setFlammable(Blocks.MANGROVE_FENCE_GATE, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_FENCE_GATE, 5, 20);
       var0.setFlammable(Blocks.OAK_FENCE, 5, 20);
       var0.setFlammable(Blocks.SPRUCE_FENCE, 5, 20);
       var0.setFlammable(Blocks.BIRCH_FENCE, 5, 20);
@@ -340,6 +345,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_FENCE, 5, 20);
       var0.setFlammable(Blocks.DARK_OAK_FENCE, 5, 20);
       var0.setFlammable(Blocks.MANGROVE_FENCE, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_FENCE, 5, 20);
       var0.setFlammable(Blocks.OAK_STAIRS, 5, 20);
       var0.setFlammable(Blocks.BIRCH_STAIRS, 5, 20);
       var0.setFlammable(Blocks.SPRUCE_STAIRS, 5, 20);
@@ -347,6 +353,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_STAIRS, 5, 20);
       var0.setFlammable(Blocks.DARK_OAK_STAIRS, 5, 20);
       var0.setFlammable(Blocks.MANGROVE_STAIRS, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_STAIRS, 5, 20);
+      var0.setFlammable(Blocks.BAMBOO_MOSAIC_STAIRS, 5, 20);
       var0.setFlammable(Blocks.OAK_LOG, 5, 5);
       var0.setFlammable(Blocks.SPRUCE_LOG, 5, 5);
       var0.setFlammable(Blocks.BIRCH_LOG, 5, 5);
@@ -354,6 +362,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.ACACIA_LOG, 5, 5);
       var0.setFlammable(Blocks.DARK_OAK_LOG, 5, 5);
       var0.setFlammable(Blocks.MANGROVE_LOG, 5, 5);
+      var0.setFlammable(Blocks.BAMBOO_BLOCK, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_OAK_LOG, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_SPRUCE_LOG, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_BIRCH_LOG, 5, 5);
@@ -361,6 +370,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.STRIPPED_ACACIA_LOG, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_DARK_OAK_LOG, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_MANGROVE_LOG, 5, 5);
+      var0.setFlammable(Blocks.STRIPPED_BAMBOO_BLOCK, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_OAK_WOOD, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_SPRUCE_WOOD, 5, 5);
       var0.setFlammable(Blocks.STRIPPED_BIRCH_WOOD, 5, 5);

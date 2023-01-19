@@ -16,9 +16,10 @@ import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
@@ -27,6 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -64,13 +66,14 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 
 public abstract class Level implements LevelAccessor, AutoCloseable {
-   public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC = ResourceKey.codec(Registry.DIMENSION_REGISTRY);
-   public static final ResourceKey<Level> OVERWORLD = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation("overworld"));
-   public static final ResourceKey<Level> NETHER = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation("the_nether"));
-   public static final ResourceKey<Level> END = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation("the_end"));
+   public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
+   public static final ResourceKey<Level> OVERWORLD = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("overworld"));
+   public static final ResourceKey<Level> NETHER = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_nether"));
+   public static final ResourceKey<Level> END = ResourceKey.create(Registries.DIMENSION, new ResourceLocation("the_end"));
    public static final int MAX_LEVEL_SIZE = 30000000;
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
@@ -368,23 +371,37 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return !this.dimensionType().hasFixedTime() && !this.isDay();
    }
 
+   public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
+      this.playSound(var1 instanceof Player var7 ? var7 : null, var2, var3, var4, var5, var6);
+   }
+
    @Override
    public void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSound(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var3, var4, var5, var6);
    }
 
    public abstract void playSeededSound(
-      @Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12
+      @Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12
    );
 
-   public abstract void playSeededSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6, long var7);
+   public void playSeededSound(
+      @Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12
+   ) {
+      this.playSeededSound(var1, var2, var4, var6, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var8), var9, var10, var11, var12);
+   }
+
+   public abstract void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7);
 
    public void playSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
 
    public void playSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
-      this.playSeededSound(var1, var2, var3, var4, var5, var6, this.threadSafeRandom.nextLong());
+      this.playSeededSound(var1, var2, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var3), var4, var5, var6, this.threadSafeRandom.nextLong());
+   }
+
+   public void playLocalSound(BlockPos var1, SoundEvent var2, SoundSource var3, float var4, float var5, boolean var6) {
+      this.playLocalSound((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, var2, var3, var4, var5, var6);
    }
 
    public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
@@ -459,12 +476,24 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.shouldTickBlocksAt(ChunkPos.asLong(var1));
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, Explosion.BlockInteraction var9) {
+   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, Level.ExplosionInteraction var9) {
       return this.explode(var1, null, null, var2, var4, var6, var8, false, var9);
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, Explosion.BlockInteraction var10) {
+   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, Level.ExplosionInteraction var10) {
       return this.explode(var1, null, null, var2, var4, var6, var8, var9, var10);
+   }
+
+   public Explosion explode(
+      @Nullable Entity var1,
+      @Nullable DamageSource var2,
+      @Nullable ExplosionDamageCalculator var3,
+      Vec3 var4,
+      float var5,
+      boolean var6,
+      Level.ExplosionInteraction var7
+   ) {
+      return this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7);
    }
 
    public Explosion explode(
@@ -476,12 +505,39 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       double var8,
       float var10,
       boolean var11,
-      Explosion.BlockInteraction var12
+      Level.ExplosionInteraction var12
    ) {
-      Explosion var13 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var12);
-      var13.explode();
-      var13.finalizeExplosion(true);
-      return var13;
+      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true);
+   }
+
+   public Explosion explode(
+      @Nullable Entity var1,
+      @Nullable DamageSource var2,
+      @Nullable ExplosionDamageCalculator var3,
+      double var4,
+      double var6,
+      double var8,
+      float var10,
+      boolean var11,
+      Level.ExplosionInteraction var12,
+      boolean var13
+   ) {
+      Explosion.BlockInteraction var14 = switch(var12) {
+         case NONE -> Explosion.BlockInteraction.KEEP;
+         case BLOCK -> this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
+         case MOB -> this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
+         ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)
+         : Explosion.BlockInteraction.KEEP;
+         case TNT -> this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
+      };
+      Explosion var15 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var14);
+      var15.explode();
+      var15.finalizeExplosion(var13);
+      return var15;
+   }
+
+   private Explosion.BlockInteraction getDestroyType(GameRules.Key<GameRules.BooleanValue> var1) {
+      return this.getGameRules().getBoolean(var1) ? Explosion.BlockInteraction.DESTROY_WITH_DECAY : Explosion.BlockInteraction.DESTROY;
    }
 
    public abstract String gatherChunkSourceStats();
@@ -598,23 +654,39 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    @Override
    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
-      this.getProfiler().incrementCounter("getEntities");
       ArrayList var4 = Lists.newArrayList();
-      this.getEntities().get(var1, var2, var3x -> {
-         if (var3.test(var3x)) {
-            var4.add(var3x);
+      this.getEntities(var1, var2, var3, var4);
+      return var4;
+   }
+
+   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4) {
+      this.getEntities(var1, var2, var3, var4, 2147483647);
+   }
+
+   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4, int var5) {
+      this.getProfiler().incrementCounter("getEntities");
+      this.getEntities().get(var1, var2, var4x -> {
+         if (var3.test(var4x)) {
+            var4.add(var4x);
+            if (var4.size() >= var5) {
+               return AbortableIterationConsumer.Continuation.ABORT;
+            }
          }
 
-         if (var3x instanceof EnderDragon var4x) {
-            for(EnderDragonPart var8 : var4x.getSubEntities()) {
-               Entity var9 = (Entity)var1.tryCast(var8);
-               if (var9 != null && var3.test(var9)) {
-                  var4.add(var9);
+         if (var4x instanceof EnderDragon var5x) {
+            for(EnderDragonPart var9 : var5x.getSubEntities()) {
+               Entity var10 = (Entity)var1.tryCast(var9);
+               if (var10 != null && var3.test(var10)) {
+                  var4.add(var10);
+                  if (var4.size() >= var5) {
+                     return AbortableIterationConsumer.Continuation.ABORT;
+                  }
                }
             }
          }
+
+         return AbortableIterationConsumer.Continuation.CONTINUE;
       });
-      return var4;
    }
 
    @Nullable
@@ -931,5 +1003,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    @Override
    public long nextSubTickCount() {
       return (long)(this.subTickCount++);
+   }
+
+   public static enum ExplosionInteraction {
+      NONE,
+      BLOCK,
+      MOB,
+      TNT;
+
+      private ExplosionInteraction() {
+      }
    }
 }

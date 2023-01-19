@@ -1,15 +1,16 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
 import net.minecraft.core.Direction;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
    private final VertexConsumer delegate;
    private final Matrix4f cameraInversePose;
    private final Matrix3f normalInversePose;
+   private final float textureScale;
    private float x;
    private float y;
    private float z;
@@ -20,13 +21,12 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
    private float ny;
    private float nz;
 
-   public SheetedDecalTextureGenerator(VertexConsumer var1, Matrix4f var2, Matrix3f var3) {
+   public SheetedDecalTextureGenerator(VertexConsumer var1, Matrix4f var2, Matrix3f var3, float var4) {
       super();
       this.delegate = var1;
-      this.cameraInversePose = var2.copy();
-      this.cameraInversePose.invert();
-      this.normalInversePose = var3.copy();
-      this.normalInversePose.invert();
+      this.cameraInversePose = new Matrix4f(var2).invert();
+      this.normalInversePose = new Matrix3f(var3).invert();
+      this.textureScale = var4;
       this.resetState();
    }
 
@@ -44,16 +44,14 @@ public class SheetedDecalTextureGenerator extends DefaultedVertexConsumer {
 
    @Override
    public void endVertex() {
-      Vector3f var1 = new Vector3f(this.nx, this.ny, this.nz);
-      var1.transform(this.normalInversePose);
+      Vector3f var1 = this.normalInversePose.transform(new Vector3f(this.nx, this.ny, this.nz));
       Direction var2 = Direction.getNearest(var1.x(), var1.y(), var1.z());
-      Vector4f var3 = new Vector4f(this.x, this.y, this.z, 1.0F);
-      var3.transform(this.cameraInversePose);
-      var3.transform(Vector3f.YP.rotationDegrees(180.0F));
-      var3.transform(Vector3f.XP.rotationDegrees(-90.0F));
-      var3.transform(var2.getRotation());
-      float var4 = -var3.x();
-      float var5 = -var3.y();
+      Vector4f var3 = this.cameraInversePose.transform(new Vector4f(this.x, this.y, this.z, 1.0F));
+      var3.rotateY(3.1415927F);
+      var3.rotateX(-1.5707964F);
+      var3.rotate(var2.getRotation());
+      float var4 = -var3.x() * this.textureScale;
+      float var5 = -var3.y() * this.textureScale;
       this.delegate
          .vertex((double)this.x, (double)this.y, (double)this.z)
          .color(1.0F, 1.0F, 1.0F, 1.0F)

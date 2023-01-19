@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -99,7 +99,7 @@ public class Goat extends Animal {
    public ItemStack createHorn() {
       RandomSource var1 = RandomSource.create((long)this.getUUID().hashCode());
       TagKey var2 = this.isScreamingGoat() ? InstrumentTags.SCREAMING_GOAT_HORNS : InstrumentTags.REGULAR_GOAT_HORNS;
-      HolderSet.Named var3 = Registry.INSTRUMENT.getOrCreateTag(var2);
+      HolderSet.Named var3 = BuiltInRegistries.INSTRUMENT.getOrCreateTag(var2);
       return InstrumentItem.create(Items.GOAT_HORN, (Holder<Instrument>)var3.getRandomElement(var1).get());
    }
 
@@ -157,12 +157,14 @@ public class Goat extends Animal {
       return this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_MILK : SoundEvents.GOAT_MILK;
    }
 
+   @Nullable
    public Goat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Goat var3 = EntityType.GOAT.create(var1);
       if (var3 != null) {
          GoatAi.initMemories(var3, var1.getRandom());
-         boolean var4 = var2 instanceof Goat && ((Goat)var2).isScreamingGoat();
-         var3.setScreamingGoat(var4 || var1.getRandom().nextDouble() < 0.02);
+         Object var4 = var1.getRandom().nextBoolean() ? this : var2;
+         boolean var5 = var4 instanceof Goat var6 && var6.isScreamingGoat() || var1.getRandom().nextDouble() < 0.02;
+         var3.setScreamingGoat(var5);
       }
 
       return var3;

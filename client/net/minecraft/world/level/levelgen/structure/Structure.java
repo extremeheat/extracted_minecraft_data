@@ -14,9 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -39,8 +40,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public abstract class Structure {
-   public static final Codec<Structure> DIRECT_CODEC = Registry.STRUCTURE_TYPES.byNameCodec().dispatch(Structure::type, StructureType::codec);
-   public static final Codec<Holder<Structure>> CODEC = RegistryFileCodec.create(Registry.STRUCTURE_REGISTRY, DIRECT_CODEC);
+   public static final Codec<Structure> DIRECT_CODEC = BuiltInRegistries.STRUCTURE_TYPE.byNameCodec().dispatch(Structure::type, StructureType::codec);
+   public static final Codec<Holder<Structure>> CODEC = RegistryFileCodec.create(Registries.STRUCTURE, DIRECT_CODEC);
    protected final Structure.StructureSettings settings;
 
    public static <S extends Structure> RecordCodecBuilder<S, Structure.StructureSettings> settingsCodec(Instance<S> var0) {
@@ -88,12 +89,13 @@ public abstract class Structure {
       LevelHeightAccessor var10,
       Predicate<Holder<Biome>> var11
    ) {
-      Optional var12 = this.findGenerationPoint(new Structure.GenerationContext(var1, var2, var3, var4, var5, var6, var8, var10, var11));
-      if (var12.isPresent() && isValidBiome((Structure.GenerationStub)var12.get(), var2, var4, var11)) {
-         StructurePiecesBuilder var13 = ((Structure.GenerationStub)var12.get()).getPiecesBuilder();
-         StructureStart var14 = new StructureStart(this, var8, var9, var13.build());
-         if (var14.isValid()) {
-            return var14;
+      Structure.GenerationContext var12 = new Structure.GenerationContext(var1, var2, var3, var4, var5, var6, var8, var10, var11);
+      Optional var13 = this.findValidGenerationPoint(var12);
+      if (var13.isPresent()) {
+         StructurePiecesBuilder var14 = ((Structure.GenerationStub)var13.get()).getPiecesBuilder();
+         StructureStart var15 = new StructureStart(this, var8, var9, var14.build());
+         if (var15.isValid()) {
+            return var15;
          }
       }
 
@@ -110,12 +112,14 @@ public abstract class Structure {
       return Optional.of(new Structure.GenerationStub(new BlockPos(var4, var6, var5), var2));
    }
 
-   private static boolean isValidBiome(Structure.GenerationStub var0, ChunkGenerator var1, RandomState var2, Predicate<Holder<Biome>> var3) {
-      BlockPos var4 = var0.position();
-      return var3.test(
-         var1.getBiomeSource()
-            .getNoiseBiome(QuartPos.fromBlock(var4.getX()), QuartPos.fromBlock(var4.getY()), QuartPos.fromBlock(var4.getZ()), var2.sampler())
-      );
+   private static boolean isValidBiome(Structure.GenerationStub var0, Structure.GenerationContext var1) {
+      BlockPos var2 = var0.position();
+      return var1.validBiome
+         .test(
+            var1.chunkGenerator
+               .getBiomeSource()
+               .getNoiseBiome(QuartPos.fromBlock(var2.getX()), QuartPos.fromBlock(var2.getY()), QuartPos.fromBlock(var2.getZ()), var1.randomState.sampler())
+         );
    }
 
    public void afterPlace(
@@ -166,7 +170,11 @@ public abstract class Structure {
       return new BlockPos(var6, getLowestY(var1, var6, var7, var3, var4), var7);
    }
 
-   public abstract Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1);
+   protected abstract Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1);
+
+   public Optional<Structure.GenerationStub> findValidGenerationPoint(Structure.GenerationContext var1) {
+      return this.findGenerationPoint(var1).filter(var1x -> isValidBiome(var1x, var1));
+   }
 
    public abstract StructureType<?> type();
 
@@ -183,15 +191,15 @@ public abstract class Structure {
       Predicate<Holder<Biome>> j
    ) {
       private final RegistryAccess registryAccess;
-      private final ChunkGenerator chunkGenerator;
+      final ChunkGenerator chunkGenerator;
       private final BiomeSource biomeSource;
-      private final RandomState randomState;
+      final RandomState randomState;
       private final StructureTemplateManager structureTemplateManager;
       private final WorldgenRandom random;
       private final long seed;
       private final ChunkPos chunkPos;
       private final LevelHeightAccessor heightAccessor;
-      private final Predicate<Holder<Biome>> validBiome;
+      final Predicate<Holder<Biome>> validBiome;
 
       public GenerationContext(
          RegistryAccess var1,
@@ -269,7 +277,7 @@ public abstract class Structure {
       final TerrainAdjustment terrainAdaptation;
       public static final MapCodec<Structure.StructureSettings> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  RegistryCodecs.homogeneousList(Registry.BIOME_REGISTRY).fieldOf("biomes").forGetter(Structure.StructureSettings::biomes),
+                  RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(Structure.StructureSettings::biomes),
                   Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values()))
                      .fieldOf("spawn_overrides")
                      .forGetter(Structure.StructureSettings::spawnOverrides),

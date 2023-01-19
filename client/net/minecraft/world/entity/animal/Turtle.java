@@ -359,6 +359,8 @@ public class Turtle extends Animal {
          }
 
          this.turtle.setHasEgg(true);
+         this.animal.setAge(6000);
+         this.partner.setAge(6000);
          this.animal.resetLove();
          this.partner.resetLove();
          RandomSource var2 = this.animal.getRandom();

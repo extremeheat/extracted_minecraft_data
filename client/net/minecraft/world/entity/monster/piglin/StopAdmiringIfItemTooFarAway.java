@@ -1,35 +1,33 @@
 package net.minecraft.world.entity.monster.piglin;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.item.ItemEntity;
 
-public class StopAdmiringIfItemTooFarAway<E extends Piglin> extends Behavior<E> {
-   private final int maxDistanceToItem;
-
-   public StopAdmiringIfItemTooFarAway(int var1) {
-      super(ImmutableMap.of(MemoryModuleType.ADMIRING_ITEM, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryStatus.REGISTERED));
-      this.maxDistanceToItem = var1;
+public class StopAdmiringIfItemTooFarAway<E extends Piglin> {
+   public StopAdmiringIfItemTooFarAway() {
+      super();
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      if (!var2.getOffhandItem().isEmpty()) {
-         return false;
-      } else {
-         Optional var3 = var2.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM);
-         if (!var3.isPresent()) {
-            return true;
-         } else {
-            return !((ItemEntity)var3.get()).closerThan(var2, (double)this.maxDistanceToItem);
-         }
-      }
-   }
-
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().eraseMemory(MemoryModuleType.ADMIRING_ITEM);
+   public static BehaviorControl<LivingEntity> create(int var0) {
+      return BehaviorBuilder.create(
+         var1 -> var1.group(var1.present(MemoryModuleType.ADMIRING_ITEM), var1.registered(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM))
+               .apply(var1, (var2, var3) -> (var4, var5, var6) -> {
+                     if (!var5.getOffhandItem().isEmpty()) {
+                        return false;
+                     } else {
+                        Optional var8 = var1.tryGet(var3);
+                        if (var8.isPresent() && ((ItemEntity)var8.get()).closerThan(var5, (double)var0)) {
+                           return false;
+                        } else {
+                           var2.erase();
+                           return true;
+                        }
+                     }
+                  })
+      );
    }
 }

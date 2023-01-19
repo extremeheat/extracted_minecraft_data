@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -156,7 +157,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    private final Codec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
-      return Registry.register(Registry.FEATURE, var0, (F)var1);
+      return Registry.register(BuiltInRegistries.FEATURE, var0, (F)var1);
    }
 
    public Feature(Codec<FC> var1) {

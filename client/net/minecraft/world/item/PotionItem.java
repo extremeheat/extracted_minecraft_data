@@ -5,8 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +19,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.context.UseOnContext;
@@ -88,7 +85,7 @@ public class PotionItem extends Item {
       ItemStack var5 = var1.getItemInHand();
       BlockState var6 = var2.getBlockState(var3);
       if (var1.getClickedFace() != Direction.DOWN && var6.is(BlockTags.CONVERTABLE_TO_MUD) && PotionUtils.getPotion(var5) == Potions.WATER) {
-         var2.playSound(null, var3, SoundEvents.GENERIC_SPLASH, SoundSource.PLAYERS, 1.0F, 1.0F);
+         var2.playSound(null, var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.setItemInHand(var1.getHand(), ItemUtils.createFilledResult(var5, var4, new ItemStack(Items.GLASS_BOTTLE)));
          var4.awardStat(Stats.ITEM_USED.get(var5.getItem()));
          if (!var2.isClientSide) {
@@ -146,16 +143,5 @@ public class PotionItem extends Item {
    @Override
    public boolean isFoil(ItemStack var1) {
       return super.isFoil(var1) || !PotionUtils.getMobEffects(var1).isEmpty();
-   }
-
-   @Override
-   public void fillItemCategory(CreativeModeTab var1, NonNullList<ItemStack> var2) {
-      if (this.allowedIn(var1)) {
-         for(Potion var4 : Registry.POTION) {
-            if (var4 != Potions.EMPTY) {
-               var2.add(PotionUtils.setPotion(new ItemStack(this), var4));
-            }
-         }
-      }
    }
 }

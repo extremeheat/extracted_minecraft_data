@@ -5,8 +5,9 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.RegistrySynchronization;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
@@ -58,10 +59,10 @@ public record ClientboundLoginPacket(
          var1.readBoolean(),
          GameType.byId(var1.readByte()),
          GameType.byNullableId(var1.readByte()),
-         var1.readCollection(Sets::newHashSetWithExpectedSize, var0 -> var0.readResourceKey(Registry.DIMENSION_REGISTRY)),
-         var1.<RegistryAccess>readWithCodec(RegistryAccess.NETWORK_CODEC).freeze(),
-         var1.readResourceKey(Registry.DIMENSION_TYPE_REGISTRY),
-         var1.readResourceKey(Registry.DIMENSION_REGISTRY),
+         var1.readCollection(Sets::newHashSetWithExpectedSize, var0 -> var0.readResourceKey(Registries.DIMENSION)),
+         var1.<RegistryAccess>readWithCodec(RegistrySynchronization.NETWORK_CODEC).freeze(),
+         var1.readResourceKey(Registries.DIMENSION_TYPE),
+         var1.readResourceKey(Registries.DIMENSION),
          var1.readLong(),
          var1.readVarInt(),
          var1.readVarInt(),
@@ -120,7 +121,7 @@ public record ClientboundLoginPacket(
       var1.writeByte(this.gameType.getId());
       var1.writeByte(GameType.getNullableId(this.previousGameType));
       var1.writeCollection(this.levels, FriendlyByteBuf::writeResourceKey);
-      var1.writeWithCodec(RegistryAccess.NETWORK_CODEC, this.registryHolder);
+      var1.writeWithCodec(RegistrySynchronization.NETWORK_CODEC, this.registryHolder);
       var1.writeResourceKey(this.dimensionType);
       var1.writeResourceKey(this.dimension);
       var1.writeLong(this.seed);

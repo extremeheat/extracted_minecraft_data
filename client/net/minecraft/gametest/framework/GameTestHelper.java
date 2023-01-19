@@ -2,6 +2,7 @@ package net.minecraft.gametest.framework;
 
 import com.mojang.authlib.GameProfile;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -11,7 +12,7 @@ import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
@@ -20,9 +21,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
@@ -78,21 +81,31 @@ public class GameTestHelper {
       return var7;
    }
 
+   public ItemEntity spawnItem(Item var1, BlockPos var2) {
+      return this.spawnItem(var1, (float)var2.getX(), (float)var2.getY(), (float)var2.getZ());
+   }
+
    public <E extends Entity> E spawn(EntityType<E> var1, BlockPos var2) {
       return this.spawn(var1, Vec3.atBottomCenterOf(var2));
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <E extends Entity> E spawn(EntityType<E> var1, Vec3 var2) {
       ServerLevel var3 = this.getLevel();
       Entity var4 = var1.create(var3);
-      if (var4 instanceof Mob) {
-         ((Mob)var4).setPersistenceRequired();
-      }
+      if (var4 == null) {
+         throw new NullPointerException("Failed to create entity " + var1.builtInRegistryHolder().key().location());
+      } else {
+         if (var4 instanceof Mob var5) {
+            var5.setPersistenceRequired();
+         }
 
-      Vec3 var5 = this.absoluteVec(var2);
-      var4.moveTo(var5.x, var5.y, var5.z, var4.getYRot(), var4.getXRot());
-      var3.addFreshEntity(var4);
-      return (E)var4;
+         Vec3 var6 = this.absoluteVec(var2);
+         var4.moveTo(var6.x, var6.y, var6.z, var4.getYRot(), var4.getXRot());
+         var3.addFreshEntity(var4);
+         return (E)var4;
+      }
    }
 
    public <E extends Entity> E spawn(EntityType<E> var1, int var2, int var3, int var4) {
@@ -143,9 +156,18 @@ public class GameTestHelper {
    }
 
    public void useBlock(BlockPos var1) {
-      BlockPos var2 = this.absolutePos(var1);
-      BlockState var3 = this.getLevel().getBlockState(var2);
-      var3.use(this.getLevel(), this.makeMockPlayer(), InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(var2), Direction.NORTH, var2, true));
+      this.useBlock(var1, this.makeMockPlayer());
+   }
+
+   public void useBlock(BlockPos var1, Player var2) {
+      BlockPos var3 = this.absolutePos(var1);
+      this.useBlock(var1, var2, new BlockHitResult(Vec3.atCenterOf(var3), Direction.NORTH, var3, true));
+   }
+
+   public void useBlock(BlockPos var1, Player var2, BlockHitResult var3) {
+      BlockPos var4 = this.absolutePos(var1);
+      BlockState var5 = this.getLevel().getBlockState(var4);
+      var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
    }
 
    public LivingEntity makeAboutToDrown(LivingEntity var1) {
@@ -154,8 +176,8 @@ public class GameTestHelper {
       return var1;
    }
 
-   public Player makeMockPlayer() {
-      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player"), null) {
+   public Player makeMockSurvivalPlayer() {
+      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
          @Override
          public boolean isSpectator() {
             return false;
@@ -163,6 +185,25 @@ public class GameTestHelper {
 
          @Override
          public boolean isCreative() {
+            return false;
+         }
+      };
+   }
+
+   public Player makeMockPlayer() {
+      return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+         @Override
+         public boolean isSpectator() {
+            return false;
+         }
+
+         @Override
+         public boolean isCreative() {
+            return true;
+         }
+
+         @Override
+         public boolean isLocalPlayer() {
             return true;
          }
       };
@@ -247,9 +288,13 @@ public class GameTestHelper {
    }
 
    public <T extends Comparable<T>> void assertBlockProperty(BlockPos var1, Property<T> var2, T var3) {
-      this.assertBlockState(
-         var1, var2x -> var2x.hasProperty(var2) && var2x.getValue(var2).equals(var3), () -> "Expected property " + var2.getName() + " to be " + var3
-      );
+      BlockState var4 = this.getBlockState(var1);
+      boolean var5 = var4.hasProperty(var2);
+      if (!var5 || !var4.getValue(var2).equals(var3)) {
+         String var6 = var5 ? "was " + var4.getValue(var2) : "property " + var2.getName() + " is missing";
+         String var7 = String.format(Locale.ROOT, "Expected property %s to be %s, %s", var2.getName(), var3, var6);
+         throw new GameTestAssertPosException(var7, this.absolutePos(var1), var1, this.testInfo.getTick());
+      }
    }
 
    public <T extends Comparable<T>> void assertBlockProperty(BlockPos var1, Property<T> var2, Predicate<T> var3, String var4) {
@@ -279,6 +324,15 @@ public class GameTestHelper {
       List var4 = this.getLevel().getEntities(var1, new AABB(var3), Entity::isAlive);
       if (var4.isEmpty()) {
          throw new GameTestAssertPosException("Expected " + var1.toShortString(), var3, var2, this.testInfo.getTick());
+      }
+   }
+
+   public void assertEntityPresent(EntityType<?> var1, Vec3 var2, Vec3 var3) {
+      List var4 = this.getLevel().getEntities(var1, new AABB(var2, var3), Entity::isAlive);
+      if (var4.isEmpty()) {
+         throw new GameTestAssertPosException(
+            "Expected " + var1.toShortString() + " between ", new BlockPos(var2), new BlockPos(var3), this.testInfo.getTick()
+         );
       }
    }
 
@@ -422,6 +476,38 @@ public class GameTestHelper {
       }
    }
 
+   public <E extends LivingEntity> void assertEntityIsHolding(BlockPos var1, EntityType<E> var2, Item var3) {
+      BlockPos var4 = this.absolutePos(var1);
+      List var5 = this.getLevel().getEntities(var2, new AABB(var4), Entity::isAlive);
+      if (var5.isEmpty()) {
+         throw new GameTestAssertPosException("Expected entity of type: " + var2, var4, var1, this.getTick());
+      } else {
+         for(LivingEntity var7 : var5) {
+            if (var7.isHolding(var3)) {
+               return;
+            }
+         }
+
+         throw new GameTestAssertPosException("Entity should be holding: " + var3, var4, var1, this.getTick());
+      }
+   }
+
+   public <E extends Entity & InventoryCarrier> void assertEntityInventoryContains(BlockPos var1, EntityType<E> var2, Item var3) {
+      BlockPos var4 = this.absolutePos(var1);
+      List var5 = this.getLevel().getEntities(var2, new AABB(var4), var0 -> var0.isAlive());
+      if (var5.isEmpty()) {
+         throw new GameTestAssertPosException("Expected " + var2.toShortString() + " to exist", var4, var1, this.getTick());
+      } else {
+         for(Entity var7 : var5) {
+            if (((InventoryCarrier)var7).getInventory().hasAnyMatching(var1x -> var1x.is(var3))) {
+               return;
+            }
+         }
+
+         throw new GameTestAssertPosException("Entity inventory should contain: " + var3, var4, var1, this.getTick());
+      }
+   }
+
    public void assertContainerEmpty(BlockPos var1) {
       BlockPos var2 = this.absolutePos(var1);
       BlockEntity var3 = this.getLevel().getBlockEntity(var2);
@@ -434,7 +520,7 @@ public class GameTestHelper {
       BlockPos var3 = this.absolutePos(var1);
       BlockEntity var4 = this.getLevel().getBlockEntity(var3);
       if (!(var4 instanceof BaseContainerBlockEntity)) {
-         throw new GameTestAssertException("Expected a container at " + var1 + ", found " + Registry.BLOCK_ENTITY_TYPE.getKey(var4.getType()));
+         throw new GameTestAssertException("Expected a container at " + var1 + ", found " + BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var4.getType()));
       } else if (((BaseContainerBlockEntity)var4).countItem(var2) != 1) {
          throw new GameTestAssertException("Container should contain: " + var2);
       }
@@ -584,6 +670,17 @@ public class GameTestHelper {
       return StructureTemplate.transform(var2.add(var1), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
    }
 
+   public Vec3 relativeVec(Vec3 var1) {
+      Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getStructureBlockPos());
+      return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
+   }
+
+   public void assertTrue(boolean var1, String var2) {
+      if (!var1) {
+         throw new GameTestAssertException(var2);
+      }
+   }
+
    public long getTick() {
       return this.testInfo.getTick();
    }
@@ -604,5 +701,12 @@ public class GameTestHelper {
 
    public void onEachTick(Runnable var1) {
       LongStream.range(this.testInfo.getTick(), (long)this.testInfo.getTimeoutTicks()).forEach(var2 -> this.testInfo.setRunAtTickTime(var2, var1::run));
+   }
+
+   public void placeAt(Player var1, ItemStack var2, BlockPos var3, Direction var4) {
+      BlockPos var5 = this.absolutePos(var3.relative(var4));
+      BlockHitResult var6 = new BlockHitResult(Vec3.atCenterOf(var5), var4, var5, false);
+      UseOnContext var7 = new UseOnContext(var1, InteractionHand.MAIN_HAND, var6);
+      var2.useOn(var7);
    }
 }

@@ -9,7 +9,7 @@ import com.google.gson.JsonSyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -44,7 +44,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
          return var1;
       } else {
          NonNullList var3 = NonNullList.create();
-         this.entries.forEach(var2x -> var2x.expand(var2, var2xx -> var2xx.createItemStack(LootTable.createStackSplitter(var3::add), var2)));
+         this.entries.forEach(var2x -> var2x.expand(var2, var2xx -> var2xx.createItemStack(LootTable.createStackSplitter(var2, var3::add), var2)));
          CompoundTag var4 = new CompoundTag();
          ContainerHelper.saveAllItems(var4, var3);
          CompoundTag var5 = BlockItem.getBlockEntityData(var1);
@@ -103,14 +103,14 @@ public class SetContainerContents extends LootItemConditionalFunction {
 
       public void serialize(JsonObject var1, SetContainerContents var2, JsonSerializationContext var3) {
          super.serialize(var1, var2, var3);
-         var1.addProperty("type", Registry.BLOCK_ENTITY_TYPE.getKey(var2.type).toString());
+         var1.addProperty("type", BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var2.type).toString());
          var1.add("entries", var3.serialize(var2.entries));
       }
 
       public SetContainerContents deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
          LootPoolEntryContainer[] var4 = (LootPoolEntryContainer[])GsonHelper.getAsObject(var1, "entries", var2, LootPoolEntryContainer[].class);
          ResourceLocation var5 = new ResourceLocation(GsonHelper.getAsString(var1, "type"));
-         BlockEntityType var6 = Registry.BLOCK_ENTITY_TYPE
+         BlockEntityType var6 = BuiltInRegistries.BLOCK_ENTITY_TYPE
             .getOptional(var5)
             .orElseThrow(() -> new JsonSyntaxException("Unknown block entity type id '" + var5 + "'"));
          return new SetContainerContents(var3, var6, Arrays.asList(var4));

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.CommonComponents;
@@ -130,7 +130,7 @@ public class PotionUtils {
    }
 
    public static ItemStack setPotion(ItemStack var0, Potion var1) {
-      ResourceLocation var2 = Registry.POTION.getKey(var1);
+      ResourceLocation var2 = BuiltInRegistries.POTION.getKey(var1);
       if (var1 == Potions.EMPTY) {
          var0.removeTagKey("Potion");
       } else {
@@ -157,67 +157,70 @@ public class PotionUtils {
    }
 
    public static void addPotionTooltip(ItemStack var0, List<Component> var1, float var2) {
-      List var3 = getMobEffects(var0);
-      ArrayList var4 = Lists.newArrayList();
-      if (var3.isEmpty()) {
+      addPotionTooltip(getMobEffects(var0), var1, var2);
+   }
+
+   public static void addPotionTooltip(List<MobEffectInstance> var0, List<Component> var1, float var2) {
+      ArrayList var3 = Lists.newArrayList();
+      if (var0.isEmpty()) {
          var1.add(NO_EFFECT);
       } else {
-         for(MobEffectInstance var6 : var3) {
-            MutableComponent var7 = Component.translatable(var6.getDescriptionId());
-            MobEffect var8 = var6.getEffect();
-            Map var9 = var8.getAttributeModifiers();
-            if (!var9.isEmpty()) {
-               for(Entry var11 : var9.entrySet()) {
-                  AttributeModifier var12 = (AttributeModifier)var11.getValue();
-                  AttributeModifier var13 = new AttributeModifier(
-                     var12.getName(), var8.getAttributeModifierValue(var6.getAmplifier(), var12), var12.getOperation()
+         for(MobEffectInstance var5 : var0) {
+            MutableComponent var6 = Component.translatable(var5.getDescriptionId());
+            MobEffect var7 = var5.getEffect();
+            Map var8 = var7.getAttributeModifiers();
+            if (!var8.isEmpty()) {
+               for(Entry var10 : var8.entrySet()) {
+                  AttributeModifier var11 = (AttributeModifier)var10.getValue();
+                  AttributeModifier var12 = new AttributeModifier(
+                     var11.getName(), var7.getAttributeModifierValue(var5.getAmplifier(), var11), var11.getOperation()
                   );
-                  var4.add(new Pair((Attribute)var11.getKey(), var13));
+                  var3.add(new Pair((Attribute)var10.getKey(), var12));
                }
             }
 
-            if (var6.getAmplifier() > 0) {
-               var7 = Component.translatable("potion.withAmplifier", var7, Component.translatable("potion.potency." + var6.getAmplifier()));
+            if (var5.getAmplifier() > 0) {
+               var6 = Component.translatable("potion.withAmplifier", var6, Component.translatable("potion.potency." + var5.getAmplifier()));
             }
 
-            if (var6.getDuration() > 20) {
-               var7 = Component.translatable("potion.withDuration", var7, MobEffectUtil.formatDuration(var6, var2));
+            if (var5.getDuration() > 20) {
+               var6 = Component.translatable("potion.withDuration", var6, MobEffectUtil.formatDuration(var5, var2));
             }
 
-            var1.add(var7.withStyle(var8.getCategory().getTooltipFormatting()));
+            var1.add(var6.withStyle(var7.getCategory().getTooltipFormatting()));
          }
       }
 
-      if (!var4.isEmpty()) {
+      if (!var3.isEmpty()) {
          var1.add(CommonComponents.EMPTY);
          var1.add(Component.translatable("potion.whenDrank").withStyle(ChatFormatting.DARK_PURPLE));
 
-         for(Pair var15 : var4) {
-            AttributeModifier var16 = (AttributeModifier)var15.getSecond();
-            double var17 = var16.getAmount();
-            double var18;
-            if (var16.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var16.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
-               var18 = var16.getAmount();
+         for(Pair var14 : var3) {
+            AttributeModifier var15 = (AttributeModifier)var14.getSecond();
+            double var16 = var15.getAmount();
+            double var17;
+            if (var15.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var15.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
+               var17 = var15.getAmount();
             } else {
-               var18 = var16.getAmount() * 100.0;
+               var17 = var15.getAmount() * 100.0;
             }
 
-            if (var17 > 0.0) {
+            if (var16 > 0.0) {
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.plus." + var16.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var18),
-                        Component.translatable(((Attribute)var15.getFirst()).getDescriptionId())
+                        "attribute.modifier.plus." + var15.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17),
+                        Component.translatable(((Attribute)var14.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.BLUE)
                );
-            } else if (var17 < 0.0) {
-               var18 *= -1.0;
+            } else if (var16 < 0.0) {
+               var17 *= -1.0;
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.take." + var16.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var18),
-                        Component.translatable(((Attribute)var15.getFirst()).getDescriptionId())
+                        "attribute.modifier.take." + var15.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17),
+                        Component.translatable(((Attribute)var14.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.RED)
                );

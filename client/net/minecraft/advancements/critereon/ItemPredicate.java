@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -130,7 +131,7 @@ public class ItemPredicate {
 
                for(JsonElement var9 : var6) {
                   ResourceLocation var10 = new ResourceLocation(GsonHelper.convertToString(var9, "item"));
-                  var7.add(Registry.ITEM.getOptional(var10).orElseThrow(() -> new JsonSyntaxException("Unknown item id '" + var10 + "'")));
+                  var7.add(BuiltInRegistries.ITEM.getOptional(var10).orElseThrow(() -> new JsonSyntaxException("Unknown item id '" + var10 + "'")));
                }
 
                var5 = var7.build();
@@ -139,13 +140,13 @@ public class ItemPredicate {
             TagKey var11 = null;
             if (var1.has("tag")) {
                ResourceLocation var12 = new ResourceLocation(GsonHelper.getAsString(var1, "tag"));
-               var11 = TagKey.create(Registry.ITEM_REGISTRY, var12);
+               var11 = TagKey.create(Registries.ITEM, var12);
             }
 
             Potion var13 = null;
             if (var1.has("potion")) {
                ResourceLocation var14 = new ResourceLocation(GsonHelper.getAsString(var1, "potion"));
-               var13 = Registry.POTION.getOptional(var14).orElseThrow(() -> new JsonSyntaxException("Unknown potion '" + var14 + "'"));
+               var13 = BuiltInRegistries.POTION.getOptional(var14).orElseThrow(() -> new JsonSyntaxException("Unknown potion '" + var14 + "'"));
             }
 
             EnchantmentPredicate[] var15 = EnchantmentPredicate.fromJsonArray(var1.get("enchantments"));
@@ -166,7 +167,7 @@ public class ItemPredicate {
             JsonArray var2 = new JsonArray();
 
             for(Item var4 : this.items) {
-               var2.add(Registry.ITEM.getKey(var4).toString());
+               var2.add(BuiltInRegistries.ITEM.getKey(var4).toString());
             }
 
             var1.add("items", var2);
@@ -200,7 +201,7 @@ public class ItemPredicate {
          }
 
          if (this.potion != null) {
-            var1.addProperty("potion", Registry.POTION.getKey(this.potion).toString());
+            var1.addProperty("potion", BuiltInRegistries.POTION.getKey(this.potion).toString());
          }
 
          return var1;

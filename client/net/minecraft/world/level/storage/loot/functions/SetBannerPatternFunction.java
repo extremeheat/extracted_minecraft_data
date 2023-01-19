@@ -10,7 +10,8 @@ import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
@@ -85,7 +86,7 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
       }
 
       public SetBannerPatternFunction.Builder addPattern(ResourceKey<BannerPattern> var1, DyeColor var2) {
-         return this.addPattern(Registry.BANNER_PATTERN.getHolderOrThrow(var1), var2);
+         return this.addPattern(BuiltInRegistries.BANNER_PATTERN.getHolderOrThrow(var1), var2);
       }
 
       public SetBannerPatternFunction.Builder addPattern(Holder<BannerPattern> var1, DyeColor var2) {
@@ -127,7 +128,7 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
          for(int var6 = 0; var6 < var5.size(); ++var6) {
             JsonObject var7 = GsonHelper.convertToJsonObject(var5.get(var6), "pattern[" + var6 + "]");
             String var8 = GsonHelper.getAsString(var7, "pattern");
-            Optional var9 = Registry.BANNER_PATTERN.getHolder(ResourceKey.create(Registry.BANNER_PATTERN_REGISTRY, new ResourceLocation(var8)));
+            Optional var9 = BuiltInRegistries.BANNER_PATTERN.getHolder(ResourceKey.create(Registries.BANNER_PATTERN, new ResourceLocation(var8)));
             if (var9.isEmpty()) {
                throw new JsonSyntaxException("Unknown pattern: " + var8);
             }

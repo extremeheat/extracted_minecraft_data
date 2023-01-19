@@ -8,7 +8,7 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -16,6 +16,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.ItemLike;
 
 public class SingleItemRecipeBuilder implements RecipeBuilder {
+   private final RecipeCategory category;
    private final Item result;
    private final Ingredient ingredient;
    private final int count;
@@ -24,20 +25,21 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
    private String group;
    private final RecipeSerializer<?> type;
 
-   public SingleItemRecipeBuilder(RecipeSerializer<?> var1, Ingredient var2, ItemLike var3, int var4) {
+   public SingleItemRecipeBuilder(RecipeCategory var1, RecipeSerializer<?> var2, Ingredient var3, ItemLike var4, int var5) {
       super();
-      this.type = var1;
-      this.result = var3.asItem();
-      this.ingredient = var2;
-      this.count = var4;
+      this.category = var1;
+      this.type = var2;
+      this.result = var4.asItem();
+      this.ingredient = var3;
+      this.count = var5;
    }
 
-   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, ItemLike var1) {
-      return new SingleItemRecipeBuilder(RecipeSerializer.STONECUTTER, var0, var1, 1);
+   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, RecipeCategory var1, ItemLike var2) {
+      return new SingleItemRecipeBuilder(var1, RecipeSerializer.STONECUTTER, var0, var2, 1);
    }
 
-   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, ItemLike var1, int var2) {
-      return new SingleItemRecipeBuilder(RecipeSerializer.STONECUTTER, var0, var1, var2);
+   public static SingleItemRecipeBuilder stonecutting(Ingredient var0, RecipeCategory var1, ItemLike var2, int var3) {
+      return new SingleItemRecipeBuilder(var1, RecipeSerializer.STONECUTTER, var0, var2, var3);
    }
 
    public SingleItemRecipeBuilder unlockedBy(String var1, CriterionTriggerInstance var2) {
@@ -72,7 +74,7 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
             this.result,
             this.count,
             this.advancement,
-            new ResourceLocation(var2.getNamespace(), "recipes/" + this.result.getItemCategory().getRecipeFolderName() + "/" + var2.getPath())
+            var2.withPrefix("recipes/" + this.category.getFolderName() + "/")
          )
       );
    }
@@ -114,7 +116,7 @@ public class SingleItemRecipeBuilder implements RecipeBuilder {
          }
 
          var1.add("ingredient", this.ingredient.toJson());
-         var1.addProperty("result", Registry.ITEM.getKey(this.result).toString());
+         var1.addProperty("result", BuiltInRegistries.ITEM.getKey(this.result).toString());
          var1.addProperty("count", this.count);
       }
 

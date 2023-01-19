@@ -8,7 +8,6 @@ import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
@@ -30,9 +29,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,22 +43,28 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.IdMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -67,7 +74,7 @@ import net.minecraft.world.phys.Vec3;
 public class FriendlyByteBuf extends ByteBuf {
    private static final int MAX_VARINT_SIZE = 5;
    private static final int MAX_VARLONG_SIZE = 10;
-   private static final int DEFAULT_NBT_QUOTA = 2097152;
+   public static final int DEFAULT_NBT_QUOTA = 2097152;
    private final ByteBuf source;
    public static final short MAX_STRING_LENGTH = 32767;
    public static final int MAX_COMPONENT_STRING_LENGTH = 262144;
@@ -100,23 +107,16 @@ public class FriendlyByteBuf extends ByteBuf {
       return 10;
    }
 
-   /** @deprecated */
+   @Deprecated
    public <T> T readWithCodec(Codec<T> var1) {
       CompoundTag var2 = this.readAnySizeNbt();
-      DataResult var3 = var1.parse(NbtOps.INSTANCE, var2);
-      var3.error().ifPresent(var1x -> {
-         throw new EncoderException("Failed to decode: " + var1x.message() + " " + var2);
-      });
-      return (T)var3.result().get();
+      return Util.getOrThrow(var1.parse(NbtOps.INSTANCE, var2), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var2));
    }
 
-   /** @deprecated */
+   @Deprecated
    public <T> void writeWithCodec(Codec<T> var1, T var2) {
-      DataResult var3 = var1.encodeStart(NbtOps.INSTANCE, var2);
-      var3.error().ifPresent(var1x -> {
-         throw new EncoderException("Failed to encode: " + var1x.message() + " " + var2);
-      });
-      this.writeNbt((CompoundTag)var3.result().get());
+      Tag var3 = Util.getOrThrow(var1.encodeStart(NbtOps.INSTANCE, var2), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2));
+      this.writeNbt((CompoundTag)var3);
    }
 
    public <T> void writeId(IdMap<T> var1, T var2) {
@@ -128,10 +128,40 @@ public class FriendlyByteBuf extends ByteBuf {
       }
    }
 
+   public <T> void writeId(IdMap<Holder<T>> var1, Holder<T> var2, FriendlyByteBuf.Writer<T> var3) {
+      switch(var2.kind()) {
+         case REFERENCE:
+            int var4 = var1.getId(var2);
+            if (var4 == -1) {
+               throw new IllegalArgumentException("Can't find id for '" + var2.value() + "' in map " + var1);
+            }
+
+            this.writeVarInt(var4 + 1);
+            break;
+         case DIRECT:
+            this.writeVarInt(0);
+            var3.accept(this, var2.value());
+      }
+   }
+
    @Nullable
    public <T> T readById(IdMap<T> var1) {
       int var2 = this.readVarInt();
       return (T)var1.byId(var2);
+   }
+
+   public <T> Holder<T> readById(IdMap<Holder<T>> var1, FriendlyByteBuf.Reader<T> var2) {
+      int var3 = this.readVarInt();
+      if (var3 == 0) {
+         return Holder.direct((T)var2.apply((T)this));
+      } else {
+         Holder var4 = (Holder)var1.byId(var3 - 1);
+         if (var4 == null) {
+            throw new IllegalArgumentException("Can't find element with id " + var3);
+         } else {
+            return var4;
+         }
+      }
    }
 
    public static <T> IntFunction<T> limitValue(IntFunction<T> var0, int var1) {
@@ -214,6 +244,31 @@ public class FriendlyByteBuf extends ByteBuf {
       for(int var3 = 0; var3 < var2; ++var3) {
          var1.accept(this);
       }
+   }
+
+   public <E extends Enum<E>> void writeEnumSet(EnumSet<E> var1, Class<E> var2) {
+      Enum[] var3 = (Enum[])var2.getEnumConstants();
+      BitSet var4 = new BitSet(var3.length);
+
+      for(int var5 = 0; var5 < var3.length; ++var5) {
+         var4.set(var5, var1.contains(var3[var5]));
+      }
+
+      this.writeFixedBitSet(var4, var3.length);
+   }
+
+   public <E extends Enum<E>> EnumSet<E> readEnumSet(Class<E> var1) {
+      Enum[] var2 = (Enum[])var1.getEnumConstants();
+      BitSet var3 = this.readFixedBitSet(var2.length);
+      EnumSet var4 = EnumSet.noneOf(var1);
+
+      for(int var5 = 0; var5 < var2.length; ++var5) {
+         if (var3.get(var5)) {
+            var4.add((E)var2[var5]);
+         }
+      }
+
+      return var4;
    }
 
    public <T> void writeOptional(Optional<T> var1, FriendlyByteBuf.Writer<T> var2) {
@@ -378,7 +433,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public GlobalPos readGlobalPos() {
-      ResourceKey var1 = this.readResourceKey(Registry.DIMENSION_REGISTRY);
+      ResourceKey var1 = this.readResourceKey(Registries.DIMENSION);
       BlockPos var2 = this.readBlockPos();
       return GlobalPos.of(var1, var2);
    }
@@ -518,7 +573,7 @@ public class FriendlyByteBuf extends ByteBuf {
       } else {
          this.writeBoolean(true);
          Item var2 = var1.getItem();
-         this.writeId(Registry.ITEM, var2);
+         this.writeId(BuiltInRegistries.ITEM, var2);
          this.writeByte(var1.getCount());
          CompoundTag var3 = null;
          if (var2.canBeDepleted() || var2.shouldOverrideMultiplayerNbt()) {
@@ -535,7 +590,7 @@ public class FriendlyByteBuf extends ByteBuf {
       if (!this.readBoolean()) {
          return ItemStack.EMPTY;
       } else {
-         Item var1 = this.readById(Registry.ITEM);
+         Item var1 = this.readById(BuiltInRegistries.ITEM);
          byte var2 = this.readByte();
          ItemStack var3 = new ItemStack(var1, var2);
          var3.setTag(this.readNbt());
@@ -668,22 +723,46 @@ public class FriendlyByteBuf extends ByteBuf {
       this.writeLongArray(var1.toLongArray());
    }
 
+   public BitSet readFixedBitSet(int var1) {
+      byte[] var2 = new byte[Mth.positiveCeilDiv(var1, 8)];
+      this.readBytes(var2);
+      return BitSet.valueOf(var2);
+   }
+
+   public void writeFixedBitSet(BitSet var1, int var2) {
+      if (var1.length() > var2) {
+         throw new EncoderException("BitSet is larger than expected size (" + var1.length() + ">" + var2 + ")");
+      } else {
+         byte[] var3 = var1.toByteArray();
+         this.writeBytes(Arrays.copyOf(var3, Mth.positiveCeilDiv(var2, 8)));
+      }
+   }
+
    public GameProfile readGameProfile() {
       UUID var1 = this.readUUID();
       String var2 = this.readUtf(16);
       GameProfile var3 = new GameProfile(var1, var2);
-      PropertyMap var4 = var3.getProperties();
-      this.readWithCount(var2x -> {
-         Property var3x = this.readProperty();
-         var4.put(var3x.getName(), var3x);
-      });
+      var3.getProperties().putAll(this.readGameProfileProperties());
       return var3;
    }
 
    public void writeGameProfile(GameProfile var1) {
       this.writeUUID(var1.getId());
       this.writeUtf(var1.getName());
-      this.writeCollection(var1.getProperties().values(), FriendlyByteBuf::writeProperty);
+      this.writeGameProfileProperties(var1.getProperties());
+   }
+
+   public PropertyMap readGameProfileProperties() {
+      PropertyMap var1 = new PropertyMap();
+      this.readWithCount(var2 -> {
+         Property var3 = this.readProperty();
+         var1.put(var3.getName(), var3);
+      });
+      return var1;
+   }
+
+   public void writeGameProfileProperties(PropertyMap var1) {
+      this.writeCollection(var1.values(), FriendlyByteBuf::writeProperty);
    }
 
    public Property readProperty() {

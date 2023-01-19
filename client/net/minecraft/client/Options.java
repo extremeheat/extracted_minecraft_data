@@ -20,8 +20,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import it.unimi.dsi.fastutil.objects.Object2FloatMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,11 +28,14 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -45,7 +46,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
-import net.minecraft.client.multiplayer.chat.ChatPreviewStatus;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
@@ -163,15 +164,10 @@ public class Options {
    private final OptionInstance<GraphicsStatus> graphicsMode = new OptionInstance<>(
       "options.graphics",
       var0 -> {
-         List var1x = OptionInstance.splitTooltip(var0, GRAPHICS_TOOLTIP_FAST);
-         List var2x = OptionInstance.splitTooltip(var0, GRAPHICS_TOOLTIP_FANCY);
-         List var3x = OptionInstance.splitTooltip(var0, GRAPHICS_TOOLTIP_FABULOUS);
-         return var3xx -> {
-            return switch(var3xx) {
-               case FANCY -> var2x;
-               case FAST -> var1x;
-               case FABULOUS -> var3x;
-            };
+         return switch(var0) {
+            case FANCY -> Tooltip.create(GRAPHICS_TOOLTIP_FANCY);
+            case FAST -> Tooltip.create(GRAPHICS_TOOLTIP_FAST);
+            case FABULOUS -> Tooltip.create(GRAPHICS_TOOLTIP_FABULOUS);
          };
       },
       (var0, var1x) -> {
@@ -198,25 +194,8 @@ public class Options {
       var0 -> {
       }
    );
-   private final OptionInstance<AmbientOcclusionStatus> ambientOcclusion = new OptionInstance<>(
-      "options.ao",
-      OptionInstance.noTooltip(),
-      OptionInstance.forOptionEnum(),
-      new OptionInstance.Enum<>(
-         Arrays.asList(AmbientOcclusionStatus.values()),
-         Codec.either(
-               Codec.BOOL
-                  .xmap(
-                     var0 -> var0 ? AmbientOcclusionStatus.MAX.getId() : AmbientOcclusionStatus.OFF.getId(),
-                     var0 -> var0 == AmbientOcclusionStatus.MAX.getId()
-                  ),
-               Codec.INT
-            )
-            .xmap(var0 -> (Integer)var0.map(var0x -> var0x, var0x -> var0x), Either::right)
-            .xmap(AmbientOcclusionStatus::byId, AmbientOcclusionStatus::getId)
-      ),
-      AmbientOcclusionStatus.MAX,
-      var0 -> Minecraft.getInstance().levelRenderer.allChanged()
+   private final OptionInstance<Boolean> ambientOcclusion = OptionInstance.createBoolean(
+      "options.ao", true, var0 -> Minecraft.getInstance().levelRenderer.allChanged()
    );
    private static final Component PRIORITIZE_CHUNK_TOOLTIP_NONE = Component.translatable("options.prioritizeChunkUpdates.none.tooltip");
    private static final Component PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED = Component.translatable("options.prioritizeChunkUpdates.byPlayer.tooltip");
@@ -224,15 +203,10 @@ public class Options {
    private final OptionInstance<PrioritizeChunkUpdates> prioritizeChunkUpdates = new OptionInstance<>(
       "options.prioritizeChunkUpdates",
       var0 -> {
-         List var1x = OptionInstance.splitTooltip(var0, PRIORITIZE_CHUNK_TOOLTIP_NONE);
-         List var2x = OptionInstance.splitTooltip(var0, PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED);
-         List var3x = OptionInstance.splitTooltip(var0, PRIORITIZE_CHUNK_TOOLTIP_NEARBY);
-         return var3xx -> {
-            return switch(var3xx) {
-               case NONE -> var1x;
-               case PLAYER_AFFECTED -> var2x;
-               case NEARBY -> var3x;
-            };
+         return switch(var0) {
+            case NONE -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NONE);
+            case PLAYER_AFFECTED -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED);
+            case NEARBY -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NEARBY);
          };
       },
       OptionInstance.forOptionEnum(),
@@ -271,6 +245,10 @@ public class Options {
       OptionInstance.UnitDouble.INSTANCE,
       0.5,
       var0 -> Minecraft.getInstance().gui.getChat().rescaleChat()
+   );
+   private final OptionInstance<Double> panoramaSpeed = new OptionInstance<>(
+      "options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, var0 -> {
+      }
    );
    @Nullable
    public String fullscreenVideoModeString;
@@ -344,7 +322,6 @@ public class Options {
       var0 -> {
       }
    );
-   private final Object2FloatMap<SoundSource> sourceVolumes = Util.make(new Object2FloatOpenHashMap(), var0 -> var0.defaultReturnValue(1.0F));
    public boolean useNativeTransport = true;
    private final OptionInstance<AttackIndicatorStatus> attackIndicator = new OptionInstance<>(
       "options.attackIndicator",
@@ -380,6 +357,7 @@ public class Options {
    });
    public int glDebugVerbosity = 1;
    private final OptionInstance<Boolean> autoJump = OptionInstance.createBoolean("options.autoJump", true);
+   private final OptionInstance<Boolean> operatorItemsTab = OptionInstance.createBoolean("options.operatorItemsTab", false);
    private final OptionInstance<Boolean> autoSuggestions = OptionInstance.createBoolean("options.autoSuggestCommands", true);
    private final OptionInstance<Boolean> chatColors = OptionInstance.createBoolean("options.chat.color", true);
    private final OptionInstance<Boolean> chatLinks = OptionInstance.createBoolean("options.chat.links", true);
@@ -405,18 +383,24 @@ public class Options {
       "options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, var1x -> this.broadcastOptions()
    );
    private final OptionInstance<Boolean> reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", false);
+   private final Map<SoundSource, OptionInstance<Double>> soundSourceVolumes = Util.make(new EnumMap<>(SoundSource.class), var1x -> {
+      for(SoundSource var5 : SoundSource.values()) {
+         var1x.put(var5, this.createSoundSliderOptionInstance("soundCategory." + var5.getName(), var5));
+      }
+   });
    private final OptionInstance<Boolean> showSubtitles = OptionInstance.createBoolean("options.showSubtitles", false);
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
-   private final OptionInstance<Boolean> directionalAudio = OptionInstance.createBoolean("options.directionalAudio", var0 -> {
-      List var1x = OptionInstance.splitTooltip(var0, DIRECTIONAL_AUDIO_TOOLTIP_ON);
-      List var2x = OptionInstance.splitTooltip(var0, DIRECTIONAL_AUDIO_TOOLTIP_OFF);
-      return var2xx -> var2xx ? var1x : var2x;
-   }, false, var0 -> {
-      SoundManager var1x = Minecraft.getInstance().getSoundManager();
-      var1x.reload();
-      var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-   });
+   private final OptionInstance<Boolean> directionalAudio = OptionInstance.createBoolean(
+      "options.directionalAudio",
+      var0 -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF),
+      false,
+      var0 -> {
+         SoundManager var1x = Minecraft.getInstance().getSoundManager();
+         var1x.reload();
+         var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      }
+   );
    private final OptionInstance<Boolean> backgroundForChatOnly = new OptionInstance<>(
       "options.accessibility.text_background",
       OptionInstance.noTooltip(),
@@ -454,24 +438,6 @@ public class Options {
       "options.hideMatchedNames", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_HIDE_MATCHED_NAMES), true
    );
    private final OptionInstance<Boolean> showAutosaveIndicator = OptionInstance.createBoolean("options.autosaveIndicator", true);
-   private static final Component CHAT_PREVIEW_OFF_TOOLTIP = Component.translatable("options.chatPreview.tooltip.off");
-   private static final Component CHAT_PREVIEW_LIVE_TOOLTIP = Component.translatable("options.chatPreview.tooltip.live");
-   private static final Component CHAT_PREVIEW_CONFIRM_TOOLTIP = Component.translatable("options.chatPreview.tooltip.confirm");
-   private final OptionInstance<ChatPreviewStatus> chatPreview = new OptionInstance<>(
-      "options.chatPreview",
-      var0 -> var1x -> {
-            return switch(var1x) {
-               case OFF -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_OFF_TOOLTIP);
-               case LIVE -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_LIVE_TOOLTIP);
-               case CONFIRM -> OptionInstance.splitTooltip(var0, CHAT_PREVIEW_CONFIRM_TOOLTIP);
-            };
-         },
-      OptionInstance.forOptionEnum(),
-      new OptionInstance.Enum<>(Arrays.asList(ChatPreviewStatus.values()), Codec.INT.xmap(ChatPreviewStatus::byId, ChatPreviewStatus::getId)),
-      ChatPreviewStatus.LIVE,
-      var0 -> {
-      }
-   );
    private static final Component CHAT_TOOLTIP_ONLY_SHOW_SECURE = Component.translatable("options.onlyShowSecureChat.tooltip");
    private final OptionInstance<Boolean> onlyShowSecureChat = OptionInstance.createBoolean(
       "options.onlyShowSecureChat", OptionInstance.cachedConstantTooltip(CHAT_TOOLTIP_ONLY_SHOW_SECURE), false
@@ -565,6 +531,26 @@ public class Options {
       Codec.DOUBLE.xmap(var0 -> (int)(var0 * 40.0 + 70.0), var0 -> ((double)var0.intValue() - 70.0) / 40.0),
       70,
       var0 -> Minecraft.getInstance().levelRenderer.needsUpdate()
+   );
+   private static final MutableComponent TELEMETRY_TOOLTIP = Component.translatable(
+      "options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all")
+   );
+   private final OptionInstance<Boolean> telemetryOptInExtra = OptionInstance.createBoolean(
+      "options.telemetry.button",
+      OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP),
+      (var0, var1x) -> {
+         Minecraft var2x = Minecraft.getInstance();
+         if (!var2x.allowsTelemetry()) {
+            return Component.translatable("options.telemetry.state.none");
+         } else {
+            return var1x && var2x.extraTelemetryAvailable()
+               ? Component.translatable("options.telemetry.state.all")
+               : Component.translatable("options.telemetry.state.minimal");
+         }
+      },
+      false,
+      var0 -> {
+      }
    );
    private static final Component ACCESSIBILITY_TOOLTIP_SCREEN_EFFECT = Component.translatable("options.screenEffectScale.tooltip");
    private final OptionInstance<Double> screenEffectScale = new OptionInstance<>(
@@ -700,7 +686,7 @@ public class Options {
       return this.graphicsMode;
    }
 
-   public OptionInstance<AmbientOcclusionStatus> ambientOcclusion() {
+   public OptionInstance<Boolean> ambientOcclusion() {
       return this.ambientOcclusion;
    }
 
@@ -722,6 +708,10 @@ public class Options {
 
    public OptionInstance<Double> textBackgroundOpacity() {
       return this.textBackgroundOpacity;
+   }
+
+   public OptionInstance<Double> panoramaSpeed() {
+      return this.panoramaSpeed;
    }
 
    public OptionInstance<HumanoidArm> mainHand() {
@@ -780,6 +770,10 @@ public class Options {
       return this.autoJump;
    }
 
+   public OptionInstance<Boolean> operatorItemsTab() {
+      return this.operatorItemsTab;
+   }
+
    public OptionInstance<Boolean> autoSuggestions() {
       return this.autoSuggestions;
    }
@@ -828,6 +822,25 @@ public class Options {
       return this.reducedDebugInfo;
    }
 
+   public final float getSoundSourceVolume(SoundSource var1) {
+      return this.getSoundSourceOptionInstance(var1).get().floatValue();
+   }
+
+   public final OptionInstance<Double> getSoundSourceOptionInstance(SoundSource var1) {
+      return Objects.requireNonNull(this.soundSourceVolumes.get(var1));
+   }
+
+   private OptionInstance<Double> createSoundSliderOptionInstance(String var1, SoundSource var2) {
+      return new OptionInstance<>(
+         var1,
+         OptionInstance.noTooltip(),
+         (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+         OptionInstance.UnitDouble.INSTANCE,
+         1.0,
+         var1x -> Minecraft.getInstance().getSoundManager().updateSourceVolume(var2, var1x.floatValue())
+      );
+   }
+
    public OptionInstance<Boolean> showSubtitles() {
       return this.showSubtitles;
    }
@@ -868,16 +881,16 @@ public class Options {
       return this.showAutosaveIndicator;
    }
 
-   public OptionInstance<ChatPreviewStatus> chatPreview() {
-      return this.chatPreview;
-   }
-
    public OptionInstance<Boolean> onlyShowSecureChat() {
       return this.onlyShowSecureChat;
    }
 
    public OptionInstance<Integer> fov() {
       return this.fov;
+   }
+
+   public OptionInstance<Boolean> telemetryOptInExtra() {
+      return this.telemetryOptInExtra;
    }
 
    public OptionInstance<Double> screenEffectScale() {
@@ -958,6 +971,7 @@ public class Options {
 
    private void processOptions(Options.FieldAccess var1) {
       var1.process("autoJump", this.autoJump);
+      var1.process("operatorItemsTab", this.operatorItemsTab);
       var1.process("autoSuggestions", this.autoSuggestions);
       var1.process("chatColors", this.chatColors);
       var1.process("chatLinks", this.chatLinks);
@@ -1033,8 +1047,9 @@ public class Options {
       this.syncWrites = var1.process("syncChunkWrites", this.syncWrites);
       var1.process("showAutosaveIndicator", this.showAutosaveIndicator);
       var1.process("allowServerListing", this.allowServerListing);
-      var1.process("chatPreview", this.chatPreview);
       var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
+      var1.process("panoramaScrollSpeed", this.panoramaSpeed);
+      var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1045,7 +1060,7 @@ public class Options {
       }
 
       for(SoundSource var14 : SoundSource.values()) {
-         this.sourceVolumes.computeFloat(var14, (var1x, var2) -> var1.process("soundCategory_" + var1x.getName(), var2 != null ? var2 : 1.0F));
+         var1.process("soundCategory_" + var14.getName(), this.soundSourceVolumes.get(var14));
       }
 
       for(PlayerModelPart var15 : PlayerModelPart.values()) {
@@ -1063,7 +1078,6 @@ public class Options {
             return;
          }
 
-         this.sourceVolumes.clear();
          CompoundTag var1 = new CompoundTag();
 
          try (BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8)) {
@@ -1251,15 +1265,6 @@ public class Options {
       this.broadcastOptions();
    }
 
-   public float getSoundSourceVolume(SoundSource var1) {
-      return this.sourceVolumes.getFloat(var1);
-   }
-
-   public void setSoundCategoryVolume(SoundSource var1, float var2) {
-      this.sourceVolumes.put(var1, var2);
-      this.minecraft.getSoundManager().updateSourceVolume(var1, var2);
-   }
-
    public void broadcastOptions() {
       if (this.minecraft.player != null) {
          int var1 = 0;
@@ -1348,7 +1353,7 @@ public class Options {
    }
 
    private static List<String> readPackList(String var0) {
-      List var1 = GsonHelper.fromJson(GSON, var0, RESOURCE_PACK_TYPE);
+      List var1 = GsonHelper.fromNullableJson(GSON, var0, RESOURCE_PACK_TYPE);
       return (List<String>)(var1 != null ? var1 : Lists.newArrayList());
    }
 

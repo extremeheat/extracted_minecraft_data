@@ -39,9 +39,9 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
 
    public ClientboundExplodePacket(FriendlyByteBuf var1) {
       super();
-      this.x = (double)var1.readFloat();
-      this.y = (double)var1.readFloat();
-      this.z = (double)var1.readFloat();
+      this.x = var1.readDouble();
+      this.y = var1.readDouble();
+      this.z = var1.readDouble();
       this.power = var1.readFloat();
       int var2 = Mth.floor(this.x);
       int var3 = Mth.floor(this.y);
@@ -59,9 +59,9 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
 
    @Override
    public void write(FriendlyByteBuf var1) {
-      var1.writeFloat((float)this.x);
-      var1.writeFloat((float)this.y);
-      var1.writeFloat((float)this.z);
+      var1.writeDouble(this.x);
+      var1.writeDouble(this.y);
+      var1.writeDouble(this.z);
       var1.writeFloat(this.power);
       int var2 = Mth.floor(this.x);
       int var3 = Mth.floor(this.y);

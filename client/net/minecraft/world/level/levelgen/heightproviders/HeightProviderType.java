@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.heightproviders;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public interface HeightProviderType<P extends HeightProvider> {
    HeightProviderType<ConstantHeight> CONSTANT = register("constant", ConstantHeight.CODEC);
@@ -14,6 +15,6 @@ public interface HeightProviderType<P extends HeightProvider> {
    Codec<P> codec();
 
    private static <P extends HeightProvider> HeightProviderType<P> register(String var0, Codec<P> var1) {
-      return Registry.register(Registry.HEIGHT_PROVIDER_TYPES, var0, () -> var1);
+      return Registry.register(BuiltInRegistries.HEIGHT_PROVIDER_TYPE, var0, () -> var1);
    }
 }

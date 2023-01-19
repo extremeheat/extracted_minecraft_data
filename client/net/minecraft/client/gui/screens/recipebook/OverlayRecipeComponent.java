@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.CommonComponents;
@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
-public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiEventListener {
+public class OverlayRecipeComponent extends GuiComponent implements Renderable, GuiEventListener {
    static final ResourceLocation RECIPE_BOOK_LOCATION = new ResourceLocation("textures/gui/recipe_book.png");
    private static final int MAX_ROW = 4;
    private static final int MAX_ROW_LARGE = 5;
@@ -139,7 +139,7 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.setShaderTexture(0, RECIPE_BOOK_LOCATION);
          var1.pushPose();
-         var1.translate(0.0, 0.0, 170.0);
+         var1.translate(0.0F, 0.0F, 170.0F);
          int var5 = this.recipeButtons.size() <= 16 ? 4 : 5;
          int var6 = Math.min(this.recipeButtons.size(), var5);
          int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
@@ -216,7 +216,7 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
       }
 
       @Override
-      public void updateNarration(NarrationElementOutput var1) {
+      public void updateWidgetNarration(NarrationElementOutput var1) {
          this.defaultButtonNarrationText(var1);
       }
 
@@ -241,10 +241,10 @@ public class OverlayRecipeComponent extends GuiComponent implements Widget, GuiE
             var6 += 26;
          }
 
-         this.blit(var1, this.x, this.y, var5, var6, this.width, this.height);
+         this.blit(var1, this.getX(), this.getY(), var5, var6, this.width, this.height);
          PoseStack var7 = RenderSystem.getModelViewStack();
          var7.pushPose();
-         var7.translate((double)(this.x + 2), (double)(this.y + 2), 125.0);
+         var7.translate((double)(this.getX() + 2), (double)(this.getY() + 2), 150.0);
 
          for(OverlayRecipeComponent.OverlayRecipeButton.Pos var9 : this.ingredientPos) {
             var7.pushPose();

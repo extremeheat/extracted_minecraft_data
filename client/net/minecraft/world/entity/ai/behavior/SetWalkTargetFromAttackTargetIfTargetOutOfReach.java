@@ -1,56 +1,47 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 
-public class SetWalkTargetFromAttackTargetIfTargetOutOfReach extends Behavior<Mob> {
+public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
    private static final int PROJECTILE_ATTACK_RANGE_BUFFER = 1;
-   private final Function<LivingEntity, Float> speedModifier;
 
-   public SetWalkTargetFromAttackTargetIfTargetOutOfReach(float var1) {
-      this(var1x -> var1);
+   public SetWalkTargetFromAttackTargetIfTargetOutOfReach() {
+      super();
    }
 
-   public SetWalkTargetFromAttackTargetIfTargetOutOfReach(Function<LivingEntity, Float> var1) {
-      super(
-         ImmutableMap.of(
-            MemoryModuleType.WALK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.LOOK_TARGET,
-            MemoryStatus.REGISTERED,
-            MemoryModuleType.ATTACK_TARGET,
-            MemoryStatus.VALUE_PRESENT,
-            MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-            MemoryStatus.REGISTERED
-         )
+   public static BehaviorControl<Mob> create(float var0) {
+      return create(var1 -> var0);
+   }
+
+   public static BehaviorControl<Mob> create(Function<LivingEntity, Float> var0) {
+      return BehaviorBuilder.create(
+         var1 -> var1.group(
+                  var1.registered(MemoryModuleType.WALK_TARGET),
+                  var1.registered(MemoryModuleType.LOOK_TARGET),
+                  var1.present(MemoryModuleType.ATTACK_TARGET),
+                  var1.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+               )
+               .apply(var1, (var2, var3, var4, var5) -> (var6, var7, var8) -> {
+                     LivingEntity var10 = var1.get(var4);
+                     Optional var11 = var1.tryGet(var5);
+                     if (var11.isPresent() && ((NearestVisibleLivingEntities)var11.get()).contains(var10) && BehaviorUtils.isWithinAttackRange(var7, var10, 1)
+                        )
+                      {
+                        var2.erase();
+                     } else {
+                        var3.set(new EntityTracker(var10, true));
+                        var2.set(new WalkTarget(new EntityTracker(var10, false), var0.apply(var7), 0));
+                     }
+      
+                     return true;
+                  })
       );
-      this.speedModifier = var1;
-   }
-
-   protected void start(ServerLevel var1, Mob var2, long var3) {
-      LivingEntity var5 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
-      if (BehaviorUtils.canSee(var2, var5) && BehaviorUtils.isWithinAttackRange(var2, var5, 1)) {
-         this.clearWalkTarget(var2);
-      } else {
-         this.setWalkAndLookTarget(var2, var5);
-      }
-   }
-
-   private void setWalkAndLookTarget(LivingEntity var1, LivingEntity var2) {
-      Brain var3 = var1.getBrain();
-      var3.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var2, true));
-      WalkTarget var4 = new WalkTarget(new EntityTracker(var2, false), this.speedModifier.apply(var1), 0);
-      var3.setMemory(MemoryModuleType.WALK_TARGET, var4);
-   }
-
-   private void clearWalkTarget(LivingEntity var1) {
-      var1.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
    }
 }

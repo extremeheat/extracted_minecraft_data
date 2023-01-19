@@ -12,7 +12,7 @@ import java.util.Map.Entry;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -63,7 +63,7 @@ public class EnchantmentHelper {
 
    @Nullable
    public static ResourceLocation getEnchantmentId(Enchantment var0) {
-      return Registry.ENCHANTMENT.getKey(var0);
+      return BuiltInRegistries.ENCHANTMENT.getKey(var0);
    }
 
    public static int getItemEnchantmentLevel(Enchantment var0, ItemStack var1) {
@@ -95,7 +95,7 @@ public class EnchantmentHelper {
 
       for(int var2 = 0; var2 < var0.size(); ++var2) {
          CompoundTag var3 = var0.getCompound(var2);
-         Registry.ENCHANTMENT.getOptional(getEnchantmentId(var3)).ifPresent(var2x -> var1.put(var2x, getEnchantmentLevel(var3)));
+         BuiltInRegistries.ENCHANTMENT.getOptional(getEnchantmentId(var3)).ifPresent(var2x -> var1.put(var2x, getEnchantmentLevel(var3)));
       }
 
       return var1;
@@ -128,7 +128,7 @@ public class EnchantmentHelper {
 
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             CompoundTag var4 = var2.getCompound(var3);
-            Registry.ENCHANTMENT.getOptional(getEnchantmentId(var4)).ifPresent(var2x -> var0.accept(var2x, getEnchantmentLevel(var4)));
+            BuiltInRegistries.ENCHANTMENT.getOptional(getEnchantmentId(var4)).ifPresent(var2x -> var0.accept(var2x, getEnchantmentLevel(var4)));
          }
       }
    }
@@ -382,7 +382,7 @@ public class EnchantmentHelper {
       Item var4 = var1.getItem();
       boolean var5 = var1.is(Items.BOOK);
 
-      for(Enchantment var7 : Registry.ENCHANTMENT) {
+      for(Enchantment var7 : BuiltInRegistries.ENCHANTMENT) {
          if ((!var7.isTreasureOnly() || var2) && var7.isDiscoverable() && (var7.category.canEnchant(var4) || var5)) {
             for(int var8 = var7.getMaxLevel(); var8 > var7.getMinLevel() - 1; --var8) {
                if (var0 >= var7.getMinCost(var8) && var0 <= var7.getMaxCost(var8)) {

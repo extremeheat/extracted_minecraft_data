@@ -5,8 +5,6 @@ import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -27,6 +25,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -38,6 +37,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
@@ -45,7 +45,7 @@ public class PackSelectionScreen extends Screen {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int LIST_WIDTH = 200;
    private static final Component DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
-   static final Component DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
+   private static final Component DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
    private static final int RELOAD_COOLDOWN = 20;
    private static final ResourceLocation DEFAULT_ICON = new ResourceLocation("textures/misc/unknown_pack.png");
    private final PackSelectionModel model;
@@ -55,11 +55,11 @@ public class PackSelectionScreen extends Screen {
    private long ticksToReload;
    private TransferableSelectionList availablePackList;
    private TransferableSelectionList selectedPackList;
-   private final File packDir;
+   private final Path packDir;
    private Button doneButton;
    private final Map<String, ResourceLocation> packIcons = Maps.newHashMap();
 
-   public PackSelectionScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3, File var4, Component var5) {
+   public PackSelectionScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3, Path var4, Component var5) {
       super(var5);
       this.lastScreen = var1;
       this.model = new PackSelectionModel(this::populateLists, this::getPackIcon, var2, var3);
@@ -86,34 +86,21 @@ public class PackSelectionScreen extends Screen {
 
    @Override
    protected void init() {
-      this.doneButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 48, 150, 20, CommonComponents.GUI_DONE, var1 -> this.onClose()));
-      this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 154,
-            this.height - 48,
-            150,
-            20,
-            Component.translatable("pack.openFolder"),
-            var1 -> Util.getPlatform().openFile(this.packDir),
-            new Button.OnTooltip() {
-               @Override
-               public void onTooltip(Button var1, PoseStack var2, int var3, int var4) {
-                  PackSelectionScreen.this.renderTooltip(var2, PackSelectionScreen.DIRECTORY_BUTTON_TOOLTIP, var3, var4);
-               }
-      
-               @Override
-               public void narrateTooltip(Consumer<Component> var1) {
-                  var1.accept(PackSelectionScreen.DIRECTORY_BUTTON_TOOLTIP);
-               }
-            }
-         )
-      );
-      this.availablePackList = new TransferableSelectionList(this.minecraft, 200, this.height, Component.translatable("pack.available.title"));
+      this.availablePackList = new TransferableSelectionList(this.minecraft, this, 200, this.height, Component.translatable("pack.available.title"));
       this.availablePackList.setLeftPos(this.width / 2 - 4 - 200);
       this.addWidget(this.availablePackList);
-      this.selectedPackList = new TransferableSelectionList(this.minecraft, 200, this.height, Component.translatable("pack.selected.title"));
+      this.selectedPackList = new TransferableSelectionList(this.minecraft, this, 200, this.height, Component.translatable("pack.selected.title"));
       this.selectedPackList.setLeftPos(this.width / 2 + 4);
       this.addWidget(this.selectedPackList);
+      this.addRenderableWidget(
+         Button.builder(Component.translatable("pack.openFolder"), var1 -> Util.getPlatform().openUri(this.packDir.toUri()))
+            .bounds(this.width / 2 - 154, this.height - 48, 150, 20)
+            .tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP))
+            .build()
+      );
+      this.doneButton = this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).bounds(this.width / 2 + 4, this.height - 48, 150, 20).build()
+      );
       this.reload();
    }
 
@@ -143,6 +130,7 @@ public class PackSelectionScreen extends Screen {
 
    private void updateList(TransferableSelectionList var1, Stream<PackSelectionModel.Entry> var2) {
       var1.children().clear();
+      var1.setSelected(null);
       var2.forEach(var2x -> var1.children().add(new TransferableSelectionList.PackEntry(this.minecraft, var1, this, var2x)));
    }
 
@@ -190,7 +178,7 @@ public class PackSelectionScreen extends Screen {
       String var2 = var1.stream().map(Path::getFileName).map(Path::toString).collect(Collectors.joining(", "));
       this.minecraft.setScreen(new ConfirmScreen(var2x -> {
          if (var2x) {
-            copyPacks(this.minecraft, var1, this.packDir.toPath());
+            copyPacks(this.minecraft, var1, this.packDir);
             this.reload();
          }
 
@@ -200,31 +188,30 @@ public class PackSelectionScreen extends Screen {
 
    private ResourceLocation loadPackIcon(TextureManager var1, Pack var2) {
       try {
-         ResourceLocation var8;
-         try (
-            PackResources var3 = var2.open();
-            InputStream var4 = var3.getRootResource("pack.png");
-         ) {
+         ResourceLocation var9;
+         try (PackResources var3 = var2.open()) {
+            IoSupplier var4 = var3.getRootResource("pack.png");
             if (var4 == null) {
                return DEFAULT_ICON;
             }
 
-            String var15 = var2.getId();
+            String var5 = var2.getId();
             ResourceLocation var6 = new ResourceLocation(
-               "minecraft", "pack/" + Util.sanitizeName(var15, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var15) + "/icon"
+               "minecraft", "pack/" + Util.sanitizeName(var5, ResourceLocation::validPathChar) + "/" + Hashing.sha1().hashUnencodedChars(var5) + "/icon"
             );
-            NativeImage var7 = NativeImage.read(var4);
-            var1.register(var6, new DynamicTexture(var7));
-            var8 = var6;
+
+            try (InputStream var7 = (InputStream)var4.get()) {
+               NativeImage var8 = NativeImage.read(var7);
+               var1.register(var6, new DynamicTexture(var8));
+               var9 = var6;
+            }
          }
 
-         return var8;
-      } catch (FileNotFoundException var13) {
+         return var9;
       } catch (Exception var14) {
          LOGGER.warn("Failed to load icon from pack {}", var2.getId(), var14);
+         return DEFAULT_ICON;
       }
-
-      return DEFAULT_ICON;
    }
 
    private ResourceLocation getPackIcon(Pack var1) {
@@ -235,15 +222,15 @@ public class PackSelectionScreen extends Screen {
       private final WatchService watcher;
       private final Path packPath;
 
-      public Watcher(File var1) throws IOException {
+      public Watcher(Path var1) throws IOException {
          super();
-         this.packPath = var1.toPath();
-         this.watcher = this.packPath.getFileSystem().newWatchService();
+         this.packPath = var1;
+         this.watcher = var1.getFileSystem().newWatchService();
 
          try {
-            this.watchDir(this.packPath);
+            this.watchDir(var1);
 
-            try (DirectoryStream var2 = Files.newDirectoryStream(this.packPath)) {
+            try (DirectoryStream var2 = Files.newDirectoryStream(var1)) {
                for(Path var4 : var2) {
                   if (Files.isDirectory(var4, LinkOption.NOFOLLOW_LINKS)) {
                      this.watchDir(var4);
@@ -257,7 +244,7 @@ public class PackSelectionScreen extends Screen {
       }
 
       @Nullable
-      public static PackSelectionScreen.Watcher create(File var0) {
+      public static PackSelectionScreen.Watcher create(Path var0) {
          try {
             return new PackSelectionScreen.Watcher(var0);
          } catch (IOException var2) {

@@ -37,7 +37,6 @@ public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
       return var3;
    }
 
-   @Override
    public ResourceLocation getTextureLocation(Mob var1) {
       ResourceLocation var2 = TEXTURES.get(var1.getType());
       if (var2 == null) {

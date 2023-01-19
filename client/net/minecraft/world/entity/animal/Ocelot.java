@@ -228,6 +228,7 @@ public class Ocelot extends Animal {
       }
    }
 
+   @Nullable
    public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return EntityType.OCELOT.create(var1);
    }

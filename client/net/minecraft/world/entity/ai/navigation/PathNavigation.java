@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -28,6 +27,8 @@ import net.minecraft.world.phys.Vec3;
 
 public abstract class PathNavigation {
    private static final int MAX_TIME_RECOMPUTE = 20;
+   private static final int STUCK_CHECK_INTERVAL = 100;
+   private static final float STUCK_THRESHOLD_DISTANCE_FACTOR = 0.25F;
    protected final Mob mob;
    protected final Level level;
    @Nullable
@@ -249,16 +250,28 @@ public abstract class PathNavigation {
             return true;
          } else {
             Vec3 var3 = Vec3.atBottomCenterOf(this.path.getNodePos(this.path.getNextNodeIndex() + 1));
-            Vec3 var4 = var3.subtract(var2);
-            Vec3 var5 = var1.subtract(var2);
-            return var4.dot(var5) > 0.0;
+            Vec3 var4 = var2.subtract(var1);
+            Vec3 var5 = var3.subtract(var1);
+            double var6 = var4.lengthSqr();
+            double var8 = var5.lengthSqr();
+            boolean var10 = var8 < var6;
+            boolean var11 = var6 < 0.5;
+            if (!var10 && !var11) {
+               return false;
+            } else {
+               Vec3 var12 = var4.normalize();
+               Vec3 var13 = var5.normalize();
+               return var13.dot(var12) < 0.0;
+            }
          }
       }
    }
 
    protected void doStuckDetection(Vec3 var1) {
       if (this.tick - this.lastStuckCheck > 100) {
-         if (var1.distanceToSqr(this.lastStuckCheckPos) < 2.25) {
+         float var2 = this.mob.getSpeed() >= 1.0F ? this.mob.getSpeed() : this.mob.getSpeed() * this.mob.getSpeed();
+         float var3 = var2 * 100.0F * 0.25F;
+         if (var1.distanceToSqr(this.lastStuckCheckPos) < (double)(var3 * var3)) {
             this.isStuck = true;
             this.stop();
          } else {
@@ -270,20 +283,21 @@ public abstract class PathNavigation {
       }
 
       if (this.path != null && !this.path.isDone()) {
-         BlockPos var2 = this.path.getNextNodePos();
-         if (var2.equals(this.timeoutCachedNode)) {
-            this.timeoutTimer += Util.getMillis() - this.lastTimeoutCheck;
+         BlockPos var7 = this.path.getNextNodePos();
+         long var8 = this.level.getGameTime();
+         if (var7.equals(this.timeoutCachedNode)) {
+            this.timeoutTimer += var8 - this.lastTimeoutCheck;
          } else {
-            this.timeoutCachedNode = var2;
-            double var3 = var1.distanceTo(Vec3.atBottomCenterOf(this.timeoutCachedNode));
-            this.timeoutLimit = this.mob.getSpeed() > 0.0F ? var3 / (double)this.mob.getSpeed() * 1000.0 : 0.0;
+            this.timeoutCachedNode = var7;
+            double var5 = var1.distanceTo(Vec3.atBottomCenterOf(this.timeoutCachedNode));
+            this.timeoutLimit = this.mob.getSpeed() > 0.0F ? var5 / (double)this.mob.getSpeed() * 20.0 : 0.0;
          }
 
          if (this.timeoutLimit > 0.0 && (double)this.timeoutTimer > this.timeoutLimit * 3.0) {
             this.timeoutPath();
          }
 
-         this.lastTimeoutCheck = Util.getMillis();
+         this.lastTimeoutCheck = var8;
       }
    }
 
@@ -339,9 +353,10 @@ public abstract class PathNavigation {
       return false;
    }
 
-   protected static boolean isClearForMovementBetween(Mob var0, Vec3 var1, Vec3 var2) {
-      Vec3 var3 = new Vec3(var2.x, var2.y + (double)var0.getBbHeight() * 0.5, var2.z);
-      return var0.level.clip(new ClipContext(var1, var3, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0)).getType() == HitResult.Type.MISS;
+   protected static boolean isClearForMovementBetween(Mob var0, Vec3 var1, Vec3 var2, boolean var3) {
+      Vec3 var4 = new Vec3(var2.x, var2.y + (double)var0.getBbHeight() * 0.5, var2.z);
+      return var0.level.clip(new ClipContext(var1, var4, ClipContext.Block.COLLIDER, var3 ? ClipContext.Fluid.ANY : ClipContext.Fluid.NONE, var0)).getType()
+         == HitResult.Type.MISS;
    }
 
    public boolean isStableDestination(BlockPos var1) {

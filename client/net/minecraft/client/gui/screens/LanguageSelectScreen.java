@@ -29,7 +29,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.packSelectionList = new LanguageSelectScreen.LanguageSelectionList(this.minecraft);
       this.addWidget(this.packSelectionList);
       this.addRenderableWidget(this.options.forceUnicodeFont().createButton(this.options, this.width / 2 - 155, this.height - 38, 150));
-      this.addRenderableWidget(new Button(this.width / 2 - 155 + 160, this.height - 38, 150, 20, CommonComponents.GUI_DONE, var1 -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
          LanguageSelectScreen.LanguageSelectionList.Entry var2 = this.packSelectionList.getSelected();
          if (var2 != null && !var2.language.getCode().equals(this.languageManager.getSelected().getCode())) {
             this.languageManager.setSelected(var2.language);
@@ -39,7 +39,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
          }
 
          this.minecraft.setScreen(this.lastScreen);
-      }));
+      }).bounds(this.width / 2 - 155 + 160, this.height - 38, 150, 20).build());
       super.init();
    }
 

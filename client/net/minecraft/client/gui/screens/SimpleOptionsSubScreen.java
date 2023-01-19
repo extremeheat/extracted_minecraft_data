@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -16,7 +15,7 @@ public abstract class SimpleOptionsSubScreen extends OptionsSubScreen {
    protected final OptionInstance<?>[] smallOptions;
    @Nullable
    private AbstractWidget narratorButton;
-   private OptionsList list;
+   protected OptionsList list;
 
    public SimpleOptionsSubScreen(Screen var1, Options var2, Component var3, OptionInstance<?>[] var4) {
       super(var1, var2, var3);
@@ -37,18 +36,15 @@ public abstract class SimpleOptionsSubScreen extends OptionsSubScreen {
 
    protected void createFooter() {
       this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height - 27, 200, 20, CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
+         Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
+            .bounds(this.width / 2 - 100, this.height - 27, 200, 20)
+            .build()
       );
    }
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.list.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
-      super.render(var1, var2, var3, var4);
-      List var5 = tooltipAt(this.list, var2, var3);
-      this.renderTooltip(var1, var5, var2, var3);
+      this.basicListRender(var1, this.list, var2, var3, var4);
    }
 
    public void updateNarratorButton() {

@@ -2,9 +2,11 @@ package net.minecraft.world.entity.ai.sensing;
 
 import java.util.function.Supplier;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.axolotl.AxolotlAi;
+import net.minecraft.world.entity.animal.camel.CamelAi;
 import net.minecraft.world.entity.animal.frog.FrogAi;
 import net.minecraft.world.entity.animal.goat.GoatAi;
 
@@ -31,6 +33,7 @@ public class SensorType<U extends Sensor<?>> {
    public static final SensorType<TemptingSensor> AXOLOTL_TEMPTATIONS = register("axolotl_temptations", () -> new TemptingSensor(AxolotlAi.getTemptations()));
    public static final SensorType<TemptingSensor> GOAT_TEMPTATIONS = register("goat_temptations", () -> new TemptingSensor(GoatAi.getTemptations()));
    public static final SensorType<TemptingSensor> FROG_TEMPTATIONS = register("frog_temptations", () -> new TemptingSensor(FrogAi.getTemptations()));
+   public static final SensorType<TemptingSensor> CAMEL_TEMPTATIONS = register("camel_temptations", () -> new TemptingSensor(CamelAi.getTemptations()));
    public static final SensorType<FrogAttackablesSensor> FROG_ATTACKABLES = register("frog_attackables", FrogAttackablesSensor::new);
    public static final SensorType<IsInWaterSensor> IS_IN_WATER = register("is_in_water", IsInWaterSensor::new);
    public static final SensorType<WardenEntitySensor> WARDEN_ENTITY_SENSOR = register("warden_entity_sensor", WardenEntitySensor::new);
@@ -46,6 +49,6 @@ public class SensorType<U extends Sensor<?>> {
    }
 
    private static <U extends Sensor<?>> SensorType<U> register(String var0, Supplier<U> var1) {
-      return Registry.register(Registry.SENSOR_TYPE, new ResourceLocation(var0), new SensorType<>(var1));
+      return Registry.register(BuiltInRegistries.SENSOR_TYPE, new ResourceLocation(var0), new SensorType<>(var1));
    }
 }

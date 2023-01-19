@@ -1,37 +1,45 @@
 package net.minecraft.advancements.critereon;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JsonOps;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityVariantPredicate<V> {
    private static final String VARIANT_KEY = "variant";
-   final Registry<V> registry;
+   final Codec<V> variantCodec;
    final Function<Entity, Optional<V>> getter;
    final EntitySubPredicate.Type type;
 
    public static <V> EntityVariantPredicate<V> create(Registry<V> var0, Function<Entity, Optional<V>> var1) {
+      return new EntityVariantPredicate<>(var0.byNameCodec(), var1);
+   }
+
+   public static <V> EntityVariantPredicate<V> create(Codec<V> var0, Function<Entity, Optional<V>> var1) {
       return new EntityVariantPredicate<>(var0, var1);
    }
 
-   private EntityVariantPredicate(Registry<V> var1, Function<Entity, Optional<V>> var2) {
+   private EntityVariantPredicate(Codec<V> var1, Function<Entity, Optional<V>> var2) {
       super();
-      this.registry = var1;
+      this.variantCodec = var1;
       this.getter = var2;
       this.type = var2x -> {
-         String var3 = GsonHelper.getAsString(var2x, "variant");
-         Object var4 = var1.get(ResourceLocation.tryParse(var3));
-         if (var4 == null) {
-            throw new JsonSyntaxException("Unknown variant: " + var3);
+         JsonElement var3 = var2x.get("variant");
+         if (var3 == null) {
+            throw new JsonParseException("Missing variant field");
          } else {
+            Object var4 = ((Pair)Util.getOrThrow(var1.decode(new Dynamic(JsonOps.INSTANCE, var3)), JsonParseException::new)).getFirst();
             return this.createPredicate((V)var4);
          }
       };
@@ -51,7 +59,13 @@ public class EntityVariantPredicate<V> {
          @Override
          public JsonObject serializeCustomData() {
             JsonObject var1x = new JsonObject();
-            var1x.addProperty("variant", EntityVariantPredicate.this.registry.getKey((V)var1).toString());
+            var1x.add(
+               "variant",
+               Util.getOrThrow(
+                  EntityVariantPredicate.this.variantCodec.encodeStart(JsonOps.INSTANCE, var1),
+                  var1xxx -> new JsonParseException("Can't serialize variant " + var1 + ", message " + var1xxx)
+               )
+            );
             return var1x;
          }
 

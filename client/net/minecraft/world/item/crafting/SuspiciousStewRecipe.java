@@ -2,19 +2,17 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FlowerBlock;
+import net.minecraft.world.level.block.SuspiciousEffectHolder;
 
 public class SuspiciousStewRecipe extends CustomRecipe {
-   public SuspiciousStewRecipe(ResourceLocation var1) {
-      super(var1);
+   public SuspiciousStewRecipe(ResourceLocation var1, CraftingBookCategory var2) {
+      super(var1, var2);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {
@@ -45,26 +43,21 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       return var3 && var5 && var4 && var6;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = ItemStack.EMPTY;
+      ItemStack var2 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
 
       for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty() && var4.is(ItemTags.SMALL_FLOWERS)) {
-            var2 = var4;
-            break;
+         if (!var4.isEmpty()) {
+            SuspiciousEffectHolder var5 = SuspiciousEffectHolder.tryGet(var4.getItem());
+            if (var5 != null) {
+               SuspiciousStewItem.saveMobEffect(var2, var5.getSuspiciousEffect(), var5.getEffectDuration());
+               break;
+            }
          }
       }
 
-      ItemStack var6 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
-      if (var2.getItem() instanceof BlockItem && ((BlockItem)var2.getItem()).getBlock() instanceof FlowerBlock var7) {
-         MobEffect var5 = var7.getSuspiciousStewEffect();
-         SuspiciousStewItem.saveMobEffect(var6, var5, var7.getEffectDuration());
-      }
-
-      return var6;
+      return var2;
    }
 
    @Override

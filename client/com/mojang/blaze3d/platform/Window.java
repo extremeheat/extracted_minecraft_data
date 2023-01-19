@@ -2,7 +2,6 @@ package com.mojang.blaze3d.platform;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -14,6 +13,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.SilentInitException;
+import net.minecraft.server.packs.resources.IoSupplier;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
@@ -146,25 +146,17 @@ public final class Window implements AutoCloseable {
       }
    }
 
-   public void setIcon(InputStream var1, InputStream var2) {
+   public void setIcon(IoSupplier<InputStream> var1, IoSupplier<InputStream> var2) {
       RenderSystem.assertInInitPhase();
 
       try {
          MemoryStack var3 = MemoryStack.stackPush();
 
          try {
-            if (var1 == null) {
-               throw new FileNotFoundException("icons/icon_16x16.png");
-            }
-
-            if (var2 == null) {
-               throw new FileNotFoundException("icons/icon_32x32.png");
-            }
-
             IntBuffer var4 = var3.mallocInt(1);
             IntBuffer var5 = var3.mallocInt(1);
             IntBuffer var6 = var3.mallocInt(1);
-            Buffer var7 = GLFWImage.mallocStack(2, var3);
+            Buffer var7 = GLFWImage.malloc(2, var3);
             ByteBuffer var8 = this.readIconPixels(var1, var4, var5, var6);
             if (var8 == null) {
                throw new IllegalStateException("Could not load icon: " + STBImage.stbi_failure_reason());
@@ -176,6 +168,7 @@ public final class Window implements AutoCloseable {
             var7.pixels(var8);
             ByteBuffer var9 = this.readIconPixels(var2, var4, var5, var6);
             if (var9 == null) {
+               STBImage.stbi_image_free(var8);
                throw new IllegalStateException("Could not load icon: " + STBImage.stbi_failure_reason());
             }
 
@@ -208,22 +201,22 @@ public final class Window implements AutoCloseable {
    }
 
    @Nullable
-   private ByteBuffer readIconPixels(InputStream var1, IntBuffer var2, IntBuffer var3, IntBuffer var4) throws IOException {
+   private ByteBuffer readIconPixels(IoSupplier<InputStream> var1, IntBuffer var2, IntBuffer var3, IntBuffer var4) throws IOException {
       RenderSystem.assertInInitPhase();
       ByteBuffer var5 = null;
 
-      ByteBuffer var6;
-      try {
-         var5 = TextureUtil.readResource(var1);
+      ByteBuffer var7;
+      try (InputStream var6 = (InputStream)var1.get()) {
+         var5 = TextureUtil.readResource(var6);
          var5.rewind();
-         var6 = STBImage.stbi_load_from_memory(var5, var2, var3, var4, 0);
+         var7 = STBImage.stbi_load_from_memory(var5, var2, var3, var4, 0);
       } finally {
          if (var5 != null) {
             MemoryUtil.memFree(var5);
          }
       }
 
-      return var6;
+      return var7;
    }
 
    public void setErrorSection(String var1) {

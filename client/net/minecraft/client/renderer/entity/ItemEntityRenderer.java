@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -59,9 +59,9 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
       float var12 = 0.25F;
       float var13 = Mth.sin(((float)var1.getAge() + var3) / 10.0F + var1.bobOffs) * 0.1F + 0.1F;
       float var14 = var9.getTransforms().getTransform(ItemTransforms.TransformType.GROUND).scale.y();
-      var4.translate(0.0, (double)(var13 + 0.25F * var14), 0.0);
+      var4.translate(0.0F, var13 + 0.25F * var14, 0.0F);
       float var15 = var1.getSpin(var3);
-      var4.mulPose(Vector3f.YP.rotation(var15));
+      var4.mulPose(Axis.YP.rotation(var15));
       float var16 = var9.getTransforms().ground.scale.x();
       float var17 = var9.getTransforms().ground.scale.y();
       float var18 = var9.getTransforms().ground.scale.z();
@@ -69,7 +69,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
          float var19 = -0.0F * (float)(var11 - 1) * 0.5F * var16;
          float var20 = -0.0F * (float)(var11 - 1) * 0.5F * var17;
          float var21 = -0.09375F * (float)(var11 - 1) * 0.5F * var18;
-         var4.translate((double)var19, (double)var20, (double)var21);
+         var4.translate(var19, var20, var21);
       }
 
       for(int var23 = 0; var23 < var11; ++var23) {
@@ -79,18 +79,18 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
                float var24 = (this.random.nextFloat() * 2.0F - 1.0F) * 0.15F;
                float var26 = (this.random.nextFloat() * 2.0F - 1.0F) * 0.15F;
                float var22 = (this.random.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var4.translate((double)var24, (double)var26, (double)var22);
+               var4.translate(var24, var26, var22);
             } else {
                float var25 = (this.random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
                float var27 = (this.random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var4.translate((double)var25, (double)var27, 0.0);
+               var4.translate(var25, var27, 0.0F);
             }
          }
 
          this.itemRenderer.render(var7, ItemTransforms.TransformType.GROUND, false, var4, var5, var6, OverlayTexture.NO_OVERLAY, var9);
          var4.popPose();
          if (!var10) {
-            var4.translate((double)(0.0F * var16), (double)(0.0F * var17), (double)(0.09375F * var18));
+            var4.translate(0.0F * var16, 0.0F * var17, 0.09375F * var18);
          }
       }
 

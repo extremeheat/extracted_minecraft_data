@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
@@ -41,18 +42,18 @@ public class ConnectScreen extends Screen {
       this.parent = var1;
    }
 
-   public static void startConnecting(Screen var0, Minecraft var1, ServerAddress var2, @Nullable ServerData var3) {
+   public static void startConnecting(Screen var0, Minecraft var1, ServerAddress var2, ServerData var3) {
       ConnectScreen var4 = new ConnectScreen(var0);
       var1.clearLevel();
       var1.prepareForMultiplayer();
-      var1.setCurrentServer(var3);
+      var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3 != null ? var3.ip : var2.getHost()));
       var1.setScreen(var4);
-      var4.connect(var1, var2);
+      var4.connect(var1, var2, var3);
    }
 
-   private void connect(final Minecraft var1, final ServerAddress var2) {
+   private void connect(final Minecraft var1, final ServerAddress var2, @Nullable final ServerData var3) {
       LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
-      Thread var3 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
+      Thread var4 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
          @Override
          public void run() {
             InetSocketAddress var1x = null;
@@ -80,32 +81,29 @@ public class ConnectScreen extends Screen {
                ConnectScreen.this.connection = Connection.connectToServer(var1x, var1.options.useNativeTransport());
                ConnectScreen.this.connection
                   .setListener(
-                     new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, ConnectScreen.this.parent, ConnectScreen.this::updateStatus)
-                  );
-               ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
-               ConnectScreen.this.connection
-                  .send(
-                     new ServerboundHelloPacket(
-                        var1.getUser().getName(), var1.getProfileKeyPairManager().profilePublicKeyData(), Optional.ofNullable(var1.getUser().getProfileId())
+                     new ClientHandshakePacketListenerImpl(
+                        ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus
                      )
                   );
+               ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
+               ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), Optional.ofNullable(var1.getUser().getProfileId())));
             } catch (Exception var6) {
                if (ConnectScreen.this.aborted) {
                   return;
                }
 
                Throwable var5 = var6.getCause();
-               Exception var3;
+               Exception var3x;
                if (var5 instanceof Exception var4) {
-                  var3 = (Exception)var4;
+                  var3x = (Exception)var4;
                } else {
-                  var3 = var6;
+                  var3x = var6;
                }
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var6);
                String var7 = var1x == null
-                  ? var3.getMessage()
-                  : var3.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
+                  ? var3x.getMessage()
+                  : var3x.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
                var1.execute(
                   () -> var1.setScreen(
                         new DisconnectedScreen(
@@ -116,8 +114,8 @@ public class ConnectScreen extends Screen {
             }
          }
       };
-      var3.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-      var3.start();
+      var4.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+      var4.start();
    }
 
    private void updateStatus(Component var1) {
@@ -142,14 +140,14 @@ public class ConnectScreen extends Screen {
 
    @Override
    protected void init() {
-      this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20, CommonComponents.GUI_CANCEL, var1 -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
          this.aborted = true;
          if (this.connection != null) {
             this.connection.disconnect(Component.translatable("connect.aborted"));
          }
 
          this.minecraft.setScreen(this.parent);
-      }));
+      }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
    }
 
    @Override

@@ -9,9 +9,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
-import net.minecraft.data.worldgen.ProcessorLists;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
@@ -26,9 +25,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public abstract class StructurePoolElement {
-   public static final Codec<StructurePoolElement> CODEC = Registry.STRUCTURE_POOL_ELEMENT
+   public static final Codec<StructurePoolElement> CODEC = BuiltInRegistries.STRUCTURE_POOL_ELEMENT
       .byNameCodec()
       .dispatch("element_type", StructurePoolElement::getType, StructurePoolElementType::codec);
+   private static final Holder<StructureProcessorList> EMPTY = Holder.direct(new StructureProcessorList(List.of()));
    @Nullable
    private volatile StructureTemplatePool.Projection projection;
 
@@ -92,7 +92,7 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
-      return var1 -> new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), ProcessorLists.EMPTY, var1);
+      return var1 -> new LegacySinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
@@ -100,7 +100,7 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
-      return var1 -> new SinglePoolElement(Either.left(new ResourceLocation(var0)), ProcessorLists.EMPTY, var1);
+      return var1 -> new SinglePoolElement(Either.left(new ResourceLocation(var0)), EMPTY, var1);
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {

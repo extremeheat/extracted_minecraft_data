@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
-import com.mojang.math.Matrix4f;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.FormattedCharSequence;
+import org.joml.Matrix4f;
 
 public class ClientTextTooltip implements ClientTooltipComponent {
    private final FormattedCharSequence text;

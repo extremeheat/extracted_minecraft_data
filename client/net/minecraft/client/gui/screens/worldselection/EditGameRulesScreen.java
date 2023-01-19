@@ -50,21 +50,18 @@ public class EditGameRulesScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
-      super.init();
       this.rules = new EditGameRulesScreen.RuleList(this.gameRules);
       this.addWidget(this.rules);
-      this.addRenderableWidget(
-         new Button(this.width / 2 - 155 + 160, this.height - 29, 150, 20, CommonComponents.GUI_CANCEL, var1 -> this.exitCallback.accept(Optional.empty()))
-      );
       this.doneButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 155, this.height - 29, 150, 20, CommonComponents.GUI_DONE, var1 -> this.exitCallback.accept(Optional.of(this.gameRules)))
+         Button.builder(CommonComponents.GUI_DONE, var1 -> this.exitCallback.accept(Optional.of(this.gameRules)))
+            .bounds(this.width / 2 - 155, this.height - 29, 150, 20)
+            .build()
       );
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.exitCallback.accept(Optional.empty()))
+            .bounds(this.width / 2 - 155 + 160, this.height - 29, 150, 20)
+            .build()
+      );
    }
 
    @Override
@@ -78,13 +75,6 @@ public class EditGameRulesScreen extends Screen {
       this.rules.render(var1, var2, var3, var4);
       drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
       super.render(var1, var2, var3, var4);
-      if (this.tooltip != null) {
-         this.renderTooltip(var1, this.tooltip, var2, var3);
-      }
-   }
-
-   void setTooltip(@Nullable List<FormattedCharSequence> var1) {
-      this.tooltip = var1;
    }
 
    private void updateDoneButton() {
@@ -116,8 +106,8 @@ public class EditGameRulesScreen extends Screen {
       @Override
       public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderLabel(var1, var3, var4);
-         this.checkbox.x = var4 + var5 - 45;
-         this.checkbox.y = var3;
+         this.checkbox.setX(var4 + var5 - 45);
+         this.checkbox.setY(var3);
          this.checkbox.render(var1, var7, var8, var10);
       }
    }
@@ -212,8 +202,8 @@ public class EditGameRulesScreen extends Screen {
       @Override
       public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderLabel(var1, var3, var4);
-         this.input.x = var4 + var5 - 44;
-         this.input.y = var3;
+         this.input.setX(var4 + var5 - 44);
+         this.input.setY(var3);
          this.input.render(var1, var7, var8, var10);
       }
    }
@@ -291,8 +281,8 @@ public class EditGameRulesScreen extends Screen {
       public void render(PoseStack var1, int var2, int var3, float var4) {
          super.render(var1, var2, var3, var4);
          EditGameRulesScreen.RuleEntry var5 = this.getHovered();
-         if (var5 != null) {
-            EditGameRulesScreen.this.setTooltip(var5.tooltip);
+         if (var5 != null && var5.tooltip != null) {
+            EditGameRulesScreen.this.setTooltipForNextRenderPass(var5.tooltip);
          }
       }
    }

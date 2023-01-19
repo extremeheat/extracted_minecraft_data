@@ -14,7 +14,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -86,10 +85,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (!this.level.isClientSide) {
-         Explosion.BlockInteraction var2 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
-            ? Explosion.BlockInteraction.DESTROY
-            : Explosion.BlockInteraction.NONE;
-         this.level.explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, false, var2);
+         this.level.explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, false, Level.ExplosionInteraction.MOB);
          this.discard();
       }
    }

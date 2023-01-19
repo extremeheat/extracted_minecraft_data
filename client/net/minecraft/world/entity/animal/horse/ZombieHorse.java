@@ -14,8 +14,6 @@ import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class ZombieHorse extends AbstractHorse {
@@ -39,19 +37,16 @@ public class ZombieHorse extends AbstractHorse {
 
    @Override
    protected SoundEvent getAmbientSound() {
-      super.getAmbientSound();
       return SoundEvents.ZOMBIE_HORSE_AMBIENT;
    }
 
    @Override
    protected SoundEvent getDeathSound() {
-      super.getDeathSound();
       return SoundEvents.ZOMBIE_HORSE_DEATH;
    }
 
    @Override
    protected SoundEvent getHurtSound(DamageSource var1) {
-      super.getHurtSound(var1);
       return SoundEvents.ZOMBIE_HORSE_HURT;
    }
 
@@ -63,32 +58,7 @@ public class ZombieHorse extends AbstractHorse {
 
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (!this.isTamed()) {
-         return InteractionResult.PASS;
-      } else if (this.isBaby()) {
-         return super.mobInteract(var1, var2);
-      } else if (var1.isSecondaryUseActive()) {
-         this.openCustomInventoryScreen(var1);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
-      } else if (this.isVehicle()) {
-         return super.mobInteract(var1, var2);
-      } else {
-         if (!var3.isEmpty()) {
-            if (var3.is(Items.SADDLE) && !this.isSaddled()) {
-               this.openCustomInventoryScreen(var1);
-               return InteractionResult.sidedSuccess(this.level.isClientSide);
-            }
-
-            InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-            if (var4.consumesAction()) {
-               return var4;
-            }
-         }
-
-         this.doPlayerRide(var1);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
-      }
+      return !this.isTamed() ? InteractionResult.PASS : super.mobInteract(var1, var2);
    }
 
    @Override

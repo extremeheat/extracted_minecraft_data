@@ -2,23 +2,24 @@ package net.minecraft.core;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Transformation;
-import com.mojang.math.Vector3f;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.Util;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 public class BlockMath {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = Util.make(Maps.newEnumMap(Direction.class), var0 -> {
       var0.put(Direction.SOUTH, Transformation.identity());
-      var0.put(Direction.EAST, new Transformation(null, Vector3f.YP.rotationDegrees(90.0F), null, null));
-      var0.put(Direction.WEST, new Transformation(null, Vector3f.YP.rotationDegrees(-90.0F), null, null));
-      var0.put(Direction.NORTH, new Transformation(null, Vector3f.YP.rotationDegrees(180.0F), null, null));
-      var0.put(Direction.UP, new Transformation(null, Vector3f.XP.rotationDegrees(-90.0F), null, null));
-      var0.put(Direction.DOWN, new Transformation(null, Vector3f.XP.rotationDegrees(90.0F), null, null));
+      var0.put(Direction.EAST, new Transformation(null, new Quaternionf().rotateY(1.5707964F), null, null));
+      var0.put(Direction.WEST, new Transformation(null, new Quaternionf().rotateY(-1.5707964F), null, null));
+      var0.put(Direction.NORTH, new Transformation(null, new Quaternionf().rotateY(3.1415927F), null, null));
+      var0.put(Direction.UP, new Transformation(null, new Quaternionf().rotateX(-1.5707964F), null, null));
+      var0.put(Direction.DOWN, new Transformation(null, new Quaternionf().rotateX(1.5707964F), null, null));
    });
    public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = Util.make(Maps.newEnumMap(Direction.class), var0 -> {
       for(Direction var4 : Direction.values()) {
@@ -31,16 +32,16 @@ public class BlockMath {
    }
 
    public static Transformation blockCenterToCorner(Transformation var0) {
-      Matrix4f var1 = Matrix4f.createTranslateMatrix(0.5F, 0.5F, 0.5F);
-      var1.multiply(var0.getMatrix());
-      var1.multiply(Matrix4f.createTranslateMatrix(-0.5F, -0.5F, -0.5F));
+      Matrix4f var1 = new Matrix4f().translation(0.5F, 0.5F, 0.5F);
+      var1.mul(var0.getMatrix());
+      var1.translate(-0.5F, -0.5F, -0.5F);
       return new Transformation(var1);
    }
 
    public static Transformation blockCornerToCenter(Transformation var0) {
-      Matrix4f var1 = Matrix4f.createTranslateMatrix(-0.5F, -0.5F, -0.5F);
-      var1.multiply(var0.getMatrix());
-      var1.multiply(Matrix4f.createTranslateMatrix(0.5F, 0.5F, 0.5F));
+      Matrix4f var1 = new Matrix4f().translation(-0.5F, -0.5F, -0.5F);
+      var1.mul(var0.getMatrix());
+      var1.translate(0.5F, 0.5F, 0.5F);
       return new Transformation(var1);
    }
 

@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
+import net.minecraft.FileUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StreamTagVisitor;
@@ -37,7 +37,7 @@ public final class RegionFileStorage implements AutoCloseable {
             ((RegionFile)this.regionCache.removeLast()).close();
          }
 
-         Files.createDirectories(this.folder);
+         FileUtil.createDirectoriesSafe(this.folder);
          Path var5 = this.folder.resolve("r." + var1.getRegionX() + "." + var1.getRegionZ() + ".mca");
          RegionFile var6 = new RegionFile(var5, this.folder, this.sync);
          this.regionCache.putAndMoveToFirst(var2, var6);

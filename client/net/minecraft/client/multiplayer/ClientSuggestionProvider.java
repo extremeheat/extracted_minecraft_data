@@ -24,6 +24,7 @@ import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacke
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -79,8 +80,8 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    }
 
    @Override
-   public Collection<ResourceLocation> getAvailableSoundEvents() {
-      return this.minecraft.getSoundManager().getAvailableSounds();
+   public Stream<ResourceLocation> getAvailableSounds() {
+      return this.minecraft.getSoundManager().getAvailableSounds().stream();
    }
 
    @Override
@@ -156,6 +157,11 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    @Override
    public RegistryAccess registryAccess() {
       return this.connection.registryAccess();
+   }
+
+   @Override
+   public FeatureFlagSet enabledFeatures() {
+      return this.connection.enabledFeatures();
    }
 
    public void completeCustomSuggestions(int var1, Suggestions var2) {

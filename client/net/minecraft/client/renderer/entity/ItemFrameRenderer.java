@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,10 +25,10 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 
 public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
-   private static final ModelResourceLocation FRAME_LOCATION = new ModelResourceLocation("item_frame", "map=false");
-   private static final ModelResourceLocation MAP_FRAME_LOCATION = new ModelResourceLocation("item_frame", "map=true");
-   private static final ModelResourceLocation GLOW_FRAME_LOCATION = new ModelResourceLocation("glow_item_frame", "map=false");
-   private static final ModelResourceLocation GLOW_MAP_FRAME_LOCATION = new ModelResourceLocation("glow_item_frame", "map=true");
+   private static final ModelResourceLocation FRAME_LOCATION = ModelResourceLocation.vanilla("item_frame", "map=false");
+   private static final ModelResourceLocation MAP_FRAME_LOCATION = ModelResourceLocation.vanilla("item_frame", "map=true");
+   private static final ModelResourceLocation GLOW_FRAME_LOCATION = ModelResourceLocation.vanilla("glow_item_frame", "map=false");
+   private static final ModelResourceLocation GLOW_MAP_FRAME_LOCATION = ModelResourceLocation.vanilla("glow_item_frame", "map=true");
    public static final int GLOW_FRAME_BRIGHTNESS = 5;
    public static final int BRIGHT_MAP_LIGHT_ADJUSTMENT = 30;
    private final ItemRenderer itemRenderer;
@@ -52,15 +52,15 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       var4.translate(-var8.x(), -var8.y(), -var8.z());
       double var9 = 0.46875;
       var4.translate((double)var7.getStepX() * 0.46875, (double)var7.getStepY() * 0.46875, (double)var7.getStepZ() * 0.46875);
-      var4.mulPose(Vector3f.XP.rotationDegrees(var1.getXRot()));
-      var4.mulPose(Vector3f.YP.rotationDegrees(180.0F - var1.getYRot()));
+      var4.mulPose(Axis.XP.rotationDegrees(var1.getXRot()));
+      var4.mulPose(Axis.YP.rotationDegrees(180.0F - var1.getYRot()));
       boolean var11 = var1.isInvisible();
       ItemStack var12 = var1.getItem();
       if (!var11) {
          ModelManager var13 = this.blockRenderer.getBlockModelShaper().getModelManager();
          ModelResourceLocation var14 = this.getFrameModelResourceLoc((T)var1, var12);
          var4.pushPose();
-         var4.translate(-0.5, -0.5, -0.5);
+         var4.translate(-0.5F, -0.5F, -0.5F);
          this.blockRenderer
             .getModelRenderer()
             .renderModel(var4.last(), var5.getBuffer(Sheets.solidBlockSheet()), null, var13.getModel(var14), 1.0F, 1.0F, 1.0F, var6, OverlayTexture.NO_OVERLAY);
@@ -70,20 +70,20 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
       if (!var12.isEmpty()) {
          OptionalInt var18 = var1.getFramedMapId();
          if (var11) {
-            var4.translate(0.0, 0.0, 0.5);
+            var4.translate(0.0F, 0.0F, 0.5F);
          } else {
-            var4.translate(0.0, 0.0, 0.4375);
+            var4.translate(0.0F, 0.0F, 0.4375F);
          }
 
          int var19 = var18.isPresent() ? var1.getRotation() % 4 * 2 : var1.getRotation();
-         var4.mulPose(Vector3f.ZP.rotationDegrees((float)var19 * 360.0F / 8.0F));
+         var4.mulPose(Axis.ZP.rotationDegrees((float)var19 * 360.0F / 8.0F));
          if (var18.isPresent()) {
-            var4.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+            var4.mulPose(Axis.ZP.rotationDegrees(180.0F));
             float var15 = 0.0078125F;
             var4.scale(0.0078125F, 0.0078125F, 0.0078125F);
-            var4.translate(-64.0, -64.0, 0.0);
+            var4.translate(-64.0F, -64.0F, 0.0F);
             MapItemSavedData var16 = MapItem.getSavedData(var18.getAsInt(), var1.level);
-            var4.translate(0.0, 0.0, -1.0);
+            var4.translate(0.0F, 0.0F, -1.0F);
             if (var16 != null) {
                int var17 = this.getLightVal((T)var1, 15728850, var6);
                Minecraft.getInstance().gameRenderer.getMapRenderer().render(var4, var5, var18.getAsInt(), var16, true, var17);

@@ -4,27 +4,24 @@ import com.google.gson.JsonObject;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleRecipeSerializer;
 
-public class SpecialRecipeBuilder {
-   final SimpleRecipeSerializer<?> serializer;
+public class SpecialRecipeBuilder extends CraftingRecipeBuilder {
+   final RecipeSerializer<?> serializer;
 
-   public SpecialRecipeBuilder(SimpleRecipeSerializer<?> var1) {
+   public SpecialRecipeBuilder(RecipeSerializer<?> var1) {
       super();
       this.serializer = var1;
    }
 
-   public static SpecialRecipeBuilder special(SimpleRecipeSerializer<?> var0) {
+   public static SpecialRecipeBuilder special(RecipeSerializer<? extends CraftingRecipe> var0) {
       return new SpecialRecipeBuilder(var0);
    }
 
    public void save(Consumer<FinishedRecipe> var1, final String var2) {
-      var1.accept(new FinishedRecipe() {
-         @Override
-         public void serializeRecipeData(JsonObject var1) {
-         }
-
+      var1.accept(new CraftingRecipeBuilder.CraftingResult(CraftingBookCategory.MISC) {
          @Override
          public RecipeSerializer<?> getType() {
             return SpecialRecipeBuilder.this.serializer;

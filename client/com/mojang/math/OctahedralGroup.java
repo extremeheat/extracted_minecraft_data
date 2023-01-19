@@ -12,6 +12,7 @@ import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.util.StringRepresentable;
+import org.joml.Matrix3f;
 
 public enum OctahedralGroup implements StringRepresentable {
    IDENTITY("identity", SymmetricGroup3.P123, false, false, false),
@@ -99,10 +100,7 @@ public enum OctahedralGroup implements StringRepresentable {
       this.invertY = var6;
       this.invertZ = var7;
       this.permutation = var4;
-      this.transformation = new Matrix3f();
-      this.transformation.m00 = var5 ? -1.0F : 1.0F;
-      this.transformation.m11 = var6 ? -1.0F : 1.0F;
-      this.transformation.m22 = var7 ? -1.0F : 1.0F;
+      this.transformation = new Matrix3f().scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
       this.transformation.mul(var4.transformation());
    }
 
@@ -119,7 +117,7 @@ public enum OctahedralGroup implements StringRepresentable {
    }
 
    public Matrix3f transformation() {
-      return this.transformation.copy();
+      return new Matrix3f(this.transformation);
    }
 
    @Override
@@ -135,14 +133,15 @@ public enum OctahedralGroup implements StringRepresentable {
    public Direction rotate(Direction var1) {
       if (this.rotatedDirections == null) {
          this.rotatedDirections = Maps.newEnumMap(Direction.class);
+         Direction.Axis[] var2 = Direction.Axis.values();
 
-         for(Direction var5 : Direction.values()) {
-            Direction.Axis var6 = var5.getAxis();
-            Direction.AxisDirection var7 = var5.getAxisDirection();
-            Direction.Axis var8 = Direction.Axis.values()[this.permutation.permutation(var6.ordinal())];
-            Direction.AxisDirection var9 = this.inverts(var8) ? var7.opposite() : var7;
-            Direction var10 = Direction.fromAxisAndDirection(var8, var9);
-            this.rotatedDirections.put(var5, var10);
+         for(Direction var6 : Direction.values()) {
+            Direction.Axis var7 = var6.getAxis();
+            Direction.AxisDirection var8 = var6.getAxisDirection();
+            Direction.Axis var9 = var2[this.permutation.permutation(var7.ordinal())];
+            Direction.AxisDirection var10 = this.inverts(var9) ? var8.opposite() : var8;
+            Direction var11 = Direction.fromAxisAndDirection(var9, var10);
+            this.rotatedDirections.put(var6, var11);
          }
       }
 

@@ -52,33 +52,30 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    @Override
    public void init() {
       this.getSubscription(this.serverData.id);
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.addRenderableWidget(
-         new Button(
-            this.width / 2 - 100,
-            row(6),
-            200,
-            20,
-            Component.translatable("mco.configure.world.subscription.extend"),
-            var1 -> {
-               String var2 = "https://aka.ms/ExtendJavaRealms?subscriptionId="
-                  + this.serverData.remoteSubscriptionId
-                  + "&profileId="
-                  + this.minecraft.getUser().getUuid();
-               this.minecraft.keyboardHandler.setClipboard(var2);
-               Util.getPlatform().openUri(var2);
-            }
-         )
+         Button.builder(
+               Component.translatable("mco.configure.world.subscription.extend"),
+               var1 -> {
+                  String var2 = "https://aka.ms/ExtendJavaRealms?subscriptionId="
+                     + this.serverData.remoteSubscriptionId
+                     + "&profileId="
+                     + this.minecraft.getUser().getUuid();
+                  this.minecraft.keyboardHandler.setClipboard(var2);
+                  Util.getPlatform().openUri(var2);
+               }
+            )
+            .bounds(this.width / 2 - 100, row(6), 200, 20)
+            .build()
       );
       this.addRenderableWidget(
-         new Button(this.width / 2 - 100, row(12), 200, 20, CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen))
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, row(12), 200, 20).build()
       );
       if (this.serverData.expired) {
-         this.addRenderableWidget(new Button(this.width / 2 - 100, row(10), 200, 20, Component.translatable("mco.configure.world.delete.button"), var1 -> {
+         this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), var1 -> {
             MutableComponent var2 = Component.translatable("mco.configure.world.delete.question.line1");
             MutableComponent var3 = Component.translatable("mco.configure.world.delete.question.line2");
             this.minecraft.setScreen(new RealmsLongConfirmationScreen(this::deleteRealm, RealmsLongConfirmationScreen.Type.Warning, var2, var3, true));
-         }));
+         }).bounds(this.width / 2 - 100, row(10), 200, 20).build());
       }
    }
 
@@ -127,11 +124,6 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       GregorianCalendar var2 = new GregorianCalendar(TimeZone.getDefault());
       var2.setTimeInMillis(var0);
       return Component.literal(DateFormat.getDateTimeInstance().format(var2.getTime()));
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    @Override

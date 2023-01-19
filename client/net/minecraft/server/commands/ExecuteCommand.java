@@ -35,6 +35,7 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.commands.arguments.RangeArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.ResourceOrTagArgument;
 import net.minecraft.commands.arguments.ScoreHolderArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -42,6 +43,7 @@ import net.minecraft.commands.arguments.coordinates.RotationArgument;
 import net.minecraft.commands.arguments.coordinates.SwizzleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
@@ -407,7 +409,7 @@ public class ExecuteCommand {
          try {
             CompoundTag var7 = var1.getData();
             int var8 = var4 ? var6 : (var5 ? 1 : 0);
-            var2.set(var7, () -> (Tag)var3.apply(var8));
+            var2.set(var7, (Tag)var3.apply(var8));
             var1.setData(var7);
          } catch (CommandSyntaxException var9) {
          }
@@ -417,25 +419,42 @@ public class ExecuteCommand {
    private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(
       CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2, CommandBuildContext var3
    ) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
-                     Commands.literal("block")
-                        .then(
-                           Commands.argument("pos", BlockPosArgument.blockPos())
-                              .then(
-                                 addConditional(
-                                    var0,
-                                    Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
-                                    var2,
-                                    var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
-                                          .test(
-                                             new BlockInWorld(
-                                                ((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
+                        Commands.literal("block")
+                           .then(
+                              Commands.argument("pos", BlockPosArgument.blockPos())
+                                 .then(
+                                    addConditional(
+                                       var0,
+                                       Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
+                                       var2,
+                                       var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
+                                             .test(
+                                                new BlockInWorld(
+                                                   ((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), true
+                                                )
                                              )
-                                          )
+                                    )
                                  )
-                              )
-                        )
-                  ))
+                           )
+                     ))
+                     .then(
+                        Commands.literal("biome")
+                           .then(
+                              Commands.argument("pos", BlockPosArgument.blockPos())
+                                 .then(
+                                    addConditional(
+                                       var0,
+                                       Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)),
+                                       var2,
+                                       var0x -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)
+                                             .test(
+                                                ((CommandSourceStack)var0x.getSource()).getLevel().getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos"))
+                                             )
+                                    )
+                                 )
+                           )
+                     ))
                   .then(
                      Commands.literal("score")
                         .then(

@@ -58,12 +58,8 @@ public class Explosion {
    private final ObjectArrayList<BlockPos> toBlow = new ObjectArrayList();
    private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
-   public Explosion(Level var1, @Nullable Entity var2, double var3, double var5, double var7, float var9) {
-      this(var1, var2, var3, var5, var7, var9, false, Explosion.BlockInteraction.DESTROY);
-   }
-
    public Explosion(Level var1, @Nullable Entity var2, double var3, double var5, double var7, float var9, List<BlockPos> var10) {
-      this(var1, var2, var3, var5, var7, var9, false, Explosion.BlockInteraction.DESTROY, var10);
+      this(var1, var2, var3, var5, var7, var9, false, Explosion.BlockInteraction.DESTROY_WITH_DECAY, var10);
    }
 
    public Explosion(
@@ -255,7 +251,7 @@ public class Explosion {
             );
       }
 
-      boolean var2 = this.blockInteraction != Explosion.BlockInteraction.NONE;
+      boolean var2 = this.interactsWithBlocks();
       if (var1) {
          if (!(this.radius < 2.0F) && var2) {
             this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, this.x, this.y, this.z, 1.0, 0.0, 0.0);
@@ -266,7 +262,7 @@ public class Explosion {
 
       if (var2) {
          ObjectArrayList var3 = new ObjectArrayList();
-         boolean var4 = this.getSourceMob() instanceof Player;
+         boolean var4 = this.getIndirectSourceEntity() instanceof Player;
          Util.shuffle(this.toBlow, this.level.random);
          ObjectListIterator var5 = this.toBlow.iterator();
 
@@ -287,7 +283,7 @@ public class Explosion {
                         .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                         .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var17)
                         .withOptionalParameter(LootContextParams.THIS_ENTITY, this.source);
-                     if (this.blockInteraction == Explosion.BlockInteraction.DESTROY) {
+                     if (this.blockInteraction == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
                         var12.withParameter(LootContextParams.EXPLOSION_RADIUS, this.radius);
                      }
 
@@ -324,6 +320,10 @@ public class Explosion {
       }
    }
 
+   public boolean interactsWithBlocks() {
+      return this.blockInteraction != Explosion.BlockInteraction.KEEP;
+   }
+
    private static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> var0, ItemStack var1, BlockPos var2) {
       int var3 = var0.size();
 
@@ -350,24 +350,38 @@ public class Explosion {
       return this.hitPlayers;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
-   public LivingEntity getSourceMob() {
+   public LivingEntity getIndirectSourceEntity() {
       if (this.source == null) {
          return null;
-      } else if (this.source instanceof PrimedTnt) {
-         return ((PrimedTnt)this.source).getOwner();
-      } else if (this.source instanceof LivingEntity) {
-         return (LivingEntity)this.source;
       } else {
-         if (this.source instanceof Projectile) {
-            Entity var1 = ((Projectile)this.source).getOwner();
-            if (var1 instanceof LivingEntity) {
-               return (LivingEntity)var1;
+         Entity var2 = this.source;
+         if (var2 instanceof PrimedTnt var4) {
+            return var4.getOwner();
+         } else {
+            var2 = this.source;
+            if (var2 instanceof LivingEntity) {
+               return (LivingEntity)var2;
+            } else {
+               var2 = this.source;
+               if (var2 instanceof Projectile var1) {
+                  var2 = var1.getOwner();
+                  if (var2 instanceof LivingEntity) {
+                     return (LivingEntity)var2;
+                  }
+               }
+
+               return null;
             }
          }
-
-         return null;
       }
+   }
+
+   @Nullable
+   public Entity getDirectSourceEntity() {
+      return this.source;
    }
 
    public void clearToBlow() {
@@ -379,9 +393,9 @@ public class Explosion {
    }
 
    public static enum BlockInteraction {
-      NONE,
-      BREAK,
-      DESTROY;
+      KEEP,
+      DESTROY,
+      DESTROY_WITH_DECAY;
 
       private BlockInteraction() {
       }

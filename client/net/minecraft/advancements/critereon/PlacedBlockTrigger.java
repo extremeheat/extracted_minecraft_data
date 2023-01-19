@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -43,7 +43,7 @@ public class PlacedBlockTrigger extends SimpleCriterionTrigger<PlacedBlockTrigge
    private static Block deserializeBlock(JsonObject var0) {
       if (var0.has("block")) {
          ResourceLocation var1 = new ResourceLocation(GsonHelper.getAsString(var0, "block"));
-         return Registry.BLOCK.getOptional(var1).orElseThrow(() -> new JsonSyntaxException("Unknown block type '" + var1 + "'"));
+         return BuiltInRegistries.BLOCK.getOptional(var1).orElseThrow(() -> new JsonSyntaxException("Unknown block type '" + var1 + "'"));
       } else {
          return null;
       }
@@ -91,7 +91,7 @@ public class PlacedBlockTrigger extends SimpleCriterionTrigger<PlacedBlockTrigge
       public JsonObject serializeToJson(SerializationContext var1) {
          JsonObject var2 = super.serializeToJson(var1);
          if (this.block != null) {
-            var2.addProperty("block", Registry.BLOCK.getKey(this.block).toString());
+            var2.addProperty("block", BuiltInRegistries.BLOCK.getKey(this.block).toString());
          }
 
          var2.add("state", this.state.serializeToJson());

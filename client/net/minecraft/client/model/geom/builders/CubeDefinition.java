@@ -1,8 +1,8 @@
 package net.minecraft.client.model.geom.builders;
 
-import com.mojang.math.Vector3f;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.geom.ModelPart;
+import org.joml.Vector3f;
 
 public final class CubeDefinition {
    @Nullable

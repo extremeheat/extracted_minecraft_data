@@ -87,12 +87,12 @@ public class AdvancementTab extends GuiComponent {
       }
 
       var1.pushPose();
-      var1.translate(0.0, 0.0, 950.0);
+      var1.translate(0.0F, 0.0F, 950.0F);
       RenderSystem.enableDepthTest();
       RenderSystem.colorMask(false, false, false, false);
       fill(var1, 4680, 2260, -4680, -2260, -16777216);
       RenderSystem.colorMask(true, true, true, true);
-      var1.translate(0.0, 0.0, -950.0);
+      var1.translate(0.0F, 0.0F, -950.0F);
       RenderSystem.depthFunc(518);
       fill(var1, 234, 113, 0, 0, -16777216);
       RenderSystem.depthFunc(515);
@@ -119,7 +119,7 @@ public class AdvancementTab extends GuiComponent {
       this.root.drawConnectivity(var1, var3, var4, false);
       this.root.draw(var1, var3, var4);
       RenderSystem.depthFunc(518);
-      var1.translate(0.0, 0.0, -950.0);
+      var1.translate(0.0F, 0.0F, -950.0F);
       RenderSystem.colorMask(false, false, false, false);
       fill(var1, 4680, 2260, -4680, -2260, -16777216);
       RenderSystem.colorMask(true, true, true, true);
@@ -129,7 +129,7 @@ public class AdvancementTab extends GuiComponent {
 
    public void drawTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {
       var1.pushPose();
-      var1.translate(0.0, 0.0, -200.0);
+      var1.translate(0.0F, 0.0F, -200.0F);
       fill(var1, 0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
       boolean var6 = false;
       int var7 = Mth.floor(this.scrollX);

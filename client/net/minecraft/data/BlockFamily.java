@@ -4,12 +4,16 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
 import org.apache.commons.lang3.StringUtils;
 
 public class BlockFamily {
    private final Block baseBlock;
    final Map<BlockFamily.Variant, Block> variants = Maps.newHashMap();
+   FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
    boolean generateModel = true;
    boolean generateRecipe = true;
    @Nullable
@@ -38,8 +42,8 @@ public class BlockFamily {
       return this.generateModel;
    }
 
-   public boolean shouldGenerateRecipe() {
-      return this.generateRecipe;
+   public boolean shouldGenerateRecipe(FeatureFlagSet var1) {
+      return this.generateRecipe && this.requiredFeatures.isSubsetOf(var1);
    }
 
    public Optional<String> getRecipeGroupPrefix() {
@@ -72,6 +76,11 @@ public class BlockFamily {
          return this;
       }
 
+      public BlockFamily.Builder mosaic(Block var1) {
+         this.family.variants.put(BlockFamily.Variant.MOSAIC, var1);
+         return this;
+      }
+
       public BlockFamily.Builder cracked(Block var1) {
          this.family.variants.put(BlockFamily.Variant.CRACKED, var1);
          return this;
@@ -87,8 +96,18 @@ public class BlockFamily {
          return this;
       }
 
+      public BlockFamily.Builder customFence(Block var1) {
+         this.family.variants.put(BlockFamily.Variant.CUSTOM_FENCE, var1);
+         return this;
+      }
+
       public BlockFamily.Builder fence(Block var1) {
          this.family.variants.put(BlockFamily.Variant.FENCE, var1);
+         return this;
+      }
+
+      public BlockFamily.Builder customFenceGate(Block var1) {
+         this.family.variants.put(BlockFamily.Variant.CUSTOM_FENCE_GATE, var1);
          return this;
       }
 
@@ -143,6 +162,11 @@ public class BlockFamily {
          return this;
       }
 
+      public BlockFamily.Builder featureLockedBehind(FeatureFlag... var1) {
+         this.family.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+         return this;
+      }
+
       public BlockFamily.Builder recipeGroupPrefix(String var1) {
          this.family.recipeGroupPrefix = var1;
          return this;
@@ -160,8 +184,11 @@ public class BlockFamily {
       CRACKED("cracked"),
       CUT("cut"),
       DOOR("door"),
+      CUSTOM_FENCE("custom_fence"),
       FENCE("fence"),
+      CUSTOM_FENCE_GATE("custom_fence_gate"),
       FENCE_GATE("fence_gate"),
+      MOSAIC("mosaic"),
       SIGN("sign"),
       SLAB("slab"),
       STAIRS("stairs"),

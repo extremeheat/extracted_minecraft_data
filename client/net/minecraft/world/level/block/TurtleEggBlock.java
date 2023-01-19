@@ -95,10 +95,12 @@ public class TurtleEggBlock extends Block {
             for(int var6 = 0; var6 < var1.getValue(EGGS); ++var6) {
                var2.levelEvent(2001, var3, Block.getId(var1));
                Turtle var7 = EntityType.TURTLE.create(var2);
-               var7.setAge(-24000);
-               var7.setHomePos(var3);
-               var7.moveTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
-               var2.addFreshEntity(var7);
+               if (var7 != null) {
+                  var7.setAge(-24000);
+                  var7.setHomePos(var3);
+                  var7.moveTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
+                  var2.addFreshEntity(var7);
+               }
             }
          }
       }

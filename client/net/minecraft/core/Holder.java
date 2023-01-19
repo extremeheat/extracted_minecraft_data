@@ -32,14 +32,10 @@ public interface Holder<T> {
 
    Holder.Kind kind();
 
-   boolean isValidInRegistry(Registry<T> var1);
+   boolean canSerializeIn(HolderOwner<T> var1);
 
    static <T> Holder<T> direct(T var0) {
       return new Holder.Direct<>((T)var0);
-   }
-
-   static <T> Holder<T> hackyErase(Holder<? extends T> var0) {
-      return var0;
    }
 
    public static record Direct<T>(T a) implements Holder<T> {
@@ -96,7 +92,7 @@ public interface Holder<T> {
       }
 
       @Override
-      public boolean isValidInRegistry(Registry<T> var1) {
+      public boolean canSerializeIn(HolderOwner<T> var1) {
          return true;
       }
 
@@ -115,7 +111,7 @@ public interface Holder<T> {
    }
 
    public static class Reference<T> implements Holder<T> {
-      private final Registry<T> registry;
+      private final HolderOwner<T> owner;
       private Set<TagKey<T>> tags = Set.of();
       private final Holder.Reference.Type type;
       @Nullable
@@ -123,26 +119,26 @@ public interface Holder<T> {
       @Nullable
       private T value;
 
-      private Reference(Holder.Reference.Type var1, Registry<T> var2, @Nullable ResourceKey<T> var3, @Nullable T var4) {
+      private Reference(Holder.Reference.Type var1, HolderOwner<T> var2, @Nullable ResourceKey<T> var3, @Nullable T var4) {
          super();
-         this.registry = var2;
+         this.owner = var2;
          this.type = var1;
          this.key = var3;
          this.value = (T)var4;
       }
 
-      public static <T> Holder.Reference<T> createStandAlone(Registry<T> var0, ResourceKey<T> var1) {
+      public static <T> Holder.Reference<T> createStandAlone(HolderOwner<T> var0, ResourceKey<T> var1) {
          return new Holder.Reference<>(Holder.Reference.Type.STAND_ALONE, var0, var1, (T)null);
       }
 
       @Deprecated
-      public static <T> Holder.Reference<T> createIntrusive(Registry<T> var0, @Nullable T var1) {
+      public static <T> Holder.Reference<T> createIntrusive(HolderOwner<T> var0, @Nullable T var1) {
          return new Holder.Reference<>(Holder.Reference.Type.INTRUSIVE, var0, null, (T)var1);
       }
 
       public ResourceKey<T> key() {
          if (this.key == null) {
-            throw new IllegalStateException("Trying to access unbound value '" + this.value + "' from registry " + this.registry);
+            throw new IllegalStateException("Trying to access unbound value '" + this.value + "' from registry " + this.owner);
          } else {
             return this.key;
          }
@@ -151,7 +147,7 @@ public interface Holder<T> {
       @Override
       public T value() {
          if (this.value == null) {
-            throw new IllegalStateException("Trying to access unbound value '" + this.key + "' from registry " + this.registry);
+            throw new IllegalStateException("Trying to access unbound value '" + this.key + "' from registry " + this.owner);
          } else {
             return this.value;
          }
@@ -178,8 +174,8 @@ public interface Holder<T> {
       }
 
       @Override
-      public boolean isValidInRegistry(Registry<T> var1) {
-         return this.registry == var1;
+      public boolean canSerializeIn(HolderOwner<T> var1) {
+         return this.owner.canSerializeIn(var1);
       }
 
       @Override
@@ -202,14 +198,19 @@ public interface Holder<T> {
          return this.key != null && this.value != null;
       }
 
-      void bind(ResourceKey<T> var1, T var2) {
+      void bindKey(ResourceKey<T> var1) {
          if (this.key != null && var1 != this.key) {
             throw new IllegalStateException("Can't change holder key: existing=" + this.key + ", new=" + var1);
-         } else if (this.type == Holder.Reference.Type.INTRUSIVE && this.value != var2) {
-            throw new IllegalStateException("Can't change holder " + var1 + " value: existing=" + this.value + ", new=" + var2);
          } else {
             this.key = var1;
-            this.value = (T)var2;
+         }
+      }
+
+      void bindValue(T var1) {
+         if (this.type == Holder.Reference.Type.INTRUSIVE && this.value != var1) {
+            throw new IllegalStateException("Can't change holder " + this.key + " value: existing=" + this.value + ", new=" + var1);
+         } else {
+            this.value = (T)var1;
          }
       }
 

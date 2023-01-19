@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
@@ -67,6 +68,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Integer> PLAY_DEAD_TICKS = register("play_dead_ticks", Codec.INT);
    public static final MemoryModuleType<Player> TEMPTING_PLAYER = register("tempting_player");
    public static final MemoryModuleType<Integer> TEMPTATION_COOLDOWN_TICKS = register("temptation_cooldown_ticks", Codec.INT);
+   public static final MemoryModuleType<Integer> GAZE_COOLDOWN_TICKS = register("gaze_cooldown_ticks", Codec.INT);
    public static final MemoryModuleType<Boolean> IS_TEMPTED = register("is_tempted", Codec.BOOL);
    public static final MemoryModuleType<Integer> LONG_JUMP_COOLDOWN_TICKS = register("long_jump_cooling_down", Codec.INT);
    public static final MemoryModuleType<Boolean> LONG_JUMP_MID_JUMP = register("long_jump_mid_jump");
@@ -128,7 +130,7 @@ public class MemoryModuleType<U> {
 
    @Override
    public String toString() {
-      return Registry.MEMORY_MODULE_TYPE.getKey(this).toString();
+      return BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(this).toString();
    }
 
    public Optional<Codec<ExpirableValue<U>>> getCodec() {
@@ -136,10 +138,10 @@ public class MemoryModuleType<U> {
    }
 
    private static <U> MemoryModuleType<U> register(String var0, Codec<U> var1) {
-      return Registry.register(Registry.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.of(var1)));
+      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.of(var1)));
    }
 
    private static <U> MemoryModuleType<U> register(String var0) {
-      return Registry.register(Registry.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.empty()));
+      return Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, new ResourceLocation(var0), new MemoryModuleType<>(Optional.empty()));
    }
 }

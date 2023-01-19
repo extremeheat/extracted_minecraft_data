@@ -1,83 +1,58 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public class StopAttackingIfTargetInvalid<E extends Mob> extends Behavior<E> {
+public class StopAttackingIfTargetInvalid {
    private static final int TIMEOUT_TO_GET_WITHIN_ATTACK_RANGE = 200;
-   private final Predicate<LivingEntity> stopAttackingWhen;
-   private final BiConsumer<E, LivingEntity> onTargetErased;
-   private final boolean canGrowTiredOfTryingToReachTarget;
-
-   public StopAttackingIfTargetInvalid(Predicate<LivingEntity> var1, BiConsumer<E, LivingEntity> var2, boolean var3) {
-      super(
-         ImmutableMap.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryStatus.REGISTERED)
-      );
-      this.stopAttackingWhen = var1;
-      this.onTargetErased = var2;
-      this.canGrowTiredOfTryingToReachTarget = var3;
-   }
-
-   public StopAttackingIfTargetInvalid(Predicate<LivingEntity> var1, BiConsumer<E, LivingEntity> var2) {
-      this(var1, var2, true);
-   }
-
-   public StopAttackingIfTargetInvalid(Predicate<LivingEntity> var1) {
-      this(var1, (var0, var1x) -> {
-      });
-   }
-
-   public StopAttackingIfTargetInvalid(BiConsumer<E, LivingEntity> var1) {
-      this(var0 -> false, var1);
-   }
 
    public StopAttackingIfTargetInvalid() {
-      this(var0 -> false, (var0, var1) -> {
-      });
+      super();
    }
 
-   protected void start(ServerLevel var1, E var2, long var3) {
-      LivingEntity var5 = this.getAttackTarget((E)var2);
-      if (!var2.canAttack(var5)) {
-         this.clearAttackTarget((E)var2);
-      } else if (this.canGrowTiredOfTryingToReachTarget && isTiredOfTryingToReachTarget(var2)) {
-         this.clearAttackTarget((E)var2);
-      } else if (this.isCurrentTargetDeadOrRemoved((E)var2)) {
-         this.clearAttackTarget((E)var2);
-      } else if (this.isCurrentTargetInDifferentLevel((E)var2)) {
-         this.clearAttackTarget((E)var2);
-      } else if (this.stopAttackingWhen.test(this.getAttackTarget((E)var2))) {
-         this.clearAttackTarget((E)var2);
-      }
+   public static <E extends Mob> BehaviorControl<E> create(BiConsumer<E, LivingEntity> var0) {
+      return create(var0x -> false, var0, true);
    }
 
-   private boolean isCurrentTargetInDifferentLevel(E var1) {
-      return this.getAttackTarget((E)var1).level != var1.level;
+   public static <E extends Mob> BehaviorControl<E> create(Predicate<LivingEntity> var0) {
+      return create(var0, (var0x, var1) -> {
+      }, true);
    }
 
-   private LivingEntity getAttackTarget(E var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+   public static <E extends Mob> BehaviorControl<E> create() {
+      return create(var0 -> false, (var0, var1) -> {
+      }, true);
    }
 
-   private static <E extends LivingEntity> boolean isTiredOfTryingToReachTarget(E var0) {
-      Optional var1 = var0.getBrain().getMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+   public static <E extends Mob> BehaviorControl<E> create(Predicate<LivingEntity> var0, BiConsumer<E, LivingEntity> var1, boolean var2) {
+      return BehaviorBuilder.create(
+         var3 -> var3.group(var3.present(MemoryModuleType.ATTACK_TARGET), var3.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
+               .apply(
+                  var3,
+                  (var4, var5) -> (var6, var7, var8) -> {
+                        LivingEntity var10 = var3.get(var4);
+                        if (var7.canAttack(var10)
+                           && (!var2 || !isTiredOfTryingToReachTarget(var7, var3.tryGet(var5)))
+                           && var10.isAlive()
+                           && var10.level == var7.level
+                           && !var0.test(var10)) {
+                           return true;
+                        } else {
+                           var1.accept(var7, var10);
+                           var4.erase();
+                           return true;
+                        }
+                     }
+               )
+      );
+   }
+
+   private static boolean isTiredOfTryingToReachTarget(LivingEntity var0, Optional<Long> var1) {
       return var1.isPresent() && var0.level.getGameTime() - var1.get() > 200L;
-   }
-
-   private boolean isCurrentTargetDeadOrRemoved(E var1) {
-      Optional var2 = var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET);
-      return var2.isPresent() && !((LivingEntity)var2.get()).isAlive();
-   }
-
-   protected void clearAttackTarget(E var1) {
-      this.onTargetErased.accept((E)var1, this.getAttackTarget((E)var1));
-      var1.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
    }
 }

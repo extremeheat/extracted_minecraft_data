@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,8 +38,6 @@ import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -215,11 +214,9 @@ public class Creeper extends Monster implements PowerableMob {
    @Override
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.FLINT_AND_STEEL)) {
-         this.level
-            .playSound(
-               var1, this.getX(), this.getY(), this.getZ(), SoundEvents.FLINTANDSTEEL_USE, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F
-            );
+      if (var3.is(ItemTags.CREEPER_IGNITERS)) {
+         SoundEvent var4 = var3.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
+         this.level.playSound(var1, this.getX(), this.getY(), this.getZ(), var4, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
          if (!this.level.isClientSide) {
             this.ignite();
             var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
@@ -233,12 +230,9 @@ public class Creeper extends Monster implements PowerableMob {
 
    private void explodeCreeper() {
       if (!this.level.isClientSide) {
-         Explosion.BlockInteraction var1 = this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
-            ? Explosion.BlockInteraction.DESTROY
-            : Explosion.BlockInteraction.NONE;
-         float var2 = this.isPowered() ? 2.0F : 1.0F;
+         float var1 = this.isPowered() ? 2.0F : 1.0F;
          this.dead = true;
-         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var2, var1);
+         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var1, Level.ExplosionInteraction.MOB);
          this.discard();
          this.spawnLingeringCloud();
       }

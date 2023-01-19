@@ -1508,17 +1508,16 @@ public class OceanMonumentPieces {
          return var1.intersects(Math.min(var6, var8), Math.min(var7, var9), Math.max(var6, var8), Math.max(var7, var9));
       }
 
-      protected boolean spawnElder(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5) {
+      protected void spawnElder(WorldGenLevel var1, BoundingBox var2, int var3, int var4, int var5) {
          BlockPos.MutableBlockPos var6 = this.getWorldPos(var3, var4, var5);
          if (var2.isInside(var6)) {
             ElderGuardian var7 = EntityType.ELDER_GUARDIAN.create(var1.getLevel());
-            var7.heal(var7.getMaxHealth());
-            var7.moveTo((double)var6.getX() + 0.5, (double)var6.getY(), (double)var6.getZ() + 0.5, 0.0F, 0.0F);
-            var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), MobSpawnType.STRUCTURE, null, null);
-            var1.addFreshEntityWithPassengers(var7);
-            return true;
-         } else {
-            return false;
+            if (var7 != null) {
+               var7.heal(var7.getMaxHealth());
+               var7.moveTo((double)var6.getX() + 0.5, (double)var6.getY(), (double)var6.getZ() + 0.5, 0.0F, 0.0F);
+               var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), MobSpawnType.STRUCTURE, null, null);
+               var1.addFreshEntityWithPassengers(var7);
+            }
          }
       }
    }

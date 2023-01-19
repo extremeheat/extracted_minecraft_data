@@ -6,17 +6,18 @@ import java.util.function.BiPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
 public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
-   Codec<BlockPredicate> CODEC = Registry.BLOCK_PREDICATE_TYPES.byNameCodec().dispatch(BlockPredicate::type, BlockPredicateType::codec);
+   Codec<BlockPredicate> CODEC = BuiltInRegistries.BLOCK_PREDICATE_TYPE.byNameCodec().dispatch(BlockPredicate::type, BlockPredicateType::codec);
    BlockPredicate ONLY_IN_AIR_PREDICATE = matchesBlocks(Blocks.AIR);
    BlockPredicate ONLY_IN_AIR_OR_WATER_PREDICATE = matchesBlocks(Blocks.AIR, Blocks.WATER);
 
@@ -112,6 +113,14 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
 
    static BlockPredicate solid() {
       return solid(Vec3i.ZERO);
+   }
+
+   static BlockPredicate noFluid() {
+      return noFluid(Vec3i.ZERO);
+   }
+
+   static BlockPredicate noFluid(Vec3i var0) {
+      return matchesFluids(var0, Fluids.EMPTY);
    }
 
    static BlockPredicate insideWorld(Vec3i var0) {

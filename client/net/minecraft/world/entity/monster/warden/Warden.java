@@ -13,6 +13,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -44,7 +45,6 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.behavior.StartAttacking;
 import net.minecraft.world.entity.ai.behavior.warden.SonicBoom;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
@@ -109,9 +109,7 @@ public class Warden extends Monster implements VibrationListener.VibrationListen
 
    public Warden(EntityType<? extends Monster> var1, Level var2) {
       super(var1, var2);
-      this.dynamicGameEventListener = new DynamicGameEventListener<>(
-         new VibrationListener(new EntityPositionSource(this, this.getEyeHeight()), 16, this, null, 0.0F, 0)
-      );
+      this.dynamicGameEventListener = new DynamicGameEventListener<>(new VibrationListener(new EntityPositionSource(this, this.getEyeHeight()), 16, this));
       this.xpReward = 5;
       this.getNavigation().setCanFloat(true);
       this.setPathfindingMalus(BlockPathTypes.UNPASSABLE_RAIL, 0.0F);
@@ -123,8 +121,8 @@ public class Warden extends Monster implements VibrationListener.VibrationListen
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket((LivingEntity)this, this.hasPose(Pose.EMERGING) ? 1 : 0);
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
+      return new ClientboundAddEntityPacket(this, this.hasPose(Pose.EMERGING) ? 1 : 0);
    }
 
    @Override
@@ -534,7 +532,8 @@ public class Warden extends Monster implements VibrationListener.VibrationListen
 
    public void setAttackTarget(LivingEntity var1) {
       this.getBrain().eraseMemory(MemoryModuleType.ROAR_TARGET);
-      StartAttacking.setAttackTarget(this, var1);
+      this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, var1);
+      this.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
       SonicBoom.setCooldown(this, 200);
    }
 
@@ -566,9 +565,7 @@ public class Warden extends Monster implements VibrationListener.VibrationListen
          && !this.isDeadOrDying()
          && !this.getBrain().hasMemoryValue(MemoryModuleType.VIBRATION_COOLDOWN)
          && !this.isDiggingOrEmerging()
-         && var1.getWorldBorder().isWithinBounds(var3)
-         && !this.isRemoved()
-         && this.level == var1) {
+         && var1.getWorldBorder().isWithinBounds(var3)) {
          Entity var7 = var5.sourceEntity();
          if (var7 instanceof LivingEntity var6 && !this.canTargetEntity((Entity)var6)) {
             return false;

@@ -48,18 +48,20 @@ public class LootTable {
       this.compositeFunction = LootItemFunctions.compose(var3);
    }
 
-   public static Consumer<ItemStack> createStackSplitter(Consumer<ItemStack> var0) {
-      return var1 -> {
-         if (var1.getCount() < var1.getMaxStackSize()) {
-            var0.accept(var1);
-         } else {
-            int var2 = var1.getCount();
+   public static Consumer<ItemStack> createStackSplitter(LootContext var0, Consumer<ItemStack> var1) {
+      return var2 -> {
+         if (var2.isItemEnabled(var0.getLevel().enabledFeatures())) {
+            if (var2.getCount() < var2.getMaxStackSize()) {
+               var1.accept(var2);
+            } else {
+               int var3 = var2.getCount();
 
-            while(var2 > 0) {
-               ItemStack var3 = var1.copy();
-               var3.setCount(Math.min(var1.getMaxStackSize(), var2));
-               var2 -= var3.getCount();
-               var0.accept(var3);
+               while(var3 > 0) {
+                  ItemStack var4 = var2.copy();
+                  var4.setCount(Math.min(var2.getMaxStackSize(), var3));
+                  var3 -= var4.getCount();
+                  var1.accept(var4);
+               }
             }
          }
       };
@@ -80,7 +82,7 @@ public class LootTable {
    }
 
    public void getRandomItems(LootContext var1, Consumer<ItemStack> var2) {
-      this.getRandomItemsRaw(var1, createStackSplitter(var2));
+      this.getRandomItemsRaw(var1, createStackSplitter(var1, var2));
    }
 
    public ObjectArrayList<ItemStack> getRandomItems(LootContext var1) {

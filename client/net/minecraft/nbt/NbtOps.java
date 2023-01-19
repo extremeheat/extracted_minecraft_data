@@ -1,9 +1,7 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.PeekingIterator;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
@@ -11,11 +9,16 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.RecordBuilder.AbstractStringBuilder;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -26,6 +29,7 @@ import javax.annotation.Nullable;
 
 public class NbtOps implements DynamicOps<Tag> {
    public static final NbtOps INSTANCE = new NbtOps();
+   private static final String WRAPPER_MARKER = "";
 
    protected NbtOps() {
       super();
@@ -69,7 +73,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<Number> getNumberValue(Tag var1) {
-      return var1 instanceof NumericTag ? DataResult.success(((NumericTag)var1).getAsNumber()) : DataResult.error("Not a number");
+      return var1 instanceof NumericTag var2 ? DataResult.success(var2.getAsNumber()) : DataResult.error("Not a number");
    }
 
    public Tag createNumeric(Number var1) {
@@ -105,67 +109,23 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<String> getStringValue(Tag var1) {
-      return var1 instanceof StringTag ? DataResult.success(var1.getAsString()) : DataResult.error("Not a string");
+      return var1 instanceof StringTag var2 ? DataResult.success(var2.getAsString()) : DataResult.error("Not a string");
    }
 
    public Tag createString(String var1) {
       return StringTag.valueOf(var1);
    }
 
-   private static CollectionTag<?> createGenericList(byte var0, byte var1) {
-      if (typesMatch(var0, var1, (byte)4)) {
-         return new LongArrayTag(new long[0]);
-      } else if (typesMatch(var0, var1, (byte)1)) {
-         return new ByteArrayTag(new byte[0]);
-      } else {
-         return (CollectionTag<?>)(typesMatch(var0, var1, (byte)3) ? new IntArrayTag(new int[0]) : new ListTag());
-      }
-   }
-
-   private static boolean typesMatch(byte var0, byte var1, byte var2) {
-      return var0 == var2 && (var1 == var2 || var1 == 0);
-   }
-
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static <T extends Tag> void fillOne(CollectionTag<T> var0, Tag var1, Tag var2) {
-      if (var1 instanceof CollectionTag var3) {
-         var3.forEach(var1x -> var0.add(var1x));
-      }
-
-      var0.add(var2);
-   }
-
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static <T extends Tag> void fillMany(CollectionTag<T> var0, Tag var1, List<Tag> var2) {
-      if (var1 instanceof CollectionTag var3) {
-         var3.forEach(var1x -> var0.add(var1x));
-      }
-
-      var2.forEach(var1x -> var0.add(var1x));
-   }
-
    public DataResult<Tag> mergeToList(Tag var1, Tag var2) {
-      if (!(var1 instanceof CollectionTag) && !(var1 instanceof EndTag)) {
-         return DataResult.error("mergeToList called with not a list: " + var1, var1);
-      } else {
-         CollectionTag var3 = createGenericList(var1 instanceof CollectionTag ? ((CollectionTag)var1).getElementType() : 0, var2.getId());
-         fillOne(var3, var1, var2);
-         return DataResult.success(var3);
-      }
+      return (DataResult<Tag>)createCollector(var1)
+         .map(var1x -> DataResult.success(var1x.accept(var2).result()))
+         .orElseGet(() -> DataResult.error("mergeToList called with not a list: " + var1, var1));
    }
 
    public DataResult<Tag> mergeToList(Tag var1, List<Tag> var2) {
-      if (!(var1 instanceof CollectionTag) && !(var1 instanceof EndTag)) {
-         return DataResult.error("mergeToList called with not a list: " + var1, var1);
-      } else {
-         CollectionTag var3 = createGenericList(
-            var1 instanceof CollectionTag ? ((CollectionTag)var1).getElementType() : 0, var2.stream().findFirst().map(Tag::getId).orElse((byte)0)
-         );
-         fillMany(var3, var1, var2);
-         return DataResult.success(var3);
-      }
+      return (DataResult<Tag>)createCollector(var1)
+         .map(var1x -> DataResult.success(var1x.acceptAll(var2).result()))
+         .orElseGet(() -> DataResult.error("mergeToList called with not a list: " + var1, var1));
    }
 
    public DataResult<Tag> mergeToMap(Tag var1, Tag var2, Tag var3) {
@@ -207,49 +167,38 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<Stream<Pair<Tag, Tag>>> getMapValues(Tag var1) {
-      if (!(var1 instanceof CompoundTag)) {
-         return DataResult.error("Not a map: " + var1);
-      } else {
-         CompoundTag var2 = (CompoundTag)var1;
-         return DataResult.success(var2.getAllKeys().stream().map(var2x -> Pair.of(this.createString(var2x), var2.get(var2x))));
-      }
+      return var1 instanceof CompoundTag var2
+         ? DataResult.success(var2.getAllKeys().stream().map(var2x -> Pair.of(this.createString(var2x), var2.get(var2x))))
+         : DataResult.error("Not a map: " + var1);
    }
 
    public DataResult<Consumer<BiConsumer<Tag, Tag>>> getMapEntries(Tag var1) {
-      if (!(var1 instanceof CompoundTag)) {
-         return DataResult.error("Not a map: " + var1);
-      } else {
-         CompoundTag var2 = (CompoundTag)var1;
-         return DataResult.success((Consumer<BiConsumer>)var2x -> var2.getAllKeys().forEach(var3 -> var2x.accept(this.createString(var3), var2.get(var3))));
-      }
+      return var1 instanceof CompoundTag var2
+         ? DataResult.success((Consumer<BiConsumer>)var2x -> var2.getAllKeys().forEach(var3 -> var2x.accept(this.createString(var3), var2.get(var3))))
+         : DataResult.error("Not a map: " + var1);
    }
 
    public DataResult<MapLike<Tag>> getMap(Tag var1) {
-      if (!(var1 instanceof CompoundTag)) {
-         return DataResult.error("Not a map: " + var1);
-      } else {
-         final CompoundTag var2 = (CompoundTag)var1;
-         return DataResult.success(new MapLike<Tag>() {
-            @Nullable
-            public Tag get(Tag var1) {
-               return var2.get(var1.getAsString());
-            }
+      return var1 instanceof CompoundTag var2 ? DataResult.success(new MapLike<Tag>() {
+         @Nullable
+         public Tag get(Tag var1) {
+            return var2.get(var1.getAsString());
+         }
 
-            @Nullable
-            public Tag get(String var1) {
-               return var2.get(var1);
-            }
+         @Nullable
+         public Tag get(String var1) {
+            return var2.get(var1);
+         }
 
-            public Stream<Pair<Tag, Tag>> entries() {
-               return var2.getAllKeys().stream().map(var2xx -> Pair.of(NbtOps.this.createString(var2xx), var2.get(var2xx)));
-            }
+         public Stream<Pair<Tag, Tag>> entries() {
+            return var2.getAllKeys().stream().map(var2xx -> Pair.of(NbtOps.this.createString(var2xx), var2.get(var2xx)));
+         }
 
-            @Override
-            public String toString() {
-               return "MapLike[" + var2 + "]";
-            }
-         });
-      }
+         @Override
+         public String toString() {
+            return "MapLike[" + var2 + "]";
+         }
+      }) : DataResult.error("Not a map: " + var1);
    }
 
    public Tag createMap(Stream<Pair<Tag, Tag>> var1) {
@@ -258,16 +207,39 @@ public class NbtOps implements DynamicOps<Tag> {
       return var2;
    }
 
+   private static Tag tryUnwrap(CompoundTag var0) {
+      if (var0.size() == 1) {
+         Tag var1 = var0.get("");
+         if (var1 != null) {
+            return var1;
+         }
+      }
+
+      return var0;
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public DataResult<Stream<Tag>> getStream(Tag var1) {
-      return var1 instanceof CollectionTag ? DataResult.success(((CollectionTag)var1).stream().map(var0 -> var0)) : DataResult.error("Not a list");
+      if (var1 instanceof ListTag var3) {
+         return var3.getElementType() == 10 ? DataResult.success(var3.stream().map(var0 -> tryUnwrap((CompoundTag)var0))) : DataResult.success(var3.stream());
+      } else {
+         return var1 instanceof CollectionTag var2 ? DataResult.success(var2.stream().map(var0 -> var0)) : DataResult.error("Not a list");
+      }
    }
 
    public DataResult<Consumer<Consumer<Tag>>> getList(Tag var1) {
-      return var1 instanceof CollectionTag var2 ? DataResult.success(var2::forEach) : DataResult.error("Not a list: " + var1);
+      if (var1 instanceof ListTag var3) {
+         return ((ListTag)var3).getElementType() == 10
+            ? DataResult.success((Consumer<Consumer>)var1x -> var3.forEach(var1xx -> var1x.accept(tryUnwrap((CompoundTag)var1xx))))
+            : DataResult.success(var3::forEach);
+      } else {
+         return var1 instanceof CollectionTag var2 ? DataResult.success(var2::forEach) : DataResult.error("Not a list: " + var1);
+      }
    }
 
    public DataResult<ByteBuffer> getByteBuffer(Tag var1) {
-      return var1 instanceof ByteArrayTag ? DataResult.success(ByteBuffer.wrap(((ByteArrayTag)var1).getAsByteArray())) : super.getByteBuffer(var1);
+      return var1 instanceof ByteArrayTag var2 ? DataResult.success(ByteBuffer.wrap(var2.getAsByteArray())) : super.getByteBuffer(var1);
    }
 
    public Tag createByteList(ByteBuffer var1) {
@@ -275,7 +247,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<IntStream> getIntStream(Tag var1) {
-      return var1 instanceof IntArrayTag ? DataResult.success(Arrays.stream(((IntArrayTag)var1).getAsIntArray())) : super.getIntStream(var1);
+      return var1 instanceof IntArrayTag var2 ? DataResult.success(Arrays.stream(var2.getAsIntArray())) : super.getIntStream(var1);
    }
 
    public Tag createIntList(IntStream var1) {
@@ -283,7 +255,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public DataResult<LongStream> getLongStream(Tag var1) {
-      return var1 instanceof LongArrayTag ? DataResult.success(Arrays.stream(((LongArrayTag)var1).getAsLongArray())) : super.getLongStream(var1);
+      return var1 instanceof LongArrayTag var2 ? DataResult.success(Arrays.stream(var2.getAsLongArray())) : super.getLongStream(var1);
    }
 
    public Tag createLongList(LongStream var1) {
@@ -291,33 +263,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public Tag createList(Stream<Tag> var1) {
-      PeekingIterator var2 = Iterators.peekingIterator(var1.iterator());
-      if (!var2.hasNext()) {
-         return new ListTag();
-      } else {
-         Tag var3 = (Tag)var2.peek();
-         if (var3 instanceof ByteTag) {
-            ArrayList var8 = Lists.newArrayList(Iterators.transform(var2, var0 -> ((ByteTag)var0).getAsByte()));
-            return new ByteArrayTag(var8);
-         } else if (var3 instanceof IntTag) {
-            ArrayList var7 = Lists.newArrayList(Iterators.transform(var2, var0 -> ((IntTag)var0).getAsInt()));
-            return new IntArrayTag(var7);
-         } else if (var3 instanceof LongTag) {
-            ArrayList var6 = Lists.newArrayList(Iterators.transform(var2, var0 -> ((LongTag)var0).getAsLong()));
-            return new LongArrayTag(var6);
-         } else {
-            ListTag var4 = new ListTag();
-
-            while(var2.hasNext()) {
-               Tag var5 = (Tag)var2.next();
-               if (!(var5 instanceof EndTag)) {
-                  var4.add(var5);
-               }
-            }
-
-            return var4;
-         }
-      }
+      return NbtOps.InitialListCollector.INSTANCE.acceptAll(var1).result();
    }
 
    public Tag remove(Tag var1, String var2) {
@@ -337,6 +283,271 @@ public class NbtOps implements DynamicOps<Tag> {
 
    public RecordBuilder<Tag> mapBuilder() {
       return new NbtOps.NbtRecordBuilder();
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private static Optional<NbtOps.ListCollector> createCollector(Tag var0) {
+      if (var0 instanceof EndTag) {
+         return Optional.of(NbtOps.InitialListCollector.INSTANCE);
+      } else {
+         if (var0 instanceof CollectionTag var1) {
+            if (var1.isEmpty()) {
+               return Optional.of(NbtOps.InitialListCollector.INSTANCE);
+            }
+
+            if (var1 instanceof ListTag var5) {
+               return switch(((ListTag)var5).getElementType()) {
+                  case 0 -> Optional.of(NbtOps.InitialListCollector.INSTANCE);
+                  case 10 -> Optional.of(new NbtOps.HeterogenousListCollector((Collection<Tag>)var5));
+                  default -> Optional.of(new NbtOps.HomogenousListCollector((ListTag)var5));
+               };
+            }
+
+            if (var1 instanceof ByteArrayTag var4) {
+               return Optional.of(new NbtOps.ByteListCollector(var4.getAsByteArray()));
+            }
+
+            if (var1 instanceof IntArrayTag var3) {
+               return Optional.of(new NbtOps.IntListCollector(var3.getAsIntArray()));
+            }
+
+            if (var1 instanceof LongArrayTag var2) {
+               return Optional.of(new NbtOps.LongListCollector(var2.getAsLongArray()));
+            }
+         }
+
+         return Optional.empty();
+      }
+   }
+
+   static class ByteListCollector implements NbtOps.ListCollector {
+      private final ByteArrayList values = new ByteArrayList();
+
+      public ByteListCollector(byte var1) {
+         super();
+         this.values.add(var1);
+      }
+
+      public ByteListCollector(byte[] var1) {
+         super();
+         this.values.addElements(0, var1);
+      }
+
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         if (var1 instanceof ByteTag var2) {
+            this.values.add(var2.getAsByte());
+            return this;
+         } else {
+            return new NbtOps.HeterogenousListCollector(this.values).accept(var1);
+         }
+      }
+
+      @Override
+      public Tag result() {
+         return new ByteArrayTag(this.values.toByteArray());
+      }
+   }
+
+   static class HeterogenousListCollector implements NbtOps.ListCollector {
+      private final ListTag result = new ListTag();
+
+      public HeterogenousListCollector() {
+         super();
+      }
+
+      public HeterogenousListCollector(Collection<Tag> var1) {
+         super();
+         this.result.addAll(var1);
+      }
+
+      public HeterogenousListCollector(IntArrayList var1) {
+         super();
+         var1.forEach(var1x -> this.result.add(wrapElement(IntTag.valueOf(var1x))));
+      }
+
+      public HeterogenousListCollector(ByteArrayList var1) {
+         super();
+         var1.forEach(var1x -> this.result.add(wrapElement(ByteTag.valueOf(var1x))));
+      }
+
+      public HeterogenousListCollector(LongArrayList var1) {
+         super();
+         var1.forEach(var1x -> this.result.add(wrapElement(LongTag.valueOf(var1x))));
+      }
+
+      private static boolean isWrapper(CompoundTag var0) {
+         return var0.size() == 1 && var0.contains("");
+      }
+
+      private static Tag wrapIfNeeded(Tag var0) {
+         if (var0 instanceof CompoundTag var1 && !isWrapper((CompoundTag)var1)) {
+            return (Tag)var1;
+         }
+
+         return wrapElement(var0);
+      }
+
+      private static CompoundTag wrapElement(Tag var0) {
+         CompoundTag var1 = new CompoundTag();
+         var1.put("", var0);
+         return var1;
+      }
+
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         this.result.add(wrapIfNeeded(var1));
+         return this;
+      }
+
+      @Override
+      public Tag result() {
+         return this.result;
+      }
+   }
+
+   static class HomogenousListCollector implements NbtOps.ListCollector {
+      private final ListTag result = new ListTag();
+
+      HomogenousListCollector(Tag var1) {
+         super();
+         this.result.add(var1);
+      }
+
+      HomogenousListCollector(ListTag var1) {
+         super();
+         this.result.addAll(var1);
+      }
+
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         if (var1.getId() != this.result.getElementType()) {
+            return new NbtOps.HeterogenousListCollector().acceptAll(this.result).accept(var1);
+         } else {
+            this.result.add(var1);
+            return this;
+         }
+      }
+
+      @Override
+      public Tag result() {
+         return this.result;
+      }
+   }
+
+   static class InitialListCollector implements NbtOps.ListCollector {
+      public static final NbtOps.InitialListCollector INSTANCE = new NbtOps.InitialListCollector();
+
+      private InitialListCollector() {
+         super();
+      }
+
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         if (var1 instanceof CompoundTag var5) {
+            return new NbtOps.HeterogenousListCollector().accept((Tag)var5);
+         } else if (var1 instanceof ByteTag var4) {
+            return new NbtOps.ByteListCollector(var4.getAsByte());
+         } else if (var1 instanceof IntTag var3) {
+            return new NbtOps.IntListCollector(var3.getAsInt());
+         } else {
+            return (NbtOps.ListCollector)(var1 instanceof LongTag var2
+               ? new NbtOps.LongListCollector(var2.getAsLong())
+               : new NbtOps.HomogenousListCollector(var1));
+         }
+      }
+
+      @Override
+      public Tag result() {
+         return new ListTag();
+      }
+   }
+
+   static class IntListCollector implements NbtOps.ListCollector {
+      private final IntArrayList values = new IntArrayList();
+
+      public IntListCollector(int var1) {
+         super();
+         this.values.add(var1);
+      }
+
+      public IntListCollector(int[] var1) {
+         super();
+         this.values.addElements(0, var1);
+      }
+
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         if (var1 instanceof IntTag var2) {
+            this.values.add(var2.getAsInt());
+            return this;
+         } else {
+            return new NbtOps.HeterogenousListCollector(this.values).accept(var1);
+         }
+      }
+
+      @Override
+      public Tag result() {
+         return new IntArrayTag(this.values.toIntArray());
+      }
+   }
+
+   interface ListCollector {
+      NbtOps.ListCollector accept(Tag var1);
+
+      default NbtOps.ListCollector acceptAll(Iterable<Tag> var1) {
+         NbtOps.ListCollector var2 = this;
+
+         for(Tag var4 : var1) {
+            var2 = var2.accept(var4);
+         }
+
+         return var2;
+      }
+
+      default NbtOps.ListCollector acceptAll(Stream<Tag> var1) {
+         return this.acceptAll(var1::iterator);
+      }
+
+      Tag result();
+   }
+
+   static class LongListCollector implements NbtOps.ListCollector {
+      private final LongArrayList values = new LongArrayList();
+
+      public LongListCollector(long var1) {
+         super();
+         this.values.add(var1);
+      }
+
+      public LongListCollector(long[] var1) {
+         super();
+         this.values.addElements(0, var1);
+      }
+
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      @Override
+      public NbtOps.ListCollector accept(Tag var1) {
+         if (var1 instanceof LongTag var2) {
+            this.values.add(var2.getAsLong());
+            return this;
+         } else {
+            return new NbtOps.HeterogenousListCollector(this.values).accept(var1);
+         }
+      }
+
+      @Override
+      public Tag result() {
+         return new LongArrayTag(this.values.toLongArray());
+      }
    }
 
    class NbtRecordBuilder extends AbstractStringBuilder<Tag, CompoundTag> {
@@ -359,13 +570,14 @@ public class NbtOps implements DynamicOps<Tag> {
          } else if (!(var2 instanceof CompoundTag)) {
             return DataResult.error("mergeToMap called with not a map: " + var2, var2);
          } else {
-            CompoundTag var3 = new CompoundTag(Maps.newHashMap(((CompoundTag)var2).entries()));
+            CompoundTag var3 = (CompoundTag)var2;
+            CompoundTag var4 = new CompoundTag(Maps.newHashMap(var3.entries()));
 
-            for(Entry var5 : var1.entries().entrySet()) {
-               var3.put((String)var5.getKey(), (Tag)var5.getValue());
+            for(Entry var6 : var1.entries().entrySet()) {
+               var4.put((String)var6.getKey(), (Tag)var6.getValue());
             }
 
-            return DataResult.success(var3);
+            return DataResult.success(var4);
          }
       }
    }

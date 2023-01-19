@@ -2,12 +2,10 @@ package net.minecraft.world.level.levelgen;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -17,8 +15,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public final class RandomState {
    final PositionalRandomFactory random;
-   private final long legacyLevelSeed;
-   private final Registry<NormalNoise.NoiseParameters> noises;
+   private final HolderGetter<NormalNoise.NoiseParameters> noises;
    private final NoiseRouter router;
    private final Climate.Sampler sampler;
    private final SurfaceSystem surfaceSystem;
@@ -27,18 +24,17 @@ public final class RandomState {
    private final Map<ResourceKey<NormalNoise.NoiseParameters>, NormalNoise> noiseIntances;
    private final Map<ResourceLocation, PositionalRandomFactory> positionalRandoms;
 
-   public static RandomState create(RegistryAccess var0, ResourceKey<NoiseGeneratorSettings> var1, long var2) {
-      return create(var0.registryOrThrow(Registry.NOISE_GENERATOR_SETTINGS_REGISTRY).getOrThrow(var1), var0.registryOrThrow(Registry.NOISE_REGISTRY), var2);
+   public static RandomState create(HolderGetter.Provider var0, ResourceKey<NoiseGeneratorSettings> var1, long var2) {
+      return create(var0.<NoiseGeneratorSettings>lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
    }
 
-   public static RandomState create(NoiseGeneratorSettings var0, Registry<NormalNoise.NoiseParameters> var1, long var2) {
+   public static RandomState create(NoiseGeneratorSettings var0, HolderGetter<NormalNoise.NoiseParameters> var1, long var2) {
       return new RandomState(var0, var1, var2);
    }
 
-   private RandomState(NoiseGeneratorSettings var1, Registry<NormalNoise.NoiseParameters> var2, final long var3) {
+   private RandomState(NoiseGeneratorSettings var1, HolderGetter<NormalNoise.NoiseParameters> var2, final long var3) {
       super();
       this.random = var1.getRandomSource().newInstance(var3).forkPositional();
-      this.legacyLevelSeed = var3;
       this.noises = var2;
       this.aquiferRandom = this.random.fromHashOf(new ResourceLocation("aquifer")).forkPositional();
       this.oreRandom = this.random.fromHashOf(new ResourceLocation("ore")).forkPositional();
@@ -62,17 +58,17 @@ public final class RandomState {
          public DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder var1) {
             Holder var2 = var1.noiseData();
             if (var5) {
-               if (Objects.equals(var2.unwrapKey(), Optional.of(Noises.TEMPERATURE))) {
+               if (var2.is(Noises.TEMPERATURE)) {
                   NormalNoise var6 = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), new NormalNoise.NoiseParameters(-7, 1.0, 1.0));
                   return new DensityFunction.NoiseHolder(var2, var6);
                }
 
-               if (Objects.equals(var2.unwrapKey(), Optional.of(Noises.VEGETATION))) {
+               if (var2.is(Noises.VEGETATION)) {
                   NormalNoise var5x = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), new NormalNoise.NoiseParameters(-7, 1.0, 1.0));
                   return new DensityFunction.NoiseHolder(var2, var5x);
                }
 
-               if (Objects.equals(var2.unwrapKey(), Optional.of(Noises.SHIFT))) {
+               if (var2.is(Noises.SHIFT)) {
                   NormalNoise var4 = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.location()), new NormalNoise.NoiseParameters(0, 0.0));
                   return new DensityFunction.NoiseHolder(var2, var4);
                }
@@ -100,13 +96,31 @@ public final class RandomState {
       }
 
       this.router = var1.noiseRouter().mapAll(new 1NoiseWiringHelper());
+      DensityFunction.Visitor var6 = new DensityFunction.Visitor() {
+         private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
+
+         // $QF: Could not properly define all variable types!
+         // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+         private DensityFunction wrapNew(DensityFunction var1) {
+            if (var1 instanceof DensityFunctions.HolderHolder var3) {
+               return var3.function().value();
+            } else {
+               return var1 instanceof DensityFunctions.Marker var2 ? var2.wrapped() : var1;
+            }
+         }
+
+         @Override
+         public DensityFunction apply(DensityFunction var1) {
+            return this.wrapped.computeIfAbsent(var1, this::wrapNew);
+         }
+      };
       this.sampler = new Climate.Sampler(
-         this.router.temperature(),
-         this.router.vegetation(),
-         this.router.continents(),
-         this.router.erosion(),
-         this.router.depth(),
-         this.router.ridges(),
+         this.router.temperature().mapAll(var6),
+         this.router.vegetation().mapAll(var6),
+         this.router.continents().mapAll(var6),
+         this.router.erosion().mapAll(var6),
+         this.router.depth().mapAll(var6),
+         this.router.ridges().mapAll(var6),
          var1.spawnTarget()
       );
    }
@@ -117,10 +131,6 @@ public final class RandomState {
 
    public PositionalRandomFactory getOrCreateRandomFactory(ResourceLocation var1) {
       return this.positionalRandoms.computeIfAbsent(var1, var2 -> this.random.fromHashOf(var1).forkPositional());
-   }
-
-   public long legacyLevelSeed() {
-      return this.legacyLevelSeed;
    }
 
    public NoiseRouter router() {

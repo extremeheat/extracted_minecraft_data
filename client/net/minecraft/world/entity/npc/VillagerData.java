@@ -2,7 +2,7 @@ package net.minecraft.world.entity.npc;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public class VillagerData {
    public static final int MIN_VILLAGER_LEVEL = 1;
@@ -10,8 +10,12 @@ public class VillagerData {
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
    public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               Registry.VILLAGER_TYPE.byNameCodec().fieldOf("type").orElseGet(() -> VillagerType.PLAINS).forGetter(var0x -> var0x.type),
-               Registry.VILLAGER_PROFESSION.byNameCodec().fieldOf("profession").orElseGet(() -> VillagerProfession.NONE).forGetter(var0x -> var0x.profession),
+               BuiltInRegistries.VILLAGER_TYPE.byNameCodec().fieldOf("type").orElseGet(() -> VillagerType.PLAINS).forGetter(var0x -> var0x.type),
+               BuiltInRegistries.VILLAGER_PROFESSION
+                  .byNameCodec()
+                  .fieldOf("profession")
+                  .orElseGet(() -> VillagerProfession.NONE)
+                  .forGetter(var0x -> var0x.profession),
                Codec.INT.fieldOf("level").orElse(1).forGetter(var0x -> var0x.level)
             )
             .apply(var0, VillagerData::new)

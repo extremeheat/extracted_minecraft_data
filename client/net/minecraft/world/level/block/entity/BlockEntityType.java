@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.BlockGetter;
@@ -53,7 +54,35 @@ public class BlockEntityType<T extends BlockEntity> {
          Blocks.WARPED_SIGN,
          Blocks.WARPED_WALL_SIGN,
          Blocks.MANGROVE_SIGN,
-         Blocks.MANGROVE_WALL_SIGN
+         Blocks.MANGROVE_WALL_SIGN,
+         Blocks.BAMBOO_SIGN,
+         Blocks.BAMBOO_WALL_SIGN
+      )
+   );
+   public static final BlockEntityType<HangingSignBlockEntity> HANGING_SIGN = register(
+      "hanging_sign",
+      BlockEntityType.Builder.of(
+         HangingSignBlockEntity::new,
+         Blocks.OAK_HANGING_SIGN,
+         Blocks.SPRUCE_HANGING_SIGN,
+         Blocks.BIRCH_HANGING_SIGN,
+         Blocks.ACACIA_HANGING_SIGN,
+         Blocks.JUNGLE_HANGING_SIGN,
+         Blocks.DARK_OAK_HANGING_SIGN,
+         Blocks.CRIMSON_HANGING_SIGN,
+         Blocks.WARPED_HANGING_SIGN,
+         Blocks.MANGROVE_HANGING_SIGN,
+         Blocks.BAMBOO_HANGING_SIGN,
+         Blocks.OAK_WALL_HANGING_SIGN,
+         Blocks.SPRUCE_WALL_HANGING_SIGN,
+         Blocks.BIRCH_WALL_HANGING_SIGN,
+         Blocks.ACACIA_WALL_HANGING_SIGN,
+         Blocks.JUNGLE_WALL_HANGING_SIGN,
+         Blocks.DARK_OAK_WALL_HANGING_SIGN,
+         Blocks.CRIMSON_WALL_HANGING_SIGN,
+         Blocks.WARPED_WALL_HANGING_SIGN,
+         Blocks.MANGROVE_WALL_HANGING_SIGN,
+         Blocks.BAMBOO_WALL_HANGING_SIGN
       )
    );
    public static final BlockEntityType<SpawnerBlockEntity> MOB_SPAWNER = register(
@@ -87,7 +116,9 @@ public class BlockEntityType<T extends BlockEntity> {
          Blocks.WITHER_SKELETON_SKULL,
          Blocks.WITHER_SKELETON_WALL_SKULL,
          Blocks.PLAYER_HEAD,
-         Blocks.PLAYER_WALL_HEAD
+         Blocks.PLAYER_WALL_HEAD,
+         Blocks.PIGLIN_HEAD,
+         Blocks.PIGLIN_WALL_HEAD
       )
    );
    public static final BlockEntityType<DaylightDetectorBlockEntity> DAYLIGHT_DETECTOR = register(
@@ -213,13 +244,16 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<SculkShriekerBlockEntity> SCULK_SHRIEKER = register(
       "sculk_shrieker", BlockEntityType.Builder.of(SculkShriekerBlockEntity::new, Blocks.SCULK_SHRIEKER)
    );
+   public static final BlockEntityType<ChiseledBookShelfBlockEntity> CHISELED_BOOKSHELF = register(
+      "chiseled_bookshelf", BlockEntityType.Builder.of(ChiseledBookShelfBlockEntity::new, Blocks.CHISELED_BOOKSHELF)
+   );
    private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
    private final Type<?> dataType;
 
    @Nullable
    public static ResourceLocation getKey(BlockEntityType<?> var0) {
-      return Registry.BLOCK_ENTITY_TYPE.getKey(var0);
+      return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var0);
    }
 
    private static <T extends BlockEntity> BlockEntityType<T> register(String var0, BlockEntityType.Builder<T> var1) {
@@ -228,7 +262,7 @@ public class BlockEntityType<T extends BlockEntity> {
       }
 
       Type var2 = Util.fetchChoiceType(References.BLOCK_ENTITY, var0);
-      return Registry.register(Registry.BLOCK_ENTITY_TYPE, var0, var1.build(var2));
+      return Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, var0, var1.build(var2));
    }
 
    public BlockEntityType(BlockEntityType.BlockEntitySupplier<? extends T> var1, Set<Block> var2, Type<?> var3) {

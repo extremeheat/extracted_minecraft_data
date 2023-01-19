@@ -21,8 +21,8 @@ import net.minecraft.commands.arguments.TemplateRotationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -72,7 +72,7 @@ public class PlaceCommand {
                      .then(
                         Commands.literal("feature")
                            .then(
-                              ((RequiredArgumentBuilder)Commands.argument("feature", ResourceKeyArgument.key(Registry.CONFIGURED_FEATURE_REGISTRY))
+                              ((RequiredArgumentBuilder)Commands.argument("feature", ResourceKeyArgument.key(Registries.CONFIGURED_FEATURE))
                                     .executes(
                                        var0x -> placeFeature(
                                              (CommandSourceStack)var0x.getSource(),
@@ -95,7 +95,7 @@ public class PlaceCommand {
                   .then(
                      Commands.literal("jigsaw")
                         .then(
-                           Commands.argument("pool", ResourceKeyArgument.key(Registry.TEMPLATE_POOL_REGISTRY))
+                           Commands.argument("pool", ResourceKeyArgument.key(Registries.TEMPLATE_POOL))
                               .then(
                                  Commands.argument("target", ResourceLocationArgument.id())
                                     .then(
@@ -128,7 +128,7 @@ public class PlaceCommand {
                .then(
                   Commands.literal("structure")
                      .then(
-                        ((RequiredArgumentBuilder)Commands.argument("structure", ResourceKeyArgument.key(Registry.STRUCTURE_REGISTRY))
+                        ((RequiredArgumentBuilder)Commands.argument("structure", ResourceKeyArgument.key(Registries.STRUCTURE))
                               .executes(
                                  var0x -> placeStructure(
                                        (CommandSourceStack)var0x.getSource(),
@@ -239,7 +239,7 @@ public class PlaceCommand {
       );
    }
 
-   public static int placeFeature(CommandSourceStack var0, Holder<ConfiguredFeature<?, ?>> var1, BlockPos var2) throws CommandSyntaxException {
+   public static int placeFeature(CommandSourceStack var0, Holder.Reference<ConfiguredFeature<?, ?>> var1, BlockPos var2) throws CommandSyntaxException {
       ServerLevel var3 = var0.getLevel();
       ConfiguredFeature var4 = (ConfiguredFeature)var1.value();
       ChunkPos var5 = new ChunkPos(var2);
@@ -247,7 +247,7 @@ public class PlaceCommand {
       if (!var4.place(var3, var3.getChunkSource().getGenerator(), var3.getRandom(), var2)) {
          throw ERROR_FEATURE_FAILED.create();
       } else {
-         String var6 = var1.unwrapKey().map(var0x -> var0x.location().toString()).orElse("[unregistered]");
+         String var6 = var1.key().location().toString();
          var0.sendSuccess(Component.translatable("commands.place.feature.success", var6, var2.getX(), var2.getY(), var2.getZ()), true);
          return 1;
       }
@@ -263,7 +263,7 @@ public class PlaceCommand {
       }
    }
 
-   public static int placeStructure(CommandSourceStack var0, Holder<Structure> var1, BlockPos var2) throws CommandSyntaxException {
+   public static int placeStructure(CommandSourceStack var0, Holder.Reference<Structure> var1, BlockPos var2) throws CommandSyntaxException {
       ServerLevel var3 = var0.getLevel();
       Structure var4 = (Structure)var1.value();
       ChunkGenerator var5 = var3.getChunkSource().getGenerator();
@@ -304,7 +304,7 @@ public class PlaceCommand {
                      var3x
                   )
             );
-         String var10 = var1.unwrapKey().map(var0x -> var0x.location().toString()).orElse("[unregistered]");
+         String var10 = var1.key().location().toString();
          var0.sendSuccess(Component.translatable("commands.place.structure.success", var10, var2.getX(), var2.getY(), var2.getZ()), true);
          return 1;
       }

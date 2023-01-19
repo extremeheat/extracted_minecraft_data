@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-public abstract class Behavior<E extends LivingEntity> {
+public abstract class Behavior<E extends LivingEntity> implements BehaviorControl<E> {
    public static final int DEFAULT_DURATION = 60;
    protected final Map<MemoryModuleType<?>, MemoryStatus> entryCondition;
    private Behavior.Status status = Behavior.Status.STOPPED;
@@ -30,10 +30,12 @@ public abstract class Behavior<E extends LivingEntity> {
       this.entryCondition = var1;
    }
 
+   @Override
    public Behavior.Status getStatus() {
       return this.status;
    }
 
+   @Override
    public final boolean tryStart(ServerLevel var1, E var2, long var3) {
       if (this.hasRequiredMemories((E)var2) && this.checkExtraStartConditions(var1, (E)var2)) {
          this.status = Behavior.Status.RUNNING;
@@ -49,6 +51,7 @@ public abstract class Behavior<E extends LivingEntity> {
    protected void start(ServerLevel var1, E var2, long var3) {
    }
 
+   @Override
    public final void tickOrStop(ServerLevel var1, E var2, long var3) {
       if (!this.timedOut(var3) && this.canStillUse(var1, (E)var2, var3)) {
          this.tick(var1, (E)var2, var3);
@@ -60,6 +63,7 @@ public abstract class Behavior<E extends LivingEntity> {
    protected void tick(ServerLevel var1, E var2, long var3) {
    }
 
+   @Override
    public final void doStop(ServerLevel var1, E var2, long var3) {
       this.status = Behavior.Status.STOPPED;
       this.stop(var1, (E)var2, var3);
@@ -81,11 +85,11 @@ public abstract class Behavior<E extends LivingEntity> {
    }
 
    @Override
-   public String toString() {
+   public String debugString() {
       return this.getClass().getSimpleName();
    }
 
-   private boolean hasRequiredMemories(E var1) {
+   protected boolean hasRequiredMemories(E var1) {
       for(Entry var3 : this.entryCondition.entrySet()) {
          MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
          MemoryStatus var5 = (MemoryStatus)var3.getValue();

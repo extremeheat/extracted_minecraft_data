@@ -1,9 +1,7 @@
 package net.minecraft.client.player;
 
 import com.google.common.collect.Lists;
-import com.mojang.brigadier.ParseResults;
 import com.mojang.logging.LogUtils;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +14,7 @@ import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.BookEditScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
+import net.minecraft.client.gui.screens.inventory.HangingSignEditScreen;
 import net.minecraft.client.gui.screens.inventory.JigsawBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.MinecartCommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
@@ -30,19 +29,10 @@ import net.minecraft.client.resources.sounds.RidingMinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.ChatMessageContent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.LastSeenMessages;
-import net.minecraft.network.chat.MessageSignature;
-import net.minecraft.network.chat.MessageSigner;
-import net.minecraft.network.chat.PreviewableCommand;
-import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -60,8 +50,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Signer;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
@@ -83,6 +71,7 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
@@ -144,7 +133,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean showDeathScreen = true;
 
    public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, boolean var6, boolean var7) {
-      super(var2, var3.getLocalGameProfile(), var1.getProfileKeyPairManager().profilePublicKey().orElse(null));
+      super(var2, var3.getLocalGameProfile());
       this.minecraft = var1;
       this.connection = var3;
       this.stats = var4;
@@ -205,6 +194,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             Entity var1 = this.getRootVehicle();
             if (var1 != this && var1.isControlledByLocalInstance()) {
                this.connection.send(new ServerboundMoveVehiclePacket(var1));
+               this.sendIsSprintingIfNeeded();
             }
          } else {
             this.sendPosition();
@@ -227,55 +217,47 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private void sendPosition() {
-      boolean var1 = this.isSprinting();
-      if (var1 != this.wasSprinting) {
+      this.sendIsSprintingIfNeeded();
+      boolean var1 = this.isShiftKeyDown();
+      if (var1 != this.wasShiftKeyDown) {
          ServerboundPlayerCommandPacket.Action var2 = var1
-            ? ServerboundPlayerCommandPacket.Action.START_SPRINTING
-            : ServerboundPlayerCommandPacket.Action.STOP_SPRINTING;
-         this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
-         this.wasSprinting = var1;
-      }
-
-      boolean var16 = this.isShiftKeyDown();
-      if (var16 != this.wasShiftKeyDown) {
-         ServerboundPlayerCommandPacket.Action var3 = var16
             ? ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY
             : ServerboundPlayerCommandPacket.Action.RELEASE_SHIFT_KEY;
-         this.connection.send(new ServerboundPlayerCommandPacket(this, var3));
-         this.wasShiftKeyDown = var16;
+         this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
+         this.wasShiftKeyDown = var1;
       }
 
       if (this.isControlledCamera()) {
-         double var17 = this.getX() - this.xLast;
-         double var5 = this.getY() - this.yLast1;
-         double var7 = this.getZ() - this.zLast;
-         double var9 = (double)(this.getYRot() - this.yRotLast);
-         double var11 = (double)(this.getXRot() - this.xRotLast);
+         double var15 = this.getX() - this.xLast;
+         double var4 = this.getY() - this.yLast1;
+         double var6 = this.getZ() - this.zLast;
+         double var8 = (double)(this.getYRot() - this.yRotLast);
+         double var10 = (double)(this.getXRot() - this.xRotLast);
          ++this.positionReminder;
-         boolean var13 = Mth.lengthSquared(var17, var5, var7) > Mth.square(2.0E-4) || this.positionReminder >= 20;
-         boolean var14 = var9 != 0.0 || var11 != 0.0;
+         boolean var12 = Mth.lengthSquared(var15, var4, var6) > Mth.square(2.0E-4) || this.positionReminder >= 20;
+         boolean var13 = var8 != 0.0 || var10 != 0.0;
          if (this.isPassenger()) {
-            Vec3 var15 = this.getDeltaMovement();
-            this.connection.send(new ServerboundMovePlayerPacket.PosRot(var15.x, -999.0, var15.z, this.getYRot(), this.getXRot(), this.onGround));
-            var13 = false;
-         } else if (var13 && var14) {
+            Vec3 var14 = this.getDeltaMovement();
+            this.connection.send(new ServerboundMovePlayerPacket.PosRot(var14.x, -999.0, var14.z, this.getYRot(), this.getXRot(), this.onGround));
+            var12 = false;
+         } else if (var12 && var13) {
             this.connection.send(new ServerboundMovePlayerPacket.PosRot(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot(), this.onGround));
-         } else if (var13) {
+         } else if (var12) {
             this.connection.send(new ServerboundMovePlayerPacket.Pos(this.getX(), this.getY(), this.getZ(), this.onGround));
-         } else if (var14) {
+         } else if (var13) {
             this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround));
          } else if (this.lastOnGround != this.onGround) {
             this.connection.send(new ServerboundMovePlayerPacket.StatusOnly(this.onGround));
          }
 
-         if (var13) {
+         if (var12) {
             this.xLast = this.getX();
             this.yLast1 = this.getY();
             this.zLast = this.getZ();
             this.positionReminder = 0;
          }
 
-         if (var14) {
+         if (var13) {
             this.yRotLast = this.getYRot();
             this.xRotLast = this.getXRot();
          }
@@ -285,91 +267,22 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
+   private void sendIsSprintingIfNeeded() {
+      boolean var1 = this.isSprinting();
+      if (var1 != this.wasSprinting) {
+         ServerboundPlayerCommandPacket.Action var2 = var1
+            ? ServerboundPlayerCommandPacket.Action.START_SPRINTING
+            : ServerboundPlayerCommandPacket.Action.STOP_SPRINTING;
+         this.connection.send(new ServerboundPlayerCommandPacket(this, var2));
+         this.wasSprinting = var1;
+      }
+   }
+
    public boolean drop(boolean var1) {
       ServerboundPlayerActionPacket.Action var2 = var1 ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
       ItemStack var3 = this.getInventory().removeFromSelected(var1);
       this.connection.send(new ServerboundPlayerActionPacket(var2, BlockPos.ZERO, Direction.DOWN));
       return !var3.isEmpty();
-   }
-
-   public void chatSigned(String var1, @Nullable Component var2) {
-      this.sendChat(var1, var2);
-   }
-
-   public boolean commandHasSignableArguments(String var1) {
-      ParseResults var2 = this.connection.getCommands().parse(var1, this.connection.getSuggestionsProvider());
-      return ArgumentSignatures.hasSignableArguments(PreviewableCommand.of(var2));
-   }
-
-   public boolean commandUnsigned(String var1) {
-      if (!this.commandHasSignableArguments(var1)) {
-         LastSeenMessages.Update var2 = this.connection.generateMessageAcknowledgements();
-         this.connection.send(new ServerboundChatCommandPacket(var1, Instant.now(), 0L, ArgumentSignatures.EMPTY, false, var2));
-         return true;
-      } else {
-         return false;
-      }
-   }
-
-   public void commandSigned(String var1, @Nullable Component var2) {
-      this.sendCommand(var1, var2);
-   }
-
-   private void sendChat(String var1, @Nullable Component var2) {
-      ChatMessageContent var3 = this.buildSignedContent(var1, var2);
-      MessageSigner var4 = this.createMessageSigner();
-      LastSeenMessages.Update var5 = this.connection.generateMessageAcknowledgements();
-      MessageSignature var6 = this.signMessage(var4, var3, var5.lastSeen());
-      this.connection.send(new ServerboundChatPacket(var3.plain(), var4.timeStamp(), var4.salt(), var6, var3.isDecorated(), var5));
-   }
-
-   private MessageSignature signMessage(MessageSigner var1, ChatMessageContent var2, LastSeenMessages var3) {
-      try {
-         Signer var4 = this.minecraft.getProfileKeyPairManager().signer();
-         if (var4 != null) {
-            return this.connection.signedMessageEncoder().pack(var4, var1, var2, var3).signature();
-         }
-      } catch (Exception var5) {
-         LOGGER.error("Failed to sign chat message: '{}'", var2.plain(), var5);
-      }
-
-      return MessageSignature.EMPTY;
-   }
-
-   private void sendCommand(String var1, @Nullable Component var2) {
-      ParseResults var3 = this.connection.getCommands().parse(var1, this.connection.getSuggestionsProvider());
-      MessageSigner var4 = this.createMessageSigner();
-      LastSeenMessages.Update var5 = this.connection.generateMessageAcknowledgements();
-      ArgumentSignatures var6 = this.signCommandArguments(var4, var3, var2, var5.lastSeen());
-      this.connection.send(new ServerboundChatCommandPacket(var1, var4.timeStamp(), var4.salt(), var6, var2 != null, var5));
-   }
-
-   private ArgumentSignatures signCommandArguments(
-      MessageSigner var1, ParseResults<SharedSuggestionProvider> var2, @Nullable Component var3, LastSeenMessages var4
-   ) {
-      Signer var5 = this.minecraft.getProfileKeyPairManager().signer();
-      if (var5 == null) {
-         return ArgumentSignatures.EMPTY;
-      } else {
-         try {
-            return ArgumentSignatures.signCommand(PreviewableCommand.of(var2), (var5x, var6) -> {
-               ChatMessageContent var7x = this.buildSignedContent(var6, var3);
-               return this.connection.signedMessageEncoder().pack(var5, var1, var7x, var4).signature();
-            });
-         } catch (Exception var7) {
-            LOGGER.error("Failed to sign command arguments", var7);
-            return ArgumentSignatures.EMPTY;
-         }
-      }
-   }
-
-   private ChatMessageContent buildSignedContent(String var1, @Nullable Component var2) {
-      String var3 = StringUtil.trimChatMessage(var1);
-      return var2 != null ? new ChatMessageContent(var3, var2) : new ChatMessageContent(var3);
-   }
-
-   private MessageSigner createMessageSigner() {
-      return MessageSigner.create(this.getUUID());
    }
 
    @Override
@@ -625,9 +538,14 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
    }
 
-   public boolean isRidingJumpable() {
-      Entity var1 = this.getVehicle();
-      return this.isPassenger() && var1 instanceof PlayerRideableJumping && ((PlayerRideableJumping)var1).canJump();
+   @Nullable
+   public PlayerRideableJumping jumpableVehicle() {
+      Entity var2 = this.getVehicle();
+      if (var2 instanceof PlayerRideableJumping var1 && ((PlayerRideableJumping)var1).canJump(this)) {
+         return (PlayerRideableJumping)var1;
+      }
+
+      return null;
    }
 
    public float getJumpRidingScale() {
@@ -635,8 +553,17 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    @Override
+   public boolean isTextFilteringEnabled() {
+      return this.minecraft.isTextFilteringEnabled();
+   }
+
+   @Override
    public void openTextEdit(SignBlockEntity var1) {
-      this.minecraft.setScreen(new SignEditScreen(var1, this.minecraft.isTextFilteringEnabled()));
+      if (var1 instanceof HangingSignBlockEntity var2) {
+         this.minecraft.setScreen(new HangingSignEditScreen((SignBlockEntity)var2, this.minecraft.isTextFilteringEnabled()));
+      } else {
+         this.minecraft.setScreen(new SignEditScreen(var1, this.minecraft.isTextFilteringEnabled()));
+      }
    }
 
    @Override
@@ -768,8 +695,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var6 = (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
-      if ((this.onGround || this.isUnderWater())
+      boolean var6 = this.hasEnoughFoodToStartSprinting();
+      if ((this.onGround || this.isUnderWater() || this.isPassenger() && this.getVehicle().isOnGround())
          && !var2
          && !var3
          && this.hasEnoughImpulseToStartSprinting()
@@ -861,8 +788,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if (this.isRidingJumpable()) {
-         PlayerRideableJumping var13 = (PlayerRideableJumping)this.getVehicle();
+      PlayerRideableJumping var13 = this.jumpableVehicle();
+      if (var13 != null && var13.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
             ++this.jumpRidingTicks;
             if (this.jumpRidingTicks == 0) {
@@ -1120,6 +1047,10 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean hasEnoughImpulseToStartSprinting() {
       double var1 = 0.8;
       return this.isUnderWater() ? this.input.hasForwardImpulse() : (double)this.input.forwardImpulse >= 0.8;
+   }
+
+   private boolean hasEnoughFoodToStartSprinting() {
+      return this.isPassenger() || (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
    }
 
    public float getWaterVision() {

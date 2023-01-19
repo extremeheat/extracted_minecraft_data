@@ -25,11 +25,11 @@ public class CompoundTag implements Tag {
       Tag var1 = (Tag)var0.convert(NbtOps.INSTANCE).getValue();
       return var1 instanceof CompoundTag ? DataResult.success((CompoundTag)var1) : DataResult.error("Not a compound tag: " + var1);
    }, var0 -> new Dynamic(NbtOps.INSTANCE, var0));
-   private static final int SELF_SIZE_IN_BITS = 384;
-   private static final int MAP_ENTRY_SIZE_IN_BITS = 256;
+   private static final int SELF_SIZE_IN_BYTES = 48;
+   private static final int MAP_ENTRY_SIZE_IN_BYTES = 32;
    public static final TagType<CompoundTag> TYPE = new TagType.VariableSize<CompoundTag>() {
       public CompoundTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBits(384L);
+         var3.accountBytes(48L);
          if (var2 > 512) {
             throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
          } else {
@@ -38,10 +38,10 @@ public class CompoundTag implements Tag {
             byte var5;
             while((var5 = CompoundTag.readNamedTagType(var1, var3)) != false) {
                String var6 = CompoundTag.readNamedTagName(var1, var3);
-               var3.accountBits((long)(224 + 16 * var6.length()));
+               var3.accountBytes((long)(28 + 2 * var6.length()));
                Tag var7 = CompoundTag.readNamedTagData(TagTypes.getType(var5), var6, var1, var2 + 1, var3);
-               if (var4.put(var6, var7) != null) {
-                  var3.accountBits(288L);
+               if (var4.put(var6, var7) == null) {
+                  var3.accountBytes(36L);
                }
             }
 
@@ -135,6 +135,19 @@ public class CompoundTag implements Tag {
       }
 
       var1.writeByte(0);
+   }
+
+   @Override
+   public int sizeInBytes() {
+      int var1 = 48;
+
+      for(Entry var3 : this.tags.entrySet()) {
+         var1 += 28 + 2 * ((String)var3.getKey()).length();
+         var1 += 36;
+         var1 += ((Tag)var3.getValue()).sizeInBytes();
+      }
+
+      return var1;
    }
 
    public Set<String> getAllKeys() {

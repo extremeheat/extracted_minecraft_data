@@ -143,7 +143,7 @@ public class ToastComponent extends GuiComponent {
 
          PoseStack var5 = RenderSystem.getModelViewStack();
          var5.pushPose();
-         var5.translate((double)((float)var1 - (float)this.toast.width() * this.getVisibility(var3)), (double)(this.index * 32), 800.0);
+         var5.translate((float)var1 - (float)this.toast.width() * this.getVisibility(var3), (float)(this.index * 32), 800.0F);
          RenderSystem.applyModelViewMatrix();
          Toast.Visibility var6 = this.toast.render(var2, ToastComponent.this, var3 - this.visibleTime);
          var5.popPose();

@@ -2,7 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -32,6 +32,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -67,7 +68,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 
-public class Cat extends TamableAnimal {
+public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
    public static final double TEMPT_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
@@ -91,7 +92,7 @@ public class Cat extends TamableAnimal {
    }
 
    public ResourceLocation getResourceLocation() {
-      return this.getCatVariant().texture();
+      return this.getVariant().texture();
    }
 
    @Override
@@ -113,11 +114,11 @@ public class Cat extends TamableAnimal {
       this.targetSelector.addGoal(1, new NonTameRandomTargetGoal<>(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   public CatVariant getCatVariant() {
+   public CatVariant getVariant() {
       return this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setCatVariant(CatVariant var1) {
+   public void setVariant(CatVariant var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
    }
 
@@ -148,7 +149,7 @@ public class Cat extends TamableAnimal {
    @Override
    protected void defineSynchedData() {
       super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT_ID, CatVariant.BLACK);
+      this.entityData.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.BLACK));
       this.entityData.define(IS_LYING, false);
       this.entityData.define(RELAX_STATE_ONE, false);
       this.entityData.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
@@ -157,16 +158,16 @@ public class Cat extends TamableAnimal {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", Registry.CAT_VARIANT.getKey(this.getCatVariant()).toString());
+      var1.putString("variant", BuiltInRegistries.CAT_VARIANT.getKey(this.getVariant()).toString());
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      CatVariant var2 = Registry.CAT_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
+      CatVariant var2 = BuiltInRegistries.CAT_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
       if (var2 != null) {
-         this.setCatVariant(var2);
+         this.setVariant(var2);
       }
 
       if (var1.contains("CollarColor", 99)) {
@@ -306,13 +307,16 @@ public class Cat extends TamableAnimal {
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Nullable
    public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cat var3 = EntityType.CAT.create(var1);
-      if (var2 instanceof Cat) {
+      if (var3 != null && var2 instanceof Cat var4) {
          if (this.random.nextBoolean()) {
-            var3.setCatVariant(this.getCatVariant());
+            var3.setVariant(this.getVariant());
          } else {
-            var3.setCatVariant(((Cat)var2).getCatVariant());
+            var3.setVariant(var4.getVariant());
          }
 
          if (this.isTame()) {
@@ -321,7 +325,7 @@ public class Cat extends TamableAnimal {
             if (this.random.nextBoolean()) {
                var3.setCollarColor(this.getCollarColor());
             } else {
-               var3.setCollarColor(((Cat)var2).getCollarColor());
+               var3.setCollarColor(var4.getCollarColor());
             }
          }
       }
@@ -349,10 +353,10 @@ public class Cat extends TamableAnimal {
       var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       boolean var6 = var1.getMoonBrightness() > 0.9F;
       TagKey var7 = var6 ? CatVariantTags.FULL_MOON_SPAWNS : CatVariantTags.DEFAULT_SPAWNS;
-      Registry.CAT_VARIANT.getTag(var7).flatMap(var1x -> var1x.getRandomElement(var1.getRandom())).ifPresent(var1x -> this.setCatVariant(var1x.value()));
+      BuiltInRegistries.CAT_VARIANT.getTag(var7).flatMap(var1x -> var1x.getRandomElement(var1.getRandom())).ifPresent(var1x -> this.setVariant(var1x.value()));
       ServerLevel var8 = var1.getLevel();
       if (var8.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
-         this.setCatVariant(CatVariant.ALL_BLACK);
+         this.setVariant(BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.ALL_BLACK));
          this.setPersistenceRequired();
       }
 
@@ -559,7 +563,7 @@ public class Cat extends TamableAnimal {
       private void giveMorningGift() {
          RandomSource var1 = this.cat.getRandom();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
-         var2.set(this.cat.blockPosition());
+         var2.set(this.cat.isLeashed() ? this.cat.getLeashHolder().blockPosition() : this.cat.blockPosition());
          this.cat
             .randomTeleport(
                (double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false

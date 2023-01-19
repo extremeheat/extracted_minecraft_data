@@ -80,7 +80,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
    }
 
    protected void tick(ServerLevel var1, E var2, long var3) {
-      if (this.ramCandidate.isPresent()) {
+      if (!this.ramCandidate.isEmpty()) {
          var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(this.ramCandidate.get().getStartPosition(), this.walkSpeed, 0));
          var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(this.ramCandidate.get().getTarget(), true));
          boolean var5 = !this.ramCandidate.get().getTarget().blockPosition().equals(this.ramCandidate.get().getTargetPosition());
@@ -92,13 +92,13 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
             BlockPos var6 = var2.blockPosition();
             if (var6.equals(this.ramCandidate.get().getStartPosition())) {
                var1.broadcastEntityEvent(var2, (byte)58);
-               if (!this.reachedRamPositionTimestamp.isPresent()) {
+               if (this.reachedRamPositionTimestamp.isEmpty()) {
                   this.reachedRamPositionTimestamp = Optional.of(var3);
                }
 
                if (var3 - this.reachedRamPositionTimestamp.get() >= (long)this.ramPrepareTime) {
                   var2.getBrain().setMemory(MemoryModuleType.RAM_TARGET, this.getEdgeOfBlock(var6, this.ramCandidate.get().getTargetPosition()));
-                  var1.playSound(null, var2, this.getPrepareRamSound.apply((E)var2), SoundSource.HOSTILE, 1.0F, var2.getVoicePitch());
+                  var1.playSound(null, var2, this.getPrepareRamSound.apply((E)var2), SoundSource.NEUTRAL, 1.0F, var2.getVoicePitch());
                   this.ramCandidate = Optional.empty();
                }
             }

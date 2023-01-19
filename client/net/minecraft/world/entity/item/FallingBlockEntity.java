@@ -6,9 +6,11 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -232,10 +234,10 @@ public class FallingBlockEntity extends Entity {
             DamageSource var6;
             if (this.blockState.getBlock() instanceof Fallable var7) {
                var5 = var7.getHurtsEntitySelector();
-               var6 = var7.getFallDamageSource();
+               var6 = var7.getFallDamageSource(this);
             } else {
                var5 = EntitySelector.NO_SPECTATORS;
-               var6 = DamageSource.FALLING_BLOCK;
+               var6 = DamageSource.fallingBlock(this);
             }
 
             float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
@@ -270,7 +272,7 @@ public class FallingBlockEntity extends Entity {
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.blockState = NbtUtils.readBlockState(var1.getCompound("BlockState"));
+      this.blockState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("BlockState"));
       this.time = var1.getInt("Time");
       if (var1.contains("HurtEntities", 99)) {
          this.hurtEntities = var1.getBoolean("HurtEntities");
@@ -320,7 +322,7 @@ public class FallingBlockEntity extends Entity {
    }
 
    @Override
-   public Packet<?> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
       return new ClientboundAddEntityPacket(this, Block.getId(this.getBlockState()));
    }
 

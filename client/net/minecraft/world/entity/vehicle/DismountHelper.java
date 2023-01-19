@@ -100,7 +100,12 @@ public class DismountHelper {
                }
             }
 
-            return !var1.getWorldBorder().isWithinBounds(var7) ? null : var6;
+            if (var0 != EntityType.PLAYER
+               || !var1.getBlockState(var2).is(BlockTags.INVALID_SPAWN_INSIDE) && !var1.getBlockState(var2.above()).is(BlockTags.INVALID_SPAWN_INSIDE)) {
+               return !var1.getWorldBorder().isWithinBounds(var7) ? null : var6;
+            } else {
+               return null;
+            }
          }
       }
    }

@@ -1,10 +1,12 @@
 package net.minecraft.client.resources.sounds;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 
 public class SimpleSoundInstance extends AbstractSoundInstance {
    public SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, BlockPos var6) {
@@ -13,6 +15,10 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
 
    public static SimpleSoundInstance forUI(SoundEvent var0, float var1) {
       return forUI(var0, var1, 0.25F);
+   }
+
+   public static SimpleSoundInstance forUI(Holder<SoundEvent> var0, float var1) {
+      return forUI((SoundEvent)var0.value(), var1);
    }
 
    public static SimpleSoundInstance forUI(SoundEvent var0, float var1, float var2) {
@@ -49,9 +55,9 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       );
    }
 
-   public static SimpleSoundInstance forRecord(SoundEvent var0, double var1, double var3, double var5) {
+   public static SimpleSoundInstance forRecord(SoundEvent var0, Vec3 var1) {
       return new SimpleSoundInstance(
-         var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1, var3, var5
+         var0, SoundSource.RECORDS, 4.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.LINEAR, var1.x, var1.y, var1.z
       );
    }
 

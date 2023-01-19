@@ -619,7 +619,7 @@ public class ChunkRenderDispatcher {
                      }
 
                      var11.pushPose();
-                     var11.translate((double)(var16.getX() & 15), (double)(var16.getY() & 15), (double)(var16.getZ() & 15));
+                     var11.translate((float)(var16.getX() & 15), (float)(var16.getY() & 15), (float)(var16.getZ() & 15));
                      var14.renderBatched(var17, var16, var10, var11, var28, true, var13);
                      var11.popPose();
                   }

@@ -21,6 +21,6 @@ public class MushroomCowRenderer extends MobRenderer<MushroomCow, CowModel<Mushr
    }
 
    public ResourceLocation getTextureLocation(MushroomCow var1) {
-      return TEXTURES.get(var1.getMushroomType());
+      return TEXTURES.get(var1.getVariant());
    }
 }

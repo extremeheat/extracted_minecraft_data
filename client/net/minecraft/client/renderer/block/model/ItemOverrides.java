@@ -5,14 +5,13 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,38 +29,38 @@ public class ItemOverrides {
       this.properties = new ResourceLocation[0];
    }
 
-   public ItemOverrides(ModelBakery var1, BlockModel var2, Function<ResourceLocation, UnbakedModel> var3, List<ItemOverride> var4) {
+   public ItemOverrides(ModelBaker var1, BlockModel var2, List<ItemOverride> var3) {
       super();
-      this.properties = var4.stream()
+      this.properties = var3.stream()
          .flatMap(ItemOverride::getPredicates)
          .map(ItemOverride.Predicate::getProperty)
          .distinct()
          .toArray(var0 -> new ResourceLocation[var0]);
-      Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
+      Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
 
-      for(int var6 = 0; var6 < this.properties.length; ++var6) {
-         var5.put(this.properties[var6], var6);
+      for(int var5 = 0; var5 < this.properties.length; ++var5) {
+         var4.put(this.properties[var5], var5);
       }
 
-      ArrayList var11 = Lists.newArrayList();
+      ArrayList var10 = Lists.newArrayList();
 
-      for(int var7 = var4.size() - 1; var7 >= 0; --var7) {
-         ItemOverride var8 = (ItemOverride)var4.get(var7);
-         BakedModel var9 = this.bakeModel(var1, var2, var3, var8);
-         ItemOverrides.PropertyMatcher[] var10 = var8.getPredicates().map(var1x -> {
-            int var2x = var5.getInt(var1x.getProperty());
+      for(int var6 = var3.size() - 1; var6 >= 0; --var6) {
+         ItemOverride var7 = (ItemOverride)var3.get(var6);
+         BakedModel var8 = this.bakeModel(var1, var2, var7);
+         ItemOverrides.PropertyMatcher[] var9 = var7.getPredicates().map(var1x -> {
+            int var2x = var4.getInt(var1x.getProperty());
             return new ItemOverrides.PropertyMatcher(var2x, var1x.getValue());
          }).toArray(var0 -> new ItemOverrides.PropertyMatcher[var0]);
-         var11.add(new ItemOverrides.BakedOverride(var10, var9));
+         var10.add(new ItemOverrides.BakedOverride(var9, var8));
       }
 
-      this.overrides = var11.toArray(new ItemOverrides.BakedOverride[0]);
+      this.overrides = var10.toArray(new ItemOverrides.BakedOverride[0]);
    }
 
    @Nullable
-   private BakedModel bakeModel(ModelBakery var1, BlockModel var2, Function<ResourceLocation, UnbakedModel> var3, ItemOverride var4) {
-      UnbakedModel var5 = (UnbakedModel)var3.apply(var4.getModel());
-      return Objects.equals(var5, var2) ? null : var1.bake(var4.getModel(), BlockModelRotation.X0_Y0);
+   private BakedModel bakeModel(ModelBaker var1, BlockModel var2, ItemOverride var3) {
+      UnbakedModel var4 = var1.getModel(var3.getModel());
+      return Objects.equals(var4, var2) ? null : var1.bake(var3.getModel(), BlockModelRotation.X0_Y0);
    }
 
    @Nullable

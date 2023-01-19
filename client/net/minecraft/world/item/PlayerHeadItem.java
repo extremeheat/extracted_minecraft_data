@@ -1,6 +1,7 @@
 package net.minecraft.world.item;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
@@ -12,7 +13,7 @@ public class PlayerHeadItem extends StandingAndWallBlockItem {
    public static final String TAG_SKULL_OWNER = "SkullOwner";
 
    public PlayerHeadItem(Block var1, Block var2, Item.Properties var3) {
-      super(var1, var2, var3);
+      super(var1, var2, var3, Direction.DOWN);
    }
 
    @Override

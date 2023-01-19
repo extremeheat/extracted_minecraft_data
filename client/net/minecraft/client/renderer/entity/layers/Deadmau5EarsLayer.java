@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,12 +27,12 @@ public class Deadmau5EarsLayer extends RenderLayer<AbstractClientPlayer, PlayerM
             float var14 = Mth.lerp(var7, var4.yRotO, var4.getYRot()) - Mth.lerp(var7, var4.yBodyRotO, var4.yBodyRot);
             float var15 = Mth.lerp(var7, var4.xRotO, var4.getXRot());
             var1.pushPose();
-            var1.mulPose(Vector3f.YP.rotationDegrees(var14));
-            var1.mulPose(Vector3f.XP.rotationDegrees(var15));
-            var1.translate((double)(0.375F * (float)(var13 * 2 - 1)), 0.0, 0.0);
-            var1.translate(0.0, -0.375, 0.0);
-            var1.mulPose(Vector3f.XP.rotationDegrees(-var15));
-            var1.mulPose(Vector3f.YP.rotationDegrees(-var14));
+            var1.mulPose(Axis.YP.rotationDegrees(var14));
+            var1.mulPose(Axis.XP.rotationDegrees(var15));
+            var1.translate(0.375F * (float)(var13 * 2 - 1), 0.0F, 0.0F);
+            var1.translate(0.0F, -0.375F, 0.0F);
+            var1.mulPose(Axis.XP.rotationDegrees(-var15));
+            var1.mulPose(Axis.YP.rotationDegrees(-var14));
             float var16 = 1.3333334F;
             var1.scale(1.3333334F, 1.3333334F, 1.3333334F);
             this.getParentModel().renderEars(var1, var11, var3, var12);

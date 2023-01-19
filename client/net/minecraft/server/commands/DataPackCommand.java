@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 
 public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_PACK = new DynamicCommandExceptionType(
@@ -31,14 +34,24 @@ public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_DISABLED = new DynamicCommandExceptionType(
       var0 -> Component.translatable("commands.datapack.disable.failed", var0)
    );
+   private static final Dynamic2CommandExceptionType ERROR_PACK_FEATURES_NOT_ENABLED = new Dynamic2CommandExceptionType(
+      (var0, var1) -> Component.translatable("commands.datapack.enable.failed.no_flags", var0, var1)
+   );
    private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (var0, var1) -> SharedSuggestionProvider.suggest(
          ((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), var1
       );
    private static final SuggestionProvider<CommandSourceStack> UNSELECTED_PACKS = (var0, var1) -> {
       PackRepository var2 = ((CommandSourceStack)var0.getSource()).getServer().getPackRepository();
       Collection var3 = var2.getSelectedIds();
+      FeatureFlagSet var4 = ((CommandSourceStack)var0.getSource()).enabledFeatures();
       return SharedSuggestionProvider.suggest(
-         var2.getAvailableIds().stream().filter(var1x -> !var3.contains(var1x)).map(StringArgumentType::escapeIfRequired), var1
+         var2.getAvailablePacks()
+            .stream()
+            .filter(var1x -> var1x.getRequestedFeatures().isSubsetOf(var4))
+            .map(Pack::getId)
+            .filter(var1x -> !var3.contains(var1x))
+            .map(StringArgumentType::escapeIfRequired),
+         var1
       );
    };
 
@@ -149,17 +162,18 @@ public class DataPackCommand {
       var1.reload();
       Collection var2 = var1.getSelectedPacks();
       Collection var3 = var1.getAvailablePacks();
-      List var4 = var3.stream().filter(var1x -> !var2.contains(var1x)).collect(Collectors.toList());
-      if (var4.isEmpty()) {
+      FeatureFlagSet var4 = var0.enabledFeatures();
+      List var5 = var3.stream().filter(var2x -> !var2.contains(var2x) && var2x.getRequestedFeatures().isSubsetOf(var4)).toList();
+      if (var5.isEmpty()) {
          var0.sendSuccess(Component.translatable("commands.datapack.list.available.none"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.datapack.list.available.success", var4.size(), ComponentUtils.formatList(var4, var0x -> var0x.getChatLink(false))),
+            Component.translatable("commands.datapack.list.available.success", var5.size(), ComponentUtils.formatList(var5, var0x -> var0x.getChatLink(false))),
             false
          );
       }
 
-      return var4.size();
+      return var5.size();
    }
 
    private static int listEnabledPacks(CommandSourceStack var0) {
@@ -191,7 +205,13 @@ public class DataPackCommand {
          } else if (!var2 && !var6) {
             throw ERROR_PACK_ALREADY_DISABLED.create(var3);
          } else {
-            return var5;
+            FeatureFlagSet var7 = ((CommandSourceStack)var0.getSource()).enabledFeatures();
+            FeatureFlagSet var8 = var5.getRequestedFeatures();
+            if (!var8.isSubsetOf(var7)) {
+               throw ERROR_PACK_FEATURES_NOT_ENABLED.create(var3, FeatureFlags.printMissingFlags(var7, var8));
+            } else {
+               return var5;
+            }
          }
       }
    }

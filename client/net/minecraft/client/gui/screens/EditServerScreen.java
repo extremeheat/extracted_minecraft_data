@@ -36,9 +36,7 @@ public class EditServerScreen extends Screen {
 
    @Override
    protected void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
-      this.nameEdit.setFocus(true);
       this.nameEdit.setValue(this.serverData.name);
       this.nameEdit.setResponder(var1 -> this.updateAddButtonStatus());
       this.addWidget(this.nameEdit);
@@ -61,11 +59,16 @@ public class EditServerScreen extends Screen {
             )
       );
       this.addButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20, Component.translatable("addServer.add"), var1 -> this.onAdd())
+         Button.builder(Component.translatable("addServer.add"), var1 -> this.onAdd())
+            .bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20)
+            .build()
       );
       this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20, CommonComponents.GUI_CANCEL, var1 -> this.callback.accept(false))
+         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.callback.accept(false))
+            .bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20)
+            .build()
       );
+      this.setInitialFocus(this.nameEdit);
       this.updateAddButtonStatus();
    }
 
@@ -76,11 +79,6 @@ public class EditServerScreen extends Screen {
       this.init(var1, var2, var3);
       this.ipEdit.setValue(var4);
       this.nameEdit.setValue(var5);
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    private void onAdd() {

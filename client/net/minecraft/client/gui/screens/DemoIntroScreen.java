@@ -21,14 +21,14 @@ public class DemoIntroScreen extends Screen {
    @Override
    protected void init() {
       boolean var1 = true;
-      this.addRenderableWidget(new Button(this.width / 2 - 116, this.height / 2 + 62 + -16, 114, 20, Component.translatable("demo.help.buy"), var0 -> {
+      this.addRenderableWidget(Button.builder(Component.translatable("demo.help.buy"), var0 -> {
          var0.active = false;
          Util.getPlatform().openUri("https://aka.ms/BuyMinecraftJava");
-      }));
-      this.addRenderableWidget(new Button(this.width / 2 + 2, this.height / 2 + 62 + -16, 114, 20, Component.translatable("demo.help.later"), var1x -> {
+      }).bounds(this.width / 2 - 116, this.height / 2 + 62 + -16, 114, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("demo.help.later"), var1x -> {
          this.minecraft.setScreen(null);
          this.minecraft.mouseHandler.grabMouse();
-      }));
+      }).bounds(this.width / 2 + 2, this.height / 2 + 62 + -16, 114, 20).build());
       Options var2 = this.minecraft.options;
       this.movementMessage = MultiLineLabel.create(
          this.font,

@@ -11,8 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 
 public class BannerDuplicateRecipe extends CustomRecipe {
-   public BannerDuplicateRecipe(ResourceLocation var1) {
-      super(var1);
+   public BannerDuplicateRecipe(ResourceLocation var1, CraftingBookCategory var2) {
+      super(var1, var2);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

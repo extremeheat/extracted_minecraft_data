@@ -18,6 +18,7 @@ import net.minecraft.server.packs.resources.SimpleReloadInstance;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagManager;
 import net.minecraft.util.Unit;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.ItemModifierManager;
@@ -28,7 +29,7 @@ import org.slf4j.Logger;
 public class ReloadableServerResources {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final CompletableFuture<Unit> DATA_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
-   private final CommandBuildContext commandBuildContext;
+   private final CommandBuildContext.Configurable commandBuildContext;
    private final Commands commands;
    private final RecipeManager recipes = new RecipeManager();
    private final TagManager tagManager;
@@ -38,13 +39,13 @@ public class ReloadableServerResources {
    private final ServerAdvancementManager advancements = new ServerAdvancementManager(this.predicateManager);
    private final ServerFunctionLibrary functionLibrary;
 
-   public ReloadableServerResources(RegistryAccess.Frozen var1, Commands.CommandSelection var2, int var3) {
+   public ReloadableServerResources(RegistryAccess.Frozen var1, FeatureFlagSet var2, Commands.CommandSelection var3, int var4) {
       super();
       this.tagManager = new TagManager(var1);
-      this.commandBuildContext = new CommandBuildContext(var1);
-      this.commands = new Commands(var2, this.commandBuildContext);
+      this.commandBuildContext = CommandBuildContext.configurable(var1, var2);
+      this.commands = new Commands(var3, this.commandBuildContext);
       this.commandBuildContext.missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy.CREATE_NEW);
-      this.functionLibrary = new ServerFunctionLibrary(var3, this.commands.getDispatcher());
+      this.functionLibrary = new ServerFunctionLibrary(var4, this.commands.getDispatcher());
    }
 
    public ServerFunctionLibrary getFunctionLibrary() {
@@ -80,13 +81,13 @@ public class ReloadableServerResources {
    }
 
    public static CompletableFuture<ReloadableServerResources> loadResources(
-      ResourceManager var0, RegistryAccess.Frozen var1, Commands.CommandSelection var2, int var3, Executor var4, Executor var5
+      ResourceManager var0, RegistryAccess.Frozen var1, FeatureFlagSet var2, Commands.CommandSelection var3, int var4, Executor var5, Executor var6
    ) {
-      ReloadableServerResources var6 = new ReloadableServerResources(var1, var2, var3);
-      return SimpleReloadInstance.create(var0, var6.listeners(), var4, var5, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled())
+      ReloadableServerResources var7 = new ReloadableServerResources(var1, var2, var3, var4);
+      return SimpleReloadInstance.create(var0, var7.listeners(), var5, var6, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled())
          .done()
-         .whenComplete((var1x, var2x) -> var6.commandBuildContext.missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy.FAIL))
-         .thenApply(var1x -> var6);
+         .whenComplete((var1x, var2x) -> var7.commandBuildContext.missingTagAccessPolicy(CommandBuildContext.MissingTagAccessPolicy.FAIL))
+         .thenApply(var1x -> var7);
    }
 
    public void updateRegistryTags(RegistryAccess var1) {

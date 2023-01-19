@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 public class Screenshot {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final String SCREENSHOT_DIR = "screenshots";
    private int rowHeight;
    private final DataOutputStream outputStream;
    private final byte[] bytes;

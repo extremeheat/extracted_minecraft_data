@@ -15,7 +15,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
@@ -95,7 +95,7 @@ public class ItemParser {
    private void readItem() throws CommandSyntaxException {
       int var1 = this.reader.getCursor();
       ResourceLocation var2 = ResourceLocation.read(this.reader);
-      Optional var3 = this.items.get(ResourceKey.create(Registry.ITEM_REGISTRY, var2));
+      Optional var3 = this.items.get(ResourceKey.create(Registries.ITEM, var2));
       this.result = Either.left((Holder)var3.orElseThrow(() -> {
          this.reader.setCursor(var1);
          return ERROR_UNKNOWN_ITEM.createWithContext(this.reader, var2);
@@ -110,7 +110,7 @@ public class ItemParser {
          this.reader.expect('#');
          this.suggestions = this::suggestTag;
          ResourceLocation var2 = ResourceLocation.read(this.reader);
-         Optional var3 = this.items.get(TagKey.create(Registry.ITEM_REGISTRY, var2));
+         Optional var3 = this.items.get(TagKey.create(Registries.ITEM, var2));
          this.result = Either.right((HolderSet)var3.orElseThrow(() -> {
             this.reader.setCursor(var1);
             return ERROR_UNKNOWN_TAG.createWithContext(this.reader, var2);
@@ -151,11 +151,11 @@ public class ItemParser {
    }
 
    private CompletableFuture<Suggestions> suggestTag(SuggestionsBuilder var1) {
-      return SharedSuggestionProvider.suggestResource(this.items.listTags().map(TagKey::location), var1, String.valueOf('#'));
+      return SharedSuggestionProvider.suggestResource(this.items.listTagIds().map(TagKey::location), var1, String.valueOf('#'));
    }
 
    private CompletableFuture<Suggestions> suggestItem(SuggestionsBuilder var1) {
-      return SharedSuggestionProvider.suggestResource(this.items.listElements().map(ResourceKey::location), var1);
+      return SharedSuggestionProvider.suggestResource(this.items.listElementIds().map(ResourceKey::location), var1);
    }
 
    private CompletableFuture<Suggestions> suggestItemIdOrTag(SuggestionsBuilder var1) {

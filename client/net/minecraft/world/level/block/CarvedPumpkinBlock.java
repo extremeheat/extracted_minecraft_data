@@ -6,6 +6,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
@@ -55,52 +56,49 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements We
    private void trySpawnGolem(Level var1, BlockPos var2) {
       BlockPattern.BlockPatternMatch var3 = this.getOrCreateSnowGolemFull().find(var1, var2);
       if (var3 != null) {
-         for(int var4 = 0; var4 < this.getOrCreateSnowGolemFull().getHeight(); ++var4) {
-            BlockInWorld var5 = var3.getBlock(0, var4, 0);
-            var1.setBlock(var5.getPos(), Blocks.AIR.defaultBlockState(), 2);
-            var1.levelEvent(2001, var5.getPos(), Block.getId(var5.getState()));
-         }
-
-         SnowGolem var10 = EntityType.SNOW_GOLEM.create(var1);
-         BlockPos var13 = var3.getBlock(0, 2, 0).getPos();
-         var10.moveTo((double)var13.getX() + 0.5, (double)var13.getY() + 0.05, (double)var13.getZ() + 0.5, 0.0F, 0.0F);
-         var1.addFreshEntity(var10);
-
-         for(ServerPlayer var7 : var1.getEntitiesOfClass(ServerPlayer.class, var10.getBoundingBox().inflate(5.0))) {
-            CriteriaTriggers.SUMMONED_ENTITY.trigger(var7, var10);
-         }
-
-         for(int var16 = 0; var16 < this.getOrCreateSnowGolemFull().getHeight(); ++var16) {
-            BlockInWorld var20 = var3.getBlock(0, var16, 0);
-            var1.blockUpdated(var20.getPos(), Blocks.AIR);
+         SnowGolem var4 = EntityType.SNOW_GOLEM.create(var1);
+         if (var4 != null) {
+            spawnGolemInWorld(var1, var3, var4, var3.getBlock(0, 2, 0).getPos());
          }
       } else {
-         var3 = this.getOrCreateIronGolemFull().find(var1, var2);
-         if (var3 != null) {
-            for(int var11 = 0; var11 < this.getOrCreateIronGolemFull().getWidth(); ++var11) {
-               for(int var14 = 0; var14 < this.getOrCreateIronGolemFull().getHeight(); ++var14) {
-                  BlockInWorld var17 = var3.getBlock(var11, var14, 0);
-                  var1.setBlock(var17.getPos(), Blocks.AIR.defaultBlockState(), 2);
-                  var1.levelEvent(2001, var17.getPos(), Block.getId(var17.getState()));
-               }
+         BlockPattern.BlockPatternMatch var6 = this.getOrCreateIronGolemFull().find(var1, var2);
+         if (var6 != null) {
+            IronGolem var5 = EntityType.IRON_GOLEM.create(var1);
+            if (var5 != null) {
+               var5.setPlayerCreated(true);
+               spawnGolemInWorld(var1, var6, var5, var6.getBlock(1, 2, 0).getPos());
             }
+         }
+      }
+   }
 
-            BlockPos var12 = var3.getBlock(1, 2, 0).getPos();
-            IronGolem var15 = EntityType.IRON_GOLEM.create(var1);
-            var15.setPlayerCreated(true);
-            var15.moveTo((double)var12.getX() + 0.5, (double)var12.getY() + 0.05, (double)var12.getZ() + 0.5, 0.0F, 0.0F);
-            var1.addFreshEntity(var15);
+   private static void spawnGolemInWorld(Level var0, BlockPattern.BlockPatternMatch var1, Entity var2, BlockPos var3) {
+      clearPatternBlocks(var0, var1);
+      var2.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + 0.05, (double)var3.getZ() + 0.5, 0.0F, 0.0F);
+      var0.addFreshEntity(var2);
 
-            for(ServerPlayer var21 : var1.getEntitiesOfClass(ServerPlayer.class, var15.getBoundingBox().inflate(5.0))) {
-               CriteriaTriggers.SUMMONED_ENTITY.trigger(var21, var15);
-            }
+      for(ServerPlayer var5 : var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0))) {
+         CriteriaTriggers.SUMMONED_ENTITY.trigger(var5, var2);
+      }
 
-            for(int var19 = 0; var19 < this.getOrCreateIronGolemFull().getWidth(); ++var19) {
-               for(int var22 = 0; var22 < this.getOrCreateIronGolemFull().getHeight(); ++var22) {
-                  BlockInWorld var8 = var3.getBlock(var19, var22, 0);
-                  var1.blockUpdated(var8.getPos(), Blocks.AIR);
-               }
-            }
+      updatePatternBlocks(var0, var1);
+   }
+
+   public static void clearPatternBlocks(Level var0, BlockPattern.BlockPatternMatch var1) {
+      for(int var2 = 0; var2 < var1.getWidth(); ++var2) {
+         for(int var3 = 0; var3 < var1.getHeight(); ++var3) {
+            BlockInWorld var4 = var1.getBlock(var2, var3, 0);
+            var0.setBlock(var4.getPos(), Blocks.AIR.defaultBlockState(), 2);
+            var0.levelEvent(2001, var4.getPos(), Block.getId(var4.getState()));
+         }
+      }
+   }
+
+   public static void updatePatternBlocks(Level var0, BlockPattern.BlockPatternMatch var1) {
+      for(int var2 = 0; var2 < var1.getWidth(); ++var2) {
+         for(int var3 = 0; var3 < var1.getHeight(); ++var3) {
+            BlockInWorld var4 = var1.getBlock(var2, var3, 0);
+            var0.blockUpdated(var4.getPos(), Blocks.AIR);
          }
       }
    }

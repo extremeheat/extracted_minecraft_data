@@ -42,11 +42,11 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.network.chat.ChatSender;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -707,6 +707,14 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       this.playSound(SoundEvents.GENERIC_EXTINGUISH_FIRE, 0.7F, 1.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
    }
 
+   public void extinguishFire() {
+      if (!this.level.isClientSide && this.wasOnFire) {
+         this.playEntityOnFireExtinguishedSound();
+      }
+
+      this.clearFire();
+   }
+
    protected void processFlappingMovement() {
       if (this.isFlapping()) {
          this.onFlap();
@@ -895,8 +903,8 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
 
    protected void checkInsideBlocks() {
       AABB var1 = this.getBoundingBox();
-      BlockPos var2 = new BlockPos(var1.minX + 0.001, var1.minY + 0.001, var1.minZ + 0.001);
-      BlockPos var3 = new BlockPos(var1.maxX - 0.001, var1.maxY - 0.001, var1.maxZ - 0.001);
+      BlockPos var2 = new BlockPos(var1.minX + 1.0E-7, var1.minY + 1.0E-7, var1.minZ + 1.0E-7);
+      BlockPos var3 = new BlockPos(var1.maxX - 1.0E-7, var1.maxY - 1.0E-7, var1.maxZ - 1.0E-7);
       if (this.level.hasChunksAt(var2, var3)) {
          BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
 
@@ -933,10 +941,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    protected void playStepSound(BlockPos var1, BlockState var2) {
-      if (!var2.getMaterial().isLiquid()) {
-         BlockState var3 = this.level.getBlockState(var1.above());
-         SoundType var4 = var3.is(BlockTags.INSIDE_STEP_SOUND_BLOCKS) ? var3.getSoundType() : var2.getSoundType();
-         this.playSound(var4.getStepSound(), var4.getVolume() * 0.15F, var4.getPitch());
+      BlockState var3 = this.level.getBlockState(var1.above());
+      boolean var4 = var3.is(BlockTags.INSIDE_STEP_SOUND_BLOCKS);
+      if (var4 || !var2.getMaterial().isLiquid()) {
+         SoundType var5 = var4 ? var3.getSoundType() : var2.getSoundType();
+         this.playSound(var5.getStepSound(), var5.getVolume() * 0.15F, var5.getPitch());
       }
    }
 
@@ -1054,10 +1063,6 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return this.wasEyeInWater && this.isInWater();
    }
 
-   public ChatSender asChatSender() {
-      return ChatSender.SYSTEM;
-   }
-
    public void updateSwimming() {
       if (this.isSwimming()) {
          this.setSwimming(this.isSprinting() && this.isInWater() && !this.isPassenger());
@@ -1075,9 +1080,13 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    void updateInWaterStateAndDoWaterCurrentPushing() {
-      if (this.getVehicle() instanceof Boat) {
+      Entity var2 = this.getVehicle();
+      if (var2 instanceof Boat var1 && !var1.isUnderWater()) {
          this.wasTouchingWater = false;
-      } else if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
+         return;
+      }
+
+      if (this.updateFluidHeightAndDoFluidPushing(FluidTags.WATER, 0.014)) {
          if (!this.wasTouchingWater && !this.firstTick) {
             this.doWaterSplashEffect();
          }
@@ -1801,6 +1810,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       }
    }
 
+   public boolean allowsDismounting(Entity var1) {
+      return true;
+   }
+
    public void stopRiding() {
       this.removeVehicle();
    }
@@ -2153,6 +2166,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return true;
    }
 
+   public void checkSlowFallDistance() {
+      if (this.deltaMovement.y() > -0.5 && this.fallDistance > 1.0F) {
+         this.fallDistance = 1.0F;
+      }
+   }
+
    public void resetFallDistance() {
       this.fallDistance = 0.0F;
    }
@@ -2355,9 +2374,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
                         var4x = new Vec3(0.5, 0.0, 0.0);
                      }
       
-                     return PortalShape.createPortalInfo(
-                        var1, var2x, var3x, var4x, this.getDimensions(this.getPose()), this.getDeltaMovement(), this.getYRot(), this.getXRot()
-                     );
+                     return PortalShape.createPortalInfo(var1, var2x, var3x, var4x, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
                   }
                )
                .orElse(null);
@@ -2508,6 +2525,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       }
    }
 
+   public void teleportRelative(double var1, double var3, double var5) {
+      this.teleportTo(this.getX() + var1, this.getY() + var3, this.getZ() + var5);
+   }
+
    public boolean shouldShowName() {
       return this.isCustomNameVisible();
    }
@@ -2516,6 +2537,14 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       if (DATA_POSE.equals(var1)) {
          this.refreshDimensions();
       }
+   }
+
+   @Deprecated
+   protected void fixupDimensions() {
+      Pose var1 = this.getPose();
+      EntityDimensions var2 = this.getDimensions(var1);
+      this.dimensions = var2;
+      this.eyeHeight = this.getEyeHeight(var1, var2);
    }
 
    public void refreshDimensions() {
@@ -2591,7 +2620,11 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return this.eyeHeight;
    }
 
-   public Vec3 getLeashOffset() {
+   public Vec3 getLeashOffset(float var1) {
+      return this.getLeashOffset();
+   }
+
+   protected Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)this.getEyeHeight(), (double)(this.getBbWidth() * 0.4F));
    }
 
@@ -2919,7 +2952,9 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return this.dimensions.height;
    }
 
-   public abstract Packet<?> getAddEntityPacket();
+   public Packet<ClientGamePacketListener> getAddEntityPacket() {
+      return new ClientboundAddEntityPacket(this);
+   }
 
    public EntityDimensions getDimensions(Pose var1) {
       return this.type.getDimensions();
@@ -2956,6 +2991,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
 
    public void setDeltaMovement(Vec3 var1) {
       this.deltaMovement = var1;
+   }
+
+   public void addDeltaMovement(Vec3 var1) {
+      this.deltaMovement = this.deltaMovement.add(var1);
    }
 
    public void setDeltaMovement(double var1, double var3, double var5) {

@@ -34,16 +34,17 @@ public class RealmsSettingsScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(true);
       int var1 = this.width / 2 - 106;
       this.doneButton = this.addRenderableWidget(
-         new Button(var1 - 2, row(12), 106, 20, Component.translatable("mco.configure.world.buttons.done"), var1x -> this.save())
+         Button.builder(Component.translatable("mco.configure.world.buttons.done"), var1x -> this.save()).bounds(var1 - 2, row(12), 106, 20).build()
       );
       this.addRenderableWidget(
-         new Button(this.width / 2 + 2, row(12), 106, 20, CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.configureWorldScreen))
+         Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.configureWorldScreen))
+            .bounds(this.width / 2 + 2, row(12), 106, 20)
+            .build()
       );
       String var2 = this.serverData.state == RealmsServer.State.OPEN ? "mco.configure.world.buttons.close" : "mco.configure.world.buttons.open";
-      Button var3 = new Button(this.width / 2 - 53, row(0), 106, 20, Component.translatable(var2), var1x -> {
+      Button var3 = Button.builder(Component.translatable(var2), var1x -> {
          if (this.serverData.state == RealmsServer.State.OPEN) {
             MutableComponent var2x = Component.translatable("mco.configure.world.close.question.line1");
             MutableComponent var3x = Component.translatable("mco.configure.world.close.question.line2");
@@ -57,7 +58,7 @@ public class RealmsSettingsScreen extends RealmsScreen {
          } else {
             this.configureWorldScreen.openTheWorld(false, this);
          }
-      });
+      }).bounds(this.width / 2 - 53, row(0), 106, 20).build();
       this.addRenderableWidget(var3);
       this.nameEdit = new EditBox(this.minecraft.font, var1, row(4), 212, 20, null, Component.translatable("mco.configure.world.name"));
       this.nameEdit.setMaxLength(32);
@@ -68,11 +69,6 @@ public class RealmsSettingsScreen extends RealmsScreen {
       this.descEdit.setMaxLength(32);
       this.descEdit.setValue(this.serverData.getDescription());
       this.addWidget(this.descEdit);
-   }
-
-   @Override
-   public void removed() {
-      this.minecraft.keyboardHandler.setSendRepeatsToGui(false);
    }
 
    @Override

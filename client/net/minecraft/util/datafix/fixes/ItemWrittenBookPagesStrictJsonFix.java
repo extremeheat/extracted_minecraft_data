@@ -35,7 +35,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
                                     if (var1xx.charAt(0) == '"' && var1xx.charAt(var1xx.length() - 1) == '"'
                                        || var1xx.charAt(0) == '{' && var1xx.charAt(var1xx.length() - 1) == '}') {
                                        try {
-                                          var2 = GsonHelper.fromJson(BlockEntitySignTextStrictJsonFix.GSON, var1xx, Component.class, true);
+                                          var2 = GsonHelper.fromNullableJson(BlockEntitySignTextStrictJsonFix.GSON, var1xx, Component.class, true);
                                           if (var2 == null) {
                                              var2 = CommonComponents.EMPTY;
                                           }

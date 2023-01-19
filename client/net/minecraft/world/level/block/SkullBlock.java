@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -9,15 +8,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SkullBlock extends AbstractSkullBlock {
-   public static final int MAX = 15;
-   private static final int ROTATIONS = 16;
+   public static final int MAX = RotationSegment.getMaxSegmentIndex();
+   private static final int ROTATIONS = MAX + 1;
    public static final IntegerProperty ROTATION = BlockStateProperties.ROTATION_16;
    protected static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 8.0, 12.0);
+   protected static final VoxelShape PIGLIN_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 8.0, 13.0);
 
    protected SkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
       super(var1, var2);
@@ -26,7 +27,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
    @Override
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE;
+      return this.getType() == SkullBlock.Types.PIGLIN ? PIGLIN_SHAPE : SHAPE;
    }
 
    @Override
@@ -36,17 +37,17 @@ public class SkullBlock extends AbstractSkullBlock {
 
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(ROTATION, Integer.valueOf(Mth.floor((double)(var1.getRotation() * 16.0F / 360.0F) + 0.5) & 15));
+      return this.defaultBlockState().setValue(ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var1.getRotation() + 180.0F)));
    }
 
    @Override
    public BlockState rotate(BlockState var1, Rotation var2) {
-      return var1.setValue(ROTATION, Integer.valueOf(var2.rotate(var1.getValue(ROTATION), 16)));
+      return var1.setValue(ROTATION, Integer.valueOf(var2.rotate(var1.getValue(ROTATION), ROTATIONS)));
    }
 
    @Override
    public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.setValue(ROTATION, Integer.valueOf(var2.mirror(var1.getValue(ROTATION), 16)));
+      return var1.setValue(ROTATION, Integer.valueOf(var2.mirror(var1.getValue(ROTATION), ROTATIONS)));
    }
 
    @Override
@@ -63,6 +64,7 @@ public class SkullBlock extends AbstractSkullBlock {
       PLAYER,
       ZOMBIE,
       CREEPER,
+      PIGLIN,
       DRAGON;
 
       private Types() {

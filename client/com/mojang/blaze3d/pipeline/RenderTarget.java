@@ -8,10 +8,10 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Matrix4f;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.joml.Matrix4f;
 
 public abstract class RenderTarget {
    private static final int RED_CHANNEL = 0;
@@ -223,10 +223,10 @@ public abstract class RenderTarget {
       Minecraft var4 = Minecraft.getInstance();
       ShaderInstance var5 = var4.gameRenderer.blitShader;
       var5.setSampler("DiffuseSampler", this.colorTextureId);
-      Matrix4f var6 = Matrix4f.orthographic((float)var1, (float)(-var2), 1000.0F, 3000.0F);
+      Matrix4f var6 = new Matrix4f().setOrtho(0.0F, (float)var1, (float)var2, 0.0F, 1000.0F, 3000.0F);
       RenderSystem.setProjectionMatrix(var6);
       if (var5.MODEL_VIEW_MATRIX != null) {
-         var5.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
+         var5.MODEL_VIEW_MATRIX.set(new Matrix4f().translation(0.0F, 0.0F, -2000.0F));
       }
 
       if (var5.PROJECTION_MATRIX != null) {

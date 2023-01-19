@@ -53,6 +53,7 @@ public class Slime extends Mob implements Enemy {
 
    public Slime(EntityType<? extends Slime> var1, Level var2) {
       super(var1, var2);
+      this.fixupDimensions();
       this.moveControl = new Slime.SlimeMoveControl(this);
    }
 
@@ -196,16 +197,18 @@ public class Slime extends Mob implements Enemy {
             float var9 = ((float)(var8 % 2) - 0.5F) * var5;
             float var10 = ((float)(var8 / 2) - 0.5F) * var5;
             Slime var11 = this.getType().create(this.level);
-            if (this.isPersistenceRequired()) {
-               var11.setPersistenceRequired();
-            }
+            if (var11 != null) {
+               if (this.isPersistenceRequired()) {
+                  var11.setPersistenceRequired();
+               }
 
-            var11.setCustomName(var3);
-            var11.setNoAi(var4);
-            var11.setInvulnerable(this.isInvulnerable());
-            var11.setSize(var6, true);
-            var11.moveTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
-            this.level.addFreshEntity(var11);
+               var11.setCustomName(var3);
+               var11.setNoAi(var4);
+               var11.setInvulnerable(this.isInvulnerable());
+               var11.setSize(var6, true);
+               var11.moveTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+               this.level.addFreshEntity(var11);
+            }
          }
       }
 

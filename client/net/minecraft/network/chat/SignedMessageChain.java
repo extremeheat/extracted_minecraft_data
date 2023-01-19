@@ -1,70 +1,95 @@
 package net.minecraft.network.chat;
 
-import java.util.Optional;
+import com.mojang.logging.LogUtils;
+import java.time.Instant;
+import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.Signer;
+import net.minecraft.world.entity.player.ProfilePublicKey;
+import org.slf4j.Logger;
 
 public class SignedMessageChain {
+   private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
-   private MessageSignature previousSignature;
+   private SignedMessageLink nextLink;
 
-   public SignedMessageChain() {
+   public SignedMessageChain(UUID var1, UUID var2) {
       super();
+      this.nextLink = SignedMessageLink.root(var1, var2);
    }
 
-   private SignedMessageChain.Link pack(Signer var1, MessageSigner var2, ChatMessageContent var3, LastSeenMessages var4) {
-      MessageSignature var5 = pack(var1, var2, this.previousSignature, var3, var4);
-      this.previousSignature = var5;
-      return new SignedMessageChain.Link(var5);
+   public SignedMessageChain.Encoder encoder(Signer var1) {
+      return var2 -> {
+         SignedMessageLink var3 = this.advanceLink();
+         return var3 == null ? null : new MessageSignature(var1.sign(var2x -> PlayerChatMessage.updateSignature(var2x, var3, var2)));
+      };
    }
 
-   private static MessageSignature pack(Signer var0, MessageSigner var1, @Nullable MessageSignature var2, ChatMessageContent var3, LastSeenMessages var4) {
-      SignedMessageHeader var5 = new SignedMessageHeader(var2, var1.profileId());
-      SignedMessageBody var6 = new SignedMessageBody(var3, var1.timeStamp(), var1.salt(), var4);
-      byte[] var7 = var6.hash().asBytes();
-      return new MessageSignature(var0.sign(var2x -> var5.updateSignature(var2x, var7)));
+   public SignedMessageChain.Decoder decoder(ProfilePublicKey var1) {
+      SignatureValidator var2 = var1.createSignatureValidator();
+      return (var3, var4) -> {
+         SignedMessageLink var5 = this.advanceLink();
+         if (var5 == null) {
+            throw new SignedMessageChain.DecodeException(Component.translatable("chat.disabled.chain_broken"), false);
+         } else if (var1.data().hasExpired()) {
+            throw new SignedMessageChain.DecodeException(Component.translatable("chat.disabled.expiredProfileKey"), false);
+         } else {
+            PlayerChatMessage var6 = new PlayerChatMessage(var5, var3, var4, null, FilterMask.PASS_THROUGH);
+            if (!var6.verify(var2)) {
+               throw new SignedMessageChain.DecodeException(Component.translatable("multiplayer.disconnect.unsigned_chat"), true);
+            } else {
+               if (var6.hasExpiredServer(Instant.now())) {
+                  LOGGER.warn("Received expired chat: '{}'. Is the client/server system time unsynchronized?", var4.content());
+               }
+
+               return var6;
+            }
+         }
+      };
    }
 
-   private PlayerChatMessage unpack(SignedMessageChain.Link var1, MessageSigner var2, ChatMessageContent var3, LastSeenMessages var4) {
-      PlayerChatMessage var5 = unpack(var1, this.previousSignature, var2, var3, var4);
-      this.previousSignature = var1.signature;
-      return var5;
+   @Nullable
+   private SignedMessageLink advanceLink() {
+      SignedMessageLink var1 = this.nextLink;
+      if (var1 != null) {
+         this.nextLink = var1.advance();
+      }
+
+      return var1;
    }
 
-   private static PlayerChatMessage unpack(
-      SignedMessageChain.Link var0, @Nullable MessageSignature var1, MessageSigner var2, ChatMessageContent var3, LastSeenMessages var4
-   ) {
-      SignedMessageHeader var5 = new SignedMessageHeader(var1, var2.profileId());
-      SignedMessageBody var6 = new SignedMessageBody(var3, var2.timeStamp(), var2.salt(), var4);
-      return new PlayerChatMessage(var5, var0.signature, var6, Optional.empty(), FilterMask.PASS_THROUGH);
-   }
+   public static class DecodeException extends ThrowingComponent {
+      private final boolean shouldDisconnect;
 
-   public SignedMessageChain.Decoder decoder() {
-      return this::unpack;
-   }
+      public DecodeException(Component var1, boolean var2) {
+         super(var1);
+         this.shouldDisconnect = var2;
+      }
 
-   public SignedMessageChain.Encoder encoder() {
-      return this::pack;
+      public boolean shouldDisconnect() {
+         return this.shouldDisconnect;
+      }
    }
 
    @FunctionalInterface
    public interface Decoder {
-      SignedMessageChain.Decoder UNSIGNED = (var0, var1, var2, var3) -> PlayerChatMessage.unsigned(var1, var2);
+      SignedMessageChain.Decoder REJECT_ALL = (var0, var1) -> {
+         throw new SignedMessageChain.DecodeException(Component.translatable("chat.disabled.missingProfileKey"), false);
+      };
 
-      PlayerChatMessage unpack(SignedMessageChain.Link var1, MessageSigner var2, ChatMessageContent var3, LastSeenMessages var4);
+      static SignedMessageChain.Decoder unsigned(UUID var0) {
+         return (var1, var2) -> PlayerChatMessage.unsigned(var0, var2.content());
+      }
+
+      PlayerChatMessage unpack(@Nullable MessageSignature var1, SignedMessageBody var2) throws SignedMessageChain.DecodeException;
    }
 
    @FunctionalInterface
    public interface Encoder {
-      SignedMessageChain.Link pack(Signer var1, MessageSigner var2, ChatMessageContent var3, LastSeenMessages var4);
-   }
+      SignedMessageChain.Encoder UNSIGNED = var0 -> null;
 
-   public static record Link(MessageSignature a) {
-      final MessageSignature signature;
-
-      public Link(MessageSignature var1) {
-         super();
-         this.signature = var1;
-      }
+      @Nullable
+      MessageSignature pack(SignedMessageBody var1);
    }
 }

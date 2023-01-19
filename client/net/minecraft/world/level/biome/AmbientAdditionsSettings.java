@@ -2,6 +2,7 @@ package net.minecraft.world.level.biome;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 
 public class AmbientAdditionsSettings {
@@ -12,16 +13,16 @@ public class AmbientAdditionsSettings {
             )
             .apply(var0, AmbientAdditionsSettings::new)
    );
-   private final SoundEvent soundEvent;
+   private final Holder<SoundEvent> soundEvent;
    private final double tickChance;
 
-   public AmbientAdditionsSettings(SoundEvent var1, double var2) {
+   public AmbientAdditionsSettings(Holder<SoundEvent> var1, double var2) {
       super();
       this.soundEvent = var1;
       this.tickChance = var2;
    }
 
-   public SoundEvent getSoundEvent() {
+   public Holder<SoundEvent> getSoundEvent() {
       return this.soundEvent;
    }
 

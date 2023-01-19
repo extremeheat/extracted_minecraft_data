@@ -3,7 +3,8 @@ package net.minecraft.server.dedicated;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import org.slf4j.Logger;
@@ -11,7 +12,7 @@ import org.slf4j.Logger;
 public class DedicatedPlayerList extends PlayerList {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public DedicatedPlayerList(DedicatedServer var1, RegistryAccess.Frozen var2, PlayerDataStorage var3) {
+   public DedicatedPlayerList(DedicatedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
       super(var1, var2, var3, var1.getProperties().maxPlayers);
       DedicatedServerProperties var4 = var1.getProperties();
       this.setViewDistance(var4.viewDistance);

@@ -47,7 +47,7 @@ public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> exten
          }
 
          var1.pushPose();
-         var1.translate(0.0, 0.0, 0.125);
+         var1.translate(0.0F, 0.0F, 0.125F);
          this.getParentModel().copyPropertiesTo(this.elytraModel);
          this.elytraModel.setupAnim((T)var4, var5, var6, var8, var9, var10);
          VertexConsumer var14 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), false, var11.hasFoil());

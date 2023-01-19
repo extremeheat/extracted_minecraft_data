@@ -9,7 +9,7 @@ import net.minecraft.client.model.SquidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -37,7 +37,7 @@ public class EntityRenderers {
          try {
             var1.put(var2, var3.create(var0));
          } catch (Exception var5) {
-            throw new IllegalArgumentException("Failed to create model for " + Registry.ENTITY_TYPE.getKey(var2), var5);
+            throw new IllegalArgumentException("Failed to create model for " + BuiltInRegistries.ENTITY_TYPE.getKey(var2), var5);
          }
       });
       return var1.build();
@@ -58,9 +58,9 @@ public class EntityRenderers {
    public static boolean validateRegistrations() {
       boolean var0 = true;
 
-      for(EntityType var2 : Registry.ENTITY_TYPE) {
+      for(EntityType var2 : BuiltInRegistries.ENTITY_TYPE) {
          if (var2 != EntityType.PLAYER && !PROVIDERS.containsKey(var2)) {
-            LOGGER.warn("No renderer registered for {}", Registry.ENTITY_TYPE.getKey(var2));
+            LOGGER.warn("No renderer registered for {}", BuiltInRegistries.ENTITY_TYPE.getKey(var2));
             var0 = false;
          }
       }
@@ -79,6 +79,7 @@ public class EntityRenderers {
       register(EntityType.BLAZE, BlazeRenderer::new);
       register(EntityType.BOAT, var0 -> new BoatRenderer(var0, false));
       register(EntityType.CAT, CatRenderer::new);
+      register(EntityType.CAMEL, var0 -> new CamelRenderer(var0, ModelLayers.CAMEL));
       register(EntityType.CAVE_SPIDER, CaveSpiderRenderer::new);
       register(EntityType.CHEST_BOAT, var0 -> new BoatRenderer(var0, true));
       register(EntityType.CHEST_MINECART, var0 -> new MinecartRenderer<>(var0, ModelLayers.CHEST_MINECART));

@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
+import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
@@ -54,8 +55,12 @@ public class RealmsConnect {
                   }
    
                   RealmsConnect.this.connection
-                     .setListener(new ClientHandshakePacketListenerImpl(RealmsConnect.this.connection, var3, RealmsConnect.this.onlineScreen, var0 -> {
-                     }));
+                     .setListener(
+                        new ClientHandshakePacketListenerImpl(
+                           RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, null, var0 -> {
+                           }
+                        )
+                     );
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
@@ -67,11 +72,10 @@ public class RealmsConnect {
    
                   String var2 = var3.getUser().getName();
                   UUID var6 = var3.getUser().getProfileId();
-                  RealmsConnect.this.connection
-                     .send(new ServerboundHelloPacket(var2, var3.getProfileKeyPairManager().profilePublicKeyData(), Optional.ofNullable(var6)));
-                  var3.setCurrentServer(var1, var4);
+                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var2, Optional.ofNullable(var6)));
+                  var3.updateReportEnvironment(ReportEnvironment.realm(var1));
                } catch (Exception var5x) {
-                  var3.getClientPackSource().clearServerPack();
+                  var3.getDownloadedPackSource().clearServerPack();
                   if (RealmsConnect.this.aborted) {
                      return;
                   }

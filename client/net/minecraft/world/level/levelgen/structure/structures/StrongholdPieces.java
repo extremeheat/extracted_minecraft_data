@@ -738,17 +738,19 @@ public class StrongholdPieces {
          return isOkBox(var6) && var0.findCollisionPiece(var6) == null ? new StrongholdPieces.PortalRoom(var5, var6, var4) : null;
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void postProcess(
          WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
       ) {
          this.generateBox(var1, var5, 0, 0, 0, 10, 7, 15, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.GRATES, 4, 1, 0);
-         byte var8 = 6;
-         this.generateBox(var1, var5, 1, var8, 1, 1, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 9, var8, 1, 9, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 2, var8, 1, 8, var8, 2, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
-         this.generateBox(var1, var5, 2, var8, 14, 8, var8, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         boolean var8 = true;
+         this.generateBox(var1, var5, 1, 6, 1, 1, 6, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var5, 9, 6, 1, 9, 6, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var5, 2, 6, 1, 8, 6, 2, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
+         this.generateBox(var1, var5, 2, 6, 14, 8, 6, 14, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 1, 1, 1, 2, 1, 4, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 8, 1, 1, 9, 1, 4, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 1, 1, 1, 1, 1, 3, Blocks.LAVA.defaultBlockState(), Blocks.LAVA.defaultBlockState(), false);
@@ -769,22 +771,22 @@ public class StrongholdPieces {
             this.generateBox(var1, var5, 10, 3, var11, 10, 4, var11, var9, var9, false);
          }
 
-         for(int var20 = 2; var20 < 9; var20 += 2) {
-            this.generateBox(var1, var5, var20, 3, 15, var20, 4, 15, var10, var10, false);
+         for(int var21 = 2; var21 < 9; var21 += 2) {
+            this.generateBox(var1, var5, var21, 3, 15, var21, 4, 15, var10, var10, false);
          }
 
-         BlockState var21 = Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         BlockState var22 = Blocks.STONE_BRICK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
          this.generateBox(var1, var5, 4, 1, 5, 6, 1, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 2, 6, 6, 2, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateBox(var1, var5, 4, 3, 7, 6, 3, 7, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
 
          for(int var12 = 4; var12 <= 6; ++var12) {
-            this.placeBlock(var1, var21, var12, 1, 4, var5);
-            this.placeBlock(var1, var21, var12, 2, 5, var5);
-            this.placeBlock(var1, var21, var12, 3, 6, var5);
+            this.placeBlock(var1, var22, var12, 1, 4, var5);
+            this.placeBlock(var1, var22, var12, 2, 5, var5);
+            this.placeBlock(var1, var22, var12, 3, 6, var5);
          }
 
-         BlockState var22 = Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
+         BlockState var23 = Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
          BlockState var13 = Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.SOUTH);
          BlockState var14 = Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.EAST);
          BlockState var15 = Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.WEST);
@@ -796,9 +798,9 @@ public class StrongholdPieces {
             var16 &= var17[var18];
          }
 
-         this.placeBlock(var1, var22.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[0])), 4, 3, 8, var5);
-         this.placeBlock(var1, var22.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[1])), 5, 3, 8, var5);
-         this.placeBlock(var1, var22.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[2])), 6, 3, 8, var5);
+         this.placeBlock(var1, var23.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[0])), 4, 3, 8, var5);
+         this.placeBlock(var1, var23.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[1])), 5, 3, 8, var5);
+         this.placeBlock(var1, var23.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[2])), 6, 3, 8, var5);
          this.placeBlock(var1, var13.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[3])), 4, 3, 12, var5);
          this.placeBlock(var1, var13.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[4])), 5, 3, 12, var5);
          this.placeBlock(var1, var13.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[5])), 6, 3, 12, var5);
@@ -809,26 +811,26 @@ public class StrongholdPieces {
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[10])), 7, 3, 10, var5);
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[11])), 7, 3, 11, var5);
          if (var16) {
-            BlockState var23 = Blocks.END_PORTAL.defaultBlockState();
-            this.placeBlock(var1, var23, 4, 3, 9, var5);
-            this.placeBlock(var1, var23, 5, 3, 9, var5);
-            this.placeBlock(var1, var23, 6, 3, 9, var5);
-            this.placeBlock(var1, var23, 4, 3, 10, var5);
-            this.placeBlock(var1, var23, 5, 3, 10, var5);
-            this.placeBlock(var1, var23, 6, 3, 10, var5);
-            this.placeBlock(var1, var23, 4, 3, 11, var5);
-            this.placeBlock(var1, var23, 5, 3, 11, var5);
-            this.placeBlock(var1, var23, 6, 3, 11, var5);
+            BlockState var24 = Blocks.END_PORTAL.defaultBlockState();
+            this.placeBlock(var1, var24, 4, 3, 9, var5);
+            this.placeBlock(var1, var24, 5, 3, 9, var5);
+            this.placeBlock(var1, var24, 6, 3, 9, var5);
+            this.placeBlock(var1, var24, 4, 3, 10, var5);
+            this.placeBlock(var1, var24, 5, 3, 10, var5);
+            this.placeBlock(var1, var24, 6, 3, 10, var5);
+            this.placeBlock(var1, var24, 4, 3, 11, var5);
+            this.placeBlock(var1, var24, 5, 3, 11, var5);
+            this.placeBlock(var1, var24, 6, 3, 11, var5);
          }
 
          if (!this.hasPlacedSpawner) {
-            BlockPos.MutableBlockPos var24 = this.getWorldPos(5, 3, 6);
-            if (var5.isInside(var24)) {
+            BlockPos.MutableBlockPos var25 = this.getWorldPos(5, 3, 6);
+            if (var5.isInside(var25)) {
                this.hasPlacedSpawner = true;
-               var1.setBlock(var24, Blocks.SPAWNER.defaultBlockState(), 2);
-               BlockEntity var19 = var1.getBlockEntity(var24);
-               if (var19 instanceof SpawnerBlockEntity) {
-                  ((SpawnerBlockEntity)var19).getSpawner().setEntityId(EntityType.SILVERFISH);
+               var1.setBlock(var25, Blocks.SPAWNER.defaultBlockState(), 2);
+               BlockEntity var19 = var1.getBlockEntity(var25);
+               if (var19 instanceof SpawnerBlockEntity var20) {
+                  var20.setEntityId(EntityType.SILVERFISH, var4);
                }
             }
          }

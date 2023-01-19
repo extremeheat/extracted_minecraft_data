@@ -16,15 +16,19 @@ public class InBedChatScreen extends ChatScreen {
    @Override
    protected void init() {
       super.init();
-      this.leaveBedButton = this.addRenderableWidget(
-         new Button(this.width / 2 - 100, this.height - 40, 200, 20, Component.translatable("multiplayer.stopSleeping"), var1 -> this.sendWakeUp())
-      );
+      this.leaveBedButton = Button.builder(Component.translatable("multiplayer.stopSleeping"), var1 -> this.sendWakeUp())
+         .bounds(this.width / 2 - 100, this.height - 40, 200, 20)
+         .build();
+      this.addRenderableWidget(this.leaveBedButton);
    }
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.leaveBedButton.visible = this.getDisplayedPreviewText() == null;
-      super.render(var1, var2, var3, var4);
+      if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
+         this.leaveBedButton.render(var1, var2, var3, var4);
+      } else {
+         super.render(var1, var2, var3, var4);
+      }
    }
 
    @Override
@@ -33,10 +37,21 @@ public class InBedChatScreen extends ChatScreen {
    }
 
    @Override
+   public boolean charTyped(char var1, int var2) {
+      return !this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer()) ? true : super.charTyped(var1, var2);
+   }
+
+   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (var1 == 256) {
          this.sendWakeUp();
-      } else if (var1 == 257 || var1 == 335) {
+      }
+
+      if (!this.minecraft.getChatStatus().isChatAllowed(this.minecraft.isLocalServer())) {
+         return true;
+      } else if (var1 != 257 && var1 != 335) {
+         return super.keyPressed(var1, var2, var3);
+      } else {
          if (this.handleChatInput(this.input.getValue(), true)) {
             this.minecraft.setScreen(null);
             this.input.setValue("");
@@ -45,8 +60,6 @@ public class InBedChatScreen extends ChatScreen {
 
          return true;
       }
-
-      return super.keyPressed(var1, var2, var3);
    }
 
    private void sendWakeUp() {

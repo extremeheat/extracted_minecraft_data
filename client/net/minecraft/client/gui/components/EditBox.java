@@ -17,7 +17,6 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -28,7 +27,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
-public class EditBox extends AbstractWidget implements Widget, GuiEventListener {
+public class EditBox extends AbstractWidget implements Renderable {
    public static final int BACKWARDS = -1;
    public static final int FORWARDS = 1;
    private static final int CURSOR_INSERT_WIDTH = 1;
@@ -57,6 +56,8 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
    private Consumer<String> responder;
    private Predicate<String> filter = Objects::nonNull;
    private BiFunction<String, Integer, FormattedCharSequence> formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
+   @Nullable
+   private Component hint;
 
    public EditBox(Font var1, int var2, int var3, int var4, int var5, Component var6) {
       this(var1, var2, var3, var4, var5, null, var6);
@@ -348,13 +349,16 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       if (!this.isVisible()) {
          return false;
       } else {
-         boolean var6 = var1 >= (double)this.x && var1 < (double)(this.x + this.width) && var3 >= (double)this.y && var3 < (double)(this.y + this.height);
+         boolean var6 = var1 >= (double)this.getX()
+            && var1 < (double)(this.getX() + this.width)
+            && var3 >= (double)this.getY()
+            && var3 < (double)(this.getY() + this.height);
          if (this.canLoseFocus) {
             this.setFocus(var6);
          }
 
          if (this.isFocused() && var6 && var5 == 0) {
-            int var7 = Mth.floor(var1) - this.x;
+            int var7 = Mth.floor(var1) - this.getX();
             if (this.bordered) {
                var7 -= 4;
             }
@@ -377,8 +381,8 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
       if (this.isVisible()) {
          if (this.isBordered()) {
             int var5 = this.isFocused() ? -1 : -6250336;
-            fill(var1, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, var5);
-            fill(var1, this.x, this.y, this.x + this.width, this.y + this.height, -16777216);
+            fill(var1, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, var5);
+            fill(var1, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
          }
 
          int var17 = this.isEditable ? this.textColor : this.textColorUneditable;
@@ -387,8 +391,8 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
          String var8 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
          boolean var9 = var6 >= 0 && var6 <= var8.length();
          boolean var10 = this.isFocused() && this.frame / 6 % 2 == 0 && var9;
-         int var11 = this.bordered ? this.x + 4 : this.x;
-         int var12 = this.bordered ? this.y + (this.height - 8) / 2 : this.y;
+         int var11 = this.bordered ? this.getX() + 4 : this.getX();
+         int var12 = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
          int var13 = var11;
          if (var7 > var8.length()) {
             var7 = var8.length();
@@ -410,6 +414,10 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
 
          if (!var8.isEmpty() && var9 && var6 < var8.length()) {
             this.font.drawShadow(var1, this.formatter.apply(var8.substring(var6), this.cursorPos), (float)var13, (float)var12, var17);
+         }
+
+         if (this.hint != null && var8.isEmpty() && !this.isFocused()) {
+            this.font.drawShadow(var1, this.hint, (float)var13, (float)var12, var17);
          }
 
          if (!var18 && this.suggestion != null) {
@@ -444,12 +452,12 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
          var4 = var7;
       }
 
-      if (var3 > this.x + this.width) {
-         var3 = this.x + this.width;
+      if (var3 > this.getX() + this.width) {
+         var3 = this.getX() + this.width;
       }
 
-      if (var1 > this.x + this.width) {
-         var1 = this.x + this.width;
+      if (var1 > this.getX() + this.width) {
+         var1 = this.getX() + this.width;
       }
 
       Tesselator var8 = Tesselator.getInstance();
@@ -509,7 +517,11 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
 
    @Override
    public boolean isMouseOver(double var1, double var3) {
-      return this.visible && var1 >= (double)this.x && var1 < (double)(this.x + this.width) && var3 >= (double)this.y && var3 < (double)(this.y + this.height);
+      return this.visible
+         && var1 >= (double)this.getX()
+         && var1 < (double)(this.getX() + this.width)
+         && var3 >= (double)this.getY()
+         && var3 < (double)(this.getY() + this.height);
    }
 
    @Override
@@ -573,15 +585,15 @@ public class EditBox extends AbstractWidget implements Widget, GuiEventListener 
    }
 
    public int getScreenX(int var1) {
-      return var1 > this.value.length() ? this.x : this.x + this.font.width(this.value.substring(0, var1));
-   }
-
-   public void setX(int var1) {
-      this.x = var1;
+      return var1 > this.value.length() ? this.getX() : this.getX() + this.font.width(this.value.substring(0, var1));
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, Component.translatable("narration.edit_box", this.getValue()));
+   public void updateWidgetNarration(NarrationElementOutput var1) {
+      var1.add(NarratedElementType.TITLE, this.createNarrationMessage());
+   }
+
+   public void setHint(Component var1) {
+      this.hint = var1;
    }
 }

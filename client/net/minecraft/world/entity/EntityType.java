@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -52,6 +53,7 @@ import net.minecraft.world.entity.animal.Turtle;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.camel.Camel;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.Tadpole;
 import net.minecraft.world.entity.animal.goat.Goat;
@@ -139,6 +141,10 @@ import net.minecraft.world.entity.vehicle.MinecartFurnace;
 import net.minecraft.world.entity.vehicle.MinecartHopper;
 import net.minecraft.world.entity.vehicle.MinecartSpawner;
 import net.minecraft.world.entity.vehicle.MinecartTNT;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -151,10 +157,10 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.slf4j.Logger;
 
-public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
+public class EntityType<T extends Entity> implements FeatureElement, EntityTypeTest<Entity, T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String ENTITY_TAG = "EntityTag";
-   private final Holder.Reference<EntityType<?>> builtInRegistryHolder = Registry.ENTITY_TYPE.createIntrusiveHolder(this);
+   private final Holder.Reference<EntityType<?>> builtInRegistryHolder = BuiltInRegistries.ENTITY_TYPE.createIntrusiveHolder(this);
    private static final float MAGIC_HORSE_WIDTH = 1.3964844F;
    public static final EntityType<Allay> ALLAY = register(
       "allay", EntityType.Builder.<Allay>of(Allay::new, MobCategory.CREATURE).sized(0.35F, 0.6F).clientTrackingRange(8).updateInterval(2)
@@ -193,6 +199,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
    );
    public static final EntityType<Cat> CAT = register(
       "cat", EntityType.Builder.<Cat>of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).clientTrackingRange(8)
+   );
+   public static final EntityType<Camel> CAMEL = register(
+      "camel",
+      EntityType.Builder.<Camel>of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).clientTrackingRange(10).requiredFeatures(FeatureFlags.UPDATE_1_20)
    );
    public static final EntityType<CaveSpider> CAVE_SPIDER = register(
       "cave_spider", EntityType.Builder.<CaveSpider>of(CaveSpider::new, MobCategory.MONSTER).sized(0.7F, 0.5F).clientTrackingRange(8)
@@ -562,17 +572,18 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
    @Nullable
    private ResourceLocation lootTable;
    private final EntityDimensions dimensions;
+   private final FeatureFlagSet requiredFeatures;
 
    private static <T extends Entity> EntityType<T> register(String var0, EntityType.Builder<T> var1) {
-      return Registry.register(Registry.ENTITY_TYPE, var0, var1.build(var0));
+      return Registry.register(BuiltInRegistries.ENTITY_TYPE, var0, var1.build(var0));
    }
 
    public static ResourceLocation getKey(EntityType<?> var0) {
-      return Registry.ENTITY_TYPE.getKey(var0);
+      return BuiltInRegistries.ENTITY_TYPE.getKey(var0);
    }
 
    public static Optional<EntityType<?>> byString(String var0) {
-      return Registry.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.tryParse(var0));
    }
 
    public EntityType(
@@ -585,7 +596,8 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
       ImmutableSet<Block> var7,
       EntityDimensions var8,
       int var9,
-      int var10
+      int var10,
+      FeatureFlagSet var11
    ) {
       super();
       this.factory = var1;
@@ -598,75 +610,85 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
       this.dimensions = var8;
       this.clientTrackingRange = var9;
       this.updateInterval = var10;
+      this.requiredFeatures = var11;
    }
 
    @Nullable
-   public Entity spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, MobSpawnType var5, boolean var6, boolean var7) {
-      return this.spawn(
-         var1, var2 == null ? null : var2.getTag(), var2 != null && var2.hasCustomHoverName() ? var2.getHoverName() : null, var3, var4, var5, var6, var7
-      );
-   }
-
-   @Nullable
-   public T spawn(
-      ServerLevel var1,
-      @Nullable CompoundTag var2,
-      @Nullable Component var3,
-      @Nullable Player var4,
-      BlockPos var5,
-      MobSpawnType var6,
-      boolean var7,
-      boolean var8
-   ) {
-      Entity var9 = this.create(var1, var2, var3, var4, var5, var6, var7, var8);
-      if (var9 != null) {
-         var1.addFreshEntityWithPassengers(var9);
+   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, MobSpawnType var5, boolean var6, boolean var7) {
+      Consumer var8;
+      CompoundTag var9;
+      if (var2 != null) {
+         var9 = var2.getTag();
+         var8 = createDefaultStackConfig(var1, var2, var3);
+      } else {
+         var8 = var0 -> {
+         };
+         var9 = null;
       }
 
-      return (T)var9;
+      return this.spawn(var1, var9, var8, var4, var5, var6, var7);
+   }
+
+   public static <T extends Entity> Consumer<T> createDefaultStackConfig(ServerLevel var0, ItemStack var1, @Nullable Player var2) {
+      Consumer var3 = var0x -> {
+      };
+      var3 = appendCustomNameConfig(var3, var1);
+      return appendCustomEntityStackConfig(var3, var0, var1, var2);
+   }
+
+   public static <T extends Entity> Consumer<T> appendCustomNameConfig(Consumer<T> var0, ItemStack var1) {
+      return var1.hasCustomHoverName() ? var0.andThen(var1x -> var1x.setCustomName(var1.getHoverName())) : var0;
+   }
+
+   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, ServerLevel var1, ItemStack var2, @Nullable Player var3) {
+      CompoundTag var4 = var2.getTag();
+      return var4 != null ? var0.andThen(var3x -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
+   }
+
+   @Nullable
+   public T spawn(ServerLevel var1, BlockPos var2, MobSpawnType var3) {
+      return this.spawn(var1, (CompoundTag)null, null, var2, var3, false, false);
+   }
+
+   @Nullable
+   public T spawn(ServerLevel var1, @Nullable CompoundTag var2, @Nullable Consumer<T> var3, BlockPos var4, MobSpawnType var5, boolean var6, boolean var7) {
+      Entity var8 = this.create(var1, var2, var3, var4, var5, var6, var7);
+      if (var8 != null) {
+         var1.addFreshEntityWithPassengers(var8);
+      }
+
+      return (T)var8;
    }
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
-   public T create(
-      ServerLevel var1,
-      @Nullable CompoundTag var2,
-      @Nullable Component var3,
-      @Nullable Player var4,
-      BlockPos var5,
-      MobSpawnType var6,
-      boolean var7,
-      boolean var8
-   ) {
-      Entity var9 = this.create(var1);
-      if (var9 == null) {
+   public T create(ServerLevel var1, @Nullable CompoundTag var2, @Nullable Consumer<T> var3, BlockPos var4, MobSpawnType var5, boolean var6, boolean var7) {
+      Entity var8 = this.create(var1);
+      if (var8 == null) {
          return null;
       } else {
-         double var10;
-         if (var7) {
-            var9.setPos((double)var5.getX() + 0.5, (double)(var5.getY() + 1), (double)var5.getZ() + 0.5);
-            var10 = getYOffset(var1, var5, var8, var9.getBoundingBox());
+         double var9;
+         if (var6) {
+            var8.setPos((double)var4.getX() + 0.5, (double)(var4.getY() + 1), (double)var4.getZ() + 0.5);
+            var9 = getYOffset(var1, var4, var7, var8.getBoundingBox());
          } else {
-            var10 = 0.0;
+            var9 = 0.0;
          }
 
-         var9.moveTo(
-            (double)var5.getX() + 0.5, (double)var5.getY() + var10, (double)var5.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F
-         );
-         if (var9 instanceof Mob var12) {
-            var12.yHeadRot = var12.getYRot();
-            var12.yBodyRot = var12.getYRot();
-            var12.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var12.blockPosition()), var6, null, var2);
-            var12.playAmbientSound();
+         var8.moveTo((double)var4.getX() + 0.5, (double)var4.getY() + var9, (double)var4.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
+         if (var8 instanceof Mob var11) {
+            var11.yHeadRot = var11.getYRot();
+            var11.yBodyRot = var11.getYRot();
+            var11.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var11.blockPosition()), var5, null, var2);
+            var11.playAmbientSound();
          }
 
-         if (var3 != null && var9 instanceof LivingEntity) {
-            var9.setCustomName(var3);
+         if (var3 != null) {
+            var3.accept(var8);
          }
 
-         updateCustomEntityTag(var1, var4, var9, var2);
-         return (T)var9;
+         return (T)var8;
       }
    }
 
@@ -717,7 +739,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
 
    public String getDescriptionId() {
       if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("entity", Registry.ENTITY_TYPE.getKey(this));
+         this.descriptionId = Util.makeDescriptionId("entity", BuiltInRegistries.ENTITY_TYPE.getKey(this));
       }
 
       return this.descriptionId;
@@ -743,8 +765,8 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
 
    public ResourceLocation getDefaultLootTable() {
       if (this.lootTable == null) {
-         ResourceLocation var1 = Registry.ENTITY_TYPE.getKey(this);
-         this.lootTable = new ResourceLocation(var1.getNamespace(), "entities/" + var1.getPath());
+         ResourceLocation var1 = BuiltInRegistries.ENTITY_TYPE.getKey(this);
+         this.lootTable = var1.withPrefix("entities/");
       }
 
       return this.lootTable;
@@ -758,9 +780,14 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
       return this.dimensions.height;
    }
 
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.requiredFeatures;
+   }
+
    @Nullable
    public T create(Level var1) {
-      return this.factory.create(this, var1);
+      return !this.isEnabled(var1.enabledFeatures()) ? null : this.factory.create(this, var1);
    }
 
    public static Optional<Entity> create(CompoundTag var0, Level var1) {
@@ -789,7 +816,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
    }
 
    public static Optional<EntityType<?>> by(CompoundTag var0) {
-      return Registry.ENTITY_TYPE.getOptional(new ResourceLocation(var0.getString("id")));
+      return BuiltInRegistries.ENTITY_TYPE.getOptional(new ResourceLocation(var0.getString("id")));
    }
 
    @Nullable
@@ -898,6 +925,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
       private int clientTrackingRange = 5;
       private int updateInterval = 3;
       private EntityDimensions dimensions = EntityDimensions.scalable(0.6F, 1.8F);
+      private FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
       private Builder(EntityType.EntityFactory<T> var1, MobCategory var2) {
          super();
@@ -954,6 +982,11 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
          return this;
       }
 
+      public EntityType.Builder<T> requiredFeatures(FeatureFlag... var1) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+         return this;
+      }
+
       public EntityType<T> build(String var1) {
          if (this.serialize) {
             Util.fetchChoiceType(References.ENTITY_TREE, var1);
@@ -969,7 +1002,8 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T> {
             this.immuneTo,
             this.dimensions,
             this.clientTrackingRange,
-            this.updateInterval
+            this.updateInterval,
+            this.requiredFeatures
          );
       }
    }

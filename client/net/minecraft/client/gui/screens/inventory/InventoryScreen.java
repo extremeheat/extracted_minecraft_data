@@ -3,8 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -19,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
+import org.joml.Quaternionf;
 
 public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMenu> implements RecipeUpdateListener {
    private static final ResourceLocation RECIPE_BUTTON_LOCATION = new ResourceLocation("textures/gui/recipe_button.png");
@@ -38,7 +37,12 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    @Override
    public void containerTick() {
       if (this.minecraft.gameMode.hasInfiniteItems()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player));
+         this.minecraft
+            .setScreen(
+               new CreativeModeInventoryScreen(
+                  this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), this.minecraft.options.operatorItemsTab().get()
+               )
+            );
       } else {
          this.recipeBookComponent.tick();
       }
@@ -47,7 +51,12 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    @Override
    protected void init() {
       if (this.minecraft.gameMode.hasInfiniteItems()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player));
+         this.minecraft
+            .setScreen(
+               new CreativeModeInventoryScreen(
+                  this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), this.minecraft.options.operatorItemsTab().get()
+               )
+            );
       } else {
          super.init();
          this.widthTooNarrow = this.width < 379;
@@ -57,7 +66,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
          this.addRenderableWidget(new ImageButton(this.leftPos + 104, this.height / 2 - 22, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, var1 -> {
             this.recipeBookComponent.toggleVisibility();
             this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-            ((ImageButton)var1).setPosition(this.leftPos + 104, this.height / 2 - 22);
+            var1.setPosition(this.leftPos + 104, this.height / 2 - 22);
             this.buttonClicked = true;
          }));
          this.addWidget(this.recipeBookComponent);
@@ -104,14 +113,14 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       float var7 = (float)Math.atan((double)(var4 / 40.0F));
       PoseStack var8 = RenderSystem.getModelViewStack();
       var8.pushPose();
-      var8.translate((double)var0, (double)var1, 1050.0);
+      var8.translate((float)var0, (float)var1, 1050.0F);
       var8.scale(1.0F, 1.0F, -1.0F);
       RenderSystem.applyModelViewMatrix();
       PoseStack var9 = new PoseStack();
-      var9.translate(0.0, 0.0, 1000.0);
+      var9.translate(0.0F, 0.0F, 1000.0F);
       var9.scale((float)var2, (float)var2, (float)var2);
-      Quaternion var10 = Vector3f.ZP.rotationDegrees(180.0F);
-      Quaternion var11 = Vector3f.XP.rotationDegrees(var7 * 20.0F);
+      Quaternionf var10 = new Quaternionf().rotateZ(3.1415927F);
+      Quaternionf var11 = new Quaternionf().rotateX(var7 * 20.0F * 0.017453292F);
       var10.mul(var11);
       var9.mulPose(var10);
       float var12 = var5.yBodyRot;
@@ -126,7 +135,7 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       var5.yHeadRotO = var5.getYRot();
       Lighting.setupForEntityInInventory();
       EntityRenderDispatcher var17 = Minecraft.getInstance().getEntityRenderDispatcher();
-      var11.conj();
+      var11.conjugate();
       var17.overrideCameraOrientation(var11);
       var17.setRenderShadow(false);
       MultiBufferSource.BufferSource var18 = Minecraft.getInstance().renderBuffers().bufferSource();
@@ -183,15 +192,6 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    @Override
    public void recipesUpdated() {
       this.recipeBookComponent.recipesUpdated();
-   }
-
-   @Override
-   public void removed() {
-      if (this.recipeBookComponentInitialized) {
-         this.recipeBookComponent.removed();
-      }
-
-      super.removed();
    }
 
    @Override

@@ -8,7 +8,7 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -17,20 +17,22 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 public class UpgradeRecipeBuilder {
    private final Ingredient base;
    private final Ingredient addition;
+   private final RecipeCategory category;
    private final Item result;
    private final Advancement.Builder advancement = Advancement.Builder.advancement();
    private final RecipeSerializer<?> type;
 
-   public UpgradeRecipeBuilder(RecipeSerializer<?> var1, Ingredient var2, Ingredient var3, Item var4) {
+   public UpgradeRecipeBuilder(RecipeSerializer<?> var1, Ingredient var2, Ingredient var3, RecipeCategory var4, Item var5) {
       super();
+      this.category = var4;
       this.type = var1;
       this.base = var2;
       this.addition = var3;
-      this.result = var4;
+      this.result = var5;
    }
 
-   public static UpgradeRecipeBuilder smithing(Ingredient var0, Ingredient var1, Item var2) {
-      return new UpgradeRecipeBuilder(RecipeSerializer.SMITHING, var0, var1, var2);
+   public static UpgradeRecipeBuilder smithing(Ingredient var0, Ingredient var1, RecipeCategory var2, Item var3) {
+      return new UpgradeRecipeBuilder(RecipeSerializer.SMITHING, var0, var1, var2, var3);
    }
 
    public UpgradeRecipeBuilder unlocks(String var1, CriterionTriggerInstance var2) {
@@ -51,13 +53,7 @@ public class UpgradeRecipeBuilder {
          .requirements(RequirementsStrategy.OR);
       var1.accept(
          new UpgradeRecipeBuilder.Result(
-            var2,
-            this.type,
-            this.base,
-            this.addition,
-            this.result,
-            this.advancement,
-            new ResourceLocation(var2.getNamespace(), "recipes/" + this.result.getItemCategory().getRecipeFolderName() + "/" + var2.getPath())
+            var2, this.type, this.base, this.addition, this.result, this.advancement, var2.withPrefix("recipes/" + this.category.getFolderName() + "/")
          )
       );
    }
@@ -95,7 +91,7 @@ public class UpgradeRecipeBuilder {
          var1.add("base", this.base.toJson());
          var1.add("addition", this.addition.toJson());
          JsonObject var2 = new JsonObject();
-         var2.addProperty("item", Registry.ITEM.getKey(this.result).toString());
+         var2.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result).toString());
          var1.add("result", var2);
       }
 

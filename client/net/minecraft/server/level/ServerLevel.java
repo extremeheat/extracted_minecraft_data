@@ -21,7 +21,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -43,10 +42,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.Packet;
@@ -69,6 +69,7 @@ import net.minecraft.server.players.SleepStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
@@ -96,6 +97,7 @@ import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
@@ -111,6 +113,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -128,7 +131,7 @@ import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.gameevent.GameEventListener;
+import net.minecraft.world.level.gameevent.GameEventDispatcher;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -169,6 +172,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private final ServerLevelData serverLevelData;
    final EntityTickList entityTickList = new EntityTickList();
    private final PersistentEntitySectionManager<Entity> entityManager;
+   private final GameEventDispatcher gameEventDispatcher;
    public boolean noSave;
    private final SleepStatus sleepStatus;
    private int emptyTime;
@@ -180,7 +184,6 @@ public class ServerLevel extends Level implements WorldGenLevel {
    protected final Raids raids;
    private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet();
    private final List<BlockEventData> blockEventsToReschedule = new ArrayList<>(64);
-   private List<GameEvent.Message> gameEventMessages = new ArrayList<>();
    private boolean handlingTick;
    private final List<CustomSpawner> customSpawners;
    @Nullable
@@ -203,7 +206,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       List<CustomSpawner> var11,
       boolean var12
    ) {
-      super(var4, var5, var6.typeHolder(), var1::getProfiler, false, var8, var9, var1.getMaxChainedNeighborUpdates());
+      super(var4, var5, var6.type(), var1::getProfiler, false, var8, var9, var1.getMaxChainedNeighborUpdates());
       this.tickTime = var12;
       this.server = var1;
       this.customSpawners = var11;
@@ -227,7 +230,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
          this.entityManager::updateChunkStatus,
          () -> var1.overworld().getDataStorage()
       );
-      var13.ensureStructuresGenerated(this.chunkSource.randomState());
+      this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
       this.updateSkyBrightness();
       this.prepareWeather();
@@ -238,7 +241,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
          var4.setGameType(var1.getDefaultGameType());
       }
 
-      long var17 = var1.getWorldData().worldGenSettings().seed();
+      long var17 = var1.getWorldData().worldGenOptions().seed();
       this.structureCheck = new StructureCheck(
          this.chunkSource.chunkScanner(),
          this.registryAccess(),
@@ -251,7 +254,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
          var17,
          var15
       );
-      this.structureManager = new StructureManager(this, var1.getWorldData().worldGenSettings(), this.structureCheck);
+      this.structureManager = new StructureManager(this, var1.getWorldData().worldGenOptions(), this.structureCheck);
       if (this.dimension() == Level.END && this.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
          this.dragonFight = new EndDragonFight(this, var17, var1.getWorldData().endDragonFightData());
       } else {
@@ -259,6 +262,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
 
       this.sleepStatus = new SleepStatus();
+      this.gameEventDispatcher = new GameEventDispatcher(this);
    }
 
    public void setWeatherParameters(int var1, int var2, boolean var3, boolean var4) {
@@ -362,8 +366,6 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       var2.push("entityManagement");
       this.entityManager.tick();
-      var2.popPush("gameEvents");
-      this.sendGameEvents();
       var2.pop();
    }
 
@@ -422,16 +424,20 @@ public class ServerLevel extends Level implements WorldGenLevel {
                && !this.getBlockState(var8.below()).is(Blocks.LIGHTNING_ROD);
             if (var10) {
                SkeletonHorse var11 = EntityType.SKELETON_HORSE.create(this);
-               var11.setTrap(true);
-               var11.setAge(0);
-               var11.setPos((double)var8.getX(), (double)var8.getY(), (double)var8.getZ());
-               this.addFreshEntity(var11);
+               if (var11 != null) {
+                  var11.setTrap(true);
+                  var11.setAge(0);
+                  var11.setPos((double)var8.getX(), (double)var8.getY(), (double)var8.getZ());
+                  this.addFreshEntity(var11);
+               }
             }
 
             LightningBolt var23 = EntityType.LIGHTNING_BOLT.create(this);
-            var23.moveTo(Vec3.atBottomCenterOf(var8));
-            var23.setVisualOnly(var10);
-            this.addFreshEntity(var23);
+            if (var23 != null) {
+               var23.moveTo(Vec3.atBottomCenterOf(var8));
+               var23.setVisualOnly(var10);
+               this.addFreshEntity(var23);
+            }
          }
       }
 
@@ -445,17 +451,28 @@ public class ServerLevel extends Level implements WorldGenLevel {
          }
 
          if (var4) {
-            if (var21.shouldSnow(this, var17)) {
-               this.setBlockAndUpdate(var17, Blocks.SNOW.defaultBlockState());
+            int var24 = this.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT);
+            if (var24 > 0 && var21.shouldSnow(this, var17)) {
+               BlockState var12 = this.getBlockState(var17);
+               if (var12.is(Blocks.SNOW)) {
+                  int var13 = var12.getValue(SnowLayerBlock.LAYERS);
+                  if (var13 < Math.min(var24, 8)) {
+                     BlockState var14 = var12.setValue(SnowLayerBlock.LAYERS, Integer.valueOf(var13 + 1));
+                     Block.pushEntitiesUp(var12, var14, this, var17);
+                     this.setBlockAndUpdate(var17, var14);
+                  }
+               } else {
+                  this.setBlockAndUpdate(var17, Blocks.SNOW.defaultBlockState());
+               }
             }
 
-            BlockState var24 = this.getBlockState(var19);
-            Biome.Precipitation var12 = var21.getPrecipitation();
-            if (var12 == Biome.Precipitation.RAIN && var21.coldEnoughToSnow(var19)) {
-               var12 = Biome.Precipitation.SNOW;
+            BlockState var26 = this.getBlockState(var19);
+            Biome.Precipitation var28 = var21.getPrecipitation();
+            if (var28 == Biome.Precipitation.RAIN && var21.coldEnoughToSnow(var19)) {
+               var28 = Biome.Precipitation.SNOW;
             }
 
-            var24.getBlock().handlePrecipitation(var24, this, var19, var12);
+            var26.getBlock().handlePrecipitation(var26, this, var19, var28);
          }
       }
 
@@ -463,19 +480,19 @@ public class ServerLevel extends Level implements WorldGenLevel {
       if (var2 > 0) {
          for(LevelChunkSection var25 : var1.getSections()) {
             if (var25.isRandomlyTicking()) {
-               int var26 = var25.bottomBlockY();
+               int var27 = var25.bottomBlockY();
 
-               for(int var13 = 0; var13 < var2; ++var13) {
-                  BlockPos var14 = this.getBlockRandomPos(var5, var26, var6, 15);
+               for(int var29 = 0; var29 < var2; ++var29) {
+                  BlockPos var30 = this.getBlockRandomPos(var5, var27, var6, 15);
                   var7.push("randomTick");
-                  BlockState var15 = var25.getBlockState(var14.getX() - var5, var14.getY() - var26, var14.getZ() - var6);
+                  BlockState var15 = var25.getBlockState(var30.getX() - var5, var30.getY() - var27, var30.getZ() - var6);
                   if (var15.isRandomlyTicking()) {
-                     var15.randomTick(this, var14, this.random);
+                     var15.randomTick(this, var30, this.random);
                   }
 
                   FluidState var16 = var15.getFluidState();
                   if (var16.isRandomlyTicking()) {
-                     var16.randomTick(this, var14, this.random);
+                     var16.randomTick(this, var30, this.random);
                   }
 
                   var7.pop();
@@ -670,7 +687,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       var1.setOldPosAndRot();
       ProfilerFiller var2 = this.getProfiler();
       ++var1.tickCount;
-      this.getProfiler().push(() -> Registry.ENTITY_TYPE.getKey(var1.getType()).toString());
+      this.getProfiler().push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString());
       var2.incrementCounter("tickNonPassenger");
       var1.tick();
       this.getProfiler().pop();
@@ -687,7 +704,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
          var2.setOldPosAndRot();
          ++var2.tickCount;
          ProfilerFiller var3 = this.getProfiler();
-         var3.push(() -> Registry.ENTITY_TYPE.getKey(var2.getType()).toString());
+         var3.push(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var2.getType()).toString());
          var3.incrementCounter("tickPassenger");
          var2.rideTick();
          var3.pop();
@@ -734,12 +751,25 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    public <T extends Entity> List<? extends T> getEntities(EntityTypeTest<Entity, T> var1, Predicate<? super T> var2) {
       ArrayList var3 = Lists.newArrayList();
-      this.getEntities().get(var1, var2x -> {
-         if (var2.test(var2x)) {
-            var3.add(var2x);
-         }
-      });
+      this.getEntities(var1, var2, var3);
       return var3;
+   }
+
+   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, Predicate<? super T> var2, List<? super T> var3) {
+      this.getEntities(var1, var2, var3, 2147483647);
+   }
+
+   public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, Predicate<? super T> var2, List<? super T> var3, int var4) {
+      this.getEntities().get(var1, var3x -> {
+         if (var2.test(var3x)) {
+            var3.add(var3x);
+            if (var3.size() >= var4) {
+               return AbortableIterationConsumer.Continuation.ABORT;
+            }
+         }
+
+         return AbortableIterationConsumer.Continuation.CONTINUE;
+      });
    }
 
    public List<? extends EnderDragon> getDragons() {
@@ -747,15 +777,22 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    public List<ServerPlayer> getPlayers(Predicate<? super ServerPlayer> var1) {
-      ArrayList var2 = Lists.newArrayList();
+      return this.getPlayers(var1, 2147483647);
+   }
 
-      for(ServerPlayer var4 : this.players) {
-         if (var1.test(var4)) {
-            var2.add(var4);
+   public List<ServerPlayer> getPlayers(Predicate<? super ServerPlayer> var1, int var2) {
+      ArrayList var3 = Lists.newArrayList();
+
+      for(ServerPlayer var5 : this.players) {
+         if (var1.test(var5)) {
+            var3.add(var5);
+            if (var3.size() >= var2) {
+               return var3;
+            }
          }
       }
 
-      return var2;
+      return var3;
    }
 
    @Nullable
@@ -847,7 +884,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @Override
    public void playSeededSound(
-      @Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12
+      @Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12
    ) {
       this.server
          .getPlayerList()
@@ -856,14 +893,14 @@ public class ServerLevel extends Level implements WorldGenLevel {
             var2,
             var4,
             var6,
-            (double)var8.getRange(var10),
+            (double)((SoundEvent)var8.value()).getRange(var10),
             this.dimension(),
             new ClientboundSoundPacket(var8, var9, var2, var4, var6, var10, var11, var12)
          );
    }
 
    @Override
-   public void playSeededSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6, long var7) {
+   public void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
       this.server
          .getPlayerList()
          .broadcast(
@@ -871,7 +908,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
             var2.getX(),
             var2.getY(),
             var2.getZ(),
-            (double)var3.getRange(var5),
+            (double)((SoundEvent)var3.value()).getRange(var5),
             this.dimension(),
             new ClientboundSoundEntityPacket(var3, var4, var2, var5, var6, var7)
          );
@@ -879,7 +916,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @Override
    public void globalLevelEvent(int var1, BlockPos var2, int var3) {
-      this.server.getPlayerList().broadcastAll(new ClientboundLevelEventPacket(var1, var2, var3, true));
+      if (this.getGameRules().getBoolean(GameRules.RULE_GLOBAL_SOUND_EVENTS)) {
+         this.server.getPlayerList().broadcastAll(new ClientboundLevelEventPacket(var1, var2, var3, true));
+      } else {
+         this.levelEvent(null, var1, var2, var3);
+      }
    }
 
    @Override
@@ -903,59 +944,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @Override
    public void gameEvent(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
-      int var4 = var1.getNotificationRadius();
-      BlockPos var5 = new BlockPos(var2);
-      int var6 = SectionPos.blockToSectionCoord(var5.getX() - var4);
-      int var7 = SectionPos.blockToSectionCoord(var5.getY() - var4);
-      int var8 = SectionPos.blockToSectionCoord(var5.getZ() - var4);
-      int var9 = SectionPos.blockToSectionCoord(var5.getX() + var4);
-      int var10 = SectionPos.blockToSectionCoord(var5.getY() + var4);
-      int var11 = SectionPos.blockToSectionCoord(var5.getZ() + var4);
-      ArrayList var12 = new ArrayList();
-      boolean var13 = false;
-
-      for(int var14 = var6; var14 <= var9; ++var14) {
-         for(int var15 = var8; var15 <= var11; ++var15) {
-            LevelChunk var16 = this.getChunkSource().getChunkNow(var14, var15);
-            if (var16 != null) {
-               for(int var17 = var7; var17 <= var10; ++var17) {
-                  var13 |= var16.getEventDispatcher(var17)
-                     .walkListeners(
-                        var1,
-                        var2,
-                        var3,
-                        (var5x, var6x) -> (var5x.handleEventsImmediately() ? var12 : this.gameEventMessages)
-                              .add(new GameEvent.Message(var1, var2, var3, var5x, var6x))
-                     );
-               }
-            }
-         }
-      }
-
-      if (!var12.isEmpty()) {
-         this.handleGameEventMessagesInQueue(var12);
-      }
-
-      if (var13) {
-         DebugPackets.sendGameEventInfo(this, var1, var2);
-      }
-   }
-
-   private void sendGameEvents() {
-      if (!this.gameEventMessages.isEmpty()) {
-         List var1 = this.gameEventMessages;
-         this.gameEventMessages = new ArrayList<>();
-         this.handleGameEventMessagesInQueue(var1);
-      }
-   }
-
-   private void handleGameEventMessagesInQueue(List<GameEvent.Message> var1) {
-      Collections.sort(var1);
-
-      for(GameEvent.Message var3 : var1) {
-         GameEventListener var4 = var3.recipient();
-         var4.handleGameEvent(this, var3);
-      }
+      this.gameEventDispatcher.post(var1, var2, var3);
    }
 
    @Override
@@ -1029,12 +1018,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
       double var8,
       float var10,
       boolean var11,
-      Explosion.BlockInteraction var12
+      Level.ExplosionInteraction var12
    ) {
-      Explosion var13 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var12);
-      var13.explode();
-      var13.finalizeExplosion(false);
-      if (var12 == Explosion.BlockInteraction.NONE) {
+      Explosion var13 = this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, false);
+      if (!var13.interactsWithBlocks()) {
          var13.clearToBlow();
       }
 
@@ -1167,10 +1154,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @Nullable
    public BlockPos findNearestMapStructure(TagKey<Structure> var1, BlockPos var2, int var3, boolean var4) {
-      if (!this.server.getWorldData().worldGenSettings().generateStructures()) {
+      if (!this.server.getWorldData().worldGenOptions().generateStructures()) {
          return null;
       } else {
-         Optional var5 = this.registryAccess().registryOrThrow(Registry.STRUCTURE_REGISTRY).getTag(var1);
+         Optional var5 = this.registryAccess().registryOrThrow(Registries.STRUCTURE).getTag(var1);
          if (var5.isEmpty()) {
             return null;
          } else {
@@ -1396,7 +1383,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
             var4.getY(),
             var4.getZ(),
             var4.getUUID(),
-            Registry.ENTITY_TYPE.getKey(var4.getType()),
+            BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType()),
             var4.isAlive(),
             var6.getString(),
             var5 != null ? var5.getString() : null
@@ -1440,12 +1427,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    public boolean isFlat() {
-      return this.server.getWorldData().worldGenSettings().isFlatWorld();
+      return this.server.getWorldData().isFlatWorld();
    }
 
    @Override
    public long getSeed() {
-      return this.server.getWorldData().worldGenSettings().seed();
+      return this.server.getWorldData().worldGenOptions().seed();
    }
 
    @Nullable
@@ -1465,7 +1452,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
          "players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s",
          this.players.size(),
          this.entityManager.gatherStats(),
-         getTypeCount(this.entityManager.getEntityGetter().getAll(), var0 -> Registry.ENTITY_TYPE.getKey(var0.getType()).toString()),
+         getTypeCount(this.entityManager.getEntityGetter().getAll(), var0 -> BuiltInRegistries.ENTITY_TYPE.getKey(var0.getType()).toString()),
          this.blockEntityTickers.size(),
          getTypeCount(this.blockEntityTickers, TickingBlockEntity::getType),
          this.getBlockTicks().count(),
@@ -1555,6 +1542,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    public boolean isNaturalSpawningAllowed(ChunkPos var1) {
       return this.entityManager.canPositionTick(var1);
+   }
+
+   @Override
+   public FeatureFlagSet enabledFeatures() {
+      return this.server.getWorldData().enabledFeatures();
    }
 
    final class EntityCallbacks implements LevelCallback<Entity> {

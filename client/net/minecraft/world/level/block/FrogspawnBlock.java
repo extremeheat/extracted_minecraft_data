@@ -96,12 +96,14 @@ public class FrogspawnBlock extends Block {
 
       for(int var5 = 1; var5 <= var4; ++var5) {
          Tadpole var6 = EntityType.TADPOLE.create(var1);
-         double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
-         double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
-         int var11 = var3.nextInt(1, 361);
-         var6.moveTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
-         var6.setPersistenceRequired();
-         var1.addFreshEntity(var6);
+         if (var6 != null) {
+            double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
+            double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
+            int var11 = var3.nextInt(1, 361);
+            var6.moveTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
+            var6.setPersistenceRequired();
+            var1.addFreshEntity(var6);
+         }
       }
    }
 

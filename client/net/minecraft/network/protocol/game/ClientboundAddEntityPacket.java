@@ -2,13 +2,12 @@ package net.minecraft.network.protocol.game;
 
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListener> {
@@ -28,26 +27,6 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    private final byte yHeadRot;
    private final int data;
 
-   public ClientboundAddEntityPacket(LivingEntity var1) {
-      this(var1, 0);
-   }
-
-   public ClientboundAddEntityPacket(LivingEntity var1, int var2) {
-      this(
-         var1.getId(),
-         var1.getUUID(),
-         var1.getX(),
-         var1.getY(),
-         var1.getZ(),
-         var1.getXRot(),
-         var1.getYRot(),
-         var1.getType(),
-         var2,
-         var1.getDeltaMovement(),
-         (double)var1.yHeadRot
-      );
-   }
-
    public ClientboundAddEntityPacket(Entity var1) {
       this(var1, 0);
    }
@@ -64,7 +43,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
          var1.getType(),
          var2,
          var1.getDeltaMovement(),
-         0.0
+         (double)var1.getYHeadRot()
       );
    }
 
@@ -80,7 +59,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
          var1.getType(),
          var2,
          var1.getDeltaMovement(),
-         0.0
+         (double)var1.getYHeadRot()
       );
    }
 
@@ -107,7 +86,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       super();
       this.id = var1.readVarInt();
       this.uuid = var1.readUUID();
-      this.type = var1.readById(Registry.ENTITY_TYPE);
+      this.type = var1.readById(BuiltInRegistries.ENTITY_TYPE);
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
@@ -124,7 +103,7 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
    public void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.id);
       var1.writeUUID(this.uuid);
-      var1.writeId(Registry.ENTITY_TYPE, this.type);
+      var1.writeId(BuiltInRegistries.ENTITY_TYPE, this.type);
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);

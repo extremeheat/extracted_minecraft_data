@@ -18,15 +18,14 @@ import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
-import net.minecraft.world.entity.ai.behavior.FlyingRandomStroll;
 import net.minecraft.world.entity.ai.behavior.GoAndGiveItemsToTarget;
 import net.minecraft.world.entity.ai.behavior.GoToWantedItem;
 import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
 import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
 import net.minecraft.world.entity.ai.behavior.PositionTracker;
+import net.minecraft.world.entity.ai.behavior.RandomStroll;
 import net.minecraft.world.entity.ai.behavior.RunOne;
-import net.minecraft.world.entity.ai.behavior.RunSometimes;
-import net.minecraft.world.entity.ai.behavior.SetEntityLookTarget;
+import net.minecraft.world.entity.ai.behavior.SetEntityLookTargetSometimes;
 import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
 import net.minecraft.world.entity.ai.behavior.StayCloseToTarget;
 import net.minecraft.world.entity.ai.behavior.Swim;
@@ -47,6 +46,7 @@ public class AllayAi {
    private static final int MAX_WAIT_DURATION = 60;
    private static final int TIME_TO_FORGET_NOTEBLOCK = 600;
    private static final int DISTANCE_TO_WANTED_ITEM = 32;
+   private static final int GIVE_ITEM_TIMEOUT_DURATION = 20;
 
    public AllayAi() {
       super();
@@ -80,15 +80,15 @@ public class AllayAi {
       var0.addActivityWithConditions(
          Activity.IDLE,
          ImmutableList.of(
-            Pair.of(0, new GoToWantedItem<>(var0x -> true, 1.75F, true, 32)),
-            Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F)),
-            Pair.of(2, new StayCloseToTarget(AllayAi::getItemDepositPosition, 4, 16, 2.25F)),
-            Pair.of(3, new RunSometimes<>(new SetEntityLookTarget(var0x -> true, 6.0F), UniformInt.of(30, 60))),
+            Pair.of(0, GoToWantedItem.create(var0x -> true, 1.75F, true, 32)),
+            Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)),
+            Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, 4, 16, 2.25F)),
+            Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))),
             Pair.of(
                4,
                new RunOne(
                   ImmutableList.of(
-                     Pair.of(new FlyingRandomStroll(1.0F), 2), Pair.of(new SetWalkTargetFromLookTarget(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)
+                     Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1)
                   )
                )
             )

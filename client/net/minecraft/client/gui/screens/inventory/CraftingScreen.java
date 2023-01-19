@@ -104,12 +104,6 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
    }
 
    @Override
-   public void removed() {
-      this.recipeBookComponent.removed();
-      super.removed();
-   }
-
-   @Override
    public RecipeBookComponent getRecipeBookComponent() {
       return this.recipeBookComponent;
    }

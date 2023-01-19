@@ -27,9 +27,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -215,25 +219,31 @@ public final class NbtUtils {
       return var1;
    }
 
-   public static BlockState readBlockState(CompoundTag var0) {
-      if (!var0.contains("Name", 8)) {
+   public static BlockState readBlockState(HolderGetter<Block> var0, CompoundTag var1) {
+      if (!var1.contains("Name", 8)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         Block var1 = Registry.BLOCK.get(new ResourceLocation(var0.getString("Name")));
-         BlockState var2 = var1.defaultBlockState();
-         if (var0.contains("Properties", 10)) {
-            CompoundTag var3 = var0.getCompound("Properties");
-            StateDefinition var4 = var1.getStateDefinition();
+         ResourceLocation var2 = new ResourceLocation(var1.getString("Name"));
+         Optional var3 = var0.get(ResourceKey.create(Registries.BLOCK, var2));
+         if (var3.isEmpty()) {
+            return Blocks.AIR.defaultBlockState();
+         } else {
+            Block var4 = (Block)((Holder)var3.get()).value();
+            BlockState var5 = var4.defaultBlockState();
+            if (var1.contains("Properties", 10)) {
+               CompoundTag var6 = var1.getCompound("Properties");
+               StateDefinition var7 = var4.getStateDefinition();
 
-            for(String var6 : var3.getAllKeys()) {
-               net.minecraft.world.level.block.state.properties.Property var7 = var4.getProperty(var6);
-               if (var7 != null) {
-                  var2 = setValueHelper(var2, var7, var6, var3, var0);
+               for(String var9 : var6.getAllKeys()) {
+                  net.minecraft.world.level.block.state.properties.Property var10 = var7.getProperty(var9);
+                  if (var10 != null) {
+                     var5 = setValueHelper(var5, var10, var9, var6, var1);
+                  }
                }
             }
-         }
 
-         return var2;
+            return var5;
+         }
       }
    }
 
@@ -251,7 +261,7 @@ public final class NbtUtils {
 
    public static CompoundTag writeBlockState(BlockState var0) {
       CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", Registry.BLOCK.getKey(var0.getBlock()).toString());
+      var1.putString("Name", BuiltInRegistries.BLOCK.getKey(var0.getBlock()).toString());
       ImmutableMap var2 = var0.getValues();
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
@@ -271,7 +281,7 @@ public final class NbtUtils {
 
    public static CompoundTag writeFluidState(FluidState var0) {
       CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", Registry.FLUID.getKey(var0.getType()).toString());
+      var1.putString("Name", BuiltInRegistries.FLUID.getKey(var0.getType()).toString());
       ImmutableMap var2 = var0.getValues();
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
@@ -542,7 +552,7 @@ public final class NbtUtils {
          var0.put("palettes", var4);
       }
 
-      if (var0.contains("entities", 10)) {
+      if (var0.contains("entities", 9)) {
          ListTag var6 = var0.getList("entities", 10);
          ListTag var8 = var6.stream()
             .map(CompoundTag.class::cast)

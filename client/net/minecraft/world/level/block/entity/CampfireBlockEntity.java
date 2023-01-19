@@ -48,10 +48,12 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
             if (var3.cookingProgress[var5] >= var3.cookingTime[var5]) {
                SimpleContainer var7 = new SimpleContainer(var6);
                ItemStack var8 = var3.quickCheck.getRecipeFor(var7, var0).map(var1x -> var1x.assemble(var7)).orElse(var6);
-               Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var8);
-               var3.items.set(var5, ItemStack.EMPTY);
-               var0.sendBlockUpdated(var1, var2, var2, 3);
-               var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var2));
+               if (var8.isItemEnabled(var0.enabledFeatures())) {
+                  Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var8);
+                  var3.items.set(var5, ItemStack.EMPTY);
+                  var0.sendBlockUpdated(var1, var2, var2, 3);
+                  var0.gameEvent(GameEvent.BLOCK_CHANGE, var1, GameEvent.Context.of(var2));
+               }
             }
          }
       }

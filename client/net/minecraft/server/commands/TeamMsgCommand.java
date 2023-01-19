@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.List;
@@ -14,7 +13,8 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.OutgoingPlayerChatMessage;
+import net.minecraft.network.chat.OutgoingChatMessage;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
@@ -34,48 +34,40 @@ public class TeamMsgCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralCommandNode var1 = var0.register(
          (LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
-            MessageArgument.ChatMessage var1x = MessageArgument.getChatMessage(var0x, "message");
+            CommandSourceStack var1x = (CommandSourceStack)var0x.getSource();
+            Entity var2 = var1x.getEntityOrException();
+            PlayerTeam var3 = (PlayerTeam)var2.getTeam();
+            if (var3 == null) {
+               throw ERROR_NOT_ON_TEAM.create();
+            } else {
+               List var4 = var1x.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
+               if (!var4.isEmpty()) {
+                  MessageArgument.resolveChatMessage(var0x, "message", var4x -> sendMessage(var1x, var2, var3, var4, var4x));
+               }
    
-            try {
-               return sendMessage((CommandSourceStack)var0x.getSource(), var1x);
-            } catch (Exception var3) {
-               var1x.consume((CommandSourceStack)var0x.getSource());
-               throw var3;
+               return var4.size();
             }
          }))
       );
       var0.register((LiteralArgumentBuilder)Commands.literal("tm").redirect(var1));
    }
 
-   private static int sendMessage(CommandSourceStack var0, MessageArgument.ChatMessage var1) throws CommandSyntaxException {
-      Entity var2 = var0.getEntityOrException();
-      PlayerTeam var3 = (PlayerTeam)var2.getTeam();
-      if (var3 == null) {
-         throw ERROR_NOT_ON_TEAM.create();
-      } else {
-         MutableComponent var4 = var3.getFormattedDisplayName().withStyle(SUGGEST_STYLE);
-         ChatType.Bound var5 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_INCOMING, var0).withTargetName(var4);
-         ChatType.Bound var6 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_OUTGOING, var0).withTargetName(var4);
-         List var7 = var0.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
-         var1.resolve(var0, var5x -> {
-            OutgoingPlayerChatMessage var6x = OutgoingPlayerChatMessage.create(var5x);
-            boolean var7x = var5x.isFullyFiltered();
-            boolean var8 = false;
+   private static void sendMessage(CommandSourceStack var0, Entity var1, PlayerTeam var2, List<ServerPlayer> var3, PlayerChatMessage var4) {
+      MutableComponent var5 = var2.getFormattedDisplayName().withStyle(SUGGEST_STYLE);
+      ChatType.Bound var6 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_INCOMING, var0).withTargetName(var5);
+      ChatType.Bound var7 = ChatType.bind(ChatType.TEAM_MSG_COMMAND_OUTGOING, var0).withTargetName(var5);
+      OutgoingChatMessage var8 = OutgoingChatMessage.create(var4);
+      boolean var9 = false;
 
-            for(ServerPlayer var10 : var7) {
-               ChatType.Bound var11 = var10 == var2 ? var6 : var5;
-               boolean var12 = var0.shouldFilterMessageTo(var10);
-               var10.sendChatMessage(var6x, var12, var11);
-               var8 |= var7x && var12 && var10 != var2;
-            }
+      for(ServerPlayer var11 : var3) {
+         ChatType.Bound var12 = var11 == var1 ? var7 : var6;
+         boolean var13 = var0.shouldFilterMessageTo(var11);
+         var11.sendChatMessage(var8, var13, var12);
+         var9 |= var13 && var4.isFullyFiltered();
+      }
 
-            if (var8) {
-               var0.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
-            }
-
-            var6x.sendHeadersToRemainingPlayers(var0.getServer().getPlayerList());
-         });
-         return var7.size();
+      if (var9) {
+         var0.sendSystemMessage(PlayerList.CHAT_FILTERED_FULL);
       }
    }
 }

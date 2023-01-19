@@ -1,43 +1,32 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Optional;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
+import org.apache.commons.lang3.mutable.MutableLong;
 
-public class StrollToPoi extends Behavior<PathfinderMob> {
-   private final MemoryModuleType<GlobalPos> memoryType;
-   private final int closeEnoughDist;
-   private final int maxDistanceFromPoi;
-   private final float speedModifier;
-   private long nextOkStartTime;
-
-   public StrollToPoi(MemoryModuleType<GlobalPos> var1, float var2, int var3, int var4) {
-      super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, var1, MemoryStatus.VALUE_PRESENT));
-      this.memoryType = var1;
-      this.speedModifier = var2;
-      this.closeEnoughDist = var3;
-      this.maxDistanceFromPoi = var4;
+public class StrollToPoi {
+   public StrollToPoi() {
+      super();
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
-      Optional var3 = var2.getBrain().getMemory(this.memoryType);
-      return var3.isPresent()
-         && var1.dimension() == ((GlobalPos)var3.get()).dimension()
-         && ((GlobalPos)var3.get()).pos().closerToCenterThan(var2.position(), (double)this.maxDistanceFromPoi);
-   }
-
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      if (var3 > this.nextOkStartTime) {
-         Brain var5 = var2.getBrain();
-         Optional var6 = var5.getMemory(this.memoryType);
-         var6.ifPresent(var2x -> var5.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2x.pos(), this.speedModifier, this.closeEnoughDist)));
-         this.nextOkStartTime = var3 + 80L;
-      }
+   public static BehaviorControl<PathfinderMob> create(MemoryModuleType<GlobalPos> var0, float var1, int var2, int var3) {
+      MutableLong var4 = new MutableLong(0L);
+      return BehaviorBuilder.create(
+         var5 -> var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
+                  GlobalPos var11 = var5.get(var6);
+                  if (var7.dimension() != var11.dimension() || !var11.pos().closerToCenterThan(var8.position(), (double)var3)) {
+                     return false;
+                  } else if (var9 <= var4.getValue()) {
+                     return true;
+                  } else {
+                     var5x.set(new WalkTarget(var11.pos(), var1, var2));
+                     var4.setValue(var9 + 80L);
+                     return true;
+                  }
+               })
+      );
    }
 }

@@ -19,8 +19,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -132,8 +132,9 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       MemoryModuleType.NEAREST_VISIBLE_PLAYER,
       MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER,
       MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
-      MemoryModuleType.WALK_TARGET,
+      MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS,
       new MemoryModuleType[]{
+         MemoryModuleType.WALK_TARGET,
          MemoryModuleType.LOOK_TARGET,
          MemoryModuleType.INTERACTION_TARGET,
          MemoryModuleType.BREED_TARGET,
@@ -478,7 +479,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          .resultOrPartial(LOGGER::error)
          .ifPresent(var1x -> var1.put("VillagerData", var1x));
       var1.putByte("FoodLevel", (byte)this.foodLevel);
-      var1.put("Gossips", (Tag)this.gossips.store(NbtOps.INSTANCE).getValue());
+      var1.put("Gossips", this.gossips.store(NbtOps.INSTANCE));
       var1.putInt("Xp", this.villagerXp);
       var1.putLong("LastRestock", this.lastRestockGameTime);
       var1.putLong("LastGossipDecay", this.lastGossipDecayTime);
@@ -657,7 +658,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Override
    public boolean canBreed() {
-      return this.foodLevel + this.countFoodPointsInInventory() >= 12 && this.getAge() == 0;
+      return this.foodLevel + this.countFoodPointsInInventory() >= 12 && !this.isSleeping() && this.getAge() == 0;
    }
 
    private boolean hungry() {
@@ -716,7 +717,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    @Override
    protected Component getTypeName() {
       return Component.translatable(
-         this.getType().getDescriptionId() + "." + Registry.VILLAGER_PROFESSION.getKey(this.getVillagerData().getProfession()).getPath()
+         this.getType().getDescriptionId() + "." + BuiltInRegistries.VILLAGER_PROFESSION.getKey(this.getVillagerData().getProfession()).getPath()
       );
    }
 
@@ -755,6 +756,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 
+   @Nullable
    public Villager getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       double var4 = this.random.nextDouble();
       VillagerType var3;
@@ -776,18 +778,22 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       if (var1.getDifficulty() != Difficulty.PEACEFUL) {
          LOGGER.info("Villager {} was struck by lightning {}.", this, var2);
          Witch var3 = EntityType.WITCH.create(var1);
-         var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-         var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null, null);
-         var3.setNoAi(this.isNoAi());
-         if (this.hasCustomName()) {
-            var3.setCustomName(this.getCustomName());
-            var3.setCustomNameVisible(this.isCustomNameVisible());
-         }
+         if (var3 != null) {
+            var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            var3.setNoAi(this.isNoAi());
+            if (this.hasCustomName()) {
+               var3.setCustomName(this.getCustomName());
+               var3.setCustomNameVisible(this.isCustomNameVisible());
+            }
 
-         var3.setPersistenceRequired();
-         var1.addFreshEntityWithPassengers(var3);
-         this.releaseAllPois();
-         this.discard();
+            var3.setPersistenceRequired();
+            var1.addFreshEntityWithPassengers(var3);
+            this.releaseAllPois();
+            this.discard();
+         } else {
+            super.thunderHit(var1, var2);
+         }
       } else {
          super.thunderHit(var1, var2);
       }

@@ -10,14 +10,11 @@ import net.minecraft.util.RandomSource;
 
 public class WeighedSoundEvents implements Weighted<Sound> {
    private final List<Weighted<Sound>> list = Lists.newArrayList();
-   private final RandomSource random = RandomSource.create();
-   private final ResourceLocation location;
    @Nullable
    private final Component subtitle;
 
    public WeighedSoundEvents(ResourceLocation var1, @Nullable String var2) {
       super();
-      this.location = var1;
       this.subtitle = var2 == null ? null : Component.translatable(var2);
    }
 
@@ -52,10 +49,6 @@ public class WeighedSoundEvents implements Weighted<Sound> {
 
    public void addSound(Weighted<Sound> var1) {
       this.list.add(var1);
-   }
-
-   public ResourceLocation getResourceLocation() {
-      return this.location;
    }
 
    @Nullable

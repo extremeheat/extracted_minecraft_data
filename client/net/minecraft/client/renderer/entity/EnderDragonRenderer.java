@@ -2,9 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -21,6 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
    public static final ResourceLocation CRYSTAL_BEAM_LOCATION = new ResourceLocation("textures/entity/end_crystal/end_crystal_beam.png");
@@ -44,11 +44,11 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
       var4.pushPose();
       float var7 = (float)var1.getLatencyPos(7, var3)[0];
       float var8 = (float)(var1.getLatencyPos(5, var3)[1] - var1.getLatencyPos(10, var3)[1]);
-      var4.mulPose(Vector3f.YP.rotationDegrees(-var7));
-      var4.mulPose(Vector3f.XP.rotationDegrees(var8 * 10.0F));
-      var4.translate(0.0, 0.0, 1.0);
+      var4.mulPose(Axis.YP.rotationDegrees(-var7));
+      var4.mulPose(Axis.XP.rotationDegrees(var8 * 10.0F));
+      var4.translate(0.0F, 0.0F, 1.0F);
       var4.scale(-1.0F, -1.0F, 1.0F);
-      var4.translate(0.0, -1.5010000467300415, 0.0);
+      var4.translate(0.0F, -1.501F, 0.0F);
       boolean var9 = var1.hurtTime > 0;
       this.model.prepareMobModel(var1, 0.0F, 0.0F, var3);
       if (var1.dragonDeathTime > 0) {
@@ -70,15 +70,15 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          RandomSource var13 = RandomSource.create(432L);
          VertexConsumer var14 = var5.getBuffer(RenderType.lightning());
          var4.pushPose();
-         var4.translate(0.0, -1.0, -2.0);
+         var4.translate(0.0F, -1.0F, -2.0F);
 
          for(int var15 = 0; (float)var15 < (var22 + var22 * var22) / 2.0F * 60.0F; ++var15) {
-            var4.mulPose(Vector3f.XP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.YP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.ZP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.XP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.YP.rotationDegrees(var13.nextFloat() * 360.0F));
-            var4.mulPose(Vector3f.ZP.rotationDegrees(var13.nextFloat() * 360.0F + var22 * 90.0F));
+            var4.mulPose(Axis.XP.rotationDegrees(var13.nextFloat() * 360.0F));
+            var4.mulPose(Axis.YP.rotationDegrees(var13.nextFloat() * 360.0F));
+            var4.mulPose(Axis.ZP.rotationDegrees(var13.nextFloat() * 360.0F));
+            var4.mulPose(Axis.XP.rotationDegrees(var13.nextFloat() * 360.0F));
+            var4.mulPose(Axis.YP.rotationDegrees(var13.nextFloat() * 360.0F));
+            var4.mulPose(Axis.ZP.rotationDegrees(var13.nextFloat() * 360.0F + var22 * 90.0F));
             float var16 = var13.nextFloat() * 20.0F + 5.0F + var24 * 10.0F;
             float var17 = var13.nextFloat() * 2.0F + 1.0F + var24 * 2.0F;
             Matrix4f var18 = var4.last().pose();
@@ -130,9 +130,9 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
       float var8 = Mth.sqrt(var0 * var0 + var2 * var2);
       float var9 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2);
       var5.pushPose();
-      var5.translate(0.0, 2.0, 0.0);
-      var5.mulPose(Vector3f.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
-      var5.mulPose(Vector3f.XP.rotation((float)(-Math.atan2((double)var8, (double)var1)) - 1.5707964F));
+      var5.translate(0.0F, 2.0F, 0.0F);
+      var5.mulPose(Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
+      var5.mulPose(Axis.XP.rotation((float)(-Math.atan2((double)var8, (double)var1)) - 1.5707964F));
       VertexConsumer var10 = var6.getBuffer(BEAM);
       float var11 = 0.0F - ((float)var4 + var3) * 0.01F;
       float var12 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2) / 32.0F - ((float)var4 + var3) * 0.01F;
@@ -343,8 +343,8 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          this.jaw.xRot = (float)(Math.sin((double)(var9 * 6.2831855F)) + 1.0) * 0.2F;
          float var10 = (float)(Math.sin((double)(var9 * 6.2831855F - 1.0F)) + 1.0);
          var10 = (var10 * var10 + var10 * 2.0F) * 0.05F;
-         var1.translate(0.0, (double)(var10 - 2.0F), -3.0);
-         var1.mulPose(Vector3f.XP.rotationDegrees(var10 * 2.0F));
+         var1.translate(0.0F, var10 - 2.0F, -3.0F);
+         var1.mulPose(Axis.XP.rotationDegrees(var10 * 2.0F));
          float var11 = 0.0F;
          float var12 = 20.0F;
          float var13 = -12.0F;
@@ -378,9 +378,9 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
          this.head.zRot = -Mth.rotWrap(var29[0] - (double)var17) * 0.017453292F;
          this.head.render(var1, var2, var3, var4, 1.0F, 1.0F, 1.0F, var8);
          var1.pushPose();
-         var1.translate(0.0, 1.0, 0.0);
-         var1.mulPose(Vector3f.ZP.rotationDegrees(-var16 * 1.5F));
-         var1.translate(0.0, -1.0, 0.0);
+         var1.translate(0.0F, 1.0F, 0.0F);
+         var1.mulPose(Axis.ZP.rotationDegrees(-var16 * 1.5F));
+         var1.translate(0.0F, -1.0F, 0.0F);
          this.body.zRot = 0.0F;
          this.body.render(var1, var2, var3, var4, 1.0F, 1.0F, 1.0F, var8);
          float var31 = var9 * 6.2831855F;

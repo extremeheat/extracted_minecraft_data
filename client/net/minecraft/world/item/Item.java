@@ -13,8 +13,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -32,6 +31,10 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
@@ -46,7 +49,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public class Item implements ItemLike {
+public class Item implements FeatureElement, ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
    protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
@@ -54,9 +57,7 @@ public class Item implements ItemLike {
    public static final int MAX_STACK_SIZE = 64;
    public static final int EAT_DURATION = 32;
    public static final int MAX_BAR_WIDTH = 13;
-   private final Holder.Reference<Item> builtInRegistryHolder = Registry.ITEM.createIntrusiveHolder(this);
-   @Nullable
-   protected final CreativeModeTab category;
+   private final Holder.Reference<Item> builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
    private final Rarity rarity;
    private final int maxStackSize;
    private final int maxDamage;
@@ -67,13 +68,14 @@ public class Item implements ItemLike {
    private String descriptionId;
    @Nullable
    private final FoodProperties foodProperties;
+   private final FeatureFlagSet requiredFeatures;
 
    public static int getId(Item var0) {
-      return var0 == null ? 0 : Registry.ITEM.getId(var0);
+      return var0 == null ? 0 : BuiltInRegistries.ITEM.getId(var0);
    }
 
    public static Item byId(int var0) {
-      return Registry.ITEM.byId(var0);
+      return BuiltInRegistries.ITEM.byId(var0);
    }
 
    @Deprecated
@@ -83,13 +85,13 @@ public class Item implements ItemLike {
 
    public Item(Item.Properties var1) {
       super();
-      this.category = var1.category;
       this.rarity = var1.rarity;
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.maxDamage = var1.maxDamage;
       this.maxStackSize = var1.maxStackSize;
       this.foodProperties = var1.foodProperties;
       this.isFireResistant = var1.isFireResistant;
+      this.requiredFeatures = var1.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var2 = this.getClass().getSimpleName();
          if (!var2.endsWith("Item")) {
@@ -202,12 +204,12 @@ public class Item implements ItemLike {
 
    @Override
    public String toString() {
-      return Registry.ITEM.getKey(this).getPath();
+      return BuiltInRegistries.ITEM.getKey(this).getPath();
    }
 
    protected String getOrCreateDescriptionId() {
       if (this.descriptionId == null) {
-         this.descriptionId = Util.makeDescriptionId("item", Registry.ITEM.getKey(this));
+         this.descriptionId = Util.makeDescriptionId("item", BuiltInRegistries.ITEM.getKey(this));
       }
 
       return this.descriptionId;
@@ -314,22 +316,6 @@ public class Item implements ItemLike {
       return 0;
    }
 
-   public void fillItemCategory(CreativeModeTab var1, NonNullList<ItemStack> var2) {
-      if (this.allowedIn(var1)) {
-         var2.add(new ItemStack(this));
-      }
-   }
-
-   protected boolean allowedIn(CreativeModeTab var1) {
-      CreativeModeTab var2 = this.getItemCategory();
-      return var2 != null && (var1 == CreativeModeTab.TAB_SEARCH || var1 == var2);
-   }
-
-   @Nullable
-   public final CreativeModeTab getItemCategory() {
-      return this.category;
-   }
-
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
       return false;
    }
@@ -380,17 +366,21 @@ public class Item implements ItemLike {
       return true;
    }
 
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.requiredFeatures;
+   }
+
    public static class Properties {
       int maxStackSize = 64;
       int maxDamage;
       @Nullable
       Item craftingRemainingItem;
-      @Nullable
-      CreativeModeTab category;
       Rarity rarity = Rarity.COMMON;
       @Nullable
       FoodProperties foodProperties;
       boolean isFireResistant;
+      FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
       public Properties() {
          super();
@@ -425,11 +415,6 @@ public class Item implements ItemLike {
          return this;
       }
 
-      public Item.Properties tab(CreativeModeTab var1) {
-         this.category = var1;
-         return this;
-      }
-
       public Item.Properties rarity(Rarity var1) {
          this.rarity = var1;
          return this;
@@ -437,6 +422,11 @@ public class Item implements ItemLike {
 
       public Item.Properties fireResistant() {
          this.isFireResistant = true;
+         return this;
+      }
+
+      public Item.Properties requiredFeatures(FeatureFlag... var1) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
       }
    }

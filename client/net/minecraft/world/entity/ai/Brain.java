@@ -26,11 +26,12 @@ import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -47,7 +48,7 @@ public class Brain<E extends LivingEntity> {
    private static final int SCHEDULE_UPDATE_DELAY = 20;
    private final Map<MemoryModuleType<?>, Optional<? extends ExpirableValue<?>>> memories = Maps.newHashMap();
    private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = Maps.newLinkedHashMap();
-   private final Map<Integer, Map<Activity, Set<Behavior<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
+   private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
    private Schedule schedule = Schedule.EMPTY;
    private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements = Maps.newHashMap();
    private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped = Maps.newHashMap();
@@ -70,14 +71,14 @@ public class Brain<E extends LivingEntity> {
          (new MapCodec<Brain<E>>() {
                public <T> Stream<T> keys(DynamicOps<T> var1x) {
                   return var0.stream()
-                     .flatMap(var0xx -> var0xx.getCodec().map(var1xxxx -> Registry.MEMORY_MODULE_TYPE.getKey(var0xx)).stream())
+                     .flatMap(var0xx -> var0xx.getCodec().map(var1xxxx -> BuiltInRegistries.MEMORY_MODULE_TYPE.getKey(var0xx)).stream())
                      .map(var1xxx -> (T)var1x.createString(var1xxx.toString()));
                }
       
                public <T> DataResult<Brain<E>> decode(DynamicOps<T> var1x, MapLike<T> var2x) {
                   MutableObject var3 = new MutableObject(DataResult.success(ImmutableList.builder()));
                   var2x.entries().forEach(var3x -> {
-                     DataResult var4x = Registry.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
+                     DataResult var4x = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
                      DataResult var5 = var4x.flatMap(var3xx -> this.captureRead(var3xx, var1x, (T)var3x.getSecond()));
                      var3.setValue(((DataResult)var3.getValue()).apply2(Builder::add, var5));
                   });
@@ -186,6 +187,12 @@ public class Brain<E extends LivingEntity> {
       }
    }
 
+   @Nullable
+   public <U> Optional<U> getMemoryInternal(MemoryModuleType<U> var1) {
+      Optional var2 = this.memories.get(var1);
+      return var2 == null ? null : var2.map(ExpirableValue::getValue);
+   }
+
    public <U> long getTimeUntilExpiry(MemoryModuleType<U> var1) {
       Optional var2 = this.memories.get(var1);
       return var2.map(ExpirableValue::getTimeToLive).orElse(0L);
@@ -232,12 +239,12 @@ public class Brain<E extends LivingEntity> {
 
    @Deprecated
    @VisibleForDebug
-   public List<Behavior<? super E>> getRunningBehaviors() {
+   public List<BehaviorControl<? super E>> getRunningBehaviors() {
       ObjectArrayList var1 = new ObjectArrayList();
 
       for(Map var3 : this.availableBehaviorsByPriority.values()) {
          for(Set var5 : var3.values()) {
-            for(Behavior var7 : var5) {
+            for(BehaviorControl var7 : var5) {
                if (var7.getStatus() == Behavior.Status.RUNNING) {
                   var1.add(var7);
                }
@@ -315,29 +322,31 @@ public class Brain<E extends LivingEntity> {
       this.defaultActivity = var1;
    }
 
-   public void addActivity(Activity var1, int var2, ImmutableList<? extends Behavior<? super E>> var3) {
+   public void addActivity(Activity var1, int var2, ImmutableList<? extends BehaviorControl<? super E>> var3) {
       this.addActivity(var1, this.createPriorityPairs(var2, var3));
    }
 
-   public void addActivityAndRemoveMemoryWhenStopped(Activity var1, int var2, ImmutableList<? extends Behavior<? super E>> var3, MemoryModuleType<?> var4) {
+   public void addActivityAndRemoveMemoryWhenStopped(
+      Activity var1, int var2, ImmutableList<? extends BehaviorControl<? super E>> var3, MemoryModuleType<?> var4
+   ) {
       ImmutableSet var5 = ImmutableSet.of(Pair.of(var4, MemoryStatus.VALUE_PRESENT));
       ImmutableSet var6 = ImmutableSet.of(var4);
       this.addActivityAndRemoveMemoriesWhenStopped(var1, this.createPriorityPairs(var2, var3), var5, var6);
    }
 
-   public void addActivity(Activity var1, ImmutableList<? extends Pair<Integer, ? extends Behavior<? super E>>> var2) {
+   public void addActivity(Activity var1, ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> var2) {
       this.addActivityAndRemoveMemoriesWhenStopped(var1, var2, ImmutableSet.of(), Sets.newHashSet());
    }
 
    public void addActivityWithConditions(
-      Activity var1, ImmutableList<? extends Pair<Integer, ? extends Behavior<? super E>>> var2, Set<Pair<MemoryModuleType<?>, MemoryStatus>> var3
+      Activity var1, ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> var2, Set<Pair<MemoryModuleType<?>, MemoryStatus>> var3
    ) {
       this.addActivityAndRemoveMemoriesWhenStopped(var1, var2, var3, Sets.newHashSet());
    }
 
    public void addActivityAndRemoveMemoriesWhenStopped(
       Activity var1,
-      ImmutableList<? extends Pair<Integer, ? extends Behavior<? super E>>> var2,
+      ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> var2,
       Set<Pair<MemoryModuleType<?>, MemoryStatus>> var3,
       Set<MemoryModuleType<?>> var4
    ) {
@@ -353,7 +362,7 @@ public class Brain<E extends LivingEntity> {
          this.availableBehaviorsByPriority
             .computeIfAbsent((Integer)var6.getFirst(), var0 -> Maps.newHashMap())
             .computeIfAbsent(var1, var0 -> Sets.newLinkedHashSet())
-            .add((Behavior<? super E>)var6.getSecond());
+            .add((BehaviorControl<? super E>)var6.getSecond());
       }
    }
 
@@ -408,7 +417,7 @@ public class Brain<E extends LivingEntity> {
    public void stopAll(ServerLevel var1, E var2) {
       long var3 = var2.level.getGameTime();
 
-      for(Behavior var6 : this.getRunningBehaviors()) {
+      for(BehaviorControl var6 : this.getRunningBehaviors()) {
          var6.doStop(var1, var2, var3);
       }
    }
@@ -420,7 +429,7 @@ public class Brain<E extends LivingEntity> {
          for(Entry var8 : var6.entrySet()) {
             Activity var9 = (Activity)var8.getKey();
             if (this.activeActivities.contains(var9)) {
-               for(Behavior var12 : (Set)var8.getValue()) {
+               for(BehaviorControl var12 : (Set)var8.getValue()) {
                   if (var12.getStatus() == Behavior.Status.STOPPED) {
                      var12.tryStart(var1, var2, var3);
                   }
@@ -433,7 +442,7 @@ public class Brain<E extends LivingEntity> {
    private void tickEachRunningBehavior(ServerLevel var1, E var2) {
       long var3 = var1.getGameTime();
 
-      for(Behavior var6 : this.getRunningBehaviors()) {
+      for(BehaviorControl var6 : this.getRunningBehaviors()) {
          var6.tickOrStop(var1, var2, var3);
       }
    }
@@ -458,13 +467,15 @@ public class Brain<E extends LivingEntity> {
       return var1 instanceof Collection && ((Collection)var1).isEmpty();
    }
 
-   ImmutableList<? extends Pair<Integer, ? extends Behavior<? super E>>> createPriorityPairs(int var1, ImmutableList<? extends Behavior<? super E>> var2) {
+   ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> createPriorityPairs(
+      int var1, ImmutableList<? extends BehaviorControl<? super E>> var2
+   ) {
       int var3 = var1;
       Builder var4 = ImmutableList.builder();
       UnmodifiableIterator var5 = var2.iterator();
 
       while(var5.hasNext()) {
-         Behavior var6 = (Behavior)var5.next();
+         BehaviorControl var6 = (BehaviorControl)var5.next();
          var4.add(Pair.of(var3++, var6));
       }
 
@@ -494,7 +505,9 @@ public class Brain<E extends LivingEntity> {
             .getCodec()
             .ifPresent(
                var3 -> this.value
-                     .ifPresent(var4 -> var2.add(Registry.MEMORY_MODULE_TYPE.byNameCodec().encodeStart(var1, this.type), var3.encodeStart(var1, var4)))
+                     .ifPresent(
+                        var4 -> var2.add(BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().encodeStart(var1, this.type), var3.encodeStart(var1, var4))
+                     )
             );
       }
    }

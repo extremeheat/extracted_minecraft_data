@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,11 +23,11 @@ public class LecternRenderer implements BlockEntityRenderer<LecternBlockEntity> 
       BlockState var7 = var1.getBlockState();
       if (var7.getValue(LecternBlock.HAS_BOOK)) {
          var3.pushPose();
-         var3.translate(0.5, 1.0625, 0.5);
+         var3.translate(0.5F, 1.0625F, 0.5F);
          float var8 = var7.getValue(LecternBlock.FACING).getClockWise().toYRot();
-         var3.mulPose(Vector3f.YP.rotationDegrees(-var8));
-         var3.mulPose(Vector3f.ZP.rotationDegrees(67.5F));
-         var3.translate(0.0, -0.125, 0.0);
+         var3.mulPose(Axis.YP.rotationDegrees(-var8));
+         var3.mulPose(Axis.ZP.rotationDegrees(67.5F));
+         var3.translate(0.0F, -0.125F, 0.0F);
          this.bookModel.setupAnim(0.0F, 0.1F, 0.9F, 1.2F);
          VertexConsumer var9 = EnchantTableRenderer.BOOK_LOCATION.buffer(var4, RenderType::entitySolid);
          this.bookModel.render(var3, var9, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);

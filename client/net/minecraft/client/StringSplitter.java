@@ -1,14 +1,11 @@
 package net.minecraft.client;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.FormattedText;
@@ -140,12 +137,6 @@ public class StringSplitter {
             }
          }
       }, var3).orElse(var1);
-   }
-
-   public List<StringSplitter.Span> findSpans(FormattedCharSequence var1, Predicate<Style> var2) {
-      StringSplitter.SpanBuilder var3 = new StringSplitter.SpanBuilder(var2);
-      var1.accept(var3);
-      return var3.build();
    }
 
    public int findLineBreak(String var1, int var2, Style var3) {
@@ -434,64 +425,6 @@ public class StringSplitter {
    @FunctionalInterface
    public interface LinePosConsumer {
       void accept(Style var1, int var2, int var3);
-   }
-
-   public static record Span(float a, float b) {
-      private final float left;
-      private final float right;
-
-      public Span(float var1, float var2) {
-         super();
-         this.left = var1;
-         this.right = var2;
-      }
-   }
-
-   class SpanBuilder implements FormattedCharSink {
-      private final Predicate<Style> predicate;
-      private float cursor;
-      private final Builder<StringSplitter.Span> spans = ImmutableList.builder();
-      private float spanStart;
-      private boolean buildingSpan;
-
-      SpanBuilder(Predicate<Style> var2) {
-         super();
-         this.predicate = var2;
-      }
-
-      @Override
-      public boolean accept(int var1, Style var2, int var3) {
-         boolean var4 = this.predicate.test(var2);
-         if (this.buildingSpan != var4) {
-            if (var4) {
-               this.startSpan();
-            } else {
-               this.endSpan();
-            }
-         }
-
-         this.cursor += StringSplitter.this.widthProvider.getWidth(var3, var2);
-         return true;
-      }
-
-      private void startSpan() {
-         this.buildingSpan = true;
-         this.spanStart = this.cursor;
-      }
-
-      private void endSpan() {
-         float var1 = this.cursor;
-         this.spans.add(new StringSplitter.Span(this.spanStart, var1));
-         this.buildingSpan = false;
-      }
-
-      public List<StringSplitter.Span> build() {
-         if (this.buildingSpan) {
-            this.endSpan();
-         }
-
-         return this.spans.build();
-      }
    }
 
    class WidthLimitedCharSink implements FormattedCharSink {

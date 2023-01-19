@@ -1,6 +1,6 @@
 package net.minecraft.tags;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Instrument;
 
@@ -10,6 +10,6 @@ public interface InstrumentTags {
    TagKey<Instrument> GOAT_HORNS = create("goat_horns");
 
    private static TagKey<Instrument> create(String var0) {
-      return TagKey.create(Registry.INSTRUMENT_REGISTRY, new ResourceLocation(var0));
+      return TagKey.create(Registries.INSTRUMENT, new ResourceLocation(var0));
    }
 }

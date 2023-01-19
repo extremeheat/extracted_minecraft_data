@@ -33,11 +33,12 @@ public class EntityDamageSource extends DamageSource {
 
    @Override
    public Component getLocalizedDeathMessage(LivingEntity var1) {
-      ItemStack var2 = this.entity instanceof LivingEntity ? ((LivingEntity)this.entity).getMainHandItem() : ItemStack.EMPTY;
-      String var3 = "death.attack." + this.msgId;
+      Entity var4 = this.entity;
+      ItemStack var2 = var4 instanceof LivingEntity var3 ? var3.getMainHandItem() : ItemStack.EMPTY;
+      String var5 = "death.attack." + this.msgId;
       return !var2.isEmpty() && var2.hasCustomHoverName()
-         ? Component.translatable(var3 + ".item", var1.getDisplayName(), this.entity.getDisplayName(), var2.getDisplayName())
-         : Component.translatable(var3, var1.getDisplayName(), this.entity.getDisplayName());
+         ? Component.translatable(var5 + ".item", var1.getDisplayName(), this.entity.getDisplayName(), var2.getDisplayName())
+         : Component.translatable(var5, var1.getDisplayName(), this.entity.getDisplayName());
    }
 
    @Override

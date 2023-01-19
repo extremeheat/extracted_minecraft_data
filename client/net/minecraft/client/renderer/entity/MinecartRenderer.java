@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.MinecartModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -36,7 +36,7 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
       float var9 = (((float)(var7 >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
       float var10 = (((float)(var7 >> 20 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
       float var11 = (((float)(var7 >> 24 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      var4.translate((double)var9, (double)var10, (double)var11);
+      var4.translate(var9, var10, var11);
       double var12 = Mth.lerp((double)var3, var1.xOld, var1.getX());
       double var14 = Mth.lerp((double)var3, var1.yOld, var1.getY());
       double var16 = Mth.lerp((double)var3, var1.zOld, var1.getZ());
@@ -63,9 +63,9 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
          }
       }
 
-      var4.translate(0.0, 0.375, 0.0);
-      var4.mulPose(Vector3f.YP.rotationDegrees(180.0F - var2));
-      var4.mulPose(Vector3f.ZP.rotationDegrees(-var21));
+      var4.translate(0.0F, 0.375F, 0.0F);
+      var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
+      var4.mulPose(Axis.ZP.rotationDegrees(-var21));
       float var28 = (float)var1.getHurtTime() - var3;
       float var29 = var1.getDamage() - var3;
       if (var29 < 0.0F) {
@@ -73,7 +73,7 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
       }
 
       if (var28 > 0.0F) {
-         var4.mulPose(Vector3f.XP.rotationDegrees(Mth.sin(var28) * var28 * var29 / 10.0F * (float)var1.getHurtDir()));
+         var4.mulPose(Axis.XP.rotationDegrees(Mth.sin(var28) * var28 * var29 / 10.0F * (float)var1.getHurtDir()));
       }
 
       int var31 = var1.getDisplayOffset();
@@ -82,8 +82,8 @@ public class MinecartRenderer<T extends AbstractMinecart> extends EntityRenderer
          var4.pushPose();
          float var26 = 0.75F;
          var4.scale(0.75F, 0.75F, 0.75F);
-         var4.translate(-0.5, (double)((float)(var31 - 8) / 16.0F), 0.5);
-         var4.mulPose(Vector3f.YP.rotationDegrees(90.0F));
+         var4.translate(-0.5F, (float)(var31 - 8) / 16.0F, 0.5F);
+         var4.mulPose(Axis.YP.rotationDegrees(90.0F));
          this.renderMinecartContents((T)var1, var3, var25, var4, var5, var6);
          var4.popPose();
       }

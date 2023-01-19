@@ -111,7 +111,7 @@ public class GameModeSwitcherScreen extends Screen {
          Optional var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
          GameModeSwitcherScreen.GameModeIcon var3 = (GameModeSwitcherScreen.GameModeIcon)var1.get();
          if (var2.isPresent() && var0.player.hasPermissions(2) && var3 != var2.get()) {
-            var0.player.commandUnsigned(var3.getCommand());
+            var0.player.connection.sendUnsignedCommand(var3.getCommand());
          }
       }
    }
@@ -215,14 +215,14 @@ public class GameModeSwitcherScreen extends Screen {
       public void renderButton(PoseStack var1, int var2, int var3, float var4) {
          Minecraft var5 = Minecraft.getInstance();
          this.drawSlot(var1, var5.getTextureManager());
-         this.icon.drawIcon(GameModeSwitcherScreen.this.itemRenderer, this.x + 5, this.y + 5);
+         this.icon.drawIcon(GameModeSwitcherScreen.this.itemRenderer, this.getX() + 5, this.getY() + 5);
          if (this.isSelected) {
             this.drawSelection(var1, var5.getTextureManager());
          }
       }
 
       @Override
-      public void updateNarration(NarrationElementOutput var1) {
+      public void updateWidgetNarration(NarrationElementOutput var1) {
          this.defaultButtonNarrationText(var1);
       }
 
@@ -239,7 +239,7 @@ public class GameModeSwitcherScreen extends Screen {
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION);
          var1.pushPose();
-         var1.translate((double)this.x, (double)this.y, 0.0);
+         var1.translate((float)this.getX(), (float)this.getY(), 0.0F);
          blit(var1, 0, 0, 0.0F, 75.0F, 26, 26, 128, 128);
          var1.popPose();
       }
@@ -248,7 +248,7 @@ public class GameModeSwitcherScreen extends Screen {
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION);
          var1.pushPose();
-         var1.translate((double)this.x, (double)this.y, 0.0);
+         var1.translate((float)this.getX(), (float)this.getY(), 0.0F);
          blit(var1, 0, 0, 26.0F, 75.0F, 26, 26, 128, 128);
          var1.popPose();
       }

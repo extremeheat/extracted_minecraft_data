@@ -7,8 +7,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -420,11 +418,6 @@ public class ItemEntity extends Entity {
 
    public float getSpin(float var1) {
       return ((float)this.getAge() + var1) / 20.0F + this.bobOffs;
-   }
-
-   @Override
-   public Packet<?> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this);
    }
 
    public ItemEntity copy() {

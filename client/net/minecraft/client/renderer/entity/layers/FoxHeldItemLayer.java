@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.FoxModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -26,31 +26,29 @@ public class FoxHeldItemLayer extends RenderLayer<Fox, FoxModel<Fox>> {
       if (var12) {
          float var13 = 0.75F;
          var1.scale(0.75F, 0.75F, 0.75F);
-         var1.translate(0.0, 0.5, 0.20937499403953552);
+         var1.translate(0.0F, 0.5F, 0.209375F);
       }
 
-      var1.translate(
-         (double)(this.getParentModel().head.x / 16.0F), (double)(this.getParentModel().head.y / 16.0F), (double)(this.getParentModel().head.z / 16.0F)
-      );
+      var1.translate(this.getParentModel().head.x / 16.0F, this.getParentModel().head.y / 16.0F, this.getParentModel().head.z / 16.0F);
       float var15 = var4.getHeadRollAngle(var7);
-      var1.mulPose(Vector3f.ZP.rotation(var15));
-      var1.mulPose(Vector3f.YP.rotationDegrees(var9));
-      var1.mulPose(Vector3f.XP.rotationDegrees(var10));
+      var1.mulPose(Axis.ZP.rotation(var15));
+      var1.mulPose(Axis.YP.rotationDegrees(var9));
+      var1.mulPose(Axis.XP.rotationDegrees(var10));
       if (var4.isBaby()) {
          if (var11) {
-            var1.translate(0.4000000059604645, 0.25999999046325684, 0.15000000596046448);
+            var1.translate(0.4F, 0.26F, 0.15F);
          } else {
-            var1.translate(0.05999999865889549, 0.25999999046325684, -0.5);
+            var1.translate(0.06F, 0.26F, -0.5F);
          }
       } else if (var11) {
-         var1.translate(0.46000000834465027, 0.25999999046325684, 0.2199999988079071);
+         var1.translate(0.46F, 0.26F, 0.22F);
       } else {
-         var1.translate(0.05999999865889549, 0.27000001072883606, -0.5);
+         var1.translate(0.06F, 0.27F, -0.5F);
       }
 
-      var1.mulPose(Vector3f.XP.rotationDegrees(90.0F));
+      var1.mulPose(Axis.XP.rotationDegrees(90.0F));
       if (var11) {
-         var1.mulPose(Vector3f.ZP.rotationDegrees(90.0F));
+         var1.mulPose(Axis.ZP.rotationDegrees(90.0F));
       }
 
       ItemStack var14 = var4.getItemBySlot(EquipmentSlot.MAINHAND);

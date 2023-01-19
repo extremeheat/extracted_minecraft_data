@@ -10,6 +10,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
+import net.minecraft.world.phys.Vec3;
 
 public class RaidCommand {
    public RaidCommand() {
@@ -93,17 +95,24 @@ public class RaidCommand {
    private static int spawnLeader(CommandSourceStack var0) {
       var0.sendSuccess(Component.literal("Spawned a raid captain"), false);
       Raider var1 = EntityType.PILLAGER.create(var0.getLevel());
-      var1.setPatrolLeader(true);
-      var1.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance());
-      var1.setPos(var0.getPosition().x, var0.getPosition().y, var0.getPosition().z);
-      var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(new BlockPos(var0.getPosition())), MobSpawnType.COMMAND, null, null);
-      var0.getLevel().addFreshEntityWithPassengers(var1);
-      return 1;
+      if (var1 == null) {
+         var0.sendFailure(Component.literal("Pillager failed to spawn"));
+         return 0;
+      } else {
+         var1.setPatrolLeader(true);
+         var1.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance());
+         var1.setPos(var0.getPosition().x, var0.getPosition().y, var0.getPosition().z);
+         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(new BlockPos(var0.getPosition())), MobSpawnType.COMMAND, null, null);
+         var0.getLevel().addFreshEntityWithPassengers(var1);
+         return 1;
+      }
    }
 
-   private static int playSound(CommandSourceStack var0, Component var1) {
+   private static int playSound(CommandSourceStack var0, @Nullable Component var1) {
       if (var1 != null && var1.getString().equals("local")) {
-         var0.getLevel().playSound(null, new BlockPos(var0.getPosition().add(5.0, 0.0, 0.0)), SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         ServerLevel var2 = var0.getLevel();
+         Vec3 var3 = var0.getPosition().add(5.0, 0.0, 0.0);
+         var2.playSeededSound(null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
       }
 
       return 1;

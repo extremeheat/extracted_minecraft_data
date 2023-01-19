@@ -3,7 +3,7 @@ package net.minecraft.client.tutorial;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
@@ -68,7 +68,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    }
 
    public static boolean hasCraftedPlanksPreviously(LocalPlayer var0, TagKey<Item> var1) {
-      for(Holder var3 : Registry.ITEM.getTagOrEmpty(var1)) {
+      for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
          if (var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) > 0) {
             return true;
          }

@@ -26,7 +26,6 @@ import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.server.ConsoleInput;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
@@ -47,8 +46,6 @@ import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -167,7 +164,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
          return false;
       } else {
-         this.setPlayerList(new DedicatedPlayerList(this, this.registryAccess(), this.playerDataStorage));
+         this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
          long var4 = Util.getNanos();
          SkullBlockEntity.setup(this.services, this);
          GameProfileCache.setUsesAuthentication(this.usesAuthentication());
@@ -198,7 +195,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             var9.start();
          }
 
-         Items.AIR.fillItemCategory(CreativeModeTab.TAB_SEARCH, NonNullList.create());
          if (var2.enableJmxMonitoring) {
             MinecraftServerStatistics.registerJmxMonitoring(this);
             LOGGER.info("JMX monitoring enabled");
@@ -259,7 +255,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          var3.write(String.format(Locale.ROOT, "view-distance=%d%n", var2.viewDistance));
          var3.write(String.format(Locale.ROOT, "simulation-distance=%d%n", var2.simulationDistance));
          var3.write(String.format(Locale.ROOT, "spawn-animals=%s%n", var2.spawnAnimals));
-         var3.write(String.format(Locale.ROOT, "generate-structures=%s%n", var2.getWorldGenSettings(this.registryAccess()).generateStructures()));
+         var3.write(String.format(Locale.ROOT, "generate-structures=%s%n", var2.worldOptions.generateStructures()));
          var3.write(String.format(Locale.ROOT, "use-native=%s%n", var2.useNativeTransport));
          var3.write(String.format(Locale.ROOT, "rate-limit=%d%n", var2.rateLimitPacketsPerSecond));
       }
@@ -319,11 +315,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Override
    public boolean isEpollEnabled() {
       return this.getProperties().useNativeTransport;
-   }
-
-   @Override
-   public boolean previewsChat() {
-      return this.getProperties().previewsChat;
    }
 
    public DedicatedPlayerList getPlayerList() {

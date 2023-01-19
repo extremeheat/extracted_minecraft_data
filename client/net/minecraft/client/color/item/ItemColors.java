@@ -2,7 +2,7 @@ package net.minecraft.client.color.item;
 
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.IdMapper;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeableLeatherItem;
@@ -97,7 +97,7 @@ public class ItemColors {
    }
 
    public int getColor(ItemStack var1, int var2) {
-      ItemColor var3 = this.itemColors.byId(Registry.ITEM.getId(var1.getItem()));
+      ItemColor var3 = this.itemColors.byId(BuiltInRegistries.ITEM.getId(var1.getItem()));
       return var3 == null ? -1 : var3.getColor(var1, var2);
    }
 
