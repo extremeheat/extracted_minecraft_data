@@ -1,0 +1,153 @@
+package net.minecraft.client.multiplayer;
+
+import com.google.common.collect.Lists;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+
+public class ClientSuggestionProvider implements SharedSuggestionProvider {
+   private final ClientPacketListener connection;
+   private final Minecraft minecraft;
+   private int pendingSuggestionsId = -1;
+   @Nullable
+   private CompletableFuture<Suggestions> pendingSuggestionsFuture;
+
+   public ClientSuggestionProvider(ClientPacketListener var1, Minecraft var2) {
+      super();
+      this.connection = var1;
+      this.minecraft = var2;
+   }
+
+   @Override
+   public Collection<String> getOnlinePlayerNames() {
+      ArrayList var1 = Lists.newArrayList();
+
+      for(PlayerInfo var3 : this.connection.getOnlinePlayers()) {
+         var1.add(var3.getProfile().getName());
+      }
+
+      return var1;
+   }
+
+   @Override
+   public Collection<String> getSelectedEntities() {
+      return (Collection<String>)(this.minecraft.hitResult != null && this.minecraft.hitResult.getType() == HitResult.Type.ENTITY
+         ? Collections.singleton(((EntityHitResult)this.minecraft.hitResult).getEntity().getStringUUID())
+         : Collections.emptyList());
+   }
+
+   @Override
+   public Collection<String> getAllTeams() {
+      return this.connection.getLevel().getScoreboard().getTeamNames();
+   }
+
+   @Override
+   public Collection<ResourceLocation> getAvailableSoundEvents() {
+      return this.minecraft.getSoundManager().getAvailableSounds();
+   }
+
+   @Override
+   public Stream<ResourceLocation> getRecipeNames() {
+      return this.connection.getRecipeManager().getRecipeIds();
+   }
+
+   @Override
+   public boolean hasPermission(int var1) {
+      LocalPlayer var2 = this.minecraft.player;
+      return var2 != null ? var2.hasPermissions(var1) : var1 == 0;
+   }
+
+   @Override
+   public CompletableFuture<Suggestions> suggestRegistryElements(
+      ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4
+   ) {
+      return this.registryAccess().registry(var1).map(var3x -> {
+         this.suggestRegistryElements(var3x, var2, var3);
+         return var3.buildFuture();
+      }).orElseGet(() -> this.customSuggestion(var4));
+   }
+
+   @Override
+   public CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1) {
+      if (this.pendingSuggestionsFuture != null) {
+         this.pendingSuggestionsFuture.cancel(false);
+      }
+
+      this.pendingSuggestionsFuture = new CompletableFuture();
+      int var2 = ++this.pendingSuggestionsId;
+      this.connection.send(new ServerboundCommandSuggestionPacket(var2, var1.getInput()));
+      return this.pendingSuggestionsFuture;
+   }
+
+   private static String prettyPrint(double var0) {
+      return String.format(Locale.ROOT, "%.2f", var0);
+   }
+
+   private static String prettyPrint(int var0) {
+      return Integer.toString(var0);
+   }
+
+   @Override
+   public Collection<SharedSuggestionProvider.TextCoordinates> getRelevantCoordinates() {
+      HitResult var1 = this.minecraft.hitResult;
+      if (var1 != null && var1.getType() == HitResult.Type.BLOCK) {
+         BlockPos var2 = ((BlockHitResult)var1).getBlockPos();
+         return Collections.singleton(
+            new SharedSuggestionProvider.TextCoordinates(prettyPrint(var2.getX()), prettyPrint(var2.getY()), prettyPrint(var2.getZ()))
+         );
+      } else {
+         return SharedSuggestionProvider.super.getRelevantCoordinates();
+      }
+   }
+
+   @Override
+   public Collection<SharedSuggestionProvider.TextCoordinates> getAbsoluteCoordinates() {
+      HitResult var1 = this.minecraft.hitResult;
+      if (var1 != null && var1.getType() == HitResult.Type.BLOCK) {
+         Vec3 var2 = var1.getLocation();
+         return Collections.singleton(new SharedSuggestionProvider.TextCoordinates(prettyPrint(var2.x), prettyPrint(var2.y), prettyPrint(var2.z)));
+      } else {
+         return SharedSuggestionProvider.super.getAbsoluteCoordinates();
+      }
+   }
+
+   @Override
+   public Set<ResourceKey<Level>> levels() {
+      return this.connection.levels();
+   }
+
+   @Override
+   public RegistryAccess registryAccess() {
+      return this.connection.registryAccess();
+   }
+
+   public void completeCustomSuggestions(int var1, Suggestions var2) {
+      if (var1 == this.pendingSuggestionsId) {
+         this.pendingSuggestionsFuture.complete(var2);
+         this.pendingSuggestionsFuture = null;
+         this.pendingSuggestionsId = -1;
+      }
+   }
+}

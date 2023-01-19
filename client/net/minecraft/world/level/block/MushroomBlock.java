@@ -1,0 +1,103 @@
+package net.minecraft.world.level.block;
+
+import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+public class MushroomBlock extends BushBlock implements BonemealableBlock {
+   protected static final float AABB_OFFSET = 3.0F;
+   protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
+   private final Supplier<Holder<? extends ConfiguredFeature<?, ?>>> featureSupplier;
+
+   public MushroomBlock(BlockBehaviour.Properties var1, Supplier<Holder<? extends ConfiguredFeature<?, ?>>> var2) {
+      super(var1);
+      this.featureSupplier = var2;
+   }
+
+   @Override
+   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+      return SHAPE;
+   }
+
+   @Override
+   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+      if (var4.nextInt(25) == 0) {
+         int var5 = 5;
+         boolean var6 = true;
+
+         for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
+            if (var2.getBlockState(var8).is(this)) {
+               if (--var5 <= 0) {
+                  return;
+               }
+            }
+         }
+
+         BlockPos var9 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(2) - var4.nextInt(2), var4.nextInt(3) - 1);
+
+         for(int var10 = 0; var10 < 4; ++var10) {
+            if (var2.isEmptyBlock(var9) && var1.canSurvive(var2, var9)) {
+               var3 = var9;
+            }
+
+            var9 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(2) - var4.nextInt(2), var4.nextInt(3) - 1);
+         }
+
+         if (var2.isEmptyBlock(var9) && var1.canSurvive(var2, var9)) {
+            var2.setBlock(var9, var1, 2);
+         }
+      }
+   }
+
+   @Override
+   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return var1.isSolidRender(var2, var3);
+   }
+
+   @Override
+   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+      BlockPos var4 = var3.below();
+      BlockState var5 = var2.getBlockState(var4);
+      if (var5.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
+         return true;
+      } else {
+         return var2.getRawBrightness(var3, 0) < 13 && this.mayPlaceOn(var5, var2, var4);
+      }
+   }
+
+   public boolean growMushroom(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
+      var1.removeBlock(var2, false);
+      if (this.featureSupplier.get().value().place(var1, var1.getChunkSource().getGenerator(), var4, var2)) {
+         return true;
+      } else {
+         var1.setBlock(var2, var3, 3);
+         return false;
+      }
+   }
+
+   @Override
+   public boolean isValidBonemealTarget(BlockGetter var1, BlockPos var2, BlockState var3, boolean var4) {
+      return true;
+   }
+
+   @Override
+   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+      return (double)var2.nextFloat() < 0.4;
+   }
+
+   @Override
+   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
+      this.growMushroom(var1, var3, var4, var2);
+   }
+}

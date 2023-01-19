@@ -1,0 +1,108 @@
+package net.minecraft.world.level;
+
+import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+
+public interface CollisionGetter extends BlockGetter {
+   WorldBorder getWorldBorder();
+
+   @Nullable
+   BlockGetter getChunkForCollisions(int var1, int var2);
+
+   default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
+      return true;
+   }
+
+   default boolean isUnobstructed(BlockState var1, BlockPos var2, CollisionContext var3) {
+      VoxelShape var4 = var1.getCollisionShape(this, var2, var3);
+      return var4.isEmpty() || this.isUnobstructed(null, var4.move((double)var2.getX(), (double)var2.getY(), (double)var2.getZ()));
+   }
+
+   default boolean isUnobstructed(Entity var1) {
+      return this.isUnobstructed(var1, Shapes.create(var1.getBoundingBox()));
+   }
+
+   default boolean noCollision(AABB var1) {
+      return this.noCollision(null, var1);
+   }
+
+   default boolean noCollision(Entity var1) {
+      return this.noCollision(var1, var1.getBoundingBox());
+   }
+
+   default boolean noCollision(@Nullable Entity var1, AABB var2) {
+      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
+         if (!var4.isEmpty()) {
+            return false;
+         }
+      }
+
+      if (!this.getEntityCollisions(var1, var2).isEmpty()) {
+         return false;
+      } else if (var1 == null) {
+         return true;
+      } else {
+         VoxelShape var5 = this.borderCollision(var1, var2);
+         return var5 == null || !Shapes.joinIsNotEmpty(var5, Shapes.create(var2), BooleanOp.AND);
+      }
+   }
+
+   List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2);
+
+   default Iterable<VoxelShape> getCollisions(@Nullable Entity var1, AABB var2) {
+      List var3 = this.getEntityCollisions(var1, var2);
+      Iterable var4 = this.getBlockCollisions(var1, var2);
+      return var3.isEmpty() ? var4 : Iterables.concat(var3, var4);
+   }
+
+   default Iterable<VoxelShape> getBlockCollisions(@Nullable Entity var1, AABB var2) {
+      return () -> new BlockCollisions(this, var1, var2);
+   }
+
+   @Nullable
+   private VoxelShape borderCollision(Entity var1, AABB var2) {
+      WorldBorder var3 = this.getWorldBorder();
+      return var3.isInsideCloseToBorder(var1, var2) ? var3.getCollisionShape() : null;
+   }
+
+   default boolean collidesWithSuffocatingBlock(@Nullable Entity var1, AABB var2) {
+      BlockCollisions var3 = new BlockCollisions(this, var1, var2, true);
+
+      while(var3.hasNext()) {
+         if (!((VoxelShape)var3.next()).isEmpty()) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   default Optional<Vec3> findFreePosition(@Nullable Entity var1, VoxelShape var2, Vec3 var3, double var4, double var6, double var8) {
+      if (var2.isEmpty()) {
+         return Optional.empty();
+      } else {
+         AABB var10 = var2.bounds().inflate(var4, var6, var8);
+         VoxelShape var11 = StreamSupport.stream(this.getBlockCollisions(var1, var10).spliterator(), false)
+            .filter(var1x -> this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(var1x.bounds()))
+            .flatMap(var0 -> var0.toAabbs().stream())
+            .map(var6x -> var6x.inflate(var4 / 2.0, var6 / 2.0, var8 / 2.0))
+            .map(Shapes::create)
+            .reduce(Shapes.empty(), Shapes::or);
+         VoxelShape var12 = Shapes.join(var2, var11, BooleanOp.ONLY_FIRST);
+         return var12.closestPointTo(var3);
+      }
+   }
+}

@@ -1,0 +1,63 @@
+package net.minecraft.server.commands;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import java.util.Collection;
+import java.util.Collections;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameType;
+
+public class GameModeCommand {
+   public static final int PERMISSION_LEVEL = 2;
+
+   public GameModeCommand() {
+      super();
+   }
+
+   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("gamemode").requires(var0x -> var0x.hasPermission(2));
+
+      for(GameType var5 : GameType.values()) {
+         var1.then(
+            ((LiteralArgumentBuilder)Commands.literal(var5.getName())
+                  .executes(var1x -> setMode(var1x, Collections.singleton(((CommandSourceStack)var1x.getSource()).getPlayerOrException()), var5)))
+               .then(Commands.argument("target", EntityArgument.players()).executes(var1x -> setMode(var1x, EntityArgument.getPlayers(var1x, "target"), var5)))
+         );
+      }
+
+      var0.register(var1);
+   }
+
+   private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
+      MutableComponent var3 = Component.translatable("gameMode." + var2.getName());
+      if (var0.getEntity() == var1) {
+         var0.sendSuccess(Component.translatable("commands.gamemode.success.self", var3), true);
+      } else {
+         if (var0.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+            var1.sendSystemMessage(Component.translatable("gameMode.changed", var3));
+         }
+
+         var0.sendSuccess(Component.translatable("commands.gamemode.success.other", var1.getDisplayName(), var3), true);
+      }
+   }
+
+   private static int setMode(CommandContext<CommandSourceStack> var0, Collection<ServerPlayer> var1, GameType var2) {
+      int var3 = 0;
+
+      for(ServerPlayer var5 : var1) {
+         if (var5.setGameMode(var2)) {
+            logGamemodeChange((CommandSourceStack)var0.getSource(), var5, var2);
+            ++var3;
+         }
+      }
+
+      return var3;
+   }
+}
