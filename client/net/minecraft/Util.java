@@ -71,6 +71,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.SingleKeyCache;
 import net.minecraft.util.TimeSource;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -81,7 +82,6 @@ public class Util {
    private static final int DEFAULT_MAX_THREADS = 255;
    private static final String MAX_THREADS_SYSTEM_PROPERTY = "max.bg.threads";
    private static final AtomicInteger WORKER_COUNT = new AtomicInteger(1);
-   private static final ExecutorService BOOTSTRAP_EXECUTOR = makeExecutor("Bootstrap");
    private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
    private static final ExecutorService IO_POOL = makeIoExecutor();
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
@@ -177,10 +177,6 @@ public class Util {
       return 255;
    }
 
-   public static ExecutorService bootstrapExecutor() {
-      return BOOTSTRAP_EXECUTOR;
-   }
-
    public static ExecutorService backgroundExecutor() {
       return BACKGROUND_EXECUTOR;
    }
@@ -246,7 +242,9 @@ public class Util {
       Type var2 = null;
 
       try {
-         var2 = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getWorldVersion())).getChoiceType(var0, var1);
+         var2 = DataFixers.getDataFixer()
+            .getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().getDataVersion().getVersion()))
+            .getChoiceType(var0, var1);
       } catch (IllegalArgumentException var4) {
          LOGGER.error("No data fixer registered for {}", var1);
          if (SharedConstants.IS_RUNNING_IN_IDE) {
@@ -361,15 +359,6 @@ public class Util {
       return (T)var0;
    }
 
-   @Nullable
-   public static <T, R> R mapNullable(@Nullable T var0, Function<T, R> var1) {
-      return (R)(var0 == null ? null : var1.apply(var0));
-   }
-
-   public static <T, R> R mapNullable(@Nullable T var0, Function<T, R> var1, R var2) {
-      return (R)(var0 == null ? var2 : var1.apply(var0));
-   }
-
    public static <K> Strategy<K> identityStrategy() {
       return Util.IdentityStrategy.INSTANCE;
    }
@@ -393,11 +382,11 @@ public class Util {
    public static <V> CompletableFuture<List<V>> sequenceFailFastAndCancel(List<? extends CompletableFuture<? extends V>> var0) {
       CompletableFuture var1 = new CompletableFuture();
       return fallibleSequence(var0, var2 -> {
-         for(CompletableFuture var4 : var0) {
-            var4.cancel(true);
+         if (var1.completeExceptionally(var2)) {
+            for(CompletableFuture var4 : var0) {
+               var4.cancel(true);
+            }
          }
-
-         var1.completeExceptionally(var2);
       }).applyToEither(var1, Function.identity());
    }
 
@@ -638,7 +627,7 @@ public class Util {
    public static DataResult<int[]> fixedSize(IntStream var0, int var1) {
       int[] var2 = var0.limit((long)(var1 + 1)).toArray();
       if (var2.length != var1) {
-         String var3 = "Input is not a list of " + var1 + " ints";
+         Supplier var3 = () -> "Input is not a list of " + var1 + " ints";
          return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
       } else {
          return DataResult.success(var2);
@@ -647,7 +636,7 @@ public class Util {
 
    public static <T> DataResult<List<T>> fixedSize(List<T> var0, int var1) {
       if (var0.size() != var1) {
-         String var2 = "Input is not a list of " + var1 + " elements";
+         Supplier var2 = () -> "Input is not a list of " + var1 + " elements";
          return var0.size() >= var1 ? DataResult.error(var2, var0.subList(0, var1)) : DataResult.error(var2);
       } else {
          return DataResult.success(var0);
@@ -684,6 +673,10 @@ public class Util {
          .chars()
          .mapToObj(var1x -> var1.test((char)var1x) ? Character.toString((char)var1x) : "_")
          .collect(Collectors.joining());
+   }
+
+   public static <K, V> SingleKeyCache<K, V> singleKeyCache(Function<K, V> var0) {
+      return new SingleKeyCache<>(var0);
    }
 
    public static <T, R> Function<T, R> memoize(final Function<T, R> var0) {

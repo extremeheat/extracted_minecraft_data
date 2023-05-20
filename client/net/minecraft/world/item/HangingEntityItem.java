@@ -1,9 +1,14 @@
 package net.minecraft.world.item;
 
+import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -17,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class HangingEntityItem extends Item {
+   private static final Component TOOLTIP_RANDOM_VARIANT = Component.translatable("painting.random").withStyle(ChatFormatting.GRAY);
    private final EntityType<? extends HangingEntity> type;
 
    public HangingEntityItem(EntityType<? extends HangingEntity> var1, Item.Properties var2) {
@@ -75,5 +81,33 @@ public class HangingEntityItem extends Item {
 
    protected boolean mayPlace(Player var1, Direction var2, ItemStack var3, BlockPos var4) {
       return !var2.getAxis().isVertical() && var1.mayUseItemAt(var4, var2, var3);
+   }
+
+   @Override
+   public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
+      super.appendHoverText(var1, var2, var3, var4);
+      if (this.type == EntityType.PAINTING) {
+         CompoundTag var5 = var1.getTag();
+         if (var5 != null && var5.contains("EntityTag", 10)) {
+            CompoundTag var6 = var5.getCompound("EntityTag");
+            Painting.loadVariant(var6)
+               .ifPresentOrElse(
+                  var1x -> {
+                     var1x.unwrapKey().ifPresent(var1xx -> {
+                        var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "title")).withStyle(ChatFormatting.YELLOW));
+                        var3.add(Component.translatable(var1xx.location().toLanguageKey("painting", "author")).withStyle(ChatFormatting.GRAY));
+                     });
+                     var3.add(
+                        Component.translatable(
+                           "painting.dimensions", Mth.positiveCeilDiv(var1x.value().getWidth(), 16), Mth.positiveCeilDiv(var1x.value().getHeight(), 16)
+                        )
+                     );
+                  },
+                  () -> var3.add(TOOLTIP_RANDOM_VARIANT)
+               );
+         } else if (var4.isCreative()) {
+            var3.add(TOOLTIP_RANDOM_VARIANT);
+         }
+      }
    }
 }

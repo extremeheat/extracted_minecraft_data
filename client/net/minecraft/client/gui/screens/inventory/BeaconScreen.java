@@ -11,7 +11,6 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -119,19 +118,18 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, BEACON_LOCATION);
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      this.itemRenderer.blitOffset = 100.0F;
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
-      this.itemRenderer.renderAndDecorateItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
-      this.itemRenderer.blitOffset = 0.0F;
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.pushPose();
+      var1.translate(0.0F, 0.0F, 100.0F);
+      this.itemRenderer.renderAndDecorateItem(var1, new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
+      this.itemRenderer.renderAndDecorateItem(var1, new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
+      this.itemRenderer.renderAndDecorateItem(var1, new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
+      this.itemRenderer.renderAndDecorateItem(var1, new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
+      this.itemRenderer.renderAndDecorateItem(var1, new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
+      var1.popPose();
    }
 
    @Override
@@ -218,7 +216,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       @Override
       protected void renderIcon(PoseStack var1) {
          RenderSystem.setShaderTexture(0, this.sprite.atlasLocation());
-         blit(var1, this.getX() + 2, this.getY() + 2, this.getBlitOffset(), 18, 18, this.sprite);
+         blit(var1, this.getX() + 2, this.getY() + 2, 0, 18, 18, this.sprite);
       }
 
       @Override
@@ -245,10 +243,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       @Override
-      public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
+      public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
          RenderSystem.setShaderTexture(0, BeaconScreen.BEACON_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          boolean var5 = true;
          int var6 = 0;
          if (!this.active) {
@@ -259,7 +255,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             var6 += this.width * 3;
          }
 
-         this.blit(var1, this.getX(), this.getY(), var6, 219, this.width, this.height);
+         blit(var1, this.getX(), this.getY(), var6, 219, this.width, this.height);
          this.renderIcon(var1);
       }
 
@@ -291,7 +287,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       @Override
       protected void renderIcon(PoseStack var1) {
-         this.blit(var1, this.getX() + 2, this.getY() + 2, this.iconX, this.iconY, 18, 18);
+         blit(var1, this.getX() + 2, this.getY() + 2, this.iconX, this.iconY, 18, 18);
       }
    }
 

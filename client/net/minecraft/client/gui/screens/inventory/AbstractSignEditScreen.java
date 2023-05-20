@@ -3,18 +3,13 @@ package net.minecraft.client.gui.screens.inventory;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.stream.IntStream;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -164,12 +159,14 @@ public abstract class AbstractSignEditScreen extends Screen {
             float var13 = (float)(-this.minecraft.font.width(var12) / 2);
             this.minecraft
                .font
-               .drawInBatch(var12, var13, (float)(var11 * this.sign.getTextLineHeight() - var8), var4, false, var10, var2, false, 0, 15728880, false);
+               .drawInBatch(
+                  var12, var13, (float)(var11 * this.sign.getTextLineHeight() - var8), var4, false, var10, var2, Font.DisplayMode.NORMAL, 0, 15728880, false
+               );
             if (var11 == this.line && var6 >= 0 && var5) {
                int var14 = this.minecraft.font.width(var12.substring(0, Math.max(Math.min(var6, var12.length()), 0)));
                int var15 = var14 - this.minecraft.font.width(var12) / 2;
                if (var6 >= var12.length()) {
-                  this.minecraft.font.drawInBatch("_", (float)var15, (float)var9, var4, false, var10, var2, false, 0, 15728880, false);
+                  this.minecraft.font.drawInBatch("_", (float)var15, (float)var9, var4, false, var10, var2, Font.DisplayMode.NORMAL, 0, 15728880, false);
                }
             }
          }
@@ -177,36 +174,26 @@ public abstract class AbstractSignEditScreen extends Screen {
 
       var2.endBatch();
 
-      for(int var23 = 0; var23 < this.messages.length; ++var23) {
-         String var24 = this.messages[var23];
-         if (var24 != null && var23 == this.line && var6 >= 0) {
-            int var25 = this.minecraft.font.width(var24.substring(0, Math.max(Math.min(var6, var24.length()), 0)));
-            int var26 = var25 - this.minecraft.font.width(var24) / 2;
-            if (var5 && var6 < var24.length()) {
-               fill(var1, var26, var9 - 1, var26 + 1, var9 + this.sign.getTextLineHeight(), 0xFF000000 | var4);
+      for(int var21 = 0; var21 < this.messages.length; ++var21) {
+         String var22 = this.messages[var21];
+         if (var22 != null && var21 == this.line && var6 >= 0) {
+            int var23 = this.minecraft.font.width(var22.substring(0, Math.max(Math.min(var6, var22.length()), 0)));
+            int var24 = var23 - this.minecraft.font.width(var22) / 2;
+            if (var5 && var6 < var22.length()) {
+               fill(var1, var24, var9 - 1, var24 + 1, var9 + this.sign.getTextLineHeight(), 0xFF000000 | var4);
             }
 
             if (var7 != var6) {
-               int var27 = Math.min(var6, var7);
+               int var25 = Math.min(var6, var7);
                int var16 = Math.max(var6, var7);
-               int var17 = this.minecraft.font.width(var24.substring(0, var27)) - this.minecraft.font.width(var24) / 2;
-               int var18 = this.minecraft.font.width(var24.substring(0, var16)) - this.minecraft.font.width(var24) / 2;
+               int var17 = this.minecraft.font.width(var22.substring(0, var25)) - this.minecraft.font.width(var22) / 2;
+               int var18 = this.minecraft.font.width(var22.substring(0, var16)) - this.minecraft.font.width(var22) / 2;
                int var19 = Math.min(var17, var18);
                int var20 = Math.max(var17, var18);
-               Tesselator var21 = Tesselator.getInstance();
-               BufferBuilder var22 = var21.getBuilder();
-               RenderSystem.setShader(GameRenderer::getPositionColorShader);
-               RenderSystem.disableTexture();
                RenderSystem.enableColorLogicOp();
                RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-               var22.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-               var22.vertex(var10, (float)var19, (float)(var9 + this.sign.getTextLineHeight()), 0.0F).color(0, 0, 255, 255).endVertex();
-               var22.vertex(var10, (float)var20, (float)(var9 + this.sign.getTextLineHeight()), 0.0F).color(0, 0, 255, 255).endVertex();
-               var22.vertex(var10, (float)var20, (float)var9, 0.0F).color(0, 0, 255, 255).endVertex();
-               var22.vertex(var10, (float)var19, (float)var9, 0.0F).color(0, 0, 255, 255).endVertex();
-               BufferUploader.drawWithShader(var22.end());
+               fill(var1, var19, var9, var20, var9 + this.sign.getTextLineHeight(), -16776961);
                RenderSystem.disableColorLogicOp();
-               RenderSystem.enableTexture();
             }
          }
       }

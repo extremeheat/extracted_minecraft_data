@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -237,7 +238,7 @@ public class FallingBlockEntity extends Entity {
                var6 = var7.getFallDamageSource(this);
             } else {
                var5 = EntitySelector.NO_SPECTATORS;
-               var6 = DamageSource.fallingBlock(this);
+               var6 = this.damageSources().fallingBlock(this);
             }
 
             float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
@@ -301,6 +302,10 @@ public class FallingBlockEntity extends Entity {
       this.fallDamageMax = var2;
    }
 
+   public void disableDrop() {
+      this.cancelDrop = true;
+   }
+
    @Override
    public boolean displayFireAnimation() {
       return false;
@@ -314,6 +319,11 @@ public class FallingBlockEntity extends Entity {
 
    public BlockState getBlockState() {
       return this.blockState;
+   }
+
+   @Override
+   protected Component getTypeName() {
+      return Component.translatable("entity.minecraft.falling_block_type", this.blockState.getBlock().getName());
    }
 
    @Override

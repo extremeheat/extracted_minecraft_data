@@ -13,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -75,12 +74,12 @@ public class RamTarget extends Behavior<Goat> {
       Brain var6 = var2.getBrain();
       if (!var5.isEmpty()) {
          LivingEntity var7 = (LivingEntity)var5.get(0);
-         var7.hurt(DamageSource.mobAttack(var2).setNoAggro(), (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE));
+         var7.hurt(var1.damageSources().noAggroMobAttack(var2), (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE));
          int var8 = var2.hasEffect(MobEffects.MOVEMENT_SPEED) ? var2.getEffect(MobEffects.MOVEMENT_SPEED).getAmplifier() + 1 : 0;
          int var9 = var2.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) ? var2.getEffect(MobEffects.MOVEMENT_SLOWDOWN).getAmplifier() + 1 : 0;
          float var10 = 0.25F * (float)(var8 - var9);
          float var11 = Mth.clamp(var2.getSpeed() * 1.65F, 0.2F, 3.0F) + var10;
-         float var12 = var7.isDamageSourceBlocked(DamageSource.mobAttack(var2)) ? 0.5F : 1.0F;
+         float var12 = var7.isDamageSourceBlocked(var1.damageSources().mobAttack(var2)) ? 0.5F : 1.0F;
          var7.knockback((double)(var12 * var11) * this.getKnockbackForce.applyAsDouble(var2), this.ramDirection.x(), this.ramDirection.z());
          this.finishRam(var1, var2);
          var1.playSound(null, var2, this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
@@ -104,7 +103,7 @@ public class RamTarget extends Behavior<Goat> {
 
    private boolean hasRammedHornBreakingBlock(ServerLevel var1, Goat var2) {
       Vec3 var3 = var2.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize();
-      BlockPos var4 = new BlockPos(var2.position().add(var3));
+      BlockPos var4 = BlockPos.containing(var2.position().add(var3));
       return var1.getBlockState(var4).is(BlockTags.SNAPS_GOAT_HORN) || var1.getBlockState(var4.above()).is(BlockTags.SNAPS_GOAT_HORN);
    }
 

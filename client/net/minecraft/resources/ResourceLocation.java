@@ -86,7 +86,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       try {
          return DataResult.success(new ResourceLocation(var0));
       } catch (ResourceLocationException var2) {
-         return DataResult.error("Not a valid resource location: " + var0 + " " + var2.getMessage());
+         return DataResult.error(() -> "Not a valid resource location: " + var0 + " " + var2.getMessage());
       }
    }
 
@@ -108,6 +108,10 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
    public ResourceLocation withPrefix(String var1) {
       return this.withPath(var1 + this.path);
+   }
+
+   public ResourceLocation withSuffix(String var1) {
+      return this.withPath(this.path + var1);
    }
 
    @Override
@@ -155,6 +159,10 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
    public String toLanguageKey(String var1) {
       return var1 + "." + this.toLanguageKey();
+   }
+
+   public String toLanguageKey(String var1, String var2) {
+      return var1 + "." + this.toLanguageKey() + "." + var2;
    }
 
    public static ResourceLocation read(StringReader var0) throws CommandSyntaxException {

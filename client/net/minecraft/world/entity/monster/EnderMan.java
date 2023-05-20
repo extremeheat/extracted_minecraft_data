@@ -19,13 +19,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.IndirectEntityDamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -76,7 +76,7 @@ public class EnderMan extends Monster implements NeutralMob {
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
    private static final EntityDataAccessor<Optional<BlockState>> DATA_CARRY_STATE = SynchedEntityData.defineId(
-      EnderMan.class, EntityDataSerializers.BLOCK_STATE
+      EnderMan.class, EntityDataSerializers.OPTIONAL_BLOCK_STATE
    );
    private static final EntityDataAccessor<Boolean> DATA_CREEPY = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_STARED_AT = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
@@ -89,7 +89,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
    public EnderMan(EntityType<? extends EnderMan> var1, Level var2) {
       super(var1, var2);
-      this.maxUpStep = 1.0F;
+      this.setMaxUpStep(1.0F);
       this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
    }
 
@@ -370,29 +370,26 @@ public class EnderMan extends Monster implements NeutralMob {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (var1 instanceof IndirectEntityDamageSource) {
-         Entity var6 = var1.getDirectEntity();
-         boolean var4;
-         if (var6 instanceof ThrownPotion) {
-            var4 = this.hurtWithCleanWater(var1, (ThrownPotion)var6, var2);
-         } else {
-            var4 = false;
-         }
-
-         for(int var5 = 0; var5 < 64; ++var5) {
-            if (this.teleport()) {
-               return true;
-            }
-         }
-
-         return var4;
       } else {
-         boolean var3 = super.hurt(var1, var2);
-         if (!this.level.isClientSide() && !(var1.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
-            this.teleport();
-         }
+         boolean var3 = var1.getDirectEntity() instanceof ThrownPotion;
+         if (!var1.is(DamageTypeTags.IS_PROJECTILE) && !var3) {
+            boolean var6 = super.hurt(var1, var2);
+            if (!this.level.isClientSide() && !(var1.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
+               this.teleport();
+            }
 
-         return var3;
+            return var6;
+         } else {
+            boolean var4 = var3 && this.hurtWithCleanWater(var1, (ThrownPotion)var1.getDirectEntity(), var2);
+
+            for(int var5 = 0; var5 < 64; ++var5) {
+               if (this.teleport()) {
+                  return true;
+               }
+            }
+
+            return var4;
+         }
       }
    }
 
@@ -518,7 +515,7 @@ public class EnderMan extends Monster implements NeutralMob {
       public EndermanLookForPlayerGoal(EnderMan var1, @Nullable Predicate<LivingEntity> var2) {
          super(var1, Player.class, 10, false, false, var2);
          this.enderman = var1;
-         this.isAngerInducing = var1x -> var1.isLookingAtMe((Player)var1x) || var1.isAngryAt(var1x);
+         this.isAngerInducing = var1x -> (var1.isLookingAtMe((Player)var1x) || var1.isAngryAt(var1x)) && !var1.hasIndirectPassenger(var1x);
          this.startAggroTargetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(this.isAngerInducing);
       }
 
@@ -551,7 +548,17 @@ public class EnderMan extends Monster implements NeutralMob {
                return true;
             }
          } else {
-            return this.target != null && this.continueAggroTargetConditions.test(this.enderman, this.target) ? true : super.canContinueToUse();
+            if (this.target != null) {
+               if (this.enderman.hasIndirectPassenger(this.target)) {
+                  return false;
+               }
+
+               if (this.continueAggroTargetConditions.test(this.enderman, this.target)) {
+                  return true;
+               }
+            }
+
+            return super.canContinueToUse();
          }
       }
 

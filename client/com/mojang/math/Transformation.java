@@ -1,12 +1,15 @@
 package com.mojang.math;
 
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.util.ExtraCodecs;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Matrix4x3f;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
@@ -14,6 +17,17 @@ import org.joml.Vector3fc;
 
 public final class Transformation {
    private final Matrix4f matrix;
+   public static final Codec<Transformation> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter(var0x -> var0x.translation),
+               ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter(var0x -> var0x.leftRotation),
+               ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter(var0x -> var0x.scale),
+               ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter(var0x -> var0x.rightRotation)
+            )
+            .apply(var0, Transformation::new)
+   );
+   public static final Codec<Transformation> EXTENDED_CODEC = Codec.either(CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix))
+      .xmap(var0 -> (Transformation)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
    private boolean decomposed;
    @Nullable
    private Vector3f translation;
@@ -25,14 +39,18 @@ public final class Transformation {
    private Quaternionf rightRotation;
    private static final Transformation IDENTITY = Util.make(() -> {
       Transformation var0 = new Transformation(new Matrix4f());
-      var0.getLeftRotation();
+      var0.translation = new Vector3f();
+      var0.leftRotation = new Quaternionf();
+      var0.scale = new Vector3f(1.0F, 1.0F, 1.0F);
+      var0.rightRotation = new Quaternionf();
+      var0.decomposed = true;
       return var0;
    });
 
    public Transformation(@Nullable Matrix4f var1) {
       super();
       if (var1 == null) {
-         this.matrix = IDENTITY.matrix;
+         this.matrix = new Matrix4f();
       } else {
          this.matrix = var1;
       }
@@ -70,9 +88,9 @@ public final class Transformation {
 
    private void ensureDecomposed() {
       if (!this.decomposed) {
-         Matrix4x3f var1 = MatrixUtil.toAffine(this.matrix);
-         Triple var2 = MatrixUtil.svdDecompose(new Matrix3f().set(var1));
-         this.translation = var1.getTranslation(new Vector3f());
+         float var1 = 1.0F / this.matrix.m33();
+         Triple var2 = MatrixUtil.svdDecompose(new Matrix3f(this.matrix).scale(var1));
+         this.translation = this.matrix.getTranslation(new Vector3f()).mul(var1);
          this.leftRotation = new Quaternionf((Quaternionfc)var2.getLeft());
          this.scale = new Vector3f((Vector3fc)var2.getMiddle());
          this.rightRotation = new Quaternionf((Quaternionfc)var2.getRight());

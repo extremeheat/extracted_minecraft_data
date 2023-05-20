@@ -1,17 +1,12 @@
 package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.math.MatrixUtil;
 import java.util.List;
@@ -23,19 +18,17 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
@@ -51,15 +44,18 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.StainedGlassPaneBlock;
+import org.joml.Matrix4f;
 
 public class ItemRenderer implements ResourceManagerReloadListener {
-   public static final ResourceLocation ENCHANT_GLINT_LOCATION = new ResourceLocation("textures/misc/enchanted_item_glint.png");
+   public static final ResourceLocation ENCHANTED_GLINT_ENTITY = new ResourceLocation("textures/misc/enchanted_glint_entity.png");
+   public static final ResourceLocation ENCHANTED_GLINT_ITEM = new ResourceLocation("textures/misc/enchanted_glint_item.png");
    private static final Set<Item> IGNORED = Sets.newHashSet(new Item[]{Items.AIR});
    private static final int GUI_SLOT_CENTER_X = 8;
    private static final int GUI_SLOT_CENTER_Y = 8;
@@ -71,25 +67,26 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    public static final ModelResourceLocation TRIDENT_IN_HAND_MODEL = ModelResourceLocation.vanilla("trident_in_hand", "inventory");
    private static final ModelResourceLocation SPYGLASS_MODEL = ModelResourceLocation.vanilla("spyglass", "inventory");
    public static final ModelResourceLocation SPYGLASS_IN_HAND_MODEL = ModelResourceLocation.vanilla("spyglass_in_hand", "inventory");
-   public float blitOffset;
+   private final Minecraft minecraft;
    private final ItemModelShaper itemModelShaper;
    private final TextureManager textureManager;
    private final ItemColors itemColors;
    private final BlockEntityWithoutLevelRenderer blockEntityRenderer;
 
-   public ItemRenderer(TextureManager var1, ModelManager var2, ItemColors var3, BlockEntityWithoutLevelRenderer var4) {
+   public ItemRenderer(Minecraft var1, TextureManager var2, ModelManager var3, ItemColors var4, BlockEntityWithoutLevelRenderer var5) {
       super();
-      this.textureManager = var1;
-      this.itemModelShaper = new ItemModelShaper(var2);
-      this.blockEntityRenderer = var4;
+      this.minecraft = var1;
+      this.textureManager = var2;
+      this.itemModelShaper = new ItemModelShaper(var3);
+      this.blockEntityRenderer = var5;
 
-      for(Item var6 : BuiltInRegistries.ITEM) {
-         if (!IGNORED.contains(var6)) {
-            this.itemModelShaper.register(var6, new ModelResourceLocation(BuiltInRegistries.ITEM.getKey(var6), "inventory"));
+      for(Item var7 : BuiltInRegistries.ITEM) {
+         if (!IGNORED.contains(var7)) {
+            this.itemModelShaper.register(var7, new ModelResourceLocation(BuiltInRegistries.ITEM.getKey(var7), "inventory"));
          }
       }
 
-      this.itemColors = var3;
+      this.itemColors = var4;
    }
 
    public ItemModelShaper getItemModelShaper() {
@@ -109,12 +106,10 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       this.renderQuadList(var5, var6, var1.getQuads(null, null, var7), var2, var3, var4);
    }
 
-   public void render(
-      ItemStack var1, ItemTransforms.TransformType var2, boolean var3, PoseStack var4, MultiBufferSource var5, int var6, int var7, BakedModel var8
-   ) {
+   public void render(ItemStack var1, ItemDisplayContext var2, boolean var3, PoseStack var4, MultiBufferSource var5, int var6, int var7, BakedModel var8) {
       if (!var1.isEmpty()) {
          var4.pushPose();
-         boolean var9 = var2 == ItemTransforms.TransformType.GUI || var2 == ItemTransforms.TransformType.GROUND || var2 == ItemTransforms.TransformType.FIXED;
+         boolean var9 = var2 == ItemDisplayContext.GUI || var2 == ItemDisplayContext.GROUND || var2 == ItemDisplayContext.FIXED;
          if (var9) {
             if (var1.is(Items.TRIDENT)) {
                var8 = this.itemModelShaper.getModelManager().getModel(TRIDENT_MODEL);
@@ -127,7 +122,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
          var4.translate(-0.5F, -0.5F, -0.5F);
          if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
             boolean var10;
-            if (var2 != ItemTransforms.TransformType.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem) {
+            if (var2 != ItemDisplayContext.GUI && !var2.firstPerson() && var1.getItem() instanceof BlockItem) {
                Block var11 = ((BlockItem)var1.getItem()).getBlock();
                var10 = !(var11 instanceof HalfTransparentBlock) && !(var11 instanceof StainedGlassPaneBlock);
             } else {
@@ -139,7 +134,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             if (var1.is(ItemTags.COMPASSES) && var1.hasFoil()) {
                var4.pushPose();
                PoseStack.Pose var13 = var4.last();
-               if (var2 == ItemTransforms.TransformType.GUI) {
+               if (var2 == ItemDisplayContext.GUI) {
                   MatrixUtil.mulComponentWise(var13.pose(), 0.5F);
                } else if (var2.firstPerson()) {
                   MatrixUtil.mulComponentWise(var13.pose(), 0.75F);
@@ -233,14 +228,16 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       return var7 == null ? this.itemModelShaper.getModelManager().getMissingModel() : var7;
    }
 
-   public void renderStatic(ItemStack var1, ItemTransforms.TransformType var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, int var7) {
-      this.renderStatic(null, var1, var2, false, var5, var6, null, var3, var4, var7);
+   public void renderStatic(
+      ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8
+   ) {
+      this.renderStatic(null, var1, var2, false, var5, var6, var7, var3, var4, var8);
    }
 
    public void renderStatic(
       @Nullable LivingEntity var1,
       ItemStack var2,
-      ItemTransforms.TransformType var3,
+      ItemDisplayContext var3,
       boolean var4,
       PoseStack var5,
       MultiBufferSource var6,
@@ -255,142 +252,133 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       }
    }
 
-   public void renderGuiItem(ItemStack var1, int var2, int var3) {
-      this.renderGuiItem(var1, var2, var3, this.getModel(var1, null, null, 0));
+   public void renderGuiItem(PoseStack var1, ItemStack var2, int var3, int var4) {
+      this.renderGuiItem(var1, var2, var3, var4, this.getModel(var2, null, null, 0));
    }
 
-   protected void renderGuiItem(ItemStack var1, int var2, int var3, BakedModel var4) {
-      this.textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
-      RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-      RenderSystem.enableBlend();
-      RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      PoseStack var5 = RenderSystem.getModelViewStack();
-      var5.pushPose();
-      var5.translate((float)var2, (float)var3, 100.0F + this.blitOffset);
-      var5.translate(8.0F, 8.0F, 0.0F);
-      var5.scale(1.0F, -1.0F, 1.0F);
-      var5.scale(16.0F, 16.0F, 16.0F);
-      RenderSystem.applyModelViewMatrix();
-      PoseStack var6 = new PoseStack();
-      MultiBufferSource.BufferSource var7 = Minecraft.getInstance().renderBuffers().bufferSource();
-      boolean var8 = !var4.usesBlockLight();
-      if (var8) {
+   protected void renderGuiItem(PoseStack var1, ItemStack var2, int var3, int var4, BakedModel var5) {
+      var1.pushPose();
+      var1.translate((float)var3, (float)var4, 100.0F);
+      var1.translate(8.0F, 8.0F, 0.0F);
+      var1.mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
+      var1.scale(16.0F, 16.0F, 16.0F);
+      MultiBufferSource.BufferSource var6 = this.minecraft.renderBuffers().bufferSource();
+      boolean var7 = !var5.usesBlockLight();
+      if (var7) {
          Lighting.setupForFlatItems();
       }
 
-      this.render(var1, ItemTransforms.TransformType.GUI, false, var6, var7, 15728880, OverlayTexture.NO_OVERLAY, var4);
-      var7.endBatch();
+      PoseStack var8 = RenderSystem.getModelViewStack();
+      var8.pushPose();
+      var8.mulPoseMatrix(var1.last().pose());
+      RenderSystem.applyModelViewMatrix();
+      this.render(var2, ItemDisplayContext.GUI, false, new PoseStack(), var6, 15728880, OverlayTexture.NO_OVERLAY, var5);
+      var6.endBatch();
       RenderSystem.enableDepthTest();
-      if (var8) {
+      if (var7) {
          Lighting.setupFor3DItems();
       }
 
-      var5.popPose();
+      var1.popPose();
+      var8.popPose();
       RenderSystem.applyModelViewMatrix();
    }
 
-   public void renderAndDecorateItem(ItemStack var1, int var2, int var3) {
-      this.tryRenderGuiItem(Minecraft.getInstance().player, var1, var2, var3, 0);
+   public void renderAndDecorateItem(PoseStack var1, ItemStack var2, int var3, int var4) {
+      this.tryRenderGuiItem(var1, this.minecraft.player, this.minecraft.level, var2, var3, var4, 0);
    }
 
-   public void renderAndDecorateItem(ItemStack var1, int var2, int var3, int var4) {
-      this.tryRenderGuiItem(Minecraft.getInstance().player, var1, var2, var3, var4);
+   public void renderAndDecorateItem(PoseStack var1, ItemStack var2, int var3, int var4, int var5) {
+      this.tryRenderGuiItem(var1, this.minecraft.player, this.minecraft.level, var2, var3, var4, var5);
    }
 
-   public void renderAndDecorateItem(ItemStack var1, int var2, int var3, int var4, int var5) {
-      this.tryRenderGuiItem(Minecraft.getInstance().player, var1, var2, var3, var4, var5);
+   public void renderAndDecorateItem(PoseStack var1, ItemStack var2, int var3, int var4, int var5, int var6) {
+      this.tryRenderGuiItem(var1, this.minecraft.player, this.minecraft.level, var2, var3, var4, var5, var6);
    }
 
-   public void renderAndDecorateFakeItem(ItemStack var1, int var2, int var3) {
-      this.tryRenderGuiItem(null, var1, var2, var3, 0);
+   public void renderAndDecorateFakeItem(PoseStack var1, ItemStack var2, int var3, int var4) {
+      this.tryRenderGuiItem(var1, null, this.minecraft.level, var2, var3, var4, 0);
    }
 
-   public void renderAndDecorateItem(LivingEntity var1, ItemStack var2, int var3, int var4, int var5) {
-      this.tryRenderGuiItem(var1, var2, var3, var4, var5);
+   public void renderAndDecorateItem(PoseStack var1, LivingEntity var2, ItemStack var3, int var4, int var5, int var6) {
+      this.tryRenderGuiItem(var1, var2, var2.level, var3, var4, var5, var6);
    }
 
-   private void tryRenderGuiItem(@Nullable LivingEntity var1, ItemStack var2, int var3, int var4, int var5) {
-      this.tryRenderGuiItem(var1, var2, var3, var4, var5, 0);
+   private void tryRenderGuiItem(PoseStack var1, @Nullable LivingEntity var2, @Nullable Level var3, ItemStack var4, int var5, int var6, int var7) {
+      this.tryRenderGuiItem(var1, var2, var3, var4, var5, var6, var7, 0);
    }
 
-   private void tryRenderGuiItem(@Nullable LivingEntity var1, ItemStack var2, int var3, int var4, int var5, int var6) {
-      if (!var2.isEmpty()) {
-         BakedModel var7 = this.getModel(var2, null, var1, var5);
-         this.blitOffset = var7.isGui3d() ? this.blitOffset + 50.0F + (float)var6 : this.blitOffset + 50.0F;
+   private void tryRenderGuiItem(PoseStack var1, @Nullable LivingEntity var2, @Nullable Level var3, ItemStack var4, int var5, int var6, int var7, int var8) {
+      if (!var4.isEmpty()) {
+         BakedModel var9 = this.getModel(var4, var3, var2, var7);
+         var1.pushPose();
+         var1.translate(0.0F, 0.0F, (float)(50 + (var9.isGui3d() ? var8 : 0)));
 
          try {
-            this.renderGuiItem(var2, var3, var4, var7);
-         } catch (Throwable var11) {
-            CrashReport var9 = CrashReport.forThrowable(var11, "Rendering item");
-            CrashReportCategory var10 = var9.addCategory("Item being rendered");
-            var10.setDetail("Item Type", () -> String.valueOf(var2.getItem()));
-            var10.setDetail("Item Damage", () -> String.valueOf(var2.getDamageValue()));
-            var10.setDetail("Item NBT", () -> String.valueOf(var2.getTag()));
-            var10.setDetail("Item Foil", () -> String.valueOf(var2.hasFoil()));
-            throw new ReportedException(var9);
+            this.renderGuiItem(var1, var4, var5, var6, var9);
+         } catch (Throwable var13) {
+            CrashReport var11 = CrashReport.forThrowable(var13, "Rendering item");
+            CrashReportCategory var12 = var11.addCategory("Item being rendered");
+            var12.setDetail("Item Type", () -> String.valueOf(var4.getItem()));
+            var12.setDetail("Item Damage", () -> String.valueOf(var4.getDamageValue()));
+            var12.setDetail("Item NBT", () -> String.valueOf(var4.getTag()));
+            var12.setDetail("Item Foil", () -> String.valueOf(var4.hasFoil()));
+            throw new ReportedException(var11);
          }
 
-         this.blitOffset = var7.isGui3d() ? this.blitOffset - 50.0F - (float)var6 : this.blitOffset - 50.0F;
+         var1.popPose();
       }
    }
 
-   public void renderGuiItemDecorations(Font var1, ItemStack var2, int var3, int var4) {
-      this.renderGuiItemDecorations(var1, var2, var3, var4, null);
+   public void renderGuiItemDecorations(PoseStack var1, Font var2, ItemStack var3, int var4, int var5) {
+      this.renderGuiItemDecorations(var1, var2, var3, var4, var5, null);
    }
 
-   public void renderGuiItemDecorations(Font var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
-      if (!var2.isEmpty()) {
-         PoseStack var6 = new PoseStack();
-         if (var2.getCount() != 1 || var5 != null) {
-            String var7 = var5 == null ? String.valueOf(var2.getCount()) : var5;
-            var6.translate(0.0F, 0.0F, this.blitOffset + 200.0F);
+   public void renderGuiItemDecorations(PoseStack var1, Font var2, ItemStack var3, int var4, int var5, @Nullable String var6) {
+      if (!var3.isEmpty()) {
+         var1.pushPose();
+         if (var3.getCount() != 1 || var6 != null) {
+            String var7 = var6 == null ? String.valueOf(var3.getCount()) : var6;
+            var1.translate(0.0F, 0.0F, 200.0F);
             MultiBufferSource.BufferSource var8 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-            var1.drawInBatch(
-               var7, (float)(var3 + 19 - 2 - var1.width(var7)), (float)(var4 + 6 + 3), 16777215, true, var6.last().pose(), var8, false, 0, 15728880
+            var2.drawInBatch(
+               var7,
+               (float)(var4 + 19 - 2 - var2.width(var7)),
+               (float)(var5 + 6 + 3),
+               16777215,
+               true,
+               var1.last().pose(),
+               var8,
+               Font.DisplayMode.NORMAL,
+               0,
+               15728880
             );
             var8.endBatch();
          }
 
-         if (var2.isBarVisible()) {
+         if (var3.isBarVisible()) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
-            RenderSystem.disableBlend();
-            Tesselator var11 = Tesselator.getInstance();
-            BufferBuilder var13 = var11.getBuilder();
-            int var9 = var2.getBarWidth();
-            int var10 = var2.getBarColor();
-            this.fillRect(var13, var3 + 2, var4 + 13, 13, 2, 0, 0, 0, 255);
-            this.fillRect(var13, var3 + 2, var4 + 13, var9, 1, var10 >> 16 & 0xFF, var10 >> 8 & 0xFF, var10 & 0xFF, 255);
-            RenderSystem.enableBlend();
-            RenderSystem.enableTexture();
+            int var11 = var3.getBarWidth();
+            int var13 = var3.getBarColor();
+            int var9 = var4 + 2;
+            int var10 = var5 + 13;
+            GuiComponent.fill(var1, var9, var10, var9 + 13, var10 + 2, -16777216);
+            GuiComponent.fill(var1, var9, var10, var9 + var11, var10 + 1, var13 | 0xFF000000);
             RenderSystem.enableDepthTest();
          }
 
-         LocalPlayer var12 = Minecraft.getInstance().player;
-         float var14 = var12 == null ? 0.0F : var12.getCooldowns().getCooldownPercent(var2.getItem(), Minecraft.getInstance().getFrameTime());
+         LocalPlayer var12 = this.minecraft.player;
+         float var14 = var12 == null ? 0.0F : var12.getCooldowns().getCooldownPercent(var3.getItem(), this.minecraft.getFrameTime());
          if (var14 > 0.0F) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            Tesselator var15 = Tesselator.getInstance();
-            BufferBuilder var16 = var15.getBuilder();
-            this.fillRect(var16, var3, var4 + Mth.floor(16.0F * (1.0F - var14)), 16, Mth.ceil(16.0F * var14), 255, 255, 255, 127);
-            RenderSystem.enableTexture();
+            int var15 = var5 + Mth.floor(16.0F * (1.0F - var14));
+            int var16 = var15 + Mth.ceil(16.0F * var14);
+            GuiComponent.fill(var1, var4, var15, var4 + 16, var16, 2147483647);
             RenderSystem.enableDepthTest();
          }
-      }
-   }
 
-   private void fillRect(BufferBuilder var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-      var1.vertex((double)(var2 + 0), (double)(var3 + 0), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + 0), (double)(var3 + var5), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + var4), (double)(var3 + var5), 0.0).color(var6, var7, var8, var9).endVertex();
-      var1.vertex((double)(var2 + var4), (double)(var3 + 0), 0.0).color(var6, var7, var8, var9).endVertex();
-      BufferUploader.drawWithShader(var1.end());
+         var1.popPose();
+      }
    }
 
    @Override

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -392,7 +393,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final BlockBehaviour.StatePredicate isViewBlocking;
       private final BlockBehaviour.StatePredicate hasPostProcess;
       private final BlockBehaviour.StatePredicate emissiveRendering;
-      private final BlockBehaviour.OffsetType offsetType;
+      private final Optional<BlockBehaviour.OffsetFunction> offsetFunction;
       private final boolean spawnParticlesOnBreak;
       @Nullable
       protected BlockBehaviour.BlockStateBase.Cache cache;
@@ -415,7 +416,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.isViewBlocking = var4.isViewBlocking;
          this.hasPostProcess = var4.hasPostProcess;
          this.emissiveRendering = var4.emissiveRendering;
-         this.offsetType = var4.offsetType.apply(this.asState());
+         this.offsetFunction = var4.offsetFunction;
          this.spawnParticlesOnBreak = var4.spawnParticlesOnBreak;
       }
 
@@ -591,19 +592,11 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Vec3 getOffset(BlockGetter var1, BlockPos var2) {
-         if (this.offsetType == BlockBehaviour.OffsetType.NONE) {
-            return Vec3.ZERO;
-         } else {
-            Block var3 = this.getBlock();
-            long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
-            float var6 = var3.getMaxHorizontalOffset();
-            double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-            double var9 = this.offsetType == BlockBehaviour.OffsetType.XYZ
-               ? ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset()
-               : 0.0;
-            double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
-            return new Vec3(var7, var9, var11);
-         }
+         return this.offsetFunction.<Vec3>map(var3 -> var3.evaluate(this.asState(), var1, var2)).orElse(Vec3.ZERO);
+      }
+
+      public boolean hasOffsetFunction() {
+         return !this.offsetFunction.isEmpty();
       }
 
       public boolean triggerEvent(Level var1, BlockPos var2, int var3, int var4) {
@@ -781,10 +774,6 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.requiresCorrectToolForDrops;
       }
 
-      public BlockBehaviour.OffsetType getOffsetType() {
-         return this.offsetType;
-      }
-
       public boolean shouldSpawnParticlesOnBreak() {
          return this.spawnParticlesOnBreak;
       }
@@ -820,7 +809,7 @@ public abstract class BlockBehaviour implements FeatureElement {
             }
 
             this.collisionShape = var2.getCollisionShape(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty());
-            if (!this.collisionShape.isEmpty() && var1.getOffsetType() != BlockBehaviour.OffsetType.NONE) {
+            if (!this.collisionShape.isEmpty() && var1.hasOffsetFunction()) {
                throw new IllegalStateException(
                   String.format(
                      Locale.ROOT,
@@ -851,6 +840,10 @@ public abstract class BlockBehaviour implements FeatureElement {
             return var0.ordinal() * SUPPORT_TYPE_COUNT + var1.ordinal();
          }
       }
+   }
+
+   public interface OffsetFunction {
+      Vec3 evaluate(BlockState var1, BlockGetter var2, BlockPos var3);
    }
 
    public static enum OffsetType {
@@ -889,7 +882,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       BlockBehaviour.StatePredicate emissiveRendering = (var0, var1x, var2x) -> false;
       boolean dynamicShape;
       FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
-      Function<BlockState, BlockBehaviour.OffsetType> offsetType = var0 -> BlockBehaviour.OffsetType.NONE;
+      Optional<BlockBehaviour.OffsetFunction> offsetFunction = Optional.empty();
 
       private Properties(Material var1, MaterialColor var2) {
          this(var1, var1x -> var2);
@@ -933,7 +926,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          var1.canOcclude = var0.properties.canOcclude;
          var1.isAir = var0.properties.isAir;
          var1.requiresCorrectToolForDrops = var0.properties.requiresCorrectToolForDrops;
-         var1.offsetType = var0.properties.offsetType;
+         var1.offsetFunction = var0.properties.offsetFunction;
          var1.spawnParticlesOnBreak = var0.properties.spawnParticlesOnBreak;
          var1.requiredFeatures = var0.properties.requiredFeatures;
          return var1;
@@ -1064,11 +1057,32 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
-         return this.offsetType(var1x -> var1);
-      }
+         switch(var1) {
+            case XYZ:
+               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+                  Block var3 = var0.getBlock();
+                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+                  double var6 = ((double)((float)(var4 >> 4 & 15L) / 15.0F) - 1.0) * (double)var3.getMaxVerticalOffset();
+                  float var8 = var3.getMaxHorizontalOffset();
+                  double var9 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+                  double var11 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var8), (double)var8);
+                  return new Vec3(var9, var6, var11);
+               });
+               break;
+            case XZ:
+               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+                  Block var3 = var0.getBlock();
+                  long var4 = Mth.getSeed(var2.getX(), 0, var2.getZ());
+                  float var6 = var3.getMaxHorizontalOffset();
+                  double var7 = Mth.clamp(((double)((float)(var4 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  double var9 = Mth.clamp(((double)((float)(var4 >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-var6), (double)var6);
+                  return new Vec3(var7, 0.0, var9);
+               });
+               break;
+            default:
+               this.offsetFunction = Optional.empty();
+         }
 
-      public BlockBehaviour.Properties offsetType(Function<BlockState, BlockBehaviour.OffsetType> var1) {
-         this.offsetType = var1;
          return this;
       }
 

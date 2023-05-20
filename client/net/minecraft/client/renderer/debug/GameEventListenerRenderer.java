@@ -1,20 +1,14 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -27,7 +21,6 @@ import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
-import org.joml.Vector3f;
 
 public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
@@ -51,10 +44,6 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
          Vec3 var10 = new Vec3(var3, 0.0, var7);
          this.trackedGameEvents.removeIf(GameEventListenerRenderer.TrackedGameEvent::isExpired);
          this.trackedListeners.removeIf(var2x -> var2x.isExpired(var9, var10));
-         RenderSystem.disableTexture();
-         RenderSystem.enableDepthTest();
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
          VertexConsumer var11 = var2.getBuffer(RenderType.lines());
 
          for(GameEventListenerRenderer.TrackedListener var13 : this.trackedListeners) {
@@ -63,93 +52,66 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
                   var9x -> {
                      double var10x = var9x.x() - (double)var13.getListenerRadius();
                      double var12 = var9x.y() - (double)var13.getListenerRadius();
-                     double var14 = var9x.z() - (double)var13.getListenerRadius();
+                     double var14x = var9x.z() - (double)var13.getListenerRadius();
                      double var16x = var9x.x() + (double)var13.getListenerRadius();
-                     double var18 = var9x.y() + (double)var13.getListenerRadius();
-                     double var20 = var9x.z() + (double)var13.getListenerRadius();
-                     Vector3f var22 = new Vector3f(1.0F, 1.0F, 0.0F);
+                     double var18x = var9x.y() + (double)var13.getListenerRadius();
+                     double var20x = var9x.z() + (double)var13.getListenerRadius();
                      LevelRenderer.renderVoxelShape(
-                        var1,
-                        var11,
-                        Shapes.create(new AABB(var10x, var12, var14, var16x, var18, var20)),
-                        -var3,
-                        -var5,
-                        -var7,
-                        var22.x(),
-                        var22.y(),
-                        var22.z(),
-                        0.35F
+                        var1, var11, Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)), -var3, -var5, -var7, 1.0F, 1.0F, 0.0F, 0.35F
                      );
                   }
                );
          }
 
-         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-         Tesselator var31 = Tesselator.getInstance();
-         BufferBuilder var32 = var31.getBuilder();
-         var32.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+         VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
 
-         for(GameEventListenerRenderer.TrackedListener var15 : this.trackedListeners) {
-            var15.getPosition(var9)
+         for(GameEventListenerRenderer.TrackedListener var14 : this.trackedListeners) {
+            var14.getPosition(var9)
                .ifPresent(
-                  var7x -> {
-                     Vector3f var8 = new Vector3f(1.0F, 1.0F, 0.0F);
-                     LevelRenderer.addChainedFilledBoxVertices(
-                        var32,
-                        var7x.x() - 0.25 - var3,
-                        var7x.y() - var5,
-                        var7x.z() - 0.25 - var7,
-                        var7x.x() + 0.25 - var3,
-                        var7x.y() - var5 + 1.0,
-                        var7x.z() + 0.25 - var7,
-                        var8.x(),
-                        var8.y(),
-                        var8.z(),
+                  var8 -> LevelRenderer.addChainedFilledBoxVertices(
+                        var1,
+                        var30,
+                        var8.x() - 0.25 - var3,
+                        var8.y() - var5,
+                        var8.z() - 0.25 - var7,
+                        var8.x() + 0.25 - var3,
+                        var8.y() - var5 + 1.0,
+                        var8.z() + 0.25 - var7,
+                        1.0F,
+                        1.0F,
+                        0.0F,
                         0.35F
-                     );
-                  }
+                     )
                );
          }
 
-         var31.end();
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         RenderSystem.lineWidth(2.0F);
-         RenderSystem.depthMask(false);
-
-         for(GameEventListenerRenderer.TrackedListener var35 : this.trackedListeners) {
-            var35.getPosition(var9).ifPresent(var0 -> {
-               DebugRenderer.renderFloatingText("Listener Origin", var0.x(), var0.y() + 1.7999999523162842, var0.z(), -1, 0.025F);
-               DebugRenderer.renderFloatingText(new BlockPos(var0).toString(), var0.x(), var0.y() + 1.5, var0.z(), -6959665, 0.025F);
+         for(GameEventListenerRenderer.TrackedListener var34 : this.trackedListeners) {
+            var34.getPosition(var9).ifPresent(var2x -> {
+               DebugRenderer.renderFloatingText(var1, var2, "Listener Origin", var2x.x(), var2x.y() + 1.7999999523162842, var2x.z(), -1, 0.025F);
+               DebugRenderer.renderFloatingText(var1, var2, BlockPos.containing(var2x).toString(), var2x.x(), var2x.y() + 1.5, var2x.z(), -6959665, 0.025F);
             });
          }
 
-         for(GameEventListenerRenderer.TrackedGameEvent var36 : this.trackedGameEvents) {
-            Vec3 var16 = var36.position;
-            double var17 = 0.20000000298023224;
-            double var19 = var16.x - 0.20000000298023224;
-            double var21 = var16.y - 0.20000000298023224;
-            double var23 = var16.z - 0.20000000298023224;
-            double var25 = var16.x + 0.20000000298023224;
-            double var27 = var16.y + 0.20000000298023224 + 0.5;
-            double var29 = var16.z + 0.20000000298023224;
-            renderTransparentFilledBox(new AABB(var19, var21, var23, var25, var27, var29), 1.0F, 1.0F, 1.0F, 0.2F);
-            DebugRenderer.renderFloatingText(var36.gameEvent.getName(), var16.x, var16.y + 0.8500000238418579, var16.z, -7564911, 0.0075F);
+         for(GameEventListenerRenderer.TrackedGameEvent var35 : this.trackedGameEvents) {
+            Vec3 var15 = var35.position;
+            double var16 = 0.20000000298023224;
+            double var18 = var15.x - 0.20000000298023224;
+            double var20 = var15.y - 0.20000000298023224;
+            double var22 = var15.z - 0.20000000298023224;
+            double var24 = var15.x + 0.20000000298023224;
+            double var26 = var15.y + 0.20000000298023224 + 0.5;
+            double var28 = var15.z + 0.20000000298023224;
+            renderFilledBox(var1, var2, new AABB(var18, var20, var22, var24, var26, var28), 1.0F, 1.0F, 1.0F, 0.2F);
+            DebugRenderer.renderFloatingText(var1, var2, var35.gameEvent.getName(), var15.x, var15.y + 0.8500000238418579, var15.z, -7564911, 0.0075F);
          }
-
-         RenderSystem.depthMask(true);
-         RenderSystem.enableTexture();
-         RenderSystem.disableBlend();
       }
    }
 
-   private static void renderTransparentFilledBox(AABB var0, float var1, float var2, float var3, float var4) {
-      Camera var5 = Minecraft.getInstance().gameRenderer.getMainCamera();
-      if (var5.isInitialized()) {
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         Vec3 var6 = var5.getPosition().reverse();
-         DebugRenderer.renderFilledBox(var0.move(var6), var1, var2, var3, var4);
+   private static void renderFilledBox(PoseStack var0, MultiBufferSource var1, AABB var2, float var3, float var4, float var5, float var6) {
+      Camera var7 = Minecraft.getInstance().gameRenderer.getMainCamera();
+      if (var7.isInitialized()) {
+         Vec3 var8 = var7.getPosition().reverse();
+         DebugRenderer.renderFilledBox(var0, var1, var2.move(var8), var3, var4, var5, var6);
       }
    }
 

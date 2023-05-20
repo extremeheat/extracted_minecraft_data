@@ -12,7 +12,7 @@ public class V3203 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.registerSimple(var2, "minecraft:camel");
+      var1.register(var2, "minecraft:camel", () -> V100.equipment(var1));
       return var2;
    }
 }

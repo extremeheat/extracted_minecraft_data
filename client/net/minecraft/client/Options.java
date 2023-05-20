@@ -3,6 +3,7 @@ package net.minecraft.client;
 import com.google.common.base.Charsets;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -14,6 +15,7 @@ import com.google.gson.stream.JsonReader;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
@@ -53,7 +55,6 @@ import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.tutorial.TutorialSteps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -250,6 +251,20 @@ public class Options {
       "options.accessibility.panorama_speed", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 1.0, var0 -> {
       }
    );
+   private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
+   private final OptionInstance<Boolean> highContrast = OptionInstance.createBoolean(
+      "options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, var1x -> {
+         PackRepository var2x = Minecraft.getInstance().getResourcePackRepository();
+         boolean var3x = var2x.getSelectedIds().contains("high_contrast");
+         if (!var3x && var1x) {
+            if (var2x.addPack("high_contrast")) {
+               this.updateResourcePacks(var2x);
+            }
+         } else if (var3x && !var1x && var2x.removePack("high_contrast")) {
+            this.updateResourcePacks(var2x);
+         }
+      }
+   );
    @Nullable
    public String fullscreenVideoModeString;
    public boolean hideServerAddress;
@@ -269,7 +284,6 @@ public class Options {
    );
    public int overrideWidth;
    public int overrideHeight;
-   public boolean heldItemTooltips = true;
    private final OptionInstance<Double> chatScale = new OptionInstance<>(
       "options.chat.scale",
       OptionInstance.noTooltip(),
@@ -312,6 +326,17 @@ public class Options {
       Codec.doubleRange(0.0, 6.0),
       0.0,
       var0 -> Minecraft.getInstance().getChatListener().setMessageDelay(var0)
+   );
+   private static final Component ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME = Component.translatable("options.notifications.display_time.tooltip");
+   private final OptionInstance<Double> notificationDisplayTime = new OptionInstance<>(
+      "options.notifications.display_time",
+      OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_NOTIFICATION_DISPLAY_TIME),
+      (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.multiplier", var1x)),
+      new OptionInstance.IntRange(5, 100).xmap(var0 -> (double)var0 / 10.0, var0 -> (int)(var0 * 10.0)),
+      Codec.doubleRange(0.5, 10.0),
+      1.0,
+      var0 -> {
+      }
    );
    private final OptionInstance<Integer> mipmapLevels = new OptionInstance<>(
       "options.mipmapLevels",
@@ -356,7 +381,7 @@ public class Options {
       }
    });
    public int glDebugVerbosity = 1;
-   private final OptionInstance<Boolean> autoJump = OptionInstance.createBoolean("options.autoJump", true);
+   private final OptionInstance<Boolean> autoJump = OptionInstance.createBoolean("options.autoJump", false);
    private final OptionInstance<Boolean> operatorItemsTab = OptionInstance.createBoolean("options.operatorItemsTab", false);
    private final OptionInstance<Boolean> autoSuggestions = OptionInstance.createBoolean("options.autoSuggestCommands", true);
    private final OptionInstance<Boolean> chatColors = OptionInstance.createBoolean("options.chat.color", true);
@@ -583,6 +608,35 @@ public class Options {
       var0 -> {
       }
    );
+   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_SPEED = Component.translatable("options.glintSpeed.tooltip");
+   private final OptionInstance<Double> glintSpeed = new OptionInstance<>(
+      "options.glintSpeed",
+      OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_SPEED),
+      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      OptionInstance.UnitDouble.INSTANCE,
+      0.5,
+      var0 -> {
+      }
+   );
+   private static final Component ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH = Component.translatable("options.glintStrength.tooltip");
+   private final OptionInstance<Double> glintStrength = new OptionInstance<>(
+      "options.glintStrength",
+      OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_GLINT_STRENGTH),
+      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      OptionInstance.UnitDouble.INSTANCE,
+      0.75,
+      RenderSystem::setShaderGlintAlpha
+   );
+   private static final Component ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH = Component.translatable("options.damageTiltStrength.tooltip");
+   private final OptionInstance<Double> damageTiltStrength = new OptionInstance<>(
+      "options.damageTiltStrength",
+      OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DAMAGE_TILT_STRENGTH),
+      (var0, var1x) -> var1x == 0.0 ? genericValueLabel(var0, CommonComponents.OPTION_OFF) : percentValueLabel(var0, var1x),
+      OptionInstance.UnitDouble.INSTANCE,
+      1.0,
+      var0 -> {
+      }
+   );
    private final OptionInstance<Double> gamma = new OptionInstance<>("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
       int var2x = (int)(var1x * 100.0);
       if (var2x == 0) {
@@ -594,6 +648,7 @@ public class Options {
       }
    }, OptionInstance.UnitDouble.INSTANCE, 0.5, var0 -> {
    });
+   private static final int MAX_GUI_SCALE_INCLUSIVE = 2147483646;
    private final OptionInstance<Integer> guiScale = new OptionInstance<>(
       "options.guiScale",
       OptionInstance.noTooltip(),
@@ -601,7 +656,7 @@ public class Options {
       new OptionInstance.ClampingLazyMaxIntRange(0, () -> {
          Minecraft var0 = Minecraft.getInstance();
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
-      }),
+      }, 2147483646),
       0,
       var0 -> {
       }
@@ -648,6 +703,7 @@ public class Options {
          var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
+   public boolean onboardAccessibility = true;
    public boolean syncWrites;
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
@@ -694,6 +750,27 @@ public class Options {
       return this.prioritizeChunkUpdates;
    }
 
+   public void updateResourcePacks(PackRepository var1) {
+      ImmutableList var2 = ImmutableList.copyOf(this.resourcePacks);
+      this.resourcePacks.clear();
+      this.incompatibleResourcePacks.clear();
+
+      for(Pack var4 : var1.getSelectedPacks()) {
+         if (!var4.isFixedPosition()) {
+            this.resourcePacks.add(var4.getId());
+            if (!var4.getCompatibility().isCompatible()) {
+               this.incompatibleResourcePacks.add(var4.getId());
+            }
+         }
+      }
+
+      this.save();
+      ImmutableList var5 = ImmutableList.copyOf(this.resourcePacks);
+      if (!var5.equals(var2)) {
+         this.minecraft.reloadResourcePacks();
+      }
+   }
+
    public OptionInstance<ChatVisiblity> chatVisibility() {
       return this.chatVisibility;
    }
@@ -712,6 +789,10 @@ public class Options {
 
    public OptionInstance<Double> panoramaSpeed() {
       return this.panoramaSpeed;
+   }
+
+   public OptionInstance<Boolean> highContrast() {
+      return this.highContrast;
    }
 
    public OptionInstance<HumanoidArm> mainHand() {
@@ -736,6 +817,10 @@ public class Options {
 
    public OptionInstance<Double> chatDelay() {
       return this.chatDelay;
+   }
+
+   public OptionInstance<Double> notificationDisplayTime() {
+      return this.notificationDisplayTime;
    }
 
    public OptionInstance<Integer> mipmapLevels() {
@@ -905,6 +990,18 @@ public class Options {
       return this.darknessEffectScale;
    }
 
+   public OptionInstance<Double> glintSpeed() {
+      return this.glintSpeed;
+   }
+
+   public OptionInstance<Double> glintStrength() {
+      return this.glintStrength;
+   }
+
+   public OptionInstance<Double> damageTiltStrength() {
+      return this.damageTiltStrength;
+   }
+
    public OptionInstance<Double> gamma() {
       return this.gamma;
    }
@@ -997,6 +1094,10 @@ public class Options {
       var1.process("screenEffectScale", this.screenEffectScale);
       var1.process("fovEffectScale", this.fovEffectScale);
       var1.process("darknessEffectScale", this.darknessEffectScale);
+      var1.process("glintSpeed", this.glintSpeed);
+      var1.process("glintStrength", this.glintStrength);
+      var1.process("damageTiltStrength", this.damageTiltStrength);
+      var1.process("highContrast", this.highContrast);
       var1.process("gamma", this.gamma);
       var1.process("renderDistance", this.renderDistance);
       var1.process("simulationDistance", this.simulationDistance);
@@ -1024,12 +1125,12 @@ public class Options {
       this.pauseOnLostFocus = var1.process("pauseOnLostFocus", this.pauseOnLostFocus);
       this.overrideWidth = var1.process("overrideWidth", this.overrideWidth);
       this.overrideHeight = var1.process("overrideHeight", this.overrideHeight);
-      this.heldItemTooltips = var1.process("heldItemTooltips", this.heldItemTooltips);
       var1.process("chatHeightFocused", this.chatHeightFocused);
       var1.process("chatDelay", this.chatDelay);
       var1.process("chatHeightUnfocused", this.chatHeightUnfocused);
       var1.process("chatScale", this.chatScale);
       var1.process("chatWidth", this.chatWidth);
+      var1.process("notificationDisplayTime", this.notificationDisplayTime);
       var1.process("mipmapLevels", this.mipmapLevels);
       this.useNativeTransport = var1.process("useNativeTransport", this.useNativeTransport);
       var1.process("mainHand", this.mainHand);
@@ -1050,6 +1151,7 @@ public class Options {
       var1.process("onlyShowSecureChat", this.onlyShowSecureChat);
       var1.process("panoramaScrollSpeed", this.panoramaSpeed);
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
+      this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1198,12 +1300,12 @@ public class Options {
       } catch (RuntimeException var4) {
       }
 
-      return NbtUtils.update(this.minecraft.getFixerUpper(), DataFixTypes.OPTIONS, var1, var2);
+      return DataFixTypes.OPTIONS.updateToCurrentVersion(this.minecraft.getFixerUpper(), var1, var2);
    }
 
    public void save() {
       try (final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8))) {
-         var1.println("version:" + SharedConstants.getCurrentVersion().getWorldVersion());
+         var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
          this.processOptions(new Options.FieldAccess() {
             public void writePrefix(String var1x) {
                var1.print(var1x);
@@ -1372,6 +1474,8 @@ public class Options {
          .add(Pair.of("fov", this.fov.get()))
          .add(Pair.of("fovEffectScale", this.fovEffectScale.get()))
          .add(Pair.of("darknessEffectScale", this.darknessEffectScale.get()))
+         .add(Pair.of("glintSpeed", this.glintSpeed.get()))
+         .add(Pair.of("glintStrength", this.glintStrength.get()))
          .add(Pair.of("prioritizeChunkUpdates", this.prioritizeChunkUpdates.get()))
          .add(Pair.of("fullscreen", this.fullscreen.get()))
          .add(Pair.of("fullscreenResolution", String.valueOf(this.fullscreenVideoModeString)))

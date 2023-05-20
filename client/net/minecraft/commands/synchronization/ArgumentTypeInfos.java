@@ -20,6 +20,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.commands.arguments.GameProfileArgument;
+import net.minecraft.commands.arguments.HeightmapTypeArgument;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.NbtTagArgument;
@@ -116,13 +117,14 @@ public class ArgumentTypeInfos {
       register(var0, "float_range", RangeArgument.Floats.class, SingletonArgumentInfo.contextFree(RangeArgument::floatRange));
       register(var0, "dimension", DimensionArgument.class, SingletonArgumentInfo.contextFree(DimensionArgument::dimension));
       register(var0, "gamemode", GameModeArgument.class, SingletonArgumentInfo.contextFree(GameModeArgument::gameMode));
-      register(var0, "time", TimeArgument.class, SingletonArgumentInfo.contextFree(TimeArgument::time));
+      register(var0, "time", TimeArgument.class, new TimeArgument.Info());
       register(var0, "resource_or_tag", fixClassType(ResourceOrTagArgument.class), new ResourceOrTagArgument.Info());
       register(var0, "resource_or_tag_key", fixClassType(ResourceOrTagKeyArgument.class), new ResourceOrTagKeyArgument.Info());
       register(var0, "resource", fixClassType(ResourceArgument.class), new ResourceArgument.Info());
       register(var0, "resource_key", fixClassType(ResourceKeyArgument.class), new ResourceKeyArgument.Info());
       register(var0, "template_mirror", TemplateMirrorArgument.class, SingletonArgumentInfo.contextFree(TemplateMirrorArgument::templateMirror));
       register(var0, "template_rotation", TemplateRotationArgument.class, SingletonArgumentInfo.contextFree(TemplateRotationArgument::templateRotation));
+      register(var0, "heightmap", HeightmapTypeArgument.class, SingletonArgumentInfo.contextFree(HeightmapTypeArgument::heightmap));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          register(var0, "test_argument", TestFunctionArgument.class, SingletonArgumentInfo.contextFree(TestFunctionArgument::testFunctionArgument));
          register(var0, "test_class", TestClassNameArgument.class, SingletonArgumentInfo.contextFree(TestClassNameArgument::testClassName));

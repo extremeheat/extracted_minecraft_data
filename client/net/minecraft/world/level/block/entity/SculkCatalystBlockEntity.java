@@ -52,7 +52,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
             if (!((LivingEntity)var5).wasExperienceConsumed()) {
                int var7 = ((LivingEntity)var5).getExperienceReward();
                if (((LivingEntity)var5).shouldDropExperience() && var7 > 0) {
-                  this.sculkSpreader.addCursors(new BlockPos(var4.relative(Direction.UP, 0.5)), var7);
+                  this.sculkSpreader.addCursors(BlockPos.containing(var4.relative(Direction.UP, 0.5)), var7);
                   this.tryAwardItSpreadsAdvancement((LivingEntity)var5);
                }
 
@@ -70,7 +70,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
    private void tryAwardItSpreadsAdvancement(LivingEntity var1) {
       LivingEntity var2 = var1.getLastHurtByMob();
       if (var2 instanceof ServerPlayer var3) {
-         DamageSource var4 = var1.getLastDamageSource() == null ? DamageSource.playerAttack((Player)var3) : var1.getLastDamageSource();
+         DamageSource var4 = var1.getLastDamageSource() == null ? this.level.damageSources().playerAttack((Player)var3) : var1.getLastDamageSource();
          CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.trigger((ServerPlayer)var3, var1, var4);
       }
    }

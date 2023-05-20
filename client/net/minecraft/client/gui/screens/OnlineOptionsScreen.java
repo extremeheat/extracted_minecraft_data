@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
+import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
@@ -22,7 +22,7 @@ public class OnlineOptionsScreen extends SimpleOptionsSubScreen {
       ArrayList var3 = Lists.newArrayList();
       var3.add(var2.realmsNotifications());
       var3.add(var2.allowServerListing());
-      OptionInstance var4 = Util.mapNullable(
+      OptionInstance var4 = Optionull.map(
          var0.level,
          var0x -> {
             Difficulty var1x = var0x.getDifficulty();

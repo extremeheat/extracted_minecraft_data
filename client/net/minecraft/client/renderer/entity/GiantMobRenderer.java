@@ -19,7 +19,10 @@ public class GiantMobRenderer extends MobRenderer<Giant, HumanoidModel<Giant>> {
       this.addLayer(new ItemInHandLayer<>(this, var1.getItemInHandRenderer()));
       this.addLayer(
          new HumanoidArmorLayer<>(
-            this, new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_INNER_ARMOR)), new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_OUTER_ARMOR))
+            this,
+            new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_INNER_ARMOR)),
+            new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT_OUTER_ARMOR)),
+            var1.getModelManager()
          )
       );
    }

@@ -30,11 +30,11 @@ public interface Registry<T> extends Keyable, IdMap<T> {
          .flatXmap(
             var1x -> (DataResult)Optional.ofNullable(this.get(var1x))
                   .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error("Unknown registry key in " + this.key() + ": " + var1x)),
+                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
             var1x -> (DataResult)this.getResourceKey((T)var1x)
                   .map(ResourceKey::location)
                   .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error("Unknown registry element in " + this.key() + ":" + var1x))
+                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry element in " + this.key() + ":" + var1x))
          );
       Codec var2 = ExtraCodecs.idResolverCodec(var1x -> this.getResourceKey((T)var1x).isPresent() ? this.getId((T)var1x) : -1, this::byId, -1);
       return ExtraCodecs.overrideLifecycle(ExtraCodecs.orCompressed(var1, var2), this::lifecycle, this::lifecycle);
@@ -45,11 +45,11 @@ public interface Registry<T> extends Keyable, IdMap<T> {
          .flatXmap(
             var1x -> (DataResult)this.getHolder(ResourceKey.create(this.key(), var1x))
                   .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error("Unknown registry key in " + this.key() + ": " + var1x)),
+                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
             var1x -> (DataResult)var1x.unwrapKey()
                   .map(ResourceKey::location)
                   .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error("Unknown registry element in " + this.key() + ":" + var1x))
+                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry element in " + this.key() + ":" + var1x))
          );
       return ExtraCodecs.overrideLifecycle(var1, var1x -> this.lifecycle(var1x.value()), var1x -> this.lifecycle(var1x.value()));
    }

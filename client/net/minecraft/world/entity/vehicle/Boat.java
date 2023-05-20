@@ -229,6 +229,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          case BIRCH -> Items.BIRCH_BOAT;
          case JUNGLE -> Items.JUNGLE_BOAT;
          case ACACIA -> Items.ACACIA_BOAT;
+         case CHERRY -> Items.CHERRY_BOAT;
          case DARK_OAK -> Items.DARK_OAK_BOAT;
          case MANGROVE -> Items.MANGROVE_BOAT;
          case BAMBOO -> Items.BAMBOO_RAFT;
@@ -237,7 +238,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
    }
 
    @Override
-   public void animateHurt() {
+   public void animateHurt(float var1) {
       this.setHurtDir(-this.getHurtDir());
       this.setHurtTime(10);
       this.setDamage(this.getDamage() * 11.0F);
@@ -340,7 +341,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
                if (var9
                   && this.getPassengers().size() < this.getMaxPassengers()
                   && !var11.isPassenger()
-                  && var11.getBbWidth() < this.getBbWidth()
+                  && this.hasEnoughSpaceFor(var11)
                   && var11 instanceof LivingEntity
                   && !(var11 instanceof WaterAnimal)
                   && !(var11 instanceof Player)) {
@@ -662,6 +663,10 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       return 0.0F;
    }
 
+   public boolean hasEnoughSpaceFor(Entity var1) {
+      return var1.getBbWidth() < this.getBbWidth();
+   }
+
    @Override
    public void positionRider(Entity var1) {
       if (this.hasPassenger(var1)) {
@@ -698,7 +703,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       Vec3 var2 = getCollisionHorizontalEscapeVector((double)(this.getBbWidth() * Mth.SQRT_OF_TWO), (double)var1.getBbWidth(), var1.getYRot());
       double var3 = this.getX() + var2.x;
       double var5 = this.getZ() + var2.z;
-      BlockPos var7 = new BlockPos(var3, this.getBoundingBox().maxY, var5);
+      BlockPos var7 = BlockPos.containing(var3, this.getBoundingBox().maxY, var5);
       BlockPos var8 = var7.below();
       if (!this.level.isWaterAt(var8)) {
          ArrayList var9 = Lists.newArrayList();
@@ -781,7 +786,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
                   return;
                }
 
-               this.causeFallDamage(this.fallDistance, 1.0F, DamageSource.FALL);
+               this.causeFallDamage(this.fallDistance, 1.0F, this.damageSources().fall());
                if (!this.level.isClientSide && !this.isRemoved()) {
                   this.kill();
                   if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
@@ -862,8 +867,9 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
    @Nullable
    @Override
-   public Entity getControllingPassenger() {
-      return this.getFirstPassenger();
+   public LivingEntity getControllingPassenger() {
+      Entity var2 = this.getFirstPassenger();
+      return var2 instanceof LivingEntity var1 ? var1 : null;
    }
 
    public void setInput(boolean var1, boolean var2, boolean var3, boolean var4) {
@@ -900,6 +906,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       BIRCH(Blocks.BIRCH_PLANKS, "birch"),
       JUNGLE(Blocks.JUNGLE_PLANKS, "jungle"),
       ACACIA(Blocks.ACACIA_PLANKS, "acacia"),
+      CHERRY(Blocks.CHERRY_PLANKS, "cherry"),
       DARK_OAK(Blocks.DARK_OAK_PLANKS, "dark_oak"),
       MANGROVE(Blocks.MANGROVE_PLANKS, "mangrove"),
       BAMBOO(Blocks.BAMBOO_PLANKS, "bamboo");

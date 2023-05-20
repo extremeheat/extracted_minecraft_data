@@ -5,10 +5,10 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.FoxModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class FoxHeldItemLayer extends RenderLayer<Fox, FoxModel<Fox>> {
@@ -52,7 +52,7 @@ public class FoxHeldItemLayer extends RenderLayer<Fox, FoxModel<Fox>> {
       }
 
       ItemStack var14 = var4.getItemBySlot(EquipmentSlot.MAINHAND);
-      this.itemInHandRenderer.renderItem(var4, var14, ItemTransforms.TransformType.GROUND, false, var1, var2, var3);
+      this.itemInHandRenderer.renderItem(var4, var14, ItemDisplayContext.GROUND, false, var1, var2, var3);
       var1.popPose();
    }
 }

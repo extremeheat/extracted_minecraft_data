@@ -8,7 +8,6 @@ import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.PendingInvite;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RowButton;
-import com.mojang.realmsclient.util.RealmsTextureManager;
 import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.Arrays;
 import java.util.List;
@@ -17,7 +16,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -155,7 +153,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          int var5 = var3 + 12;
          int var6 = var4 - 12;
          int var7 = this.font.width(var2);
-         this.fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+         fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
          this.font.drawShadow(var1, var2, (float)var5, (float)var6, 16777215);
       }
    }
@@ -197,10 +195,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          RealmsPendingInvitesScreen.this.font
             .draw(var1, RealmsUtil.convertToAgePresentationFromInstant(var2.date), (float)(var3 + 38), (float)(var4 + 24), 7105644);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
-         RealmsTextureManager.withBoundFace(var2.worldOwnerUuid, () -> {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            PlayerFaceRenderer.draw(var1, var3, var4, 32);
-         });
+         RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.worldOwnerUuid);
       }
 
       @Override
@@ -221,7 +216,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          @Override
          protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
             RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.ACCEPT_ICON_LOCATION);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float var5 = var4 ? 19.0F : 0.0F;
             GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
@@ -243,7 +237,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          @Override
          protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
             RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.REJECT_ICON_LOCATION);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float var5 = var4 ? 19.0F : 0.0F;
             GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
@@ -275,11 +268,6 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       @Override
       public int getRowWidth() {
          return 260;
-      }
-
-      @Override
-      public boolean isFocused() {
-         return RealmsPendingInvitesScreen.this.getFocused() == this;
       }
 
       @Override

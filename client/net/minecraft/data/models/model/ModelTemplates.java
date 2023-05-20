@@ -88,6 +88,10 @@ public class ModelTemplates {
    public static final ModelTemplate RAIL_RAISED_NE = create("template_rail_raised_ne", "_raised_ne", TextureSlot.RAIL);
    public static final ModelTemplate RAIL_RAISED_SW = create("template_rail_raised_sw", "_raised_sw", TextureSlot.RAIL);
    public static final ModelTemplate CARPET = create("carpet", TextureSlot.WOOL);
+   public static final ModelTemplate FLOWERBED_1 = create("flowerbed_1", "_1", TextureSlot.FLOWERBED, TextureSlot.STEM);
+   public static final ModelTemplate FLOWERBED_2 = create("flowerbed_2", "_2", TextureSlot.FLOWERBED, TextureSlot.STEM);
+   public static final ModelTemplate FLOWERBED_3 = create("flowerbed_3", "_3", TextureSlot.FLOWERBED, TextureSlot.STEM);
+   public static final ModelTemplate FLOWERBED_4 = create("flowerbed_4", "_4", TextureSlot.FLOWERBED, TextureSlot.STEM);
    public static final ModelTemplate CORAL_FAN = create("coral_fan", TextureSlot.FAN);
    public static final ModelTemplate CORAL_WALL_FAN = create("coral_wall_fan", TextureSlot.FAN);
    public static final ModelTemplate GLAZED_TERRACOTTA = create("template_glazed_terracotta", TextureSlot.PATTERN);
@@ -155,6 +159,8 @@ public class ModelTemplates {
    public static final ModelTemplate FLAT_ITEM = createItem("generated", TextureSlot.LAYER0);
    public static final ModelTemplate FLAT_HANDHELD_ITEM = createItem("handheld", TextureSlot.LAYER0);
    public static final ModelTemplate FLAT_HANDHELD_ROD_ITEM = createItem("handheld_rod", TextureSlot.LAYER0);
+   public static final ModelTemplate TWO_LAYERED_ITEM = createItem("generated", TextureSlot.LAYER0, TextureSlot.LAYER1);
+   public static final ModelTemplate THREE_LAYERED_ITEM = createItem("generated", TextureSlot.LAYER0, TextureSlot.LAYER1, TextureSlot.LAYER2);
    public static final ModelTemplate SHULKER_BOX_INVENTORY = createItem("template_shulker_box", TextureSlot.PARTICLE);
    public static final ModelTemplate BED_INVENTORY = createItem("template_bed", TextureSlot.PARTICLE);
    public static final ModelTemplate BANNER_INVENTORY = createItem("template_banner");

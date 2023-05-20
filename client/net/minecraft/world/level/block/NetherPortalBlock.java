@@ -74,7 +74,7 @@ public class NetherPortalBlock extends Block {
 
    @Override
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (!var4.isPassenger() && !var4.isVehicle() && var4.canChangeDimensions()) {
+      if (var4.canChangeDimensions()) {
          var4.handleInsidePortal(var3);
       }
    }

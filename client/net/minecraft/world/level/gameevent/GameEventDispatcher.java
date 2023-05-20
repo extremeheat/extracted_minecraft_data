@@ -20,7 +20,7 @@ public class GameEventDispatcher {
 
    public void post(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
       int var4 = var1.getNotificationRadius();
-      BlockPos var5 = new BlockPos(var2);
+      BlockPos var5 = BlockPos.containing(var2);
       int var6 = SectionPos.blockToSectionCoord(var5.getX() - var4);
       int var7 = SectionPos.blockToSectionCoord(var5.getY() - var4);
       int var8 = SectionPos.blockToSectionCoord(var5.getZ() - var4);

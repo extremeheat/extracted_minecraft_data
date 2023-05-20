@@ -16,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -167,7 +168,26 @@ public class GameTestHelper {
    public void useBlock(BlockPos var1, Player var2, BlockHitResult var3) {
       BlockPos var4 = this.absolutePos(var1);
       BlockState var5 = this.getLevel().getBlockState(var4);
-      var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
+      InteractionResult var6 = var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
+      if (!var6.consumesAction()) {
+         UseOnContext var7 = new UseOnContext(var2, InteractionHand.MAIN_HAND, var3);
+         var2.getItemInHand(InteractionHand.MAIN_HAND).useOn(var7);
+      }
+   }
+
+   public void continuouslyUse(BlockPos var1, Player var2, BlockHitResult var3) {
+      BlockPos var4 = this.absolutePos(var1);
+      BlockState var5 = this.getLevel().getBlockState(var4);
+      InteractionResult var6 = var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
+      if (!var6.consumesAction()) {
+         UseOnContext var7 = new UseOnContext(var2, InteractionHand.MAIN_HAND, var3);
+         ItemStack var8 = var2.getItemInHand(InteractionHand.MAIN_HAND);
+         if (var2.isUsingItem()) {
+            var8.onUseTick(this.getLevel(), var2, var2.getUseItemRemainingTicks());
+         } else {
+            var8.useOn(var7);
+         }
+      }
    }
 
    public LivingEntity makeAboutToDrown(LivingEntity var1) {
@@ -331,7 +351,7 @@ public class GameTestHelper {
       List var4 = this.getLevel().getEntities(var1, new AABB(var2, var3), Entity::isAlive);
       if (var4.isEmpty()) {
          throw new GameTestAssertPosException(
-            "Expected " + var1.toShortString() + " between ", new BlockPos(var2), new BlockPos(var3), this.testInfo.getTick()
+            "Expected " + var1.toShortString() + " between ", BlockPos.containing(var2), BlockPos.containing(var3), this.testInfo.getTick()
          );
       }
    }

@@ -35,6 +35,7 @@ import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -43,6 +44,7 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.ArrayUtils;
 
 public class WanderingTrader extends AbstractVillager {
    private static final int NUMBER_OF_TRADE_OFFERS = 5;
@@ -130,13 +132,20 @@ public class WanderingTrader extends AbstractVillager {
       VillagerTrades.ItemListing[] var1 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(1);
       VillagerTrades.ItemListing[] var2 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(2);
       if (var1 != null && var2 != null) {
-         MerchantOffers var3 = this.getOffers();
-         this.addOffersFromItemListings(var3, var1, 5);
+         if (this.level.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
+            VillagerTrades.ItemListing[] var3 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES_1_20.get(1);
+            if (var3 != null) {
+               var1 = (VillagerTrades.ItemListing[])ArrayUtils.addAll(var1, var3);
+            }
+         }
+
+         MerchantOffers var7 = this.getOffers();
+         this.addOffersFromItemListings(var7, var1, 5);
          int var4 = this.random.nextInt(var2.length);
          VillagerTrades.ItemListing var5 = var2[var4];
          MerchantOffer var6 = var5.getOffer(this, this.random);
          if (var6 != null) {
-            var3.add(var6);
+            var7.add(var6);
          }
       }
    }

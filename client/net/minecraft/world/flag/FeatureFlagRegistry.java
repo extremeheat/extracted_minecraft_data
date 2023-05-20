@@ -72,7 +72,7 @@ public class FeatureFlagRegistry {
       return ResourceLocation.CODEC.listOf().comapFlatMap(var1 -> {
          HashSet var2 = new HashSet();
          FeatureFlagSet var3 = this.fromNames(var1, var2::add);
-         return !var2.isEmpty() ? DataResult.error("Unknown feature ids: " + var2, var3) : DataResult.success(var3);
+         return !var2.isEmpty() ? DataResult.error(() -> "Unknown feature ids: " + var2, var3) : DataResult.success(var3);
       }, var1 -> List.copyOf(this.toNames(var1)));
    }
 

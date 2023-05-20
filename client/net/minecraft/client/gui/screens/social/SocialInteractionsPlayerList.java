@@ -4,8 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,16 +35,8 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      double var5 = this.minecraft.getWindow().getGuiScale();
-      RenderSystem.enableScissor(
-         (int)((double)this.getRowLeft() * var5),
-         (int)((double)(this.height - this.y1) * var5),
-         (int)((double)(this.getScrollbarPosition() + 6) * var5),
-         (int)((double)(this.height - (this.height - this.y1) - this.y0 - 4) * var5)
-      );
-      super.render(var1, var2, var3, var4);
-      RenderSystem.disableScissor();
+   protected void enableScissor() {
+      enableScissor(this.x0, this.y0 + 4, this.x1, this.y1);
    }
 
    public void updatePlayerList(Collection<UUID> var1, double var2, boolean var4) {

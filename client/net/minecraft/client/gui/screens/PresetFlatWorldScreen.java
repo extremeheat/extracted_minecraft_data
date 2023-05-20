@@ -18,7 +18,7 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.screens.worldselection.WorldGenSettingsComponent;
+import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -179,9 +179,9 @@ public class PresetFlatWorldScreen extends Screen {
       this.listText = Component.translatable("createWorld.customize.presets.list");
       this.export = new EditBox(this.font, 50, 40, this.width - 100, 20, this.shareText);
       this.export.setMaxLength(1230);
-      WorldGenSettingsComponent var1 = this.parent.parent.worldGenSettingsComponent;
-      RegistryAccess var2 = var1.registryHolder();
-      FeatureFlagSet var3 = var1.settings().dataConfiguration().enabledFeatures();
+      WorldCreationContext var1 = this.parent.parent.getUiState().getSettings();
+      RegistryAccess.Frozen var2 = var1.worldgenLoadContext();
+      FeatureFlagSet var3 = var1.dataConfiguration().enabledFeatures();
       HolderLookup.RegistryLookup var4 = var2.lookupOrThrow(Registries.BIOME);
       HolderLookup.RegistryLookup var5 = var2.lookupOrThrow(Registries.STRUCTURE_SET);
       HolderLookup.RegistryLookup var6 = var2.lookupOrThrow(Registries.PLACED_FEATURE);
@@ -283,11 +283,6 @@ public class PresetFlatWorldScreen extends Screen {
       }
 
       @Override
-      protected boolean isFocused() {
-         return PresetFlatWorldScreen.this.getFocused() == this;
-      }
-
-      @Override
       public boolean keyPressed(int var1, int var2, int var3) {
          if (super.keyPressed(var1, var2, var3)) {
             return true;
@@ -336,13 +331,12 @@ public class PresetFlatWorldScreen extends Screen {
 
          private void blitSlot(PoseStack var1, int var2, int var3, Item var4) {
             this.blitSlotBg(var1, var2 + 1, var3 + 1);
-            PresetFlatWorldScreen.this.itemRenderer.renderGuiItem(new ItemStack(var4), var2 + 2, var3 + 2);
+            PresetFlatWorldScreen.this.itemRenderer.renderGuiItem(var1, new ItemStack(var4), var2 + 2, var3 + 2);
          }
 
          private void blitSlotBg(PoseStack var1, int var2, int var3) {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, GuiComponent.STATS_ICON_LOCATION);
-            GuiComponent.blit(var1, var2, var3, PresetFlatWorldScreen.this.getBlitOffset(), 0.0F, 0.0F, 18, 18, 128, 128);
+            GuiComponent.blit(var1, var2, var3, 0, 0.0F, 0.0F, 18, 18, 128, 128);
          }
 
          @Override

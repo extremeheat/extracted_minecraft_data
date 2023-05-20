@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -99,7 +98,7 @@ public class CactusBlock extends Block {
 
    @Override
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      var4.hurt(DamageSource.CACTUS, 1.0F);
+      var4.hurt(var2.damageSources().cactus(), 1.0F);
    }
 
    @Override

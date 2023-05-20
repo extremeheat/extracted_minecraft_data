@@ -2,6 +2,7 @@ package net.minecraft.world.effect;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -15,9 +16,13 @@ public final class MobEffectUtil {
       super();
    }
 
-   public static String formatDuration(MobEffectInstance var0, float var1) {
-      int var2 = Mth.floor((float)var0.getDuration() * var1);
-      return StringUtil.formatTickDuration(var2);
+   public static Component formatDuration(MobEffectInstance var0, float var1) {
+      if (var0.isInfiniteDuration()) {
+         return Component.translatable("effect.duration.infinite");
+      } else {
+         int var2 = Mth.floor((float)var0.getDuration() * var1);
+         return Component.literal(StringUtil.formatTickDuration(var2));
+      }
    }
 
    public static boolean hasDigSpeed(LivingEntity var0) {
@@ -48,7 +53,7 @@ public final class MobEffectUtil {
          var7x -> var7x.gameMode.isSurvival()
                && (var1 == null || !var1.isAlliedTo(var7x))
                && var2.closerThan(var7x.position(), var3)
-               && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).getDuration() < var6)
+               && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).endsWithin(var6 - 1))
       );
       var8.forEach(var2x -> var2x.addEffect(new MobEffectInstance(var5), var1));
       return var8;

@@ -4,14 +4,18 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.Holder;
+import net.minecraft.data.models.ItemModelGenerators;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -20,6 +24,8 @@ import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.armortrim.ArmorTrim;
+import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LightBlock;
 
@@ -28,9 +34,9 @@ public class ItemProperties {
    private static final String TAG_CUSTOM_MODEL_DATA = "CustomModelData";
    private static final ResourceLocation DAMAGED = new ResourceLocation("damaged");
    private static final ResourceLocation DAMAGE = new ResourceLocation("damage");
-   private static final ClampedItemPropertyFunction PROPERTY_DAMAGED = (var0, var1, var2, var3) -> var0.isDamaged() ? 1.0F : 0.0F;
-   private static final ClampedItemPropertyFunction PROPERTY_DAMAGE = (var0, var1, var2, var3) -> Mth.clamp(
-         (float)var0.getDamageValue() / (float)var0.getMaxDamage(), 0.0F, 1.0F
+   private static final ClampedItemPropertyFunction PROPERTY_DAMAGED = (var0x, var1, var2, var3) -> var0x.isDamaged() ? 1.0F : 0.0F;
+   private static final ClampedItemPropertyFunction PROPERTY_DAMAGE = (var0x, var1, var2, var3) -> Mth.clamp(
+         (float)var0x.getDamageValue() / (float)var0x.getMaxDamage(), 0.0F, 1.0F
       );
    private static final Map<Item, Map<ResourceLocation, ItemPropertyFunction>> PROPERTIES = Maps.newHashMap();
 
@@ -73,23 +79,42 @@ public class ItemProperties {
    }
 
    static {
-      registerGeneric(new ResourceLocation("lefthanded"), (var0, var1, var2, var3) -> var2 != null && var2.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F);
+      registerGeneric(new ResourceLocation("lefthanded"), (var0x, var1, var2, var3) -> var2 != null && var2.getMainArm() != HumanoidArm.RIGHT ? 1.0F : 0.0F);
       registerGeneric(
          new ResourceLocation("cooldown"),
-         (var0, var1, var2, var3) -> var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0.getItem(), 0.0F) : 0.0F
+         (var0x, var1, var2, var3) -> var2 instanceof Player ? ((Player)var2).getCooldowns().getCooldownPercent(var0x.getItem(), 0.0F) : 0.0F
       );
-      registerCustomModelData((var0, var1, var2, var3) -> var0.hasTag() ? (float)var0.getTag().getInt("CustomModelData") : 0.0F);
-      register(Items.BOW, new ResourceLocation("pull"), (var0, var1, var2, var3) -> {
+      ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
+         if (!var0x.is(ItemTags.TRIMMABLE_ARMOR)) {
+            return -1.0F / 0.0F;
+         } else if (var1 == null) {
+            return 0.0F;
+         } else {
+            return !var1.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)
+               ? -1.0F / 0.0F
+               : ArmorTrim.getTrim(var1.registryAccess(), var0x).map(ArmorTrim::material).map(Holder::value).map(TrimMaterial::itemModelIndex).orElse(0.0F);
+         }
+      };
+      registerGeneric(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, var0);
+      registerCustomModelData((var0x, var1, var2, var3) -> var0x.hasTag() ? (float)var0x.getTag().getInt("CustomModelData") : 0.0F);
+      register(Items.BOW, new ResourceLocation("pull"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return var2.getUseItem() != var0 ? 0.0F : (float)(var0.getUseDuration() - var2.getUseItemRemainingTicks()) / 20.0F;
+            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / 20.0F;
          }
       });
       register(
-         Items.BOW, new ResourceLocation("pulling"), (var0, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 ? 1.0F : 0.0F
+         Items.BRUSH,
+         new ResourceLocation("brushing"),
+         (var0x, var1, var2, var3) -> var2 != null && var2.getUseItem() == var0x ? (float)(var2.getUseItemRemainingTicks() % 10) / 10.0F : 0.0F
       );
-      register(Items.BUNDLE, new ResourceLocation("filled"), (var0, var1, var2, var3) -> BundleItem.getFullnessDisplay(var0));
+      register(
+         Items.BOW,
+         new ResourceLocation("pulling"),
+         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+      );
+      register(Items.BUNDLE, new ResourceLocation("filled"), (var0x, var1, var2, var3) -> BundleItem.getFullnessDisplay(var0x));
       register(Items.CLOCK, new ResourceLocation("time"), new ClampedItemPropertyFunction() {
          private double rotation;
          private double rota;
@@ -138,49 +163,47 @@ public class ItemProperties {
          Items.COMPASS,
          new ResourceLocation("angle"),
          new CompassItemPropertyFunction(
-            (var0, var1, var2) -> CompassItem.isLodestoneCompass(var1)
+            (var0x, var1, var2) -> CompassItem.isLodestoneCompass(var1)
                   ? CompassItem.getLodestonePosition(var1.getOrCreateTag())
-                  : CompassItem.getSpawnPosition(var0)
+                  : CompassItem.getSpawnPosition(var0x)
          )
       );
       register(
          Items.RECOVERY_COMPASS,
          new ResourceLocation("angle"),
-         new CompassItemPropertyFunction((var0, var1, var2) -> var2 instanceof Player var3 ? var3.getLastDeathLocation().orElse(null) : null)
+         new CompassItemPropertyFunction((var0x, var1, var2) -> var2 instanceof Player var3 ? var3.getLastDeathLocation().orElse(null) : null)
       );
       register(
          Items.CROSSBOW,
          new ResourceLocation("pull"),
-         (var0, var1, var2, var3) -> {
+         (var0x, var1, var2, var3) -> {
             if (var2 == null) {
                return 0.0F;
             } else {
-               return CrossbowItem.isCharged(var0)
+               return CrossbowItem.isCharged(var0x)
                   ? 0.0F
-                  : (float)(var0.getUseDuration() - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0);
+                  : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x);
             }
          }
       );
       register(
          Items.CROSSBOW,
          new ResourceLocation("pulling"),
-         (var0, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 && !CrossbowItem.isCharged(var0) ? 1.0F : 0.0F
+         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x && !CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F
       );
-      register(Items.CROSSBOW, new ResourceLocation("charged"), (var0, var1, var2, var3) -> var2 != null && CrossbowItem.isCharged(var0) ? 1.0F : 0.0F);
+      register(Items.CROSSBOW, new ResourceLocation("charged"), (var0x, var1, var2, var3) -> CrossbowItem.isCharged(var0x) ? 1.0F : 0.0F);
       register(
          Items.CROSSBOW,
          new ResourceLocation("firework"),
-         (var0, var1, var2, var3) -> var2 != null && CrossbowItem.isCharged(var0) && CrossbowItem.containsChargedProjectile(var0, Items.FIREWORK_ROCKET)
-               ? 1.0F
-               : 0.0F
+         (var0x, var1, var2, var3) -> CrossbowItem.isCharged(var0x) && CrossbowItem.containsChargedProjectile(var0x, Items.FIREWORK_ROCKET) ? 1.0F : 0.0F
       );
-      register(Items.ELYTRA, new ResourceLocation("broken"), (var0, var1, var2, var3) -> ElytraItem.isFlyEnabled(var0) ? 0.0F : 1.0F);
-      register(Items.FISHING_ROD, new ResourceLocation("cast"), (var0, var1, var2, var3) -> {
+      register(Items.ELYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> ElytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
+      register(Items.FISHING_ROD, new ResourceLocation("cast"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
          } else {
-            boolean var4 = var2.getMainHandItem() == var0;
-            boolean var5 = var2.getOffhandItem() == var0;
+            boolean var4 = var2.getMainHandItem() == var0x;
+            boolean var5 = var2.getOffhandItem() == var0x;
             if (var2.getMainHandItem().getItem() instanceof FishingRodItem) {
                var5 = false;
             }
@@ -191,15 +214,15 @@ public class ItemProperties {
       register(
          Items.SHIELD,
          new ResourceLocation("blocking"),
-         (var0, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 ? 1.0F : 0.0F
+         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
       );
       register(
          Items.TRIDENT,
          new ResourceLocation("throwing"),
-         (var0, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 ? 1.0F : 0.0F
+         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
       );
-      register(Items.LIGHT, new ResourceLocation("level"), (var0, var1, var2, var3) -> {
-         CompoundTag var4 = var0.getTagElement("BlockStateTag");
+      register(Items.LIGHT, new ResourceLocation("level"), (var0x, var1, var2, var3) -> {
+         CompoundTag var4 = var0x.getTagElement("BlockStateTag");
 
          try {
             if (var4 != null) {
@@ -216,7 +239,7 @@ public class ItemProperties {
       register(
          Items.GOAT_HORN,
          new ResourceLocation("tooting"),
-         (var0, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0 ? 1.0F : 0.0F
+         (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
       );
    }
 }

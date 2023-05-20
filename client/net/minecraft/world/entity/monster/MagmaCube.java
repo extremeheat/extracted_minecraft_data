@@ -88,11 +88,6 @@ public class MagmaCube extends Slime {
    }
 
    @Override
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      return false;
-   }
-
-   @Override
    protected boolean isDealsDamage() {
       return this.isEffectiveAi();
    }

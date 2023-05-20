@@ -20,7 +20,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.slf4j.Logger;
 
-public class TextureAtlas extends AbstractTexture implements Tickable {
+public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable {
    private static final Logger LOGGER = LogUtils.getLogger();
    @Deprecated
    public static final ResourceLocation LOCATION_BLOCKS = InventoryMenu.BLOCK_ATLAS;
@@ -31,6 +31,9 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
    private Map<ResourceLocation, TextureAtlasSprite> texturesByName = Map.of();
    private final ResourceLocation location;
    private final int maxSupportedTextureSize;
+   private int width;
+   private int height;
+   private int mipLevel;
 
    public TextureAtlas(ResourceLocation var1) {
       super();
@@ -45,6 +48,9 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
    public void upload(SpriteLoader.Preparations var1) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{var1.width(), var1.height(), var1.mipLevel(), this.location});
       TextureUtil.prepareImage(this.getId(), var1.mipLevel(), var1.width(), var1.height());
+      this.width = var1.width();
+      this.height = var1.height();
+      this.mipLevel = var1.mipLevel();
       this.clearTextureData();
       this.texturesByName = Map.copyOf(var1.regions());
       ArrayList var2 = new ArrayList();
@@ -73,17 +79,11 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
       this.animatedTextures = List.copyOf(var3);
    }
 
-   private void dumpContents(int var1, int var2, int var3) {
-      String var4 = this.location.toDebugFileName();
-      Path var5 = TextureUtil.getDebugTexturePath();
-
-      try {
-         Files.createDirectories(var5);
-         TextureUtil.writeAsPNG(var5, var4, this.getId(), var1, var2, var3);
-         dumpSpriteNames(var5, var4, this.texturesByName);
-      } catch (IOException var7) {
-         LOGGER.warn("Failed to dump atlas contents to {}", var5);
-      }
+   @Override
+   public void dumpContents(ResourceLocation var1, Path var2) throws IOException {
+      String var3 = var1.toDebugFileName();
+      TextureUtil.writeAsPNG(var2, var3, this.getId(), this.mipLevel, this.width, this.height);
+      dumpSpriteNames(var2, var3, this.texturesByName);
    }
 
    private static void dumpSpriteNames(Path var0, String var1, Map<ResourceLocation, TextureAtlasSprite> var2) {
@@ -139,6 +139,14 @@ public class TextureAtlas extends AbstractTexture implements Tickable {
 
    public int maxSupportedTextureSize() {
       return this.maxSupportedTextureSize;
+   }
+
+   int getWidth() {
+      return this.width;
+   }
+
+   int getHeight() {
+      return this.height;
    }
 
    public void updateFilter(SpriteLoader.Preparations var1) {

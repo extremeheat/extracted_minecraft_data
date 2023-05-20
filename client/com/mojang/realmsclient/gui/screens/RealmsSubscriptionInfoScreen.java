@@ -13,11 +13,13 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.util.CommonLinks;
 import org.slf4j.Logger;
 
 public class RealmsSubscriptionInfoScreen extends RealmsScreen {
@@ -33,6 +35,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    private static final Component DAY_SUFFIX = Component.translatable("mco.configure.world.subscription.day");
    private static final Component DAYS_SUFFIX = Component.translatable("mco.configure.world.subscription.days");
    private static final Component UNKNOWN = Component.translatable("mco.configure.world.subscription.unknown");
+   private static final Component RECURRING_INFO = Component.translatable("mco.configure.world.subscription.recurring.info");
    private final Screen lastScreen;
    final RealmsServer serverData;
    final Screen mainScreen;
@@ -40,7 +43,6 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    private Component startDate = UNKNOWN;
    @Nullable
    private Subscription.SubscriptionType type;
-   private static final String PURCHASE_LINK = "https://aka.ms/ExtendJavaRealms";
 
    public RealmsSubscriptionInfoScreen(Screen var1, RealmsServer var2, Screen var3) {
       super(GameNarrator.NO_TITLE);
@@ -52,21 +54,11 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    @Override
    public void init() {
       this.getSubscription(this.serverData.id);
-      this.addRenderableWidget(
-         Button.builder(
-               Component.translatable("mco.configure.world.subscription.extend"),
-               var1 -> {
-                  String var2 = "https://aka.ms/ExtendJavaRealms?subscriptionId="
-                     + this.serverData.remoteSubscriptionId
-                     + "&profileId="
-                     + this.minecraft.getUser().getUuid();
-                  this.minecraft.keyboardHandler.setClipboard(var2);
-                  Util.getPlatform().openUri(var2);
-               }
-            )
-            .bounds(this.width / 2 - 100, row(6), 200, 20)
-            .build()
-      );
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), var1 -> {
+         String var2 = CommonLinks.extendRealms(this.serverData.remoteSubscriptionId, this.minecraft.getUser().getUuid());
+         this.minecraft.keyboardHandler.setClipboard(var2);
+         Util.getPlatform().openUri(var2);
+      }).bounds(this.width / 2 - 100, row(6), 200, 20).build());
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, row(12), 200, 20).build()
       );
@@ -76,6 +68,8 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
             MutableComponent var3 = Component.translatable("mco.configure.world.delete.question.line2");
             this.minecraft.setScreen(new RealmsLongConfirmationScreen(this::deleteRealm, RealmsLongConfirmationScreen.Type.Warning, var2, var3, true));
          }).bounds(this.width / 2 - 100, row(10), 200, 20).build());
+      } else {
+         this.addRenderableWidget(new MultiLineTextWidget(this.width / 2 - 100, row(8), RECURRING_INFO, this.font).setColor(10526880).setMaxWidth(200));
       }
    }
 
@@ -163,7 +157,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
          int var3 = var1 % 30;
          MutableComponent var4 = Component.empty();
          if (var2 > 0) {
-            var4.append(Integer.toString(var2)).append(" ");
+            var4.append(Integer.toString(var2)).append(CommonComponents.SPACE);
             if (var2 == 1) {
                var4.append(MONTH_SUFFIX);
             } else {
@@ -176,7 +170,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
                var4.append(", ");
             }
 
-            var4.append(Integer.toString(var3)).append(" ");
+            var4.append(Integer.toString(var3)).append(CommonComponents.SPACE);
             if (var3 == 1) {
                var4.append(DAY_SUFFIX);
             } else {

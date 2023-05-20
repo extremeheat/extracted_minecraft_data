@@ -28,26 +28,23 @@ public class ClientLanguage extends Language {
       this.defaultRightToLeft = var2;
    }
 
-   public static ClientLanguage loadFrom(ResourceManager var0, List<LanguageInfo> var1) {
-      HashMap var2 = Maps.newHashMap();
-      boolean var3 = false;
+   public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
+      HashMap var3 = Maps.newHashMap();
 
-      for(LanguageInfo var5 : var1) {
-         var3 |= var5.isBidirectional();
-         String var6 = var5.getCode();
-         String var7 = String.format(Locale.ROOT, "lang/%s.json", var6);
+      for(String var5 : var1) {
+         String var6 = String.format(Locale.ROOT, "lang/%s.json", var5);
 
-         for(String var9 : var0.getNamespaces()) {
+         for(String var8 : var0.getNamespaces()) {
             try {
-               ResourceLocation var10 = new ResourceLocation(var9, var7);
-               appendFrom(var6, var0.getResourceStack(var10), var2);
-            } catch (Exception var11) {
-               LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{var9, var7, var11.toString()});
+               ResourceLocation var9 = new ResourceLocation(var8, var6);
+               appendFrom(var5, var0.getResourceStack(var9), var3);
+            } catch (Exception var10) {
+               LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{var8, var6, var10.toString()});
             }
          }
       }
 
-      return new ClientLanguage(ImmutableMap.copyOf(var2), var3);
+      return new ClientLanguage(ImmutableMap.copyOf(var3), var2);
    }
 
    private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {
@@ -61,8 +58,8 @@ public class ClientLanguage extends Language {
    }
 
    @Override
-   public String getOrDefault(String var1) {
-      return this.storage.getOrDefault(var1, var1);
+   public String getOrDefault(String var1, String var2) {
+      return this.storage.getOrDefault(var1, var2);
    }
 
    @Override

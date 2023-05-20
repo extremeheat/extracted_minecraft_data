@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -143,6 +144,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
@@ -189,7 +191,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    private static final int NO_BLOCK_UPDATES_TO_ACK = -1;
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
-   public final Connection connection;
+   private final Connection connection;
    private final MinecraftServer server;
    public ServerPlayer player;
    private int tickCount;
@@ -259,7 +261,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       this.player.absMoveTo(this.firstGoodX, this.firstGoodY, this.firstGoodZ, this.player.getYRot(), this.player.getXRot());
       ++this.tickCount;
       this.knownMovePacketCount = this.receivedMovePacketCount;
-      if (this.clientIsFloating && !this.player.isSleeping() && !this.player.isPassenger()) {
+      if (this.clientIsFloating && !this.player.isSleeping() && !this.player.isPassenger() && !this.player.isDeadOrDying()) {
          if (++this.aboveGroundTickCount > 80) {
             LOGGER.warn("{} was kicked for floating too long!", this.player.getName().getString());
             this.disconnect(Component.translatable("multiplayer.disconnect.flying"));
@@ -333,8 +335,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    }
 
    @Override
-   public Connection getConnection() {
-      return this.connection;
+   public boolean isAcceptingMessages() {
+      return this.connection.isConnected();
    }
 
    private boolean isSingleplayerOwner() {
@@ -349,7 +351,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    private <T, R> CompletableFuture<R> filterTextPacket(T var1, BiFunction<TextFilter, T, CompletableFuture<R>> var2) {
       return ((CompletableFuture)var2.apply(this.player.getTextFilter(), var1)).thenApply(var1x -> {
-         if (!this.getConnection().isConnected()) {
+         if (!this.isAcceptingMessages()) {
             LOGGER.debug("Ignoring packet due to disconnection");
             throw new CancellationException("disconnected");
          } else {
@@ -990,26 +992,16 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       return false;
    }
 
-   public void dismount(double var1, double var3, double var5, float var7, float var8) {
-      this.teleport(var1, var3, var5, var7, var8, Collections.emptySet(), true);
-   }
-
    public void teleport(double var1, double var3, double var5, float var7, float var8) {
-      this.teleport(var1, var3, var5, var7, var8, Collections.emptySet(), false);
+      this.teleport(var1, var3, var5, var7, var8, Collections.emptySet());
    }
 
-   public void teleport(double var1, double var3, double var5, float var7, float var8, Set<ClientboundPlayerPositionPacket.RelativeArgument> var9) {
-      this.teleport(var1, var3, var5, var7, var8, var9, false);
-   }
-
-   public void teleport(
-      double var1, double var3, double var5, float var7, float var8, Set<ClientboundPlayerPositionPacket.RelativeArgument> var9, boolean var10
-   ) {
-      double var11 = var9.contains(ClientboundPlayerPositionPacket.RelativeArgument.X) ? this.player.getX() : 0.0;
-      double var13 = var9.contains(ClientboundPlayerPositionPacket.RelativeArgument.Y) ? this.player.getY() : 0.0;
-      double var15 = var9.contains(ClientboundPlayerPositionPacket.RelativeArgument.Z) ? this.player.getZ() : 0.0;
-      float var17 = var9.contains(ClientboundPlayerPositionPacket.RelativeArgument.Y_ROT) ? this.player.getYRot() : 0.0F;
-      float var18 = var9.contains(ClientboundPlayerPositionPacket.RelativeArgument.X_ROT) ? this.player.getXRot() : 0.0F;
+   public void teleport(double var1, double var3, double var5, float var7, float var8, Set<RelativeMovement> var9) {
+      double var10 = var9.contains(RelativeMovement.X) ? this.player.getX() : 0.0;
+      double var12 = var9.contains(RelativeMovement.Y) ? this.player.getY() : 0.0;
+      double var14 = var9.contains(RelativeMovement.Z) ? this.player.getZ() : 0.0;
+      float var16 = var9.contains(RelativeMovement.Y_ROT) ? this.player.getYRot() : 0.0F;
+      float var17 = var9.contains(RelativeMovement.X_ROT) ? this.player.getXRot() : 0.0F;
       this.awaitingPositionFromClient = new Vec3(var1, var3, var5);
       if (++this.awaitingTeleport == 2147483647) {
          this.awaitingTeleport = 0;
@@ -1019,7 +1011,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       this.player.absMoveTo(var1, var3, var5, var7, var8);
       this.player
          .connection
-         .send(new ClientboundPlayerPositionPacket(var1 - var11, var3 - var13, var5 - var15, var7 - var17, var8 - var18, var9, this.awaitingTeleport, var10));
+         .send(new ClientboundPlayerPositionPacket(var1 - var10, var3 - var12, var5 - var14, var7 - var16, var8 - var17, var9, this.awaitingTeleport));
    }
 
    @Override
@@ -1160,12 +1152,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handlePaddleBoat(ServerboundPaddleBoatPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
-      Entity var2 = this.player.getVehicle();
-      if (var2 instanceof Boat) {
-         ((Boat)var2).setPaddleState(var1.getLeft(), var1.getRight());
+      Entity var2 = this.player.getControlledVehicle();
+      if (var2 instanceof Boat var3) {
+         var3.setPaddleState(var1.getLeft(), var1.getRight());
       }
    }
 
@@ -1317,13 +1311,15 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          LOGGER.warn("{} sent out-of-order chat: '{}'", this.player.getName().getString(), var1);
          this.disconnect(Component.translatable("multiplayer.disconnect.out_of_order_chat"));
          return Optional.empty();
-      } else if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
-         this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
-         return Optional.empty();
       } else {
          Optional var4 = this.unpackAndApplyLastSeen(var3);
-         this.player.resetLastActionTime();
-         return var4;
+         if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+            this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
+            return Optional.empty();
+         } else {
+            this.player.resetLastActionTime();
+            return var4;
+         }
       }
    }
 
@@ -1421,15 +1417,17 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             }
             break;
          case START_RIDING_JUMP:
-            if (this.player.getVehicle() instanceof PlayerRideableJumping var5) {
-               int var6 = var1.getData();
-               if (var5.canJump(this.player) && var6 > 0) {
-                  var5.handleStartJump(var6);
+            Entity var7 = this.player.getControlledVehicle();
+            if (var7 instanceof PlayerRideableJumping var5) {
+               int var8 = var1.getData();
+               if (var5.canJump() && var8 > 0) {
+                  var5.handleStartJump(var8);
                }
             }
             break;
          case STOP_RIDING_JUMP:
-            if (this.player.getVehicle() instanceof PlayerRideableJumping var4) {
+            Entity var6 = this.player.getControlledVehicle();
+            if (var6 instanceof PlayerRideableJumping var4) {
                var4.handleStopJump();
             }
             break;
@@ -1484,6 +1482,10 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       this.send(new ClientboundDisguisedChatPacket(var1, var2.toNetwork(this.player.level.registryAccess())));
    }
 
+   public SocketAddress getRemoteAddress() {
+      return this.connection.getRemoteAddress();
+   }
+
    @Override
    public void handleInteract(ServerboundInteractPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
@@ -1496,7 +1498,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             return;
          }
 
-         if (var3.distanceToSqr(this.player.getEyePosition()) < MAX_INTERACTION_DISTANCE) {
+         AABB var4 = var3.getBoundingBox();
+         if (var4.distanceToSqr(this.player.getEyePosition()) < MAX_INTERACTION_DISTANCE) {
             var1.dispatch(
                new ServerboundInteractPacket.Handler() {
                   private void performInteraction(InteractionHand var1, ServerGamePacketListenerImpl.EntityInteraction var2x) {
@@ -1674,7 +1677,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          boolean var7 = var1.getSlotNum() >= 1 && var1.getSlotNum() <= 45;
          boolean var8 = var3.isEmpty() || var3.getDamageValue() >= 0 && var3.getCount() <= 64 && !var3.isEmpty();
          if (var7 && var8) {
-            this.player.inventoryMenu.getSlot(var1.getSlotNum()).set(var3);
+            this.player.inventoryMenu.getSlot(var1.getSlotNum()).setByPlayer(var3);
             this.player.inventoryMenu.broadcastChanges();
          } else if (var2 && var8 && this.dropSpamTickCount < 200) {
             this.dropSpamTickCount += 20;

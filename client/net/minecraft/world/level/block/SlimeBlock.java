@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
@@ -20,7 +19,7 @@ public class SlimeBlock extends HalfTransparentBlock {
       if (var4.isSuppressingBounce()) {
          super.fallOn(var1, var2, var3, var4, var5);
       } else {
-         var4.causeFallDamage(var5, 0.0F, DamageSource.FALL);
+         var4.causeFallDamage(var5, 0.0F, var1.damageSources().fall());
       }
    }
 

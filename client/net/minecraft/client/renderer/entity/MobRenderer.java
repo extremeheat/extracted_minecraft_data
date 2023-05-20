@@ -60,11 +60,11 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       float var23 = 0.025F;
       VertexConsumer var24 = var4.getBuffer(RenderType.leash());
       Matrix4f var25 = var3.last().pose();
-      float var26 = Mth.fastInvSqrt(var20 * var20 + var22 * var22) * 0.025F / 2.0F;
+      float var26 = Mth.invSqrt(var20 * var20 + var22 * var22) * 0.025F / 2.0F;
       float var27 = var22 * var26;
       float var28 = var20 * var26;
-      BlockPos var29 = new BlockPos(var1.getEyePosition(var2));
-      BlockPos var30 = new BlockPos(var5.getEyePosition(var2));
+      BlockPos var29 = BlockPos.containing(var1.getEyePosition(var2));
+      BlockPos var30 = BlockPos.containing(var5.getEyePosition(var2));
       int var31 = this.getBlockLightLevel((T)var1, var29);
       int var32 = this.entityRenderDispatcher.getRenderer(var5).getBlockLightLevel(var5, var30);
       int var33 = var1.level.getBrightness(LightLayer.SKY, var29);

@@ -44,6 +44,7 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.ItemDisplayContext;
 import org.slf4j.Logger;
 
 public class BlockModel implements UnbakedModel {
@@ -61,10 +62,12 @@ public class BlockModel implements UnbakedModel {
       .create();
    private static final char REFERENCE_CHAR = '#';
    public static final String PARTICLE_TEXTURE_REFERENCE = "particle";
+   private static final boolean DEFAULT_AMBIENT_OCCLUSION = true;
    private final List<BlockElement> elements;
    @Nullable
    private final BlockModel.GuiLight guiLight;
-   private final boolean hasAmbientOcclusion;
+   @Nullable
+   private final Boolean hasAmbientOcclusion;
    private final ItemTransforms transforms;
    private final List<ItemOverride> overrides;
    public String name = "";
@@ -87,7 +90,7 @@ public class BlockModel implements UnbakedModel {
       @Nullable ResourceLocation var1,
       List<BlockElement> var2,
       Map<String, Either<Material, String>> var3,
-      boolean var4,
+      @Nullable Boolean var4,
       @Nullable BlockModel.GuiLight var5,
       ItemTransforms var6,
       List<ItemOverride> var7
@@ -107,7 +110,11 @@ public class BlockModel implements UnbakedModel {
    }
 
    public boolean hasAmbientOcclusion() {
-      return this.parent != null ? this.parent.hasAmbientOcclusion() : this.hasAmbientOcclusion;
+      if (this.hasAmbientOcclusion != null) {
+         return this.hasAmbientOcclusion;
+      } else {
+         return this.parent != null ? this.parent.hasAmbientOcclusion() : true;
+      }
    }
 
    public BlockModel.GuiLight getGuiLight() {
@@ -266,18 +273,18 @@ public class BlockModel implements UnbakedModel {
    }
 
    public ItemTransforms getTransforms() {
-      ItemTransform var1 = this.getTransform(ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND);
-      ItemTransform var2 = this.getTransform(ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND);
-      ItemTransform var3 = this.getTransform(ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND);
-      ItemTransform var4 = this.getTransform(ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND);
-      ItemTransform var5 = this.getTransform(ItemTransforms.TransformType.HEAD);
-      ItemTransform var6 = this.getTransform(ItemTransforms.TransformType.GUI);
-      ItemTransform var7 = this.getTransform(ItemTransforms.TransformType.GROUND);
-      ItemTransform var8 = this.getTransform(ItemTransforms.TransformType.FIXED);
+      ItemTransform var1 = this.getTransform(ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+      ItemTransform var2 = this.getTransform(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+      ItemTransform var3 = this.getTransform(ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
+      ItemTransform var4 = this.getTransform(ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+      ItemTransform var5 = this.getTransform(ItemDisplayContext.HEAD);
+      ItemTransform var6 = this.getTransform(ItemDisplayContext.GUI);
+      ItemTransform var7 = this.getTransform(ItemDisplayContext.GROUND);
+      ItemTransform var8 = this.getTransform(ItemDisplayContext.FIXED);
       return new ItemTransforms(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   private ItemTransform getTransform(ItemTransforms.TransformType var1) {
+   private ItemTransform getTransform(ItemDisplayContext var1) {
       return this.parent != null && !this.transforms.hasTransform(var1) ? this.parent.getTransform(var1) : this.transforms.getTransform(var1);
    }
 
@@ -287,8 +294,6 @@ public class BlockModel implements UnbakedModel {
    }
 
    public static class Deserializer implements JsonDeserializer<BlockModel> {
-      private static final boolean DEFAULT_AMBIENT_OCCLUSION = true;
-
       public Deserializer() {
          super();
       }
@@ -298,7 +303,7 @@ public class BlockModel implements UnbakedModel {
          List var5 = this.getElements(var3, var4);
          String var6 = this.getParentName(var4);
          Map var7 = this.getTextureMap(var4);
-         boolean var8 = this.getAmbientOcclusion(var4);
+         Boolean var8 = this.getAmbientOcclusion(var4);
          ItemTransforms var9 = ItemTransforms.NO_TRANSFORMS;
          if (var4.has("display")) {
             JsonObject var10 = GsonHelper.getAsJsonObject(var4, "display");
@@ -357,8 +362,9 @@ public class BlockModel implements UnbakedModel {
          return GsonHelper.getAsString(var1, "parent", "");
       }
 
-      protected boolean getAmbientOcclusion(JsonObject var1) {
-         return GsonHelper.getAsBoolean(var1, "ambientocclusion", true);
+      @Nullable
+      protected Boolean getAmbientOcclusion(JsonObject var1) {
+         return var1.has("ambientocclusion") ? GsonHelper.getAsBoolean(var1, "ambientocclusion") : null;
       }
 
       protected List<BlockElement> getElements(JsonDeserializationContext var1, JsonObject var2) {

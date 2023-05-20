@@ -9,13 +9,13 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
@@ -99,7 +99,7 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
                   .renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1, false)), var1, var7, var9, var10, var11, var4, var5);
                break;
             case ENTITYBLOCK_ANIMATED:
-               this.blockEntityRenderer.renderByItem(new ItemStack(var1.getBlock()), ItemTransforms.TransformType.NONE, var2, var3, var4, var5);
+               this.blockEntityRenderer.renderByItem(new ItemStack(var1.getBlock()), ItemDisplayContext.NONE, var2, var3, var4, var5);
          }
       }
    }

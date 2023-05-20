@@ -134,6 +134,10 @@ public class VertexBuffer implements AutoCloseable {
          var3.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
       }
 
+      if (var3.GLINT_ALPHA != null) {
+         var3.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+      }
+
       if (var3.FOG_START != null) {
          var3.FOG_START.set(RenderSystem.getShaderFogStart());
       }

@@ -224,12 +224,9 @@ public class StructureTemplateManager {
    }
 
    public StructureTemplate readStructure(CompoundTag var1) {
-      if (!var1.contains("DataVersion", 99)) {
-         var1.putInt("DataVersion", 500);
-      }
-
       StructureTemplate var2 = new StructureTemplate();
-      var2.load(this.blockLookup, NbtUtils.update(this.fixerUpper, DataFixTypes.STRUCTURE, var1, var1.getInt("DataVersion")));
+      int var3 = NbtUtils.getDataVersion(var1, 500);
+      var2.load(this.blockLookup, DataFixTypes.STRUCTURE.updateToCurrentVersion(this.fixerUpper, var1, var3));
       return var2;
    }
 

@@ -4,6 +4,8 @@ import com.google.common.base.MoreObjects;
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.ClipboardManager;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.TextureUtil;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Locale;
 import javax.annotation.Nullable;
@@ -24,7 +26,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
@@ -88,7 +93,9 @@ public class KeyboardHandler {
       this.minecraft
          .gui
          .getChat()
-         .addMessage(Component.empty().append(Component.translatable("debug.prefix").withStyle(var1, ChatFormatting.BOLD)).append(" ").append(var2));
+         .addMessage(
+            Component.empty().append(Component.translatable("debug.prefix").withStyle(var1, ChatFormatting.BOLD)).append(CommonComponents.SPACE).append(var2)
+         );
    }
 
    private void debugFeedbackComponent(Component var1) {
@@ -125,8 +132,8 @@ public class KeyboardHandler {
                if (this.minecraft.player.isReducedDebugInfo()) {
                   return false;
                } else {
-                  ClientPacketListener var5 = this.minecraft.player.connection;
-                  if (var5 == null) {
+                  ClientPacketListener var7 = this.minecraft.player.connection;
+                  if (var7 == null) {
                      return false;
                   }
 
@@ -206,9 +213,18 @@ public class KeyboardHandler {
                var4.addMessage(Component.translatable("debug.creative_spectator.help"));
                var4.addMessage(Component.translatable("debug.pause_focus.help"));
                var4.addMessage(Component.translatable("debug.help.help"));
+               var4.addMessage(Component.translatable("debug.dump_dynamic_textures.help"));
                var4.addMessage(Component.translatable("debug.reload_resourcepacks.help"));
                var4.addMessage(Component.translatable("debug.pause.help"));
                var4.addMessage(Component.translatable("debug.gamemodes.help"));
+               return true;
+            case 83:
+               Path var5 = TextureUtil.getDebugTexturePath(this.minecraft.gameDirectory.toPath()).toAbsolutePath();
+               this.minecraft.getTextureManager().dumpAllSheets(var5);
+               MutableComponent var6 = Component.literal(var5.toString())
+                  .withStyle(ChatFormatting.UNDERLINE)
+                  .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var5.toFile().toString())));
+               this.debugFeedbackTranslated("debug.dump_dynamic_textures", var6);
                return true;
             case 84:
                this.debugFeedbackTranslated("debug.reload_resourcepacks.message");
@@ -315,6 +331,23 @@ public class KeyboardHandler {
          }
 
          Screen var7 = this.minecraft.screen;
+         if (var7 != null) {
+            switch(var3) {
+               case 258:
+                  this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
+               case 259:
+               case 260:
+               case 261:
+               default:
+                  break;
+               case 262:
+               case 263:
+               case 264:
+               case 265:
+                  this.minecraft.setLastInputType(InputType.KEYBOARD_ARROW);
+            }
+         }
+
          if (var5 == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)var7).lastKeySelection <= Util.getMillis() - 20L)) {
             if (this.minecraft.options.keyFullscreen.matches(var3, var4)) {
                this.minecraft.getWindow().toggleFullScreen();

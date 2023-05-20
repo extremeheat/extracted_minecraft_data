@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.Vex;
+import net.minecraft.world.item.ItemStack;
 
 public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
    private final ModelPart root;
@@ -76,31 +77,47 @@ public class VexModel extends HierarchicalModel<Vex> implements ArmedModel {
 
    public void setupAnim(Vex var1, float var2, float var3, float var4, float var5, float var6) {
       this.root().getAllParts().forEach(ModelPart::resetPose);
-      this.body.xRot = 6.440265F;
       this.head.yRot = var5 * 0.017453292F;
       this.head.xRot = var6 * 0.017453292F;
-      float var7 = 0.62831855F + Mth.cos(var4 * 5.5F * 0.017453292F) * 0.1F;
+      float var7 = Mth.cos(var4 * 5.5F * 0.017453292F) * 0.1F;
+      this.rightArm.zRot = 0.62831855F + var7;
+      this.leftArm.zRot = -(0.62831855F + var7);
       if (var1.isCharging()) {
          this.body.xRot = 0.0F;
-         this.rightArm.xRot = 3.6651914F;
-         this.rightArm.yRot = 0.2617994F;
-         this.rightArm.zRot = -0.47123888F;
+         this.setArmsCharging(var1.getMainHandItem(), var1.getOffhandItem(), var7);
       } else {
          this.body.xRot = 0.15707964F;
-         this.rightArm.xRot = 0.0F;
-         this.rightArm.yRot = 0.0F;
-         this.rightArm.zRot = var7;
       }
 
-      this.leftArm.zRot = -var7;
-      this.rightWing.y = 1.0F;
-      this.leftWing.y = 1.0F;
       this.leftWing.yRot = 1.0995574F + Mth.cos(var4 * 45.836624F * 0.017453292F) * 0.017453292F * 16.2F;
       this.rightWing.yRot = -this.leftWing.yRot;
       this.leftWing.xRot = 0.47123888F;
       this.leftWing.zRot = -0.47123888F;
       this.rightWing.xRot = 0.47123888F;
       this.rightWing.zRot = 0.47123888F;
+   }
+
+   private void setArmsCharging(ItemStack var1, ItemStack var2, float var3) {
+      if (var1.isEmpty() && var2.isEmpty()) {
+         this.rightArm.xRot = -1.2217305F;
+         this.rightArm.yRot = 0.2617994F;
+         this.rightArm.zRot = -0.47123888F - var3;
+         this.leftArm.xRot = -1.2217305F;
+         this.leftArm.yRot = -0.2617994F;
+         this.leftArm.zRot = 0.47123888F + var3;
+      } else {
+         if (!var1.isEmpty()) {
+            this.rightArm.xRot = 3.6651914F;
+            this.rightArm.yRot = 0.2617994F;
+            this.rightArm.zRot = -0.47123888F - var3;
+         }
+
+         if (!var2.isEmpty()) {
+            this.leftArm.xRot = 3.6651914F;
+            this.leftArm.yRot = -0.2617994F;
+            this.leftArm.zRot = 0.47123888F + var3;
+         }
+      }
    }
 
    @Override

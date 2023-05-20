@@ -25,7 +25,7 @@ public class FoodOnAStickItem<T extends Entity & ItemSteerable> extends Item {
       if (var1.isClientSide) {
          return InteractionResultHolder.pass(var4);
       } else {
-         Entity var5 = var2.getVehicle();
+         Entity var5 = var2.getControlledVehicle();
          if (var2.isPassenger() && var5 instanceof ItemSteerable var6 && var5.getType() == this.canInteractWith && var6.boost()) {
             var4.hurtAndBreak(this.consumeItemDamage, var2, var1x -> var1x.broadcastBreakEvent(var3));
             if (var4.isEmpty()) {

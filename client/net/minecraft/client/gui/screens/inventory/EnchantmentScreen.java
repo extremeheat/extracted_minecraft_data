@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.CommonComponents;
@@ -77,12 +76,10 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
       Lighting.setupForFlatItems();
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, ENCHANTING_TABLE_LOCATION);
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       int var7 = (int)this.minecraft.getWindow().getGuiScale();
       RenderSystem.viewport((this.width - 320) / 2 * var7, (this.height - 240) / 2 * var7, 320 * var7, 240 * var7);
       Matrix4f var8 = new Matrix4f().translation(-0.34F, 0.23F, 0.0F).perspective(1.5707964F, 1.3333334F, 9.0F, 80.0F);
@@ -102,8 +99,8 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       var1.mulPose(Axis.XP.rotationDegrees(180.0F));
       float var12 = Mth.lerp(var2, this.oFlip, this.flip) + 0.25F;
       float var13 = Mth.lerp(var2, this.oFlip, this.flip) + 0.75F;
-      var12 = (var12 - (float)Mth.fastFloor((double)var12)) * 1.6F - 0.3F;
-      var13 = (var13 - (float)Mth.fastFloor((double)var13)) * 1.6F - 0.3F;
+      var12 = (var12 - (float)Mth.floor(var12)) * 1.6F - 0.3F;
+      var13 = (var13 - (float)Mth.floor(var13)) * 1.6F - 0.3F;
       if (var12 < 0.0F) {
          var12 = 0.0F;
       }
@@ -129,42 +126,38 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       RenderSystem.viewport(0, 0, this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight());
       RenderSystem.restoreProjectionMatrix();
       Lighting.setupFor3DItems();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       EnchantmentNames.getInstance().initSeed((long)this.menu.getEnchantmentSeed());
       int var16 = this.menu.getGoldCount();
 
       for(int var17 = 0; var17 < 3; ++var17) {
          int var18 = var5 + 60;
          int var19 = var18 + 20;
-         this.setBlitOffset(0);
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, ENCHANTING_TABLE_LOCATION);
          int var20 = this.menu.costs[var17];
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          if (var20 == 0) {
-            this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
+            blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
          } else {
             String var21 = var20 + "";
             int var22 = 86 - this.font.width(var21);
             FormattedText var23 = EnchantmentNames.getInstance().getRandomName(this.font, var22);
             int var24 = 6839882;
             if ((var16 < var17 + 1 || this.minecraft.player.experienceLevel < var20) && !this.minecraft.player.getAbilities().instabuild) {
-               this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
-               this.blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 239, 16, 16);
-               this.font.drawWordWrap(var23, var19, var6 + 16 + 19 * var17, var22, (var24 & 16711422) >> 1);
+               blit(var1, var18, var6 + 14 + 19 * var17, 0, 185, 108, 19);
+               blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 239, 16, 16);
+               this.font.drawWordWrap(var1, var23, var19, var6 + 16 + 19 * var17, var22, (var24 & 16711422) >> 1);
                var24 = 4226832;
             } else {
                int var25 = var3 - (var5 + 60);
                int var26 = var4 - (var6 + 14 + 19 * var17);
                if (var25 >= 0 && var26 >= 0 && var25 < 108 && var26 < 19) {
-                  this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 204, 108, 19);
+                  blit(var1, var18, var6 + 14 + 19 * var17, 0, 204, 108, 19);
                   var24 = 16777088;
                } else {
-                  this.blit(var1, var18, var6 + 14 + 19 * var17, 0, 166, 108, 19);
+                  blit(var1, var18, var6 + 14 + 19 * var17, 0, 166, 108, 19);
                }
 
-               this.blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 223, 16, 16);
-               this.font.drawWordWrap(var23, var19, var6 + 16 + 19 * var17, var22, var24);
+               blit(var1, var18 + 1, var6 + 15 + 19 * var17, 16 * var17, 223, 16, 16);
+               this.font.drawWordWrap(var1, var23, var19, var6 + 16 + 19 * var17, var22, var24);
                var24 = 8453920;
             }
 

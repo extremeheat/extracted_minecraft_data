@@ -22,6 +22,7 @@ import net.minecraft.util.SpawnUtil;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
@@ -103,7 +104,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements VibrationLi
          return (ServerPlayer)var0;
       } else {
          if (var0 != null) {
-            Entity var2 = var0.getControllingPassenger();
+            LivingEntity var2 = var0.getControllingPassenger();
             if (var2 instanceof ServerPlayer) {
                return (ServerPlayer)var2;
             }
@@ -117,7 +118,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements VibrationLi
          }
 
          if (var0 instanceof ItemEntity var4) {
-            Entity var5 = var4.getThrowingEntity();
+            Entity var5 = var4.getOwner();
             if (var5 instanceof ServerPlayer) {
                return (ServerPlayer)var5;
             }

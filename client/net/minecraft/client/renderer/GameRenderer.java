@@ -38,7 +38,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.MapRenderer;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -54,6 +53,7 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -63,6 +63,7 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -239,9 +240,13 @@ public class GameRenderer implements AutoCloseable {
    @Nullable
    private static ShaderInstance rendertypeTextShader;
    @Nullable
+   private static ShaderInstance rendertypeTextBackgroundShader;
+   @Nullable
    private static ShaderInstance rendertypeTextIntensityShader;
    @Nullable
    private static ShaderInstance rendertypeTextSeeThroughShader;
+   @Nullable
+   private static ShaderInstance rendertypeTextBackgroundSeeThroughShader;
    @Nullable
    private static ShaderInstance rendertypeTextIntensitySeeThroughShader;
    @Nullable
@@ -687,6 +692,12 @@ public class GameRenderer implements AutoCloseable {
          );
          var3.add(
             Pair.of(
+               new ShaderInstance(var1, "rendertype_text_background", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
+               (Consumer<ShaderInstance>)var0 -> rendertypeTextBackgroundShader = var0
+            )
+         );
+         var3.add(
+            Pair.of(
                new ShaderInstance(var1, "rendertype_text_intensity", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
                (Consumer<ShaderInstance>)var0 -> rendertypeTextIntensityShader = var0
             )
@@ -695,6 +706,12 @@ public class GameRenderer implements AutoCloseable {
             Pair.of(
                new ShaderInstance(var1, "rendertype_text_see_through", DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
                (Consumer<ShaderInstance>)var0 -> rendertypeTextSeeThroughShader = var0
+            )
+         );
+         var3.add(
+            Pair.of(
+               new ShaderInstance(var1, "rendertype_text_background_see_through", DefaultVertexFormat.POSITION_COLOR_LIGHTMAP),
+               (Consumer<ShaderInstance>)var0 -> rendertypeTextBackgroundSeeThroughShader = var0
             )
          );
          var3.add(
@@ -841,7 +858,7 @@ public class GameRenderer implements AutoCloseable {
                Vec3 var16 = var14.getLocation();
                double var17 = var5.distanceToSqr(var16);
                if (var6 && var17 > 9.0) {
-                  this.minecraft.hitResult = BlockHitResult.miss(var16, Direction.getNearest(var10.x, var10.y, var10.z), new BlockPos(var16));
+                  this.minecraft.hitResult = BlockHitResult.miss(var16, Direction.getNearest(var10.x, var10.y, var10.z), BlockPos.containing(var16));
                } else if (var17 < var8 || this.minecraft.hitResult == null) {
                   this.minecraft.hitResult = var14;
                   if (var15 instanceof LivingEntity || var15 instanceof ItemFrame) {
@@ -914,10 +931,11 @@ public class GameRenderer implements AutoCloseable {
 
          var4 /= (float)var3.hurtDuration;
          var4 = Mth.sin(var4 * var4 * var4 * var4 * 3.1415927F);
-         float var8 = var3.hurtDir;
-         var1.mulPose(Axis.YP.rotationDegrees(-var8));
-         var1.mulPose(Axis.ZP.rotationDegrees(-var4 * 14.0F));
-         var1.mulPose(Axis.YP.rotationDegrees(var8));
+         float var9 = var3.getHurtDir();
+         var1.mulPose(Axis.YP.rotationDegrees(-var9));
+         float var6 = (float)((double)(-var4) * 14.0 * this.minecraft.options.damageTiltStrength().get());
+         var1.mulPose(Axis.ZP.rotationDegrees(var6));
+         var1.mulPose(Axis.YP.rotationDegrees(var9));
       }
    }
 
@@ -1013,8 +1031,8 @@ public class GameRenderer implements AutoCloseable {
    }
 
    public static float getNightVisionScale(LivingEntity var0, float var1) {
-      int var2 = var0.getEffect(MobEffects.NIGHT_VISION).getDuration();
-      return var2 > 200 ? 1.0F : 0.7F + Mth.sin(((float)var2 - var1) * 3.1415927F * 0.2F) * 0.3F;
+      MobEffectInstance var2 = var0.getEffect(MobEffects.NIGHT_VISION);
+      return !var2.endsWithin(200) ? 1.0F : 0.7F + Mth.sin(((float)var2.getDuration() - var1) * 3.1415927F * 0.2F) * 0.3F;
    }
 
    public void render(float var1, long var2, boolean var4) {
@@ -1046,7 +1064,6 @@ public class GameRenderer implements AutoCloseable {
             if (this.postEffect != null && this.effectActive) {
                RenderSystem.disableBlend();
                RenderSystem.disableDepthTest();
-               RenderSystem.enableTexture();
                RenderSystem.resetTextureMatrix();
                this.postEffect.process(var1);
             }
@@ -1062,6 +1079,7 @@ public class GameRenderer implements AutoCloseable {
             );
          RenderSystem.setProjectionMatrix(var8);
          PoseStack var9 = RenderSystem.getModelViewStack();
+         var9.pushPose();
          var9.setIdentity();
          var9.translate(0.0F, 0.0F, -2000.0F);
          RenderSystem.applyModelViewMatrix();
@@ -1139,6 +1157,12 @@ public class GameRenderer implements AutoCloseable {
                throw new ReportedException(var19);
             }
          }
+
+         this.minecraft.getProfiler().push("toasts");
+         this.minecraft.getToasts().render(var10);
+         this.minecraft.getProfiler().pop();
+         var9.popPose();
+         RenderSystem.applyModelViewMatrix();
       }
    }
 
@@ -1315,7 +1339,7 @@ public class GameRenderer implements AutoCloseable {
          MultiBufferSource.BufferSource var14 = this.renderBuffers.bufferSource();
          this.minecraft
             .getItemRenderer()
-            .renderStatic(this.itemActivationItem, ItemTransforms.TransformType.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var12, var14, 0);
+            .renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var12, var14, this.minecraft.level, 0);
          var12.popPose();
          var14.endBatch();
          RenderSystem.enableCull();
@@ -1613,6 +1637,11 @@ public class GameRenderer implements AutoCloseable {
    }
 
    @Nullable
+   public static ShaderInstance getRendertypeTextBackgroundShader() {
+      return rendertypeTextBackgroundShader;
+   }
+
+   @Nullable
    public static ShaderInstance getRendertypeTextIntensityShader() {
       return rendertypeTextIntensityShader;
    }
@@ -1620,6 +1649,11 @@ public class GameRenderer implements AutoCloseable {
    @Nullable
    public static ShaderInstance getRendertypeTextSeeThroughShader() {
       return rendertypeTextSeeThroughShader;
+   }
+
+   @Nullable
+   public static ShaderInstance getRendertypeTextBackgroundSeeThroughShader() {
+      return rendertypeTextBackgroundSeeThroughShader;
    }
 
    @Nullable

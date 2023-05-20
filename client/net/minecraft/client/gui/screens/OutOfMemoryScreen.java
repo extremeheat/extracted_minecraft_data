@@ -3,19 +3,20 @@ package net.minecraft.client.gui.screens;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class OutOfMemoryScreen extends Screen {
    private MultiLineLabel message = MultiLineLabel.EMPTY;
 
    public OutOfMemoryScreen() {
-      super(Component.translatable("outOfMemory.error"));
+      super(Component.translatable("outOfMemory.title"));
    }
 
    @Override
    protected void init() {
       this.addRenderableWidget(
-         Button.builder(Component.translatable("gui.toTitle"), var1 -> this.minecraft.setScreen(new TitleScreen()))
+         Button.builder(CommonComponents.GUI_TO_TITLE, var1 -> this.minecraft.setScreen(new TitleScreen()))
             .bounds(this.width / 2 - 155, this.height / 4 + 120 + 12, 150, 20)
             .build()
       );

@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
@@ -64,7 +63,6 @@ public class StructureTemplate {
    public static final String ENTITY_TAG_BLOCKPOS = "blockPos";
    public static final String ENTITY_TAG_NBT = "nbt";
    public static final String SIZE_TAG = "size";
-   static final int CHUNK_SIZE = 16;
    private final List<StructureTemplate.Palette> palettes = Lists.newArrayList();
    private final List<StructureTemplate.StructureEntityInfo> entityInfoList = Lists.newArrayList();
    private Vec3i size = Vec3i.ZERO;
@@ -166,7 +164,7 @@ public class StructureTemplate {
          if (var6 instanceof Painting) {
             var9 = ((Painting)var6).getPos().subtract(var2);
          } else {
-            var9 = new BlockPos(var7);
+            var9 = BlockPos.containing(var7);
          }
 
          this.entityInfoList.add(new StructureTemplate.StructureEntityInfo(var7, var9, var8.copy()));
@@ -383,6 +381,10 @@ public class StructureTemplate {
          }
       }
 
+      for(StructureProcessor var12 : var3.getProcessors()) {
+         var12.finalizeStructure(var0, var1, var2, var3, var5);
+      }
+
       return var5;
    }
 
@@ -404,7 +406,7 @@ public class StructureTemplate {
                var7x += var6x.mirror(var3) - var6x.getYRot();
                var6x.moveTo(var13.x, var13.y, var13.z, var7x, var6x.getXRot());
                if (var7 && var6x instanceof Mob) {
-                  ((Mob)var6x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(new BlockPos(var13)), MobSpawnType.STRUCTURE, null, var11);
+                  ((Mob)var6x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null, var11);
                }
 
                var1.addFreshEntityWithPassengers(var6x);
@@ -609,8 +611,7 @@ public class StructureTemplate {
 
       var1.put("entities", var12);
       var1.put("size", this.newIntegerList(this.size.getX(), this.size.getY(), this.size.getZ()));
-      var1.putInt("DataVersion", SharedConstants.getCurrentVersion().getWorldVersion());
-      return var1;
+      return NbtUtils.addCurrentDataVersion(var1);
    }
 
    public void load(HolderGetter<Block> var1, CompoundTag var2) {

@@ -11,7 +11,6 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.nbt.CompoundTag;
@@ -23,6 +22,7 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.SkullBlock;
@@ -64,28 +64,28 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
 
          this.getParentModel().getHead().translateAndRotate(var1);
          if (var12 instanceof BlockItem && ((BlockItem)var12).getBlock() instanceof AbstractSkullBlock) {
-            float var19 = 1.1875F;
+            float var21 = 1.1875F;
             var1.scale(1.1875F, -1.1875F, -1.1875F);
             if (var13) {
                var1.translate(0.0F, 0.0625F, 0.0F);
             }
 
-            GameProfile var20 = null;
+            GameProfile var16 = null;
             if (var11.hasTag()) {
-               CompoundTag var16 = var11.getTag();
-               if (var16.contains("SkullOwner", 10)) {
-                  var20 = NbtUtils.readGameProfile(var16.getCompound("SkullOwner"));
+               CompoundTag var17 = var11.getTag();
+               if (var17.contains("SkullOwner", 10)) {
+                  var16 = NbtUtils.readGameProfile(var17.getCompound("SkullOwner"));
                }
             }
 
             var1.translate(-0.5, 0.0, -0.5);
-            SkullBlock.Type var21 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
-            SkullModelBase var17 = this.skullModels.get(var21);
-            RenderType var18 = SkullBlockRenderer.getRenderType(var21, var20);
-            SkullBlockRenderer.renderSkull(null, 180.0F, var5, var1, var2, var3, var17, var18);
-         } else if (!(var12 instanceof ArmorItem) || ((ArmorItem)var12).getSlot() != EquipmentSlot.HEAD) {
+            SkullBlock.Type var22 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
+            SkullModelBase var18 = this.skullModels.get(var22);
+            RenderType var19 = SkullBlockRenderer.getRenderType(var22, var16);
+            SkullBlockRenderer.renderSkull(null, 180.0F, var5, var1, var2, var3, var18, var19);
+         } else if (!(var12 instanceof ArmorItem var20) || var20.getEquipmentSlot() != EquipmentSlot.HEAD) {
             translateToHead(var1, var13);
-            this.itemInHandRenderer.renderItem(var4, var11, ItemTransforms.TransformType.HEAD, false, var1, var2, var3);
+            this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.HEAD, false, var1, var2, var3);
          }
 
          var1.popPose();

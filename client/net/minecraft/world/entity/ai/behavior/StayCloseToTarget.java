@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -12,23 +13,25 @@ public class StayCloseToTarget {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(Function<LivingEntity, Optional<PositionTracker>> var0, int var1, int var2, float var3) {
+   public static BehaviorControl<LivingEntity> create(
+      Function<LivingEntity, Optional<PositionTracker>> var0, Predicate<LivingEntity> var1, int var2, int var3, float var4
+   ) {
       return BehaviorBuilder.create(
-         var4 -> var4.group(var4.registered(MemoryModuleType.LOOK_TARGET), var4.absent(MemoryModuleType.WALK_TARGET))
-               .apply(var4, (var4x, var5) -> (var6, var7, var8) -> {
-                     Optional var10 = (Optional)var0.apply(var7);
-                     if (var10.isEmpty()) {
-                        return false;
-                     } else {
-                        PositionTracker var11 = (PositionTracker)var10.get();
-                        if (var7.position().closerThan(var11.currentPosition(), (double)var2)) {
+         var5 -> var5.group(var5.registered(MemoryModuleType.LOOK_TARGET), var5.registered(MemoryModuleType.WALK_TARGET))
+               .apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
+                     Optional var11 = (Optional)var0.apply(var8);
+                     if (!var11.isEmpty() && var1.test(var8)) {
+                        PositionTracker var12 = (PositionTracker)var11.get();
+                        if (var8.position().closerThan(var12.currentPosition(), (double)var3)) {
                            return false;
                         } else {
-                           PositionTracker var12 = (PositionTracker)var10.get();
-                           var4x.set(var12);
-                           var5.set(new WalkTarget(var12, var3, var1));
+                           PositionTracker var13 = (PositionTracker)var11.get();
+                           var5x.set(var13);
+                           var6.set(new WalkTarget(var13, var4, var2));
                            return true;
                         }
+                     } else {
+                        return false;
                      }
                   })
       );

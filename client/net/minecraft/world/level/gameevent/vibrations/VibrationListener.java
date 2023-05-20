@@ -33,6 +33,7 @@ public class VibrationListener implements GameEventListener {
    @VisibleForTesting
    public static final Object2IntMap<GameEvent> VIBRATION_FREQUENCY_FOR_EVENT = Object2IntMaps.unmodifiable(Util.make(new Object2IntOpenHashMap(), var0 -> {
       var0.put(GameEvent.STEP, 1);
+      var0.put(GameEvent.ITEM_INTERACT_FINISH, 2);
       var0.put(GameEvent.FLAP, 2);
       var0.put(GameEvent.SWIM, 3);
       var0.put(GameEvent.ELYTRA_GLIDE, 4);
@@ -42,9 +43,11 @@ public class VibrationListener implements GameEventListener {
       var0.put(GameEvent.ENTITY_SHAKE, 6);
       var0.put(GameEvent.BLOCK_CHANGE, 6);
       var0.put(GameEvent.NOTE_BLOCK_PLAY, 6);
+      var0.put(GameEvent.ENTITY_DISMOUNT, 6);
       var0.put(GameEvent.PROJECTILE_SHOOT, 7);
       var0.put(GameEvent.DRINK, 7);
       var0.put(GameEvent.PRIME_FUSE, 7);
+      var0.put(GameEvent.ENTITY_MOUNT, 7);
       var0.put(GameEvent.PROJECTILE_LAND, 8);
       var0.put(GameEvent.EAT, 8);
       var0.put(GameEvent.ENTITY_INTERACT, 8);
@@ -65,7 +68,6 @@ public class VibrationListener implements GameEventListener {
       var0.put(GameEvent.ENTITY_DIE, 13);
       var0.put(GameEvent.BLOCK_DESTROY, 13);
       var0.put(GameEvent.FLUID_PICKUP, 13);
-      var0.put(GameEvent.ITEM_INTERACT_FINISH, 14);
       var0.put(GameEvent.CONTAINER_CLOSE, 14);
       var0.put(GameEvent.PISTON_CONTRACT, 14);
       var0.put(GameEvent.PISTON_EXTEND, 15);
@@ -136,7 +138,7 @@ public class VibrationListener implements GameEventListener {
                   .onSignalReceive(
                      (ServerLevel)var2,
                      this,
-                     new BlockPos(this.currentVibration.pos()),
+                     BlockPos.containing(this.currentVibration.pos()),
                      this.currentVibration.gameEvent(),
                      this.currentVibration.getEntity((ServerLevel)var2).orElse(null),
                      this.currentVibration.getProjectileOwner((ServerLevel)var2).orElse(null),
@@ -170,7 +172,7 @@ public class VibrationListener implements GameEventListener {
             return false;
          } else {
             Vec3 var6 = (Vec3)var5.get();
-            if (!this.config.shouldListen(var1, this, new BlockPos(var4), var2, var3)) {
+            if (!this.config.shouldListen(var1, this, BlockPos.containing(var4), var2, var3)) {
                return false;
             } else if (isOccluded(var1, var4, var6)) {
                return false;

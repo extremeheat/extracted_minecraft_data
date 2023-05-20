@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
@@ -108,13 +107,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
       this.clearRemovedEntities();
-      this.doRender(var3, var5, var7);
-      RenderSystem.enableTexture();
-      RenderSystem.disableBlend();
+      this.doRender(var1, var2, var3, var5, var7);
       if (!this.minecraft.player.isSpectator()) {
          this.updateLastLookedAtUuid();
       }
@@ -127,173 +121,170 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       });
    }
 
-   private void doRender(double var1, double var3, double var5) {
-      BlockPos var7 = new BlockPos(var1, var3, var5);
-      this.brainDumpsPerEntity.values().forEach(var7x -> {
-         if (this.isPlayerCloseEnoughToMob(var7x)) {
-            this.renderBrainInfo(var7x, var1, var3, var5);
+   private void doRender(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
+      BlockPos var9 = BlockPos.containing(var3, var5, var7);
+      this.brainDumpsPerEntity.values().forEach(var9x -> {
+         if (this.isPlayerCloseEnoughToMob(var9x)) {
+            this.renderBrainInfo(var1, var2, var9x, var3, var5, var7);
          }
       });
 
-      for(BlockPos var9 : this.pois.keySet()) {
-         if (var7.closerThan(var9, 30.0)) {
-            highlightPoi(var9);
+      for(BlockPos var11 : this.pois.keySet()) {
+         if (var9.closerThan(var11, 30.0)) {
+            highlightPoi(var1, var2, var11);
          }
       }
 
-      this.pois.values().forEach(var2 -> {
-         if (var7.closerThan(var2.pos, 30.0)) {
-            this.renderPoiInfo(var2);
+      this.pois.values().forEach(var4 -> {
+         if (var9.closerThan(var4.pos, 30.0)) {
+            this.renderPoiInfo(var1, var2, var4);
          }
       });
-      this.getGhostPois().forEach((var2, var3x) -> {
-         if (var7.closerThan(var2, 30.0)) {
-            this.renderGhostPoi(var2, var3x);
+      this.getGhostPois().forEach((var4, var5x) -> {
+         if (var9.closerThan(var4, 30.0)) {
+            this.renderGhostPoi(var1, var2, var4, var5x);
          }
       });
    }
 
-   private static void highlightPoi(BlockPos var0) {
-      float var1 = 0.05F;
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      DebugRenderer.renderFilledBox(var0, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
-   }
-
-   private void renderGhostPoi(BlockPos var1, List<String> var2) {
+   private static void highlightPoi(PoseStack var0, MultiBufferSource var1, BlockPos var2) {
       float var3 = 0.05F;
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      DebugRenderer.renderFilledBox(var1, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
-      renderTextOverPos(var2 + "", var1, 0, -256);
-      renderTextOverPos("Ghost POI", var1, 1, -65536);
+      DebugRenderer.renderFilledBox(var0, var1, var2, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
    }
 
-   private void renderPoiInfo(BrainDebugRenderer.PoiInfo var1) {
-      int var2 = 0;
-      Set var3 = this.getTicketHolderNames(var1);
-      if (var3.size() < 4) {
-         renderTextOverPoi("Owners: " + var3, var1, var2, -256);
+   private void renderGhostPoi(PoseStack var1, MultiBufferSource var2, BlockPos var3, List<String> var4) {
+      float var5 = 0.05F;
+      DebugRenderer.renderFilledBox(var1, var2, var3, 0.05F, 0.2F, 0.2F, 1.0F, 0.3F);
+      renderTextOverPos(var1, var2, var4 + "", var3, 0, -256);
+      renderTextOverPos(var1, var2, "Ghost POI", var3, 1, -65536);
+   }
+
+   private void renderPoiInfo(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.PoiInfo var3) {
+      int var4 = 0;
+      Set var5 = this.getTicketHolderNames(var3);
+      if (var5.size() < 4) {
+         renderTextOverPoi(var1, var2, "Owners: " + var5, var3, var4, -256);
       } else {
-         renderTextOverPoi(var3.size() + " ticket holders", var1, var2, -256);
+         renderTextOverPoi(var1, var2, var5.size() + " ticket holders", var3, var4, -256);
       }
 
-      ++var2;
-      Set var4 = this.getPotentialTicketHolderNames(var1);
-      if (var4.size() < 4) {
-         renderTextOverPoi("Candidates: " + var4, var1, var2, -23296);
+      ++var4;
+      Set var6 = this.getPotentialTicketHolderNames(var3);
+      if (var6.size() < 4) {
+         renderTextOverPoi(var1, var2, "Candidates: " + var6, var3, var4, -23296);
       } else {
-         renderTextOverPoi(var4.size() + " potential owners", var1, var2, -23296);
+         renderTextOverPoi(var1, var2, var6.size() + " potential owners", var3, var4, -23296);
       }
 
-      renderTextOverPoi("Free tickets: " + var1.freeTicketCount, var1, ++var2, -256);
-      renderTextOverPoi(var1.type, var1, ++var2, -1);
+      renderTextOverPoi(var1, var2, "Free tickets: " + var3.freeTicketCount, var3, ++var4, -256);
+      renderTextOverPoi(var1, var2, var3.type, var3, ++var4, -1);
    }
 
-   private void renderPath(BrainDebugRenderer.BrainDump var1, double var2, double var4, double var6) {
-      if (var1.path != null) {
-         PathfindingRenderer.renderPath(var1.path, 0.5F, false, false, var2, var4, var6);
+   private void renderPath(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.BrainDump var3, double var4, double var6, double var8) {
+      if (var3.path != null) {
+         PathfindingRenderer.renderPath(var1, var2, var3.path, 0.5F, false, false, var4, var6, var8);
       }
    }
 
-   private void renderBrainInfo(BrainDebugRenderer.BrainDump var1, double var2, double var4, double var6) {
-      boolean var8 = this.isMobSelected(var1);
-      int var9 = 0;
-      renderTextOverMob(var1.pos, var9, var1.name, -1, 0.03F);
-      ++var9;
-      if (var8) {
-         renderTextOverMob(var1.pos, var9, var1.profession + " " + var1.xp + " xp", -1, 0.02F);
-         ++var9;
+   private void renderBrainInfo(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.BrainDump var3, double var4, double var6, double var8) {
+      boolean var10 = this.isMobSelected(var3);
+      int var11 = 0;
+      renderTextOverMob(var1, var2, var3.pos, var11, var3.name, -1, 0.03F);
+      ++var11;
+      if (var10) {
+         renderTextOverMob(var1, var2, var3.pos, var11, var3.profession + " " + var3.xp + " xp", -1, 0.02F);
+         ++var11;
       }
 
-      if (var8) {
-         int var10 = var1.health < var1.maxHealth ? -23296 : -1;
+      if (var10) {
+         int var12 = var3.health < var3.maxHealth ? -23296 : -1;
          renderTextOverMob(
-            var1.pos,
-            var9,
-            "health: " + String.format(Locale.ROOT, "%.1f", var1.health) + " / " + String.format(Locale.ROOT, "%.1f", var1.maxHealth),
-            var10,
+            var1,
+            var2,
+            var3.pos,
+            var11,
+            "health: " + String.format(Locale.ROOT, "%.1f", var3.health) + " / " + String.format(Locale.ROOT, "%.1f", var3.maxHealth),
+            var12,
             0.02F
          );
-         ++var9;
+         ++var11;
       }
 
-      if (var8 && !var1.inventory.equals("")) {
-         renderTextOverMob(var1.pos, var9, var1.inventory, -98404, 0.02F);
-         ++var9;
+      if (var10 && !var3.inventory.equals("")) {
+         renderTextOverMob(var1, var2, var3.pos, var11, var3.inventory, -98404, 0.02F);
+         ++var11;
       }
 
-      if (var8) {
-         for(String var11 : var1.behaviors) {
-            renderTextOverMob(var1.pos, var9, var11, -16711681, 0.02F);
-            ++var9;
+      if (var10) {
+         for(String var13 : var3.behaviors) {
+            renderTextOverMob(var1, var2, var3.pos, var11, var13, -16711681, 0.02F);
+            ++var11;
          }
       }
 
-      if (var8) {
-         for(String var17 : var1.activities) {
-            renderTextOverMob(var1.pos, var9, var17, -16711936, 0.02F);
-            ++var9;
+      if (var10) {
+         for(String var19 : var3.activities) {
+            renderTextOverMob(var1, var2, var3.pos, var11, var19, -16711936, 0.02F);
+            ++var11;
          }
       }
 
-      if (var1.wantsGolem) {
-         renderTextOverMob(var1.pos, var9, "Wants Golem", -23296, 0.02F);
-         ++var9;
+      if (var3.wantsGolem) {
+         renderTextOverMob(var1, var2, var3.pos, var11, "Wants Golem", -23296, 0.02F);
+         ++var11;
       }
 
-      if (var8 && var1.angerLevel != -1) {
-         renderTextOverMob(var1.pos, var9, "Anger Level: " + var1.angerLevel, -98404, 0.02F);
-         ++var9;
+      if (var10 && var3.angerLevel != -1) {
+         renderTextOverMob(var1, var2, var3.pos, var11, "Anger Level: " + var3.angerLevel, -98404, 0.02F);
+         ++var11;
       }
 
-      if (var8) {
-         for(String var18 : var1.gossips) {
-            if (var18.startsWith(var1.name)) {
-               renderTextOverMob(var1.pos, var9, var18, -1, 0.02F);
+      if (var10) {
+         for(String var20 : var3.gossips) {
+            if (var20.startsWith(var3.name)) {
+               renderTextOverMob(var1, var2, var3.pos, var11, var20, -1, 0.02F);
             } else {
-               renderTextOverMob(var1.pos, var9, var18, -23296, 0.02F);
+               renderTextOverMob(var1, var2, var3.pos, var11, var20, -23296, 0.02F);
             }
 
-            ++var9;
+            ++var11;
          }
       }
 
-      if (var8) {
-         for(String var19 : Lists.reverse(var1.memories)) {
-            renderTextOverMob(var1.pos, var9, var19, -3355444, 0.02F);
-            ++var9;
+      if (var10) {
+         for(String var21 : Lists.reverse(var3.memories)) {
+            renderTextOverMob(var1, var2, var3.pos, var11, var21, -3355444, 0.02F);
+            ++var11;
          }
       }
 
-      if (var8) {
-         this.renderPath(var1, var2, var4, var6);
+      if (var10) {
+         this.renderPath(var1, var2, var3, var4, var6, var8);
       }
    }
 
-   private static void renderTextOverPoi(String var0, BrainDebugRenderer.PoiInfo var1, int var2, int var3) {
-      BlockPos var4 = var1.pos;
-      renderTextOverPos(var0, var4, var2, var3);
+   private static void renderTextOverPoi(PoseStack var0, MultiBufferSource var1, String var2, BrainDebugRenderer.PoiInfo var3, int var4, int var5) {
+      renderTextOverPos(var0, var1, var2, var3.pos, var4, var5);
    }
 
-   private static void renderTextOverPos(String var0, BlockPos var1, int var2, int var3) {
-      double var4 = 1.3;
-      double var6 = 0.2;
-      double var8 = (double)var1.getX() + 0.5;
-      double var10 = (double)var1.getY() + 1.3 + (double)var2 * 0.2;
-      double var12 = (double)var1.getZ() + 0.5;
-      DebugRenderer.renderFloatingText(var0, var8, var10, var12, var3, 0.02F, true, 0.0F, true);
+   private static void renderTextOverPos(PoseStack var0, MultiBufferSource var1, String var2, BlockPos var3, int var4, int var5) {
+      double var6 = 1.3;
+      double var8 = 0.2;
+      double var10 = (double)var3.getX() + 0.5;
+      double var12 = (double)var3.getY() + 1.3 + (double)var4 * 0.2;
+      double var14 = (double)var3.getZ() + 0.5;
+      DebugRenderer.renderFloatingText(var0, var1, var2, var10, var12, var14, var5, 0.02F, true, 0.0F, true);
    }
 
-   private static void renderTextOverMob(Position var0, int var1, String var2, int var3, float var4) {
-      double var5 = 2.4;
-      double var7 = 0.25;
-      BlockPos var9 = new BlockPos(var0);
-      double var10 = (double)var9.getX() + 0.5;
-      double var12 = var0.y() + 2.4 + (double)var1 * 0.25;
-      double var14 = (double)var9.getZ() + 0.5;
-      float var16 = 0.5F;
-      DebugRenderer.renderFloatingText(var2, var10, var12, var14, var3, var4, false, 0.5F, true);
+   private static void renderTextOverMob(PoseStack var0, MultiBufferSource var1, Position var2, int var3, String var4, int var5, float var6) {
+      double var7 = 2.4;
+      double var9 = 0.25;
+      BlockPos var11 = BlockPos.containing(var2);
+      double var12 = (double)var11.getX() + 0.5;
+      double var14 = var2.y() + 2.4 + (double)var3 * 0.25;
+      double var16 = (double)var11.getZ() + 0.5;
+      float var18 = 0.5F;
+      DebugRenderer.renderFloatingText(var0, var1, var4, var12, var14, var16, var5, var6, false, 0.5F, true);
    }
 
    private Set<String> getTicketHolderNames(BrainDebugRenderer.PoiInfo var1) {
@@ -310,8 +301,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private boolean isPlayerCloseEnoughToMob(BrainDebugRenderer.BrainDump var1) {
       LocalPlayer var2 = this.minecraft.player;
-      BlockPos var3 = new BlockPos(var2.getX(), var1.pos.y(), var2.getZ());
-      BlockPos var4 = new BlockPos(var1.pos);
+      BlockPos var3 = BlockPos.containing(var2.getX(), var1.pos.y(), var2.getZ());
+      BlockPos var4 = BlockPos.containing(var1.pos);
       return var3.closerThan(var4, 30.0);
    }
 

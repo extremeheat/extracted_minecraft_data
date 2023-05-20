@@ -104,8 +104,8 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       this.cellWidth = var5.getCellWidth();
       this.cellHeight = var5.getCellHeight();
       this.cellCountXZ = var1;
-      this.cellCountY = Mth.intFloorDiv(var5.height(), this.cellHeight);
-      this.cellNoiseMinY = Mth.intFloorDiv(var5.minY(), this.cellHeight);
+      this.cellCountY = Mth.floorDiv(var5.height(), this.cellHeight);
+      this.cellNoiseMinY = Mth.floorDiv(var5.minY(), this.cellHeight);
       this.firstCellX = Math.floorDiv(var3, this.cellWidth);
       this.firstCellZ = Math.floorDiv(var4, this.cellWidth);
       this.interpolators = Lists.newArrayList();

@@ -38,6 +38,10 @@ public class MouseHandler {
 
    private void onPress(long var1, int var3, int var4, int var5) {
       if (var1 == this.minecraft.getWindow().getWindow()) {
+         if (this.minecraft.screen != null) {
+            this.minecraft.setLastInputType(InputType.MOUSE);
+         }
+
          boolean var6 = var4 == 1;
          if (Minecraft.ON_OSX && var3 == 0) {
             if (var6) {

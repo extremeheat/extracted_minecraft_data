@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Iterator;
 import java.util.List;
@@ -36,65 +35,61 @@ public class SubtitleOverlay extends GuiComponent implements SoundEventListener 
       }
 
       if (this.isListening && !this.subtitles.isEmpty()) {
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
          Vec3 var2 = new Vec3(this.minecraft.player.getX(), this.minecraft.player.getEyeY(), this.minecraft.player.getZ());
          Vec3 var3 = new Vec3(0.0, 0.0, -1.0).xRot(-this.minecraft.player.getXRot() * 0.017453292F).yRot(-this.minecraft.player.getYRot() * 0.017453292F);
          Vec3 var4 = new Vec3(0.0, 1.0, 0.0).xRot(-this.minecraft.player.getXRot() * 0.017453292F).yRot(-this.minecraft.player.getYRot() * 0.017453292F);
          Vec3 var5 = var3.cross(var4);
          int var6 = 0;
          int var7 = 0;
-         Iterator var8 = this.subtitles.iterator();
+         double var8 = this.minecraft.options.notificationDisplayTime().get();
+         Iterator var10 = this.subtitles.iterator();
 
-         while(var8.hasNext()) {
-            SubtitleOverlay.Subtitle var9 = (SubtitleOverlay.Subtitle)var8.next();
-            if (var9.getTime() + 3000L <= Util.getMillis()) {
-               var8.remove();
+         while(var10.hasNext()) {
+            SubtitleOverlay.Subtitle var11 = (SubtitleOverlay.Subtitle)var10.next();
+            if ((double)var11.getTime() + 3000.0 * var8 <= (double)Util.getMillis()) {
+               var10.remove();
             } else {
-               var7 = Math.max(var7, this.minecraft.font.width(var9.getText()));
+               var7 = Math.max(var7, this.minecraft.font.width(var11.getText()));
             }
          }
 
          var7 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
 
-         for(SubtitleOverlay.Subtitle var28 : this.subtitles) {
-            boolean var10 = true;
-            Component var11 = var28.getText();
-            Vec3 var12 = var28.getLocation().subtract(var2).normalize();
-            double var13 = -var5.dot(var12);
-            double var15 = -var3.dot(var12);
-            boolean var17 = var15 > 0.5;
-            int var18 = var7 / 2;
-            byte var19 = 9;
-            int var20 = var19 / 2;
-            float var21 = 1.0F;
-            int var22 = this.minecraft.font.width(var11);
-            int var23 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var28.getTime()) / 3000.0F));
-            int var24 = var23 << 16 | var23 << 8 | var23;
+         for(SubtitleOverlay.Subtitle var30 : this.subtitles) {
+            boolean var12 = true;
+            Component var13 = var30.getText();
+            Vec3 var14 = var30.getLocation().subtract(var2).normalize();
+            double var15 = -var5.dot(var14);
+            double var17 = -var3.dot(var14);
+            boolean var19 = var17 > 0.5;
+            int var20 = var7 / 2;
+            byte var21 = 9;
+            int var22 = var21 / 2;
+            float var23 = 1.0F;
+            int var24 = this.minecraft.font.width(var13);
+            int var25 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var30.getTime()) / (float)(3000.0 * var8)));
+            int var26 = var25 << 16 | var25 << 8 | var25;
             var1.pushPose();
             var1.translate(
-               (float)this.minecraft.getWindow().getGuiScaledWidth() - (float)var18 * 1.0F - 2.0F,
-               (float)(this.minecraft.getWindow().getGuiScaledHeight() - 35) - (float)(var6 * (var19 + 1)) * 1.0F,
+               (float)this.minecraft.getWindow().getGuiScaledWidth() - (float)var20 * 1.0F - 2.0F,
+               (float)(this.minecraft.getWindow().getGuiScaledHeight() - 35) - (float)(var6 * (var21 + 1)) * 1.0F,
                0.0F
             );
             var1.scale(1.0F, 1.0F, 1.0F);
-            fill(var1, -var18 - 1, -var20 - 1, var18 + 1, var20 + 1, this.minecraft.options.getBackgroundColor(0.8F));
-            RenderSystem.enableBlend();
-            int var25 = var24 + -16777216;
-            if (!var17) {
-               if (var13 > 0.0) {
-                  drawString(var1, this.minecraft.font, ">", var18 - this.minecraft.font.width(">"), -var20, var25);
-               } else if (var13 < 0.0) {
-                  drawString(var1, this.minecraft.font, "<", -var18, -var20, var25);
+            fill(var1, -var20 - 1, -var22 - 1, var20 + 1, var22 + 1, this.minecraft.options.getBackgroundColor(0.8F));
+            int var27 = var26 + -16777216;
+            if (!var19) {
+               if (var15 > 0.0) {
+                  drawString(var1, this.minecraft.font, ">", var20 - this.minecraft.font.width(">"), -var22, var27);
+               } else if (var15 < 0.0) {
+                  drawString(var1, this.minecraft.font, "<", -var20, -var22, var27);
                }
             }
 
-            drawString(var1, this.minecraft.font, var11, -var22 / 2, -var20, var25);
+            drawString(var1, this.minecraft.font, var13, -var24 / 2, -var22, var27);
             var1.popPose();
             ++var6;
          }
-
-         RenderSystem.disableBlend();
       }
    }
 

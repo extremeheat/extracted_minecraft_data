@@ -12,6 +12,16 @@ public class UpdateOneTwentyLootTableProvider {
    }
 
    public static LootTableProvider create(PackOutput var0) {
-      return new LootTableProvider(var0, Set.of(), List.of(new LootTableProvider.SubProviderEntry(UpdateOneTwentyBlockLoot::new, LootContextParamSets.BLOCK)));
+      return new LootTableProvider(
+         var0,
+         Set.of(),
+         List.of(
+            new LootTableProvider.SubProviderEntry(UpdateOneTwentyFishingLoot::new, LootContextParamSets.FISHING),
+            new LootTableProvider.SubProviderEntry(UpdateOneTwentyBlockLoot::new, LootContextParamSets.BLOCK),
+            new LootTableProvider.SubProviderEntry(UpdateOneTwentyChestLoot::new, LootContextParamSets.CHEST),
+            new LootTableProvider.SubProviderEntry(UpdateOneTwentyEntityLoot::new, LootContextParamSets.ENTITY),
+            new LootTableProvider.SubProviderEntry(UpdateOneTwentyArchaeologyLoot::new, LootContextParamSets.ARCHAEOLOGY)
+         )
+      );
    }
 }

@@ -49,7 +49,9 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          var0.screenEffectScale(),
          var0.entityDistanceScaling(),
          var0.fovEffectScale(),
-         var0.showAutosaveIndicator()
+         var0.showAutosaveIndicator(),
+         var0.glintSpeed(),
+         var0.glintStrength()
       };
    }
 

@@ -1,5 +1,6 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -43,32 +44,32 @@ public class FireworkRocketRecipe extends CustomRecipe {
       return var3 && var4 >= 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = new ItemStack(Items.FIREWORK_ROCKET, 3);
-      CompoundTag var3 = var2.getOrCreateTagElement("Fireworks");
-      ListTag var4 = new ListTag();
-      int var5 = 0;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET, 3);
+      CompoundTag var4 = var3.getOrCreateTagElement("Fireworks");
+      ListTag var5 = new ListTag();
+      int var6 = 0;
 
-      for(int var6 = 0; var6 < var1.getContainerSize(); ++var6) {
-         ItemStack var7 = var1.getItem(var6);
-         if (!var7.isEmpty()) {
-            if (GUNPOWDER_INGREDIENT.test(var7)) {
-               ++var5;
-            } else if (STAR_INGREDIENT.test(var7)) {
-               CompoundTag var8 = var7.getTagElement("Explosion");
-               if (var8 != null) {
-                  var4.add(var8);
+      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
+         ItemStack var8 = var1.getItem(var7);
+         if (!var8.isEmpty()) {
+            if (GUNPOWDER_INGREDIENT.test(var8)) {
+               ++var6;
+            } else if (STAR_INGREDIENT.test(var8)) {
+               CompoundTag var9 = var8.getTagElement("Explosion");
+               if (var9 != null) {
+                  var5.add(var9);
                }
             }
          }
       }
 
-      var3.putByte("Flight", (byte)var5);
-      if (!var4.isEmpty()) {
-         var3.put("Explosions", var4);
+      var4.putByte("Flight", (byte)var6);
+      if (!var5.isEmpty()) {
+         var4.put("Explosions", var5);
       }
 
-      return var2;
+      return var3;
    }
 
    @Override
@@ -77,7 +78,7 @@ public class FireworkRocketRecipe extends CustomRecipe {
    }
 
    @Override
-   public ItemStack getResultItem() {
+   public ItemStack getResultItem(RegistryAccess var1) {
       return new ItemStack(Items.FIREWORK_ROCKET);
    }
 

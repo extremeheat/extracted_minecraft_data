@@ -308,7 +308,7 @@ public class FishingHook extends Projectile {
             double var8 = this.getX() + (double)(var6 * (float)this.timeUntilHooked * 0.1F);
             double var10 = (double)((float)Mth.floor(this.getY()) + 1.0F);
             double var12 = this.getZ() + (double)(var7 * (float)this.timeUntilHooked * 0.1F);
-            BlockState var14 = var2.getBlockState(new BlockPos(var8, var10 - 1.0, var12));
+            BlockState var14 = var2.getBlockState(BlockPos.containing(var8, var10 - 1.0, var12));
             if (var14.is(Blocks.WATER)) {
                if (this.random.nextFloat() < 0.15F) {
                   var2.sendParticles(ParticleTypes.BUBBLE, var8, var10 - 0.10000000149011612, var12, 1, (double)var6, 0.1, (double)var7, 0.0);
@@ -364,7 +364,7 @@ public class FishingHook extends Projectile {
             double var21 = this.getX() + (double)(Mth.sin(var19) * var20) * 0.1;
             double var22 = (double)((float)Mth.floor(this.getY()) + 1.0F);
             double var23 = this.getZ() + (double)(Mth.cos(var19) * var20) * 0.1;
-            BlockState var24 = var2.getBlockState(new BlockPos(var21, var22 - 1.0, var23));
+            BlockState var24 = var2.getBlockState(BlockPos.containing(var21, var22 - 1.0, var23));
             if (var24.is(Blocks.WATER)) {
                var2.sendParticles(ParticleTypes.SPLASH, var21, var22, var23, 2 + this.random.nextInt(2), 0.10000000149011612, 0.0, 0.10000000149011612, 0.0);
             }

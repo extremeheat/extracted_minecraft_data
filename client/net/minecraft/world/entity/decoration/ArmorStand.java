@@ -16,6 +16,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -86,7 +87,7 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
-      this.maxUpStep = 0.0F;
+      this.setMaxUpStep(0.0F);
    }
 
    public ArmorStand(Level var1, double var2, double var4, double var6) {
@@ -387,16 +388,16 @@ public class ArmorStand extends LivingEntity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.level.isClientSide || this.isRemoved()) {
          return false;
-      } else if (DamageSource.OUT_OF_WORLD.equals(var1)) {
+      } else if (var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          this.kill();
          return false;
       } else if (this.isInvulnerableTo(var1) || this.invisible || this.isMarker()) {
          return false;
-      } else if (var1.isExplosion()) {
+      } else if (var1.is(DamageTypeTags.IS_EXPLOSION)) {
          this.brokenByAnything(var1);
          this.kill();
          return false;
-      } else if (DamageSource.IN_FIRE.equals(var1)) {
+      } else if (var1.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
          if (this.isOnFire()) {
             this.causeDamage(var1, 0.15F);
          } else {
@@ -404,7 +405,7 @@ public class ArmorStand extends LivingEntity {
          }
 
          return false;
-      } else if (DamageSource.ON_FIRE.equals(var1) && this.getHealth() > 0.5F) {
+      } else if (var1.is(DamageTypeTags.BURNS_ARMOR_STANDS) && this.getHealth() > 0.5F) {
          this.causeDamage(var1, 4.0F);
          return false;
       } else {
@@ -413,26 +414,31 @@ public class ArmorStand extends LivingEntity {
          boolean var5 = "player".equals(var1.getMsgId());
          if (!var5 && !var3) {
             return false;
-         } else if (var1.getEntity() instanceof Player && !((Player)var1.getEntity()).getAbilities().mayBuild) {
-            return false;
-         } else if (var1.isCreativePlayer()) {
-            this.playBrokenSound();
-            this.showBreakingParticles();
-            this.kill();
-            return var4;
          } else {
-            long var6 = this.level.getGameTime();
-            if (var6 - this.lastHit > 5L && !var3) {
-               this.level.broadcastEntityEvent(this, (byte)32);
-               this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-               this.lastHit = var6;
-            } else {
-               this.brokenByPlayer(var1);
-               this.showBreakingParticles();
-               this.kill();
+            Entity var7 = var1.getEntity();
+            if (var7 instanceof Player var6 && !var6.getAbilities().mayBuild) {
+               return false;
             }
 
-            return true;
+            if (var1.isCreativePlayer()) {
+               this.playBrokenSound();
+               this.showBreakingParticles();
+               this.kill();
+               return var4;
+            } else {
+               long var8 = this.level.getGameTime();
+               if (var8 - this.lastHit > 5L && !var3) {
+                  this.level.broadcastEntityEvent(this, (byte)32);
+                  this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
+                  this.lastHit = var8;
+               } else {
+                  this.brokenByPlayer(var1);
+                  this.showBreakingParticles();
+                  this.kill();
+               }
+
+               return true;
+            }
          }
       }
    }
@@ -490,7 +496,12 @@ public class ArmorStand extends LivingEntity {
    }
 
    private void brokenByPlayer(DamageSource var1) {
-      Block.popResource(this.level, this.blockPosition(), new ItemStack(Items.ARMOR_STAND));
+      ItemStack var2 = new ItemStack(Items.ARMOR_STAND);
+      if (this.hasCustomName()) {
+         var2.setHoverName(this.getCustomName());
+      }
+
+      Block.popResource(this.level, this.blockPosition(), var2);
       this.brokenByAnything(var1);
    }
 
@@ -629,7 +640,7 @@ public class ArmorStand extends LivingEntity {
       return (this.entityData.get(DATA_CLIENT_FLAGS) & 1) != 0;
    }
 
-   private void setShowArms(boolean var1) {
+   public void setShowArms(boolean var1) {
       this.entityData.set(DATA_CLIENT_FLAGS, this.setBit(this.entityData.get(DATA_CLIENT_FLAGS), 4, var1));
    }
 
@@ -637,7 +648,7 @@ public class ArmorStand extends LivingEntity {
       return (this.entityData.get(DATA_CLIENT_FLAGS) & 4) != 0;
    }
 
-   private void setNoBasePlate(boolean var1) {
+   public void setNoBasePlate(boolean var1) {
       this.entityData.set(DATA_CLIENT_FLAGS, this.setBit(this.entityData.get(DATA_CLIENT_FLAGS), 8, var1));
    }
 
@@ -793,7 +804,7 @@ public class ArmorStand extends LivingEntity {
          BlockPos var3 = this.blockPosition();
          int var4 = -2147483648;
 
-         for(BlockPos var6 : BlockPos.betweenClosed(new BlockPos(var2.minX, var2.minY, var2.minZ), new BlockPos(var2.maxX, var2.maxY, var2.maxZ))) {
+         for(BlockPos var6 : BlockPos.betweenClosed(BlockPos.containing(var2.minX, var2.minY, var2.minZ), BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ))) {
             int var7 = Math.max(this.level.getBrightness(LightLayer.BLOCK, var6), this.level.getBrightness(LightLayer.SKY, var6));
             if (var7 == 15) {
                return Vec3.atCenterOf(var6);

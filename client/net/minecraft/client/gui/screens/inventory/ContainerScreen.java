@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -31,12 +30,10 @@ public class ContainerScreen extends AbstractContainerScreen<ChestMenu> implemen
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, CONTAINER_BACKGROUND);
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.containerRows * 18 + 17);
-      this.blit(var1, var5, var6 + this.containerRows * 18 + 17, 0, 126, this.imageWidth, 96);
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.containerRows * 18 + 17);
+      blit(var1, var5, var6 + this.containerRows * 18 + 17, 0, 126, this.imageWidth, 96);
    }
 }

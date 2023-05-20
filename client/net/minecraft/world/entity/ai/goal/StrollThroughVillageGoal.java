@@ -41,7 +41,7 @@ public class StrollThroughVillageGoal extends Goal {
             return false;
          } else {
             Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, var1x -> (double)(-var1.sectionsToVillage(SectionPos.of(var1x))));
-            this.wantedPos = var3 == null ? null : new BlockPos(var3);
+            this.wantedPos = var3 == null ? null : BlockPos.containing(var3);
             return this.wantedPos != null;
          }
       }
@@ -62,7 +62,7 @@ public class StrollThroughVillageGoal extends Goal {
             Vec3 var4 = var3.subtract(var2);
             var2 = var4.scale(0.4).add(var2);
             Vec3 var5 = var2.subtract(var3).normalize().scale(10.0).add(var3);
-            BlockPos var6 = new BlockPos(var5);
+            BlockPos var6 = BlockPos.containing(var5);
             var6 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var6);
             if (!var1.moveTo((double)var6.getX(), (double)var6.getY(), (double)var6.getZ(), 1.0)) {
                this.moveRandomly();

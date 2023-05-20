@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
@@ -30,7 +30,7 @@ public class FollowBoatGoal extends Goal {
       boolean var2 = false;
 
       for(Boat var4 : var1) {
-         Entity var5 = var4.getControllingPassenger();
+         LivingEntity var5 = var4.getControllingPassenger();
          if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
             var2 = true;
             break;

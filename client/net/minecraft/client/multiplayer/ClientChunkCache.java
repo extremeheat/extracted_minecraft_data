@@ -81,6 +81,20 @@ public class ClientChunkCache extends ChunkSource {
       return this.level;
    }
 
+   public void replaceBiomes(int var1, int var2, FriendlyByteBuf var3) {
+      if (!this.storage.inRange(var1, var2)) {
+         LOGGER.warn("Ignoring chunk since it's not in the view range: {}, {}", var1, var2);
+      } else {
+         int var4 = this.storage.getIndex(var1, var2);
+         LevelChunk var5 = this.storage.chunks.get(var4);
+         if (!isValidChunk(var5, var1, var2)) {
+            LOGGER.warn("Ignoring chunk since it's not present: {}, {}", var1, var2);
+         } else {
+            var5.replaceBiomes(var3);
+         }
+      }
+   }
+
    @Nullable
    public LevelChunk replaceWithPacketData(
       int var1, int var2, FriendlyByteBuf var3, CompoundTag var4, Consumer<ClientboundLevelChunkPacketData.BlockEntityTagOutput> var5

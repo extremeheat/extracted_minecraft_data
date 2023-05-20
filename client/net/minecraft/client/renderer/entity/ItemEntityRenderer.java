@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
@@ -12,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
@@ -58,7 +58,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
       int var11 = this.getRenderAmount(var7);
       float var12 = 0.25F;
       float var13 = Mth.sin(((float)var1.getAge() + var3) / 10.0F + var1.bobOffs) * 0.1F + 0.1F;
-      float var14 = var9.getTransforms().getTransform(ItemTransforms.TransformType.GROUND).scale.y();
+      float var14 = var9.getTransforms().getTransform(ItemDisplayContext.GROUND).scale.y();
       var4.translate(0.0F, var13 + 0.25F * var14, 0.0F);
       float var15 = var1.getSpin(var3);
       var4.mulPose(Axis.YP.rotation(var15));
@@ -87,7 +87,7 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity> {
             }
          }
 
-         this.itemRenderer.render(var7, ItemTransforms.TransformType.GROUND, false, var4, var5, var6, OverlayTexture.NO_OVERLAY, var9);
+         this.itemRenderer.render(var7, ItemDisplayContext.GROUND, false, var4, var5, var6, OverlayTexture.NO_OVERLAY, var9);
          var4.popPose();
          if (!var10) {
             var4.translate(0.0F * var16, 0.0F * var17, 0.09375F * var18);

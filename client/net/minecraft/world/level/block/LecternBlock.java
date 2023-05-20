@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -149,7 +150,7 @@ public class LecternBlock extends BaseEntityBlock {
       return new LecternBlockEntity(var1, var2);
    }
 
-   public static boolean tryPlaceBook(@Nullable Player var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
+   public static boolean tryPlaceBook(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
       if (!var3.getValue(HAS_BOOK)) {
          if (!var1.isClientSide) {
             placeBook(var0, var1, var2, var3, var4);
@@ -163,19 +164,20 @@ public class LecternBlock extends BaseEntityBlock {
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static void placeBook(@Nullable Player var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
+   private static void placeBook(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof LecternBlockEntity var6) {
          var6.setBook(var4.split(1));
-         resetBookState(var1, var2, var3, true);
+         resetBookState(var0, var1, var2, var3, true);
          var1.playSound(null, var2, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var1.gameEvent(var0, GameEvent.BLOCK_CHANGE, var2);
       }
    }
 
-   public static void resetBookState(Level var0, BlockPos var1, BlockState var2, boolean var3) {
-      var0.setBlock(var1, var2.setValue(POWERED, Boolean.valueOf(false)).setValue(HAS_BOOK, Boolean.valueOf(var3)), 3);
-      updateBelow(var0, var1, var2);
+   public static void resetBookState(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3, boolean var4) {
+      BlockState var5 = var3.setValue(POWERED, Boolean.valueOf(false)).setValue(HAS_BOOK, Boolean.valueOf(var4));
+      var1.setBlock(var2, var5, 3);
+      var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var0, var5));
+      updateBelow(var1, var2, var3);
    }
 
    public static void signalPageChange(Level var0, BlockPos var1, BlockState var2) {

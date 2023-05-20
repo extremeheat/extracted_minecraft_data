@@ -32,7 +32,7 @@ public class GameNarrator {
       String var2 = var1.getString();
       if (this.getStatus().shouldNarrateSystem() && !var2.isEmpty()) {
          this.logNarratedMessage(var2);
-         this.narrator.say(var2, true);
+         this.narrator.say(var2, false);
       }
    }
 

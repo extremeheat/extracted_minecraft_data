@@ -3,11 +3,11 @@ package net.minecraft.client.gui.screens.inventory;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMenu> implements RecipeUpdateListener {
@@ -99,57 +100,65 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, INVENTORY_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      renderEntityInInventory(var5 + 51, var6 + 75, 30, (float)(var5 + 51) - this.xMouse, (float)(var6 + 75 - 50) - this.yMouse, this.minecraft.player);
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      renderEntityInInventoryFollowsMouse(
+         var1, var5 + 51, var6 + 75, 30, (float)(var5 + 51) - this.xMouse, (float)(var6 + 75 - 50) - this.yMouse, this.minecraft.player
+      );
    }
 
-   public static void renderEntityInInventory(int var0, int var1, int var2, float var3, float var4, LivingEntity var5) {
-      float var6 = (float)Math.atan((double)(var3 / 40.0F));
+   public static void renderEntityInInventoryFollowsMouse(PoseStack var0, int var1, int var2, int var3, float var4, float var5, LivingEntity var6) {
       float var7 = (float)Math.atan((double)(var4 / 40.0F));
-      PoseStack var8 = RenderSystem.getModelViewStack();
-      var8.pushPose();
-      var8.translate((float)var0, (float)var1, 1050.0F);
-      var8.scale(1.0F, 1.0F, -1.0F);
+      float var8 = (float)Math.atan((double)(var5 / 40.0F));
+      Quaternionf var9 = new Quaternionf().rotateZ(3.1415927F);
+      Quaternionf var10 = new Quaternionf().rotateX(var8 * 20.0F * 0.017453292F);
+      var9.mul(var10);
+      float var11 = var6.yBodyRot;
+      float var12 = var6.getYRot();
+      float var13 = var6.getXRot();
+      float var14 = var6.yHeadRotO;
+      float var15 = var6.yHeadRot;
+      var6.yBodyRot = 180.0F + var7 * 20.0F;
+      var6.setYRot(180.0F + var7 * 40.0F);
+      var6.setXRot(-var8 * 20.0F);
+      var6.yHeadRot = var6.getYRot();
+      var6.yHeadRotO = var6.getYRot();
+      renderEntityInInventory(var0, var1, var2, var3, var9, var10, var6);
+      var6.yBodyRot = var11;
+      var6.setYRot(var12);
+      var6.setXRot(var13);
+      var6.yHeadRotO = var14;
+      var6.yHeadRot = var15;
+   }
+
+   public static void renderEntityInInventory(PoseStack var0, int var1, int var2, int var3, Quaternionf var4, @Nullable Quaternionf var5, LivingEntity var6) {
+      double var7 = 1000.0;
+      PoseStack var9 = RenderSystem.getModelViewStack();
+      var9.pushPose();
+      var9.translate(0.0, 0.0, 1000.0);
       RenderSystem.applyModelViewMatrix();
-      PoseStack var9 = new PoseStack();
-      var9.translate(0.0F, 0.0F, 1000.0F);
-      var9.scale((float)var2, (float)var2, (float)var2);
-      Quaternionf var10 = new Quaternionf().rotateZ(3.1415927F);
-      Quaternionf var11 = new Quaternionf().rotateX(var7 * 20.0F * 0.017453292F);
-      var10.mul(var11);
-      var9.mulPose(var10);
-      float var12 = var5.yBodyRot;
-      float var13 = var5.getYRot();
-      float var14 = var5.getXRot();
-      float var15 = var5.yHeadRotO;
-      float var16 = var5.yHeadRot;
-      var5.yBodyRot = 180.0F + var6 * 20.0F;
-      var5.setYRot(180.0F + var6 * 40.0F);
-      var5.setXRot(-var7 * 20.0F);
-      var5.yHeadRot = var5.getYRot();
-      var5.yHeadRotO = var5.getYRot();
+      var0.pushPose();
+      var0.translate((double)var1, (double)var2, -950.0);
+      var0.mulPoseMatrix(new Matrix4f().scaling((float)var3, (float)var3, (float)(-var3)));
+      var0.mulPose(var4);
       Lighting.setupForEntityInInventory();
-      EntityRenderDispatcher var17 = Minecraft.getInstance().getEntityRenderDispatcher();
-      var11.conjugate();
-      var17.overrideCameraOrientation(var11);
-      var17.setRenderShadow(false);
-      MultiBufferSource.BufferSource var18 = Minecraft.getInstance().renderBuffers().bufferSource();
-      RenderSystem.runAsFancy(() -> var17.render(var5, 0.0, 0.0, 0.0, 0.0F, 1.0F, var9, var18, 15728880));
-      var18.endBatch();
-      var17.setRenderShadow(true);
-      var5.yBodyRot = var12;
-      var5.setYRot(var13);
-      var5.setXRot(var14);
-      var5.yHeadRotO = var15;
-      var5.yHeadRot = var16;
-      var8.popPose();
-      RenderSystem.applyModelViewMatrix();
+      EntityRenderDispatcher var10 = Minecraft.getInstance().getEntityRenderDispatcher();
+      if (var5 != null) {
+         var5.conjugate();
+         var10.overrideCameraOrientation(var5);
+      }
+
+      var10.setRenderShadow(false);
+      MultiBufferSource.BufferSource var11 = Minecraft.getInstance().renderBuffers().bufferSource();
+      RenderSystem.runAsFancy(() -> var10.render(var6, 0.0, 0.0, 0.0, 0.0F, 1.0F, var0, var11, 15728880));
+      var11.endBatch();
+      var10.setRenderShadow(true);
+      var0.popPose();
       Lighting.setupFor3DItems();
+      var9.popPose();
+      RenderSystem.applyModelViewMatrix();
    }
 
    @Override

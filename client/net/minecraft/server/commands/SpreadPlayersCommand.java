@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -241,7 +242,15 @@ public class SpreadPlayersCommand {
             var11 = var2[var7++];
          }
 
-         var10.teleportToWithTicket((double)Mth.floor(var11.x) + 0.5, (double)var11.getSpawnY(var1, var3), (double)Mth.floor(var11.z) + 0.5);
+         var10.teleportTo(
+            var1,
+            (double)Mth.floor(var11.x) + 0.5,
+            (double)var11.getSpawnY(var1, var3),
+            (double)Mth.floor(var11.z) + 0.5,
+            Set.of(),
+            var10.getYRot(),
+            var10.getXRot()
+         );
          double var20 = 1.7976931348623157E308;
 
          for(SpreadPlayersCommand.Position var17 : var2) {
@@ -339,7 +348,7 @@ public class SpreadPlayersCommand {
       }
 
       public boolean isSafe(BlockGetter var1, int var2) {
-         BlockPos var3 = new BlockPos(this.x, (double)(this.getSpawnY(var1, var2) - 1), this.z);
+         BlockPos var3 = BlockPos.containing(this.x, (double)(this.getSpawnY(var1, var2) - 1), this.z);
          BlockState var4 = var1.getBlockState(var3);
          Material var5 = var4.getMaterial();
          return var3.getY() < var2 && !var5.isLiquid() && var5 != Material.FIRE;

@@ -38,7 +38,7 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
          Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
             if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
-               return DataResult.error("Element " + var1 + " is not valid in current registry set");
+               return DataResult.error(() -> "Element " + var1 + " is not valid in current registry set");
             }
 
             return (DataResult<T>)var1.unwrap()
@@ -55,18 +55,18 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
          if (var4.isEmpty()) {
-            return DataResult.error("Registry does not exist: " + this.registryKey);
+            return DataResult.error(() -> "Registry does not exist: " + this.registryKey);
          } else {
             HolderGetter var5 = (HolderGetter)var4.get();
             DataResult var6 = ResourceLocation.CODEC.decode(var1, var2);
             if (var6.result().isEmpty()) {
                return !this.allowInline
-                  ? DataResult.error("Inline definitions not allowed here")
+                  ? DataResult.error(() -> "Inline definitions not allowed here")
                   : this.elementCodec.decode(var1, var2).map(var0 -> var0.mapFirst(Holder::direct));
             } else {
                Pair var7 = (Pair)var6.result().get();
                ResourceKey var8 = ResourceKey.create(this.registryKey, (ResourceLocation)var7.getFirst());
-               return ((DataResult)var5.get(var8).map(DataResult::success).orElseGet(() -> (T)DataResult.error("Failed to get element " + var8)))
+               return ((DataResult)var5.get(var8).map(DataResult::success).orElseGet(() -> (T)DataResult.error(() -> "Failed to get element " + var8)))
                   .map(var1x -> Pair.of(var1x, var7.getSecond()))
                   .setLifecycle(Lifecycle.stable());
             }

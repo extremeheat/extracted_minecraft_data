@@ -1,5 +1,6 @@
 package com.mojang.realmsclient.client;
 
+import com.google.gson.JsonArray;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.dto.BackupList;
 import com.mojang.realmsclient.dto.GuardedSerializer;
@@ -10,6 +11,7 @@ import com.mojang.realmsclient.dto.PingResult;
 import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.RealmsDescriptionDto;
 import com.mojang.realmsclient.dto.RealmsNews;
+import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerAddress;
 import com.mojang.realmsclient.dto.RealmsServerList;
@@ -27,6 +29,7 @@ import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.util.WorldGenerationInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -50,6 +53,7 @@ public class RealmsClient {
    private static final String OPS_RESOURCE = "ops";
    private static final String REGIONS_RESOURCE = "regions/ping/stat";
    private static final String TRIALS_RESOURCE = "trial";
+   private static final String NOTIFICATIONS_RESOURCE = "notifications";
    private static final String PATH_INITIALIZE = "/$WORLD_ID/initialize";
    private static final String PATH_GET_ACTIVTIES = "/$WORLD_ID";
    private static final String PATH_GET_LIVESTATS = "/liveplayerlist";
@@ -79,6 +83,8 @@ public class RealmsClient {
    private static final String PATH_CLIENT_COMPATIBLE = "/client/compatible";
    private static final String PATH_TOS_AGREED = "/tos/agreed";
    private static final String PATH_NEWS = "/v1/news";
+   private static final String PATH_MARK_NOTIFICATIONS_SEEN = "/seen";
+   private static final String PATH_DISMISS_NOTIFICATIONS = "/dismiss";
    private static final String PATH_STAGE_AVAILABLE = "/stageAvailable";
    private static final GuardedSerializer GSON = new GuardedSerializer();
 
@@ -133,6 +139,35 @@ public class RealmsClient {
       String var1 = this.url("worlds");
       String var2 = this.execute(Request.get(var1));
       return RealmsServerList.parse(var2);
+   }
+
+   public List<RealmsNotification> getNotifications() throws RealmsServiceException {
+      String var1 = this.url("notifications");
+      String var2 = this.execute(Request.get(var1));
+      List var3 = RealmsNotification.parseList(var2);
+      return var3.size() > 1 ? List.of((RealmsNotification)var3.get(0)) : var3;
+   }
+
+   private static JsonArray uuidListToJsonArray(List<UUID> var0) {
+      JsonArray var1 = new JsonArray();
+
+      for(UUID var3 : var0) {
+         if (var3 != null) {
+            var1.add(var3.toString());
+         }
+      }
+
+      return var1;
+   }
+
+   public void notificationsSeen(List<UUID> var1) throws RealmsServiceException {
+      String var2 = this.url("notifications/seen");
+      this.execute(Request.post(var2, GSON.toJson(uuidListToJsonArray(var1))));
+   }
+
+   public void notificationsDismiss(List<UUID> var1) throws RealmsServiceException {
+      String var2 = this.url("notifications/dismiss");
+      this.execute(Request.post(var2, GSON.toJson(uuidListToJsonArray(var1))));
    }
 
    public RealmsServer getOwnWorld(long var1) throws RealmsServiceException {

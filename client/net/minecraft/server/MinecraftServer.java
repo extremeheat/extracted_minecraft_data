@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -11,6 +12,7 @@ import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -20,13 +22,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.Proxy;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -156,7 +156,6 @@ import net.minecraft.world.level.storage.loot.LootTables;
 import net.minecraft.world.level.storage.loot.PredicateManager;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
 public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements CommandSource, AutoCloseable {
@@ -193,7 +192,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private boolean debugCommandProfilerDelayStart;
    private final ServerConnectionListener connection;
    private final ChunkProgressListenerFactory progressListenerFactory;
-   private final ServerStatus status = new ServerStatus();
+   @Nullable
+   private ServerStatus status;
+   @Nullable
+   private ServerStatus.Favicon statusIcon;
    private final RandomSource random = RandomSource.create();
    private final DataFixer fixerUpper;
    private String localIp;
@@ -630,11 +632,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          this.nextTickTime = Util.getMillis();
-         this.status.setDescription(Component.literal(this.motd));
-         this.status
-            .setVersion(new ServerStatus.Version(SharedConstants.getCurrentVersion().getName(), SharedConstants.getCurrentVersion().getProtocolVersion()));
-         this.status.setEnforcesSecureChat(this.enforceSecureProfile());
-         this.updateStatusIcon(this.status);
+         this.statusIcon = this.loadStatusIcon().orElse(null);
+         this.status = this.buildServerStatus();
 
          while(this.running) {
             long var1 = Util.getMillis() - this.nextTickTime;
@@ -758,23 +757,21 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       super.doRunTask(var1);
    }
 
-   private void updateStatusIcon(ServerStatus var1) {
-      Optional var2 = Optional.of(this.getFile("server-icon.png")).filter(File::isFile);
-      if (!var2.isPresent()) {
-         var2 = this.storageSource.getIconFile().map(Path::toFile).filter(File::isFile);
-      }
-
-      var2.ifPresent(var1x -> {
+   private Optional<ServerStatus.Favicon> loadStatusIcon() {
+      Optional var1 = Optional.of(this.getFile("server-icon.png").toPath())
+         .filter(var0 -> Files.isRegularFile(var0))
+         .or(() -> this.storageSource.getIconFile().filter(var0 -> Files.isRegularFile(var0)));
+      return var1.flatMap(var0 -> {
          try {
-            BufferedImage var2x = ImageIO.read(var1x);
-            Validate.validState(var2x.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
-            Validate.validState(var2x.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
-            ByteArrayOutputStream var3 = new ByteArrayOutputStream();
-            ImageIO.write(var2x, "PNG", var3);
-            byte[] var4 = Base64.getEncoder().encode(var3.toByteArray());
-            var1.setFavicon("data:image/png;base64," + new String(var4, StandardCharsets.UTF_8));
-         } catch (Exception var5) {
-            LOGGER.error("Couldn't load server icon", var5);
+            BufferedImage var1x = ImageIO.read(var0.toFile());
+            Preconditions.checkState(var1x.getWidth() == 64, "Must be 64 pixels wide");
+            Preconditions.checkState(var1x.getHeight() == 64, "Must be 64 pixels high");
+            ByteArrayOutputStream var2 = new ByteArrayOutputStream();
+            ImageIO.write(var1x, "PNG", var2);
+            return Optional.of(new ServerStatus.Favicon(var2.toByteArray()));
+         } catch (Exception var3) {
+            LOGGER.error("Couldn't load server icon", var3);
+            return Optional.empty();
          }
       });
    }
@@ -799,23 +796,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.tickChildren(var1);
       if (var2 - this.lastServerStatus >= 5000000000L) {
          this.lastServerStatus = var2;
-         this.status.setPlayers(new ServerStatus.Players(this.getMaxPlayers(), this.getPlayerCount()));
-         if (!this.hidesOnlinePlayers()) {
-            GameProfile[] var4 = new GameProfile[Math.min(this.getPlayerCount(), 12)];
-            int var5 = Mth.nextInt(this.random, 0, this.getPlayerCount() - var4.length);
-
-            for(int var6 = 0; var6 < var4.length; ++var6) {
-               ServerPlayer var7 = this.playerList.getPlayers().get(var5 + var6);
-               if (var7.allowsListing()) {
-                  var4[var6] = var7.getGameProfile();
-               } else {
-                  var4[var6] = ANONYMOUS_PLAYER_PROFILE;
-               }
-            }
-
-            Collections.shuffle(Arrays.asList(var4));
-            this.status.getPlayers().setSample(var4);
-         }
+         this.status = this.buildServerStatus();
       }
 
       if (this.tickCount % 6000 == 0) {
@@ -827,11 +808,42 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       this.profiler.push("tallying");
-      long var8 = this.tickTimes[this.tickCount % 100] = Util.getNanos() - var2;
-      this.averageTickTime = this.averageTickTime * 0.8F + (float)var8 / 1000000.0F * 0.19999999F;
-      long var9 = Util.getNanos();
-      this.frameTimer.logFrameDuration(var9 - var2);
+      long var4 = this.tickTimes[this.tickCount % 100] = Util.getNanos() - var2;
+      this.averageTickTime = this.averageTickTime * 0.8F + (float)var4 / 1000000.0F * 0.19999999F;
+      long var6 = Util.getNanos();
+      this.frameTimer.logFrameDuration(var6 - var2);
       this.profiler.pop();
+   }
+
+   private ServerStatus buildServerStatus() {
+      ServerStatus.Players var1 = this.buildPlayerStatus();
+      return new ServerStatus(
+         Component.nullToEmpty(this.motd),
+         Optional.of(var1),
+         Optional.of(ServerStatus.Version.current()),
+         Optional.ofNullable(this.statusIcon),
+         this.enforceSecureProfile()
+      );
+   }
+
+   private ServerStatus.Players buildPlayerStatus() {
+      List var1 = this.playerList.getPlayers();
+      int var2 = this.getMaxPlayers();
+      if (this.hidesOnlinePlayers()) {
+         return new ServerStatus.Players(var2, var1.size(), List.of());
+      } else {
+         int var3 = Math.min(var1.size(), 12);
+         ObjectArrayList var4 = new ObjectArrayList(var3);
+         int var5 = Mth.nextInt(this.random, 0, var1.size() - var3);
+
+         for(int var6 = 0; var6 < var3; ++var6) {
+            ServerPlayer var7 = (ServerPlayer)var1.get(var5 + var6);
+            var4.add(var7.allowsListing() ? var7.getGameProfile() : ANONYMOUS_PLAYER_PROFILE);
+         }
+
+         Util.shuffle(var4, this.random);
+         return new ServerStatus.Players(var2, var1.size(), var4);
+      }
    }
 
    public void tickChildren(BooleanSupplier var1) {
@@ -843,11 +855,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.profiler.push(() -> var3 + " " + var3.dimension().location());
          if (this.tickCount % 20 == 0) {
             this.profiler.push("timeSync");
-            this.playerList
-               .broadcastAll(
-                  new ClientboundSetTimePacket(var3.getGameTime(), var3.getDayTime(), var3.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)),
-                  var3.dimension()
-               );
+            this.synchronizeTime(var3);
             this.profiler.pop();
          }
 
@@ -877,6 +885,23 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       for(int var7 = 0; var7 < this.tickables.size(); ++var7) {
          this.tickables.get(var7).run();
+      }
+
+      this.profiler.pop();
+   }
+
+   private void synchronizeTime(ServerLevel var1) {
+      this.playerList
+         .broadcastAll(
+            new ClientboundSetTimePacket(var1.getGameTime(), var1.getDayTime(), var1.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)), var1.dimension()
+         );
+   }
+
+   public void forceTimeSynchronization() {
+      this.profiler.push("timeSync");
+
+      for(ServerLevel var2 : this.getAllLevels()) {
+         this.synchronizeTime(var2);
       }
 
       this.profiler.pop();
@@ -1199,6 +1224,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.services.profileCache();
    }
 
+   @Nullable
    public ServerStatus getStatus() {
       return this.status;
    }

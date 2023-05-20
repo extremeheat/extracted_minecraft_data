@@ -6,9 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.EntityDamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -97,7 +97,7 @@ public class Silverfish extends Monster {
       if (this.isInvulnerableTo(var1)) {
          return false;
       } else {
-         if ((var1 instanceof EntityDamageSource || var1 == DamageSource.MAGIC) && this.friendsGoal != null) {
+         if ((var1.getEntity() != null || var1.is(DamageTypeTags.ALWAYS_TRIGGERS_SILVERFISH)) && this.friendsGoal != null) {
             this.friendsGoal.notifyHurt();
          }
 
@@ -156,7 +156,7 @@ public class Silverfish extends Monster {
             RandomSource var1 = this.mob.getRandom();
             if (this.mob.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
                this.selectedDirection = Direction.getRandom(var1);
-               BlockPos var2 = new BlockPos(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+               BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
                BlockState var3 = this.mob.level.getBlockState(var2);
                if (InfestedBlock.isCompatibleHostBlock(var3)) {
                   this.doMerge = true;
@@ -180,7 +180,7 @@ public class Silverfish extends Monster {
             super.start();
          } else {
             Level var1 = this.mob.level;
-            BlockPos var2 = new BlockPos(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+            BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
             BlockState var3 = var1.getBlockState(var2);
             if (InfestedBlock.isCompatibleHostBlock(var3)) {
                var1.setBlock(var2, InfestedBlock.infestedStateByHost(var3), 3);

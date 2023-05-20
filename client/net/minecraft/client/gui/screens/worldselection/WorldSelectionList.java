@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -27,7 +28,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -39,7 +39,6 @@ import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -54,7 +53,6 @@ import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
 public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.Entry> {
@@ -194,19 +192,9 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       return super.getRowWidth() + 50;
    }
 
-   @Override
-   protected boolean isFocused() {
-      return this.screen.getFocused() == this;
-   }
-
    public void setSelected(@Nullable WorldSelectionList.Entry var1) {
       super.setSelected(var1);
-      this.screen.updateButtonStatus(var1 != null && var1.isSelectable());
-   }
-
-   @Override
-   protected void moveSelection(AbstractSelectionList.SelectionDirection var1) {
-      this.moveSelection(var1, WorldSelectionList.Entry::isSelectable);
+      this.screen.updateButtonStatus(var1 != null && var1.isSelectable(), var1 != null);
    }
 
    public Optional<WorldSelectionList.WorldListEntry> getSelectedOpt() {
@@ -340,8 +328,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
          this.minecraft.font.draw(var1, var11, (float)(var4 + 32 + 3), (float)(var3 + 1), 16777215);
          this.minecraft.font.draw(var1, var12, (float)(var4 + 32 + 3), (float)(var3 + 9 + 3), 8421504);
          this.minecraft.font.draw(var1, var13, (float)(var4 + 32 + 3), (float)(var3 + 9 + 9 + 3), 8421504);
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.setShaderTexture(0, this.icon != null ? this.iconLocation : WorldSelectionList.ICON_MISSING);
          RenderSystem.enableBlend();
          GuiComponent.blit(var1, var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
@@ -349,8 +335,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
          if (this.minecraft.options.touchscreen().get() || var9) {
             RenderSystem.setShaderTexture(0, WorldSelectionList.ICON_OVERLAY_LOCATION);
             GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int var14 = var7 - var4;
             boolean var15 = var14 < 32;
             int var16 = var15 ? 32 : 0;
@@ -399,7 +383,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             return true;
          } else {
             WorldSelectionList.this.setSelected((WorldSelectionList.Entry)this);
-            this.screen.updateButtonStatus(WorldSelectionList.this.getSelectedOpt().isPresent());
             if (var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0) {
                this.joinWorld();
                return true;
@@ -408,7 +391,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                return true;
             } else {
                this.lastClickTime = Util.getMillis();
-               return false;
+               return true;
             }
          }
       }
@@ -546,7 +529,8 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                this.minecraft
                   .setScreen(
                      new ConfirmScreen(
-                        var4x -> this.minecraft.setScreen((Screen)(var4x ? CreateWorldScreen.createFromExisting(this.screen, var3, var4, var5) : this.screen)),
+                        var4x -> this.minecraft
+                              .setScreen((Screen)(var4x ? CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5) : this.screen)),
                         Component.translatable("selectWorld.recreate.customized.title"),
                         Component.translatable("selectWorld.recreate.customized.text"),
                         CommonComponents.GUI_PROCEED,
@@ -554,7 +538,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                      )
                   );
             } else {
-               this.minecraft.setScreen(CreateWorldScreen.createFromExisting(this.screen, var3, var4, var5));
+               this.minecraft.setScreen(CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5));
             }
          } catch (Exception var8) {
             WorldSelectionList.LOGGER.error("Unable to recreate world", var8);
@@ -589,8 +573,8 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                DynamicTexture var5;
                try (InputStream var2 = Files.newInputStream(this.iconFile)) {
                   NativeImage var3 = NativeImage.read(var2);
-                  Validate.validState(var3.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
-                  Validate.validState(var3.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
+                  Preconditions.checkState(var3.getWidth() == 64, "Must be 64 pixels wide");
+                  Preconditions.checkState(var3.getHeight() == 64, "Must be 64 pixels high");
                   DynamicTexture var4 = new DynamicTexture(var3);
                   this.minecraft.getTextureManager().register(this.iconLocation, var4);
                   var5 = var4;

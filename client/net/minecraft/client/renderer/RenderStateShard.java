@@ -19,6 +19,7 @@ import org.joml.Matrix4f;
 
 public abstract class RenderStateShard {
    private static final float VIEW_SCALE_Z_EPSILON = 0.99975586F;
+   public static final double MAX_ENCHANTMENT_GLINT_SPEED_MILLIS = 8.0;
    protected final String name;
    private final Runnable setupState;
    private final Runnable clearState;
@@ -206,11 +207,17 @@ public abstract class RenderStateShard {
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeTextShader
    );
+   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_BACKGROUND_SHADER = new RenderStateShard.ShaderStateShard(
+      GameRenderer::getRendertypeTextBackgroundShader
+   );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_INTENSITY_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeTextIntensityShader
    );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_SEE_THROUGH_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeTextSeeThroughShader
+   );
+   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_BACKGROUND_SEE_THROUGH_SHADER = new RenderStateShard.ShaderStateShard(
+      GameRenderer::getRendertypeTextBackgroundSeeThroughShader
    );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TEXT_INTENSITY_SEE_THROUGH_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeTextIntensitySeeThroughShader
@@ -356,7 +363,7 @@ public abstract class RenderStateShard {
    }
 
    private static void setupGlintTexturing(float var0) {
-      long var1 = Util.getMillis() * 8L;
+      long var1 = (long)((double)Util.getMillis() * Minecraft.getInstance().options.glintSpeed().get() * 8.0);
       float var3 = (float)(var1 % 110000L) / 110000.0F;
       float var4 = (float)(var1 % 30000L) / 30000.0F;
       Matrix4f var5 = new Matrix4f().translation(-var3, var4, 0.0F);
@@ -580,7 +587,6 @@ public abstract class RenderStateShard {
 
       public TextureStateShard(ResourceLocation var1, boolean var2, boolean var3) {
          super(() -> {
-            RenderSystem.enableTexture();
             TextureManager var3x = Minecraft.getInstance().getTextureManager();
             var3x.getTexture(var1).setFilter(var2, var3);
             RenderSystem.setShaderTexture(0, var1);

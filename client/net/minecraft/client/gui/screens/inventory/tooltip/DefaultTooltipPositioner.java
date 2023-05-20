@@ -13,7 +13,7 @@ public class DefaultTooltipPositioner implements ClientTooltipPositioner {
 
    @Override
    public Vector2ic positionTooltip(Screen var1, int var2, int var3, int var4, int var5) {
-      Vector2i var6 = new Vector2i(var2, var3);
+      Vector2i var6 = new Vector2i(var2, var3).add(12, -12);
       this.positionTooltip(var1, var6, var4, var5);
       return var6;
    }

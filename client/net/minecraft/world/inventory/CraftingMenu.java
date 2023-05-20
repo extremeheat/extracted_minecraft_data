@@ -62,7 +62,7 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
          if (var7.isPresent()) {
             CraftingRecipe var8 = (CraftingRecipe)var7.get();
             if (var4.setRecipeUsed(var1, var5, var8)) {
-               ItemStack var9 = var8.assemble(var3);
+               ItemStack var9 = var8.assemble(var3, var1.registryAccess());
                if (var9.isItemEnabled(var1.enabledFeatures())) {
                   var6 = var9;
                }
@@ -136,7 +136,7 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
          }
 
          if (var5.isEmpty()) {
-            var4.set(ItemStack.EMPTY);
+            var4.setByPlayer(ItemStack.EMPTY);
          } else {
             var4.setChanged();
          }

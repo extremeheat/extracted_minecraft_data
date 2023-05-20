@@ -77,19 +77,16 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    @Override
-   public Entity getControllingPassenger() {
-      Entity var1 = this.getFirstPassenger();
-      return var1 != null && this.canBeControlledBy(var1) ? var1 : null;
-   }
-
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private boolean canBeControlledBy(Entity var1) {
-      if (this.isSaddled() && var1 instanceof Player var2) {
-         return var2.getMainHandItem().is(Items.CARROT_ON_A_STICK) || var2.getOffhandItem().is(Items.CARROT_ON_A_STICK);
-      } else {
-         return false;
+   public LivingEntity getControllingPassenger() {
+      if (this.isSaddled()) {
+         Entity var2 = this.getFirstPassenger();
+         if (var2 instanceof Player var1
+            && (((Player)var1).getMainHandItem().is(Items.CARROT_ON_A_STICK) || ((Player)var1).getOffhandItem().is(Items.CARROT_ON_A_STICK))) {
+            return (LivingEntity)var1;
+         }
       }
+
+      return null;
    }
 
    @Override
@@ -244,18 +241,21 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   public void travel(Vec3 var1) {
-      this.travel(this, this.steering, var1);
+   protected void tickRidden(LivingEntity var1, Vec3 var2) {
+      super.tickRidden(var1, var2);
+      this.setRot(var1.getYRot(), var1.getXRot() * 0.5F);
+      this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+      this.steering.tickBoost();
    }
 
    @Override
-   public float getSteeringSpeed() {
-      return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.225F;
+   protected Vec3 getRiddenInput(LivingEntity var1, Vec3 var2) {
+      return new Vec3(0.0, 0.0, 1.0);
    }
 
    @Override
-   public void travelWithInput(Vec3 var1) {
-      super.travel(var1);
+   protected float getRiddenSpeed(LivingEntity var1) {
+      return (float)(this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.225 * (double)this.steering.boostFactor());
    }
 
    @Override

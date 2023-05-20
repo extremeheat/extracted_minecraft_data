@@ -39,7 +39,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             if (this.stackedContents.canCraft(var2, null)) {
                this.handleRecipeClicked(var2, var3);
             } else {
-               this.clearGrid(true);
+               this.clearGrid();
                var1.connection.send(new ClientboundPlaceGhostRecipePacket(var1.containerMenu.containerId, var2));
             }
 
@@ -48,12 +48,12 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       }
    }
 
-   protected void clearGrid(boolean var1) {
-      for(int var2 = 0; var2 < this.menu.getSize(); ++var2) {
-         if (this.menu.shouldMoveToInventory(var2)) {
-            ItemStack var3 = this.menu.getSlot(var2).getItem().copy();
-            this.inventory.placeItemBackInInventory(var3, false);
-            this.menu.getSlot(var2).set(var3);
+   protected void clearGrid() {
+      for(int var1 = 0; var1 < this.menu.getSize(); ++var1) {
+         if (this.menu.shouldMoveToInventory(var1)) {
+            ItemStack var2 = this.menu.getSlot(var1).getItem().copy();
+            this.inventory.placeItemBackInInventory(var2, false);
+            this.menu.getSlot(var1).set(var2);
          }
       }
 
@@ -89,7 +89,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
          }
 
          if (this.stackedContents.canCraft(var1, var12, var7)) {
-            this.clearGrid(false);
+            this.clearGrid();
             this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var12.iterator(), var7);
          }
       }

@@ -148,6 +148,8 @@ public class Spider extends Monster {
       this.entityData.set(DATA_FLAGS_ID, var2);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public SpawnGroupData finalizeSpawn(
@@ -171,10 +173,10 @@ public class Spider extends Monster {
          }
       }
 
-      if (var4 instanceof Spider.SpiderEffectsGroupData) {
-         MobEffect var9 = ((Spider.SpiderEffectsGroupData)var4).effect;
-         if (var9 != null) {
-            this.addEffect(new MobEffectInstance(var9, 2147483647));
+      if (var4 instanceof Spider.SpiderEffectsGroupData var10) {
+         MobEffect var8 = var10.effect;
+         if (var8 != null) {
+            this.addEffect(new MobEffectInstance(var8, -1));
          }
       }
 

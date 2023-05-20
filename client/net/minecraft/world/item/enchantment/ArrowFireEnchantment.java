@@ -16,9 +16,4 @@ public class ArrowFireEnchantment extends Enchantment {
    public int getMaxCost(int var1) {
       return 50;
    }
-
-   @Override
-   public int getMaxLevel() {
-      return 1;
-   }
 }

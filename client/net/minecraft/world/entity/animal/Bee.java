@@ -224,7 +224,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(DamageSource.sting(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      boolean var2 = var1.hurt(this.damageSources().sting(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
       if (var2) {
          this.doEnchantDamageEffects(this, var1);
          if (var1 instanceof LivingEntity) {
@@ -362,13 +362,13 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       if (this.underWaterTicks > 20) {
-         this.hurt(DamageSource.DROWN, 1.0F);
+         this.hurt(this.damageSources().drown(), 1.0F);
       }
 
       if (var1) {
          ++this.timeSinceSting;
          if (this.timeSinceSting % 5 == 0 && this.random.nextInt(Mth.clamp(1200 - this.timeSinceSting, 1, 1200)) == 0) {
-            this.hurt(DamageSource.GENERIC, this.getHealth());
+            this.hurt(this.damageSources().generic(), this.getHealth());
          }
       }
 
@@ -613,11 +613,6 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
       return this.isBaby() ? var2.height * 0.5F : var2.height * 0.5F;
-   }
-
-   @Override
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      return false;
    }
 
    @Override
@@ -1313,7 +1308,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       public void start() {
          Vec3 var1 = this.findPos();
          if (var1 != null) {
-            Bee.this.navigation.moveTo(Bee.this.navigation.createPath(new BlockPos(var1), 1), 1.0);
+            Bee.this.navigation.moveTo(Bee.this.navigation.createPath(BlockPos.containing(var1), 1), 1.0);
          }
       }
 

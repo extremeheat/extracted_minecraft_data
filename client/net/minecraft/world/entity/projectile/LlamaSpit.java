@@ -3,7 +3,6 @@ package net.minecraft.world.entity.projectile;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,9 +58,9 @@ public class LlamaSpit extends Projectile {
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      Entity var2 = this.getOwner();
-      if (var2 instanceof LivingEntity) {
-         var1.getEntity().hurt(DamageSource.indirectMobAttack(this, (LivingEntity)var2).setProjectile(), 1.0F);
+      Entity var3 = this.getOwner();
+      if (var3 instanceof LivingEntity var2) {
+         var1.getEntity().hurt(this.damageSources().mobProjectile(this, (LivingEntity)var2), 1.0F);
       }
    }
 

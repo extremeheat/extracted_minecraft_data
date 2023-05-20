@@ -191,7 +191,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
 
    private static boolean tryTakeInItemFromSlot(Hopper var0, Container var1, int var2, Direction var3) {
       ItemStack var4 = var1.getItem(var2);
-      if (!var4.isEmpty() && canTakeItemFromContainer(var1, var4, var2, var3)) {
+      if (!var4.isEmpty() && canTakeItemFromContainer(var0, var1, var4, var2, var3)) {
          ItemStack var5 = var4.copy();
          ItemStack var6 = addItem(var1, var0, var1.removeItem(var2, 1), null);
          if (var6.isEmpty()) {
@@ -222,18 +222,20 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static ItemStack addItem(@Nullable Container var0, Container var1, ItemStack var2, @Nullable Direction var3) {
-      if (var1 instanceof WorldlyContainer var7 && var3 != null) {
-         int[] var8 = var7.getSlotsForFace(var3);
+      if (var1 instanceof WorldlyContainer var4 && var3 != null) {
+         int[] var7 = var4.getSlotsForFace(var3);
 
-         for(int var6 = 0; var6 < var8.length && !var2.isEmpty(); ++var6) {
-            var2 = tryMoveInItem(var0, var1, var2, var8[var6], var3);
+         for(int var8 = 0; var8 < var7.length && !var2.isEmpty(); ++var8) {
+            var2 = tryMoveInItem(var0, var1, var2, var7[var8], var3);
          }
-      } else {
-         int var4 = var1.getContainerSize();
 
-         for(int var5 = 0; var5 < var4 && !var2.isEmpty(); ++var5) {
-            var2 = tryMoveInItem(var0, var1, var2, var5, var3);
-         }
+         return var2;
+      }
+
+      int var5 = var1.getContainerSize();
+
+      for(int var6 = 0; var6 < var5 && !var2.isEmpty(); ++var6) {
+         var2 = tryMoveInItem(var0, var1, var2, var6, var3);
       }
 
       return var2;
@@ -243,12 +245,24 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       if (!var0.canPlaceItem(var2, var1)) {
          return false;
       } else {
-         return !(var0 instanceof WorldlyContainer) || ((WorldlyContainer)var0).canPlaceItemThroughFace(var2, var1, var3);
+         if (var0 instanceof WorldlyContainer var4 && !var4.canPlaceItemThroughFace(var2, var1, var3)) {
+            return false;
+         }
+
+         return true;
       }
    }
 
-   private static boolean canTakeItemFromContainer(Container var0, ItemStack var1, int var2, Direction var3) {
-      return !(var0 instanceof WorldlyContainer) || ((WorldlyContainer)var0).canTakeItemThroughFace(var2, var1, var3);
+   private static boolean canTakeItemFromContainer(Container var0, Container var1, ItemStack var2, int var3, Direction var4) {
+      if (!var1.canTakeItem(var0, var3, var2)) {
+         return false;
+      } else {
+         if (var1 instanceof WorldlyContainer var5 && !var5.canTakeItemThroughFace(var3, var2, var4)) {
+            return false;
+         }
+
+         return true;
+      }
    }
 
    // $QF: Could not properly define all variable types!
@@ -319,7 +333,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    @Nullable
    private static Container getContainerAt(Level var0, double var1, double var3, double var5) {
       Object var7 = null;
-      BlockPos var8 = new BlockPos(var1, var3, var5);
+      BlockPos var8 = BlockPos.containing(var1, var3, var5);
       BlockState var9 = var0.getBlockState(var8);
       Block var10 = var9.getBlock();
       if (var10 instanceof WorldlyContainerHolder) {
@@ -351,10 +365,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
          return false;
       } else if (var0.getDamageValue() != var1.getDamageValue()) {
          return false;
-      } else if (var0.getCount() > var0.getMaxStackSize()) {
-         return false;
       } else {
-         return ItemStack.tagMatches(var0, var1);
+         return var0.getCount() > var0.getMaxStackSize() ? false : ItemStack.tagMatches(var0, var1);
       }
    }
 

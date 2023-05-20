@@ -101,7 +101,7 @@ public class Raids extends SavedData {
             BlockPos var4;
             if (var6 > 0) {
                var7 = var7.scale(1.0 / (double)var6);
-               var4 = new BlockPos(var7);
+               var4 = BlockPos.containing(var7);
             } else {
                var4 = var3;
             }

@@ -2,7 +2,6 @@ package net.minecraft.world.entity.decoration;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -36,6 +35,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
       Painting.class, EntityDataSerializers.PAINTING_VARIANT
    );
    private static final ResourceKey<PaintingVariant> DEFAULT_VARIANT = PaintingVariants.KEBAB;
+   public static final String VARIANT_TAG = "variant";
 
    private static Holder<PaintingVariant> getDefaultVariant() {
       return BuiltInRegistries.PAINTING_VARIANT.getHolderOrThrow(DEFAULT_VARIANT);
@@ -110,22 +110,28 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
 
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
-      var1.putString("variant", this.getVariant().unwrapKey().orElse(DEFAULT_VARIANT).location().toString());
+      storeVariant(var1, this.getVariant());
       var1.putByte("facing", (byte)this.direction.get2DDataValue());
       super.addAdditionalSaveData(var1);
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
-      Holder var2 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
-         .map(var0 -> ResourceKey.create(Registries.PAINTING_VARIANT, var0))
-         .flatMap(BuiltInRegistries.PAINTING_VARIANT::getHolder)
-         .map((Function<? super Holder.Reference<PaintingVariant>, ? extends Holder.Reference<PaintingVariant>>)(var0 -> var0))
-         .orElseGet(Painting::getDefaultVariant);
+      Holder var2 = loadVariant(var1).orElseGet(Painting::getDefaultVariant);
       this.setVariant(var2);
       this.direction = Direction.from2DDataValue(var1.getByte("facing"));
       super.readAdditionalSaveData(var1);
       this.setDirection(this.direction);
+   }
+
+   public static void storeVariant(CompoundTag var0, Holder<PaintingVariant> var1) {
+      var0.putString("variant", var1.unwrapKey().orElse(DEFAULT_VARIANT).location().toString());
+   }
+
+   public static Optional<Holder<PaintingVariant>> loadVariant(CompoundTag var0) {
+      return Optional.ofNullable(ResourceLocation.tryParse(var0.getString("variant")))
+         .map(var0x -> ResourceKey.create(Registries.PAINTING_VARIANT, var0x))
+         .flatMap(BuiltInRegistries.PAINTING_VARIANT::getHolder);
    }
 
    @Override

@@ -50,25 +50,26 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
             this.menu.exit();
          } else {
             int var3 = this.minecraft.getWindow().getGuiScaledWidth() / 2;
-            int var4 = this.getBlitOffset();
-            this.setBlitOffset(-90);
-            int var5 = Mth.floor((float)this.minecraft.getWindow().getGuiScaledHeight() - 22.0F * var2);
-            SpectatorPage var6 = this.menu.getCurrentPage();
-            this.renderPage(var1, var2, var3, var5, var6);
-            this.setBlitOffset(var4);
+            var1.pushPose();
+            var1.translate(0.0F, 0.0F, -90.0F);
+            int var4 = Mth.floor((float)this.minecraft.getWindow().getGuiScaledHeight() - 22.0F * var2);
+            SpectatorPage var5 = this.menu.getCurrentPage();
+            this.renderPage(var1, var2, var3, var4, var5);
+            var1.popPose();
          }
       }
    }
 
    protected void renderPage(PoseStack var1, float var2, int var3, int var4, SpectatorPage var5) {
       RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var2);
       RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-      this.blit(var1, var3 - 91, var4, 0, 0, 182, 22);
+      blit(var1, var3 - 91, var4, 0, 0, 182, 22);
       if (var5.getSelectedSlot() >= 0) {
-         this.blit(var1, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 0, 22, 24, 22);
+         blit(var1, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 0, 22, 24, 22);
       }
+
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
       for(int var6 = 0; var6 < 9; ++var6) {
          this.renderSlot(var1, var6, this.minecraft.getWindow().getGuiScaledWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
@@ -86,6 +87,7 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
          float var8 = var6.isEnabled() ? 1.0F : 0.25F;
          RenderSystem.setShaderColor(var8, var8, var8, var5);
          var6.renderIcon(var1, var8, var7);
+         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          var1.popPose();
          if (var7 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
@@ -102,10 +104,7 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
          if (var4 != null) {
             int var5 = (this.minecraft.getWindow().getGuiScaledWidth() - this.minecraft.font.width(var4)) / 2;
             int var6 = this.minecraft.getWindow().getGuiScaledHeight() - 35;
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
             this.minecraft.font.drawShadow(var1, var4, (float)var5, (float)var6, 16777215 + (var2 << 24));
-            RenderSystem.disableBlend();
          }
       }
    }

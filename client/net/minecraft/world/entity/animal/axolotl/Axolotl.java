@@ -112,7 +112,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
       this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
       this.moveControl = new Axolotl.AxolotlMoveControl(this);
       this.lookControl = new Axolotl.AxolotlLookControl(this, 20);
-      this.maxUpStep = 1.0F;
+      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -194,7 +194,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
          this.setAirSupply(var1 - 1);
          if (this.getAirSupply() == -20) {
             this.setAirSupply(0);
-            this.hurt(DamageSource.DRY_OUT, 2.0F);
+            this.hurt(this.damageSources().dryOut(), 2.0F);
          }
       } else {
          this.setAirSupply(this.getMaxAirSupply());
@@ -320,7 +320,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(DamageSource.mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
       if (var2) {
          this.doEnchantDamageEffects(this, var1);
          this.playSound(SoundEvents.AXOLOTL_ATTACK, 1.0F, 1.0F);
@@ -425,10 +425,10 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
 
    public void applySupportingEffects(Player var1) {
       MobEffectInstance var2 = var1.getEffect(MobEffects.REGENERATION);
-      int var3 = var2 != null ? var2.getDuration() : 0;
-      if (var3 < 2400) {
-         var3 = Math.min(2400, 100 + var3);
-         var1.addEffect(new MobEffectInstance(MobEffects.REGENERATION, var3, 0), this);
+      if (var2 == null || var2.endsWithin(2399)) {
+         int var3 = var2 != null ? var2.getDuration() : 0;
+         int var4 = Math.min(2400, 100 + var3);
+         var1.addEffect(new MobEffectInstance(MobEffects.REGENERATION, var4, 0), this);
       }
 
       var1.removeEffect(MobEffects.DIG_SLOWDOWN);
@@ -489,7 +489,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

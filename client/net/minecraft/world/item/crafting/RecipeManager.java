@@ -102,7 +102,7 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
          .values()
          .stream()
          .filter(var2x -> var2x.matches(var2, var3))
-         .sorted(Comparator.comparing(var0 -> var0.getResultItem().getDescriptionId()))
+         .sorted(Comparator.comparing(var1x -> var1x.getResultItem(var3.registryAccess()).getDescriptionId()))
          .collect(Collectors.toList());
    }
 

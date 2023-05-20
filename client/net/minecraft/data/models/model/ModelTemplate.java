@@ -40,22 +40,34 @@ public class ModelTemplate {
    }
 
    public ResourceLocation create(ResourceLocation var1, TextureMapping var2, BiConsumer<ResourceLocation, Supplier<JsonElement>> var3) {
-      Map var4 = this.createMap(var2);
-      var3.accept(var1, () -> {
-         JsonObject var2x = new JsonObject();
-         this.model.ifPresent(var1xx -> var2x.addProperty("parent", var1xx.toString()));
-         if (!var4.isEmpty()) {
-            JsonObject var3x = new JsonObject();
-            var4.forEach((var1xx, var2xx) -> var3x.addProperty(var1xx.getId(), var2xx.toString()));
-            var2x.add("textures", var3x);
-         }
+      return this.create(var1, var2, var3, this::createBaseTemplate);
+   }
 
-         return var2x;
-      });
+   public ResourceLocation create(
+      ResourceLocation var1, TextureMapping var2, BiConsumer<ResourceLocation, Supplier<JsonElement>> var3, ModelTemplate.JsonFactory var4
+   ) {
+      Map var5 = this.createMap(var2);
+      var3.accept(var1, () -> var4.create(var1, var5));
       return var1;
+   }
+
+   public JsonObject createBaseTemplate(ResourceLocation var1, Map<TextureSlot, ResourceLocation> var2) {
+      JsonObject var3 = new JsonObject();
+      this.model.ifPresent(var1x -> var3.addProperty("parent", var1x.toString()));
+      if (!var2.isEmpty()) {
+         JsonObject var4 = new JsonObject();
+         var2.forEach((var1x, var2x) -> var4.addProperty(var1x.getId(), var2x.toString()));
+         var3.add("textures", var4);
+      }
+
+      return var3;
    }
 
    private Map<TextureSlot, ResourceLocation> createMap(TextureMapping var1) {
       return Streams.concat(new Stream[]{this.requiredSlots.stream(), var1.getForced()}).collect(ImmutableMap.toImmutableMap(Function.identity(), var1::get));
+   }
+
+   public interface JsonFactory {
+      JsonObject create(ResourceLocation var1, Map<TextureSlot, ResourceLocation> var2);
    }
 }

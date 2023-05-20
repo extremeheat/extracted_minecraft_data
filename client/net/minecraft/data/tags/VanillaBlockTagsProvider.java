@@ -431,6 +431,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.WALL_CORALS)
          .add(Blocks.TUBE_CORAL_WALL_FAN, Blocks.BRAIN_CORAL_WALL_FAN, Blocks.BUBBLE_CORAL_WALL_FAN, Blocks.FIRE_CORAL_WALL_FAN, Blocks.HORN_CORAL_WALL_FAN);
       this.tag(BlockTags.SAND).add(Blocks.SAND, Blocks.RED_SAND);
+      this.tag(BlockTags.SMELTS_TO_GLASS).add(Blocks.SAND, Blocks.RED_SAND);
       this.tag(BlockTags.RAILS).add(Blocks.RAIL, Blocks.POWERED_RAIL, Blocks.DETECTOR_RAIL, Blocks.ACTIVATOR_RAIL);
       this.tag(BlockTags.CORAL_BLOCKS)
          .add(Blocks.TUBE_CORAL_BLOCK, Blocks.BRAIN_CORAL_BLOCK, Blocks.BUBBLE_CORAL_BLOCK, Blocks.FIRE_CORAL_BLOCK, Blocks.HORN_CORAL_BLOCK);
@@ -1317,7 +1318,9 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.GEODE_INVALID_BLOCKS).add(Blocks.BEDROCK, Blocks.WATER, Blocks.LAVA, Blocks.ICE, Blocks.PACKED_ICE, Blocks.BLUE_ICE);
       this.tag(BlockTags.ANIMALS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK);
       this.tag(BlockTags.AXOLOTLS_SPAWNABLE_ON).add(Blocks.CLAY);
-      this.tag(BlockTags.GOATS_SPAWNABLE_ON).add(Blocks.STONE, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.PACKED_ICE, Blocks.GRAVEL);
+      this.tag(BlockTags.GOATS_SPAWNABLE_ON)
+         .addTag(BlockTags.ANIMALS_SPAWNABLE_ON)
+         .add(Blocks.STONE, Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.PACKED_ICE, Blocks.GRAVEL);
       this.tag(BlockTags.MOOSHROOMS_SPAWNABLE_ON).add(Blocks.MYCELIUM);
       this.tag(BlockTags.PARROTS_SPAWNABLE_ON).add(Blocks.GRASS_BLOCK, Blocks.AIR).addTag(BlockTags.LEAVES).addTag(BlockTags.LOGS);
       this.tag(BlockTags.POLAR_BEARS_SPAWNABLE_ON_ALTERNATE).add(Blocks.ICE);

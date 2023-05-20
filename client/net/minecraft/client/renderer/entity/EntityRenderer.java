@@ -29,7 +29,7 @@ public abstract class EntityRenderer<T extends Entity> {
    }
 
    public final int getPackedLightCoords(T var1, float var2) {
-      BlockPos var3 = new BlockPos(var1.getLightProbePosition(var2));
+      BlockPos var3 = BlockPos.containing(var1.getLightProbePosition(var2));
       return LightTexture.pack(this.getBlockLightLevel((T)var1, var3), this.getSkyLightLevel((T)var1, var3));
    }
 
@@ -91,9 +91,11 @@ public abstract class EntityRenderer<T extends Entity> {
          int var13 = (int)(var12 * 255.0F) << 24;
          Font var14 = this.getFont();
          float var15 = (float)(-var14.width(var2) / 2);
-         var14.drawInBatch(var2, var15, (float)var10, 553648127, false, var11, var4, var8, var13, var5);
+         var14.drawInBatch(
+            var2, var15, (float)var10, 553648127, false, var11, var4, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var13, var5
+         );
          if (var8) {
-            var14.drawInBatch(var2, var15, (float)var10, -1, false, var11, var4, false, 0, var5);
+            var14.drawInBatch(var2, var15, (float)var10, -1, false, var11, var4, Font.DisplayMode.NORMAL, 0, var5);
          }
 
          var3.popPose();

@@ -178,7 +178,8 @@ public class Arrow extends AbstractArrow {
 
       for(MobEffectInstance var4 : this.potion.getEffects()) {
          var1.addEffect(
-            new MobEffectInstance(var4.getEffect(), Math.max(var4.getDuration() / 8, 1), var4.getAmplifier(), var4.isAmbient(), var4.isVisible()), var2
+            new MobEffectInstance(var4.getEffect(), Math.max(var4.mapDuration(var0 -> var0 / 8), 1), var4.getAmplifier(), var4.isAmbient(), var4.isVisible()),
+            var2
          );
       }
 

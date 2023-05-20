@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.reporting;
 
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -10,7 +9,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.Optionull;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -102,7 +101,7 @@ public class ChatReportScreen extends Screen {
             .bounds(this.contentLeft(), this.selectChatTop(), 280, 20)
             .build()
       );
-      Component var6 = Util.mapNullable(var3, ReportReason::title, SELECT_REASON);
+      Component var6 = Optionull.mapOrDefault(var3, ReportReason::title, SELECT_REASON);
       this.addRenderableWidget(
          Button.builder(var6, var1x -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, this.reportBuilder.reason(), var1xx -> {
                this.reportBuilder.setReason(var1xx);
@@ -140,7 +139,7 @@ public class ChatReportScreen extends Screen {
    private void onReportChanged() {
       this.cannotBuildReason = this.reportBuilder.checkBuildable();
       this.sendButton.active = this.cannotBuildReason == null;
-      this.sendButton.setTooltip(Util.mapNullable(this.cannotBuildReason, var0 -> Tooltip.create(var0.message())));
+      this.sendButton.setTooltip(Optionull.map(this.cannotBuildReason, var0 -> Tooltip.create(var0.message())));
    }
 
    private void sendReport() {
@@ -208,7 +207,6 @@ public class ChatReportScreen extends Screen {
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       int var5 = this.width / 2;
-      RenderSystem.disableDepthTest();
       this.renderBackground(var1);
       drawCenteredString(var1, this.font, this.title, var5, 10, 16777215);
       drawCenteredString(var1, this.font, OBSERVED_WHAT_LABEL, var5, this.selectChatTop() - 9 - 6, 16777215);
@@ -218,7 +216,6 @@ public class ChatReportScreen extends Screen {
 
       drawString(var1, this.font, MORE_COMMENTS_LABEL, this.contentLeft(), this.commentBoxTop() - 9 - 6, 16777215);
       super.render(var1, var2, var3, var4);
-      RenderSystem.enableDepthTest();
    }
 
    @Override

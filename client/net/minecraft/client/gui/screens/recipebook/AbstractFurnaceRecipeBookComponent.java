@@ -34,14 +34,16 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
 
    @Override
    public void setupGhostRecipe(Recipe<?> var1, List<Slot> var2) {
-      ItemStack var3 = var1.getResultItem();
+      ItemStack var3 = var1.getResultItem(this.minecraft.level.registryAccess());
       this.ghostRecipe.setRecipe(var1);
       this.ghostRecipe.addIngredient(Ingredient.of(var3), ((Slot)var2.get(2)).x, ((Slot)var2.get(2)).y);
       NonNullList var4 = var1.getIngredients();
       Slot var5 = (Slot)var2.get(1);
       if (var5.getItem().isEmpty()) {
          if (this.fuels == null) {
-            this.fuels = Ingredient.of(this.getFuelItems().stream().map(ItemStack::new));
+            this.fuels = Ingredient.of(
+               this.getFuelItems().stream().filter(var1x -> var1x.isEnabled(this.minecraft.level.enabledFeatures())).map(ItemStack::new)
+            );
          }
 
          this.ghostRecipe.addIngredient(this.fuels, var5.x, var5.y);

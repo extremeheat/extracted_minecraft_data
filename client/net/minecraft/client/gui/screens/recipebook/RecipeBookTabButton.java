@@ -7,7 +7,6 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.client.gui.components.StateSwitchingButton;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.item.ItemStack;
@@ -40,7 +39,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
    }
 
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
       if (this.animationTime > 0.0F) {
          float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
          var1.pushPose();
@@ -50,7 +49,6 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       }
 
       Minecraft var9 = Minecraft.getInstance();
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, this.resourceLocation);
       RenderSystem.disableDepthTest();
       int var6 = this.xTexStart;
@@ -68,24 +66,23 @@ public class RecipeBookTabButton extends StateSwitchingButton {
          var8 -= 2;
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      this.blit(var1, var8, this.getY(), var6, var7, this.width, this.height);
+      blit(var1, var8, this.getY(), var6, var7, this.width, this.height);
       RenderSystem.enableDepthTest();
-      this.renderIcon(var9.getItemRenderer());
+      this.renderIcon(var1, var9.getItemRenderer());
       if (this.animationTime > 0.0F) {
          var1.popPose();
          this.animationTime -= var4;
       }
    }
 
-   private void renderIcon(ItemRenderer var1) {
-      List var2 = this.category.getIconItems();
-      int var3 = this.isStateTriggered ? -2 : 0;
-      if (var2.size() == 1) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.getX() + 9 + var3, this.getY() + 5);
-      } else if (var2.size() == 2) {
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(0), this.getX() + 3 + var3, this.getY() + 5);
-         var1.renderAndDecorateFakeItem((ItemStack)var2.get(1), this.getX() + 14 + var3, this.getY() + 5);
+   private void renderIcon(PoseStack var1, ItemRenderer var2) {
+      List var3 = this.category.getIconItems();
+      int var4 = this.isStateTriggered ? -2 : 0;
+      if (var3.size() == 1) {
+         var2.renderAndDecorateFakeItem(var1, (ItemStack)var3.get(0), this.getX() + 9 + var4, this.getY() + 5);
+      } else if (var3.size() == 2) {
+         var2.renderAndDecorateFakeItem(var1, (ItemStack)var3.get(0), this.getX() + 3 + var4, this.getY() + 5);
+         var2.renderAndDecorateFakeItem(var1, (ItemStack)var3.get(1), this.getX() + 14 + var4, this.getY() + 5);
       }
    }
 

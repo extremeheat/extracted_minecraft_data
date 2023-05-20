@@ -38,59 +38,58 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    @Override
-   public void renderImage(Font var1, int var2, int var3, PoseStack var4, ItemRenderer var5, int var6) {
-      int var7 = this.gridSizeX();
-      int var8 = this.gridSizeY();
-      boolean var9 = this.weight >= 64;
-      int var10 = 0;
+   public void renderImage(Font var1, int var2, int var3, PoseStack var4, ItemRenderer var5) {
+      int var6 = this.gridSizeX();
+      int var7 = this.gridSizeY();
+      boolean var8 = this.weight >= 64;
+      int var9 = 0;
 
-      for(int var11 = 0; var11 < var8; ++var11) {
-         for(int var12 = 0; var12 < var7; ++var12) {
-            int var13 = var2 + var12 * 18 + 1;
-            int var14 = var3 + var11 * 20 + 1;
-            this.renderSlot(var13, var14, var10++, var9, var1, var4, var5, var6);
+      for(int var10 = 0; var10 < var7; ++var10) {
+         for(int var11 = 0; var11 < var6; ++var11) {
+            int var12 = var2 + var11 * 18 + 1;
+            int var13 = var3 + var10 * 20 + 1;
+            this.renderSlot(var12, var13, var9++, var8, var1, var4, var5);
          }
       }
 
-      this.drawBorder(var2, var3, var7, var8, var4, var6);
+      this.drawBorder(var2, var3, var6, var7, var4);
    }
 
-   private void renderSlot(int var1, int var2, int var3, boolean var4, Font var5, PoseStack var6, ItemRenderer var7, int var8) {
+   private void renderSlot(int var1, int var2, int var3, boolean var4, Font var5, PoseStack var6, ItemRenderer var7) {
       if (var3 >= this.items.size()) {
-         this.blit(var6, var1, var2, var8, var4 ? ClientBundleTooltip.Texture.BLOCKED_SLOT : ClientBundleTooltip.Texture.SLOT);
+         this.blit(var6, var1, var2, var4 ? ClientBundleTooltip.Texture.BLOCKED_SLOT : ClientBundleTooltip.Texture.SLOT);
       } else {
-         ItemStack var9 = this.items.get(var3);
-         this.blit(var6, var1, var2, var8, ClientBundleTooltip.Texture.SLOT);
-         var7.renderAndDecorateItem(var9, var1 + 1, var2 + 1, var3);
-         var7.renderGuiItemDecorations(var5, var9, var1 + 1, var2 + 1);
+         ItemStack var8 = this.items.get(var3);
+         this.blit(var6, var1, var2, ClientBundleTooltip.Texture.SLOT);
+         var7.renderAndDecorateItem(var6, var8, var1 + 1, var2 + 1, var3);
+         var7.renderGuiItemDecorations(var6, var5, var8, var1 + 1, var2 + 1);
          if (var3 == 0) {
-            AbstractContainerScreen.renderSlotHighlight(var6, var1 + 1, var2 + 1, var8);
+            AbstractContainerScreen.renderSlotHighlight(var6, var1 + 1, var2 + 1, 0);
          }
       }
    }
 
-   private void drawBorder(int var1, int var2, int var3, int var4, PoseStack var5, int var6) {
-      this.blit(var5, var1, var2, var6, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
-      this.blit(var5, var1 + var3 * 18 + 1, var2, var6, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
+   private void drawBorder(int var1, int var2, int var3, int var4, PoseStack var5) {
+      this.blit(var5, var1, var2, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
+      this.blit(var5, var1 + var3 * 18 + 1, var2, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
 
-      for(int var7 = 0; var7 < var3; ++var7) {
-         this.blit(var5, var1 + 1 + var7 * 18, var2, var6, ClientBundleTooltip.Texture.BORDER_HORIZONTAL_TOP);
-         this.blit(var5, var1 + 1 + var7 * 18, var2 + var4 * 20, var6, ClientBundleTooltip.Texture.BORDER_HORIZONTAL_BOTTOM);
+      for(int var6 = 0; var6 < var3; ++var6) {
+         this.blit(var5, var1 + 1 + var6 * 18, var2, ClientBundleTooltip.Texture.BORDER_HORIZONTAL_TOP);
+         this.blit(var5, var1 + 1 + var6 * 18, var2 + var4 * 20, ClientBundleTooltip.Texture.BORDER_HORIZONTAL_BOTTOM);
       }
 
-      for(int var8 = 0; var8 < var4; ++var8) {
-         this.blit(var5, var1, var2 + var8 * 20 + 1, var6, ClientBundleTooltip.Texture.BORDER_VERTICAL);
-         this.blit(var5, var1 + var3 * 18 + 1, var2 + var8 * 20 + 1, var6, ClientBundleTooltip.Texture.BORDER_VERTICAL);
+      for(int var7 = 0; var7 < var4; ++var7) {
+         this.blit(var5, var1, var2 + var7 * 20 + 1, ClientBundleTooltip.Texture.BORDER_VERTICAL);
+         this.blit(var5, var1 + var3 * 18 + 1, var2 + var7 * 20 + 1, ClientBundleTooltip.Texture.BORDER_VERTICAL);
       }
 
-      this.blit(var5, var1, var2 + var4 * 20, var6, ClientBundleTooltip.Texture.BORDER_CORNER_BOTTOM);
-      this.blit(var5, var1 + var3 * 18 + 1, var2 + var4 * 20, var6, ClientBundleTooltip.Texture.BORDER_CORNER_BOTTOM);
+      this.blit(var5, var1, var2 + var4 * 20, ClientBundleTooltip.Texture.BORDER_CORNER_BOTTOM);
+      this.blit(var5, var1 + var3 * 18 + 1, var2 + var4 * 20, ClientBundleTooltip.Texture.BORDER_CORNER_BOTTOM);
    }
 
-   private void blit(PoseStack var1, int var2, int var3, int var4, ClientBundleTooltip.Texture var5) {
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+   private void blit(PoseStack var1, int var2, int var3, ClientBundleTooltip.Texture var4) {
       RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
-      GuiComponent.blit(var1, var2, var3, var4, (float)var5.x, (float)var5.y, var5.w, var5.h, 128, 128);
+      GuiComponent.blit(var1, var2, var3, 0, (float)var4.x, (float)var4.y, var4.w, var4.h, 128, 128);
    }
 
    private int gridSizeX() {

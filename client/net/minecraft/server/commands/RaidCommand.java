@@ -102,7 +102,7 @@ public class RaidCommand {
          var1.setPatrolLeader(true);
          var1.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance());
          var1.setPos(var0.getPosition().x, var0.getPosition().y, var0.getPosition().z);
-         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(new BlockPos(var0.getPosition())), MobSpawnType.COMMAND, null, null);
+         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(BlockPos.containing(var0.getPosition())), MobSpawnType.COMMAND, null, null);
          var0.getLevel().addFreshEntityWithPassengers(var1);
          return 1;
       }

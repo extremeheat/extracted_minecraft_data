@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import java.util.Map;
@@ -36,24 +35,19 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       Camera var9 = this.minecraft.gameRenderer.getMainCamera();
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
-      BlockPos var10 = new BlockPos(var9.getPosition().x, 0.0, var9.getPosition().z);
-      this.goalSelectors.forEach((var1x, var2x) -> {
-         for(int var3x = 0; var3x < var2x.size(); ++var3x) {
-            GoalSelectorDebugRenderer.DebugGoal var4 = var2x.get(var3x);
-            if (var10.closerThan(var4.pos, 160.0)) {
-               double var5x = (double)var4.pos.getX() + 0.5;
-               double var7x = (double)var4.pos.getY() + 2.0 + (double)var3x * 0.25;
-               double var9x = (double)var4.pos.getZ() + 0.5;
-               int var11 = var4.isRunning ? -16711936 : -3355444;
-               DebugRenderer.renderFloatingText(var4.name, var5x, var7x, var9x, var11);
+      BlockPos var10 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
+      this.goalSelectors.forEach((var3x, var4) -> {
+         for(int var5x = 0; var5x < var4.size(); ++var5x) {
+            GoalSelectorDebugRenderer.DebugGoal var6 = var4.get(var5x);
+            if (var10.closerThan(var6.pos, 160.0)) {
+               double var7x = (double)var6.pos.getX() + 0.5;
+               double var9x = (double)var6.pos.getY() + 2.0 + (double)var5x * 0.25;
+               double var11 = (double)var6.pos.getZ() + 0.5;
+               int var13 = var6.isRunning ? -16711936 : -3355444;
+               DebugRenderer.renderFloatingText(var1, var2, var6.name, var7x, var9x, var11, var13);
             }
          }
       });
-      RenderSystem.enableDepthTest();
-      RenderSystem.enableTexture();
    }
 
    public static class DebugGoal {

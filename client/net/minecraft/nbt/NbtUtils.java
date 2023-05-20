@@ -9,9 +9,7 @@ import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +34,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringUtil;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -501,14 +498,6 @@ public final class NbtUtils {
       return var1;
    }
 
-   public static CompoundTag update(DataFixer var0, DataFixTypes var1, CompoundTag var2, int var3) {
-      return update(var0, var1, var2, var3, SharedConstants.getCurrentVersion().getWorldVersion());
-   }
-
-   public static CompoundTag update(DataFixer var0, DataFixTypes var1, CompoundTag var2, int var3, int var4) {
-      return (CompoundTag)var0.update(var1.getType(), new Dynamic(NbtOps.INSTANCE, var2), var3, var4).getValue();
-   }
-
    public static Component toPrettyComponent(Tag var0) {
       return new TextComponentTagVisitor("", 0).visit(var0);
    }
@@ -659,5 +648,19 @@ public final class NbtUtils {
 
       var1.putString("Name", var3);
       return var1;
+   }
+
+   public static CompoundTag addCurrentDataVersion(CompoundTag var0) {
+      int var1 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+      return addDataVersion(var0, var1);
+   }
+
+   public static CompoundTag addDataVersion(CompoundTag var0, int var1) {
+      var0.putInt("DataVersion", var1);
+      return var0;
+   }
+
+   public static int getDataVersion(CompoundTag var0, int var1) {
+      return var0.contains("DataVersion", 99) ? var0.getInt("DataVersion") : var1;
    }
 }

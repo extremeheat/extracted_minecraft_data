@@ -64,6 +64,6 @@ public class CombatEntry {
    }
 
    public float getFallDistance() {
-      return this.source == DamageSource.OUT_OF_WORLD ? 3.4028235E38F : this.fallDistance;
+      return this.fallDistance;
    }
 }

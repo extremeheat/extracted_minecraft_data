@@ -39,14 +39,23 @@ public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       return SharedSuggestionProvider.suggest(
-         Arrays.<Enum>stream((Enum[])this.values.get()).map(var0 -> ((StringRepresentable)var0).getSerializedName()).collect(Collectors.toList()), var2
+         Arrays.<Enum>stream((Enum[])this.values.get())
+            .map(var0 -> ((StringRepresentable)var0).getSerializedName())
+            .map(this::convertId)
+            .collect(Collectors.toList()),
+         var2
       );
    }
 
    public Collection<String> getExamples() {
       return Arrays.<Enum>stream((Enum[])this.values.get())
          .map(var0 -> ((StringRepresentable)var0).getSerializedName())
+         .map(this::convertId)
          .limit(2L)
          .collect(Collectors.toList());
+   }
+
+   protected String convertId(String var1) {
+      return var1;
    }
 }

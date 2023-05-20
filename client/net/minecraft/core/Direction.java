@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -33,7 +34,7 @@ public enum Direction implements StringRepresentable {
    EAST(5, 4, 3, "east", Direction.AxisDirection.POSITIVE, Direction.Axis.X, new Vec3i(1, 0, 0));
 
    public static final StringRepresentable.EnumCodec<Direction> CODEC = StringRepresentable.fromEnum(Direction::values);
-   public static final Codec<Direction> VERTICAL_CODEC = CODEC.flatXmap(Direction::verifyVertical, Direction::verifyVertical);
+   public static final Codec<Direction> VERTICAL_CODEC = ExtraCodecs.validate(CODEC, Direction::verifyVertical);
    private final int data3d;
    private final int oppositeIndex;
    private final int data2d;
@@ -321,7 +322,7 @@ public enum Direction implements StringRepresentable {
    }
 
    private static DataResult<Direction> verifyVertical(Direction var0) {
-      return var0.getAxis().isVertical() ? DataResult.success(var0) : DataResult.error("Expected a vertical direction");
+      return var0.getAxis().isVertical() ? DataResult.success(var0) : DataResult.error(() -> "Expected a vertical direction");
    }
 
    public static Direction get(Direction.AxisDirection var0, Direction.Axis var1) {

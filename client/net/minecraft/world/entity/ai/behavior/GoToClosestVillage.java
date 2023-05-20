@@ -27,7 +27,7 @@ public class GoToClosestVillage {
                   for(int var10 = 0; var10 < 5; ++var10) {
                      Vec3 var11 = LandRandomPos.getPos(var4, 15, 7, var1xxxx -> (double)(-var7.sectionsToVillage(SectionPos.of(var1xxxx))));
                      if (var11 != null) {
-                        int var12 = var7.sectionsToVillage(SectionPos.of(new BlockPos(var11)));
+                        int var12 = var7.sectionsToVillage(SectionPos.of(BlockPos.containing(var11)));
                         if (var12 < var8) {
                            var9 = var11;
                            break;

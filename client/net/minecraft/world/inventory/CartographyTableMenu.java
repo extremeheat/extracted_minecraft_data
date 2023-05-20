@@ -183,7 +183,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          }
 
          if (var5.isEmpty()) {
-            var4.set(ItemStack.EMPTY);
+            var4.setByPlayer(ItemStack.EMPTY);
          }
 
          var4.setChanged();

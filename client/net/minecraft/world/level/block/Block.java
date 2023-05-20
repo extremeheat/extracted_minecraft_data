@@ -25,7 +25,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -276,7 +275,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(BlockState var0, LootContext.Builder var1) {
       ServerLevel var2 = var1.getLevel();
-      BlockPos var3 = new BlockPos(var1.getParameter(LootContextParams.ORIGIN));
+      BlockPos var3 = BlockPos.containing(var1.getParameter(LootContextParams.ORIGIN));
       var0.getDrops(var1).forEach(var2x -> popResource(var2, var3, var2x));
       var0.spawnAfterBreak(var2, var3, ItemStack.EMPTY, true);
    }
@@ -303,28 +302,26 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static void popResource(Level var0, BlockPos var1, ItemStack var2) {
-      float var3 = EntityType.ITEM.getHeight() / 2.0F;
-      double var4 = (double)((float)var1.getX() + 0.5F) + Mth.nextDouble(var0.random, -0.25, 0.25);
-      double var6 = (double)((float)var1.getY() + 0.5F) + Mth.nextDouble(var0.random, -0.25, 0.25) - (double)var3;
-      double var8 = (double)((float)var1.getZ() + 0.5F) + Mth.nextDouble(var0.random, -0.25, 0.25);
-      popResource(var0, () -> new ItemEntity(var0, var4, var6, var8, var2), var2);
+      double var3 = (double)EntityType.ITEM.getHeight() / 2.0;
+      double var5 = (double)var1.getX() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
+      double var7 = (double)var1.getY() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25) - var3;
+      double var9 = (double)var1.getZ() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
+      popResource(var0, () -> new ItemEntity(var0, var5, var7, var9, var2), var2);
    }
 
    public static void popResourceFromFace(Level var0, BlockPos var1, Direction var2, ItemStack var3) {
       int var4 = var2.getStepX();
       int var5 = var2.getStepY();
       int var6 = var2.getStepZ();
-      float var7 = EntityType.ITEM.getWidth() / 2.0F;
-      float var8 = EntityType.ITEM.getHeight() / 2.0F;
-      double var9 = (double)((float)var1.getX() + 0.5F) + (var4 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)((float)var4 * (0.5F + var7)));
-      double var11 = (double)((float)var1.getY() + 0.5F)
-         + (var5 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)((float)var5 * (0.5F + var8)))
-         - (double)var8;
-      double var13 = (double)((float)var1.getZ() + 0.5F) + (var6 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)((float)var6 * (0.5F + var7)));
-      double var15 = var4 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var4 * 0.1;
-      double var17 = var5 == 0 ? Mth.nextDouble(var0.random, 0.0, 0.1) : (double)var5 * 0.1 + 0.1;
-      double var19 = var6 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var6 * 0.1;
-      popResource(var0, () -> new ItemEntity(var0, var9, var11, var13, var3, var15, var17, var19), var3);
+      double var7 = (double)EntityType.ITEM.getWidth() / 2.0;
+      double var9 = (double)EntityType.ITEM.getHeight() / 2.0;
+      double var11 = (double)var1.getX() + 0.5 + (var4 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var4 * (0.5 + var7));
+      double var13 = (double)var1.getY() + 0.5 + (var5 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var5 * (0.5 + var9)) - var9;
+      double var15 = (double)var1.getZ() + 0.5 + (var6 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var6 * (0.5 + var7));
+      double var17 = var4 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var4 * 0.1;
+      double var19 = var5 == 0 ? Mth.nextDouble(var0.random, 0.0, 0.1) : (double)var5 * 0.1 + 0.1;
+      double var21 = var6 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var6 * 0.1;
+      popResource(var0, () -> new ItemEntity(var0, var11, var13, var15, var3, var17, var19, var21), var3);
    }
 
    private static void popResource(Level var0, Supplier<ItemEntity> var1, ItemStack var2) {
@@ -382,7 +379,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      var4.causeFallDamage(var5, 1.0F, DamageSource.FALL);
+      var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
    }
 
    public void updateEntityAfterFallOn(BlockGetter var1, Entity var2) {

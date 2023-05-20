@@ -34,7 +34,7 @@ public class YieldJobSite {
                   (var2, var3, var4, var5, var6) -> (var6x, var7, var8) -> {
                         if (var7.isBaby()) {
                            return false;
-                        } else if (var7.getVillagerData().getProfession() == VillagerProfession.NONE) {
+                        } else if (var7.getVillagerData().getProfession() != VillagerProfession.NONE) {
                            return false;
                         } else {
                            BlockPos var10 = var1.<GlobalPos>get(var2).pos();

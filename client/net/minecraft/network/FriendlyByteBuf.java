@@ -3,11 +3,16 @@ package net.minecraft.network;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
@@ -56,7 +61,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -64,12 +68,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class FriendlyByteBuf extends ByteBuf {
    private static final int MAX_VARINT_SIZE = 5;
@@ -81,6 +88,7 @@ public class FriendlyByteBuf extends ByteBuf {
    private static final int PUBLIC_KEY_SIZE = 256;
    private static final int MAX_PUBLIC_KEY_HEADER_SIZE = 256;
    private static final int MAX_PUBLIC_KEY_LENGTH = 512;
+   private static final Gson GSON = new Gson();
 
    public FriendlyByteBuf(ByteBuf var1) {
       super();
@@ -108,15 +116,26 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    @Deprecated
-   public <T> T readWithCodec(Codec<T> var1) {
-      CompoundTag var2 = this.readAnySizeNbt();
-      return Util.getOrThrow(var1.parse(NbtOps.INSTANCE, var2), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var2));
+   public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2) {
+      CompoundTag var3 = this.readAnySizeNbt();
+      return Util.getOrThrow(var2.parse(var1, var3), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var3));
    }
 
    @Deprecated
-   public <T> void writeWithCodec(Codec<T> var1, T var2) {
-      Tag var3 = Util.getOrThrow(var1.encodeStart(NbtOps.INSTANCE, var2), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2));
-      this.writeNbt((CompoundTag)var3);
+   public <T> void writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
+      Tag var4 = Util.getOrThrow(var2.encodeStart(var1, var3), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var3));
+      this.writeNbt((CompoundTag)var4);
+   }
+
+   public <T> T readJsonWithCodec(Codec<T> var1) {
+      JsonElement var2 = GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
+      DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
+      return Util.getOrThrow(var3, var0 -> new DecoderException("Failed to decode json: " + var0));
+   }
+
+   public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
+      DataResult var3 = var1.encodeStart(JsonOps.INSTANCE, var2);
+      this.writeUtf(GSON.toJson(Util.getOrThrow(var3, var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2))));
    }
 
    public <T> void writeId(IdMap<T> var1, T var2) {
@@ -441,6 +460,27 @@ public class FriendlyByteBuf extends ByteBuf {
    public void writeGlobalPos(GlobalPos var1) {
       this.writeResourceKey(var1.dimension());
       this.writeBlockPos(var1.pos());
+   }
+
+   public Vector3f readVector3f() {
+      return new Vector3f(this.readFloat(), this.readFloat(), this.readFloat());
+   }
+
+   public void writeVector3f(Vector3f var1) {
+      this.writeFloat(var1.x());
+      this.writeFloat(var1.y());
+      this.writeFloat(var1.z());
+   }
+
+   public Quaternionf readQuaternion() {
+      return new Quaternionf(this.readFloat(), this.readFloat(), this.readFloat(), this.readFloat());
+   }
+
+   public void writeQuaternion(Quaternionf var1) {
+      this.writeFloat(var1.x);
+      this.writeFloat(var1.y);
+      this.writeFloat(var1.z);
+      this.writeFloat(var1.w);
    }
 
    public Component readComponent() {

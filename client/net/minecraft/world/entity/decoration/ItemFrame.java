@@ -14,6 +14,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -160,12 +162,13 @@ public class ItemFrame extends HangingEntity {
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.fixed) {
-         return var1 != DamageSource.OUT_OF_WORLD && !var1.isCreativePlayer() ? false : super.hurt(var1, var2);
+         return !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !var1.isCreativePlayer() ? false : super.hurt(var1, var2);
       } else if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!var1.isExplosion() && !this.getItem().isEmpty()) {
+      } else if (!var1.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty()) {
          if (!this.level.isClientSide) {
             this.dropItem(var1.getEntity(), false);
+            this.gameEvent(GameEvent.BLOCK_CHANGE, var1.getEntity());
             this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
          }
 
@@ -200,6 +203,7 @@ public class ItemFrame extends HangingEntity {
    public void dropItem(@Nullable Entity var1) {
       this.playSound(this.getBreakSound(), 1.0F, 1.0F);
       this.dropItem(var1, true);
+      this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
    }
 
    public SoundEvent getBreakSound() {
@@ -405,6 +409,7 @@ public class ItemFrame extends HangingEntity {
                }
 
                this.setItem(var3);
+               this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
                if (!var1.getAbilities().instabuild) {
                   var3.shrink(1);
                }
@@ -412,6 +417,7 @@ public class ItemFrame extends HangingEntity {
          } else {
             this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);
             this.setRotation(this.getRotation() + 1);
+            this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
          }
 
          return InteractionResult.CONSUME;

@@ -177,7 +177,7 @@ public class Camera {
 
             for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
                Vec3 var6 = this.position.add(var5);
-               BlockPos var7 = new BlockPos(var6);
+               BlockPos var7 = BlockPos.containing(var6);
                FluidState var8 = this.level.getFluidState(var7);
                if (var8.is(FluidTags.LAVA)) {
                   if (var6.y <= (double)(var8.getHeight(this.level, var7) + (float)var7.getY())) {

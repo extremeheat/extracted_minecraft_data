@@ -90,7 +90,7 @@ public class Brain<E extends LivingEntity> {
                }
       
                private <T, U> DataResult<Brain.MemoryValue<U>> captureRead(MemoryModuleType<U> var1x, DynamicOps<T> var2x, T var3) {
-                  return ((DataResult)var1x.getCodec().map(DataResult::success).orElseGet(() -> (T)DataResult.error("No codec for memory: " + var1x)))
+                  return ((DataResult)var1x.getCodec().map(DataResult::success).orElseGet(() -> (T)DataResult.error(() -> "No codec for memory: " + var1x)))
                      .flatMap(var2xxx -> var2xxx.parse(var2x, var3))
                      .map(var1xxx -> new Brain.MemoryValue(var1x, Optional.of(var1xxx)));
                }
@@ -150,6 +150,10 @@ public class Brain<E extends LivingEntity> {
 
    public boolean hasMemoryValue(MemoryModuleType<?> var1) {
       return this.checkMemory(var1, MemoryStatus.VALUE_PRESENT);
+   }
+
+   public void clearMemories() {
+      this.memories.keySet().forEach(var1 -> this.memories.put(var1, Optional.empty()));
    }
 
    public <U> void eraseMemory(MemoryModuleType<U> var1) {

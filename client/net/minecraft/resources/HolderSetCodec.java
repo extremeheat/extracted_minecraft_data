@@ -8,7 +8,6 @@ import com.mojang.serialization.DynamicOps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderOwner;
@@ -24,11 +23,10 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    private final Codec<Either<TagKey<E>, List<Holder<E>>>> registryAwareCodec;
 
    private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> var0, boolean var1) {
-      Function var2 = ExtraCodecs.ensureHomogenous(Holder::kind);
-      Codec var3 = var0.listOf().flatXmap(var2, var2);
+      Codec var2 = ExtraCodecs.validate(var0.listOf(), ExtraCodecs.ensureHomogenous(Holder::kind));
       return var1
-         ? var3
-         : Codec.either(var3, var0)
+         ? var2
+         : Codec.either(var2, var0)
             .xmap(var0x -> (List)var0x.map(var0xx -> var0xx, List::of), var0x -> var0x.size() == 1 ? Either.right((Holder)var0x.get(0)) : Either.left(var0x));
    }
 
@@ -67,7 +65,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
          Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
             if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
-               return DataResult.error("HolderSet " + var1 + " is not valid in current registry set");
+               return DataResult.error(() -> "HolderSet " + var1 + " is not valid in current registry set");
             }
 
             return this.registryAwareCodec.encode(var1.unwrap().mapRight(List::copyOf), var2, var3);
@@ -83,7 +81,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
 
          for(Holder var3 : (List)var0.getFirst()) {
             if (!(var3 instanceof Holder.Direct)) {
-               return DataResult.error("Can't decode element " + var3 + " without registry");
+               return DataResult.error(() -> "Can't decode element " + var3 + " without registry");
             }
 
             Holder.Direct var4 = (Holder.Direct)var3;

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -56,6 +57,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundChunksBiomesPacket;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ClientboundSetChunkCacheCenterPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
@@ -1226,24 +1228,24 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       }
    }
 
-   public void resendChunk(ChunkAccess var1) {
-      ChunkPos var2 = var1.getPos();
-      LevelChunk var3;
-      if (var1 instanceof LevelChunk var4) {
-         var3 = (LevelChunk)var4;
-      } else {
-         var3 = this.level.getChunk(var2.x, var2.z);
-      }
+   public void resendBiomesForChunks(List<ChunkAccess> var1) {
+      HashMap var2 = new HashMap();
 
-      MutableObject var7 = new MutableObject();
-
-      for(ServerPlayer var6 : this.getPlayers(var2, false)) {
-         if (var7.getValue() == null) {
-            var7.setValue(new ClientboundLevelChunkWithLightPacket(var3, this.lightEngine, null, null, true));
+      for(ChunkAccess var4 : var1) {
+         ChunkPos var5 = var4.getPos();
+         LevelChunk var6;
+         if (var4 instanceof LevelChunk var7) {
+            var6 = (LevelChunk)var7;
+         } else {
+            var6 = this.level.getChunk(var5.x, var5.z);
          }
 
-         var6.trackChunk(var2, (Packet<?>)var7.getValue());
+         for(ServerPlayer var8 : this.getPlayers(var5, false)) {
+            var2.computeIfAbsent(var8, var0 -> new ArrayList()).add(var6);
+         }
       }
+
+      var2.forEach((var0, var1x) -> var0.connection.send(ClientboundChunksBiomesPacket.forChunks(var1x)));
    }
 
    private void playerLoadedChunk(ServerPlayer var1, MutableObject<ClientboundLevelChunkWithLightPacket> var2, LevelChunk var3) {

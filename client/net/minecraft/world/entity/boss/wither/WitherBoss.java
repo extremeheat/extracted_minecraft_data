@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
@@ -443,9 +444,9 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (var1 == DamageSource.DROWN || var1.getEntity() instanceof WitherBoss) {
+      } else if (var1.is(DamageTypeTags.WITHER_IMMUNE_TO) || var1.getEntity() instanceof WitherBoss) {
          return false;
-      } else if (this.getInvulnerableTicks() > 0 && var1 != DamageSource.OUT_OF_WORLD) {
+      } else if (this.getInvulnerableTicks() > 0 && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return false;
       } else {
          if (this.isPowered()) {
@@ -488,11 +489,6 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       } else {
          this.noActionTime = 0;
       }
-   }
-
-   @Override
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      return false;
    }
 
    @Override

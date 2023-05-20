@@ -1,17 +1,14 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
+import org.joml.Matrix4f;
 
 public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
@@ -25,93 +22,80 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      RenderSystem.enableDepthTest();
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
       Entity var9 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-      Tesselator var10 = Tesselator.getInstance();
-      BufferBuilder var11 = var10.getBuilder();
-      double var12 = (double)this.minecraft.level.getMinBuildHeight() - var5;
-      double var14 = (double)this.minecraft.level.getMaxBuildHeight() - var5;
-      RenderSystem.disableTexture();
-      RenderSystem.disableBlend();
-      ChunkPos var16 = var9.chunkPosition();
-      double var17 = (double)var16.getMinBlockX() - var3;
-      double var19 = (double)var16.getMinBlockZ() - var7;
-      RenderSystem.lineWidth(1.0F);
-      var11.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+      float var10 = (float)((double)this.minecraft.level.getMinBuildHeight() - var5);
+      float var11 = (float)((double)this.minecraft.level.getMaxBuildHeight() - var5);
+      ChunkPos var12 = var9.chunkPosition();
+      float var13 = (float)((double)var12.getMinBlockX() - var3);
+      float var14 = (float)((double)var12.getMinBlockZ() - var7);
+      VertexConsumer var15 = var2.getBuffer(RenderType.debugLineStrip(1.0));
+      Matrix4f var16 = var1.last().pose();
 
-      for(int var21 = -16; var21 <= 32; var21 += 16) {
-         for(int var22 = -16; var22 <= 32; var22 += 16) {
-            var11.vertex(var17 + (double)var21, var12, var19 + (double)var22).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
-            var11.vertex(var17 + (double)var21, var12, var19 + (double)var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-            var11.vertex(var17 + (double)var21, var14, var19 + (double)var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-            var11.vertex(var17 + (double)var21, var14, var19 + (double)var22).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
+      for(int var17 = -16; var17 <= 32; var17 += 16) {
+         for(int var18 = -16; var18 <= 32; var18 += 16) {
+            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
+            var15.vertex(var16, var13 + (float)var17, var10, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+            var15.vertex(var16, var13 + (float)var17, var11, var14 + (float)var18).color(1.0F, 0.0F, 0.0F, 0.0F).endVertex();
          }
       }
 
-      for(int var25 = 2; var25 < 16; var25 += 2) {
-         int var30 = var25 % 4 == 0 ? CELL_BORDER : YELLOW;
-         var11.vertex(var17 + (double)var25, var12, var19).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17 + (double)var25, var12, var19).color(var30).endVertex();
-         var11.vertex(var17 + (double)var25, var14, var19).color(var30).endVertex();
-         var11.vertex(var17 + (double)var25, var14, var19).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17 + (double)var25, var12, var19 + 16.0).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17 + (double)var25, var12, var19 + 16.0).color(var30).endVertex();
-         var11.vertex(var17 + (double)var25, var14, var19 + 16.0).color(var30).endVertex();
-         var11.vertex(var17 + (double)var25, var14, var19 + 16.0).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+      for(int var21 = 2; var21 < 16; var21 += 2) {
+         int var26 = var21 % 4 == 0 ? CELL_BORDER : YELLOW;
+         var15.vertex(var16, var13 + (float)var21, var10, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var10, var14).color(var26).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var11, var14).color(var26).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var11, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var10, var14 + 16.0F).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var10, var14 + 16.0F).color(var26).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var11, var14 + 16.0F).color(var26).endVertex();
+         var15.vertex(var16, var13 + (float)var21, var11, var14 + 16.0F).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
       }
 
-      for(int var26 = 2; var26 < 16; var26 += 2) {
-         int var31 = var26 % 4 == 0 ? CELL_BORDER : YELLOW;
-         var11.vertex(var17, var12, var19 + (double)var26).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17, var12, var19 + (double)var26).color(var31).endVertex();
-         var11.vertex(var17, var14, var19 + (double)var26).color(var31).endVertex();
-         var11.vertex(var17, var14, var19 + (double)var26).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17 + 16.0, var12, var19 + (double)var26).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17 + 16.0, var12, var19 + (double)var26).color(var31).endVertex();
-         var11.vertex(var17 + 16.0, var14, var19 + (double)var26).color(var31).endVertex();
-         var11.vertex(var17 + 16.0, var14, var19 + (double)var26).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+      for(int var22 = 2; var22 < 16; var22 += 2) {
+         int var27 = var22 % 4 == 0 ? CELL_BORDER : YELLOW;
+         var15.vertex(var16, var13, var10, var14 + (float)var22).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13, var10, var14 + (float)var22).color(var27).endVertex();
+         var15.vertex(var16, var13, var11, var14 + (float)var22).color(var27).endVertex();
+         var15.vertex(var16, var13, var11, var14 + (float)var22).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var10, var14 + (float)var22).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var10, var14 + (float)var22).color(var27).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var11, var14 + (float)var22).color(var27).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var11, var14 + (float)var22).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
       }
 
-      for(int var27 = this.minecraft.level.getMinBuildHeight(); var27 <= this.minecraft.level.getMaxBuildHeight(); var27 += 2) {
-         double var32 = (double)var27 - var5;
-         int var24 = var27 % 8 == 0 ? CELL_BORDER : YELLOW;
-         var11.vertex(var17, var32, var19).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
-         var11.vertex(var17, var32, var19).color(var24).endVertex();
-         var11.vertex(var17, var32, var19 + 16.0).color(var24).endVertex();
-         var11.vertex(var17 + 16.0, var32, var19 + 16.0).color(var24).endVertex();
-         var11.vertex(var17 + 16.0, var32, var19).color(var24).endVertex();
-         var11.vertex(var17, var32, var19).color(var24).endVertex();
-         var11.vertex(var17, var32, var19).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+      for(int var23 = this.minecraft.level.getMinBuildHeight(); var23 <= this.minecraft.level.getMaxBuildHeight(); var23 += 2) {
+         float var28 = (float)((double)var23 - var5);
+         int var19 = var23 % 8 == 0 ? CELL_BORDER : YELLOW;
+         var15.vertex(var16, var13, var28, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13, var28, var14).color(var19).endVertex();
+         var15.vertex(var16, var13, var28, var14 + 16.0F).color(var19).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var28, var14 + 16.0F).color(var19).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var28, var14).color(var19).endVertex();
+         var15.vertex(var16, var13, var28, var14).color(var19).endVertex();
+         var15.vertex(var16, var13, var28, var14).color(1.0F, 1.0F, 0.0F, 0.0F).endVertex();
       }
 
-      var10.end();
-      RenderSystem.lineWidth(2.0F);
-      var11.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+      var15 = var2.getBuffer(RenderType.debugLineStrip(2.0));
 
-      for(int var28 = 0; var28 <= 16; var28 += 16) {
-         for(int var33 = 0; var33 <= 16; var33 += 16) {
-            var11.vertex(var17 + (double)var28, var12, var19 + (double)var33).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
-            var11.vertex(var17 + (double)var28, var12, var19 + (double)var33).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-            var11.vertex(var17 + (double)var28, var14, var19 + (double)var33).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-            var11.vertex(var17 + (double)var28, var14, var19 + (double)var33).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+      for(int var24 = 0; var24 <= 16; var24 += 16) {
+         for(int var29 = 0; var29 <= 16; var29 += 16) {
+            var15.vertex(var16, var13 + (float)var24, var10, var14 + (float)var29).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+            var15.vertex(var16, var13 + (float)var24, var10, var14 + (float)var29).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+            var15.vertex(var16, var13 + (float)var24, var11, var14 + (float)var29).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+            var15.vertex(var16, var13 + (float)var24, var11, var14 + (float)var29).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
          }
       }
 
-      for(int var29 = this.minecraft.level.getMinBuildHeight(); var29 <= this.minecraft.level.getMaxBuildHeight(); var29 += 16) {
-         double var34 = (double)var29 - var5;
-         var11.vertex(var17, var34, var19).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
-         var11.vertex(var17, var34, var19).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var11.vertex(var17, var34, var19 + 16.0).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var11.vertex(var17 + 16.0, var34, var19 + 16.0).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var11.vertex(var17 + 16.0, var34, var19).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var11.vertex(var17, var34, var19).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
-         var11.vertex(var17, var34, var19).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+      for(int var25 = this.minecraft.level.getMinBuildHeight(); var25 <= this.minecraft.level.getMaxBuildHeight(); var25 += 16) {
+         float var30 = (float)((double)var25 - var5);
+         var15.vertex(var16, var13, var30, var14).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
+         var15.vertex(var16, var13, var30, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+         var15.vertex(var16, var13, var30, var14 + 16.0F).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var30, var14 + 16.0F).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+         var15.vertex(var16, var13 + 16.0F, var30, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+         var15.vertex(var16, var13, var30, var14).color(0.25F, 0.25F, 1.0F, 1.0F).endVertex();
+         var15.vertex(var16, var13, var30, var14).color(0.25F, 0.25F, 1.0F, 0.0F).endVertex();
       }
-
-      var10.end();
-      RenderSystem.lineWidth(1.0F);
-      RenderSystem.enableBlend();
-      RenderSystem.enableTexture();
    }
 }

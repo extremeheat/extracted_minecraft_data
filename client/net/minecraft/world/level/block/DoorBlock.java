@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -46,11 +46,11 @@ public class DoorBlock extends Block {
    protected static final VoxelShape NORTH_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
    protected static final VoxelShape WEST_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
    protected static final VoxelShape EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
-   private final SoundEvent closeSound;
-   private final SoundEvent openSound;
+   private final BlockSetType type;
 
-   protected DoorBlock(BlockBehaviour.Properties var1, SoundEvent var2, SoundEvent var3) {
-      super(var1);
+   protected DoorBlock(BlockBehaviour.Properties var1, BlockSetType var2) {
+      super(var1.sound(var2.soundType()));
+      this.type = var2;
       this.registerDefaultState(
          this.stateDefinition
             .any()
@@ -60,8 +60,6 @@ public class DoorBlock extends Block {
             .setValue(POWERED, Boolean.valueOf(false))
             .setValue(HALF, DoubleBlockHalf.LOWER)
       );
-      this.closeSound = var2;
-      this.openSound = var3;
    }
 
    @Override
@@ -231,7 +229,7 @@ public class DoorBlock extends Block {
    }
 
    private void playSound(@Nullable Entity var1, Level var2, BlockPos var3, boolean var4) {
-      var2.playSound(var1, var3, var4 ? this.openSound : this.closeSound, SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+      var2.playSound(var1, var3, var4 ? this.type.doorOpen() : this.type.doorClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
    }
 
    @Override

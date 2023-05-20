@@ -177,7 +177,7 @@ public class Dolphin extends WaterAnimal {
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(DamageSource.mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
       if (var2) {
          this.doEnchantDamageEffects(this, var1);
          this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
@@ -251,7 +251,7 @@ public class Dolphin extends WaterAnimal {
          } else {
             this.setMoisntessLevel(this.getMoistnessLevel() - 1);
             if (this.getMoistnessLevel() <= 0) {
-               this.hurt(DamageSource.DRY_OUT, 1.0F);
+               this.hurt(this.damageSources().dryOut(), 1.0F);
             }
 
             if (this.onGround) {
@@ -408,7 +408,7 @@ public class Dolphin extends WaterAnimal {
       @Override
       public boolean canContinueToUse() {
          BlockPos var1 = this.dolphin.getTreasurePos();
-         return !new BlockPos((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0)
+         return !BlockPos.containing((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0)
             && !this.stuck
             && this.dolphin.getAirSupply() >= 100;
       }
@@ -433,7 +433,9 @@ public class Dolphin extends WaterAnimal {
       @Override
       public void stop() {
          BlockPos var1 = this.dolphin.getTreasurePos();
-         if (new BlockPos((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0) || this.stuck) {
+         if (BlockPos.containing((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0) || this.stuck
+            )
+          {
             this.dolphin.setGotFish(false);
          }
       }
@@ -449,7 +451,7 @@ public class Dolphin extends WaterAnimal {
             }
 
             if (var3 != null) {
-               BlockPos var4 = new BlockPos(var3);
+               BlockPos var4 = BlockPos.containing(var3);
                if (!var1.getFluidState(var4).is(FluidTags.WATER) || !var1.getBlockState(var4).isPathfindable(var1, var4, PathComputationType.WATER)) {
                   var3 = DefaultRandomPos.getPosTowards(this.dolphin, 8, 5, var2, 1.5707963705062866);
                }

@@ -29,22 +29,22 @@ public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       for(BlockPos var11 : this.raidCenters) {
          if (var9.closerThan(var11, 160.0)) {
-            highlightRaidCenter(var11);
+            highlightRaidCenter(var1, var2, var11);
          }
       }
    }
 
-   private static void highlightRaidCenter(BlockPos var0) {
-      DebugRenderer.renderFilledBox(var0.offset(-0.5, -0.5, -0.5), var0.offset(1.5, 1.5, 1.5), 1.0F, 0.0F, 0.0F, 0.15F);
-      int var1 = -65536;
-      renderTextOverBlock("Raid center", var0, -65536);
+   private static void highlightRaidCenter(PoseStack var0, MultiBufferSource var1, BlockPos var2) {
+      DebugRenderer.renderFilledBox(var0, var1, var2.offset(-1, -1, -1), var2.offset(1, 1, 1), 1.0F, 0.0F, 0.0F, 0.15F);
+      int var3 = -65536;
+      renderTextOverBlock(var0, var1, "Raid center", var2, -65536);
    }
 
-   private static void renderTextOverBlock(String var0, BlockPos var1, int var2) {
-      double var3 = (double)var1.getX() + 0.5;
-      double var5 = (double)var1.getY() + 1.3;
-      double var7 = (double)var1.getZ() + 0.5;
-      DebugRenderer.renderFloatingText(var0, var3, var5, var7, var2, 0.04F, true, 0.0F, true);
+   private static void renderTextOverBlock(PoseStack var0, MultiBufferSource var1, String var2, BlockPos var3, int var4) {
+      double var5 = (double)var3.getX() + 0.5;
+      double var7 = (double)var3.getY() + 1.3;
+      double var9 = (double)var3.getZ() + 0.5;
+      DebugRenderer.renderFloatingText(var0, var1, var2, var5, var7, var9, var4, 0.04F, true, 0.0F, true);
    }
 
    private Camera getCamera() {

@@ -42,9 +42,9 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
 
    @Override
    protected void randomizeAttributes(RandomSource var1) {
-      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)this.generateRandomMaxHealth(var1));
-      this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(this.generateRandomSpeed(var1));
-      this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(this.generateRandomJumpStrength(var1));
+      this.getAttribute(Attributes.MAX_HEALTH).setBaseValue((double)generateMaxHealth(var1::nextInt));
+      this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(generateSpeed(var1::nextDouble));
+      this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(generateJumpStrength(var1::nextDouble));
    }
 
    @Override

@@ -31,15 +31,19 @@ public class SpriteLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ResourceLocation location;
    private final int maxSupportedTextureSize;
+   private final int minWidth;
+   private final int minHeight;
 
-   public SpriteLoader(ResourceLocation var1, int var2) {
+   public SpriteLoader(ResourceLocation var1, int var2, int var3, int var4) {
       super();
       this.location = var1;
       this.maxSupportedTextureSize = var2;
+      this.minWidth = var3;
+      this.minHeight = var4;
    }
 
    public static SpriteLoader create(TextureAtlas var0) {
-      return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize());
+      return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize(), var0.getWidth(), var0.getHeight());
    }
 
    public SpriteLoader.Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
@@ -62,24 +66,24 @@ public class SpriteLoader {
          var5.registerSprite(var9);
       }
 
-      int var15 = Math.min(var6, var7);
-      int var16 = Mth.log2(var15);
-      int var17;
-      if (var16 < var2) {
-         LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, var2, var16, var15});
-         var17 = var16;
+      int var17 = Math.min(var6, var7);
+      int var18 = Mth.log2(var17);
+      int var19;
+      if (var18 < var2) {
+         LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, var2, var18, var17});
+         var19 = var18;
       } else {
-         var17 = var2;
+         var19 = var2;
       }
 
       try {
          var5.stitch();
-      } catch (StitcherException var14) {
-         CrashReport var12 = CrashReport.forThrowable(var14, "Stitching");
+      } catch (StitcherException var16) {
+         CrashReport var12 = CrashReport.forThrowable(var16, "Stitching");
          CrashReportCategory var13 = var12.addCategory("Stitcher");
          var13.setDetail(
             "Sprites",
-            var14.getAllSprites()
+            var16.getAllSprites()
                .stream()
                .map(var0 -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height()))
                .collect(Collectors.joining(","))
@@ -88,16 +92,18 @@ public class SpriteLoader {
          throw new ReportedException(var12);
       }
 
-      Map var11 = this.getStitchedSprites(var5);
-      TextureAtlasSprite var18 = (TextureAtlasSprite)var11.get(MissingTextureAtlasSprite.getLocation());
-      CompletableFuture var19;
-      if (var17 > 0) {
-         var19 = CompletableFuture.runAsync(() -> var11.values().forEach(var1xx -> var1xx.contents().increaseMipLevel(var17)), var3);
+      int var11 = Math.max(var5.getWidth(), this.minWidth);
+      int var20 = Math.max(var5.getHeight(), this.minHeight);
+      Map var21 = this.getStitchedSprites(var5, var11, var20);
+      TextureAtlasSprite var14 = (TextureAtlasSprite)var21.get(MissingTextureAtlasSprite.getLocation());
+      CompletableFuture var15;
+      if (var19 > 0) {
+         var15 = CompletableFuture.runAsync(() -> var21.values().forEach(var1xx -> var1xx.contents().increaseMipLevel(var19)), var3);
       } else {
-         var19 = CompletableFuture.completedFuture(null);
+         var15 = CompletableFuture.completedFuture(null);
       }
 
-      return new SpriteLoader.Preparations(var5.getWidth(), var5.getHeight(), var17, var18, var11, var19);
+      return new SpriteLoader.Preparations(var11, var20, var19, var14, var21, var15);
    }
 
    public static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(List<Supplier<SpriteContents>> var0, Executor var1) {
@@ -130,7 +136,7 @@ public class SpriteLoader {
       }
 
       FrameSize var11 = var2.calculateFrameSize(var3.getWidth(), var3.getHeight());
-      if (Mth.isDivisionInteger(var3.getWidth(), var11.width()) && Mth.isDivisionInteger(var3.getHeight(), var11.height())) {
+      if (Mth.isMultipleOf(var3.getWidth(), var11.width()) && Mth.isMultipleOf(var3.getHeight(), var11.height())) {
          return new SpriteContents(var0, var11, var3, var2);
       } else {
          LOGGER.error(
@@ -141,12 +147,10 @@ public class SpriteLoader {
       }
    }
 
-   private Map<ResourceLocation, TextureAtlasSprite> getStitchedSprites(Stitcher<SpriteContents> var1) {
-      HashMap var2 = new HashMap();
-      int var3 = var1.getWidth();
-      int var4 = var1.getHeight();
-      var1.gatherSprites((var4x, var5, var6) -> var2.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var3, var4, var5, var6)));
-      return var2;
+   private Map<ResourceLocation, TextureAtlasSprite> getStitchedSprites(Stitcher<SpriteContents> var1, int var2, int var3) {
+      HashMap var4 = new HashMap();
+      var1.gatherSprites((var4x, var5, var6) -> var4.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var2, var3, var5, var6)));
+      return var4;
    }
 
    public static record Preparations(int a, int b, int c, TextureAtlasSprite d, Map<ResourceLocation, TextureAtlasSprite> e, CompletableFuture<Void> f) {

@@ -76,7 +76,7 @@ public final class NaturalSpawner {
             var2.query(ChunkPos.asLong(var9), var6 -> {
                MobSpawnSettings.MobSpawnCost var7x = getRoughBiome(var9, var6).getMobSettings().getMobSpawnCost(var7.getType());
                if (var7x != null) {
-                  var4.addCharge(var7.blockPosition(), var7x.getCharge());
+                  var4.addCharge(var7.blockPosition(), var7x.charge());
                }
 
                if (var7 instanceof Mob) {
@@ -366,7 +366,7 @@ public final class NaturalSpawner {
                         double var23 = Mth.clamp((double)var13, (double)var7 + (double)var20, (double)var7 + 16.0 - (double)var20);
                         if (!var0.noCollision(var9.type.getAABB(var21, (double)var19.getY(), var23))
                            || !SpawnPlacements.checkSpawnRules(
-                              var9.type, var0, MobSpawnType.CHUNK_GENERATION, new BlockPos(var21, (double)var19.getY(), var23), var0.getRandom()
+                              var9.type, var0, MobSpawnType.CHUNK_GENERATION, BlockPos.containing(var21, (double)var19.getY(), var23), var0.getRandom()
                            )) {
                            continue;
                         }
@@ -477,10 +477,10 @@ public final class NaturalSpawner {
             this.lastCharge = 0.0;
             return true;
          } else {
-            double var5 = var4.getCharge();
+            double var5 = var4.charge();
             this.lastCharge = var5;
             double var7 = this.spawnPotential.getPotentialEnergyChange(var2, var5);
-            return var7 <= var4.getEnergyBudget();
+            return var7 <= var4.energyBudget();
          }
       }
 
@@ -493,7 +493,7 @@ public final class NaturalSpawner {
          } else {
             MobSpawnSettings.MobSpawnCost var7 = NaturalSpawner.getRoughBiome(var6, var2).getMobSettings().getMobSpawnCost(var3);
             if (var7 != null) {
-               var4 = var7.getCharge();
+               var4 = var7.charge();
             } else {
                var4 = 0.0;
             }

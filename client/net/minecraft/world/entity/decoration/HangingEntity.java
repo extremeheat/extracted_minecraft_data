@@ -138,7 +138,7 @@ public abstract class HangingEntity extends Entity {
    @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
-         return !this.level.mayInteract((Player)var2, this.pos) ? true : this.hurt(DamageSource.playerAttack((Player)var2), 0.0F);
+         return !this.level.mayInteract((Player)var2, this.pos) ? true : this.hurt(this.damageSources().playerAttack((Player)var2), 0.0F);
       } else {
          return false;
       }
@@ -227,7 +227,7 @@ public abstract class HangingEntity extends Entity {
 
    @Override
    public void setPos(double var1, double var3, double var5) {
-      this.pos = new BlockPos(var1, var3, var5);
+      this.pos = BlockPos.containing(var1, var3, var5);
       this.recalculateBoundingBox();
       this.hasImpulse = true;
    }

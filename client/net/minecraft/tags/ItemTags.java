@@ -26,6 +26,7 @@ public final class ItemTags {
    public static final TagKey<Item> OAK_LOGS = bind("oak_logs");
    public static final TagKey<Item> BIRCH_LOGS = bind("birch_logs");
    public static final TagKey<Item> ACACIA_LOGS = bind("acacia_logs");
+   public static final TagKey<Item> CHERRY_LOGS = bind("cherry_logs");
    public static final TagKey<Item> JUNGLE_LOGS = bind("jungle_logs");
    public static final TagKey<Item> SPRUCE_LOGS = bind("spruce_logs");
    public static final TagKey<Item> MANGROVE_LOGS = bind("mangrove_logs");
@@ -35,6 +36,7 @@ public final class ItemTags {
    public static final TagKey<Item> WART_BLOCKS = bind("wart_blocks");
    public static final TagKey<Item> BANNERS = bind("banners");
    public static final TagKey<Item> SAND = bind("sand");
+   public static final TagKey<Item> SMELTS_TO_GLASS = bind("smelts_to_glass");
    public static final TagKey<Item> STAIRS = bind("stairs");
    public static final TagKey<Item> SLABS = bind("slabs");
    public static final TagKey<Item> WALLS = bind("walls");
@@ -86,6 +88,19 @@ public final class ItemTags {
    public static final TagKey<Item> COMPASSES = bind("compasses");
    public static final TagKey<Item> HANGING_SIGNS = bind("hanging_signs");
    public static final TagKey<Item> CREEPER_IGNITERS = bind("creeper_igniters");
+   public static final TagKey<Item> NOTE_BLOCK_TOP_INSTRUMENTS = bind("noteblock_top_instruments");
+   public static final TagKey<Item> TRIMMABLE_ARMOR = bind("trimmable_armor");
+   public static final TagKey<Item> TRIM_MATERIALS = bind("trim_materials");
+   public static final TagKey<Item> TRIM_TEMPLATES = bind("trim_templates");
+   public static final TagKey<Item> SNIFFER_FOOD = bind("sniffer_food");
+   public static final TagKey<Item> DECORATED_POT_SHARDS = bind("decorated_pot_shards");
+   public static final TagKey<Item> SWORDS = bind("swords");
+   public static final TagKey<Item> AXES = bind("axes");
+   public static final TagKey<Item> HOES = bind("hoes");
+   public static final TagKey<Item> PICKAXES = bind("pickaxes");
+   public static final TagKey<Item> SHOVELS = bind("shovels");
+   public static final TagKey<Item> TOOLS = bind("tools");
+   public static final TagKey<Item> BREAKS_DECORATED_POTS = bind("breaks_decorated_pots");
 
    private ItemTags() {
       super();

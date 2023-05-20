@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
@@ -16,8 +17,9 @@ import org.slf4j.Logger;
 
 public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int INFINITE_DURATION = -1;
    private final MobEffect effect;
-   int duration;
+   private int duration;
    private int amplifier;
    private boolean ambient;
    private boolean visible;
@@ -94,7 +96,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       int var2 = this.duration;
       boolean var3 = false;
       if (var1.amplifier > this.amplifier) {
-         if (var1.duration < this.duration) {
+         if (var1.isShorterDurationThan(this)) {
             MobEffectInstance var4 = this.hiddenEffect;
             this.hiddenEffect = new MobEffectInstance(this);
             this.hiddenEffect.hiddenEffect = var4;
@@ -103,7 +105,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.amplifier = var1.amplifier;
          this.duration = var1.duration;
          var3 = true;
-      } else if (var1.duration > this.duration) {
+      } else if (this.isShorterDurationThan(var1)) {
          if (var1.amplifier == this.amplifier) {
             this.duration = var1.duration;
             var3 = true;
@@ -129,12 +131,23 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          var3 = true;
       }
 
-      if (var2 != this.duration) {
-         this.factorData.ifPresent(var2x -> var2x.effectChangedTimestamp += this.duration - var2);
-         var3 = true;
-      }
-
       return var3;
+   }
+
+   private boolean isShorterDurationThan(MobEffectInstance var1) {
+      return !this.isInfiniteDuration() && (this.duration < var1.duration || var1.isInfiniteDuration());
+   }
+
+   public boolean isInfiniteDuration() {
+      return this.duration == -1;
+   }
+
+   public boolean endsWithin(int var1) {
+      return !this.isInfiniteDuration() && this.duration <= var1;
+   }
+
+   public int mapDuration(Int2IntFunction var1) {
+      return !this.isInfiniteDuration() && this.duration != 0 ? var1.applyAsInt(this.duration) : this.duration;
    }
 
    public MobEffect getEffect() {
@@ -162,8 +175,9 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public boolean tick(LivingEntity var1, Runnable var2) {
-      if (this.duration > 0) {
-         if (this.effect.isDurationEffectTick(this.duration, this.amplifier)) {
+      if (this.hasRemainingDuration()) {
+         int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
+         if (this.effect.isDurationEffectTick(var3, this.amplifier)) {
             this.applyEffect(var1);
          }
 
@@ -175,8 +189,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          }
       }
 
-      this.factorData.ifPresent(var1x -> var1x.update(this));
-      return this.duration > 0;
+      this.factorData.ifPresent(var1x -> var1x.tick(this));
+      return this.hasRemainingDuration();
+   }
+
+   private boolean hasRemainingDuration() {
+      return this.isInfiniteDuration() || this.duration > 0;
    }
 
    private int tickDownDuration() {
@@ -184,11 +202,11 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.hiddenEffect.tickDownDuration();
       }
 
-      return --this.duration;
+      return this.duration = this.mapDuration(var0 -> var0 - 1);
    }
 
    public void applyEffect(LivingEntity var1) {
-      if (this.duration > 0) {
+      if (this.hasRemainingDuration()) {
          this.effect.applyEffectTick(var1, this.amplifier);
       }
    }
@@ -201,9 +219,9 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public String toString() {
       String var1;
       if (this.amplifier > 0) {
-         var1 = this.getDescriptionId() + " x " + (this.amplifier + 1) + ", Duration: " + this.duration;
+         var1 = this.getDescriptionId() + " x " + (this.amplifier + 1) + ", Duration: " + this.describeDuration();
       } else {
-         var1 = this.getDescriptionId() + ", Duration: " + this.duration;
+         var1 = this.getDescriptionId() + ", Duration: " + this.describeDuration();
       }
 
       if (!this.visible) {
@@ -215,6 +233,10 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
 
       return var1;
+   }
+
+   private String describeDuration() {
+      return this.isInfiniteDuration() ? "infinite" : Integer.toString(this.duration);
    }
 
    @Override
@@ -306,7 +328,8 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       boolean var2 = true;
       return (this.getDuration() <= 32147 || var1.getDuration() <= 32147) && (!this.isAmbient() || !var1.isAmbient())
          ? ComparisonChain.start()
-            .compare(this.isAmbient(), var1.isAmbient())
+            .compareFalseFirst(this.isAmbient(), var1.isAmbient())
+            .compareFalseFirst(this.isInfiniteDuration(), var1.isInfiniteDuration())
             .compare(this.getDuration(), var1.getDuration())
             .compare(this.getEffect().getColor(), var1.getEffect().getColor())
             .result()
@@ -320,7 +343,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
                   Codec.FLOAT.fieldOf("factor_start").orElse(0.0F).forGetter(var0x -> var0x.factorStart),
                   Codec.FLOAT.fieldOf("factor_target").orElse(1.0F).forGetter(var0x -> var0x.factorTarget),
                   Codec.FLOAT.fieldOf("factor_current").orElse(0.0F).forGetter(var0x -> var0x.factorCurrent),
-                  ExtraCodecs.NON_NEGATIVE_INT.fieldOf("effect_changed_timestamp").orElse(0).forGetter(var0x -> var0x.effectChangedTimestamp),
+                  ExtraCodecs.NON_NEGATIVE_INT.fieldOf("ticks_active").orElse(0).forGetter(var0x -> var0x.ticksActive),
                   Codec.FLOAT.fieldOf("factor_previous_frame").orElse(0.0F).forGetter(var0x -> var0x.factorPreviousFrame),
                   Codec.BOOL.fieldOf("had_effect_last_tick").orElse(false).forGetter(var0x -> var0x.hadEffectLastTick)
                )
@@ -330,7 +353,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       private float factorStart;
       private float factorTarget;
       private float factorCurrent;
-      int effectChangedTimestamp;
+      private int ticksActive;
       private float factorPreviousFrame;
       private boolean hadEffectLastTick;
 
@@ -340,7 +363,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.factorStart = var2;
          this.factorTarget = var3;
          this.factorCurrent = var4;
-         this.effectChangedTimestamp = var5;
+         this.ticksActive = var5;
          this.factorPreviousFrame = var6;
          this.hadEffectLastTick = var7;
       }
@@ -349,17 +372,18 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this(var1, 0.0F, 1.0F, 0.0F, 0, 0.0F, false);
       }
 
-      public void update(MobEffectInstance var1) {
+      public void tick(MobEffectInstance var1) {
          this.factorPreviousFrame = this.factorCurrent;
-         boolean var2 = var1.duration > this.paddingDuration;
+         boolean var2 = !var1.endsWithin(this.paddingDuration);
+         ++this.ticksActive;
          if (this.hadEffectLastTick != var2) {
             this.hadEffectLastTick = var2;
-            this.effectChangedTimestamp = var1.duration;
+            this.ticksActive = 0;
             this.factorStart = this.factorCurrent;
             this.factorTarget = var2 ? 1.0F : 0.0F;
          }
 
-         float var3 = Mth.clamp(((float)this.effectChangedTimestamp - (float)var1.duration) / (float)this.paddingDuration, 0.0F, 1.0F);
+         float var3 = Mth.clamp((float)this.ticksActive / (float)this.paddingDuration, 0.0F, 1.0F);
          this.factorCurrent = Mth.lerp(var3, this.factorStart, this.factorTarget);
       }
 

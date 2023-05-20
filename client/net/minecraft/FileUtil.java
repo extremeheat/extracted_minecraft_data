@@ -108,8 +108,8 @@ public class FileUtil {
       int var1 = var0.indexOf(47);
       if (var1 == -1) {
          return switch(var0) {
-            case "", ".", ".." -> DataResult.error("Invalid path '" + var0 + "'");
-            default -> !isValidStrictPathSegment(var0) ? DataResult.error("Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
+            case "", ".", ".." -> DataResult.error(() -> "Invalid path '" + var0 + "'");
+            default -> !isValidStrictPathSegment(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
          };
       } else {
          ArrayList var2 = new ArrayList();
@@ -122,7 +122,7 @@ public class FileUtil {
                case "":
                case ".":
                case "..":
-                  return DataResult.error("Invalid segment '" + var5 + "' in path '" + var0 + "'");
+                  return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
          }
       }

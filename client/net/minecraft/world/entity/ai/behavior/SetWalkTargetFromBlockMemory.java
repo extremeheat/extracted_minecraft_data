@@ -27,7 +27,7 @@ public class SetWalkTargetFromBlockMemory {
                            int var16 = 0;
                            boolean var17 = true;
       
-                           while(var15 == null || new BlockPos(var15).distManhattan(var10.blockPosition()) > var3) {
+                           while(var15 == null || BlockPos.containing(var15).distManhattan(var10.blockPosition()) > var3) {
                               var15 = DefaultRandomPos.getPosTowards(var10, 15, 7, Vec3.atBottomCenterOf(var13.pos()), 1.5707963705062866);
                               if (++var16 == 1000) {
                                  var10.releasePoi(var0);

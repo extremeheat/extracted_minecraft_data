@@ -51,6 +51,10 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       new ResourceLocation("signs"),
       Sheets.SHULKER_SHEET,
       new ResourceLocation("shulker_boxes"),
+      Sheets.ARMOR_TRIMS_SHEET,
+      new ResourceLocation("armor_trims"),
+      Sheets.DECORATED_POT_SHEET,
+      new ResourceLocation("decorated_pot"),
       TextureAtlas.LOCATION_BLOCKS,
       new ResourceLocation("blocks")
    );

@@ -1,8 +1,6 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import net.minecraft.Util;
@@ -30,26 +28,17 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       long var9 = Util.getMillis();
       this.markers.entrySet().removeIf(var2x -> var9 > var2x.getValue().removeAtTime);
-      this.markers.forEach(this::renderMarker);
+      this.markers.forEach((var3x, var4) -> this.renderMarker(var1, var2, var3x, var4));
    }
 
-   private void renderMarker(BlockPos var1, GameTestDebugRenderer.Marker var2) {
-      RenderSystem.enableBlend();
-      RenderSystem.blendFuncSeparate(
-         GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
-      );
-      RenderSystem.setShaderColor(0.0F, 1.0F, 0.0F, 0.75F);
-      RenderSystem.disableTexture();
-      DebugRenderer.renderFilledBox(var1, 0.02F, var2.getR(), var2.getG(), var2.getB(), var2.getA());
-      if (!var2.text.isEmpty()) {
-         double var3 = (double)var1.getX() + 0.5;
-         double var5 = (double)var1.getY() + 1.2;
-         double var7 = (double)var1.getZ() + 0.5;
-         DebugRenderer.renderFloatingText(var2.text, var3, var5, var7, -1, 0.01F, true, 0.0F, true);
+   private void renderMarker(PoseStack var1, MultiBufferSource var2, BlockPos var3, GameTestDebugRenderer.Marker var4) {
+      DebugRenderer.renderFilledBox(var1, var2, var3, 0.02F, var4.getR(), var4.getG(), var4.getB(), var4.getA() * 0.75F);
+      if (!var4.text.isEmpty()) {
+         double var5 = (double)var3.getX() + 0.5;
+         double var7 = (double)var3.getY() + 1.2;
+         double var9 = (double)var3.getZ() + 0.5;
+         DebugRenderer.renderFloatingText(var1, var2, var4.text, var5, var7, var9, -1, 0.01F, true, 0.0F, true);
       }
-
-      RenderSystem.enableTexture();
-      RenderSystem.disableBlend();
    }
 
    static class Marker {

@@ -77,7 +77,7 @@ public class MoveThroughVillageGoal extends Goal {
                   return false;
                } else {
                   Optional var4 = var1.getPoiManager()
-                     .find(var0 -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, new BlockPos(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
+                     .find(var0 -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
                   if (var4.isEmpty()) {
                      return false;
                   } else {

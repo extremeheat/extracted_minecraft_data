@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.ItemLike;
@@ -93,11 +94,11 @@ public class CreativeModeTab {
       return this.type;
    }
 
-   public void buildContents(FeatureFlagSet var1, boolean var2) {
-      CreativeModeTab.ItemDisplayBuilder var3 = new CreativeModeTab.ItemDisplayBuilder(this, var1);
-      this.displayItemsGenerator.accept(var1, var3, var2);
-      this.displayItems = var3.tabContents;
-      this.displayItemsSearchTab = var3.searchTabContents;
+   public void buildContents(CreativeModeTab.ItemDisplayParameters var1) {
+      CreativeModeTab.ItemDisplayBuilder var2 = new CreativeModeTab.ItemDisplayBuilder(this, var1.enabledFeatures);
+      this.displayItemsGenerator.accept(var1, var2);
+      this.displayItems = var2.tabContents;
+      this.displayItemsSearchTab = var2.searchTabContents;
       this.rebuildSearchTree();
    }
 
@@ -124,7 +125,7 @@ public class CreativeModeTab {
    }
 
    public static class Builder {
-      private static final CreativeModeTab.DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1, var2) -> {
+      private static final CreativeModeTab.DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1) -> {
       };
       private final CreativeModeTab.Row row;
       private final int column;
@@ -197,8 +198,9 @@ public class CreativeModeTab {
       }
    }
 
+   @FunctionalInterface
    public interface DisplayItemsGenerator {
-      void accept(FeatureFlagSet var1, CreativeModeTab.Output var2, boolean var3);
+      void accept(CreativeModeTab.ItemDisplayParameters var1, CreativeModeTab.Output var2);
    }
 
    static class ItemDisplayBuilder implements CreativeModeTab.Output {
@@ -242,6 +244,23 @@ public class CreativeModeTab {
                }
             }
          }
+      }
+   }
+
+   public static record ItemDisplayParameters(FeatureFlagSet a, boolean b, HolderLookup.Provider c) {
+      final FeatureFlagSet enabledFeatures;
+      private final boolean hasPermissions;
+      private final HolderLookup.Provider holders;
+
+      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+         super();
+         this.enabledFeatures = var1;
+         this.hasPermissions = var2;
+         this.holders = var3;
+      }
+
+      public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+         return !this.enabledFeatures.equals(var1) || this.hasPermissions != var2 || this.holders != var3;
       }
    }
 

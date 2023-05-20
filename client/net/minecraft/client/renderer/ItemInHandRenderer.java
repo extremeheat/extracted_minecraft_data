@@ -9,7 +9,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
@@ -20,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -116,7 +116,7 @@ public class ItemInHandRenderer {
       this.itemRenderer = var3;
    }
 
-   public void renderItem(LivingEntity var1, ItemStack var2, ItemTransforms.TransformType var3, boolean var4, PoseStack var5, MultiBufferSource var6, int var7) {
+   public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, boolean var4, PoseStack var5, MultiBufferSource var6, int var7) {
       if (!var2.isEmpty()) {
          this.itemRenderer.renderStatic(var1, var2, var3, var4, var5, var6, var1.level, var7, OverlayTexture.NO_OVERLAY, var1.getId() + var3.ordinal());
       }
@@ -253,6 +253,31 @@ public class ItemInHandRenderer {
       var1.mulPose(Axis.YP.rotationDegrees((float)var8 * var9 * 90.0F));
       var1.mulPose(Axis.XP.rotationDegrees(var9 * 10.0F));
       var1.mulPose(Axis.ZP.rotationDegrees((float)var8 * var9 * 30.0F));
+   }
+
+   private void applyBrushTransform(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4, float var5) {
+      this.applyItemArmTransform(var1, var3, var5);
+      float var6 = (float)this.minecraft.player.getUseItemRemainingTicks() - var2 + 1.0F;
+      float var7 = 1.0F - var6 / (float)var4.getUseDuration();
+      float var8 = -90.0F;
+      float var9 = 60.0F;
+      boolean var10 = true;
+      float var11 = 150.0F;
+      float var12 = -15.0F;
+      float var13 = -15.0F + 75.0F * Mth.cos(var7 * 45.0F * 3.1415927F);
+      if (var3 != HumanoidArm.RIGHT) {
+         var1.translate(0.1, 0.83, 0.35);
+         var1.mulPose(Axis.XP.rotationDegrees(-80.0F));
+         var1.mulPose(Axis.YP.rotationDegrees(-90.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(var13));
+         var1.translate(-0.3, 0.22, 0.35);
+      } else {
+         var1.translate(-0.25, 0.22, 0.35);
+         var1.mulPose(Axis.XP.rotationDegrees(-80.0F));
+         var1.mulPose(Axis.YP.rotationDegrees(90.0F));
+         var1.mulPose(Axis.ZP.rotationDegrees(0.0F));
+         var1.mulPose(Axis.XP.rotationDegrees(var13));
+      }
    }
 
    private void applyItemArmAttackTransform(PoseStack var1, HumanoidArm var2, float var3) {
@@ -393,13 +418,7 @@ public class ItemInHandRenderer {
             }
 
             this.renderItem(
-               var1,
-               var6,
-               var14 ? ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
-               !var14,
-               var8,
-               var9,
-               var10
+               var1, var6, var14 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !var14, var8, var9, var10
             );
          } else {
             boolean var21 = var12 == HumanoidArm.RIGHT;
@@ -463,6 +482,9 @@ public class ItemInHandRenderer {
                      var8.translate(0.0F, 0.0F, var30 * 0.2F);
                      var8.scale(1.0F, 1.0F, 1.0F + var30 * 0.2F);
                      var8.mulPose(Axis.YN.rotationDegrees((float)var24 * 45.0F));
+                     break;
+                  case BRUSH:
+                     this.applyBrushTransform(var8, var2, var12, var6, var7);
                }
             } else if (var1.isAutoSpinAttack()) {
                this.applyItemArmTransform(var8, var12, var7);
@@ -481,13 +503,7 @@ public class ItemInHandRenderer {
             }
 
             this.renderItem(
-               var1,
-               var6,
-               var21 ? ItemTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND,
-               !var21,
-               var8,
-               var9,
-               var10
+               var1, var6, var21 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !var21, var8, var9, var10
             );
          }
 

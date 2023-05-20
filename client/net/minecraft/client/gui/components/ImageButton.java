@@ -1,19 +1,17 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class ImageButton extends Button {
-   private final ResourceLocation resourceLocation;
-   private final int xTexStart;
-   private final int yTexStart;
-   private final int yDiffTex;
-   private final int textureWidth;
-   private final int textureHeight;
+   protected final ResourceLocation resourceLocation;
+   protected final int xTexStart;
+   protected final int yTexStart;
+   protected final int yDiffTex;
+   protected final int textureWidth;
+   protected final int textureHeight;
 
    public ImageButton(int var1, int var2, int var3, int var4, int var5, int var6, ResourceLocation var7, Button.OnPress var8) {
       this(var1, var2, var3, var4, var5, var6, var4, var7, 256, 256, var8);
@@ -40,17 +38,19 @@ public class ImageButton extends Button {
    }
 
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderTexture(0, this.resourceLocation);
-      int var5 = this.yTexStart;
-      if (!this.isActive()) {
-         var5 += this.yDiffTex * 2;
-      } else if (this.isHoveredOrFocused()) {
-         var5 += this.yDiffTex;
-      }
-
-      RenderSystem.enableDepthTest();
-      blit(var1, this.getX(), this.getY(), (float)this.xTexStart, (float)var5, this.width, this.height, this.textureWidth, this.textureHeight);
+   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+      this.renderTexture(
+         var1,
+         this.resourceLocation,
+         this.getX(),
+         this.getY(),
+         this.xTexStart,
+         this.yTexStart,
+         this.yDiffTex,
+         this.width,
+         this.height,
+         this.textureWidth,
+         this.textureHeight
+      );
    }
 }

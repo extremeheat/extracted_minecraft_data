@@ -8,7 +8,6 @@ import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Transformation;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -97,7 +96,7 @@ public class Font {
          return 0;
       } else {
          MultiBufferSource.BufferSource var8 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         int var9 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var8, false, 0, 15728880, var7);
+         int var9 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var8, Font.DisplayMode.NORMAL, 0, 15728880, var7);
          var8.endBatch();
          return var9;
       }
@@ -105,31 +104,50 @@ public class Font {
 
    private int drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, Matrix4f var5, boolean var6) {
       MultiBufferSource.BufferSource var7 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-      int var8 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var7, false, 0, 15728880);
+      int var8 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var7, Font.DisplayMode.NORMAL, 0, 15728880);
       var7.endBatch();
       return var8;
    }
 
    public int drawInBatch(
-      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
    ) {
       return this.drawInBatch(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, this.isBidirectional());
    }
 
    public int drawInBatch(
-      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10, boolean var11
+      String var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10,
+      boolean var11
    ) {
       return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
    }
 
    public int drawInBatch(
-      Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      Component var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
    ) {
       return this.drawInBatch(var1.getVisualOrderText(), var2, var3, var4, var5, var6, var7, var8, var9, var10);
    }
 
    public int drawInBatch(
-      FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      FormattedCharSequence var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10
    ) {
       return this.drawInternal(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10);
    }
@@ -167,7 +185,17 @@ public class Font {
    }
 
    private int drawInternal(
-      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10, boolean var11
+      String var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10,
+      boolean var11
    ) {
       if (var11) {
          var1 = this.bidirectionalShaping(var1);
@@ -185,7 +213,16 @@ public class Font {
    }
 
    private int drawInternal(
-      FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      FormattedCharSequence var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10
    ) {
       var4 = adjustColor(var4);
       Matrix4f var11 = new Matrix4f(var6);
@@ -199,7 +236,7 @@ public class Font {
    }
 
    private float renderText(
-      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, Font.DisplayMode var8, int var9, int var10
    ) {
       Font.StringRenderOutput var11 = new Font.StringRenderOutput(var7, var2, var3, var4, var5, var6, var8, var10);
       StringDecomposer.iterateFormatted(var1, Style.EMPTY, var11);
@@ -207,7 +244,16 @@ public class Font {
    }
 
    private float renderText(
-      FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, boolean var8, int var9, int var10
+      FormattedCharSequence var1,
+      float var2,
+      float var3,
+      int var4,
+      boolean var5,
+      Matrix4f var6,
+      MultiBufferSource var7,
+      Font.DisplayMode var8,
+      int var9,
+      int var10
    ) {
       Font.StringRenderOutput var11 = new Font.StringRenderOutput(var7, var2, var3, var4, var5, var6, var8, var10);
       var1.accept(var11);
@@ -259,12 +305,12 @@ public class Font {
       return this.splitter.headByWidth(var1, var2, Style.EMPTY);
    }
 
-   public void drawWordWrap(FormattedText var1, int var2, int var3, int var4, int var5) {
-      Matrix4f var6 = Transformation.identity().getMatrix();
+   public void drawWordWrap(PoseStack var1, FormattedText var2, int var3, int var4, int var5, int var6) {
+      Matrix4f var7 = var1.last().pose();
 
-      for(FormattedCharSequence var8 : this.split(var1, var4)) {
-         this.drawInternal(var8, (float)var2, (float)var3, var5, var6, false);
-         var3 += 9;
+      for(FormattedCharSequence var9 : this.split(var2, var5)) {
+         this.drawInternal(var9, (float)var3, (float)var4, var6, var7, false);
+         var4 += 9;
       }
    }
 
@@ -319,10 +365,6 @@ public class Font {
          }
 
          this.effects.add(var1);
-      }
-
-      public StringRenderOutput(MultiBufferSource var2, float var3, float var4, int var5, boolean var6, Matrix4f var7, boolean var8, int var9) {
-         this(var2, var3, var4, var5, var6, var7, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, var9);
       }
 
       public StringRenderOutput(MultiBufferSource var2, float var3, float var4, int var5, boolean var6, Matrix4f var7, Font.DisplayMode var8, int var9) {

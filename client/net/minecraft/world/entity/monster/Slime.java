@@ -235,7 +235,7 @@ public class Slime extends Mob implements Enemy {
          int var2 = this.getSize();
          if (this.distanceToSqr(var1) < 0.6 * (double)var2 * 0.6 * (double)var2
             && this.hasLineOfSight(var1)
-            && var1.hurt(DamageSource.mobAttack(this), this.getAttackDamage())) {
+            && var1.hurt(this.damageSources().mobAttack(this), this.getAttackDamage())) {
             this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
             this.doEnchantDamageEffects(this, var1);
          }
@@ -388,6 +388,8 @@ public class Slime extends Mob implements Enemy {
          return true;
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          LivingEntity var1 = this.slime.getTarget();
@@ -395,7 +397,10 @@ public class Slime extends Mob implements Enemy {
             this.slime.lookAt(var1, 10.0F, 10.0F);
          }
 
-         ((Slime.SlimeMoveControl)this.slime.getMoveControl()).setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
+         MoveControl var3 = this.slime.getMoveControl();
+         if (var3 instanceof Slime.SlimeMoveControl var2) {
+            var2.setDirection(this.slime.getYRot(), this.slime.isDealsDamage());
+         }
       }
    }
 
@@ -419,13 +424,18 @@ public class Slime extends Mob implements Enemy {
          return true;
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          if (this.slime.getRandom().nextFloat() < 0.8F) {
             this.slime.getJumpControl().jump();
          }
 
-         ((Slime.SlimeMoveControl)this.slime.getMoveControl()).setWantedMovement(1.2);
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof Slime.SlimeMoveControl var1) {
+            var1.setWantedMovement(1.2);
+         }
       }
    }
 
@@ -443,9 +453,14 @@ public class Slime extends Mob implements Enemy {
          return !this.slime.isPassenger();
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
-         ((Slime.SlimeMoveControl)this.slime.getMoveControl()).setWantedMovement(1.0);
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof Slime.SlimeMoveControl var1) {
+            var1.setWantedMovement(1.0);
+         }
       }
    }
 
@@ -522,6 +537,8 @@ public class Slime extends Mob implements Enemy {
             && this.slime.getMoveControl() instanceof Slime.SlimeMoveControl;
       }
 
+      // $QF: Could not properly define all variable types!
+      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void tick() {
          if (--this.nextRandomizeTime <= 0) {
@@ -529,7 +546,10 @@ public class Slime extends Mob implements Enemy {
             this.chosenDegrees = (float)this.slime.getRandom().nextInt(360);
          }
 
-         ((Slime.SlimeMoveControl)this.slime.getMoveControl()).setDirection(this.chosenDegrees, false);
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof Slime.SlimeMoveControl var1) {
+            var1.setDirection(this.chosenDegrees, false);
+         }
       }
    }
 }

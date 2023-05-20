@@ -10,7 +10,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -57,13 +56,12 @@ public class RecipeButton extends AbstractWidget {
    }
 
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
       if (!Screen.hasControlDown()) {
          this.time += var4;
       }
 
       Minecraft var5 = Minecraft.getInstance();
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, RECIPE_BOOK_LOCATION);
       int var6 = 29;
       if (!this.collection.hasCraftable()) {
@@ -76,31 +74,28 @@ public class RecipeButton extends AbstractWidget {
       }
 
       boolean var8 = this.animationTime > 0.0F;
-      PoseStack var9 = RenderSystem.getModelViewStack();
       if (var8) {
-         float var10 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         var9.pushPose();
-         var9.translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
-         var9.scale(var10, var10, 1.0F);
-         var9.translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
-         RenderSystem.applyModelViewMatrix();
+         float var9 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
+         var1.pushPose();
+         var1.translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
+         var1.scale(var9, var9, 1.0F);
+         var1.translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
          this.animationTime -= var4;
       }
 
-      this.blit(var1, this.getX(), this.getY(), var6, var7, this.width, this.height);
-      List var13 = this.getOrderedRecipes();
-      this.currentIndex = Mth.floor(this.time / 30.0F) % var13.size();
-      ItemStack var11 = ((Recipe)var13.get(this.currentIndex)).getResultItem();
-      int var12 = 4;
+      blit(var1, this.getX(), this.getY(), var6, var7, this.width, this.height);
+      List var12 = this.getOrderedRecipes();
+      this.currentIndex = Mth.floor(this.time / 30.0F) % var12.size();
+      ItemStack var10 = ((Recipe)var12.get(this.currentIndex)).getResultItem(this.collection.registryAccess());
+      int var11 = 4;
       if (this.collection.hasSingleResultItem() && this.getOrderedRecipes().size() > 1) {
-         var5.getItemRenderer().renderAndDecorateItem(var11, this.getX() + var12 + 1, this.getY() + var12 + 1, 0, 10);
-         --var12;
+         var5.getItemRenderer().renderAndDecorateItem(var1, var10, this.getX() + var11 + 1, this.getY() + var11 + 1, 0, 10);
+         --var11;
       }
 
-      var5.getItemRenderer().renderAndDecorateFakeItem(var11, this.getX() + var12, this.getY() + var12);
+      var5.getItemRenderer().renderAndDecorateFakeItem(var1, var10, this.getX() + var11, this.getY() + var11);
       if (var8) {
-         var9.popPose();
-         RenderSystem.applyModelViewMatrix();
+         var1.popPose();
       }
    }
 
@@ -123,7 +118,7 @@ public class RecipeButton extends AbstractWidget {
    }
 
    public List<Component> getTooltipText(Screen var1) {
-      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).getResultItem();
+      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).getResultItem(this.collection.registryAccess());
       ArrayList var3 = Lists.newArrayList(var1.getTooltipFromItem(var2));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var3.add(MORE_RECIPES_TOOLTIP);
@@ -134,7 +129,7 @@ public class RecipeButton extends AbstractWidget {
 
    @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).getResultItem();
+      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).getResultItem(this.collection.registryAccess());
       var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -63,12 +62,10 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, CRAFTING_TABLE_LOCATION);
       int var5 = this.leftPos;
       int var6 = (this.height - this.imageHeight) / 2;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
    }
 
    @Override

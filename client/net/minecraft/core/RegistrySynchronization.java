@@ -15,6 +15,9 @@ import net.minecraft.network.chat.ChatType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.item.armortrim.TrimMaterial;
+import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -23,7 +26,10 @@ public class RegistrySynchronization {
       Builder var0 = ImmutableMap.builder();
       put(var0, Registries.BIOME, Biome.NETWORK_CODEC);
       put(var0, Registries.CHAT_TYPE, ChatType.CODEC);
+      put(var0, Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC);
+      put(var0, Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC);
       put(var0, Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC);
+      put(var0, Registries.DAMAGE_TYPE, DamageType.CODEC);
       return var0.build();
    });
    public static final Codec<RegistryAccess> NETWORK_CODEC = makeNetworkCodec();
@@ -48,7 +54,7 @@ public class RegistrySynchronization {
       return (DataResult<? extends Codec<E>>)Optional.ofNullable(NETWORKABLE_REGISTRIES.get(var0))
          .map(var0x -> var0x.networkCodec())
          .map(DataResult::success)
-         .orElseGet(() -> DataResult.error("Unknown or not serializable registry: " + var0));
+         .orElseGet(() -> DataResult.error(() -> "Unknown or not serializable registry: " + var0));
    }
 
    private static <E> Codec<RegistryAccess> makeNetworkCodec() {

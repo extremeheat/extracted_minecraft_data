@@ -16,6 +16,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -34,6 +35,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -106,36 +108,39 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
+   private final RegistryAccess registryAccess;
+   private final DamageSources damageSources;
    private long subTickCount;
 
    protected Level(
       WritableLevelData var1,
       ResourceKey<Level> var2,
-      Holder<DimensionType> var3,
-      Supplier<ProfilerFiller> var4,
-      boolean var5,
+      RegistryAccess var3,
+      Holder<DimensionType> var4,
+      Supplier<ProfilerFiller> var5,
       boolean var6,
-      long var7,
-      int var9
+      boolean var7,
+      long var8,
+      int var10
    ) {
       super();
-      this.profiler = var4;
+      this.profiler = var5;
       this.levelData = var1;
-      this.dimensionTypeRegistration = var3;
-      this.dimensionTypeId = (ResourceKey)var3.unwrapKey().orElseThrow(() -> new IllegalArgumentException("Dimension must be registered, got " + var3));
-      final DimensionType var10 = (DimensionType)var3.value();
+      this.dimensionTypeRegistration = var4;
+      this.dimensionTypeId = (ResourceKey)var4.unwrapKey().orElseThrow(() -> new IllegalArgumentException("Dimension must be registered, got " + var4));
+      final DimensionType var11 = (DimensionType)var4.value();
       this.dimension = var2;
-      this.isClientSide = var5;
-      if (var10.coordinateScale() != 1.0) {
+      this.isClientSide = var6;
+      if (var11.coordinateScale() != 1.0) {
          this.worldBorder = new WorldBorder() {
             @Override
             public double getCenterX() {
-               return super.getCenterX() / var10.coordinateScale();
+               return super.getCenterX() / var11.coordinateScale();
             }
 
             @Override
             public double getCenterZ() {
-               return super.getCenterZ() / var10.coordinateScale();
+               return super.getCenterZ() / var11.coordinateScale();
             }
          };
       } else {
@@ -143,9 +148,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
 
       this.thread = Thread.currentThread();
-      this.biomeManager = new BiomeManager(this, var7);
-      this.isDebug = var6;
-      this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
+      this.biomeManager = new BiomeManager(this, var8);
+      this.isDebug = var7;
+      this.neighborUpdater = new CollectingNeighborUpdater(this, var10);
+      this.registryAccess = var3;
+      this.damageSources = new DamageSources(var3);
    }
 
    @Override
@@ -601,7 +608,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       BlockPos var1 = new BlockPos(this.levelData.getXSpawn(), this.levelData.getYSpawn(), this.levelData.getZSpawn());
       if (!this.getWorldBorder().isWithinBounds(var1)) {
          var1 = this.getHeightmapPos(
-            Heightmap.Types.MOTION_BLOCKING, new BlockPos(this.getWorldBorder().getCenterX(), 0.0, this.getWorldBorder().getCenterZ())
+            Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(this.getWorldBorder().getCenterX(), 0.0, this.getWorldBorder().getCenterZ())
          );
       }
 
@@ -795,6 +802,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void broadcastEntityEvent(Entity var1, byte var2) {
    }
 
+   public void broadcastDamageEvent(Entity var1, DamageSource var2) {
+   }
+
    public void blockEvent(BlockPos var1, Block var2, int var3, int var4) {
       this.getBlockState(var1).triggerEvent(this, var1, var3, var4);
    }
@@ -849,13 +859,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          return false;
       } else {
          Biome var2 = this.getBiome(var1).value();
-         return var2.getPrecipitation() == Biome.Precipitation.RAIN && var2.warmEnoughToRain(var1);
+         return var2.getPrecipitationAt(var1) == Biome.Precipitation.RAIN;
       }
-   }
-
-   public boolean isHumidAt(BlockPos var1) {
-      Biome var2 = this.getBiome(var1).value();
-      return var2.isHumid();
    }
 
    @Nullable
@@ -1003,6 +1008,15 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    @Override
    public long nextSubTickCount() {
       return (long)(this.subTickCount++);
+   }
+
+   @Override
+   public RegistryAccess registryAccess() {
+      return this.registryAccess;
+   }
+
+   public DamageSources damageSources() {
+      return this.damageSources;
    }
 
    public static enum ExplosionInteraction {

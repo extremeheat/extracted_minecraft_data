@@ -34,7 +34,7 @@ public class SkeletonHorse extends AbstractHorse {
 
    @Override
    protected void randomizeAttributes(RandomSource var1) {
-      this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(this.generateRandomJumpStrength(var1));
+      this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(generateJumpStrength(var1::nextDouble));
    }
 
    @Override
@@ -124,11 +124,6 @@ public class SkeletonHorse extends AbstractHorse {
       super.readAdditionalSaveData(var1);
       this.setTrap(var1.getBoolean("SkeletonTrap"));
       this.trapTime = var1.getInt("SkeletonTrapTime");
-   }
-
-   @Override
-   public boolean rideableUnderWater() {
-      return true;
    }
 
    @Override

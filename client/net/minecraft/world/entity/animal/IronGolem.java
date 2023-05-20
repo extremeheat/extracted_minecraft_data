@@ -64,7 +64,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
    public IronGolem(EntityType<? extends IronGolem> var1, Level var2) {
       super(var1, var2);
-      this.maxUpStep = 1.0F;
+      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -206,7 +206,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.level.broadcastEntityEvent(this, (byte)4);
       float var2 = this.getAttackDamage();
       float var3 = (int)var2 > 0 ? var2 / 2.0F + (float)this.random.nextInt((int)var2) : var2;
-      boolean var4 = var1.hurt(DamageSource.mobAttack(this), var3);
+      boolean var4 = var1.hurt(this.damageSources().mobAttack(this), var3);
       if (var4) {
          double var5 = var1 instanceof LivingEntity var7 ? var7.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
          double var9 = Math.max(0.0, 1.0 - var5);

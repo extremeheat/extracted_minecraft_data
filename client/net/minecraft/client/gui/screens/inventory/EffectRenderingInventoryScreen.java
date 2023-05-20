@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.effect.MobEffect;
@@ -38,7 +39,6 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       int var5 = this.width - var4;
       Collection var6 = this.minecraft.player.getActiveEffects();
       if (!var6.isEmpty() && var5 >= 32) {
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          boolean var7 = var5 >= 120;
          int var8 = 33;
          if (var6.size() > 5) {
@@ -63,7 +63,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
             }
 
             if (var11 != null) {
-               List var14 = List.of(this.getEffectName(var11), Component.literal(MobEffectUtil.formatDuration(var11, 1.0F)));
+               List var14 = List.of(this.getEffectName(var11), MobEffectUtil.formatDuration(var11, 1.0F));
                this.renderTooltip(var1, var14, Optional.empty(), var2, var3);
             }
          }
@@ -75,11 +75,10 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       int var6 = this.topPos;
 
       for(MobEffectInstance var8 : var4) {
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          if (var5) {
-            this.blit(var1, var2, var6, 0, 166, 120, 32);
+            blit(var1, var2, var6, 0, 166, 120, 32);
          } else {
-            this.blit(var1, var2, var6, 0, 198, 32, 32);
+            blit(var1, var2, var6, 0, 198, 32, 32);
          }
 
          var6 += var3;
@@ -94,7 +93,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
          MobEffect var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
          RenderSystem.setShaderTexture(0, var11.atlasLocation());
-         blit(var1, var2 + (var5 ? 6 : 7), var7 + 7, this.getBlitOffset(), 18, 18, var11);
+         blit(var1, var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
          var7 += var3;
       }
    }
@@ -105,7 +104,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       for(MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
          this.font.drawShadow(var1, var8, (float)(var2 + 10 + 18), (float)(var5 + 6), 16777215);
-         String var9 = MobEffectUtil.formatDuration(var7, 1.0F);
+         Component var9 = MobEffectUtil.formatDuration(var7, 1.0F);
          this.font.drawShadow(var1, var9, (float)(var2 + 10 + 18), (float)(var5 + 6 + 10), 8355711);
          var5 += var3;
       }
@@ -114,7 +113,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
    private Component getEffectName(MobEffectInstance var1) {
       MutableComponent var2 = var1.getEffect().getDisplayName().copy();
       if (var1.getAmplifier() >= 1 && var1.getAmplifier() <= 9) {
-         var2.append(" ").append(Component.translatable("enchantment.level." + (var1.getAmplifier() + 1)));
+         var2.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + (var1.getAmplifier() + 1)));
       }
 
       return var2;

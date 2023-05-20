@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.stats.RecipeBook;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
@@ -30,22 +31,26 @@ public class ClientRecipeBook extends RecipeBook {
       super();
    }
 
-   public void setupCollections(Iterable<Recipe<?>> var1) {
-      Map var2 = categorizeAndGroupRecipes(var1);
-      HashMap var3 = Maps.newHashMap();
-      Builder var4 = ImmutableList.builder();
-      var2.forEach((var2x, var3x) -> var3.put(var2x, (List)var3x.stream().map(RecipeCollection::new).peek(var4::add).collect(ImmutableList.toImmutableList())));
+   public void setupCollections(Iterable<Recipe<?>> var1, RegistryAccess var2) {
+      Map var3 = categorizeAndGroupRecipes(var1);
+      HashMap var4 = Maps.newHashMap();
+      Builder var5 = ImmutableList.builder();
+      var3.forEach(
+         (var3x, var4x) -> var4.put(
+               var3x, (List)var4x.stream().map(var1xx -> new RecipeCollection(var2, var1xx)).peek(var5::add).collect(ImmutableList.toImmutableList())
+            )
+      );
       RecipeBookCategories.AGGREGATE_CATEGORIES
          .forEach(
-            (var1x, var2x) -> var3.put(
+            (var1x, var2x) -> var4.put(
                   var1x,
                   (List)var2x.stream()
-                     .flatMap(var1xx -> ((List)var3.getOrDefault(var1xx, ImmutableList.of())).stream())
+                     .flatMap(var1xx -> ((List)var4.getOrDefault(var1xx, ImmutableList.of())).stream())
                      .collect(ImmutableList.toImmutableList())
                )
          );
-      this.collectionsByTab = ImmutableMap.copyOf(var3);
-      this.allCollections = var4.build();
+      this.collectionsByTab = ImmutableMap.copyOf(var4);
+      this.allCollections = var5.build();
    }
 
    private static Map<RecipeBookCategories, List<List<Recipe<?>>>> categorizeAndGroupRecipes(Iterable<Recipe<?>> var0) {

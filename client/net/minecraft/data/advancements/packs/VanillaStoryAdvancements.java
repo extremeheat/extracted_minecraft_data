@@ -14,10 +14,12 @@ import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -189,7 +191,9 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "deflected_projectile",
             EntityHurtPlayerTrigger.TriggerInstance.entityHurtPlayer(
-               DamagePredicate.Builder.damageInstance().type(DamageSourcePredicate.Builder.damageType().isProjectile(true)).blocked(true)
+               DamagePredicate.Builder.damageInstance()
+                  .type(DamageSourcePredicate.Builder.damageType().tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE)))
+                  .blocked(true)
             )
          )
          .save(var2, "story/deflect_arrow");

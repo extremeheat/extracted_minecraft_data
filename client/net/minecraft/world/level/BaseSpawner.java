@@ -102,7 +102,7 @@ public abstract class BaseSpawner {
                double var13 = var10 >= 2 ? var9.getDouble(1) : (double)(var2.getY() + var4.nextInt(3) - 1);
                double var15 = var10 >= 3 ? var9.getDouble(2) : (double)var2.getZ() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
                if (var1.noCollision(((EntityType)var8.get()).getAABB(var11, var13, var15))) {
-                  BlockPos var17 = new BlockPos(var11, var13, var15);
+                  BlockPos var17 = BlockPos.containing(var11, var13, var15);
                   if (var5.getCustomSpawnRules().isPresent()) {
                      if (!((EntityType)var8.get()).getCategory().isFriendly() && var1.getDifficulty() == Difficulty.PEACEFUL) {
                         continue;

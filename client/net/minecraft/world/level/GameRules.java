@@ -101,6 +101,9 @@ public class GameRules {
    public static final GameRules.Key<GameRules.IntegerValue> RULE_MAX_COMMAND_CHAIN_LENGTH = register(
       "maxCommandChainLength", GameRules.Category.MISC, GameRules.IntegerValue.create(65536)
    );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_COMMAND_MODIFICATION_BLOCK_LIMIT = register(
+      "commandModificationBlockLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32768)
+   );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ANNOUNCE_ADVANCEMENTS = register(
       "announceAdvancements", GameRules.Category.CHAT, GameRules.BooleanValue.create(true)
    );
@@ -167,6 +170,9 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_GLOBAL_SOUND_EVENTS = register(
       "globalSoundEvents", GameRules.Category.MISC, GameRules.BooleanValue.create(true)
+   );
+   public static final GameRules.Key<GameRules.BooleanValue> RULE_DO_VINES_SPREAD = register(
+      "doVinesSpread", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true)
    );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 

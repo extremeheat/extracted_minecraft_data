@@ -22,6 +22,7 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.Codec.ResultFunction;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -48,6 +49,9 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.joml.AxisAngle4f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ExtraCodecs {
@@ -57,21 +61,52 @@ public class ExtraCodecs {
       try {
          return DataResult.success(Component.Serializer.fromJson(var0));
       } catch (JsonParseException var2) {
-         return DataResult.error(var2.getMessage());
+         return DataResult.error(var2::getMessage);
       }
    }, var0 -> {
       try {
          return DataResult.success(Component.Serializer.toJsonTree(var0));
       } catch (IllegalArgumentException var2) {
-         return DataResult.error(var2.getMessage());
+         return DataResult.error(var2::getMessage);
       }
    });
    public static final Codec<Vector3f> VECTOR3F = Codec.FLOAT
       .listOf()
       .comapFlatMap(
-         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vector3f(var0x.get(0), var0x.get(1), var0x.get(2))),
-         var0 -> ImmutableList.of(var0.x(), var0.y(), var0.z())
+         var0 -> Util.fixedSize(var0, 3).map(var0x -> new Vector3f(var0x.get(0), var0x.get(1), var0x.get(2))), var0 -> List.of(var0.x(), var0.y(), var0.z())
       );
+   public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS = Codec.FLOAT
+      .listOf()
+      .comapFlatMap(
+         var0 -> Util.fixedSize(var0, 4).map(var0x -> new Quaternionf(var0x.get(0), var0x.get(1), var0x.get(2), var0x.get(3))),
+         var0 -> List.of(var0.x, var0.y, var0.z, var0.w)
+      );
+   public static final Codec<AxisAngle4f> AXISANGLE4F = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               Codec.FLOAT.fieldOf("angle").forGetter(var0x -> var0x.angle),
+               VECTOR3F.fieldOf("axis").forGetter(var0x -> new Vector3f(var0x.x, var0x.y, var0x.z))
+            )
+            .apply(var0, AxisAngle4f::new)
+   );
+   public static final Codec<Quaternionf> QUATERNIONF = Codec.either(QUATERNIONF_COMPONENTS, AXISANGLE4F.xmap(Quaternionf::new, AxisAngle4f::new))
+      .xmap(var0 -> (Quaternionf)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
+   public static Codec<Matrix4f> MATRIX4F = Codec.FLOAT.listOf().comapFlatMap(var0 -> Util.fixedSize(var0, 16).map(var0x -> {
+         Matrix4f var1 = new Matrix4f();
+
+         for(int var2 = 0; var2 < var0x.size(); ++var2) {
+            var1.setRowColumn(var2 >> 2, var2 & 3, var0x.get(var2));
+         }
+
+         return var1.determineProperties();
+      }), var0 -> {
+      FloatArrayList var1 = new FloatArrayList(16);
+
+      for(int var2 = 0; var2 < 16; ++var2) {
+         var1.add(var0.getRowColumn(var2 >> 2, var2 & 3));
+      }
+
+      return var1;
+   });
    public static final Codec<Integer> NON_NEGATIVE_INT = intRangeWithMessage(0, 2147483647, var0 -> "Value must be non-negative: " + var0);
    public static final Codec<Integer> POSITIVE_INT = intRangeWithMessage(1, 2147483647, var0 -> "Value must be positive: " + var0);
    public static final Codec<Float> POSITIVE_FLOAT = floatRangeMinExclusiveWithMessage(0.0F, 3.4028235E38F, var0 -> "Value must be positive: " + var0);
@@ -79,7 +114,7 @@ public class ExtraCodecs {
       try {
          return DataResult.success(Pattern.compile(var0));
       } catch (PatternSyntaxException var2) {
-         return DataResult.error("Invalid regex pattern '" + var0 + "': " + var2.getMessage());
+         return DataResult.error(() -> "Invalid regex pattern '" + var0 + "': " + var2.getMessage());
       }
    }, Pattern::pattern);
    public static final Codec<Instant> INSTANT_ISO8601 = instantCodec(DateTimeFormatter.ISO_INSTANT);
@@ -87,7 +122,7 @@ public class ExtraCodecs {
       try {
          return DataResult.success(Base64.getDecoder().decode(var0));
       } catch (IllegalArgumentException var2) {
-         return DataResult.error("Malformed base64 string");
+         return DataResult.error(() -> "Malformed base64 string");
       }
    }, var0 -> Base64.getEncoder().encodeToString(var0));
    public static final Codec<ExtraCodecs.TagOrElementLocation> TAG_OR_ELEMENT_ID = Codec.STRING
@@ -138,6 +173,9 @@ public class ExtraCodecs {
                return var0x;
             })
    );
+   public static final Codec<String> NON_EMPTY_STRING = validate(
+      Codec.STRING, var0 -> var0.isEmpty() ? DataResult.error(() -> "Expected non-empty string") : DataResult.success(var0)
+   );
 
    public ExtraCodecs() {
       super();
@@ -173,7 +211,7 @@ public class ExtraCodecs {
          public <T> DataResult<Pair<A, T>> apply(DynamicOps<T> var1, T var2, DataResult<Pair<A, T>> var3) {
             MutableObject var4 = new MutableObject();
             Optional var5 = var3.resultOrPartial(var4::setValue);
-            return var5.isPresent() ? var3 : DataResult.error("(" + (String)var4.getValue() + " -> using default)", Pair.of(var0, var2));
+            return var5.isPresent() ? var3 : DataResult.error(() -> "(" + (String)var4.getValue() + " -> using default)", Pair.of(var0, var2));
          }
 
          public <T> DataResult<T> coApply(DynamicOps<T> var1, A var2, DataResult<T> var3) {
@@ -192,10 +230,10 @@ public class ExtraCodecs {
          .flatXmap(
             var1x -> (DataResult)Optional.ofNullable(var1.apply(var1x))
                   .map(DataResult::success)
-                  .orElseGet(() -> DataResult.error("Unknown element id: " + var1x)),
+                  .orElseGet(() -> DataResult.error(() -> "Unknown element id: " + var1x)),
             var2x -> {
                int var3 = var0.applyAsInt(var2x);
-               return var3 == var2 ? DataResult.error("Element with unknown id: " + var2x) : DataResult.success(var3);
+               return var3 == var2 ? DataResult.error(() -> "Element with unknown id: " + var2x) : DataResult.success(var3);
             }
          );
    }
@@ -205,10 +243,10 @@ public class ExtraCodecs {
          .flatXmap(
             var1x -> (DataResult)Optional.ofNullable(var1.apply(var1x))
                   .map(DataResult::success)
-                  .orElseGet(() -> DataResult.error("Unknown element name:" + var1x)),
+                  .orElseGet(() -> DataResult.error(() -> "Unknown element name:" + var1x)),
             var1x -> (DataResult)Optional.ofNullable((String)var0.apply(var1x))
                   .map(DataResult::success)
-                  .orElseGet(() -> DataResult.error("Element with unknown name: " + var1x))
+                  .orElseGet(() -> DataResult.error(() -> "Element with unknown name: " + var1x))
          );
    }
 
@@ -246,38 +284,37 @@ public class ExtraCodecs {
       });
    }
 
-   private static <N extends Number & Comparable<N>> Function<N, DataResult<N>> checkRangeWithMessage(N var0, N var1, Function<N, String> var2) {
-      return var3 -> var3.compareTo(var0) >= 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error((String)var2.apply(var3));
+   public static <T> Codec<T> validate(Codec<T> var0, Function<T, DataResult<T>> var1) {
+      return var0.flatXmap(var1, var1);
    }
 
    private static Codec<Integer> intRangeWithMessage(int var0, int var1, Function<Integer, String> var2) {
-      Function var3 = checkRangeWithMessage(var0, var1, var2);
-      return Codec.INT.flatXmap(var3, var3);
+      return validate(
+         Codec.INT,
+         var3 -> var3.compareTo(var0) >= 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> (String)var2.apply(var3))
+      );
    }
 
-   private static <N extends Number & Comparable<N>> Function<N, DataResult<N>> checkRangeMinExclusiveWithMessage(N var0, N var1, Function<N, String> var2) {
-      return var3 -> var3.compareTo(var0) > 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error((String)var2.apply(var3));
+   public static Codec<Integer> intRange(int var0, int var1) {
+      return intRangeWithMessage(var0, var1, var2 -> "Value must be within range [" + var0 + ";" + var1 + "]: " + var2);
    }
 
    private static Codec<Float> floatRangeMinExclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
-      Function var3 = checkRangeMinExclusiveWithMessage(var0, var1, var2);
-      return Codec.FLOAT.flatXmap(var3, var3);
-   }
-
-   public static <T> Function<List<T>, DataResult<List<T>>> nonEmptyListCheck() {
-      return var0 -> var0.isEmpty() ? DataResult.error("List must have contents") : DataResult.success(var0);
+      return validate(
+         Codec.FLOAT,
+         var3 -> var3.compareTo(var0) > 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> (String)var2.apply(var3))
+      );
    }
 
    public static <T> Codec<List<T>> nonEmptyList(Codec<List<T>> var0) {
-      return var0.flatXmap(nonEmptyListCheck(), nonEmptyListCheck());
-   }
-
-   public static <T> Function<HolderSet<T>, DataResult<HolderSet<T>>> nonEmptyHolderSetCheck() {
-      return var0 -> var0.unwrap().right().filter(List::isEmpty).isPresent() ? DataResult.error("List must have contents") : DataResult.success(var0);
+      return validate(var0, var0x -> var0x.isEmpty() ? DataResult.error(() -> "List must have contents") : DataResult.success(var0x));
    }
 
    public static <T> Codec<HolderSet<T>> nonEmptyHolderSet(Codec<HolderSet<T>> var0) {
-      return var0.flatXmap(nonEmptyHolderSetCheck(), nonEmptyHolderSetCheck());
+      return validate(
+         var0,
+         var0x -> var0x.unwrap().right().filter(List::isEmpty).isPresent() ? DataResult.error(() -> "List must have contents") : DataResult.success(var0x)
+      );
    }
 
    public static <A> Codec<A> lazyInitializedCodec(Supplier<Codec<A>> var0) {
@@ -320,7 +357,7 @@ public class ExtraCodecs {
                Object var4 = var2.next();
                Object var5 = var0.apply(var4);
                if (var5 != var3) {
-                  return DataResult.error("Mixed type list: element " + var4 + " had type " + var5 + ", but list is of type " + var3);
+                  return DataResult.error(() -> "Mixed type list: element " + var4 + " had type " + var5 + ", but list is of type " + var3);
                }
             }
          }
@@ -335,7 +372,7 @@ public class ExtraCodecs {
             try {
                return var0.decode(var1, var2);
             } catch (Exception var4) {
-               return DataResult.error("Cauch exception decoding " + var2 + ": " + var4.getMessage());
+               return DataResult.error(() -> "Caught exception decoding " + var2 + ": " + var4.getMessage());
             }
          }
       });
@@ -346,7 +383,7 @@ public class ExtraCodecs {
          try {
             return DataResult.success(Instant.from(var0.parse(var1)));
          } catch (Exception var3) {
-            return DataResult.error(var3.getMessage());
+            return DataResult.error(var3::getMessage);
          }
       }, var0::format);
    }
@@ -359,12 +396,28 @@ public class ExtraCodecs {
       try {
          return DataResult.success(new GameProfile((UUID)((Optional)var0.getFirst()).orElse(null), (String)((Optional)var0.getSecond()).orElse(null)));
       } catch (Throwable var2) {
-         return DataResult.error(var2.getMessage());
+         return DataResult.error(var2::getMessage);
       }
    }
 
    private static DataResult<Pair<Optional<UUID>, Optional<String>>> mapGameProfileToIdName(GameProfile var0) {
       return DataResult.success(Pair.of(Optional.ofNullable(var0.getId()), Optional.ofNullable(var0.getName())));
+   }
+
+   public static Codec<String> sizeLimitedString(int var0, int var1) {
+      return validate(
+         Codec.STRING,
+         var2 -> {
+            int var3 = var2.length();
+            if (var3 < var0) {
+               return DataResult.error(() -> "String \"" + var2 + "\" is too short: " + var3 + ", expected range [" + var0 + "-" + var1 + "]");
+            } else {
+               return var3 > var1
+                  ? DataResult.error(() -> "String \"" + var2 + "\" is too long: " + var3 + ", expected range [" + var0 + "-" + var1 + "]")
+                  : DataResult.success(var2);
+            }
+         }
+      );
    }
 
    static final class EitherCodec<F, S> implements Codec<Either<F, S>> {
@@ -469,7 +522,7 @@ public class ExtraCodecs {
          Optional var6 = var4.result();
          if (var5.isPresent() && var6.isPresent()) {
             return DataResult.error(
-               "Both alternatives read successfully, can not pick the correct one; first: " + var5.get() + " second: " + var6.get(), (Pair)var5.get()
+               () -> "Both alternatives read successfully, can not pick the correct one; first: " + var5.get() + " second: " + var6.get(), (Pair)var5.get()
             );
          } else {
             return var5.isPresent() ? var3 : var4;

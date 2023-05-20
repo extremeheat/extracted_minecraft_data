@@ -38,14 +38,12 @@ public class SocialInteractionsScreen extends Screen {
    private static final Component EMPTY_HIDDEN = Component.translatable("gui.socialInteractions.empty_hidden").withStyle(ChatFormatting.GRAY);
    private static final Component EMPTY_BLOCKED = Component.translatable("gui.socialInteractions.empty_blocked").withStyle(ChatFormatting.GRAY);
    private static final Component BLOCKING_HINT = Component.translatable("gui.socialInteractions.blocking_hint");
-   private static final String BLOCK_LINK = "https://aka.ms/javablocking";
    private static final int BG_BORDER_SIZE = 8;
-   private static final int BG_UNITS = 16;
    private static final int BG_WIDTH = 236;
    private static final int SEARCH_HEIGHT = 16;
    private static final int MARGIN_Y = 64;
+   public static final int SEARCH_START = 72;
    public static final int LIST_START = 88;
-   public static final int SEARCH_START = 78;
    private static final int IMAGE_WIDTH = 238;
    private static final int BUTTON_HEIGHT = 20;
    private static final int ITEM_HEIGHT = 36;
@@ -71,12 +69,8 @@ public class SocialInteractionsScreen extends Screen {
       return Math.max(52, this.height - 128 - 16);
    }
 
-   private int backgroundUnits() {
-      return this.windowHeight() / 16;
-   }
-
    private int listEnd() {
-      return 80 + this.backgroundUnits() * 16 - 8;
+      return 80 + this.windowHeight() - 8;
    }
 
    private int marginX() {
@@ -108,7 +102,7 @@ public class SocialInteractionsScreen extends Screen {
       int var2 = this.socialInteractionsPlayerList.getRowLeft();
       int var3 = this.socialInteractionsPlayerList.getRowRight();
       int var4 = this.font.width(BLOCKING_HINT) + 40;
-      int var5 = 64 + 16 * this.backgroundUnits();
+      int var5 = 64 + this.windowHeight();
       int var6 = (this.width - var4) / 2 + 3;
       this.allButton = this.addRenderableWidget(
          Button.builder(TAB_ALL, var1x -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(var2, 45, var1, 20).build()
@@ -120,7 +114,7 @@ public class SocialInteractionsScreen extends Screen {
          Button.builder(TAB_BLOCKED, var1x -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build()
       );
       String var7 = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = new EditBox(this.font, this.marginX() + 28, 78, 196, 16, SEARCH_HINT) {
+      this.searchBox = new EditBox(this.font, this.marginX() + 29, 75, 198, 13, SEARCH_HINT) {
          @Override
          protected MutableComponent createNarrationMessage() {
             return !SocialInteractionsScreen.this.searchBox.getValue().isEmpty() && SocialInteractionsScreen.this.socialInteractionsPlayerList.isEmpty()
@@ -129,7 +123,6 @@ public class SocialInteractionsScreen extends Screen {
          }
       };
       this.searchBox.setMaxLength(16);
-      this.searchBox.setBordered(false);
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(16777215);
       this.searchBox.setValue(var7);
@@ -191,15 +184,8 @@ public class SocialInteractionsScreen extends Screen {
       int var2 = this.marginX() + 3;
       super.renderBackground(var1);
       RenderSystem.setShaderTexture(0, SOCIAL_INTERACTIONS_LOCATION);
-      this.blit(var1, var2, 64, 1, 1, 236, 8);
-      int var3 = this.backgroundUnits();
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         this.blit(var1, var2, 72 + 16 * var4, 1, 10, 236, 16);
-      }
-
-      this.blit(var1, var2, 72 + 16 * var3, 1, 27, 236, 8);
-      this.blit(var1, var2 + 10, 76, 243, 1, 12, 12);
+      blitNineSliced(var1, var2, 64, 236, this.windowHeight() + 16, 8, 236, 34, 1, 1);
+      blit(var1, var2 + 10, 76, 243, 1, 12, 12);
    }
 
    @Override
@@ -213,11 +199,11 @@ public class SocialInteractionsScreen extends Screen {
       if (!this.socialInteractionsPlayerList.isEmpty()) {
          this.socialInteractionsPlayerList.render(var1, var2, var3, var4);
       } else if (!this.searchBox.getValue().isEmpty()) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_SEARCH, this.width / 2, (78 + this.listEnd()) / 2, -1);
+         drawCenteredString(var1, this.minecraft.font, EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.HIDDEN) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_HIDDEN, this.width / 2, (78 + this.listEnd()) / 2, -1);
+         drawCenteredString(var1, this.minecraft.font, EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.BLOCKED) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_BLOCKED, this.width / 2, (78 + this.listEnd()) / 2, -1);
+         drawCenteredString(var1, this.minecraft.font, EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
       }
 
       this.searchBox.render(var1, var2, var3, var4);

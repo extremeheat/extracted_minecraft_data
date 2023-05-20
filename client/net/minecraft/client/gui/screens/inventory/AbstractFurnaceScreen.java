@@ -6,7 +6,6 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -64,19 +63,17 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, this.texture);
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      this.blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       if (this.menu.isLit()) {
          int var7 = this.menu.getLitProgress();
-         this.blit(var1, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
+         blit(var1, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
       }
 
       int var8 = this.menu.getBurnProgress();
-      this.blit(var1, var5 + 79, var6 + 34, 176, 14, var8 + 1, 16);
+      blit(var1, var5 + 79, var6 + 34, 176, 14, var8 + 1, 16);
    }
 
    @Override

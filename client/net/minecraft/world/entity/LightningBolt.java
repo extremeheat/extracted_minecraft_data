@@ -162,7 +162,7 @@ public class LightningBolt extends Entity {
 
    private BlockPos getStrikePosition() {
       Vec3 var1 = this.position();
-      return new BlockPos(var1.x, var1.y - 1.0E-6, var1.z);
+      return BlockPos.containing(var1.x, var1.y - 1.0E-6, var1.z);
    }
 
    private void spawnFire(int var1) {

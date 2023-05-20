@@ -122,6 +122,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          RenderSystem.setShaderTexture(0, this.iconSkin);
          RenderSystem.setShaderColor(var2, var2, var2, (float)var3 / 255.0F);
          PlayerFaceRenderer.draw(var1, 2, 2, 12);
+         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       }
 
       @Override

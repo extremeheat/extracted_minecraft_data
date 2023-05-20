@@ -1,7 +1,5 @@
 package net.minecraft.data.advancements.packs;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRewards;
@@ -32,19 +30,19 @@ import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.advancements.critereon.SummonedEntityTrigger;
+import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
@@ -52,9 +50,6 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 
 public class VanillaNetherAdvancements implements AdvancementSubProvider {
-   private static final List<ResourceKey<Biome>> EXPLORABLE_BIOMES = ImmutableList.of(
-      Biomes.NETHER_WASTES, Biomes.SOUL_SAND_VALLEY, Biomes.WARPED_FOREST, Biomes.CRIMSON_FOREST, Biomes.BASALT_DELTAS
-   );
    private static final EntityPredicate.Composite DISTRACT_PIGLIN_PLAYER_ARMOR_PREDICATE = EntityPredicate.Composite.create(
       LootItemEntityPropertyCondition.hasProperties(
             LootContext.EntityTarget.THIS,
@@ -122,7 +117,9 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
             "killed_ghast",
             KilledTrigger.TriggerInstance.playerKilledEntity(
                EntityPredicate.Builder.entity().of(EntityType.GHAST),
-               DamageSourcePredicate.Builder.damageType().isProjectile(true).direct(EntityPredicate.Builder.entity().of(EntityType.FIREBALL))
+               DamageSourcePredicate.Builder.damageType()
+                  .tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE))
+                  .direct(EntityPredicate.Builder.entity().of(EntityType.FIREBALL))
             )
          )
          .save(var2, "nether/return_to_sender");
@@ -478,7 +475,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
             )
          )
          .save(var2, "nether/ride_strider_in_overworld_lava");
-      VanillaAdventureAdvancements.addBiomes(Advancement.Builder.advancement(), EXPLORABLE_BIOMES)
+      VanillaAdventureAdvancements.addBiomes(Advancement.Builder.advancement(), MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes().toList())
          .parent(var14)
          .display(
             Items.NETHERITE_BOOTS,

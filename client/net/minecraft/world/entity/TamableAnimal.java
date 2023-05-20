@@ -151,16 +151,6 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       }
    }
 
-   @Nullable
-   public LivingEntity getOwner() {
-      try {
-         UUID var1 = this.getOwnerUUID();
-         return var1 == null ? null : this.level.getPlayerByUUID(var1);
-      } catch (IllegalArgumentException var2) {
-         return null;
-      }
-   }
-
    @Override
    public boolean canAttack(LivingEntity var1) {
       return this.isOwnedBy(var1) ? false : super.canAttack(var1);

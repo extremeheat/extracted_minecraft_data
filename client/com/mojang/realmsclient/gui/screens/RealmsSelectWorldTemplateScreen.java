@@ -329,7 +329,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var5 = var3 + 12;
          int var6 = var4 - 12;
          int var7 = this.font.width(var2);
-         this.fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+         fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
          this.font.drawShadow(var1, var2, (float)var5, (float)var6, 16777215);
       }
    }
@@ -361,11 +361,9 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
 
       private void drawImage(PoseStack var1, int var2, int var3, int var4, int var5, WorldTemplate var6) {
-         RealmsTextureManager.bindWorldTemplate(var6.id, var6.image);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         RenderSystem.setShaderTexture(0, RealmsTextureManager.worldTemplate(var6.id, var6.image));
          GuiComponent.blit(var1, var2 + 1, var3 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
          RenderSystem.setShaderTexture(0, RealmsSelectWorldTemplateScreen.SLOT_FRAME_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 40, 40, 40, 40);
       }
 
@@ -397,14 +395,12 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
          if (!var12) {
             RenderSystem.setShaderTexture(0, RealmsSelectWorldTemplateScreen.LINK_ICON);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float var13 = var10 ? 15.0F : 0.0F;
             GuiComponent.blit(var1, var2 + var9, var3, var13, 0.0F, 15, 15, 30, 15);
          }
 
          if (!"".equals(var7)) {
             RenderSystem.setShaderTexture(0, RealmsSelectWorldTemplateScreen.TRAILER_ICON);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int var15 = var2 + var9 + (var12 ? 0 : 17);
             float var14 = var11 ? 15.0F : 0.0F;
             GuiComponent.blit(var1, var15, var3, var14, 0.0F, 15, 15, 30, 15);
@@ -463,7 +459,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             int var8 = var7 / this.itemHeight;
             if (var1 >= (double)var6 && var1 < (double)this.getScrollbarPosition() && var8 >= 0 && var7 >= 0 && var8 < this.getItemCount()) {
                this.selectItem(var8);
-               this.itemClicked(var7, var8, var1, var3, this.width);
+               this.itemClicked(var7, var8, var1, var3, this.width, var5);
                if (var8 >= RealmsSelectWorldTemplateScreen.this.worldTemplateObjectSelectionList.getItemCount()) {
                   return super.mouseClicked(var1, var3, var5);
                }
@@ -499,11 +495,6 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       @Override
       public void renderBackground(PoseStack var1) {
          RealmsSelectWorldTemplateScreen.this.renderBackground(var1);
-      }
-
-      @Override
-      public boolean isFocused() {
-         return RealmsSelectWorldTemplateScreen.this.getFocused() == this;
       }
 
       public boolean isEmpty() {

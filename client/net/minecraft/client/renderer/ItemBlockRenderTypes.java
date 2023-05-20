@@ -30,6 +30,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.OAK_LEAVES, var2);
       var0.put(Blocks.SPRUCE_LEAVES, var2);
       var0.put(Blocks.ACACIA_LEAVES, var2);
+      var0.put(Blocks.CHERRY_LEAVES, var2);
       var0.put(Blocks.BIRCH_LEAVES, var2);
       var0.put(Blocks.DARK_OAK_LEAVES, var2);
       var0.put(Blocks.AZALEA_LEAVES, var2);
@@ -42,6 +43,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BIRCH_SAPLING, var3);
       var0.put(Blocks.JUNGLE_SAPLING, var3);
       var0.put(Blocks.ACACIA_SAPLING, var3);
+      var0.put(Blocks.CHERRY_SAPLING, var3);
       var0.put(Blocks.DARK_OAK_SAPLING, var3);
       var0.put(Blocks.GLASS, var3);
       var0.put(Blocks.WHITE_BED, var3);
@@ -71,6 +73,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.DANDELION, var3);
       var0.put(Blocks.POPPY, var3);
       var0.put(Blocks.BLUE_ORCHID, var3);
+      var0.put(Blocks.TORCHFLOWER, var3);
       var0.put(Blocks.ALLIUM, var3);
       var0.put(Blocks.AZURE_BLUET, var3);
       var0.put(Blocks.RED_TULIP, var3);
@@ -106,6 +109,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BIRCH_TRAPDOOR, var3);
       var0.put(Blocks.JUNGLE_TRAPDOOR, var3);
       var0.put(Blocks.ACACIA_TRAPDOOR, var3);
+      var0.put(Blocks.CHERRY_TRAPDOOR, var3);
       var0.put(Blocks.DARK_OAK_TRAPDOOR, var3);
       var0.put(Blocks.CRIMSON_TRAPDOOR, var3);
       var0.put(Blocks.WARPED_TRAPDOOR, var3);
@@ -128,6 +132,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_BIRCH_SAPLING, var3);
       var0.put(Blocks.POTTED_JUNGLE_SAPLING, var3);
       var0.put(Blocks.POTTED_ACACIA_SAPLING, var3);
+      var0.put(Blocks.POTTED_CHERRY_SAPLING, var3);
       var0.put(Blocks.POTTED_DARK_OAK_SAPLING, var3);
       var0.put(Blocks.POTTED_MANGROVE_PROPAGULE, var3);
       var0.put(Blocks.POTTED_FERN, var3);
@@ -150,6 +155,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_CACTUS, var3);
       var0.put(Blocks.POTTED_AZALEA, var3);
       var0.put(Blocks.POTTED_FLOWERING_AZALEA, var3);
+      var0.put(Blocks.POTTED_TORCHFLOWER, var3);
       var0.put(Blocks.CARROTS, var3);
       var0.put(Blocks.POTATOES, var3);
       var0.put(Blocks.COMPARATOR, var3);
@@ -165,12 +171,14 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.BIRCH_DOOR, var3);
       var0.put(Blocks.JUNGLE_DOOR, var3);
       var0.put(Blocks.ACACIA_DOOR, var3);
+      var0.put(Blocks.CHERRY_DOOR, var3);
       var0.put(Blocks.DARK_OAK_DOOR, var3);
       var0.put(Blocks.MANGROVE_DOOR, var3);
       var0.put(Blocks.BAMBOO_DOOR, var3);
       var0.put(Blocks.END_ROD, var3);
       var0.put(Blocks.CHORUS_PLANT, var3);
       var0.put(Blocks.CHORUS_FLOWER, var3);
+      var0.put(Blocks.TORCHFLOWER_CROP, var3);
       var0.put(Blocks.BEETROOTS, var3);
       var0.put(Blocks.KELP, var3);
       var0.put(Blocks.KELP_PLANT, var3);
@@ -244,6 +252,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.FLOWERING_AZALEA, var3);
       var0.put(Blocks.AZALEA, var3);
       var0.put(Blocks.MOSS_CARPET, var3);
+      var0.put(Blocks.PINK_PETALS, var3);
       var0.put(Blocks.BIG_DRIPLEAF, var3);
       var0.put(Blocks.BIG_DRIPLEAF_STEM, var3);
       var0.put(Blocks.SMALL_DRIPLEAF, var3);

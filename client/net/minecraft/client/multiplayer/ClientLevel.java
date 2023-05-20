@@ -32,7 +32,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -167,7 +166,7 @@ public class ClientLevel extends Level {
       boolean var9,
       long var10
    ) {
-      super(var2, var3, var4, var7, true, var9, var10, 1000000);
+      super(var2, var3, var1.registryAccess(), var4, var7, true, var9, var10, 1000000);
       this.connection = var1;
       this.chunkSource = new ClientChunkCache(this, var5);
       this.clientLevelData = var2;
@@ -550,11 +549,6 @@ public class ClientLevel extends Level {
    @Override
    public Scoreboard getScoreboard() {
       return this.scoreboard;
-   }
-
-   @Override
-   public RegistryAccess registryAccess() {
-      return this.connection.registryAccess();
    }
 
    @Override

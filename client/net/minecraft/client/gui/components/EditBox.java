@@ -2,11 +2,7 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -15,12 +11,13 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -346,15 +343,13 @@ public class EditBox extends AbstractWidget implements Renderable {
 
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
-      if (!this.isVisible()) {
-         return false;
-      } else {
+      if (this.isVisible() && var5 == 0) {
          boolean var6 = var1 >= (double)this.getX()
             && var1 < (double)(this.getX() + this.width)
             && var3 >= (double)this.getY()
             && var3 < (double)(this.getY() + this.height);
          if (this.canLoseFocus) {
-            this.setFocus(var6);
+            this.setFocused(var6);
          }
 
          if (this.isFocused() && var6 && var5 == 0) {
@@ -369,15 +364,13 @@ public class EditBox extends AbstractWidget implements Renderable {
          } else {
             return false;
          }
+      } else {
+         return false;
       }
    }
 
-   public void setFocus(boolean var1) {
-      this.setFocused(var1);
-   }
-
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
          if (this.isBordered()) {
             int var5 = this.isFocused() ? -1 : -6250336;
@@ -434,48 +427,36 @@ public class EditBox extends AbstractWidget implements Renderable {
 
          if (var7 != var6) {
             int var16 = var11 + this.font.width(var8.substring(0, var7));
-            this.renderHighlight(var15, var12 - 1, var16 - 1, var12 + 1 + 9);
+            this.renderHighlight(var1, var15, var12 - 1, var16 - 1, var12 + 1 + 9);
          }
       }
    }
 
-   private void renderHighlight(int var1, int var2, int var3, int var4) {
-      if (var1 < var3) {
-         int var5 = var1;
-         var1 = var3;
-         var3 = var5;
-      }
-
+   private void renderHighlight(PoseStack var1, int var2, int var3, int var4, int var5) {
       if (var2 < var4) {
-         int var7 = var2;
+         int var6 = var2;
          var2 = var4;
-         var4 = var7;
+         var4 = var6;
       }
 
-      if (var3 > this.getX() + this.width) {
-         var3 = this.getX() + this.width;
+      if (var3 < var5) {
+         int var7 = var3;
+         var3 = var5;
+         var5 = var7;
       }
 
-      if (var1 > this.getX() + this.width) {
-         var1 = this.getX() + this.width;
+      if (var4 > this.getX() + this.width) {
+         var4 = this.getX() + this.width;
       }
 
-      Tesselator var8 = Tesselator.getInstance();
-      BufferBuilder var6 = var8.getBuilder();
-      RenderSystem.setShader(GameRenderer::getPositionShader);
-      RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-      RenderSystem.disableTexture();
+      if (var2 > this.getX() + this.width) {
+         var2 = this.getX() + this.width;
+      }
+
       RenderSystem.enableColorLogicOp();
       RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      var6.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-      var6.vertex((double)var1, (double)var4, 0.0).endVertex();
-      var6.vertex((double)var3, (double)var4, 0.0).endVertex();
-      var6.vertex((double)var3, (double)var2, 0.0).endVertex();
-      var6.vertex((double)var1, (double)var2, 0.0).endVertex();
-      var8.end();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      fill(var1, var2, var3, var4, var5, -16776961);
       RenderSystem.disableColorLogicOp();
-      RenderSystem.enableTexture();
    }
 
    public void setMaxLength(int var1) {
@@ -510,9 +491,10 @@ public class EditBox extends AbstractWidget implements Renderable {
       this.textColorUneditable = var1;
    }
 
+   @Nullable
    @Override
-   public boolean changeFocus(boolean var1) {
-      return this.visible && this.isEditable ? super.changeFocus(var1) : false;
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      return this.visible && this.isEditable ? super.nextFocusPath(var1) : null;
    }
 
    @Override
@@ -525,9 +507,12 @@ public class EditBox extends AbstractWidget implements Renderable {
    }
 
    @Override
-   protected void onFocusedChanged(boolean var1) {
-      if (var1) {
-         this.frame = 0;
+   public void setFocused(boolean var1) {
+      if (this.canLoseFocus || var1) {
+         super.setFocused(var1);
+         if (var1) {
+            this.frame = 0;
+         }
       }
    }
 

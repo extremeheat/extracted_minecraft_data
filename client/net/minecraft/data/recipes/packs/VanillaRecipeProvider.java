@@ -9,6 +9,7 @@ import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.FinishedRecipe;
@@ -584,7 +585,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .define('#', ItemTags.PLANKS)
          .pattern("##")
          .pattern("##")
-         .unlockedBy("has_planks", has(ItemTags.PLANKS))
+         .unlockedBy("unlock_right_away", PlayerTrigger.TriggerInstance.tick())
+         .showNotification(false)
          .save(var1);
       ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.CROSSBOW)
          .define('~', Items.STRING)
@@ -595,7 +597,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .pattern("~$~")
          .pattern(" # ")
          .unlockedBy("has_string", has(Items.STRING))
-         .unlockedBy("has_stick", has(Items.STICK))
          .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
          .unlockedBy("has_tripwire_hook", has(Blocks.TRIPWIRE_HOOK))
          .save(var1);
@@ -1557,7 +1558,6 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .pattern(" S ")
          .pattern("S#S")
          .pattern("LLL")
-         .unlockedBy("has_stick", has(Items.STICK))
          .unlockedBy("has_soul_sand", has(ItemTags.SOUL_FIRE_BASE_BLOCKS))
          .save(var1);
       ShapedRecipeBuilder.shaped(RecipeCategory.BREWING, Items.GLISTERING_MELON_SLICE)
@@ -2016,8 +2016,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
       nineBlockStorageRecipes(var1, RecipeCategory.MISC, Items.RAW_IRON, RecipeCategory.BUILDING_BLOCKS, Items.RAW_IRON_BLOCK);
       nineBlockStorageRecipes(var1, RecipeCategory.MISC, Items.RAW_COPPER, RecipeCategory.BUILDING_BLOCKS, Items.RAW_COPPER_BLOCK);
       nineBlockStorageRecipes(var1, RecipeCategory.MISC, Items.RAW_GOLD, RecipeCategory.BUILDING_BLOCKS, Items.RAW_GOLD_BLOCK);
-      SimpleCookingRecipeBuilder.smelting(Ingredient.of(ItemTags.SAND), RecipeCategory.BUILDING_BLOCKS, Blocks.GLASS.asItem(), 0.1F, 200)
-         .unlockedBy("has_sand", has(ItemTags.SAND))
+      SimpleCookingRecipeBuilder.smelting(Ingredient.of(ItemTags.SMELTS_TO_GLASS), RecipeCategory.BUILDING_BLOCKS, Blocks.GLASS.asItem(), 0.1F, 200)
+         .unlockedBy("has_smelts_to_glass", has(ItemTags.SMELTS_TO_GLASS))
          .save(var1);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of(Blocks.SEA_PICKLE), RecipeCategory.MISC, Items.LIME_DYE, 0.1F, 200)
          .unlockedBy("has_sea_pickle", has(Blocks.SEA_PICKLE))
@@ -2505,14 +2505,14 @@ public class VanillaRecipeProvider extends RecipeProvider {
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILES, 2);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILES);
       stonecutterResultFromBase(var1, RecipeCategory.DECORATIONS, Blocks.DEEPSLATE_TILE_WALL, Blocks.DEEPSLATE_TILES);
-      netheriteSmithing(var1, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
-      netheriteSmithing(var1, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
-      netheriteSmithing(var1, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
-      netheriteSmithing(var1, Items.DIAMOND_BOOTS, RecipeCategory.COMBAT, Items.NETHERITE_BOOTS);
-      netheriteSmithing(var1, Items.DIAMOND_SWORD, RecipeCategory.COMBAT, Items.NETHERITE_SWORD);
-      netheriteSmithing(var1, Items.DIAMOND_AXE, RecipeCategory.TOOLS, Items.NETHERITE_AXE);
-      netheriteSmithing(var1, Items.DIAMOND_PICKAXE, RecipeCategory.TOOLS, Items.NETHERITE_PICKAXE);
-      netheriteSmithing(var1, Items.DIAMOND_HOE, RecipeCategory.TOOLS, Items.NETHERITE_HOE);
-      netheriteSmithing(var1, Items.DIAMOND_SHOVEL, RecipeCategory.TOOLS, Items.NETHERITE_SHOVEL);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_BOOTS, RecipeCategory.COMBAT, Items.NETHERITE_BOOTS);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_SWORD, RecipeCategory.COMBAT, Items.NETHERITE_SWORD);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_AXE, RecipeCategory.TOOLS, Items.NETHERITE_AXE);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_PICKAXE, RecipeCategory.TOOLS, Items.NETHERITE_PICKAXE);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_HOE, RecipeCategory.TOOLS, Items.NETHERITE_HOE);
+      legacyNetheriteSmithing(var1, Items.DIAMOND_SHOVEL, RecipeCategory.TOOLS, Items.NETHERITE_SHOVEL);
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.reporting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -15,7 +16,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class ReportReasonSelectionScreen extends Screen {
-   private static final String ADDITIONAL_INFO_LINK = "https://aka.ms/aboutjavareporting";
    private static final Component REASON_TITLE = Component.translatable("gui.abuseReport.reason.title");
    private static final Component REASON_DESCRIPTION = Component.translatable("gui.abuseReport.reason.description");
    private static final Component READ_INFO_LABEL = Component.translatable("gui.chatReport.read_info");
@@ -44,7 +44,7 @@ public class ReportReasonSelectionScreen extends Screen {
       this.reasonSelectionList = new ReportReasonSelectionScreen.ReasonSelectionList(this.minecraft);
       this.reasonSelectionList.setRenderBackground(false);
       this.addWidget(this.reasonSelectionList);
-      ReportReasonSelectionScreen.ReasonSelectionList.Entry var1 = Util.mapNullable(this.currentlySelectedReason, this.reasonSelectionList::findEntry);
+      ReportReasonSelectionScreen.ReasonSelectionList.Entry var1 = Optionull.map(this.currentlySelectedReason, this.reasonSelectionList::findEntry);
       this.reasonSelectionList.setSelected(var1);
       int var2 = this.width / 2 - 150 - 5;
       this.addRenderableWidget(Button.builder(READ_INFO_LABEL, var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
@@ -83,7 +83,7 @@ public class ReportReasonSelectionScreen extends Screen {
          int var10 = var7 - var6;
          int var11 = var9 - var8;
          int var12 = this.font.wordWrapHeight(var5.reason.description(), var10);
-         this.font.drawWordWrap(var5.reason.description(), var6, var8 + (var11 - var12) / 2, var10, -1);
+         this.font.drawWordWrap(var1, var5.reason.description(), var6, var8 + (var11 - var12) / 2, var10, -1);
       }
    }
 
@@ -117,9 +117,7 @@ public class ReportReasonSelectionScreen extends Screen {
          super(var2, ReportReasonSelectionScreen.this.width, ReportReasonSelectionScreen.this.height, 40, ReportReasonSelectionScreen.this.height - 95, 18);
 
          for(ReportReason var6 : ReportReason.values()) {
-            if (var6.reportable()) {
-               this.addEntry(new ReportReasonSelectionScreen.ReasonSelectionList.Entry(var6));
-            }
+            this.addEntry(new ReportReasonSelectionScreen.ReasonSelectionList.Entry(var6));
          }
       }
 
@@ -136,11 +134,6 @@ public class ReportReasonSelectionScreen extends Screen {
       @Override
       protected int getScrollbarPosition() {
          return this.getRowRight() - 2;
-      }
-
-      @Override
-      protected boolean isFocused() {
-         return ReportReasonSelectionScreen.this.getFocused() == this;
       }
 
       public void setSelected(@Nullable ReportReasonSelectionScreen.ReasonSelectionList.Entry var1) {

@@ -2,20 +2,24 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -24,8 +28,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, NarratableEntry {
+public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
    public static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
+   public static final ResourceLocation ACCESSIBILITY_TEXTURE = new ResourceLocation("textures/gui/accessibility.png");
+   private static final double PERIOD_PER_SCROLLED_PIXEL = 0.5;
+   private static final double MIN_SCROLL_PERIOD = 3.0;
    protected int width;
    protected int height;
    private int x;
@@ -35,6 +42,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
    public boolean active = true;
    public boolean visible = true;
    protected float alpha = 1.0F;
+   private int tabOrderGroup;
    private boolean focused;
    @Nullable
    private Tooltip tooltip;
@@ -51,33 +59,23 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       this.message = var5;
    }
 
+   @Override
    public int getHeight() {
       return this.height;
-   }
-
-   protected int getYImage(boolean var1) {
-      byte var2 = 1;
-      if (!this.active) {
-         var2 = 0;
-      } else if (var1) {
-         var2 = 2;
-      }
-
-      return var2;
    }
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       if (this.visible) {
          this.isHovered = var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
-         this.renderButton(var1, var2, var3, var4);
+         this.renderWidget(var1, var2, var3, var4);
          this.updateTooltip();
       }
    }
 
    private void updateTooltip() {
       if (this.tooltip != null) {
-         boolean var1 = this.isHoveredOrFocused();
+         boolean var1 = this.isHovered || this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard();
          if (var1 != this.wasHoveredOrFocused) {
             if (var1) {
                this.hoverOrFocusedStartTime = Util.getMillis();
@@ -96,7 +94,9 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
    }
 
    protected ClientTooltipPositioner createTooltipPositioner() {
-      return (ClientTooltipPositioner)(this.isFocused() ? new BelowOrAboveWidgetTooltipPositioner(this) : DefaultTooltipPositioner.INSTANCE);
+      return (ClientTooltipPositioner)(!this.isHovered && this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard()
+         ? new BelowOrAboveWidgetTooltipPositioner(this)
+         : new MenuTooltipPositioner(this));
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
@@ -115,26 +115,43 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return Component.translatable("gui.narrate.button", var0);
    }
 
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Font var6 = var5.font;
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-      int var7 = this.getYImage(this.isHoveredOrFocused());
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.enableDepthTest();
-      this.blit(var1, this.getX(), this.getY(), 0, 46 + var7 * 20, this.width / 2, this.height);
-      this.blit(var1, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2, 46 + var7 * 20, this.width / 2, this.height);
-      this.renderBg(var1, var5, var2, var3);
-      int var8 = this.active ? 16777215 : 10526880;
-      drawCenteredString(
-         var1, var6, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, var8 | Mth.ceil(this.alpha * 255.0F) << 24
-      );
+   public abstract void renderWidget(PoseStack var1, int var2, int var3, float var4);
+
+   protected static void renderScrollingString(PoseStack var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
+      int var8 = var1.width(var2);
+      int var9 = (var4 + var6 - 9) / 2 + 1;
+      int var10 = var5 - var3;
+      if (var8 > var10) {
+         int var11 = var8 - var10;
+         double var12 = (double)Util.getMillis() / 1000.0;
+         double var14 = Math.max((double)var11 * 0.5, 3.0);
+         double var16 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var12 / var14)) / 2.0 + 0.5;
+         double var18 = Mth.lerp(var16, 0.0, (double)var11);
+         enableScissor(var3, var4, var5, var6);
+         drawString(var0, var1, var2, var3 - (int)var18, var9, var7);
+         disableScissor();
+      } else {
+         drawCenteredString(var0, var1, var2, (var3 + var5) / 2, var9, var7);
+      }
    }
 
-   protected void renderBg(PoseStack var1, Minecraft var2, int var3, int var4) {
+   protected void renderScrollingString(PoseStack var1, Font var2, int var3, int var4) {
+      int var5 = this.getX() + var3;
+      int var6 = this.getX() + this.getWidth() - var3;
+      renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
+   }
+
+   public void renderTexture(PoseStack var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
+      RenderSystem.setShaderTexture(0, var2);
+      int var12 = var6;
+      if (!this.isActive()) {
+         var12 = var6 + var7 * 2;
+      } else if (this.isHoveredOrFocused()) {
+         var12 = var6 + var7;
+      }
+
+      RenderSystem.enableDepthTest();
+      blit(var1, var3, var4, (float)var5, (float)var12, var8, var9, var10, var11);
    }
 
    public void onClick(double var1, double var3) {
@@ -197,22 +214,14 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
          && var3 < (double)(this.getY() + this.height);
    }
 
-   public boolean isHoveredOrFocused() {
-      return this.isHovered || this.focused;
-   }
-
+   @Nullable
    @Override
-   public boolean changeFocus(boolean var1) {
-      if (this.active && this.visible) {
-         this.focused = !this.focused;
-         this.onFocusedChanged(this.focused);
-         return this.focused;
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      if (!this.active || !this.visible) {
+         return null;
       } else {
-         return false;
+         return !this.isFocused() ? ComponentPath.leaf(this) : null;
       }
-   }
-
-   protected void onFocusedChanged(boolean var1) {
    }
 
    @Override
@@ -229,6 +238,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       var1.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
+   @Override
    public int getWidth() {
       return this.width;
    }
@@ -249,8 +259,17 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return this.message;
    }
 
+   @Override
    public boolean isFocused() {
       return this.focused;
+   }
+
+   public boolean isHovered() {
+      return this.isHovered;
+   }
+
+   public boolean isHoveredOrFocused() {
+      return this.isHovered() || this.isFocused();
    }
 
    @Override
@@ -258,13 +277,14 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return this.visible && this.active;
    }
 
-   protected void setFocused(boolean var1) {
+   @Override
+   public void setFocused(boolean var1) {
       this.focused = var1;
    }
 
    @Override
    public NarratableEntry.NarrationPriority narrationPriority() {
-      if (this.focused) {
+      if (this.isFocused()) {
          return NarratableEntry.NarrationPriority.FOCUSED;
       } else {
          return this.isHovered ? NarratableEntry.NarrationPriority.HOVERED : NarratableEntry.NarrationPriority.NONE;
@@ -292,24 +312,42 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       }
    }
 
+   @Override
    public int getX() {
       return this.x;
    }
 
+   @Override
    public void setX(int var1) {
       this.x = var1;
    }
 
-   public void setPosition(int var1, int var2) {
-      this.setX(var1);
-      this.setY(var2);
-   }
-
+   @Override
    public int getY() {
       return this.y;
    }
 
+   @Override
    public void setY(int var1) {
       this.y = var1;
+   }
+
+   @Override
+   public void visitWidgets(Consumer<AbstractWidget> var1) {
+      var1.accept(this);
+   }
+
+   @Override
+   public ScreenRectangle getRectangle() {
+      return LayoutElement.super.getRectangle();
+   }
+
+   @Override
+   public int getTabOrderGroup() {
+      return this.tabOrderGroup;
+   }
+
+   public void setTabOrderGroup(int var1) {
+      this.tabOrderGroup = var1;
    }
 }

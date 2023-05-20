@@ -77,7 +77,7 @@ public class PlaceCommand {
                                        var0x -> placeFeature(
                                              (CommandSourceStack)var0x.getSource(),
                                              ResourceKeyArgument.getConfiguredFeature(var0x, "feature"),
-                                             new BlockPos(((CommandSourceStack)var0x.getSource()).getPosition())
+                                             BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition())
                                           )
                                     ))
                                  .then(
@@ -106,7 +106,7 @@ public class PlaceCommand {
                                                       ResourceKeyArgument.getStructureTemplatePool(var0x, "pool"),
                                                       ResourceLocationArgument.getId(var0x, "target"),
                                                       IntegerArgumentType.getInteger(var0x, "max_depth"),
-                                                      new BlockPos(((CommandSourceStack)var0x.getSource()).getPosition())
+                                                      BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition())
                                                    )
                                              ))
                                           .then(
@@ -133,7 +133,7 @@ public class PlaceCommand {
                                  var0x -> placeStructure(
                                        (CommandSourceStack)var0x.getSource(),
                                        ResourceKeyArgument.getStructure(var0x, "structure"),
-                                       new BlockPos(((CommandSourceStack)var0x.getSource()).getPosition())
+                                       BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition())
                                     )
                               ))
                            .then(
@@ -157,7 +157,7 @@ public class PlaceCommand {
                               var0x -> placeTemplate(
                                     (CommandSourceStack)var0x.getSource(),
                                     ResourceLocationArgument.getId(var0x, "template"),
-                                    new BlockPos(((CommandSourceStack)var0x.getSource()).getPosition()),
+                                    BlockPos.containing(((CommandSourceStack)var0x.getSource()).getPosition()),
                                     Rotation.NONE,
                                     Mirror.NONE,
                                     1.0F,

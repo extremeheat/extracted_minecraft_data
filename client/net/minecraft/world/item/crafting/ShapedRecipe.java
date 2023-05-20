@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -31,8 +32,11 @@ public class ShapedRecipe implements CraftingRecipe {
    private final ResourceLocation id;
    final String group;
    final CraftingBookCategory category;
+   final boolean showNotification;
 
-   public ShapedRecipe(ResourceLocation var1, String var2, CraftingBookCategory var3, int var4, int var5, NonNullList<Ingredient> var6, ItemStack var7) {
+   public ShapedRecipe(
+      ResourceLocation var1, String var2, CraftingBookCategory var3, int var4, int var5, NonNullList<Ingredient> var6, ItemStack var7, boolean var8
+   ) {
       super();
       this.id = var1;
       this.group = var2;
@@ -41,6 +45,11 @@ public class ShapedRecipe implements CraftingRecipe {
       this.height = var5;
       this.recipeItems = var6;
       this.result = var7;
+      this.showNotification = var8;
+   }
+
+   public ShapedRecipe(ResourceLocation var1, String var2, CraftingBookCategory var3, int var4, int var5, NonNullList<Ingredient> var6, ItemStack var7) {
+      this(var1, var2, var3, var4, var5, var6, var7, true);
    }
 
    @Override
@@ -64,13 +73,18 @@ public class ShapedRecipe implements CraftingRecipe {
    }
 
    @Override
-   public ItemStack getResultItem() {
+   public ItemStack getResultItem(RegistryAccess var1) {
       return this.result;
    }
 
    @Override
    public NonNullList<Ingredient> getIngredients() {
       return this.recipeItems;
+   }
+
+   @Override
+   public boolean showNotification() {
+      return this.showNotification;
    }
 
    @Override
@@ -117,8 +131,8 @@ public class ShapedRecipe implements CraftingRecipe {
       return true;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      return this.getResultItem().copy();
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      return this.getResultItem(var2).copy();
    }
 
    public int getWidth() {
@@ -297,7 +311,8 @@ public class ShapedRecipe implements CraftingRecipe {
          int var8 = var6.length;
          NonNullList var9 = ShapedRecipe.dissolvePattern(var6, var5, var7, var8);
          ItemStack var10 = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(var2, "result"));
-         return new ShapedRecipe(var1, var3, var4, var7, var8, var9, var10);
+         boolean var11 = GsonHelper.getAsBoolean(var2, "show_notification", true);
+         return new ShapedRecipe(var1, var3, var4, var7, var8, var9, var10, var11);
       }
 
       public ShapedRecipe fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
@@ -311,8 +326,9 @@ public class ShapedRecipe implements CraftingRecipe {
             var7.set(var8, Ingredient.fromNetwork(var2));
          }
 
-         ItemStack var9 = var2.readItem();
-         return new ShapedRecipe(var1, var5, var6, var3, var4, var7, var9);
+         ItemStack var10 = var2.readItem();
+         boolean var9 = var2.readBoolean();
+         return new ShapedRecipe(var1, var5, var6, var3, var4, var7, var10, var9);
       }
 
       public void toNetwork(FriendlyByteBuf var1, ShapedRecipe var2) {
@@ -326,6 +342,7 @@ public class ShapedRecipe implements CraftingRecipe {
          }
 
          var1.writeItem(var2.result);
+         var1.writeBoolean(var2.showNotification);
       }
    }
 }

@@ -29,7 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import org.slf4j.Logger;
 
-public class AreaEffectCloud extends Entity {
+public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int TIME_BETWEEN_APPLICATIONS = 5;
    private static final EntityDataAccessor<Float> DATA_RADIUS = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
@@ -225,7 +225,9 @@ public class AreaEffectCloud extends Entity {
             ArrayList var23 = Lists.newArrayList();
 
             for(MobEffectInstance var26 : this.potion.getEffects()) {
-               var23.add(new MobEffectInstance(var26.getEffect(), var26.getDuration() / 4, var26.getAmplifier(), var26.isAmbient(), var26.isVisible()));
+               var23.add(
+                  new MobEffectInstance(var26.getEffect(), var26.mapDuration(var0 -> var0 / 4), var26.getAmplifier(), var26.isAmbient(), var26.isVisible())
+               );
             }
 
             var23.addAll(this.effects);

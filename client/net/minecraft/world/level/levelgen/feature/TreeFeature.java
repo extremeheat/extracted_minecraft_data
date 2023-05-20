@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -69,7 +70,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       BlockPos var3,
       BiConsumer<BlockPos, BlockState> var4,
       BiConsumer<BlockPos, BlockState> var5,
-      BiConsumer<BlockPos, BlockState> var6,
+      FoliagePlacer.FoliageSetter var6,
       TreeConfiguration var7
    ) {
       int var8 = var7.trunkPlacer.getTreeHeight(var2);
@@ -124,13 +125,13 @@ public class TreeFeature extends Feature<TreeConfiguration> {
 
    @Override
    public final boolean place(FeaturePlaceContext<TreeConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
+      final WorldGenLevel var2 = var1.level();
       RandomSource var3 = var1.random();
       BlockPos var4 = var1.origin();
       TreeConfiguration var5 = (TreeConfiguration)var1.config();
       HashSet var6 = Sets.newHashSet();
       HashSet var7 = Sets.newHashSet();
-      HashSet var8 = Sets.newHashSet();
+      final HashSet var8 = Sets.newHashSet();
       HashSet var9 = Sets.newHashSet();
       BiConsumer var10 = (var2x, var3x) -> {
          var6.add(var2x.immutable());
@@ -140,9 +141,17 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var7.add(var2x.immutable());
          var2.setBlock(var2x, var3x, 19);
       };
-      BiConsumer var12 = (var2x, var3x) -> {
-         var8.add(var2x.immutable());
-         var2.setBlock(var2x, var3x, 19);
+      FoliagePlacer.FoliageSetter var12 = new FoliagePlacer.FoliageSetter() {
+         @Override
+         public void set(BlockPos var1, BlockState var2x) {
+            var8.add(var1.immutable());
+            var2.setBlock(var1, var2x, 19);
+         }
+
+         @Override
+         public boolean isSet(BlockPos var1) {
+            return var8.contains(var1);
+         }
       };
       BiConsumer var13 = (var2x, var3x) -> {
          var9.add(var2x.immutable());

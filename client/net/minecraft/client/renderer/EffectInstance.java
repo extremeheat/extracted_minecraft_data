@@ -237,7 +237,6 @@ public class EffectInstance implements Effect, AutoCloseable {
       for(int var1 = 0; var1 < this.samplerLocations.size(); ++var1) {
          if (this.samplerMap.get(this.samplerNames.get(var1)) != null) {
             GlStateManager._activeTexture(33984 + var1);
-            GlStateManager._disableTexture();
             GlStateManager._bindTexture(0);
          }
       }
@@ -258,7 +257,6 @@ public class EffectInstance implements Effect, AutoCloseable {
          IntSupplier var3 = this.samplerMap.get(var2);
          if (var3 != null) {
             RenderSystem.activeTexture(33984 + var1);
-            RenderSystem.enableTexture();
             int var4 = var3.getAsInt();
             if (var4 != -1) {
                RenderSystem.bindTexture(var4);

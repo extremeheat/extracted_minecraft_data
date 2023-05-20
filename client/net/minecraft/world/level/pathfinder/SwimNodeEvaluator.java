@@ -106,32 +106,30 @@ public class SwimNodeEvaluator extends NodeEvaluator {
 
    @Override
    public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4) {
-      return this.getBlockPathType(
-         var1, var2, var3, var4, this.mob, this.entityWidth, this.entityHeight, this.entityDepth, this.canOpenDoors(), this.canPassDoors()
-      );
+      return this.getBlockPathType(var1, var2, var3, var4, this.mob);
    }
 
    @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5, int var6, int var7, int var8, boolean var9, boolean var10) {
-      BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5) {
+      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
-      for(int var12 = var2; var12 < var2 + var6; ++var12) {
-         for(int var13 = var3; var13 < var3 + var7; ++var13) {
-            for(int var14 = var4; var14 < var4 + var8; ++var14) {
-               FluidState var15 = var1.getFluidState(var11.set(var12, var13, var14));
-               BlockState var16 = var1.getBlockState(var11.set(var12, var13, var14));
-               if (var15.isEmpty() && var16.isPathfindable(var1, var11.below(), PathComputationType.WATER) && var16.isAir()) {
+      for(int var7 = var2; var7 < var2 + this.entityWidth; ++var7) {
+         for(int var8 = var3; var8 < var3 + this.entityHeight; ++var8) {
+            for(int var9 = var4; var9 < var4 + this.entityDepth; ++var9) {
+               FluidState var10 = var1.getFluidState(var6.set(var7, var8, var9));
+               BlockState var11 = var1.getBlockState(var6.set(var7, var8, var9));
+               if (var10.isEmpty() && var11.isPathfindable(var1, var6.below(), PathComputationType.WATER) && var11.isAir()) {
                   return BlockPathTypes.BREACH;
                }
 
-               if (!var15.is(FluidTags.WATER)) {
+               if (!var10.is(FluidTags.WATER)) {
                   return BlockPathTypes.BLOCKED;
                }
             }
          }
       }
 
-      BlockState var17 = var1.getBlockState(var11);
-      return var17.isPathfindable(var1, var11, PathComputationType.WATER) ? BlockPathTypes.WATER : BlockPathTypes.BLOCKED;
+      BlockState var12 = var1.getBlockState(var6);
+      return var12.isPathfindable(var1, var6, PathComputationType.WATER) ? BlockPathTypes.WATER : BlockPathTypes.BLOCKED;
    }
 }

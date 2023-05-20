@@ -6,13 +6,14 @@ import java.util.List;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class AdvancementToast implements Toast {
+   public static final int DISPLAY_TIME = 5000;
    private final Advancement advancement;
    private boolean playedSound;
 
@@ -23,11 +24,9 @@ public class AdvancementToast implements Toast {
 
    @Override
    public Toast.Visibility render(PoseStack var1, ToastComponent var2, long var3) {
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, TEXTURE);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       DisplayInfo var5 = this.advancement.getDisplay();
-      var2.blit(var1, 0, 0, 0, 0, this.width(), this.height());
+      GuiComponent.blit(var1, 0, 0, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.getMinecraft().font.split(var5.getTitle(), 125);
          int var7 = var5.getFrame() == FrameType.CHALLENGE ? 16746751 : 16776960;
@@ -58,8 +57,8 @@ public class AdvancementToast implements Toast {
             }
          }
 
-         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var5.getIcon(), 8, 8);
-         return var3 >= 5000L ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var1, var5.getIcon(), 8, 8);
+         return (double)var3 >= 5000.0 * var2.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       } else {
          return Toast.Visibility.HIDE;
       }

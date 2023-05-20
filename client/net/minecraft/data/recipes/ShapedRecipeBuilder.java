@@ -34,6 +34,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
    private final Advancement.Builder advancement = Advancement.Builder.advancement();
    @Nullable
    private String group;
+   private boolean showNotification = true;
 
    public ShapedRecipeBuilder(RecipeCategory var1, ItemLike var2, int var3) {
       super();
@@ -88,6 +89,11 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
       return this;
    }
 
+   public ShapedRecipeBuilder showNotification(boolean var1) {
+      this.showNotification = var1;
+      return this;
+   }
+
    @Override
    public Item getResult() {
       return this.result;
@@ -111,7 +117,8 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
             this.rows,
             this.key,
             this.advancement,
-            var2.withPrefix("recipes/" + this.category.getFolderName() + "/")
+            var2.withPrefix("recipes/" + this.category.getFolderName() + "/"),
+            this.showNotification
          )
       );
    }
@@ -153,6 +160,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
       private final Map<Character, Ingredient> key;
       private final Advancement.Builder advancement;
       private final ResourceLocation advancementId;
+      private final boolean showNotification;
 
       public Result(
          ResourceLocation var1,
@@ -163,7 +171,8 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          List<String> var6,
          Map<Character, Ingredient> var7,
          Advancement.Builder var8,
-         ResourceLocation var9
+         ResourceLocation var9,
+         boolean var10
       ) {
          super(var5);
          this.id = var1;
@@ -174,6 +183,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          this.key = var7;
          this.advancement = var8;
          this.advancementId = var9;
+         this.showNotification = var10;
       }
 
       @Override
@@ -204,6 +214,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          }
 
          var1.add("result", var8);
+         var1.addProperty("show_notification", this.showNotification);
       }
 
       @Override

@@ -62,9 +62,13 @@ public class RegistrySetBuilder {
 
    public HolderLookup.Provider buildPatch(RegistryAccess var1, HolderLookup.Provider var2) {
       RegistrySetBuilder.BuildState var3 = this.createState(var1);
-      Stream var4 = var1.registries().map(var0 -> var0.value().asLookup());
-      Stream var5 = this.entries.stream().map(var1x -> var1x.collectChanges(var3).buildAsLookup());
-      HolderLookup.Provider var6 = HolderLookup.Provider.create(Stream.concat(var4, var5.peek(var3::addOwner)));
+      HashMap var4 = new HashMap();
+      var3.collectReferencedRegistries().forEach(var1x -> var4.put(var1x.key, var1x));
+      this.entries.stream().map(var1x -> var1x.collectChanges(var3)).forEach(var1x -> var4.put(var1x.key, var1x));
+      Stream var5 = var1.registries().map(var0 -> var0.value().asLookup());
+      HolderLookup.Provider var6 = HolderLookup.Provider.create(
+         Stream.concat(var5, var4.values().stream().map(RegistrySetBuilder.RegistryContents::buildAsLookup).peek(var3::addOwner))
+      );
       var3.fillMissingHolders(var2);
       var3.reportRemainingUnreferencedValues();
       var3.throwOnError();
@@ -168,6 +172,16 @@ public class RegistrySetBuilder {
                });
          }
       }
+
+      public Stream<RegistrySetBuilder.RegistryContents<?>> collectReferencedRegistries() {
+         return this.lookup
+            .holders
+            .keySet()
+            .stream()
+            .map(ResourceKey::registry)
+            .distinct()
+            .map(var0 -> new RegistrySetBuilder.RegistryContents(ResourceKey.createRegistryKey(var0), Lifecycle.stable(), Map.of()));
+      }
    }
 
    static class CompositeOwner implements HolderOwner<Object> {
@@ -217,14 +231,16 @@ public class RegistrySetBuilder {
       void run(BootstapContext<T> var1);
    }
 
-   static record RegistryContents<T>(RegistrySetBuilder.RegistryStub<T> a, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> b) {
-      final RegistrySetBuilder.RegistryStub<T> stub;
+   static record RegistryContents<T>(ResourceKey<? extends Registry<? extends T>> a, Lifecycle b, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> c) {
+      final ResourceKey<? extends Registry<? extends T>> key;
+      final Lifecycle lifecycle;
       final Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> values;
 
-      RegistryContents(RegistrySetBuilder.RegistryStub<T> var1, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> var2) {
+      RegistryContents(ResourceKey<? extends Registry<? extends T>> var1, Lifecycle var2, Map<ResourceKey<T>, RegistrySetBuilder.ValueAndHolder<T>> var3) {
          super();
-         this.stub = var1;
-         this.values = var2;
+         this.key = var1;
+         this.lifecycle = var2;
+         this.values = var3;
       }
 
       public HolderLookup.RegistryLookup<T> buildAsLookup() {
@@ -241,12 +257,12 @@ public class RegistrySetBuilder {
 
             @Override
             public ResourceKey<? extends Registry<? extends T>> key() {
-               return RegistryContents.this.stub.key();
+               return RegistryContents.this.key;
             }
 
             @Override
             public Lifecycle registryLifecycle() {
-               return RegistryContents.this.stub.lifecycle();
+               return RegistryContents.this.lifecycle;
             }
 
             @Override
@@ -303,7 +319,7 @@ public class RegistrySetBuilder {
             }
          }
 
-         return new RegistrySetBuilder.RegistryContents<>(this, var2);
+         return new RegistrySetBuilder.RegistryContents<>(this.key, this.lifecycle, var2);
       }
    }
 

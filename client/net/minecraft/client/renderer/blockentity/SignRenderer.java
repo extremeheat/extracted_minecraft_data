@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -23,6 +22,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -121,7 +121,10 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
          if (var12) {
             this.font.drawInBatch8xOutline(var15, var16, (float)(var14 * var1.getTextLineHeight() - var9), var11, var8, var2.last().pose(), var3, var13);
          } else {
-            this.font.drawInBatch(var15, var16, (float)(var14 * var1.getTextLineHeight() - var9), var11, false, var2.last().pose(), var3, false, 0, var13);
+            this.font
+               .drawInBatch(
+                  var15, var16, (float)(var14 * var1.getTextLineHeight() - var9), var11, false, var2.last().pose(), var3, Font.DisplayMode.NORMAL, 0, var13
+               );
          }
       }
 
@@ -149,11 +152,15 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
 
    static int getDarkColor(SignBlockEntity var0) {
       int var1 = var0.getColor().getTextColor();
-      double var2 = 0.4;
-      int var4 = (int)((double)NativeImage.getR(var1) * 0.4);
-      int var5 = (int)((double)NativeImage.getG(var1) * 0.4);
-      int var6 = (int)((double)NativeImage.getB(var1) * 0.4);
-      return var1 == DyeColor.BLACK.getTextColor() && var0.hasGlowingText() ? -988212 : NativeImage.combine(0, var6, var5, var4);
+      if (var1 == DyeColor.BLACK.getTextColor() && var0.hasGlowingText()) {
+         return -988212;
+      } else {
+         double var2 = 0.4;
+         int var4 = (int)((double)FastColor.ARGB32.red(var1) * 0.4);
+         int var5 = (int)((double)FastColor.ARGB32.green(var1) * 0.4);
+         int var6 = (int)((double)FastColor.ARGB32.blue(var1) * 0.4);
+         return FastColor.ARGB32.color(0, var4, var5, var6);
+      }
    }
 
    public static SignRenderer.SignModel createSignModel(EntityModelSet var0, WoodType var1) {
