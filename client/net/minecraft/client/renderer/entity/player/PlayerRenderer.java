@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity.player;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -22,6 +23,7 @@ import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -43,8 +45,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       this.addLayer(
          new HumanoidArmorLayer<>(
             this,
-            new HumanoidModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)),
-            new HumanoidModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR))
+            new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)),
+            new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR)),
+            var1.getModelManager()
          )
       );
       this.addLayer(new PlayerItemInHandLayer<>(this, var1.getItemInHandRenderer()));
@@ -128,6 +131,10 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             if (var3 == UseAnim.TOOT_HORN) {
                return HumanoidModel.ArmPose.TOOT_HORN;
             }
+
+            if (var3 == UseAnim.BRUSH) {
+               return HumanoidModel.ArmPose.BRUSH;
+            }
          } else if (!var0.swinging && var2.is(Items.CROSSBOW) && CrossbowItem.isCharged(var2)) {
             return HumanoidModel.ArmPose.CROSSBOW_HOLD;
          }
@@ -153,7 +160,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          Objective var9 = var8.getDisplayObjective(2);
          if (var9 != null) {
             Score var10 = var8.getOrCreatePlayerScore(var1.getScoreboardName(), var9);
-            super.renderNameTag(var1, Component.literal(Integer.toString(var10.getScore())).append(" ").append(var9.getDisplayName()), var3, var4, var5);
+            super.renderNameTag(
+               var1, Component.literal(Integer.toString(var10.getScore())).append(CommonComponents.SPACE).append(var9.getDisplayName()), var3, var4, var5
+            );
             var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
          }
       }
@@ -194,7 +203,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          }
 
          Vec3 var9 = var1.getViewVector(var5);
-         Vec3 var10 = var1.getDeltaMovement();
+         Vec3 var10 = var1.getDeltaMovementLerped(var5);
          double var11 = var10.horizontalDistanceSqr();
          double var13 = var9.horizontalDistanceSqr();
          if (var11 > 0.0 && var13 > 0.0) {

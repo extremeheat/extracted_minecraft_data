@@ -46,7 +46,7 @@ public class FogRenderer {
       Entity var6 = var0.getEntity();
       if (var5 == FogType.WATER) {
          long var7 = Util.getMillis();
-         int var9 = var2.getBiome(new BlockPos(var0.getPosition())).value().getWaterFogColor();
+         int var9 = var2.getBiome(BlockPos.containing(var0.getPosition())).value().getWaterFogColor();
          if (biomeChangedTime < 0L) {
             targetBiomeFog = var9;
             previousBiomeFog = var9;
@@ -287,7 +287,7 @@ public class FogRenderer {
 
       @Override
       public void setupFog(FogRenderer.FogData var1, LivingEntity var2, MobEffectInstance var3, float var4, float var5) {
-         float var6 = Mth.lerp(Math.min(1.0F, (float)var3.getDuration() / 20.0F), var4, 5.0F);
+         float var6 = var3.isInfiniteDuration() ? 5.0F : Mth.lerp(Math.min(1.0F, (float)var3.getDuration() / 20.0F), var4, 5.0F);
          if (var1.mode == FogRenderer.FogMode.FOG_SKY) {
             var1.start = 0.0F;
             var1.end = var6 * 0.8F;
@@ -355,7 +355,7 @@ public class FogRenderer {
       default float getModifiedVoidDarkness(LivingEntity var1, MobEffectInstance var2, float var3, float var4) {
          MobEffectInstance var5 = var1.getEffect(this.getMobEffect());
          if (var5 != null) {
-            if (var5.getDuration() < 20) {
+            if (var5.endsWithin(19)) {
                var3 = 1.0F - (float)var5.getDuration() / 20.0F;
             } else {
                var3 = 0.0F;

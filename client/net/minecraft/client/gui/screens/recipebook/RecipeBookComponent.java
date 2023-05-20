@@ -22,7 +22,6 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.searchtree.SearchRegistry;
@@ -96,9 +95,8 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
       this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       String var3 = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = new EditBox(this.minecraft.font, var1 + 25, var2 + 14, 80, 9 + 5, Component.translatable("itemGroup.search"));
+      this.searchBox = new EditBox(this.minecraft.font, var1 + 26, var2 + 14, 79, 9 + 3, Component.translatable("itemGroup.search"));
       this.searchBox.setMaxLength(50);
-      this.searchBox.setBordered(false);
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(16777215);
       this.searchBox.setValue(var3);
@@ -129,11 +127,6 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
 
    private void updateFilterButtonTooltip() {
       this.filterButton.setTooltip(this.filterButton.isStateTriggered() ? Tooltip.create(this.getRecipeFilterName()) : Tooltip.create(ALL_RECIPES_TOOLTIP));
-   }
-
-   @Override
-   public boolean changeFocus(boolean var1) {
-      return false;
    }
 
    protected void initFilterButtonTextures() {
@@ -253,12 +246,10 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
       if (this.isVisible()) {
          var1.pushPose();
          var1.translate(0.0F, 0.0F, 100.0F);
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, RECIPE_BOOK_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          int var5 = (this.width - 147) / 2 - this.xOffset;
          int var6 = (this.height - 166) / 2;
-         this.blit(var1, var5, var6, 1, 1, 147, 166);
+         blit(var1, var5, var6, 1, 1, 147, 166);
          this.searchBox.render(var1, var2, var3, var4);
 
          for(RecipeBookTabButton var8 : this.tabButtons) {
@@ -387,7 +378,7 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
          return true;
       } else if (this.minecraft.options.keyChat.matches(var1, var2) && !this.searchBox.isFocused()) {
          this.ignoreTextInput = true;
-         this.searchBox.setFocus(true);
+         this.searchBox.setFocused(true);
          return true;
       } else {
          return false;
@@ -419,6 +410,15 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
       return false;
    }
 
+   @Override
+   public void setFocused(boolean var1) {
+   }
+
+   @Override
+   public boolean isFocused() {
+      return false;
+   }
+
    private void checkSearchStringUpdate() {
       String var1 = this.searchBox.getValue().toLowerCase(Locale.ROOT);
       this.pirateSpeechForThePeople(var1);
@@ -431,13 +431,14 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
    private void pirateSpeechForThePeople(String var1) {
       if ("excitedze".equals(var1)) {
          LanguageManager var2 = this.minecraft.getLanguageManager();
-         LanguageInfo var3 = var2.getLanguage("en_pt");
-         if (var2.getSelected().compareTo(var3) == 0) {
+         String var3 = "en_pt";
+         LanguageInfo var4 = var2.getLanguage("en_pt");
+         if (var4 == null || var2.getSelected().equals("en_pt")) {
             return;
          }
 
-         var2.setSelected(var3);
-         this.minecraft.options.languageCode = var3.getCode();
+         var2.setSelected("en_pt");
+         this.minecraft.options.languageCode = "en_pt";
          this.minecraft.reloadResourcePacks();
          this.minecraft.options.save();
       }
@@ -462,7 +463,7 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
    }
 
    public void setupGhostRecipe(Recipe<?> var1, List<Slot> var2) {
-      ItemStack var3 = var1.getResultItem();
+      ItemStack var3 = var1.getResultItem(this.minecraft.level.registryAccess());
       this.ghostRecipe.setRecipe(var1);
       this.ghostRecipe.addIngredient(Ingredient.of(var3), ((Slot)var2.get(0)).x, ((Slot)var2.get(0)).y);
       this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var1.getIngredients().iterator(), 0);

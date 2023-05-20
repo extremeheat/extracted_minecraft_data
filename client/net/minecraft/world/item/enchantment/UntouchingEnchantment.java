@@ -18,11 +18,6 @@ public class UntouchingEnchantment extends Enchantment {
    }
 
    @Override
-   public int getMaxLevel() {
-      return 1;
-   }
-
-   @Override
    public boolean checkCompatibility(Enchantment var1) {
       return super.checkCompatibility(var1) && var1 != Enchantments.BLOCK_FORTUNE;
    }

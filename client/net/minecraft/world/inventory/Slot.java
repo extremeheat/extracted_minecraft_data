@@ -55,12 +55,11 @@ public class Slot {
       return !this.getItem().isEmpty();
    }
 
-   public void set(ItemStack var1) {
-      this.container.setItem(this.slot, var1);
-      this.setChanged();
+   public void setByPlayer(ItemStack var1) {
+      this.set(var1);
    }
 
-   public void initialize(ItemStack var1) {
+   public void set(ItemStack var1) {
       this.container.setItem(this.slot, var1);
       this.setChanged();
    }
@@ -106,7 +105,7 @@ public class Slot {
             return Optional.empty();
          } else {
             if (this.getItem().isEmpty()) {
-               this.set(ItemStack.EMPTY);
+               this.setByPlayer(ItemStack.EMPTY);
             }
 
             return Optional.of(var4);
@@ -129,11 +128,11 @@ public class Slot {
          ItemStack var3 = this.getItem();
          int var4 = Math.min(Math.min(var2, var1.getCount()), this.getMaxStackSize(var1) - var3.getCount());
          if (var3.isEmpty()) {
-            this.set(var1.split(var4));
+            this.setByPlayer(var1.split(var4));
          } else if (ItemStack.isSameItemSameTags(var3, var1)) {
             var1.shrink(var4);
             var3.grow(var4);
-            this.set(var3);
+            this.setByPlayer(var3);
          }
 
          return var1;

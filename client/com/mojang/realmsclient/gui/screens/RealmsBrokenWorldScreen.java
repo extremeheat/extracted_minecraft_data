@@ -69,7 +69,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
    @Override
    public Component getNarrationMessage() {
-      return ComponentUtils.formatList(Stream.concat(Stream.of(this.title), Stream.of(this.message)).collect(Collectors.toList()), Component.literal(" "));
+      return ComponentUtils.formatList(Stream.concat(Stream.of(this.title), Stream.of(this.message)).collect(Collectors.toList()), CommonComponents.SPACE);
    }
 
    private void addButtons() {
@@ -279,7 +279,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       if (var12) {
          RenderSystem.setShaderTexture(0, RealmsWorldSlotButton.EMPTY_SLOT_LOCATION);
       } else if (var11 != null && var9 != -1L) {
-         RealmsTextureManager.bindWorldTemplate(String.valueOf(var9), var11);
+         RenderSystem.setShaderTexture(0, RealmsTextureManager.worldTemplate(String.valueOf(var9), var11));
       } else if (var8 == 1) {
          RenderSystem.setShaderTexture(0, RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_1);
       } else if (var8 == 2) {
@@ -287,7 +287,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       } else if (var8 == 3) {
          RenderSystem.setShaderTexture(0, RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_3);
       } else {
-         RealmsTextureManager.bindWorldTemplate(String.valueOf(this.serverData.minigameId), this.serverData.minigameImage);
+         RenderSystem.setShaderTexture(0, RealmsTextureManager.worldTemplate(String.valueOf(this.serverData.minigameId), this.serverData.minigameImage));
       }
 
       if (!var6) {
@@ -307,5 +307,6 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 80, 80, 80, 80);
       drawCenteredString(var1, this.font, var7, var2 + 40, var3 + 66, 16777215);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 }

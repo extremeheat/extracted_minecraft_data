@@ -1,32 +1,40 @@
 package net.minecraft.client.gui.components;
 
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarrationSupplier;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 
 public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    private static final Component USAGE_NARRATION = Component.translatable("narration.selection.usage");
-   private boolean inFocus;
 
    public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
       super(var1, var2, var3, var4, var5, var6);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Nullable
    @Override
-   public boolean changeFocus(boolean var1) {
-      if (!this.inFocus && this.getItemCount() == 0) {
-         return false;
-      } else {
-         this.inFocus = !this.inFocus;
-         if (this.inFocus && this.getSelected() == null && this.getItemCount() > 0) {
-            this.moveSelection(AbstractSelectionList.SelectionDirection.DOWN);
-         } else if (this.inFocus && this.getSelected() != null) {
-            this.refreshSelection();
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      if (this.getItemCount() == 0) {
+         return null;
+      } else if (this.isFocused() && var1 instanceof FocusNavigationEvent.ArrowNavigation var4) {
+         ObjectSelectionList.Entry var3 = this.nextEntry(var4.direction());
+         return var3 != null ? ComponentPath.path(this, ComponentPath.leaf(var3)) : null;
+      } else if (!this.isFocused()) {
+         ObjectSelectionList.Entry var2 = this.getSelected();
+         if (var2 == null) {
+            var2 = this.nextEntry(var1.getVerticalDirectionForInitialFocus());
          }
 
-         return this.inFocus;
+         return var2 == null ? null : ComponentPath.path(this, ComponentPath.leaf(var2));
+      } else {
+         return null;
       }
    }
 
@@ -52,11 +60,6 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
    public abstract static class Entry<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList.Entry<E> implements NarrationSupplier {
       public Entry() {
          super();
-      }
-
-      @Override
-      public boolean changeFocus(boolean var1) {
-         return false;
       }
 
       public abstract Component getNarration();

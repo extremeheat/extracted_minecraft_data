@@ -37,6 +37,7 @@ public class PlayerMenuItem implements SpectatorMenuItem {
       RenderSystem.setShaderTexture(0, this.location);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, (float)var3 / 255.0F);
       PlayerFaceRenderer.draw(var1, 2, 2, 12);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    @Override

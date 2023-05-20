@@ -151,7 +151,7 @@ public class BehaviorUtils {
 
       while(
          var3 != null
-            && !var0.level.getBlockState(new BlockPos(var3)).isPathfindable(var0.level, new BlockPos(var3), PathComputationType.WATER)
+            && !var0.level.getBlockState(BlockPos.containing(var3)).isPathfindable(var0.level, BlockPos.containing(var3), PathComputationType.WATER)
             && var4++ < 10
       ) {
          var3 = DefaultRandomPos.getPos(var0, var1, var2);

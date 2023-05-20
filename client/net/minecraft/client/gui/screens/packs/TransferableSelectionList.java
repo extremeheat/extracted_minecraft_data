@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.packs;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -10,7 +9,6 @@ import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -24,9 +22,9 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    static final Component INCOMPATIBLE_TITLE = Component.translatable("pack.incompatible");
    static final Component INCOMPATIBLE_CONFIRM_TITLE = Component.translatable("pack.incompatible.confirm.title");
    private final Component title;
-   private final Screen screen;
+   final PackSelectionScreen screen;
 
-   public TransferableSelectionList(Minecraft var1, Screen var2, int var3, int var4, Component var5) {
+   public TransferableSelectionList(Minecraft var1, PackSelectionScreen var2, int var3, int var4, Component var5) {
       super(var1, var3, var4, 32, var4 - 55 + 4, 36);
       this.screen = var2;
       this.title = var5;
@@ -35,9 +33,9 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    }
 
    @Override
-   protected void renderHeader(PoseStack var1, int var2, int var3, Tesselator var4) {
-      MutableComponent var5 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      this.minecraft.font.draw(var1, var5, (float)(var2 + this.width / 2 - this.minecraft.font.width(var5) / 2), (float)Math.min(this.y0 + 3, var3), 16777215);
+   protected void renderHeader(PoseStack var1, int var2, int var3) {
+      MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
+      this.minecraft.font.draw(var1, var4, (float)(var2 + this.width / 2 - this.minecraft.font.width(var4) / 2), (float)Math.min(this.y0 + 3, var3), 16777215);
    }
 
    @Override
@@ -51,8 +49,28 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    }
 
    @Override
-   protected boolean isFocused() {
-      return this.screen.getFocused() == this;
+   public boolean keyPressed(int var1, int var2, int var3) {
+      if (this.getSelected() != null) {
+         switch(var1) {
+            case 32:
+            case 257:
+               this.getSelected().keyboardSelection();
+               return true;
+            default:
+               if (Screen.hasShiftDown()) {
+                  switch(var1) {
+                     case 264:
+                        this.getSelected().keyboardMoveDown();
+                        return true;
+                     case 265:
+                        this.getSelected().keyboardMoveUp();
+                        return true;
+                  }
+               }
+         }
+      }
+
+      return super.keyPressed(var1, var2, var3);
    }
 
    public static class PackEntry extends ObjectSelectionList.Entry<TransferableSelectionList.PackEntry> {
@@ -67,23 +85,21 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       private static final String TOO_LONG_NAME_SUFFIX = "...";
       private final TransferableSelectionList parent;
       protected final Minecraft minecraft;
-      protected final Screen screen;
       private final PackSelectionModel.Entry pack;
       private final FormattedCharSequence nameDisplayCache;
       private final MultiLineLabel descriptionDisplayCache;
       private final FormattedCharSequence incompatibleNameDisplayCache;
       private final MultiLineLabel incompatibleDescriptionDisplayCache;
 
-      public PackEntry(Minecraft var1, TransferableSelectionList var2, Screen var3, PackSelectionModel.Entry var4) {
+      public PackEntry(Minecraft var1, TransferableSelectionList var2, PackSelectionModel.Entry var3) {
          super();
          this.minecraft = var1;
-         this.screen = var3;
-         this.pack = var4;
+         this.pack = var3;
          this.parent = var2;
-         this.nameDisplayCache = cacheName(var1, var4.getTitle());
-         this.descriptionDisplayCache = cacheDescription(var1, var4.getExtendedDescription());
+         this.nameDisplayCache = cacheName(var1, var3.getTitle());
+         this.descriptionDisplayCache = cacheDescription(var1, var3.getExtendedDescription());
          this.incompatibleNameDisplayCache = cacheName(var1, TransferableSelectionList.INCOMPATIBLE_TITLE);
-         this.incompatibleDescriptionDisplayCache = cacheDescription(var1, var4.getCompatibility().getDescription());
+         this.incompatibleDescriptionDisplayCache = cacheDescription(var1, var3.getCompatibility().getDescription());
       }
 
       private static FormattedCharSequence cacheName(Minecraft var0, Component var1) {
@@ -109,21 +125,16 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             GuiComponent.fill(var1, var4 - 1, var3 - 1, var4 + var5 - 9, var3 + var6 + 1, -8978432);
          }
 
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, this.pack.getIconTexture());
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          GuiComponent.blit(var1, var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          FormattedCharSequence var12 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
-         if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9)) {
+         if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
             RenderSystem.setShaderTexture(0, TransferableSelectionList.ICON_OVERLAY_LOCATION);
             GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             int var14 = var7 - var4;
             int var15 = var8 - var3;
             if (!this.pack.getCompatibility().isCompatible()) {
@@ -168,49 +179,83 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
          var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, 8421504);
       }
 
+      public String getPackId() {
+         return this.pack.getId();
+      }
+
       private boolean showHoverOverlay() {
          return !this.pack.isFixedPosition() || !this.pack.isRequired();
       }
 
+      public void keyboardSelection() {
+         if (this.pack.canSelect() && this.handlePackSelection()) {
+            this.parent.screen.updateFocus(this.parent);
+         } else if (this.pack.canUnselect()) {
+            this.pack.unselect();
+            this.parent.screen.updateFocus(this.parent);
+         }
+      }
+
+      void keyboardMoveUp() {
+         if (this.pack.canMoveUp()) {
+            this.pack.moveUp();
+         }
+      }
+
+      void keyboardMoveDown() {
+         if (this.pack.canMoveDown()) {
+            this.pack.moveDown();
+         }
+      }
+
+      private boolean handlePackSelection() {
+         if (this.pack.getCompatibility().isCompatible()) {
+            this.pack.select();
+            return true;
+         } else {
+            Component var1 = this.pack.getCompatibility().getConfirmation();
+            this.minecraft.setScreen(new ConfirmScreen(var1x -> {
+               this.minecraft.setScreen(this.parent.screen);
+               if (var1x) {
+                  this.pack.select();
+               }
+            }, TransferableSelectionList.INCOMPATIBLE_CONFIRM_TITLE, var1));
+            return false;
+         }
+      }
+
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
-         double var6 = var1 - (double)this.parent.getRowLeft();
-         double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
-         if (this.showHoverOverlay() && var6 <= 32.0) {
-            if (this.pack.canSelect()) {
-               PackCompatibility var10 = this.pack.getCompatibility();
-               if (var10.isCompatible()) {
-                  this.pack.select();
-               } else {
-                  Component var11 = var10.getConfirmation();
-                  this.minecraft.setScreen(new ConfirmScreen(var1x -> {
-                     this.minecraft.setScreen(this.screen);
-                     if (var1x) {
-                        this.pack.select();
-                     }
-                  }, TransferableSelectionList.INCOMPATIBLE_CONFIRM_TITLE, var11));
+         if (var5 != 0) {
+            return false;
+         } else {
+            double var6 = var1 - (double)this.parent.getRowLeft();
+            double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
+            if (this.showHoverOverlay() && var6 <= 32.0) {
+               this.parent.screen.clearSelected();
+               if (this.pack.canSelect()) {
+                  this.handlePackSelection();
+                  return true;
                }
 
-               return true;
+               if (var6 < 16.0 && this.pack.canUnselect()) {
+                  this.pack.unselect();
+                  return true;
+               }
+
+               if (var6 > 16.0 && var8 < 16.0 && this.pack.canMoveUp()) {
+                  this.pack.moveUp();
+                  return true;
+               }
+
+               if (var6 > 16.0 && var8 > 16.0 && this.pack.canMoveDown()) {
+                  this.pack.moveDown();
+                  return true;
+               }
             }
 
-            if (var6 < 16.0 && this.pack.canUnselect()) {
-               this.pack.unselect();
-               return true;
-            }
-
-            if (var6 > 16.0 && var8 < 16.0 && this.pack.canMoveUp()) {
-               this.pack.moveUp();
-               return true;
-            }
-
-            if (var6 > 16.0 && var8 > 16.0 && this.pack.canMoveDown()) {
-               this.pack.moveDown();
-               return true;
-            }
+            return false;
          }
-
-         return false;
       }
    }
 }

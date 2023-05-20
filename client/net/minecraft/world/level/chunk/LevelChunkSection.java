@@ -171,6 +171,12 @@ public class LevelChunkSection {
       this.biomes = var2;
    }
 
+   public void readBiomes(FriendlyByteBuf var1) {
+      PalettedContainer var2 = this.biomes.recreate();
+      var2.read(var1);
+      this.biomes = var2;
+   }
+
    public void write(FriendlyByteBuf var1) {
       var1.writeShort(this.nonEmptyBlockCount);
       this.states.write(var1);

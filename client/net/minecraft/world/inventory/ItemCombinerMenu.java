@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -9,23 +10,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class ItemCombinerMenu extends AbstractContainerMenu {
-   public static final int INPUT_SLOT = 0;
-   public static final int ADDITIONAL_SLOT = 1;
-   public static final int RESULT_SLOT = 2;
-   private static final int INV_SLOT_START = 3;
-   private static final int INV_SLOT_END = 30;
-   private static final int USE_ROW_SLOT_START = 30;
-   private static final int USE_ROW_SLOT_END = 39;
-   protected final ResultContainer resultSlots = new ResultContainer();
-   protected final Container inputSlots = new SimpleContainer(2) {
-      @Override
-      public void setChanged() {
-         super.setChanged();
-         ItemCombinerMenu.this.slotsChanged(this);
-      }
-   };
+   private static final int INVENTORY_SLOTS_PER_ROW = 9;
+   private static final int INVENTORY_SLOTS_PER_COLUMN = 3;
    protected final ContainerLevelAccess access;
    protected final Player player;
+   protected final Container inputSlots;
+   private final List<Integer> inputSlotIndexes;
+   protected final ResultContainer resultSlots = new ResultContainer();
+   private final int resultSlotIndex;
 
    protected abstract boolean mayPickup(Player var1, boolean var2);
 
@@ -37,9 +29,28 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       super(var1, var2);
       this.access = var4;
       this.player = var3.player;
-      this.addSlot(new Slot(this.inputSlots, 0, 27, 47));
-      this.addSlot(new Slot(this.inputSlots, 1, 76, 47));
-      this.addSlot(new Slot(this.resultSlots, 2, 134, 47) {
+      ItemCombinerMenuSlotDefinition var5 = this.createInputSlotDefinitions();
+      this.inputSlots = this.createContainer(var5.getNumOfInputSlots());
+      this.inputSlotIndexes = var5.getInputSlotIndexes();
+      this.resultSlotIndex = var5.getResultSlotIndex();
+      this.createInputSlots(var5);
+      this.createResultSlot(var5);
+      this.createInventorySlots(var3);
+   }
+
+   private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
+      for(final ItemCombinerMenuSlotDefinition.SlotDefinition var3 : var1.getSlots()) {
+         this.addSlot(new Slot(this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
+            @Override
+            public boolean mayPlace(ItemStack var1) {
+               return var3.mayPlace().test(var1);
+            }
+         });
+      }
+   }
+
+   private void createResultSlot(ItemCombinerMenuSlotDefinition var1) {
+      this.addSlot(new Slot(this.resultSlots, var1.getResultSlot().slotIndex(), var1.getResultSlot().x(), var1.getResultSlot().y()) {
          @Override
          public boolean mayPlace(ItemStack var1) {
             return false;
@@ -55,19 +66,33 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
             ItemCombinerMenu.this.onTake(var1, var2);
          }
       });
+   }
 
-      for(int var5 = 0; var5 < 3; ++var5) {
-         for(int var6 = 0; var6 < 9; ++var6) {
-            this.addSlot(new Slot(var3, var6 + var5 * 9 + 9, 8 + var6 * 18, 84 + var5 * 18));
+   private void createInventorySlots(Inventory var1) {
+      for(int var2 = 0; var2 < 3; ++var2) {
+         for(int var3 = 0; var3 < 9; ++var3) {
+            this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
          }
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var3, var7, 8 + var7 * 18, 142));
+      for(int var4 = 0; var4 < 9; ++var4) {
+         this.addSlot(new Slot(var1, var4, 8 + var4 * 18, 142));
       }
    }
 
    public abstract void createResult();
+
+   protected abstract ItemCombinerMenuSlotDefinition createInputSlotDefinitions();
+
+   private SimpleContainer createContainer(int var1) {
+      return new SimpleContainer(var1) {
+         @Override
+         public void setChanged() {
+            super.setChanged();
+            ItemCombinerMenu.this.slotsChanged(this);
+         }
+      };
+   }
 
    @Override
    public void slotsChanged(Container var1) {
@@ -94,10 +119,6 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
          );
    }
 
-   protected boolean shouldQuickMoveToAdditionalSlot(ItemStack var1) {
-      return false;
-   }
-
    @Override
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
@@ -105,25 +126,35 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
-         if (var2 == 2) {
-            if (!this.moveItemStackTo(var5, 3, 39, true)) {
+         int var6 = this.getInventorySlotStart();
+         int var7 = this.getUseRowEnd();
+         if (var2 == this.getResultSlot()) {
+            if (!this.moveItemStackTo(var5, var6, var7, true)) {
                return ItemStack.EMPTY;
             }
 
             var4.onQuickCraft(var5, var3);
-         } else if (var2 != 0 && var2 != 1) {
-            if (var2 >= 3 && var2 < 39) {
-               int var6 = this.shouldQuickMoveToAdditionalSlot(var3) ? 1 : 0;
-               if (!this.moveItemStackTo(var5, var6, 2, false)) {
-                  return ItemStack.EMPTY;
-               }
+         } else if (this.inputSlotIndexes.contains(var2)) {
+            if (!this.moveItemStackTo(var5, var6, var7, false)) {
+               return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 3, 39, false)) {
+         } else if (this.canMoveIntoInputSlots(var5) && var2 >= this.getInventorySlotStart() && var2 < this.getUseRowEnd()) {
+            int var8 = this.getSlotToQuickMoveTo(var3);
+            if (!this.moveItemStackTo(var5, var8, this.getResultSlot(), false)) {
+               return ItemStack.EMPTY;
+            }
+         } else if (var2 >= this.getInventorySlotStart() && var2 < this.getInventorySlotEnd()) {
+            if (!this.moveItemStackTo(var5, this.getUseRowStart(), this.getUseRowEnd(), false)) {
+               return ItemStack.EMPTY;
+            }
+         } else if (var2 >= this.getUseRowStart()
+            && var2 < this.getUseRowEnd()
+            && !this.moveItemStackTo(var5, this.getInventorySlotStart(), this.getInventorySlotEnd(), false)) {
             return ItemStack.EMPTY;
          }
 
          if (var5.isEmpty()) {
-            var4.set(ItemStack.EMPTY);
+            var4.setByPlayer(ItemStack.EMPTY);
          } else {
             var4.setChanged();
          }
@@ -136,5 +167,33 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
       }
 
       return var3;
+   }
+
+   protected boolean canMoveIntoInputSlots(ItemStack var1) {
+      return true;
+   }
+
+   public int getSlotToQuickMoveTo(ItemStack var1) {
+      return this.inputSlots.isEmpty() ? 0 : this.inputSlotIndexes.get(0);
+   }
+
+   public int getResultSlot() {
+      return this.resultSlotIndex;
+   }
+
+   private int getInventorySlotStart() {
+      return this.getResultSlot() + 1;
+   }
+
+   private int getInventorySlotEnd() {
+      return this.getInventorySlotStart() + 27;
+   }
+
+   private int getUseRowStart() {
+      return this.getInventorySlotEnd();
+   }
+
+   private int getUseRowEnd() {
+      return this.getUseRowStart() + 9;
    }
 }

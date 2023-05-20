@@ -79,7 +79,7 @@ public class SelectWorldScreen extends Screen {
             .bounds(this.width / 2 + 82, this.height - 28, 72, 20)
             .build()
       );
-      this.updateButtonStatus(false);
+      this.updateButtonStatus(false, false);
       this.setInitialFocus(this.searchBox);
    }
 
@@ -106,11 +106,11 @@ public class SelectWorldScreen extends Screen {
       super.render(var1, var2, var3, var4);
    }
 
-   public void updateButtonStatus(boolean var1) {
+   public void updateButtonStatus(boolean var1, boolean var2) {
       this.selectButton.active = var1;
-      this.deleteButton.active = var1;
       this.renameButton.active = var1;
       this.copyButton.active = var1;
+      this.deleteButton.active = var2;
    }
 
    @Override

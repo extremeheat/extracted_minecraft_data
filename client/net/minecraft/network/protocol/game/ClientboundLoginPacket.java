@@ -7,9 +7,13 @@ import javax.annotation.Nullable;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
@@ -52,6 +56,9 @@ public record ClientboundLoginPacket(
    private final boolean isDebug;
    private final boolean isFlat;
    private final Optional<GlobalPos> lastDeathLocation;
+   private static final RegistryOps<Tag> BUILTIN_CONTEXT_OPS = RegistryOps.create(
+      NbtOps.INSTANCE, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)
+   );
 
    public ClientboundLoginPacket(FriendlyByteBuf var1) {
       this(
@@ -60,7 +67,7 @@ public record ClientboundLoginPacket(
          GameType.byId(var1.readByte()),
          GameType.byNullableId(var1.readByte()),
          var1.readCollection(Sets::newHashSetWithExpectedSize, var0 -> var0.readResourceKey(Registries.DIMENSION)),
-         var1.<RegistryAccess>readWithCodec(RegistrySynchronization.NETWORK_CODEC).freeze(),
+         var1.<RegistryAccess>readWithCodec(BUILTIN_CONTEXT_OPS, RegistrySynchronization.NETWORK_CODEC).freeze(),
          var1.readResourceKey(Registries.DIMENSION_TYPE),
          var1.readResourceKey(Registries.DIMENSION),
          var1.readLong(),
@@ -121,7 +128,7 @@ public record ClientboundLoginPacket(
       var1.writeByte(this.gameType.getId());
       var1.writeByte(GameType.getNullableId(this.previousGameType));
       var1.writeCollection(this.levels, FriendlyByteBuf::writeResourceKey);
-      var1.writeWithCodec(RegistrySynchronization.NETWORK_CODEC, this.registryHolder);
+      var1.writeWithCodec(BUILTIN_CONTEXT_OPS, RegistrySynchronization.NETWORK_CODEC, this.registryHolder);
       var1.writeResourceKey(this.dimensionType);
       var1.writeResourceKey(this.dimension);
       var1.writeLong(this.seed);

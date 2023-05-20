@@ -5,10 +5,10 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class CrossedArmsItemLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
@@ -24,7 +24,7 @@ public class CrossedArmsItemLayer<T extends LivingEntity, M extends EntityModel<
       var1.translate(0.0F, 0.4F, -0.4F);
       var1.mulPose(Axis.XP.rotationDegrees(180.0F));
       ItemStack var11 = var4.getItemBySlot(EquipmentSlot.MAINHAND);
-      this.itemInHandRenderer.renderItem(var4, var11, ItemTransforms.TransformType.GROUND, false, var1, var2, var3);
+      this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.GROUND, false, var1, var2, var3);
       var1.popPose();
    }
 }

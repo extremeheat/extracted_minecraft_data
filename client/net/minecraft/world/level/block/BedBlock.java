@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -91,7 +90,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
             }
 
             Vec3 var8 = var3.getCenter();
-            var2.explode(null, DamageSource.badRespawnPointExplosion(var8), null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+            var2.explode(null, var2.damageSources().badRespawnPointExplosion(var8), null, var8, 5.0F, true, Level.ExplosionInteraction.BLOCK);
             return InteractionResult.SUCCESS;
          } else if (var1.getValue(OCCUPIED)) {
             if (!this.kickVillagerOutOfBed(var2, var3)) {

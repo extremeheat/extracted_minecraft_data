@@ -69,7 +69,7 @@ public class NeighborsUpdateRenderer implements DebugRenderer.SimpleDebugRendere
       for(Entry var29 : var15.entrySet()) {
          BlockPos var30 = (BlockPos)var29.getKey();
          Integer var31 = (Integer)var29.getValue();
-         DebugRenderer.renderFloatingText(String.valueOf(var31), var30.getX(), var30.getY(), var30.getZ(), -1);
+         DebugRenderer.renderFloatingText(var1, var2, String.valueOf(var31), var30.getX(), var30.getY(), var30.getZ(), -1);
       }
    }
 }

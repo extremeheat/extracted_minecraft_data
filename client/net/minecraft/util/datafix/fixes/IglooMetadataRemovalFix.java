@@ -1,5 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
+import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -13,8 +14,7 @@ public class IglooMetadataRemovalFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
-      Type var2 = this.getOutputSchema().getType(References.STRUCTURE_FEATURE);
-      return this.writeFixAndRead("IglooMetadataRemovalFix", var1, var2, IglooMetadataRemovalFix::fixTag);
+      return this.fixTypeEverywhereTyped("IglooMetadataRemovalFix", var1, var0 -> var0.update(DSL.remainderFinder(), IglooMetadataRemovalFix::fixTag));
    }
 
    private static <T> Dynamic<T> fixTag(Dynamic<T> var0) {

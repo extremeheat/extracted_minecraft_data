@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.effect.MobEffect;
@@ -49,7 +50,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
       this.effectAmplifier = var1.readByte();
       this.effectDurationTicks = var1.readVarInt();
       this.flags = var1.readByte();
-      this.factorData = var1.readNullable(var0 -> var0.readWithCodec(MobEffectInstance.FactorData.CODEC));
+      this.factorData = var1.readNullable(var0 -> var0.readWithCodec(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC));
    }
 
    @Override
@@ -59,7 +60,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
       var1.writeByte(this.effectAmplifier);
       var1.writeVarInt(this.effectDurationTicks);
       var1.writeByte(this.flags);
-      var1.writeNullable(this.factorData, (var0, var1x) -> var0.writeWithCodec(MobEffectInstance.FactorData.CODEC, var1x));
+      var1.writeNullable(this.factorData, (var0, var1x) -> var0.writeWithCodec(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC, var1x));
    }
 
    public void handle(ClientGamePacketListener var1) {

@@ -1,16 +1,12 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 
 public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -36,34 +32,26 @@ public class WorldGenAttemptRenderer implements DebugRenderer.SimpleDebugRendere
 
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      Tesselator var9 = Tesselator.getInstance();
-      BufferBuilder var10 = var9.getBuilder();
-      var10.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+      VertexConsumer var9 = var2.getBuffer(RenderType.debugFilledBox());
 
-      for(int var11 = 0; var11 < this.toRender.size(); ++var11) {
-         BlockPos var12 = this.toRender.get(var11);
-         Float var13 = this.scales.get(var11);
-         float var14 = var13 / 2.0F;
+      for(int var10 = 0; var10 < this.toRender.size(); ++var10) {
+         BlockPos var11 = this.toRender.get(var10);
+         Float var12 = this.scales.get(var10);
+         float var13 = var12 / 2.0F;
          LevelRenderer.addChainedFilledBoxVertices(
-            var10,
-            (double)((float)var12.getX() + 0.5F - var14) - var3,
-            (double)((float)var12.getY() + 0.5F - var14) - var5,
-            (double)((float)var12.getZ() + 0.5F - var14) - var7,
-            (double)((float)var12.getX() + 0.5F + var14) - var3,
-            (double)((float)var12.getY() + 0.5F + var14) - var5,
-            (double)((float)var12.getZ() + 0.5F + var14) - var7,
-            this.reds.get(var11),
-            this.greens.get(var11),
-            this.blues.get(var11),
-            this.alphas.get(var11)
+            var1,
+            var9,
+            (double)((float)var11.getX() + 0.5F - var13) - var3,
+            (double)((float)var11.getY() + 0.5F - var13) - var5,
+            (double)((float)var11.getZ() + 0.5F - var13) - var7,
+            (double)((float)var11.getX() + 0.5F + var13) - var3,
+            (double)((float)var11.getY() + 0.5F + var13) - var5,
+            (double)((float)var11.getZ() + 0.5F + var13) - var7,
+            this.reds.get(var10),
+            this.greens.get(var10),
+            this.blues.get(var10),
+            this.alphas.get(var10)
          );
       }
-
-      var9.end();
-      RenderSystem.enableTexture();
    }
 }

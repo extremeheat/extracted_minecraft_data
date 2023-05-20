@@ -79,7 +79,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       }
    };
    private static final Item POISONOUS_FOOD = Items.COOKIE;
-   private static final Set<Item> TAME_FOOD = Sets.newHashSet(new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS});
+   private static final Set<Item> TAME_FOOD = Sets.newHashSet(
+      new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS}
+   );
    static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
       var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
@@ -285,7 +287,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
          this.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
          if (var1.isCreative() || !this.isInvulnerable()) {
-            this.hurt(DamageSource.playerAttack(var1), 3.4028235E38F);
+            this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
          return InteractionResult.sidedSuccess(this.level.isClientSide);
@@ -310,11 +312,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    }
 
    @Override
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      return false;
-   }
-
-   @Override
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
    }
 
@@ -331,7 +328,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(DamageSource.mobAttack(this), 3.0F);
+      return var1.hurt(this.damageSources().mobAttack(this), 3.0F);
    }
 
    @Nullable

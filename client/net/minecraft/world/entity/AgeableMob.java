@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -140,6 +141,12 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    protected void ageBoundaryReached() {
+      if (!this.isBaby() && this.isPassenger()) {
+         Entity var2 = this.getVehicle();
+         if (var2 instanceof Boat var1 && !var1.hasEnoughSpaceFor(this)) {
+            this.stopRiding();
+         }
+      }
    }
 
    @Override

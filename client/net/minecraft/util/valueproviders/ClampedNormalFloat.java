@@ -18,7 +18,7 @@ public class ClampedNormalFloat extends FloatProvider {
                .apply(var0, ClampedNormalFloat::new)
       )
       .comapFlatMap(
-         var0 -> var0.max < var0.min ? DataResult.error("Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0),
+         var0 -> var0.max < var0.min ? DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0),
          Function.identity()
       );
    private final float mean;

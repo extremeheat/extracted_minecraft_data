@@ -146,11 +146,19 @@ public interface Component extends Message, FormattedText {
    }
 
    static MutableComponent translatable(String var0) {
-      return MutableComponent.create(new TranslatableContents(var0));
+      return MutableComponent.create(new TranslatableContents(var0, null, TranslatableContents.NO_ARGS));
    }
 
    static MutableComponent translatable(String var0, Object... var1) {
-      return MutableComponent.create(new TranslatableContents(var0, var1));
+      return MutableComponent.create(new TranslatableContents(var0, null, var1));
+   }
+
+   static MutableComponent translatableWithFallback(String var0, @Nullable String var1) {
+      return MutableComponent.create(new TranslatableContents(var0, var1, TranslatableContents.NO_ARGS));
+   }
+
+   static MutableComponent translatableWithFallback(String var0, @Nullable String var1, Object... var2) {
+      return MutableComponent.create(new TranslatableContents(var0, var1, var2));
    }
 
    static MutableComponent empty() {
@@ -212,19 +220,19 @@ public interface Component extends Message, FormattedText {
             return Component.literal(var1.getAsString());
          } else if (!var1.isJsonObject()) {
             if (var1.isJsonArray()) {
-               JsonArray var10 = var1.getAsJsonArray();
-               MutableComponent var11 = null;
+               JsonArray var11 = var1.getAsJsonArray();
+               MutableComponent var12 = null;
 
-               for(JsonElement var20 : var10) {
-                  MutableComponent var22 = this.deserialize(var20, var20.getClass(), var3);
-                  if (var11 == null) {
-                     var11 = var22;
+               for(JsonElement var21 : var11) {
+                  MutableComponent var23 = this.deserialize(var21, var21.getClass(), var3);
+                  if (var12 == null) {
+                     var12 = var23;
                   } else {
-                     var11.append(var22);
+                     var12.append(var23);
                   }
                }
 
-               return var11;
+               return var12;
             } else {
                throw new JsonParseException("Don't know how to turn " + var1 + " into a Component");
             }
@@ -235,29 +243,30 @@ public interface Component extends Message, FormattedText {
                String var6 = GsonHelper.getAsString(var4, "text");
                var5 = var6.isEmpty() ? Component.empty() : Component.literal(var6);
             } else if (var4.has("translate")) {
-               String var12 = GsonHelper.getAsString(var4, "translate");
+               String var13 = GsonHelper.getAsString(var4, "translate");
+               String var7 = GsonHelper.getAsString(var4, "fallback", null);
                if (var4.has("with")) {
-                  JsonArray var7 = GsonHelper.getAsJsonArray(var4, "with");
-                  Object[] var8 = new Object[var7.size()];
+                  JsonArray var8 = GsonHelper.getAsJsonArray(var4, "with");
+                  Object[] var9 = new Object[var8.size()];
 
-                  for(int var9 = 0; var9 < var8.length; ++var9) {
-                     var8[var9] = unwrapTextArgument(this.deserialize(var7.get(var9), var2, var3));
+                  for(int var10 = 0; var10 < var9.length; ++var10) {
+                     var9[var10] = unwrapTextArgument(this.deserialize(var8.get(var10), var2, var3));
                   }
 
-                  var5 = Component.translatable(var12, var8);
+                  var5 = Component.translatableWithFallback(var13, var7, var9);
                } else {
-                  var5 = Component.translatable(var12);
+                  var5 = Component.translatableWithFallback(var13, var7);
                }
             } else if (var4.has("score")) {
-               JsonObject var13 = GsonHelper.getAsJsonObject(var4, "score");
-               if (!var13.has("name") || !var13.has("objective")) {
+               JsonObject var14 = GsonHelper.getAsJsonObject(var4, "score");
+               if (!var14.has("name") || !var14.has("objective")) {
                   throw new JsonParseException("A score component needs a least a name and an objective");
                }
 
-               var5 = Component.score(GsonHelper.getAsString(var13, "name"), GsonHelper.getAsString(var13, "objective"));
+               var5 = Component.score(GsonHelper.getAsString(var14, "name"), GsonHelper.getAsString(var14, "objective"));
             } else if (var4.has("selector")) {
-               Optional var14 = this.parseSeparator(var2, var3, var4);
-               var5 = Component.selector(GsonHelper.getAsString(var4, "selector"), var14);
+               Optional var15 = this.parseSeparator(var2, var3, var4);
+               var5 = Component.selector(GsonHelper.getAsString(var4, "selector"), var15);
             } else if (var4.has("keybind")) {
                var5 = Component.keybind(GsonHelper.getAsString(var4, "keybind"));
             } else {
@@ -265,33 +274,33 @@ public interface Component extends Message, FormattedText {
                   throw new JsonParseException("Don't know how to turn " + var1 + " into a Component");
                }
 
-               String var15 = GsonHelper.getAsString(var4, "nbt");
-               Optional var18 = this.parseSeparator(var2, var3, var4);
-               boolean var21 = GsonHelper.getAsBoolean(var4, "interpret", false);
-               Object var23;
+               String var16 = GsonHelper.getAsString(var4, "nbt");
+               Optional var19 = this.parseSeparator(var2, var3, var4);
+               boolean var22 = GsonHelper.getAsBoolean(var4, "interpret", false);
+               Object var24;
                if (var4.has("block")) {
-                  var23 = new BlockDataSource(GsonHelper.getAsString(var4, "block"));
+                  var24 = new BlockDataSource(GsonHelper.getAsString(var4, "block"));
                } else if (var4.has("entity")) {
-                  var23 = new EntityDataSource(GsonHelper.getAsString(var4, "entity"));
+                  var24 = new EntityDataSource(GsonHelper.getAsString(var4, "entity"));
                } else {
                   if (!var4.has("storage")) {
                      throw new JsonParseException("Don't know how to turn " + var1 + " into a Component");
                   }
 
-                  var23 = new StorageDataSource(new ResourceLocation(GsonHelper.getAsString(var4, "storage")));
+                  var24 = new StorageDataSource(new ResourceLocation(GsonHelper.getAsString(var4, "storage")));
                }
 
-               var5 = Component.nbt(var15, var21, var18, (DataSource)var23);
+               var5 = Component.nbt(var16, var22, var19, (DataSource)var24);
             }
 
             if (var4.has("extra")) {
-               JsonArray var16 = GsonHelper.getAsJsonArray(var4, "extra");
-               if (var16.size() <= 0) {
+               JsonArray var17 = GsonHelper.getAsJsonArray(var4, "extra");
+               if (var17.size() <= 0) {
                   throw new JsonParseException("Unexpected empty array of components");
                }
 
-               for(int var19 = 0; var19 < var16.size(); ++var19) {
-                  var5.append(this.deserialize(var16.get(var19), var2, var3));
+               for(int var20 = 0; var20 < var17.size(); ++var20) {
+                  var5.append(this.deserialize(var17.get(var20), var2, var3));
                }
             }
 
@@ -346,57 +355,62 @@ public interface Component extends Message, FormattedText {
             var4.add("extra", var5);
          }
 
-         ComponentContents var17 = var1.getContents();
-         if (var17 == ComponentContents.EMPTY) {
+         ComponentContents var18 = var1.getContents();
+         if (var18 == ComponentContents.EMPTY) {
             var4.addProperty("text", "");
-         } else if (var17 instanceof LiteralContents var19) {
-            var4.addProperty("text", var19.text());
-         } else if (var17 instanceof TranslatableContents var8) {
+         } else if (var18 instanceof LiteralContents var20) {
+            var4.addProperty("text", var20.text());
+         } else if (var18 instanceof TranslatableContents var8) {
             var4.addProperty("translate", var8.getKey());
-            if (var8.getArgs().length > 0) {
-               JsonArray var12 = new JsonArray();
+            String var12 = var8.getFallback();
+            if (var12 != null) {
+               var4.addProperty("fallback", var12);
+            }
 
-               for(Object var16 : var8.getArgs()) {
-                  if (var16 instanceof Component) {
-                     var12.add(this.serialize((Component)var16, var16.getClass(), var3));
+            if (var8.getArgs().length > 0) {
+               JsonArray var13 = new JsonArray();
+
+               for(Object var17 : var8.getArgs()) {
+                  if (var17 instanceof Component) {
+                     var13.add(this.serialize((Component)var17, var17.getClass(), var3));
                   } else {
-                     var12.add(new JsonPrimitive(String.valueOf(var16)));
+                     var13.add(new JsonPrimitive(String.valueOf(var17)));
                   }
                }
 
-               var4.add("with", var12);
+               var4.add("with", var13);
             }
-         } else if (var17 instanceof ScoreContents var9) {
-            JsonObject var20 = new JsonObject();
-            var20.addProperty("name", var9.getName());
-            var20.addProperty("objective", var9.getObjective());
-            var4.add("score", var20);
-         } else if (var17 instanceof SelectorContents var10) {
+         } else if (var18 instanceof ScoreContents var9) {
+            JsonObject var21 = new JsonObject();
+            var21.addProperty("name", var9.getName());
+            var21.addProperty("objective", var9.getObjective());
+            var4.add("score", var21);
+         } else if (var18 instanceof SelectorContents var10) {
             var4.addProperty("selector", var10.getPattern());
             this.serializeSeparator(var3, var4, var10.getSeparator());
-         } else if (var17 instanceof KeybindContents var11) {
+         } else if (var18 instanceof KeybindContents var11) {
             var4.addProperty("keybind", var11.getName());
          } else {
-            if (!(var17 instanceof NbtContents)) {
-               throw new IllegalArgumentException("Don't know how to serialize " + var17 + " as a Component");
+            if (!(var18 instanceof NbtContents)) {
+               throw new IllegalArgumentException("Don't know how to serialize " + var18 + " as a Component");
             }
 
-            NbtContents var18 = (NbtContents)var17;
-            var4.addProperty("nbt", var18.getNbtPath());
-            var4.addProperty("interpret", var18.isInterpreting());
-            this.serializeSeparator(var3, var4, var18.getSeparator());
-            DataSource var21 = var18.getDataSource();
-            if (var21 instanceof BlockDataSource var23) {
-               var4.addProperty("block", var23.posPattern());
-            } else if (var21 instanceof EntityDataSource var24) {
-               var4.addProperty("entity", var24.selectorPattern());
+            NbtContents var19 = (NbtContents)var18;
+            var4.addProperty("nbt", var19.getNbtPath());
+            var4.addProperty("interpret", var19.isInterpreting());
+            this.serializeSeparator(var3, var4, var19.getSeparator());
+            DataSource var22 = var19.getDataSource();
+            if (var22 instanceof BlockDataSource var24) {
+               var4.addProperty("block", var24.posPattern());
+            } else if (var22 instanceof EntityDataSource var25) {
+               var4.addProperty("entity", var25.selectorPattern());
             } else {
-               if (!(var21 instanceof StorageDataSource)) {
-                  throw new IllegalArgumentException("Don't know how to serialize " + var17 + " as a Component");
+               if (!(var22 instanceof StorageDataSource)) {
+                  throw new IllegalArgumentException("Don't know how to serialize " + var18 + " as a Component");
                }
 
-               StorageDataSource var22 = (StorageDataSource)var21;
-               var4.addProperty("storage", var22.id().toString());
+               StorageDataSource var23 = (StorageDataSource)var22;
+               var4.addProperty("storage", var23.id().toString());
             }
          }
 

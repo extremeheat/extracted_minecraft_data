@@ -5,12 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
-import java.util.function.BiConsumer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.LevelSimulatedReader;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class BlobFoliagePlacer extends FoliagePlacer {
@@ -34,7 +31,7 @@ public class BlobFoliagePlacer extends FoliagePlacer {
    @Override
    protected void createFoliage(
       LevelSimulatedReader var1,
-      BiConsumer<BlockPos, BlockState> var2,
+      FoliagePlacer.FoliageSetter var2,
       RandomSource var3,
       TreeConfiguration var4,
       int var5,

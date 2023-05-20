@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
 import com.google.common.collect.Queues;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -104,6 +103,10 @@ public class ToastComponent extends GuiComponent {
       return this.minecraft;
    }
 
+   public double getNotificationDisplayTimeMultiplier() {
+      return this.minecraft.options.notificationDisplayTime().get();
+   }
+
    class ToastInstance<T extends Toast> {
       private static final long ANIMATION_TIME = 600L;
       private final T toast;
@@ -141,16 +144,13 @@ public class ToastComponent extends GuiComponent {
             this.visibleTime = var3;
          }
 
-         PoseStack var5 = RenderSystem.getModelViewStack();
-         var5.pushPose();
-         var5.translate((float)var1 - (float)this.toast.width() * this.getVisibility(var3), (float)(this.index * 32), 800.0F);
-         RenderSystem.applyModelViewMatrix();
-         Toast.Visibility var6 = this.toast.render(var2, ToastComponent.this, var3 - this.visibleTime);
-         var5.popPose();
-         RenderSystem.applyModelViewMatrix();
-         if (var6 != this.visibility) {
+         var2.pushPose();
+         var2.translate((float)var1 - (float)this.toast.width() * this.getVisibility(var3), (float)(this.index * 32), 800.0F);
+         Toast.Visibility var5 = this.toast.render(var2, ToastComponent.this, var3 - this.visibleTime);
+         var2.popPose();
+         if (var5 != this.visibility) {
             this.animationTime = var3 - (long)((int)((1.0F - this.getVisibility(var3)) * 600.0F));
-            this.visibility = var6;
+            this.visibility = var5;
             this.visibility.playSound(ToastComponent.this.minecraft.getSoundManager());
          }
 

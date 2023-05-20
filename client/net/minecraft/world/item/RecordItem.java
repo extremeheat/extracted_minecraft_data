@@ -16,7 +16,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JukeboxBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 public class RecordItem extends Item {
    private static final Map<SoundEvent, RecordItem> BY_NAME = Maps.newHashMap();
@@ -32,6 +35,8 @@ public class RecordItem extends Item {
       BY_NAME.put(this.sound, this);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
@@ -40,10 +45,14 @@ public class RecordItem extends Item {
       if (var4.is(Blocks.JUKEBOX) && !var4.getValue(JukeboxBlock.HAS_RECORD)) {
          ItemStack var5 = var1.getItemInHand();
          if (!var2.isClientSide) {
-            ((JukeboxBlock)Blocks.JUKEBOX).setRecord(var1.getPlayer(), var2, var3, var4, var5);
-            var2.levelEvent(null, 1010, var3, Item.getId(this));
-            var5.shrink(1);
             Player var6 = var1.getPlayer();
+            BlockEntity var8 = var2.getBlockEntity(var3);
+            if (var8 instanceof JukeboxBlockEntity var7) {
+               var7.setFirstItem(var5.copy());
+               var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6, var4));
+            }
+
+            var5.shrink(1);
             if (var6 != null) {
                var6.awardStat(Stats.PLAY_RECORD);
             }

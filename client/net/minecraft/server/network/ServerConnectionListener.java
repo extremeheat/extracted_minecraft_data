@@ -12,6 +12,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -35,12 +36,8 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.network.Connection;
-import net.minecraft.network.PacketDecoder;
-import net.minecraft.network.PacketEncoder;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.RateKickingConnection;
-import net.minecraft.network.Varint21FrameDecoder;
-import net.minecraft.network.Varint21LengthFieldPrepender;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.PacketFlow;
@@ -90,21 +87,18 @@ public class ServerConnectionListener {
                            protected void initChannel(Channel var1) {
                               try {
                                  var1.config().setOption(ChannelOption.TCP_NODELAY, true);
-                              } catch (ChannelException var4) {
+                              } catch (ChannelException var5) {
                               }
                
-                              var1.pipeline()
+                              ChannelPipeline var2 = var1.pipeline()
                                  .addLast("timeout", new ReadTimeoutHandler(30))
-                                 .addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this))
-                                 .addLast("splitter", new Varint21FrameDecoder())
-                                 .addLast("decoder", new PacketDecoder(PacketFlow.SERVERBOUND))
-                                 .addLast("prepender", new Varint21LengthFieldPrepender())
-                                 .addLast("encoder", new PacketEncoder(PacketFlow.CLIENTBOUND));
-                              int var2 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
-                              Object var3 = var2 > 0 ? new RateKickingConnection(var2) : new Connection(PacketFlow.SERVERBOUND);
-                              ServerConnectionListener.this.connections.add(var3);
-                              var1.pipeline().addLast("packet_handler", (ChannelHandler)var3);
-                              ((Connection)var3).setListener(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, (Connection)var3));
+                                 .addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this));
+                              Connection.configureSerialization(var2, PacketFlow.SERVERBOUND);
+                              int var3 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
+                              Object var4 = var3 > 0 ? new RateKickingConnection(var3) : new Connection(PacketFlow.SERVERBOUND);
+                              ServerConnectionListener.this.connections.add(var4);
+                              var2.addLast("packet_handler", (ChannelHandler)var4);
+                              ((Connection)var4).setListener(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, (Connection)var4));
                            }
                         }
                      )
@@ -124,7 +118,8 @@ public class ServerConnectionListener {
                Connection var2 = new Connection(PacketFlow.SERVERBOUND);
                var2.setListener(new MemoryServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, var2));
                ServerConnectionListener.this.connections.add(var2);
-               var1.pipeline().addLast("packet_handler", var2);
+               ChannelPipeline var3 = var1.pipeline();
+               var3.addLast("packet_handler", var2);
             }
          }).group((EventLoopGroup)SERVER_EVENT_GROUP.get()).localAddress(LocalAddress.ANY)).bind().syncUninterruptibly();
          this.channels.add(var1);

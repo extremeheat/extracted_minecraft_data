@@ -77,6 +77,7 @@ public class EntityRenderers {
       register(EntityType.BAT, BatRenderer::new);
       register(EntityType.BEE, BeeRenderer::new);
       register(EntityType.BLAZE, BlazeRenderer::new);
+      register(EntityType.BLOCK_DISPLAY, DisplayRenderer.BlockDisplayRenderer::new);
       register(EntityType.BOAT, var0 -> new BoatRenderer(var0, false));
       register(EntityType.CAT, CatRenderer::new);
       register(EntityType.CAMEL, var0 -> new CamelRenderer(var0, ModelLayers.CAMEL));
@@ -122,8 +123,10 @@ public class EntityRenderers {
       register(EntityType.HORSE, HorseRenderer::new);
       register(EntityType.HUSK, HuskRenderer::new);
       register(EntityType.ILLUSIONER, IllusionerRenderer::new);
+      register(EntityType.INTERACTION, NoopRenderer::new);
       register(EntityType.IRON_GOLEM, IronGolemRenderer::new);
       register(EntityType.ITEM, ItemEntityRenderer::new);
+      register(EntityType.ITEM_DISPLAY, DisplayRenderer.ItemDisplayRenderer::new);
       register(EntityType.ITEM_FRAME, ItemFrameRenderer::new);
       register(EntityType.LEASH_KNOT, LeashKnotRenderer::new);
       register(EntityType.LIGHTNING_BOLT, LightningBoltRenderer::new);
@@ -160,6 +163,7 @@ public class EntityRenderers {
       register(EntityType.SKELETON_HORSE, var0 -> new UndeadHorseRenderer(var0, ModelLayers.SKELETON_HORSE));
       register(EntityType.SLIME, SlimeRenderer::new);
       register(EntityType.SMALL_FIREBALL, var0 -> new ThrownItemRenderer<>(var0, 0.75F, true));
+      register(EntityType.SNIFFER, SnifferRenderer::new);
       register(EntityType.SNOWBALL, ThrownItemRenderer::new);
       register(EntityType.SNOW_GOLEM, SnowGolemRenderer::new);
       register(EntityType.SPAWNER_MINECART, var0 -> new MinecartRenderer<>(var0, ModelLayers.SPAWNER_MINECART));
@@ -169,6 +173,7 @@ public class EntityRenderers {
       register(EntityType.STRAY, StrayRenderer::new);
       register(EntityType.STRIDER, StriderRenderer::new);
       register(EntityType.TADPOLE, TadpoleRenderer::new);
+      register(EntityType.TEXT_DISPLAY, DisplayRenderer.TextDisplayRenderer::new);
       register(EntityType.TNT, TntRenderer::new);
       register(EntityType.TNT_MINECART, TntMinecartRenderer::new);
       register(EntityType.TRADER_LLAMA, var0 -> new LlamaRenderer(var0, ModelLayers.TRADER_LLAMA));

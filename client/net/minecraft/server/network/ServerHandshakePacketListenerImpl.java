@@ -8,6 +8,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
 import net.minecraft.network.protocol.login.ClientboundLoginDisconnectPacket;
+import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.server.MinecraftServer;
 
 public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
@@ -27,23 +28,24 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
          case LOGIN:
             this.connection.setProtocol(ConnectionProtocol.LOGIN);
             if (var1.getProtocolVersion() != SharedConstants.getCurrentVersion().getProtocolVersion()) {
-               MutableComponent var2;
+               MutableComponent var3;
                if (var1.getProtocolVersion() < 754) {
-                  var2 = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().getName());
+                  var3 = Component.translatable("multiplayer.disconnect.outdated_client", SharedConstants.getCurrentVersion().getName());
                } else {
-                  var2 = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().getName());
+                  var3 = Component.translatable("multiplayer.disconnect.incompatible", SharedConstants.getCurrentVersion().getName());
                }
 
-               this.connection.send(new ClientboundLoginDisconnectPacket(var2));
-               this.connection.disconnect(var2);
+               this.connection.send(new ClientboundLoginDisconnectPacket(var3));
+               this.connection.disconnect(var3);
             } else {
                this.connection.setListener(new ServerLoginPacketListenerImpl(this.server, this.connection));
             }
             break;
          case STATUS:
-            if (this.server.repliesToStatus()) {
+            ServerStatus var2 = this.server.getStatus();
+            if (this.server.repliesToStatus() && var2 != null) {
                this.connection.setProtocol(ConnectionProtocol.STATUS);
-               this.connection.setListener(new ServerStatusPacketListenerImpl(this.server, this.connection));
+               this.connection.setListener(new ServerStatusPacketListenerImpl(var2, this.connection));
             } else {
                this.connection.disconnect(IGNORE_STATUS_REASON);
             }
@@ -58,7 +60,7 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
    }
 
    @Override
-   public Connection getConnection() {
-      return this.connection;
+   public boolean isAcceptingMessages() {
+      return this.connection.isConnected();
    }
 }

@@ -48,6 +48,7 @@ import net.minecraft.server.commands.BanPlayerCommands;
 import net.minecraft.server.commands.BossBarCommands;
 import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.commands.CloneCommands;
+import net.minecraft.server.commands.DamageCommand;
 import net.minecraft.server.commands.DataPackCommand;
 import net.minecraft.server.commands.DeOpCommands;
 import net.minecraft.server.commands.DebugCommand;
@@ -84,6 +85,7 @@ import net.minecraft.server.commands.PlaySoundCommand;
 import net.minecraft.server.commands.PublishCommand;
 import net.minecraft.server.commands.RecipeCommand;
 import net.minecraft.server.commands.ReloadCommand;
+import net.minecraft.server.commands.RideCommand;
 import net.minecraft.server.commands.SaveAllCommand;
 import net.minecraft.server.commands.SaveOffCommand;
 import net.minecraft.server.commands.SaveOnCommand;
@@ -95,6 +97,7 @@ import net.minecraft.server.commands.SetBlockCommand;
 import net.minecraft.server.commands.SetPlayerIdleTimeoutCommand;
 import net.minecraft.server.commands.SetSpawnCommand;
 import net.minecraft.server.commands.SetWorldSpawnCommand;
+import net.minecraft.server.commands.SpawnArmorTrimsCommand;
 import net.minecraft.server.commands.SpectateCommand;
 import net.minecraft.server.commands.SpreadPlayersCommand;
 import net.minecraft.server.commands.StopCommand;
@@ -134,6 +137,7 @@ public class Commands {
       BossBarCommands.register(this.dispatcher);
       ClearInventoryCommands.register(this.dispatcher, var2);
       CloneCommands.register(this.dispatcher, var2);
+      DamageCommand.register(this.dispatcher, var2);
       DataCommands.register(this.dispatcher);
       DataPackCommand.register(this.dispatcher);
       DebugCommand.register(this.dispatcher);
@@ -163,6 +167,7 @@ public class Commands {
       PlaySoundCommand.register(this.dispatcher);
       ReloadCommand.register(this.dispatcher);
       RecipeCommand.register(this.dispatcher);
+      RideCommand.register(this.dispatcher);
       SayCommand.register(this.dispatcher);
       ScheduleCommand.register(this.dispatcher);
       ScoreboardCommand.register(this.dispatcher);
@@ -190,6 +195,7 @@ public class Commands {
 
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          TestCommand.register(this.dispatcher);
+         SpawnArmorTrimsCommand.register(this.dispatcher);
       }
 
       if (var1.includeDedicated) {

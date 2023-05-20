@@ -107,8 +107,6 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    public final AnimationState jumpAnimationState = new AnimationState();
    public final AnimationState croakAnimationState = new AnimationState();
    public final AnimationState tongueAnimationState = new AnimationState();
-   public final AnimationState walkAnimationState = new AnimationState();
-   public final AnimationState swimAnimationState = new AnimationState();
    public final AnimationState swimIdleAnimationState = new AnimationState();
 
    public Frog(EntityType<? extends Animal> var1, Level var2) {
@@ -117,7 +115,7 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
       this.setPathfindingMalus(BlockPathTypes.WATER, 4.0F);
       this.setPathfindingMalus(BlockPathTypes.TRAPDOOR, -1.0F);
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
-      this.maxUpStep = 1.0F;
+      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -192,14 +190,6 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
       return true;
    }
 
-   private boolean isMovingOnLand() {
-      return this.onGround && this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6 && !this.isInWaterOrBubble();
-   }
-
-   private boolean isMovingInWater() {
-      return this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6 && this.isInWaterOrBubble();
-   }
-
    @Override
    protected void customServerAiStep() {
       this.level.getProfiler().push("frogBrain");
@@ -214,22 +204,7 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    @Override
    public void tick() {
       if (this.level.isClientSide()) {
-         if (this.isMovingOnLand()) {
-            this.walkAnimationState.startIfStopped(this.tickCount);
-         } else {
-            this.walkAnimationState.stop();
-         }
-
-         if (this.isMovingInWater()) {
-            this.swimIdleAnimationState.stop();
-            this.swimAnimationState.startIfStopped(this.tickCount);
-         } else if (this.isInWaterOrBubble()) {
-            this.swimAnimationState.stop();
-            this.swimIdleAnimationState.startIfStopped(this.tickCount);
-         } else {
-            this.swimAnimationState.stop();
-            this.swimIdleAnimationState.stop();
-         }
+         this.swimIdleAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
       }
 
       super.tick();
@@ -259,6 +234,18 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
       }
 
       super.onSyncedDataUpdated(var1);
+   }
+
+   @Override
+   protected void updateWalkAnimation(float var1) {
+      float var2;
+      if (this.jumpAnimationState.isStarted()) {
+         var2 = 0.0F;
+      } else {
+         var2 = Math.min(var1 * 25.0F, 1.0F);
+      }
+
+      this.walkAnimation.update(var2, 0.4F);
    }
 
    @Nullable
@@ -366,18 +353,13 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
       } else {
          super.travel(var1);
       }
-   }
-
-   @Override
-   public boolean canCutCorner(BlockPathTypes var1) {
-      return super.canCutCorner(var1) && var1 != BlockPathTypes.WATER_BORDER;
    }
 
    public static boolean canEat(LivingEntity var0) {
@@ -440,6 +422,11 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    static class FrogPathNavigation extends AmphibiousPathNavigation {
       FrogPathNavigation(Frog var1, Level var2) {
          super(var1, var2);
+      }
+
+      @Override
+      public boolean canCutCorner(BlockPathTypes var1) {
+         return var1 != BlockPathTypes.WATER_BORDER && super.canCutCorner(var1);
       }
 
       @Override

@@ -35,6 +35,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
@@ -48,11 +49,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class Camel extends AbstractHorse implements PlayerRideableJumping, RiderShieldingMount, Saddleable {
    public static final Ingredient TEMPTATION_ITEM = Ingredient.of(Items.CACTUS);
    public static final int DASH_COOLDOWN_TICKS = 55;
+   public static final int MAX_HEAD_Y_ROT = 30;
    private static final float RUNNING_SPEED_BONUS = 0.1F;
    private static final float DASH_VERTICAL_MOMENTUM = 1.4285F;
    private static final float DASH_HORIZONTAL_MOMENTUM = 22.2222F;
@@ -62,7 +65,6 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
    private static final float SITTING_HEIGHT_DIFFERENCE = 1.43F;
    public static final EntityDataAccessor<Boolean> DASH = SynchedEntityData.defineId(Camel.class, EntityDataSerializers.BOOLEAN);
    public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK = SynchedEntityData.defineId(Camel.class, EntityDataSerializers.LONG);
-   public final AnimationState walkAnimationState = new AnimationState();
    public final AnimationState sitAnimationState = new AnimationState();
    public final AnimationState sitPoseAnimationState = new AnimationState();
    public final AnimationState sitUpAnimationState = new AnimationState();
@@ -74,7 +76,8 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
 
    public Camel(EntityType<? extends Camel> var1, Level var2) {
       super(var1, var2);
-      this.maxUpStep = 1.5F;
+      this.setMaxUpStep(1.5F);
+      this.moveControl = new Camel.CamelMoveControl();
       GroundPathNavigation var3 = (GroundPathNavigation)this.getNavigation();
       var3.setCanFloat(true);
       var3.setCanWalkOverFences(true);
@@ -83,18 +86,18 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putBoolean("IsSitting", this.getPose() == Pose.SITTING);
       var1.putLong("LastPoseTick", this.entityData.get(LAST_POSE_CHANGE_TICK));
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.getBoolean("IsSitting")) {
+      long var2 = var1.getLong("LastPoseTick");
+      if (var2 < 0L) {
          this.setPose(Pose.SITTING);
       }
 
-      this.resetLastPoseChangeTick(var1.getLong("LastPoseTick"));
+      this.resetLastPoseChangeTick(var2);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -108,7 +111,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
    protected void defineSynchedData() {
       super.defineSynchedData();
       this.entityData.define(DASH, false);
-      this.entityData.define(LAST_POSE_CHANGE_TICK, -52L);
+      this.entityData.define(LAST_POSE_CHANGE_TICK, 0L);
    }
 
    @Override
@@ -116,7 +119,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
    ) {
       CamelAi.initMemories(this, var1.getRandom());
-      this.entityData.set(LAST_POSE_CHANGE_TICK, var1.getLevel().getGameTime() - 52L);
+      this.resetLastPoseChangeTickToFullStand(var1.getLevel().getGameTime());
       return super.finalizeSpawn(var1, var2, var3, var4, var5);
    }
 
@@ -171,12 +174,16 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       if (this.dashCooldown > 0) {
          --this.dashCooldown;
          if (this.dashCooldown == 0) {
-            this.level.playSound(null, this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.PLAYERS, 1.0F, 1.0F);
+            this.level.playSound(null, this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       }
 
       if (this.level.isClientSide()) {
          this.setupAnimationStates();
+      }
+
+      if (this.refuseToMove()) {
+         this.clampHeadRotationToBody(this, 30.0F);
       }
    }
 
@@ -188,71 +195,77 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
          --this.idleAnimationTimeout;
       }
 
-      switch(this.getPose()) {
-         case STANDING:
-            this.sitAnimationState.stop();
+      if (this.isCamelVisuallySitting()) {
+         this.sitUpAnimationState.stop();
+         this.dashAnimationState.stop();
+         if (this.isVisuallySittingDown()) {
+            this.sitAnimationState.startIfStopped(this.tickCount);
             this.sitPoseAnimationState.stop();
-            this.dashAnimationState.animateWhen(this.isDashing(), this.tickCount);
-            this.sitUpAnimationState.animateWhen(this.isInPoseTransition(), this.tickCount);
-            this.walkAnimationState
-               .animateWhen((this.onGround || this.hasControllingPassenger()) && this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6, this.tickCount);
-            break;
-         case SITTING:
-            this.walkAnimationState.stop();
-            this.sitUpAnimationState.stop();
-            this.dashAnimationState.stop();
-            if (this.isSittingDown()) {
-               this.sitAnimationState.startIfStopped(this.tickCount);
-               this.sitPoseAnimationState.stop();
-            } else {
-               this.sitAnimationState.stop();
-               this.sitPoseAnimationState.startIfStopped(this.tickCount);
-            }
-            break;
-         default:
-            this.walkAnimationState.stop();
+         } else {
             this.sitAnimationState.stop();
-            this.sitPoseAnimationState.stop();
-            this.sitUpAnimationState.stop();
-            this.dashAnimationState.stop();
+            this.sitPoseAnimationState.startIfStopped(this.tickCount);
+         }
+      } else {
+         this.sitAnimationState.stop();
+         this.sitPoseAnimationState.stop();
+         this.dashAnimationState.animateWhen(this.isDashing(), this.tickCount);
+         this.sitUpAnimationState.animateWhen(this.isInPoseTransition() && this.getPoseTime() >= 0L, this.tickCount);
       }
+   }
+
+   @Override
+   protected void updateWalkAnimation(float var1) {
+      float var2;
+      if (this.getPose() == Pose.STANDING && !this.dashAnimationState.isStarted()) {
+         var2 = Math.min(var1 * 6.0F, 1.0F);
+      } else {
+         var2 = 0.0F;
+      }
+
+      this.walkAnimation.update(var2, 0.2F);
    }
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isAlive()) {
-         if (this.refuseToMove() && this.isOnGround()) {
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.0, 1.0, 0.0));
-            var1 = var1.multiply(0.0, 1.0, 0.0);
-         }
+      if (this.refuseToMove() && this.isOnGround()) {
+         this.setDeltaMovement(this.getDeltaMovement().multiply(0.0, 1.0, 0.0));
+         var1 = var1.multiply(0.0, 1.0, 0.0);
+      }
 
-         super.travel(var1);
+      super.travel(var1);
+   }
+
+   @Override
+   protected void tickRidden(LivingEntity var1, Vec3 var2) {
+      super.tickRidden(var1, var2);
+      if (var1.zza > 0.0F && this.isCamelSitting() && !this.isInPoseTransition()) {
+         this.standUp();
       }
    }
 
    public boolean refuseToMove() {
-      return this.isPoseSitting() || this.isInPoseTransition();
+      return this.isCamelSitting() || this.isInPoseTransition();
    }
 
    @Override
-   protected float getDrivenMovementSpeed(LivingEntity var1) {
+   protected float getRiddenSpeed(LivingEntity var1) {
       float var2 = var1.isSprinting() && this.getJumpCooldown() == 0 ? 0.1F : 0.0F;
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) + var2;
    }
 
    @Override
-   protected boolean mountIgnoresControllerInput(LivingEntity var1) {
-      boolean var2 = this.isInPoseTransition();
-      if (this.isPoseSitting() && !var2 && var1.zza > 0.0F) {
-         this.standUp();
-      }
-
-      return this.refuseToMove() || super.mountIgnoresControllerInput(var1);
+   protected Vec2 getRiddenRotation(LivingEntity var1) {
+      return this.refuseToMove() ? new Vec2(this.getXRot(), this.getYRot()) : super.getRiddenRotation(var1);
    }
 
    @Override
-   public boolean canJump(Player var1) {
-      return !this.refuseToMove() && this.getControllingPassenger() == var1 && super.canJump(var1);
+   protected Vec3 getRiddenInput(LivingEntity var1, Vec3 var2) {
+      return this.refuseToMove() ? Vec3.ZERO : super.getRiddenInput(var1, var2);
+   }
+
+   @Override
+   public boolean canJump() {
+      return !this.refuseToMove() && super.canJump();
    }
 
    @Override
@@ -263,14 +276,19 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
    }
 
    @Override
-   protected void executeRidersJump(float var1, float var2, float var3) {
-      double var4 = this.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.getBlockJumpFactor() + this.getJumpBoostPower();
+   public boolean canSprint() {
+      return true;
+   }
+
+   @Override
+   protected void executeRidersJump(float var1, Vec3 var2) {
+      double var3 = this.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.getBlockJumpFactor() + this.getJumpBoostPower();
       this.addDeltaMovement(
          this.getLookAngle()
             .multiply(1.0, 0.0, 1.0)
             .normalize()
             .scale((double)(22.2222F * var1) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor())
-            .add(0.0, (double)(1.4285F * var1) * var4, 0.0)
+            .add(0.0, (double)(1.4285F * var1) * var3, 0.0)
       );
       this.dashCooldown = 55;
       this.setDashing(true);
@@ -357,7 +375,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
 
    @Override
    protected void onLeashDistance(float var1) {
-      if (var1 > 6.0F && this.isPoseSitting() && !this.isInPoseTransition()) {
+      if (var1 > 6.0F && this.isCamelSitting() && !this.isInPoseTransition()) {
          this.standUp();
       }
    }
@@ -470,7 +488,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       float var6 = var5 - this.getScale() * 0.2F;
       float var7 = var5 - var6;
       boolean var8 = this.isInPoseTransition();
-      boolean var9 = this.getPose() == Pose.SITTING;
+      boolean var9 = this.isCamelSitting();
       if (var8) {
          int var10 = var9 ? 40 : 52;
          int var11;
@@ -483,7 +501,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
             var12 = var1 ? 0.6F : 0.35F;
          }
 
-         float var13 = (float)this.getPoseTime() + var2;
+         float var13 = Mth.clamp((float)this.getPoseTime() + var2, 0.0F, (float)var10);
          boolean var14 = var13 < (float)var11;
          float var15 = var14 ? var13 / (float)var11 : (var13 - (float)var11) / (float)(var10 - var11);
          float var16 = var5 - var12 * var6;
@@ -506,7 +524,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
 
    @Override
    public double getPassengersRidingOffset() {
-      return (double)(this.getDimensions(this.getPose()).height - (this.isBaby() ? 0.35F : 0.6F));
+      return (double)(this.getDimensions(this.isCamelSitting() ? Pose.SITTING : Pose.STANDING).height - (this.isBaby() ? 0.35F : 0.6F));
    }
 
    @Override
@@ -525,6 +543,19 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       float var5 = var2 + var4 - var3;
       var1.setYRot(var5);
       var1.setYHeadRot(var5);
+   }
+
+   private void clampHeadRotationToBody(Entity var1, float var2) {
+      float var3 = var1.getYHeadRot();
+      float var4 = Mth.wrapDegrees(this.yBodyRot - var3);
+      float var5 = Mth.clamp(Mth.wrapDegrees(this.yBodyRot - var3), -var2, var2);
+      float var6 = var3 + var4 - var5;
+      var1.setYHeadRot(var6);
+   }
+
+   @Override
+   public int getMaxHeadYRot() {
+      return 30;
    }
 
    @Override
@@ -551,34 +582,33 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       DebugPackets.sendEntityBrain(this);
    }
 
-   public boolean isPoseSitting() {
-      return this.getPose() == Pose.SITTING;
+   public boolean isCamelSitting() {
+      return this.entityData.get(LAST_POSE_CHANGE_TICK) < 0L;
+   }
+
+   public boolean isCamelVisuallySitting() {
+      return this.getPoseTime() < 0L != this.isCamelSitting();
    }
 
    public boolean isInPoseTransition() {
       long var1 = this.getPoseTime();
-
-      return switch(this.getPose()) {
-         case STANDING -> var1 < 52L;
-         case SITTING -> var1 < 40L;
-         default -> false;
-      };
+      return var1 < (long)(this.isCamelSitting() ? 40 : 52);
    }
 
-   private boolean isSittingDown() {
-      return this.getPose() == Pose.SITTING && this.getPoseTime() < 40L;
+   private boolean isVisuallySittingDown() {
+      return this.isCamelSitting() && this.getPoseTime() < 40L && this.getPoseTime() >= 0L;
    }
 
    public void sitDown() {
-      if (!this.hasPose(Pose.SITTING)) {
+      if (!this.isCamelSitting()) {
          this.playSound(SoundEvents.CAMEL_SIT, 1.0F, 1.0F);
          this.setPose(Pose.SITTING);
-         this.resetLastPoseChangeTick(this.level.getGameTime());
+         this.resetLastPoseChangeTick(-this.level.getGameTime());
       }
    }
 
    public void standUp() {
-      if (!this.hasPose(Pose.STANDING)) {
+      if (this.isCamelSitting()) {
          this.playSound(SoundEvents.CAMEL_STAND, 1.0F, 1.0F);
          this.setPose(Pose.STANDING);
          this.resetLastPoseChangeTick(this.level.getGameTime());
@@ -587,7 +617,7 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
 
    public void standUpPanic() {
       this.setPose(Pose.STANDING);
-      this.resetLastPoseChangeTick(this.level.getGameTime() - 52L);
+      this.resetLastPoseChangeTickToFullStand(this.level.getGameTime());
    }
 
    @VisibleForTesting
@@ -595,8 +625,12 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
       this.entityData.set(LAST_POSE_CHANGE_TICK, var1);
    }
 
+   private void resetLastPoseChangeTickToFullStand(long var1) {
+      this.resetLastPoseChangeTick(Math.max(0L, var1 - 52L - 1L));
+   }
+
    public long getPoseTime() {
-      return this.level.getGameTime() - this.entityData.get(LAST_POSE_CHANGE_TICK);
+      return this.level.getGameTime() - Math.abs(this.entityData.get(LAST_POSE_CHANGE_TICK));
    }
 
    @Override
@@ -640,6 +674,21 @@ public class Camel extends AbstractHorse implements PlayerRideableJumping, Rider
          if (!Camel.this.refuseToMove()) {
             super.clientTick();
          }
+      }
+   }
+
+   class CamelMoveControl extends MoveControl {
+      public CamelMoveControl() {
+         super(Camel.this);
+      }
+
+      @Override
+      public void tick() {
+         if (this.operation == MoveControl.Operation.MOVE_TO && !Camel.this.isLeashed() && Camel.this.isCamelSitting() && !Camel.this.isInPoseTransition()) {
+            Camel.this.standUp();
+         }
+
+         super.tick();
       }
    }
 }

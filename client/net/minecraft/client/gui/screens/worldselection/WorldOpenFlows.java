@@ -12,6 +12,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.DatapackLoadFailureScreen;
@@ -199,7 +200,21 @@ public class WorldOpenFlows {
             var7 = this.loadWorldStem(var5, var3, var6);
          } catch (Exception var11) {
             LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var11);
-            this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> this.doLoadLevel(var1, var2, true, var4)));
+            if (!var3) {
+               this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> this.doLoadLevel(var1, var2, true, var4)));
+            } else {
+               this.minecraft
+                  .setScreen(
+                     new AlertScreen(
+                        () -> this.minecraft.setScreen(null),
+                        Component.translatable("datapackFailure.safeMode.failed.title"),
+                        Component.translatable("datapackFailure.safeMode.failed.description"),
+                        CommonComponents.GUI_TO_TITLE,
+                        true
+                     )
+                  );
+            }
+
             safeCloseAccess(var5, var2);
             return;
          }
@@ -274,26 +289,26 @@ public class WorldOpenFlows {
       }, var5, var6, false));
    }
 
-   public static void confirmWorldCreation(Minecraft var0, CreateWorldScreen var1, Lifecycle var2, Runnable var3) {
-      BooleanConsumer var4 = var3x -> {
+   public static void confirmWorldCreation(Minecraft var0, CreateWorldScreen var1, Lifecycle var2, Runnable var3, boolean var4) {
+      BooleanConsumer var5 = var3x -> {
          if (var3x) {
             var3.run();
          } else {
             var0.setScreen(var1);
          }
       };
-      if (var2 == Lifecycle.stable()) {
+      if (var4 || var2 == Lifecycle.stable()) {
          var3.run();
       } else if (var2 == Lifecycle.experimental()) {
          var0.setScreen(
             new ConfirmScreen(
-               var4, Component.translatable("selectWorld.warning.experimental.title"), Component.translatable("selectWorld.warning.experimental.question")
+               var5, Component.translatable("selectWorld.warning.experimental.title"), Component.translatable("selectWorld.warning.experimental.question")
             )
          );
       } else {
          var0.setScreen(
             new ConfirmScreen(
-               var4, Component.translatable("selectWorld.warning.deprecated.title"), Component.translatable("selectWorld.warning.deprecated.question")
+               var5, Component.translatable("selectWorld.warning.deprecated.title"), Component.translatable("selectWorld.warning.deprecated.question")
             )
          );
       }

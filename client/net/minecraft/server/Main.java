@@ -8,7 +8,10 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.Proxy;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -19,6 +22,8 @@ import joptsimple.NonOptionArgumentSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
+import joptsimple.util.PathConverter;
+import joptsimple.util.PathProperties;
 import net.minecraft.CrashReport;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
@@ -82,73 +87,79 @@ public class Main {
       ArgumentAcceptingOptionSpec var13 = var1.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(-1, new Integer[0]);
       ArgumentAcceptingOptionSpec var14 = var1.accepts("serverId").withRequiredArg();
       OptionSpecBuilder var15 = var1.accepts("jfrProfile");
-      NonOptionArgumentSpec var16 = var1.nonOptions();
+      ArgumentAcceptingOptionSpec var16 = var1.accepts("pidFile").withRequiredArg().withValuesConvertedBy(new PathConverter(new PathProperties[0]));
+      NonOptionArgumentSpec var17 = var1.nonOptions();
 
       try {
-         OptionSet var17 = var1.parse(var0);
-         if (var17.has(var9)) {
+         OptionSet var18 = var1.parse(var0);
+         if (var18.has(var9)) {
             var1.printHelpOn(System.err);
             return;
          }
 
+         Path var19 = (Path)var18.valueOf(var16);
+         if (var19 != null) {
+            writePidFile(var19);
+         }
+
          CrashReport.preload();
-         if (var17.has(var15)) {
+         if (var18.has(var15)) {
             JvmProfiler.INSTANCE.start(Environment.SERVER);
          }
 
          Bootstrap.bootStrap();
          Bootstrap.validate();
          Util.startTimerHackThread();
-         Path var18 = Paths.get("server.properties");
-         DedicatedServerSettings var19 = new DedicatedServerSettings(var18);
-         var19.forceSave();
-         Path var20 = Paths.get("eula.txt");
-         Eula var21 = new Eula(var20);
-         if (var17.has(var3)) {
-            LOGGER.info("Initialized '{}' and '{}'", var18.toAbsolutePath(), var20.toAbsolutePath());
+         Path var20 = Paths.get("server.properties");
+         DedicatedServerSettings var21 = new DedicatedServerSettings(var20);
+         var21.forceSave();
+         Path var22 = Paths.get("eula.txt");
+         Eula var23 = new Eula(var22);
+         if (var18.has(var3)) {
+            LOGGER.info("Initialized '{}' and '{}'", var20.toAbsolutePath(), var22.toAbsolutePath());
             return;
          }
 
-         if (!var21.hasAgreedToEULA()) {
+         if (!var23.hasAgreedToEULA()) {
             LOGGER.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
             return;
          }
 
-         File var22 = new File((String)var17.valueOf(var11));
-         Services var23 = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), var22);
-         String var24 = (String)Optional.ofNullable((String)var17.valueOf(var12)).orElse(var19.getProperties().levelName);
-         LevelStorageSource var25 = LevelStorageSource.createDefault(var22.toPath());
-         LevelStorageSource.LevelStorageAccess var26 = var25.createAccess(var24);
-         LevelSummary var27 = var26.getSummary();
-         if (var27 != null) {
-            if (var27.requiresManualConversion()) {
+         File var24 = new File((String)var18.valueOf(var11));
+         Services var25 = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), var24);
+         String var26 = (String)Optional.ofNullable((String)var18.valueOf(var12)).orElse(var21.getProperties().levelName);
+         LevelStorageSource var27 = LevelStorageSource.createDefault(var24.toPath());
+         LevelStorageSource.LevelStorageAccess var28 = var27.createAccess(var26);
+         LevelSummary var29 = var28.getSummary();
+         if (var29 != null) {
+            if (var29.requiresManualConversion()) {
                LOGGER.info("This world must be opened in an older version (like 1.6.4) to be safely converted");
                return;
             }
 
-            if (!var27.isCompatible()) {
+            if (!var29.isCompatible()) {
                LOGGER.info("This world was created by an incompatible version.");
                return;
             }
          }
 
-         boolean var28 = var17.has(var8);
-         if (var28) {
+         boolean var30 = var18.has(var8);
+         if (var30) {
             LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
          }
 
-         PackRepository var29 = ServerPacksSource.createPackRepository(var26.getLevelPath(LevelResource.DATAPACK_DIR));
+         PackRepository var31 = ServerPacksSource.createPackRepository(var28.getLevelPath(LevelResource.DATAPACK_DIR));
 
-         WorldStem var30;
+         WorldStem var32;
          try {
-            WorldLoader.InitConfig var31 = loadOrCreateConfig(var19.getProperties(), var26, var28, var29);
-            var30 = Util.<WorldStem>blockUntilDone(
+            WorldLoader.InitConfig var33 = loadOrCreateConfig(var21.getProperties(), var28, var30, var31);
+            var32 = Util.<WorldStem>blockUntilDone(
                   var6x -> WorldLoader.load(
-                        var31,
+                        var33,
                         var5xx -> {
                            Registry var6xx = var5xx.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
                            RegistryOps var7x = RegistryOps.create(NbtOps.INSTANCE, var5xx.datapackWorldgen());
-                           Pair var8x = var26.getDataTag(var7x, var5xx.dataConfiguration(), var6xx, var5xx.datapackWorldgen().allRegistriesLifecycle());
+                           Pair var8x = var28.getDataTag(var7x, var5xx.dataConfiguration(), var6xx, var5xx.datapackWorldgen().allRegistriesLifecycle());
                            if (var8x != null) {
                               return new WorldLoader.DataLoadOutput<>(
                                  (WorldData)var8x.getFirst(), ((WorldDimensions.Complete)var8x.getSecond()).dimensionsRegistryAccess()
@@ -157,16 +168,16 @@ public class Main {
                               LevelSettings var9x;
                               WorldOptions var10x;
                               WorldDimensions var11x;
-                              if (var17.has(var4)) {
+                              if (var18.has(var4)) {
                                  var9x = MinecraftServer.DEMO_SETTINGS;
                                  var10x = WorldOptions.DEMO_OPTIONS;
                                  var11x = WorldPresets.createNormalWorldDimensions(var5xx.datapackWorldgen());
                               } else {
-                                 DedicatedServerProperties var12x = var19.getProperties();
+                                 DedicatedServerProperties var12x = var21.getProperties();
                                  var9x = new LevelSettings(
                                     var12x.levelName, var12x.gamemode, var12x.hardcore, var12x.difficulty, false, new GameRules(), var5xx.dataConfiguration()
                                  );
-                                 var10x = var17.has(var5) ? var12x.worldOptions.withBonusChest(true) : var12x.worldOptions;
+                                 var10x = var18.has(var5) ? var12x.worldOptions.withBonusChest(true) : var12x.worldOptions;
                                  var11x = var12x.createDimensions(var5xx.datapackWorldgen());
                               }
          
@@ -183,30 +194,30 @@ public class Main {
                      )
                )
                .get();
-         } catch (Exception var35) {
+         } catch (Exception var37) {
             LOGGER.warn(
-               "Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var35
+               "Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var37
             );
             return;
          }
 
-         RegistryAccess.Frozen var37 = var30.registries().compositeAccess();
-         if (var17.has(var6)) {
-            forceUpgrade(var26, DataFixers.getDataFixer(), var17.has(var7), () -> true, var37.registryOrThrow(Registries.LEVEL_STEM));
+         RegistryAccess.Frozen var39 = var32.registries().compositeAccess();
+         if (var18.has(var6)) {
+            forceUpgrade(var28, DataFixers.getDataFixer(), var18.has(var7), () -> true, var39.registryOrThrow(Registries.LEVEL_STEM));
          }
 
-         WorldData var32 = var30.worldData();
-         var26.saveDataTag(var37, var32);
-         final DedicatedServer var33 = MinecraftServer.spin(
+         WorldData var34 = var32.worldData();
+         var28.saveDataTag(var39, var34);
+         final DedicatedServer var35 = MinecraftServer.spin(
             var12x -> {
                DedicatedServer var13x = new DedicatedServer(
-                  var12x, var26, var29, var30, var19, DataFixers.getDataFixer(), var23, LoggerChunkProgressListener::new
+                  var12x, var28, var31, var32, var21, DataFixers.getDataFixer(), var25, LoggerChunkProgressListener::new
                );
-               var13x.setSingleplayerProfile(var17.has(var10) ? new GameProfile(null, (String)var17.valueOf(var10)) : null);
-               var13x.setPort(var17.valueOf(var13));
-               var13x.setDemo(var17.has(var4));
-               var13x.setId((String)var17.valueOf(var14));
-               boolean var14x = !var17.has(var2) && !var17.valuesOf(var16).contains("nogui");
+               var13x.setSingleplayerProfile(var18.has(var10) ? new GameProfile(null, (String)var18.valueOf(var10)) : null);
+               var13x.setPort(var18.valueOf(var13));
+               var13x.setDemo(var18.has(var4));
+               var13x.setId((String)var18.valueOf(var14));
+               boolean var14x = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
                if (var14x && !GraphicsEnvironment.isHeadless()) {
                   var13x.showGui();
                }
@@ -214,16 +225,25 @@ public class Main {
                return var13x;
             }
          );
-         Thread var34 = new Thread("Server Shutdown Thread") {
+         Thread var36 = new Thread("Server Shutdown Thread") {
             @Override
             public void run() {
-               var33.halt(true);
+               var35.halt(true);
             }
          };
-         var34.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-         Runtime.getRuntime().addShutdownHook(var34);
-      } catch (Exception var36) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var36);
+         var36.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+         Runtime.getRuntime().addShutdownHook(var36);
+      } catch (Exception var38) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var38);
+      }
+   }
+
+   private static void writePidFile(Path var0) {
+      try {
+         long var1 = ProcessHandle.current().pid();
+         Files.writeString(var0, Long.toString(var1));
+      } catch (IOException var3) {
+         throw new UncheckedIOException(var3);
       }
    }
 

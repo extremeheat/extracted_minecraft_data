@@ -109,7 +109,6 @@ public class GLX {
 
    public static void _renderCrosshair(int var0, boolean var1, boolean var2, boolean var3) {
       RenderSystem.assertOnRenderThread();
-      GlStateManager._disableTexture();
       GlStateManager._depthMask(false);
       GlStateManager._disableCull();
       RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
@@ -154,7 +153,6 @@ public class GLX {
       RenderSystem.lineWidth(1.0F);
       GlStateManager._enableCull();
       GlStateManager._depthMask(true);
-      GlStateManager._enableTexture();
    }
 
    public static <T> T make(Supplier<T> var0) {

@@ -55,6 +55,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
 
@@ -76,7 +77,7 @@ public class Turtle extends Animal {
       this.setPathfindingMalus(BlockPathTypes.DOOR_WOOD_CLOSED, -1.0F);
       this.setPathfindingMalus(BlockPathTypes.DOOR_OPEN, -1.0F);
       this.moveControl = new Turtle.TurtleMoveControl(this);
-      this.maxUpStep = 1.0F;
+      this.setMaxUpStep(1.0F);
    }
 
    public void setHomePos(BlockPos var1) {
@@ -311,7 +312,7 @@ public class Turtle extends Animal {
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(0.1F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -330,7 +331,7 @@ public class Turtle extends Animal {
 
    @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      this.hurt(DamageSource.LIGHTNING_BOLT, 3.4028235E38F);
+      this.hurt(this.damageSources().lightningBolt(), 3.4028235E38F);
    }
 
    static class TurtleBreedGoal extends BreedGoal {
@@ -430,7 +431,7 @@ public class Turtle extends Animal {
                var4 = DefaultRandomPos.getPosTowards(this.turtle, 8, 7, var3, 1.5707963705062866);
             }
 
-            if (var4 != null && !var2 && !this.turtle.level.getBlockState(new BlockPos(var4)).is(Blocks.WATER)) {
+            if (var4 != null && !var2 && !this.turtle.level.getBlockState(BlockPos.containing(var4)).is(Blocks.WATER)) {
                var4 = DefaultRandomPos.getPosTowards(this.turtle, 16, 5, var3, 1.5707963705062866);
             }
 
@@ -507,11 +508,10 @@ public class Turtle extends Animal {
             } else if (this.turtle.layEggCounter > this.adjustedTickDelay(200)) {
                Level var2 = this.turtle.level;
                var2.playSound(null, var1, SoundEvents.TURTLE_LAY_EGG, SoundSource.BLOCKS, 0.3F, 0.9F + var2.random.nextFloat() * 0.2F);
-               var2.setBlock(
-                  this.blockPos.above(),
-                  Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, Integer.valueOf(this.turtle.random.nextInt(4) + 1)),
-                  3
-               );
+               BlockPos var3 = this.blockPos.above();
+               BlockState var4 = Blocks.TURTLE_EGG.defaultBlockState().setValue(TurtleEggBlock.EGGS, Integer.valueOf(this.turtle.random.nextInt(4) + 1));
+               var2.setBlock(var3, var4, 3);
+               var2.gameEvent(GameEvent.BLOCK_PLACE, var3, GameEvent.Context.of(this.turtle, var4));
                this.turtle.setHasEgg(false);
                this.turtle.setLayingEgg(false);
                this.turtle.setInLoveTime(600);
@@ -560,13 +560,17 @@ public class Turtle extends Animal {
             double var3 = this.wantedY - this.turtle.getY();
             double var5 = this.wantedZ - this.turtle.getZ();
             double var7 = Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
-            var3 /= var7;
-            float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875) - 90.0F;
-            this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), var9, 90.0F));
-            this.turtle.yBodyRot = this.turtle.getYRot();
-            float var10 = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), var10));
-            this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * var3 * 0.1, 0.0));
+            if (var7 < 9.999999747378752E-6) {
+               this.mob.setSpeed(0.0F);
+            } else {
+               var3 /= var7;
+               float var9 = (float)(Mth.atan2(var5, var1) * 57.2957763671875) - 90.0F;
+               this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), var9, 90.0F));
+               this.turtle.yBodyRot = this.turtle.getYRot();
+               float var10 = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
+               this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), var10));
+               this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * var3 * 0.1, 0.0));
+            }
          } else {
             this.turtle.setSpeed(0.0F);
          }
@@ -654,7 +658,7 @@ public class Turtle extends Animal {
             var5 = 0;
          }
 
-         BlockPos var7 = new BlockPos((double)var4 + this.turtle.getX(), (double)var5 + this.turtle.getY(), (double)var6 + this.turtle.getZ());
+         BlockPos var7 = BlockPos.containing((double)var4 + this.turtle.getX(), (double)var5 + this.turtle.getY(), (double)var6 + this.turtle.getZ());
          this.turtle.setTravelPos(var7);
          this.turtle.setTravelling(true);
          this.stuck = false;

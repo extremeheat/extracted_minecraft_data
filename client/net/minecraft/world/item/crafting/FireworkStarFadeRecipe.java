@@ -2,6 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -43,24 +44,24 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       return var4 && var3;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ArrayList var2 = Lists.newArrayList();
-      ItemStack var3 = null;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ArrayList var3 = Lists.newArrayList();
+      ItemStack var4 = null;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         Item var6 = var5.getItem();
-         if (var6 instanceof DyeItem) {
-            var2.add(((DyeItem)var6).getDyeColor().getFireworkColor());
-         } else if (STAR_INGREDIENT.test(var5)) {
-            var3 = var5.copy();
-            var3.setCount(1);
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         Item var7 = var6.getItem();
+         if (var7 instanceof DyeItem) {
+            var3.add(((DyeItem)var7).getDyeColor().getFireworkColor());
+         } else if (STAR_INGREDIENT.test(var6)) {
+            var4 = var6.copy();
+            var4.setCount(1);
          }
       }
 
-      if (var3 != null && !var2.isEmpty()) {
-         var3.getOrCreateTagElement("Explosion").putIntArray("FadeColors", var2);
-         return var3;
+      if (var4 != null && !var3.isEmpty()) {
+         var4.getOrCreateTagElement("Explosion").putIntArray("FadeColors", var3);
+         return var4;
       } else {
          return ItemStack.EMPTY;
       }

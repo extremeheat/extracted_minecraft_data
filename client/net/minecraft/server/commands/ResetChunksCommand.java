@@ -64,7 +64,7 @@ public class ResetChunksCommand {
       ServerChunkCache var4 = var3.getChunkSource();
       var4.chunkMap.debugReloadGenerator();
       Vec3 var5 = var0.getPosition();
-      ChunkPos var6 = new ChunkPos(new BlockPos(var5));
+      ChunkPos var6 = new ChunkPos(BlockPos.containing(var5));
       int var7 = var6.z - var1;
       int var8 = var6.z + var1;
       int var9 = var6.x - var1;

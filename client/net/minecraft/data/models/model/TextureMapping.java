@@ -110,6 +110,10 @@ public class TextureMapping {
       return singleSlot(TextureSlot.WOOL, getBlockTexture(var0));
    }
 
+   public static TextureMapping flowerbed(Block var0) {
+      return new TextureMapping().put(TextureSlot.FLOWERBED, getBlockTexture(var0)).put(TextureSlot.STEM, getBlockTexture(var0, "_stem"));
+   }
+
    public static TextureMapping wool(ResourceLocation var0) {
       return singleSlot(TextureSlot.WOOL, var0);
    }
@@ -335,6 +339,14 @@ public class TextureMapping {
 
    public static TextureMapping layer0(ResourceLocation var0) {
       return new TextureMapping().put(TextureSlot.LAYER0, var0);
+   }
+
+   public static TextureMapping layered(ResourceLocation var0, ResourceLocation var1) {
+      return new TextureMapping().put(TextureSlot.LAYER0, var0).put(TextureSlot.LAYER1, var1);
+   }
+
+   public static TextureMapping layered(ResourceLocation var0, ResourceLocation var1, ResourceLocation var2) {
+      return new TextureMapping().put(TextureSlot.LAYER0, var0).put(TextureSlot.LAYER1, var1).put(TextureSlot.LAYER2, var2);
    }
 
    public static ResourceLocation getBlockTexture(Block var0) {

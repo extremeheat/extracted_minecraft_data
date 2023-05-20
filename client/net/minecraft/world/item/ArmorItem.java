@@ -3,15 +3,15 @@ package net.minecraft.world.item;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntitySelector;
@@ -26,20 +26,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
 
-public class ArmorItem extends Item implements Wearable {
-   private static final UUID[] ARMOR_MODIFIER_UUID_PER_SLOT = new UUID[]{
-      UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"),
-      UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"),
-      UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"),
-      UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150")
-   };
+public class ArmorItem extends Item implements Equipable {
+   private static final EnumMap<ArmorItem.Type, UUID> ARMOR_MODIFIER_UUID_PER_TYPE = Util.make(new EnumMap<>(ArmorItem.Type.class), var0 -> {
+      var0.put(ArmorItem.Type.BOOTS, UUID.fromString("845DB27C-C624-495F-8C9F-6020A9A58B6B"));
+      var0.put(ArmorItem.Type.LEGGINGS, UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"));
+      var0.put(ArmorItem.Type.CHESTPLATE, UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"));
+      var0.put(ArmorItem.Type.HELMET, UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150"));
+   });
    public static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
       @Override
       protected ItemStack execute(BlockSource var1, ItemStack var2) {
          return ArmorItem.dispenseArmor(var1, var2) ? var2 : super.execute(var1, var2);
       }
    };
-   protected final EquipmentSlot slot;
+   protected final ArmorItem.Type type;
    private final int defense;
    private final float toughness;
    protected final float knockbackResistance;
@@ -66,16 +66,16 @@ public class ArmorItem extends Item implements Wearable {
       }
    }
 
-   public ArmorItem(ArmorMaterial var1, EquipmentSlot var2, Item.Properties var3) {
-      super(var3.defaultDurability(var1.getDurabilityForSlot(var2)));
+   public ArmorItem(ArmorMaterial var1, ArmorItem.Type var2, Item.Properties var3) {
+      super(var3.defaultDurability(var1.getDurabilityForType(var2)));
       this.material = var1;
-      this.slot = var2;
-      this.defense = var1.getDefenseForSlot(var2);
+      this.type = var2;
+      this.defense = var1.getDefenseForType(var2);
       this.toughness = var1.getToughness();
       this.knockbackResistance = var1.getKnockbackResistance();
       DispenserBlock.registerBehavior(this, DISPENSE_ITEM_BEHAVIOR);
       Builder var4 = ImmutableMultimap.builder();
-      UUID var5 = ARMOR_MODIFIER_UUID_PER_SLOT[var2.getIndex()];
+      UUID var5 = ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
       var4.put(Attributes.ARMOR, new AttributeModifier(var5, "Armor modifier", (double)this.defense, AttributeModifier.Operation.ADDITION));
       var4.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, "Armor toughness", (double)this.toughness, AttributeModifier.Operation.ADDITION));
       if (var1 == ArmorMaterials.NETHERITE) {
@@ -88,8 +88,8 @@ public class ArmorItem extends Item implements Wearable {
       this.defaultModifiers = var4.build();
    }
 
-   public EquipmentSlot getSlot() {
-      return this.slot;
+   public ArmorItem.Type getType() {
+      return this.type;
    }
 
    @Override
@@ -108,25 +108,12 @@ public class ArmorItem extends Item implements Wearable {
 
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      EquipmentSlot var5 = Mob.getEquipmentSlotForItem(var4);
-      ItemStack var6 = var2.getItemBySlot(var5);
-      if (var6.isEmpty()) {
-         var2.setItemSlot(var5, var4.copy());
-         if (!var1.isClientSide()) {
-            var2.awardStat(Stats.ITEM_USED.get(this));
-         }
-
-         var4.setCount(0);
-         return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
-      } else {
-         return InteractionResultHolder.fail(var4);
-      }
+      return this.swapWithEquipmentSlot(this, var1, var2, var3);
    }
 
    @Override
    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == this.slot ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
+      return var1 == this.type.getSlot() ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
    }
 
    public int getDefense() {
@@ -137,9 +124,36 @@ public class ArmorItem extends Item implements Wearable {
       return this.toughness;
    }
 
-   @Nullable
+   @Override
+   public EquipmentSlot getEquipmentSlot() {
+      return this.type.getSlot();
+   }
+
    @Override
    public SoundEvent getEquipSound() {
       return this.getMaterial().getEquipSound();
+   }
+
+   public static enum Type {
+      HELMET(EquipmentSlot.HEAD, "helmet"),
+      CHESTPLATE(EquipmentSlot.CHEST, "chestplate"),
+      LEGGINGS(EquipmentSlot.LEGS, "leggings"),
+      BOOTS(EquipmentSlot.FEET, "boots");
+
+      private final EquipmentSlot slot;
+      private final String name;
+
+      private Type(EquipmentSlot var3, String var4) {
+         this.slot = var3;
+         this.name = var4;
+      }
+
+      public EquipmentSlot getSlot() {
+         return this.slot;
+      }
+
+      public String getName() {
+         return this.name;
+      }
    }
 }

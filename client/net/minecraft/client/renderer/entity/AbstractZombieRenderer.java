@@ -10,7 +10,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, M extends ZombieM
 
    protected AbstractZombieRenderer(EntityRendererProvider.Context var1, M var2, M var3, M var4) {
       super(var1, (M)var2, 0.5F);
-      this.addLayer(new HumanoidArmorLayer<>(this, var3, var4));
+      this.addLayer(new HumanoidArmorLayer<>(this, var3, var4, var1.getModelManager()));
    }
 
    public ResourceLocation getTextureLocation(Zombie var1) {

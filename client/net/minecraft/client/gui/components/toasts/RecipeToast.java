@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
@@ -32,23 +32,25 @@ public class RecipeToast implements Toast {
       if (this.recipes.isEmpty()) {
          return Toast.Visibility.HIDE;
       } else {
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, TEXTURE);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         var2.blit(var1, 0, 0, 0, 32, this.width(), this.height());
+         GuiComponent.blit(var1, 0, 0, 0, 32, this.width(), this.height());
          var2.getMinecraft().font.draw(var1, TITLE_TEXT, 30.0F, 7.0F, -11534256);
          var2.getMinecraft().font.draw(var1, DESCRIPTION_TEXT, 30.0F, 18.0F, -16777216);
-         Recipe var5 = this.recipes.get((int)(var3 / Math.max(1L, 5000L / (long)this.recipes.size()) % (long)this.recipes.size()));
+         Recipe var5 = this.recipes
+            .get(
+               (int)(
+                  (double)var3
+                     / Math.max(1.0, 5000.0 * var2.getNotificationDisplayTimeMultiplier() / (double)this.recipes.size())
+                     % (double)this.recipes.size()
+               )
+            );
          ItemStack var6 = var5.getToastSymbol();
-         PoseStack var7 = RenderSystem.getModelViewStack();
-         var7.pushPose();
-         var7.scale(0.6F, 0.6F, 1.0F);
-         RenderSystem.applyModelViewMatrix();
-         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var6, 3, 3);
-         var7.popPose();
-         RenderSystem.applyModelViewMatrix();
-         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var5.getResultItem(), 8, 8);
-         return var3 - this.lastChanged >= 5000L ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
+         var1.pushPose();
+         var1.scale(0.6F, 0.6F, 1.0F);
+         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var1, var6, 3, 3);
+         var1.popPose();
+         var2.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(var1, var5.getResultItem(var2.getMinecraft().level.registryAccess()), 8, 8);
+         return (double)(var3 - this.lastChanged) >= 5000.0 * var2.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       }
    }
 

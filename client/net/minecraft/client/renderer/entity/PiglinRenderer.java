@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.HumanoidArmorModel;
 import net.minecraft.client.model.PiglinModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -25,7 +25,9 @@ public class PiglinRenderer extends HumanoidMobRenderer<Mob, PiglinModel<Mob>> {
 
    public PiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, boolean var5) {
       super(var1, createModel(var1.getModelSet(), var2, var5), 0.5F, 1.0019531F, 1.0F, 1.0019531F);
-      this.addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel(var1.bakeLayer(var3)), new HumanoidModel(var1.bakeLayer(var4))));
+      this.addLayer(
+         new HumanoidArmorLayer<>(this, new HumanoidArmorModel(var1.bakeLayer(var3)), new HumanoidArmorModel(var1.bakeLayer(var4)), var1.getModelManager())
+      );
    }
 
    private static PiglinModel<Mob> createModel(EntityModelSet var0, ModelLayerLocation var1, boolean var2) {

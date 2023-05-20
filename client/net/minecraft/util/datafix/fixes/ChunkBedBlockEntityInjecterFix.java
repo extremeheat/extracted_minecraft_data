@@ -2,6 +2,7 @@ package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class ChunkBedBlockEntityInjecterFix extends DataFix {
    public ChunkBedBlockEntityInjecterFix(Schema var1, boolean var2) {
@@ -61,30 +61,35 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                for(int var10 = 0; var10 < var9.size(); ++var10) {
                   Dynamic var11 = (Dynamic)var9.get(var10);
                   int var12 = var11.get("Y").asInt(0);
-                  Stream var13 = var11.get("Blocks").asStream().map(var0x -> var0x.asInt(0));
-                  int var14 = 0;
-      
-                  for(int var16 : var13::iterator) {
-                     if (416 == (var16 & 0xFF) << 4) {
-                        int var17 = var14 & 15;
-                        int var18 = var14 >> 8 & 15;
-                        int var19 = var14 >> 4 & 15;
-                        HashMap var20 = Maps.newHashMap();
-                        var20.put(var11.createString("id"), var11.createString("minecraft:bed"));
-                        var20.put(var11.createString("x"), var11.createInt(var17 + (var6x << 4)));
-                        var20.put(var11.createString("y"), var11.createInt(var18 + (var12 << 4)));
-                        var20.put(var11.createString("z"), var11.createInt(var19 + (var7 << 4)));
-                        var20.put(var11.createString("color"), var11.createShort((short)14));
-                        var8.add(
-                           ((Pair)var3.read(var11.createMap(var20))
-                                 .result()
-                                 .orElseThrow(() -> new IllegalStateException("Could not parse newly created bed block entity.")))
-                              .getFirst()
-                        );
-                     }
-      
-                     ++var14;
-                  }
+                  Streams.mapWithIndex(var11.get("Blocks").asIntStream(), (var4xx, var5xx) -> {
+                        if (416 == (var4xx & 0xFF) << 4) {
+                           int var7x = (int)var5xx;
+                           int var8x = var7x & 15;
+                           int var9x = var7x >> 8 & 15;
+                           int var10x = var7x >> 4 & 15;
+                           HashMap var11x = Maps.newHashMap();
+                           var11x.put(var11.createString("id"), var11.createString("minecraft:bed"));
+                           var11x.put(var11.createString("x"), var11.createInt(var8x + (var6x << 4)));
+                           var11x.put(var11.createString("y"), var11.createInt(var9x + (var12 << 4)));
+                           var11x.put(var11.createString("z"), var11.createInt(var10x + (var7 << 4)));
+                           var11x.put(var11.createString("color"), var11.createShort((short)14));
+                           return var11x;
+                        } else {
+                           return null;
+                        }
+                     })
+                     .forEachOrdered(
+                        var3xx -> {
+                           if (var3xx != null) {
+                              var8.add(
+                                 ((Pair)var3.read(var11.createMap(var3xx))
+                                       .result()
+                                       .orElseThrow(() -> new IllegalStateException("Could not parse newly created bed block entity.")))
+                                    .getFirst()
+                              );
+                           }
+                        }
+                     );
                }
       
                return !var8.isEmpty() ? var3x.set(var4, var4x.set(var5, var8)) : var3x;

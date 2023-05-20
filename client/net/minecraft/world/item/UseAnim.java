@@ -9,7 +9,8 @@ public enum UseAnim {
    SPEAR,
    CROSSBOW,
    SPYGLASS,
-   TOOT_HORN;
+   TOOT_HORN,
+   BRUSH;
 
    private UseAnim() {
    }

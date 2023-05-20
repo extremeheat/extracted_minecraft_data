@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -17,6 +17,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -30,10 +32,12 @@ import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -41,6 +45,9 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.ScreenNarrationCollector;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenDirection;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -70,6 +77,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private final List<NarratableEntry> narratables = Lists.newArrayList();
    @Nullable
    protected Minecraft minecraft;
+   private boolean initialized;
    protected ItemRenderer itemRenderer;
    public int width;
    public int height;
@@ -124,16 +132,60 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       if (var1 == 256 && this.shouldCloseOnEsc()) {
          this.onClose();
          return true;
-      } else if (var1 == 258) {
-         boolean var4 = !hasShiftDown();
-         if (!this.changeFocus(var4)) {
-            this.changeFocus(var4);
+      } else if (super.keyPressed(var1, var2, var3)) {
+         return true;
+      } else {
+         Object var4 = switch(var1) {
+            case 258 -> this.createTabEvent();
+            default -> null;
+            case 262 -> this.createArrowEvent(ScreenDirection.RIGHT);
+            case 263 -> this.createArrowEvent(ScreenDirection.LEFT);
+            case 264 -> this.createArrowEvent(ScreenDirection.DOWN);
+            case 265 -> this.createArrowEvent(ScreenDirection.UP);
+         };
+         if (var4 != null) {
+            ComponentPath var5 = super.nextFocusPath((FocusNavigationEvent)var4);
+            if (var5 == null && var4 instanceof FocusNavigationEvent.TabNavigation) {
+               this.clearFocus();
+               var5 = super.nextFocusPath((FocusNavigationEvent)var4);
+            }
+
+            if (var5 != null) {
+               this.changeFocus(var5);
+            }
          }
 
          return false;
-      } else {
-         return super.keyPressed(var1, var2, var3);
       }
+   }
+
+   private FocusNavigationEvent.TabNavigation createTabEvent() {
+      boolean var1 = !hasShiftDown();
+      return new FocusNavigationEvent.TabNavigation(var1);
+   }
+
+   private FocusNavigationEvent.ArrowNavigation createArrowEvent(ScreenDirection var1) {
+      return new FocusNavigationEvent.ArrowNavigation(var1);
+   }
+
+   protected void setInitialFocus(GuiEventListener var1) {
+      ComponentPath var2 = ComponentPath.path(this, var1.nextFocusPath(new FocusNavigationEvent.InitialFocus()));
+      if (var2 != null) {
+         this.changeFocus(var2);
+      }
+   }
+
+   private void clearFocus() {
+      ComponentPath var1 = this.getCurrentFocusPath();
+      if (var1 != null) {
+         var1.applyFocus(false);
+      }
+   }
+
+   @VisibleForTesting
+   protected void changeFocus(ComponentPath var1) {
+      this.clearFocus();
+      var1.applyFocus(true);
    }
 
    public boolean shouldCloseOnEsc() {
@@ -226,60 +278,52 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
             var7 += var9.getHeight();
          }
 
-         int var22 = var3 + 12;
-         int var24 = var4 - 12;
-         Vector2ic var12 = var5.positionTooltip(this, var22, var24, var6, var7);
-         var22 = var12.x();
-         var24 = var12.y();
+         Vector2ic var21 = var5.positionTooltip(this, var3, var4, var6, var7);
+         int var11 = var21.x();
+         int var12 = var21.y();
          var1.pushPose();
          boolean var13 = true;
-         float var14 = this.itemRenderer.blitOffset;
-         this.itemRenderer.blitOffset = 400.0F;
-         Tesselator var15 = Tesselator.getInstance();
-         BufferBuilder var16 = var15.getBuilder();
+         Tesselator var14 = Tesselator.getInstance();
+         BufferBuilder var15 = var14.getBuilder();
          RenderSystem.setShader(GameRenderer::getPositionColorShader);
-         var16.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-         Matrix4f var17 = var1.last().pose();
+         var15.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+         Matrix4f var16 = var1.last().pose();
          TooltipRenderUtil.renderTooltipBackground(
             (var0, var1x, var2x, var3x, var4x, var5x, var6x, var7x, var8) -> GuiComponent.fillGradient(
                   var0, var1x, var2x, var3x, var4x, var5x, var6x, var7x, var8
                ),
-            var17,
             var16,
-            var22,
-            var24,
+            var15,
+            var11,
+            var12,
             var6,
             var7,
             400
          );
          RenderSystem.enableDepthTest();
-         RenderSystem.disableTexture();
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
-         BufferUploader.drawWithShader(var16.end());
-         RenderSystem.disableBlend();
-         RenderSystem.enableTexture();
-         MultiBufferSource.BufferSource var18 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+         BufferUploader.drawWithShader(var15.end());
+         MultiBufferSource.BufferSource var17 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
          var1.translate(0.0F, 0.0F, 400.0F);
-         int var19 = var24;
+         int var18 = var12;
 
-         for(int var20 = 0; var20 < var2.size(); ++var20) {
-            ClientTooltipComponent var21 = (ClientTooltipComponent)var2.get(var20);
-            var21.renderText(this.font, var22, var19, var17, var18);
-            var19 += var21.getHeight() + (var20 == 0 ? 2 : 0);
+         for(int var19 = 0; var19 < var2.size(); ++var19) {
+            ClientTooltipComponent var20 = (ClientTooltipComponent)var2.get(var19);
+            var20.renderText(this.font, var11, var18, var16, var17);
+            var18 += var20.getHeight() + (var19 == 0 ? 2 : 0);
          }
 
-         var18.endBatch();
+         var17.endBatch();
+         var18 = var12;
+
+         for(int var23 = 0; var23 < var2.size(); ++var23) {
+            ClientTooltipComponent var24 = (ClientTooltipComponent)var2.get(var23);
+            var24.renderImage(this.font, var11, var18, var1, this.itemRenderer);
+            var18 += var24.getHeight() + (var23 == 0 ? 2 : 0);
+         }
+
          var1.popPose();
-         var19 = var24;
-
-         for(int var27 = 0; var27 < var2.size(); ++var27) {
-            ClientTooltipComponent var28 = (ClientTooltipComponent)var2.get(var27);
-            var28.renderImage(this.font, var22, var19, var1, this.itemRenderer, 400);
-            var19 += var28.getHeight() + (var27 == 0 ? 2 : 0);
-         }
-
-         this.itemRenderer.blitOffset = var14;
       }
    }
 
@@ -376,14 +420,20 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.font = var1.font;
       this.width = var2;
       this.height = var3;
-      this.rebuildWidgets();
+      if (!this.initialized) {
+         this.init();
+      } else {
+         this.repositionElements();
+      }
+
+      this.initialized = true;
       this.triggerImmediateNarration(false);
       this.suppressNarration(NARRATE_SUPPRESS_AFTER_INIT_TIME);
    }
 
    protected void rebuildWidgets() {
       this.clearWidgets();
-      this.setFocused(null);
+      this.clearFocus();
       this.init();
    }
 
@@ -401,34 +451,23 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void removed() {
    }
 
-   public void renderBackground(PoseStack var1) {
-      this.renderBackground(var1, 0);
+   public void added() {
    }
 
-   public void renderBackground(PoseStack var1, int var2) {
+   public void renderBackground(PoseStack var1) {
       if (this.minecraft.level != null) {
-         this.fillGradient(var1, 0, 0, this.width, this.height, -1072689136, -804253680);
+         fillGradient(var1, 0, 0, this.width, this.height, -1072689136, -804253680);
       } else {
-         this.renderDirtBackground(var2);
+         this.renderDirtBackground(var1);
       }
    }
 
-   public void renderDirtBackground(int var1) {
-      Tesselator var2 = Tesselator.getInstance();
-      BufferBuilder var3 = var2.getBuilder();
-      RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+   public void renderDirtBackground(PoseStack var1) {
       RenderSystem.setShaderTexture(0, BACKGROUND_LOCATION);
+      RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
+      boolean var2 = true;
+      blit(var1, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
       RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      float var4 = 32.0F;
-      var3.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var3.vertex(0.0, (double)this.height, 0.0).uv(0.0F, (float)this.height / 32.0F + (float)var1).color(64, 64, 64, 255).endVertex();
-      var3.vertex((double)this.width, (double)this.height, 0.0)
-         .uv((float)this.width / 32.0F, (float)this.height / 32.0F + (float)var1)
-         .color(64, 64, 64, 255)
-         .endVertex();
-      var3.vertex((double)this.width, 0.0, 0.0).uv((float)this.width / 32.0F, (float)var1).color(64, 64, 64, 255).endVertex();
-      var3.vertex(0.0, 0.0, 0.0).uv(0.0F, (float)var1).color(64, 64, 64, 255).endVertex();
-      var2.end();
    }
 
    public boolean isPauseScreen() {
@@ -484,8 +523,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return var0 == 65 && hasControlDown() && !hasShiftDown() && !hasAltDown();
    }
 
+   protected void repositionElements() {
+      this.rebuildWidgets();
+   }
+
    public void resize(Minecraft var1, int var2, int var3) {
-      this.init(var1, var2, var3);
+      this.width = var2;
+      this.height = var3;
+      this.repositionElements();
    }
 
    public static void wrapScreenError(Runnable var0, String var1, String var2) {
@@ -570,14 +615,22 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       }
    }
 
+   protected boolean shouldNarrateNavigation() {
+      return true;
+   }
+
    protected void updateNarrationState(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, this.getNarrationMessage());
-      var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
+      if (this.shouldNarrateNavigation()) {
+         var1.add(NarratedElementType.USAGE, USAGE_NARRATION);
+      }
+
       this.updateNarratedWidget(var1);
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      ImmutableList var2 = this.narratables.stream().filter(NarratableEntry::isActive).collect(ImmutableList.toImmutableList());
+      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).collect(Collectors.toList());
+      Collections.sort(var2, Comparator.comparingInt(TabOrderedElement::getTabOrderGroup));
       Screen.NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {
@@ -644,6 +697,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       for(AbstractWidget var4 : var0) {
          var4.visible = false;
       }
+   }
+
+   @Override
+   public ScreenRectangle getRectangle() {
+      return new ScreenRectangle(0, 0, this.width, this.height);
    }
 
    static record DeferredTooltipRendering(List<FormattedCharSequence> a, ClientTooltipPositioner b) {

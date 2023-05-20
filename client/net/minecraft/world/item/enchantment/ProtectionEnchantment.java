@@ -1,5 +1,6 @@
 package net.minecraft.world.item.enchantment;
 
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,18 +31,18 @@ public class ProtectionEnchantment extends Enchantment {
 
    @Override
    public int getDamageProtection(int var1, DamageSource var2) {
-      if (var2.isBypassInvul()) {
+      if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return 0;
       } else if (this.type == ProtectionEnchantment.Type.ALL) {
          return var1;
-      } else if (this.type == ProtectionEnchantment.Type.FIRE && var2.isFire()) {
+      } else if (this.type == ProtectionEnchantment.Type.FIRE && var2.is(DamageTypeTags.IS_FIRE)) {
          return var1 * 2;
-      } else if (this.type == ProtectionEnchantment.Type.FALL && var2.isFall()) {
+      } else if (this.type == ProtectionEnchantment.Type.FALL && var2.is(DamageTypeTags.IS_FALL)) {
          return var1 * 3;
-      } else if (this.type == ProtectionEnchantment.Type.EXPLOSION && var2.isExplosion()) {
+      } else if (this.type == ProtectionEnchantment.Type.EXPLOSION && var2.is(DamageTypeTags.IS_EXPLOSION)) {
          return var1 * 2;
       } else {
-         return this.type == ProtectionEnchantment.Type.PROJECTILE && var2.isProjectile() ? var1 * 2 : 0;
+         return this.type == ProtectionEnchantment.Type.PROJECTILE && var2.is(DamageTypeTags.IS_PROJECTILE) ? var1 * 2 : 0;
       }
    }
 
@@ -72,7 +73,7 @@ public class ProtectionEnchantment extends Enchantment {
    public static double getExplosionKnockbackAfterDampener(LivingEntity var0, double var1) {
       int var3 = EnchantmentHelper.getEnchantmentLevel(Enchantments.BLAST_PROTECTION, var0);
       if (var3 > 0) {
-         var1 -= (double)Mth.floor(var1 * (double)((float)var3 * 0.15F));
+         var1 *= Mth.clamp(1.0 - (double)var3 * 0.15, 0.0, 1.0);
       }
 
       return var1;

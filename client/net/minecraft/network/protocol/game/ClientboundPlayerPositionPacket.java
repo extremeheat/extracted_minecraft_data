@@ -1,9 +1,9 @@
 package net.minecraft.network.protocol.game;
 
-import java.util.EnumSet;
 import java.util.Set;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.world.entity.RelativeMovement;
 
 public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketListener> {
    private final double x;
@@ -11,13 +11,10 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
    private final double z;
    private final float yRot;
    private final float xRot;
-   private final Set<ClientboundPlayerPositionPacket.RelativeArgument> relativeArguments;
+   private final Set<RelativeMovement> relativeArguments;
    private final int id;
-   private final boolean dismountVehicle;
 
-   public ClientboundPlayerPositionPacket(
-      double var1, double var3, double var5, float var7, float var8, Set<ClientboundPlayerPositionPacket.RelativeArgument> var9, int var10, boolean var11
-   ) {
+   public ClientboundPlayerPositionPacket(double var1, double var3, double var5, float var7, float var8, Set<RelativeMovement> var9, int var10) {
       super();
       this.x = var1;
       this.y = var3;
@@ -26,7 +23,6 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       this.xRot = var8;
       this.relativeArguments = var9;
       this.id = var10;
-      this.dismountVehicle = var11;
    }
 
    public ClientboundPlayerPositionPacket(FriendlyByteBuf var1) {
@@ -36,9 +32,8 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       this.z = var1.readDouble();
       this.yRot = var1.readFloat();
       this.xRot = var1.readFloat();
-      this.relativeArguments = ClientboundPlayerPositionPacket.RelativeArgument.unpack(var1.readUnsignedByte());
+      this.relativeArguments = RelativeMovement.unpack(var1.readUnsignedByte());
       this.id = var1.readVarInt();
-      this.dismountVehicle = var1.readBoolean();
    }
 
    @Override
@@ -48,9 +43,8 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       var1.writeDouble(this.z);
       var1.writeFloat(this.yRot);
       var1.writeFloat(this.xRot);
-      var1.writeByte(ClientboundPlayerPositionPacket.RelativeArgument.pack(this.relativeArguments));
+      var1.writeByte(RelativeMovement.pack(this.relativeArguments));
       var1.writeVarInt(this.id);
-      var1.writeBoolean(this.dismountVehicle);
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -81,57 +75,7 @@ public class ClientboundPlayerPositionPacket implements Packet<ClientGamePacketL
       return this.id;
    }
 
-   public boolean requestDismountVehicle() {
-      return this.dismountVehicle;
-   }
-
-   public Set<ClientboundPlayerPositionPacket.RelativeArgument> getRelativeArguments() {
+   public Set<RelativeMovement> getRelativeArguments() {
       return this.relativeArguments;
-   }
-
-   public static enum RelativeArgument {
-      X(0),
-      Y(1),
-      Z(2),
-      Y_ROT(3),
-      X_ROT(4);
-
-      public static final Set<ClientboundPlayerPositionPacket.RelativeArgument> ALL = Set.of(values());
-      public static final Set<ClientboundPlayerPositionPacket.RelativeArgument> ROTATION = Set.of(X_ROT, Y_ROT);
-      private final int bit;
-
-      private RelativeArgument(int var3) {
-         this.bit = var3;
-      }
-
-      private int getMask() {
-         return 1 << this.bit;
-      }
-
-      private boolean isSet(int var1) {
-         return (var1 & this.getMask()) == this.getMask();
-      }
-
-      public static Set<ClientboundPlayerPositionPacket.RelativeArgument> unpack(int var0) {
-         EnumSet var1 = EnumSet.noneOf(ClientboundPlayerPositionPacket.RelativeArgument.class);
-
-         for(ClientboundPlayerPositionPacket.RelativeArgument var5 : values()) {
-            if (var5.isSet(var0)) {
-               var1.add(var5);
-            }
-         }
-
-         return var1;
-      }
-
-      public static int pack(Set<ClientboundPlayerPositionPacket.RelativeArgument> var0) {
-         int var1 = 0;
-
-         for(ClientboundPlayerPositionPacket.RelativeArgument var3 : var0) {
-            var1 |= var3.getMask();
-         }
-
-         return var1;
-      }
    }
 }

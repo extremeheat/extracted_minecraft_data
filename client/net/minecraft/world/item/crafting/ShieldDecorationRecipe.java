@@ -1,5 +1,6 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -49,29 +50,29 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = ItemStack.EMPTY;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
       ItemStack var3 = ItemStack.EMPTY;
+      ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty()) {
-            if (var5.getItem() instanceof BannerItem) {
-               var2 = var5;
-            } else if (var5.is(Items.SHIELD)) {
-               var3 = var5.copy();
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         if (!var6.isEmpty()) {
+            if (var6.getItem() instanceof BannerItem) {
+               var3 = var6;
+            } else if (var6.is(Items.SHIELD)) {
+               var4 = var6.copy();
             }
          }
       }
 
-      if (var3.isEmpty()) {
-         return var3;
+      if (var4.isEmpty()) {
+         return var4;
       } else {
-         CompoundTag var6 = BlockItem.getBlockEntityData(var2);
-         CompoundTag var7 = var6 == null ? new CompoundTag() : var6.copy();
-         var7.putInt("Base", ((BannerItem)var2.getItem()).getColor().getId());
-         BlockItem.setBlockEntityData(var3, BlockEntityType.BANNER, var7);
-         return var3;
+         CompoundTag var7 = BlockItem.getBlockEntityData(var3);
+         CompoundTag var8 = var7 == null ? new CompoundTag() : var7.copy();
+         var8.putInt("Base", ((BannerItem)var3.getItem()).getColor().getId());
+         BlockItem.setBlockEntityData(var4, BlockEntityType.BANNER, var8);
+         return var4;
       }
    }
 

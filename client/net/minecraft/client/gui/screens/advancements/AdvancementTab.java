@@ -9,7 +9,6 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
@@ -72,59 +71,46 @@ public class AdvancementTab extends GuiComponent {
    }
 
    public void drawTab(PoseStack var1, int var2, int var3, boolean var4) {
-      this.type.draw(var1, this, var2, var3, var4, this.index);
+      this.type.draw(var1, var2, var3, var4, this.index);
    }
 
-   public void drawIcon(int var1, int var2, ItemRenderer var3) {
-      this.type.drawIcon(var1, var2, this.index, var3, this.icon);
+   public void drawIcon(PoseStack var1, int var2, int var3, ItemRenderer var4) {
+      this.type.drawIcon(var1, var2, var3, this.index, var4, this.icon);
    }
 
-   public void drawContents(PoseStack var1) {
+   public void drawContents(PoseStack var1, int var2, int var3) {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
          this.centered = true;
       }
 
+      enableScissor(var2, var3, var2 + 234, var3 + 113);
       var1.pushPose();
-      var1.translate(0.0F, 0.0F, 950.0F);
-      RenderSystem.enableDepthTest();
-      RenderSystem.colorMask(false, false, false, false);
-      fill(var1, 4680, 2260, -4680, -2260, -16777216);
-      RenderSystem.colorMask(true, true, true, true);
-      var1.translate(0.0F, 0.0F, -950.0F);
-      RenderSystem.depthFunc(518);
-      fill(var1, 234, 113, 0, 0, -16777216);
-      RenderSystem.depthFunc(515);
-      ResourceLocation var2 = this.display.getBackground();
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      if (var2 != null) {
-         RenderSystem.setShaderTexture(0, var2);
+      var1.translate((float)var2, (float)var3, 0.0F);
+      ResourceLocation var4 = this.display.getBackground();
+      if (var4 != null) {
+         RenderSystem.setShaderTexture(0, var4);
       } else {
          RenderSystem.setShaderTexture(0, TextureManager.INTENTIONAL_MISSING_TEXTURE);
       }
 
-      int var3 = Mth.floor(this.scrollX);
-      int var4 = Mth.floor(this.scrollY);
-      int var5 = var3 % 16;
-      int var6 = var4 % 16;
+      int var5 = Mth.floor(this.scrollX);
+      int var6 = Mth.floor(this.scrollY);
+      int var7 = var5 % 16;
+      int var8 = var6 % 16;
 
-      for(int var7 = -1; var7 <= 15; ++var7) {
-         for(int var8 = -1; var8 <= 8; ++var8) {
-            blit(var1, var5 + 16 * var7, var6 + 16 * var8, 0.0F, 0.0F, 16, 16, 16, 16);
+      for(int var9 = -1; var9 <= 15; ++var9) {
+         for(int var10 = -1; var10 <= 8; ++var10) {
+            blit(var1, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 
-      this.root.drawConnectivity(var1, var3, var4, true);
-      this.root.drawConnectivity(var1, var3, var4, false);
-      this.root.draw(var1, var3, var4);
-      RenderSystem.depthFunc(518);
-      var1.translate(0.0F, 0.0F, -950.0F);
-      RenderSystem.colorMask(false, false, false, false);
-      fill(var1, 4680, 2260, -4680, -2260, -16777216);
-      RenderSystem.colorMask(true, true, true, true);
-      RenderSystem.depthFunc(515);
+      this.root.drawConnectivity(var1, var5, var6, true);
+      this.root.drawConnectivity(var1, var5, var6, false);
+      this.root.draw(var1, var5, var6);
       var1.popPose();
+      disableScissor();
    }
 
    public void drawTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {

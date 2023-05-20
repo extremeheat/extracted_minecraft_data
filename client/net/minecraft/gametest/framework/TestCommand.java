@@ -254,7 +254,7 @@ public class TestCommand {
    private static int createNewStructure(CommandSourceStack var0, String var1, int var2, int var3, int var4) {
       if (var2 <= 48 && var3 <= 48 && var4 <= 48) {
          ServerLevel var5 = var0.getLevel();
-         BlockPos var6 = new BlockPos(var0.getPosition());
+         BlockPos var6 = BlockPos.containing(var0.getPosition());
          BlockPos var7 = new BlockPos(var6.getX(), var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var6).getY(), var6.getZ() + 3);
          StructureUtils.createNewEmptyStructureBlock(var1.toLowerCase(), var7, new Vec3i(var2, var3, var4), Rotation.NONE, var5);
 
@@ -306,7 +306,7 @@ public class TestCommand {
    }
 
    private static int runNearbyTest(CommandSourceStack var0) {
-      BlockPos var1 = new BlockPos(var0.getPosition());
+      BlockPos var1 = BlockPos.containing(var0.getPosition());
       ServerLevel var2 = var0.getLevel();
       BlockPos var3 = StructureUtils.findNearestStructureBlock(var1, 15, var2);
       if (var3 == null) {
@@ -320,7 +320,7 @@ public class TestCommand {
    }
 
    private static int runAllNearbyTests(CommandSourceStack var0) {
-      BlockPos var1 = new BlockPos(var0.getPosition());
+      BlockPos var1 = BlockPos.containing(var0.getPosition());
       ServerLevel var2 = var0.getLevel();
       Collection var3 = StructureUtils.findStructureBlocks(var1, 200, var2);
       if (var3.isEmpty()) {
@@ -347,7 +347,7 @@ public class TestCommand {
 
       runTestPreparation(var5, var0);
       AABB var7 = StructureUtils.getStructureBounds(var3);
-      BlockPos var8 = new BlockPos(var7.minX, var7.minY, var7.minZ);
+      BlockPos var8 = BlockPos.containing(var7.minX, var7.minY, var7.minZ);
       GameTestRunner.runTest(var6, var8, GameTestTicker.SINGLETON);
    }
 
@@ -369,9 +369,9 @@ public class TestCommand {
    private static int clearAllTests(CommandSourceStack var0, int var1) {
       ServerLevel var2 = var0.getLevel();
       GameTestRunner.clearMarkers(var2);
-      BlockPos var3 = new BlockPos(
+      BlockPos var3 = BlockPos.containing(
          var0.getPosition().x,
-         (double)var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, new BlockPos(var0.getPosition())).getY(),
+         (double)var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, BlockPos.containing(var0.getPosition())).getY(),
          var0.getPosition().z
       );
       GameTestRunner.clearAllTests(var2, var3, GameTestTicker.SINGLETON, Mth.clamp(var1, 0, 1024));
@@ -380,7 +380,7 @@ public class TestCommand {
 
    private static int runTest(CommandSourceStack var0, TestFunction var1, int var2) {
       ServerLevel var3 = var0.getLevel();
-      BlockPos var4 = new BlockPos(var0.getPosition());
+      BlockPos var4 = BlockPos.containing(var0.getPosition());
       int var5 = var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var4).getY();
       BlockPos var6 = new BlockPos(var4.getX(), var5, var4.getZ() + 3);
       GameTestRunner.clearMarkers(var3);
@@ -436,7 +436,7 @@ public class TestCommand {
    }
 
    private static void runTests(CommandSourceStack var0, Collection<TestFunction> var1, int var2, int var3) {
-      BlockPos var4 = new BlockPos(var0.getPosition());
+      BlockPos var4 = BlockPos.containing(var0.getPosition());
       BlockPos var5 = new BlockPos(var4.getX(), var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var4).getY(), var4.getZ() + 3);
       ServerLevel var6 = var0.getLevel();
       Rotation var7 = StructureUtils.getRotationForRotationSteps(var2);
@@ -451,7 +451,7 @@ public class TestCommand {
    }
 
    private static int exportNearestTestStructure(CommandSourceStack var0) {
-      BlockPos var1 = new BlockPos(var0.getPosition());
+      BlockPos var1 = BlockPos.containing(var0.getPosition());
       ServerLevel var2 = var0.getLevel();
       BlockPos var3 = StructureUtils.findNearestStructureBlock(var1, 15, var2);
       if (var3 == null) {

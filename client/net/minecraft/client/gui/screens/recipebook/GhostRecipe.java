@@ -68,12 +68,12 @@ public class GhostRecipe {
 
          ItemStack var11 = var8.getItem();
          ItemRenderer var12 = var2.getItemRenderer();
-         var12.renderAndDecorateFakeItem(var11, var9, var10);
+         var12.renderAndDecorateFakeItem(var1, var11, var9, var10);
          RenderSystem.depthFunc(516);
          GuiComponent.fill(var1, var9, var10, var9 + 16, var10 + 16, 822083583);
          RenderSystem.depthFunc(515);
          if (var7 == 0) {
-            var12.renderGuiItemDecorations(var2.font, var11, var9, var10);
+            var12.renderGuiItemDecorations(var1, var2.font, var11, var9, var10);
          }
       }
    }

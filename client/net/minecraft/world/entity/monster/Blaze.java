@@ -136,11 +136,6 @@ public class Blaze extends Monster {
    }
 
    @Override
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      return false;
-   }
-
-   @Override
    public boolean isOnFire() {
       return this.isCharged();
    }

@@ -29,42 +29,42 @@ enum AdvancementTabType {
       return this.max;
    }
 
-   public void draw(PoseStack var1, GuiComponent var2, int var3, int var4, boolean var5, int var6) {
-      int var7 = this.textureX;
-      if (var6 > 0) {
-         var7 += this.width;
+   public void draw(PoseStack var1, int var2, int var3, boolean var4, int var5) {
+      int var6 = this.textureX;
+      if (var5 > 0) {
+         var6 += this.width;
       }
 
-      if (var6 == this.max - 1) {
-         var7 += this.width;
+      if (var5 == this.max - 1) {
+         var6 += this.width;
       }
 
-      int var8 = var5 ? this.textureY + this.height : this.textureY;
-      var2.blit(var1, var3 + this.getX(var6), var4 + this.getY(var6), var7, var8, this.width, this.height);
+      int var7 = var4 ? this.textureY + this.height : this.textureY;
+      GuiComponent.blit(var1, var2 + this.getX(var5), var3 + this.getY(var5), var6, var7, this.width, this.height);
    }
 
-   public void drawIcon(int var1, int var2, int var3, ItemRenderer var4, ItemStack var5) {
-      int var6 = var1 + this.getX(var3);
-      int var7 = var2 + this.getY(var3);
+   public void drawIcon(PoseStack var1, int var2, int var3, int var4, ItemRenderer var5, ItemStack var6) {
+      int var7 = var2 + this.getX(var4);
+      int var8 = var3 + this.getY(var4);
       switch(this) {
          case ABOVE:
-            var6 += 6;
-            var7 += 9;
+            var7 += 6;
+            var8 += 9;
             break;
          case BELOW:
-            var6 += 6;
             var7 += 6;
+            var8 += 6;
             break;
          case LEFT:
-            var6 += 10;
-            var7 += 5;
+            var7 += 10;
+            var8 += 5;
             break;
          case RIGHT:
-            var6 += 6;
-            var7 += 5;
+            var7 += 6;
+            var8 += 5;
       }
 
-      var4.renderAndDecorateFakeItem(var5, var6, var7);
+      var5.renderAndDecorateFakeItem(var1, var6, var7, var8);
    }
 
    public int getX(int var1) {

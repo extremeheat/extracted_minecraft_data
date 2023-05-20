@@ -1,7 +1,9 @@
 package net.minecraft.world.item;
 
 import java.util.List;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -35,6 +37,10 @@ public class BottleItem extends Item {
          var8.setRadius(var8.getRadius() - 0.5F);
          var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.BOTTLE_FILL_DRAGONBREATH, SoundSource.NEUTRAL, 1.0F, 1.0F);
          var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var2.position());
+         if (var2 instanceof ServerPlayer var9) {
+            CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger((ServerPlayer)var9, var5, var8);
+         }
+
          return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(var5, var2, new ItemStack(Items.DRAGON_BREATH)), var1.isClientSide());
       } else {
          BlockHitResult var6 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);

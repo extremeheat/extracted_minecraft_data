@@ -31,7 +31,7 @@ public class CapeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abs
             double var12 = Mth.lerp((double)var7, var4.xCloakO, var4.xCloak) - Mth.lerp((double)var7, var4.xo, var4.getX());
             double var14 = Mth.lerp((double)var7, var4.yCloakO, var4.yCloak) - Mth.lerp((double)var7, var4.yo, var4.getY());
             double var16 = Mth.lerp((double)var7, var4.zCloakO, var4.zCloak) - Mth.lerp((double)var7, var4.zo, var4.getZ());
-            float var18 = var4.yBodyRotO + (var4.yBodyRot - var4.yBodyRotO);
+            float var18 = Mth.rotLerp(var7, var4.yBodyRotO, var4.yBodyRot);
             double var19 = (double)Mth.sin(var18 * 0.017453292F);
             double var21 = (double)(-Mth.cos(var18 * 0.017453292F));
             float var23 = (float)var14 * 10.0F;

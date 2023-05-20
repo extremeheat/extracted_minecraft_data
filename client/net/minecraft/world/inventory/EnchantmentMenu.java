@@ -254,11 +254,11 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             ItemStack var6 = var5.copy();
             var6.setCount(1);
             var5.shrink(1);
-            this.slots.get(0).set(var6);
+            this.slots.get(0).setByPlayer(var6);
          }
 
          if (var5.isEmpty()) {
-            var4.set(ItemStack.EMPTY);
+            var4.setByPlayer(ItemStack.EMPTY);
          } else {
             var4.setChanged();
          }

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -36,7 +37,7 @@ public class DeathScreen extends Screen {
       MutableComponent var1 = this.hardcore ? Component.translatable("deathScreen.spectate") : Component.translatable("deathScreen.respawn");
       this.exitButtons.add(this.addRenderableWidget(Button.builder(var1, var1x -> {
          this.minecraft.player.respawn();
-         this.minecraft.setScreen(null);
+         var1x.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()));
       this.exitToTitleButton = this.addRenderableWidget(
          Button.builder(
@@ -47,11 +48,7 @@ public class DeathScreen extends Screen {
             .build()
       );
       this.exitButtons.add(this.exitToTitleButton);
-
-      for(Button var3 : this.exitButtons) {
-         var3.active = false;
-      }
-
+      this.setButtonsActive(false);
       this.deathScore = Component.translatable("deathScreen.score")
          .append(": ")
          .append(Component.literal(Integer.toString(this.minecraft.player.getScore())).withStyle(ChatFormatting.YELLOW));
@@ -66,7 +63,7 @@ public class DeathScreen extends Screen {
       if (this.hardcore) {
          this.exitToTitleScreen();
       } else {
-         ConfirmScreen var1 = new ConfirmScreen(
+         DeathScreen.TitleConfirmScreen var1 = new DeathScreen.TitleConfirmScreen(
             var1x -> {
                if (var1x) {
                   this.exitToTitleScreen();
@@ -96,7 +93,7 @@ public class DeathScreen extends Screen {
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.fillGradient(var1, 0, 0, this.width, this.height, 1615855616, -1602211792);
+      fillGradient(var1, 0, 0, this.width, this.height, 1615855616, -1602211792);
       var1.pushPose();
       var1.scale(2.0F, 2.0F, 2.0F);
       drawCenteredString(var1, this.font, this.title, this.width / 2 / 2, 30, 16777215);
@@ -114,8 +111,7 @@ public class DeathScreen extends Screen {
       super.render(var1, var2, var3, var4);
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
          RenderSystem.setShaderTexture(0, AbstractWidget.WIDGETS_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         this.blit(var1, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 182, 24, 15, 15);
+         blit(var1, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 182, 24, 15, 15);
       }
    }
 
@@ -154,9 +150,19 @@ public class DeathScreen extends Screen {
       super.tick();
       ++this.delayTicker;
       if (this.delayTicker == 20) {
-         for(Button var2 : this.exitButtons) {
-            var2.active = true;
-         }
+         this.setButtonsActive(true);
+      }
+   }
+
+   private void setButtonsActive(boolean var1) {
+      for(Button var3 : this.exitButtons) {
+         var3.active = var1;
+      }
+   }
+
+   public static class TitleConfirmScreen extends ConfirmScreen {
+      public TitleConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
+         super(var1, var2, var3, var4, var5);
       }
    }
 }

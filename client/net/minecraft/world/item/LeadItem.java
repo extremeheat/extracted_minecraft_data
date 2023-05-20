@@ -28,7 +28,6 @@ public class LeadItem extends Item {
             bindPlayerMobs(var5, var2, var3);
          }
 
-         var2.gameEvent(GameEvent.BLOCK_ATTACH, var3, GameEvent.Context.of(var5));
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
          return InteractionResult.PASS;
@@ -55,6 +54,10 @@ public class LeadItem extends Item {
             var12.setLeashedTo(var3, true);
             var4 = true;
          }
+      }
+
+      if (var4) {
+         var1.gameEvent(GameEvent.BLOCK_ATTACH, var2, GameEvent.Context.of(var0));
       }
 
       return var4 ? InteractionResult.SUCCESS : InteractionResult.PASS;

@@ -352,7 +352,7 @@ public abstract class AbstractContainerMenu {
                      }
 
                      var28 -= var12.getCount() - var13;
-                     var10.set(var12);
+                     var10.setByPlayer(var12);
                   }
                }
 
@@ -421,7 +421,7 @@ public abstract class AbstractContainerMenu {
                         this.setCarried(var27.safeInsert(var37, var41));
                      } else if (var37.getCount() <= var27.getMaxStackSize(var37)) {
                         this.setCarried(var33);
-                        var27.set(var37);
+                        var27.setByPlayer(var37);
                      }
                   } else if (ItemStack.isSameItemSameTags(var33, var37)) {
                      Optional var42 = var27.tryRemove(var33.getCount(), var37.getMaxStackSize() - var37.getCount(), var4);
@@ -444,30 +444,30 @@ public abstract class AbstractContainerMenu {
                if (var15.mayPickup(var4)) {
                   var5.setItem(var2, var29);
                   var15.onSwapCraft(var29.getCount());
-                  var15.set(ItemStack.EMPTY);
+                  var15.setByPlayer(ItemStack.EMPTY);
                   var15.onTake(var4, var29);
                }
             } else if (var29.isEmpty()) {
                if (var15.mayPlace(var22)) {
                   int var34 = var15.getMaxStackSize(var22);
                   if (var22.getCount() > var34) {
-                     var15.set(var22.split(var34));
+                     var15.setByPlayer(var22.split(var34));
                   } else {
                      var5.setItem(var2, ItemStack.EMPTY);
-                     var15.set(var22);
+                     var15.setByPlayer(var22);
                   }
                }
             } else if (var15.mayPickup(var4) && var15.mayPlace(var22)) {
                int var35 = var15.getMaxStackSize(var22);
                if (var22.getCount() > var35) {
-                  var15.set(var22.split(var35));
+                  var15.setByPlayer(var22.split(var35));
                   var15.onTake(var4, var29);
                   if (!var5.add(var29)) {
                      var4.drop(var29, true);
                   }
                } else {
                   var5.setItem(var2, var29);
-                  var15.set(var22);
+                  var15.setByPlayer(var22);
                   var15.onTake(var4, var29);
                }
             }
@@ -576,7 +576,7 @@ public abstract class AbstractContainerMenu {
 
    public void initializeContents(int var1, List<ItemStack> var2, ItemStack var3) {
       for(int var4 = 0; var4 < var2.size(); ++var4) {
-         this.getSlot(var4).initialize((ItemStack)var2.get(var4));
+         this.getSlot(var4).set((ItemStack)var2.get(var4));
       }
 
       this.carried = var3;
@@ -635,9 +635,9 @@ public abstract class AbstractContainerMenu {
             ItemStack var12 = var11.getItem();
             if (var12.isEmpty() && var11.mayPlace(var1)) {
                if (var1.getCount() > var11.getMaxStackSize()) {
-                  var11.set(var1.split(var11.getMaxStackSize()));
+                  var11.setByPlayer(var1.split(var11.getMaxStackSize()));
                } else {
-                  var11.set(var1.split(var1.getCount()));
+                  var11.setByPlayer(var1.split(var1.getCount()));
                }
 
                var11.setChanged();

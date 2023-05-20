@@ -1,34 +1,36 @@
 package net.minecraft;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.DSL.TypeReference;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetector.Level;
 import java.time.Duration;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.commands.BrigadierExceptions;
-import net.minecraft.util.datafix.DataFixerOptimizationOption;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 
 public class SharedConstants {
    @Deprecated
    public static final boolean SNAPSHOT = false;
    @Deprecated
-   public static final int WORLD_VERSION = 3218;
+   public static final int WORLD_VERSION = 3337;
    @Deprecated
    public static final String SERIES = "main";
    @Deprecated
-   public static final String VERSION_STRING = "1.19.3";
+   public static final String VERSION_STRING = "1.19.4";
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 761;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 762;
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 114;
-   public static final int SNBT_NAG_VERSION = 3200;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 126;
+   public static final int SNBT_NAG_VERSION = 3318;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean THROW_ON_TASK_FAILURE = false;
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 12;
+   public static final int RESOURCE_PACK_FORMAT = 13;
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 10;
+   public static final int DATA_PACK_FORMAT = 12;
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
@@ -113,7 +115,7 @@ public class SharedConstants {
    public static final long MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
    public static boolean CHECK_DATA_FIXER_SCHEMA = true;
    public static boolean IS_RUNNING_IN_IDE;
-   public static DataFixerOptimizationOption DATAFIXER_OPTIMIZATION_OPTION = DataFixerOptimizationOption.UNINITIALIZED_UNOPTIMIZED;
+   public static Set<TypeReference> DATA_FIX_TYPES_TO_OPTIMIZE = Set.of();
    public static final int WORLD_RESOLUTION = 16;
    public static final int MAX_CHAT_LENGTH = 256;
    public static final int MAX_COMMAND_LENGTH = 32500;
@@ -178,7 +180,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 761;
+      return 762;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {
@@ -192,11 +194,7 @@ public class SharedConstants {
    }
 
    public static void enableDataFixerOptimizations() {
-      DATAFIXER_OPTIMIZATION_OPTION = switch(DATAFIXER_OPTIMIZATION_OPTION) {
-         case INITIALIZED_UNOPTIMIZED -> throw new IllegalStateException("Tried to enable datafixer optimization after unoptimized initialization");
-         case INITIALIZED_OPTIMIZED -> DataFixerOptimizationOption.INITIALIZED_OPTIMIZED;
-         default -> DataFixerOptimizationOption.UNINITIALIZED_OPTIMIZED;
-      };
+      DATA_FIX_TYPES_TO_OPTIMIZE = DataFixTypes.TYPES_FOR_LEVEL_LIST;
    }
 
    static {

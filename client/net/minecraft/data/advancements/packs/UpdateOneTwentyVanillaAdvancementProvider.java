@@ -12,6 +12,6 @@ public class UpdateOneTwentyVanillaAdvancementProvider {
    }
 
    public static AdvancementProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
-      return new AdvancementProvider(var0, var1, List.of(new UpdateOneTwentyAdvancements()));
+      return new AdvancementProvider(var0, var1, List.of(new UpdateOneTwentyAdventureAdvancements(), new UpdateOneTwentyHusbandryAdvancements()));
    }
 }

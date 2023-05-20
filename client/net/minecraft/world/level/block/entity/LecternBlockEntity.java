@@ -87,18 +87,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
 
       @Override
       public boolean stillValid(Player var1) {
-         if (LecternBlockEntity.this.level.getBlockEntity(LecternBlockEntity.this.worldPosition) != LecternBlockEntity.this) {
-            return false;
-         } else {
-            return var1.distanceToSqr(
-                     (double)LecternBlockEntity.this.worldPosition.getX() + 0.5,
-                     (double)LecternBlockEntity.this.worldPosition.getY() + 0.5,
-                     (double)LecternBlockEntity.this.worldPosition.getZ() + 0.5
-                  )
-                  > 64.0
-               ? false
-               : LecternBlockEntity.this.hasBook();
-         }
+         return Container.stillValidBlockEntity(LecternBlockEntity.this, var1) && LecternBlockEntity.this.hasBook();
       }
 
       @Override
@@ -151,7 +140,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    void onBookItemRemove() {
       this.page = 0;
       this.pageCount = 0;
-      LecternBlock.resetBookState(this.getLevel(), this.getBlockPos(), this.getBlockState(), false);
+      LecternBlock.resetBookState(null, this.getLevel(), this.getBlockPos(), this.getBlockState(), false);
    }
 
    public void setBook(ItemStack var1, @Nullable Player var2) {

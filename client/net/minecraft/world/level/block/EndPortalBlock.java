@@ -39,8 +39,6 @@ public class EndPortalBlock extends BaseEntityBlock {
    @Override
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var2 instanceof ServerLevel
-         && !var4.isPassenger()
-         && !var4.isVehicle()
          && var4.canChangeDimensions()
          && Shapes.joinIsNotEmpty(
             Shapes.create(var4.getBoundingBox().move((double)(-var3.getX()), (double)(-var3.getY()), (double)(-var3.getZ()))),

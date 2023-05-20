@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -67,7 +69,7 @@ public class FarmBlock extends Block {
    @Override
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
-         turnToDirt(var1, var2, var3);
+         turnToDirt(null, var1, var2, var3);
       }
    }
 
@@ -78,7 +80,7 @@ public class FarmBlock extends Block {
          if (var5 > 0) {
             var2.setBlock(var3, var1.setValue(MOISTURE, Integer.valueOf(var5 - 1)), 2);
          } else if (!isUnderCrops(var2, var3)) {
-            turnToDirt(var1, var2, var3);
+            turnToDirt(null, var1, var2, var3);
          }
       } else if (var5 < 7) {
          var2.setBlock(var3, var1.setValue(MOISTURE, Integer.valueOf(7)), 2);
@@ -92,14 +94,16 @@ public class FarmBlock extends Block {
          && var4 instanceof LivingEntity
          && (var4 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))
          && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
-         turnToDirt(var2, var1, var3);
+         turnToDirt(var4, var2, var1, var3);
       }
 
       super.fallOn(var1, var2, var3, var4, var5);
    }
 
-   public static void turnToDirt(BlockState var0, Level var1, BlockPos var2) {
-      var1.setBlockAndUpdate(var2, pushEntitiesUp(var0, Blocks.DIRT.defaultBlockState(), var1, var2));
+   public static void turnToDirt(@Nullable Entity var0, BlockState var1, Level var2, BlockPos var3) {
+      BlockState var4 = pushEntitiesUp(var1, Blocks.DIRT.defaultBlockState(), var2, var3);
+      var2.setBlockAndUpdate(var3, var4);
+      var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var4));
    }
 
    private static boolean isUnderCrops(BlockGetter var0, BlockPos var1) {

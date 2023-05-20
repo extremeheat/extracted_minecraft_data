@@ -98,8 +98,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       float var26 = 0.0F;
       float var13 = 0.0F;
       if (!var1.isPassenger() && var1.isAlive()) {
-         var26 = Mth.lerp(var3, var1.animationSpeedOld, var1.animationSpeed);
-         var13 = var1.animationPosition - var1.animationSpeed * (1.0F - var3);
+         var26 = var1.walkAnimation.speed(var3);
+         var13 = var1.walkAnimation.position(var3);
          if (var1.isBaby()) {
             var13 *= 3.0F;
          }

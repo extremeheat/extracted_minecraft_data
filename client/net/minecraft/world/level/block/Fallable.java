@@ -17,7 +17,7 @@ public interface Fallable {
    }
 
    default DamageSource getFallDamageSource(Entity var1) {
-      return DamageSource.fallingBlock(var1);
+      return var1.damageSources().fallingBlock(var1);
    }
 
    default Predicate<Entity> getHurtsEntitySelector() {

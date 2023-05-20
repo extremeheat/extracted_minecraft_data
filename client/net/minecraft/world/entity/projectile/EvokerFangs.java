@@ -6,13 +6,13 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.Level;
 
-public class EvokerFangs extends Entity {
+public class EvokerFangs extends Entity implements TraceableEntity {
    public static final int ATTACK_DURATION = 20;
    public static final int LIFE_OFFSET = 2;
    public static final int ATTACK_TRIGGER_TICKS = 14;
@@ -114,13 +114,13 @@ public class EvokerFangs extends Entity {
       LivingEntity var2 = this.getOwner();
       if (var1.isAlive() && !var1.isInvulnerable() && var1 != var2) {
          if (var2 == null) {
-            var1.hurt(DamageSource.MAGIC, 6.0F);
+            var1.hurt(this.damageSources().magic(), 6.0F);
          } else {
             if (var2.isAlliedTo(var1)) {
                return;
             }
 
-            var1.hurt(DamageSource.indirectMagic(this, var2), 6.0F);
+            var1.hurt(this.damageSources().indirectMagic(this, var2), 6.0F);
          }
       }
    }

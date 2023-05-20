@@ -141,8 +141,9 @@ public class ComponentUtils {
       if (var0 != null) {
          ComponentContents var2 = var0.getContents();
          if (var2 instanceof TranslatableContents var1) {
-            String var3 = var1.getKey();
-            return Language.getInstance().has(var3);
+            String var4 = var1.getKey();
+            String var3 = var1.getFallback();
+            return var3 != null || Language.getInstance().has(var4);
          }
       }
 

@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.Minecraft;
@@ -23,10 +22,7 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       ClientLevel var9 = this.minecraft.level;
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
-      BlockPos var10 = new BlockPos(var3, var5, var7);
+      BlockPos var10 = BlockPos.containing(var3, var5, var7);
       LongOpenHashSet var11 = new LongOpenHashSet();
 
       for(BlockPos var13 : BlockPos.betweenClosed(var10.offset(-10, -10, -10), var10.offset(10, 10, 10))) {
@@ -36,6 +32,8 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          long var17 = SectionPos.blockToSection(var13.asLong());
          if (var11.add(var17)) {
             DebugRenderer.renderFloatingText(
+               var1,
+               var2,
                var9.getChunkSource().getLightEngine().getDebugData(LightLayer.SKY, SectionPos.of(var17)),
                (double)SectionPos.sectionToBlockCoord(SectionPos.x(var17), 8),
                (double)SectionPos.sectionToBlockCoord(SectionPos.y(var17), 8),
@@ -46,10 +44,10 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
          if (var14 != 15) {
-            DebugRenderer.renderFloatingText(String.valueOf(var14), (double)var13.getX() + 0.5, (double)var13.getY() + 0.25, (double)var13.getZ() + 0.5, var16);
+            DebugRenderer.renderFloatingText(
+               var1, var2, String.valueOf(var14), (double)var13.getX() + 0.5, (double)var13.getY() + 0.25, (double)var13.getZ() + 0.5, var16
+            );
          }
       }
-
-      RenderSystem.enableTexture();
    }
 }

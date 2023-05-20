@@ -5,15 +5,20 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.apache.commons.lang3.ArrayUtils;
@@ -46,6 +51,15 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       }
    }
 
+   public void resetMappingAndUpdateButtons() {
+      KeyMapping.resetMapping();
+      this.refreshEntries();
+   }
+
+   public void refreshEntries() {
+      this.children().forEach(KeyBindsList.Entry::refreshEntry);
+   }
+
    @Override
    protected int getScrollbarPosition() {
       return super.getScrollbarPosition() + 15;
@@ -73,9 +87,10 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
             .draw(var1, this.name, (float)(KeyBindsList.this.minecraft.screen.width / 2 - this.width / 2), (float)(var3 + var6 - 9 - 1), 16777215);
       }
 
+      @Nullable
       @Override
-      public boolean changeFocus(boolean var1) {
-         return false;
+      public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+         return null;
       }
 
       @Override
@@ -97,12 +112,18 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
             }
          });
       }
+
+      @Override
+      protected void refreshEntry() {
+      }
    }
 
    public abstract static class Entry extends ContainerObjectSelectionList.Entry<KeyBindsList.Entry> {
       public Entry() {
          super();
       }
+
+      abstract void refreshEntry();
    }
 
    public class KeyEntry extends KeyBindsList.Entry {
@@ -110,12 +131,16 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       private final Component name;
       private final Button changeButton;
       private final Button resetButton;
+      private boolean hasCollision = false;
 
       KeyEntry(KeyMapping var2, Component var3) {
          super();
          this.key = var2;
          this.name = var3;
-         this.changeButton = Button.builder(var3, var2x -> KeyBindsList.this.keyBindsScreen.selectedKey = var2)
+         this.changeButton = Button.builder(var3, var2x -> {
+               KeyBindsList.this.keyBindsScreen.selectedKey = var2;
+               KeyBindsList.this.resetMappingAndUpdateButtons();
+            })
             .bounds(0, 0, 75, 20)
             .createNarration(
                var2x -> var2.isUnbound()
@@ -125,42 +150,24 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
             .build();
          this.resetButton = Button.builder(Component.translatable("controls.reset"), var2x -> {
             KeyBindsList.this.minecraft.options.setKey(var2, var2.getDefaultKey());
-            KeyMapping.resetMapping();
+            KeyBindsList.this.resetMappingAndUpdateButtons();
          }).bounds(0, 0, 50, 20).createNarration(var1x -> Component.translatable("narrator.controls.reset", var3)).build();
+         this.refreshEntry();
       }
 
       @Override
       public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         boolean var11 = KeyBindsList.this.keyBindsScreen.selectedKey == this.key;
          float var10003 = (float)(var4 + 90 - KeyBindsList.this.maxNameWidth);
          KeyBindsList.this.minecraft.font.draw(var1, this.name, var10003, (float)(var3 + var6 / 2 - 9 / 2), 16777215);
          this.resetButton.setX(var4 + 190);
          this.resetButton.setY(var3);
-         this.resetButton.active = !this.key.isDefault();
          this.resetButton.render(var1, var7, var8, var10);
          this.changeButton.setX(var4 + 105);
          this.changeButton.setY(var3);
-         this.changeButton.setMessage(this.key.getTranslatedKeyMessage());
-         boolean var12 = false;
-         if (!this.key.isUnbound()) {
-            for(KeyMapping var16 : KeyBindsList.this.minecraft.options.keyMappings) {
-               if (var16 != this.key && this.key.same(var16)) {
-                  var12 = true;
-                  break;
-               }
-            }
-         }
-
-         if (var11) {
-            this.changeButton
-               .setMessage(
-                  Component.literal("> ")
-                     .append(this.changeButton.getMessage().copy().withStyle(ChatFormatting.YELLOW))
-                     .append(" <")
-                     .withStyle(ChatFormatting.YELLOW)
-               );
-         } else if (var12) {
-            this.changeButton.setMessage(this.changeButton.getMessage().copy().withStyle(ChatFormatting.RED));
+         if (this.hasCollision) {
+            boolean var11 = true;
+            int var12 = this.changeButton.getX() - 6;
+            GuiComponent.fill(var1, var12, var3 + 2, var12 + 3, var3 + var6 + 2, ChatFormatting.RED.getColor() | 0xFF000000);
          }
 
          this.changeButton.render(var1, var7, var8, var10);
@@ -177,17 +184,46 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       }
 
       @Override
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         if (this.changeButton.mouseClicked(var1, var3, var5)) {
-            return true;
-         } else {
-            return this.resetButton.mouseClicked(var1, var3, var5);
-         }
-      }
+      protected void refreshEntry() {
+         this.changeButton.setMessage(this.key.getTranslatedKeyMessage());
+         this.resetButton.active = !this.key.isDefault();
+         this.hasCollision = false;
+         MutableComponent var1 = Component.empty();
+         if (!this.key.isUnbound()) {
+            for(KeyMapping var5 : KeyBindsList.this.minecraft.options.keyMappings) {
+               if (var5 != this.key && this.key.same(var5)) {
+                  if (this.hasCollision) {
+                     var1.append(", ");
+                  }
 
-      @Override
-      public boolean mouseReleased(double var1, double var3, int var5) {
-         return this.changeButton.mouseReleased(var1, var3, var5) || this.resetButton.mouseReleased(var1, var3, var5);
+                  this.hasCollision = true;
+                  var1.append(Component.translatable(var5.getName()));
+               }
+            }
+         }
+
+         if (this.hasCollision) {
+            this.changeButton
+               .setMessage(
+                  Component.literal("[ ")
+                     .append(this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE))
+                     .append(" ]")
+                     .withStyle(ChatFormatting.RED)
+               );
+            this.changeButton.setTooltip(Tooltip.create(Component.translatable("controls.keybinds.duplicateKeybinds", var1)));
+         } else {
+            this.changeButton.setTooltip(null);
+         }
+
+         if (KeyBindsList.this.keyBindsScreen.selectedKey == this.key) {
+            this.changeButton
+               .setMessage(
+                  Component.literal("> ")
+                     .append(this.changeButton.getMessage().copy().withStyle(ChatFormatting.WHITE, ChatFormatting.UNDERLINE))
+                     .append(" <")
+                     .withStyle(ChatFormatting.YELLOW)
+               );
+         }
       }
    }
 }

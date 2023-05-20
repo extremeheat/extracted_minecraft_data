@@ -327,25 +327,7 @@ public class V1460 extends NamespacedSchema {
                )
             )
       );
-      var1.registerType(
-         false,
-         References.STRUCTURE_FEATURE,
-         () -> DSL.optionalFields(
-               "Children",
-               DSL.list(
-                  DSL.optionalFields(
-                     "CA",
-                     References.BLOCK_STATE.in(var1),
-                     "CB",
-                     References.BLOCK_STATE.in(var1),
-                     "CC",
-                     References.BLOCK_STATE.in(var1),
-                     "CD",
-                     References.BLOCK_STATE.in(var1)
-                  )
-               )
-            )
-      );
+      var1.registerType(false, References.STRUCTURE_FEATURE, DSL::remainder);
       Map var5 = V1451_6.createCriterionTypes(var1);
       var1.registerType(
          false,
@@ -379,7 +361,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.BIOME, () -> DSL.constType(namespacedString()));
       var1.registerType(false, References.ENTITY_NAME, () -> DSL.constType(namespacedString()));
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
-      var1.registerType(true, References.WORLD_GEN_SETTINGS, DSL::remainder);
+      var1.registerType(false, References.WORLD_GEN_SETTINGS, DSL::remainder);
       var1.registerType(false, References.ENTITY_CHUNK, () -> DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1))));
    }
 }

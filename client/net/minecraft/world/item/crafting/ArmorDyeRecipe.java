@@ -2,6 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -41,31 +42,31 @@ public class ArmorDyeRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ArrayList var2 = Lists.newArrayList();
-      ItemStack var3 = ItemStack.EMPTY;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ArrayList var3 = Lists.newArrayList();
+      ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty()) {
-            Item var6 = var5.getItem();
-            if (var6 instanceof DyeableLeatherItem) {
-               if (!var3.isEmpty()) {
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         if (!var6.isEmpty()) {
+            Item var7 = var6.getItem();
+            if (var7 instanceof DyeableLeatherItem) {
+               if (!var4.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
-               var3 = var5.copy();
+               var4 = var6.copy();
             } else {
-               if (!(var6 instanceof DyeItem)) {
+               if (!(var7 instanceof DyeItem)) {
                   return ItemStack.EMPTY;
                }
 
-               var2.add((DyeItem)var6);
+               var3.add((DyeItem)var7);
             }
          }
       }
 
-      return !var3.isEmpty() && !var2.isEmpty() ? DyeableLeatherItem.dyeArmor(var3, var2) : ItemStack.EMPTY;
+      return !var4.isEmpty() && !var3.isEmpty() ? DyeableLeatherItem.dyeArmor(var4, var3) : ItemStack.EMPTY;
    }
 
    @Override

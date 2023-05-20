@@ -3,7 +3,6 @@ package net.minecraft.util.datafix.fixes;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
@@ -122,14 +121,11 @@ public class ChunkStructuresTemplateRenameFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
-      OpticFinder var2 = var1.findField("Children");
-      return this.fixTypeEverywhereTyped(
-         "ChunkStructuresTemplateRenameFix",
-         var1,
-         var2x -> var2x.updateTyped(
-               var2, var2xx -> var2xx.update(DSL.remainderFinder(), var2xxx -> this.fixTag((Dynamic<?>)var2x.get(DSL.remainderFinder()), var2xxx))
-            )
-      );
+      return this.fixTypeEverywhereTyped("ChunkStructuresTemplateRenameFix", var1, var1x -> var1x.update(DSL.remainderFinder(), this::fixChildren));
+   }
+
+   private Dynamic<?> fixChildren(Dynamic<?> var1) {
+      return var1.update("Children", var2 -> var1.createList(var2.asStream().map(var2x -> this.fixTag(var1, var2x))));
    }
 
    private Dynamic<?> fixTag(Dynamic<?> var1, Dynamic<?> var2) {

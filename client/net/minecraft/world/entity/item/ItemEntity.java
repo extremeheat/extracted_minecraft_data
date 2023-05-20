@@ -3,7 +3,6 @@ package net.minecraft.world.entity.item;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -13,6 +12,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -20,6 +20,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
-public class ItemEntity extends Entity {
+public class ItemEntity extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
    private static final int LIFETIME = 6000;
    private static final int INFINITE_PICKUP_DELAY = 32767;
@@ -39,7 +40,7 @@ public class ItemEntity extends Entity {
    @Nullable
    private UUID thrower;
    @Nullable
-   private UUID owner;
+   private UUID target;
    public final float bobOffs;
 
    public ItemEntity(EntityType<? extends ItemEntity> var1, Level var2) {
@@ -72,8 +73,19 @@ public class ItemEntity extends Entity {
       return this.getItem().is(ItemTags.DAMPENS_VIBRATIONS);
    }
 
-   public Entity getThrowingEntity() {
-      return Util.mapNullable(this.getThrower(), this.level::getPlayerByUUID);
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Nullable
+   @Override
+   public Entity getOwner() {
+      if (this.thrower != null) {
+         Level var2 = this.level;
+         if (var2 instanceof ServerLevel var1) {
+            return var1.getEntity(this.thrower);
+         }
+      }
+
+      return null;
    }
 
    @Override
@@ -122,7 +134,7 @@ public class ItemEntity extends Entity {
             this.move(MoverType.SELF, this.getDeltaMovement());
             float var3 = 0.98F;
             if (this.onGround) {
-               var3 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0, this.getZ())).getBlock().getFriction() * 0.98F;
+               var3 = this.level.getBlockState(BlockPos.containing(this.getX(), this.getY() - 1.0, this.getZ())).getBlock().getFriction() * 0.98F;
             }
 
             this.setDeltaMovement(this.getDeltaMovement().multiply((double)var3, 0.98, (double)var3));
@@ -192,7 +204,7 @@ public class ItemEntity extends Entity {
    private void tryToMerge(ItemEntity var1) {
       ItemStack var2 = this.getItem();
       ItemStack var3 = var1.getItem();
-      if (Objects.equals(this.getOwner(), var1.getOwner()) && areMergable(var2, var3)) {
+      if (Objects.equals(this.target, var1.target) && areMergable(var2, var3)) {
          if (var3.getCount() < var2.getCount()) {
             merge(this, var2, var1, var3);
          } else {
@@ -244,7 +256,7 @@ public class ItemEntity extends Entity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.isExplosion()) {
+      } else if (!this.getItem().isEmpty() && this.getItem().is(Items.NETHER_STAR) && var1.is(DamageTypeTags.IS_EXPLOSION)) {
          return false;
       } else if (!this.getItem().getItem().canBeHurtBy(var1)) {
          return false;
@@ -268,12 +280,12 @@ public class ItemEntity extends Entity {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
       var1.putShort("PickupDelay", (short)this.pickupDelay);
-      if (this.getThrower() != null) {
-         var1.putUUID("Thrower", this.getThrower());
+      if (this.thrower != null) {
+         var1.putUUID("Thrower", this.thrower);
       }
 
-      if (this.getOwner() != null) {
-         var1.putUUID("Owner", this.getOwner());
+      if (this.target != null) {
+         var1.putUUID("Owner", this.target);
       }
 
       if (!this.getItem().isEmpty()) {
@@ -290,7 +302,7 @@ public class ItemEntity extends Entity {
       }
 
       if (var1.hasUUID("Owner")) {
-         this.owner = var1.getUUID("Owner");
+         this.target = var1.getUUID("Owner");
       }
 
       if (var1.hasUUID("Thrower")) {
@@ -310,7 +322,7 @@ public class ItemEntity extends Entity {
          ItemStack var2 = this.getItem();
          Item var3 = var2.getItem();
          int var4 = var2.getCount();
-         if (this.pickupDelay == 0 && (this.owner == null || this.owner.equals(var1.getUUID())) && var1.getInventory().add(var2)) {
+         if (this.pickupDelay == 0 && (this.target == null || this.target.equals(var1.getUUID())) && var1.getInventory().add(var2)) {
             var1.take(this, var4);
             if (var2.isEmpty()) {
                this.discard();
@@ -361,18 +373,8 @@ public class ItemEntity extends Entity {
       }
    }
 
-   @Nullable
-   public UUID getOwner() {
-      return this.owner;
-   }
-
-   public void setOwner(@Nullable UUID var1) {
-      this.owner = var1;
-   }
-
-   @Nullable
-   public UUID getThrower() {
-      return this.thrower;
+   public void setTarget(@Nullable UUID var1) {
+      this.target = var1;
    }
 
    public void setThrower(@Nullable UUID var1) {

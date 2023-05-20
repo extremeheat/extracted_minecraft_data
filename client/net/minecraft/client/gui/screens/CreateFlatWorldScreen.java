@@ -133,11 +133,6 @@ public class CreateFlatWorldScreen extends Screen {
       }
 
       @Override
-      protected boolean isFocused() {
-         return CreateFlatWorldScreen.this.getFocused() == this;
-      }
-
-      @Override
       protected int getScrollbarPosition() {
          return this.width - 70;
       }
@@ -218,14 +213,13 @@ public class CreateFlatWorldScreen extends Screen {
          private void blitSlot(PoseStack var1, int var2, int var3, ItemStack var4) {
             this.blitSlotBg(var1, var2 + 1, var3 + 1);
             if (!var4.isEmpty()) {
-               CreateFlatWorldScreen.this.itemRenderer.renderGuiItem(var4, var2 + 2, var3 + 2);
+               CreateFlatWorldScreen.this.itemRenderer.renderGuiItem(var1, var4, var2 + 2, var3 + 2);
             }
          }
 
          private void blitSlotBg(PoseStack var1, int var2, int var3) {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, GuiComponent.STATS_ICON_LOCATION);
-            GuiComponent.blit(var1, var2, var3, CreateFlatWorldScreen.this.getBlitOffset(), 0.0F, 0.0F, 18, 18, 128, 128);
+            GuiComponent.blit(var1, var2, var3, 0, 0.0F, 0.0F, 18, 18, 128, 128);
          }
       }
    }

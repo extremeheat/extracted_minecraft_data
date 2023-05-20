@@ -3,18 +3,15 @@ package com.mojang.blaze3d.platform;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 import net.minecraft.SharedConstants;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
@@ -78,28 +75,26 @@ public class TextureUtil {
       GlStateManager._bindTexture(var0);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static ByteBuffer readResource(InputStream var0) throws IOException {
-      ByteBuffer var1;
-      if (var0 instanceof FileInputStream var2) {
-         FileChannel var3 = var2.getChannel();
-         var1 = MemoryUtil.memAlloc((int)var3.size() + 1);
+      ReadableByteChannel var1 = Channels.newChannel(var0);
+      return var1 instanceof SeekableByteChannel var2 ? readResource(var1, (int)var2.size() + 1) : readResource(var1, 8192);
+   }
 
-         while(var3.read(var1) != -1) {
-         }
-      } else {
-         var1 = MemoryUtil.memAlloc(8192);
-         ReadableByteChannel var4 = Channels.newChannel(var0);
+   private static ByteBuffer readResource(ReadableByteChannel var0, int var1) throws IOException {
+      ByteBuffer var2 = MemoryUtil.memAlloc(var1);
 
-         while(var4.read(var1) != -1) {
-            if (var1.remaining() == 0) {
-               var1 = MemoryUtil.memRealloc(var1, var1.capacity() * 2);
+      try {
+         while(var0.read(var2) != -1) {
+            if (!var2.hasRemaining()) {
+               var2 = MemoryUtil.memRealloc(var2, var2.capacity() * 2);
             }
          }
-      }
 
-      return var1;
+         return var2;
+      } catch (IOException var4) {
+         MemoryUtil.memFree(var2);
+         throw var4;
+      }
    }
 
    public static void writeAsPNG(Path var0, String var1, int var2, int var3, int var4, int var5) {
@@ -119,19 +114,6 @@ public class TextureUtil {
             LOGGER.debug("Unable to write: ", var14);
          }
       }
-   }
-
-   public static void initTexture(IntBuffer var0, int var1, int var2) {
-      RenderSystem.assertOnRenderThread();
-      GL11.glPixelStorei(3312, 0);
-      GL11.glPixelStorei(3313, 0);
-      GL11.glPixelStorei(3314, 0);
-      GL11.glPixelStorei(3315, 0);
-      GL11.glPixelStorei(3316, 0);
-      GL11.glPixelStorei(3317, 4);
-      GL11.glTexImage2D(3553, 0, 6408, var1, var2, 0, 32993, 33639, var0);
-      GL11.glTexParameteri(3553, 10240, 9728);
-      GL11.glTexParameteri(3553, 10241, 9729);
    }
 
    public static Path getDebugTexturePath(Path var0) {

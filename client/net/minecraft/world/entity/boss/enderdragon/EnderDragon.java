@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -413,7 +414,7 @@ public class EnderDragon extends Mob implements Enemy {
             double var12 = Math.max(var8 * var8 + var10 * var10, 0.1);
             var7.push(var8 / var12 * 4.0, 0.20000000298023224, var10 / var12 * 4.0);
             if (!this.phaseManager.getCurrentPhase().isSitting() && ((LivingEntity)var7).getLastHurtByMobTimestamp() < var7.tickCount - 2) {
-               var7.hurt(DamageSource.mobAttack(this), 5.0F);
+               var7.hurt(this.damageSources().mobAttack(this), 5.0F);
                this.doEnchantDamageEffects(this, var7);
             }
          }
@@ -423,7 +424,7 @@ public class EnderDragon extends Mob implements Enemy {
    private void hurt(List<Entity> var1) {
       for(Entity var3 : var1) {
          if (var3 instanceof LivingEntity) {
-            var3.hurt(DamageSource.mobAttack(this), 10.0F);
+            var3.hurt(this.damageSources().mobAttack(this), 10.0F);
             this.doEnchantDamageEffects(this, var3);
          }
       }
@@ -481,7 +482,7 @@ public class EnderDragon extends Mob implements Enemy {
          if (var3 < 0.01F) {
             return false;
          } else {
-            if (var2.getEntity() instanceof Player || var2.isExplosion()) {
+            if (var2.getEntity() instanceof Player || var2.is(DamageTypeTags.ALWAYS_HURTS_ENDER_DRAGONS)) {
                float var4 = this.getHealth();
                this.reallyHurt(var2, var3);
                if (this.isDeadOrDying() && !this.phaseManager.getCurrentPhase().isSitting()) {
@@ -556,8 +557,6 @@ public class EnderDragon extends Mob implements Enemy {
       }
 
       this.move(MoverType.SELF, new Vec3(0.0, 0.10000000149011612, 0.0));
-      this.setYRot(this.getYRot() + 20.0F);
-      this.yBodyRot = this.getYRot();
       if (this.dragonDeathTime == 200 && this.level instanceof ServerLevel) {
          if (var4) {
             ExperienceOrb.award((ServerLevel)this.level, this.position(), Mth.floor((float)var5 * 0.2F));
@@ -852,7 +851,7 @@ public class EnderDragon extends Mob implements Enemy {
       }
 
       if (var1 == this.nearestCrystal) {
-         this.hurt(this.head, DamageSource.explosion(var1, var4), 10.0F);
+         this.hurt(this.head, this.damageSources().explosion(var1, var4), 10.0F);
       }
 
       this.phaseManager.getCurrentPhase().onCrystalDestroyed(var1, var2, var3, var4);
@@ -904,5 +903,10 @@ public class EnderDragon extends Mob implements Enemy {
    @Override
    public boolean canAttack(LivingEntity var1) {
       return var1.canBeSeenAsEnemy();
+   }
+
+   @Override
+   public double getPassengersRidingOffset() {
+      return (double)this.body.getBbHeight();
    }
 }

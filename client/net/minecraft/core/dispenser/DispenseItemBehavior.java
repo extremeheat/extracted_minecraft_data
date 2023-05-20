@@ -3,6 +3,7 @@ package net.minecraft.core.dispenser;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
@@ -204,11 +205,12 @@ public interface DispenseItemBehavior {
             Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
             BlockPos var4 = var1.getPos().relative(var3);
             ServerLevel var5 = var1.getLevel();
-            ArmorStand var6 = new ArmorStand(var5, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5);
-            EntityType.updateCustomEntityTag(var5, null, var6, var2.getTag());
-            var6.setYRot(var3.toYRot());
-            var5.addFreshEntity(var6);
-            var2.shrink(1);
+            Consumer var6 = EntityType.appendDefaultStackConfig(var1x -> var1x.setYRot(var3.toYRot()), var5, var2, null);
+            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var2.getTag(), var6, var4, MobSpawnType.DISPENSER, false, false);
+            if (var7 != null) {
+               var2.shrink(1);
+            }
+
             return var2;
          }
       });
@@ -337,6 +339,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.JUNGLE_BOAT, new BoatDispenseItemBehavior(Boat.Type.JUNGLE));
       DispenserBlock.registerBehavior(Items.DARK_OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK));
       DispenserBlock.registerBehavior(Items.ACACIA_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA));
+      DispenserBlock.registerBehavior(Items.CHERRY_BOAT, new BoatDispenseItemBehavior(Boat.Type.CHERRY));
       DispenserBlock.registerBehavior(Items.MANGROVE_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE));
       DispenserBlock.registerBehavior(Items.BAMBOO_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO));
       DispenserBlock.registerBehavior(Items.OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK, true));
@@ -345,6 +348,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.JUNGLE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.JUNGLE, true));
       DispenserBlock.registerBehavior(Items.DARK_OAK_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.DARK_OAK, true));
       DispenserBlock.registerBehavior(Items.ACACIA_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.ACACIA, true));
+      DispenserBlock.registerBehavior(Items.CHERRY_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.CHERRY, true));
       DispenserBlock.registerBehavior(Items.MANGROVE_CHEST_BOAT, new BoatDispenseItemBehavior(Boat.Type.MANGROVE, true));
       DispenserBlock.registerBehavior(Items.BAMBOO_CHEST_RAFT, new BoatDispenseItemBehavior(Boat.Type.BAMBOO, true));
       DefaultDispenseItemBehavior var9 = new DefaultDispenseItemBehavior() {
@@ -579,7 +583,7 @@ public interface DispenseItemBehavior {
             this.setSuccess(true);
             if (var6.is(Blocks.RESPAWN_ANCHOR)) {
                if (var6.getValue(RespawnAnchorBlock.CHARGE) != 4) {
-                  RespawnAnchorBlock.charge(var5, var4, var6);
+                  RespawnAnchorBlock.charge(null, var5, var4, var6);
                   var2.shrink(1);
                } else {
                   this.setSuccess(false);

@@ -22,11 +22,14 @@ import net.minecraft.server.packs.repository.PackSource;
 
 public class ClientPackSource extends BuiltInPackSource {
    private static final PackMetadataSection VERSION_METADATA_SECTION = new PackMetadataSection(
-      Component.translatable("resourcePack.vanilla.description"), PackType.CLIENT_RESOURCES.getVersion(SharedConstants.getCurrentVersion())
+      Component.translatable("resourcePack.vanilla.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES)
    );
    private static final BuiltInMetadata BUILT_IN_METADATA = BuiltInMetadata.of(PackMetadataSection.TYPE, VERSION_METADATA_SECTION);
    private static final Component VANILLA_NAME = Component.translatable("resourcePack.vanilla.name");
-   private static final Map<String, Component> SPECIAL_PACK_NAMES = Map.of("programmer_art", Component.translatable("resourcePack.programmer_art.name"));
+   public static final String HIGH_CONTRAST_PACK = "high_contrast";
+   private static final Map<String, Component> SPECIAL_PACK_NAMES = Map.of(
+      "programmer_art", Component.translatable("resourcePack.programmer_art.name"), "high_contrast", Component.translatable("resourcePack.high_contrast.name")
+   );
    private static final ResourceLocation PACKS_DIR = new ResourceLocation("minecraft", "resourcepacks");
    @Nullable
    private final Path externalAssetDir;

@@ -252,17 +252,21 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    public void copyArea(BoundingBox var1, Vec3i var2) {
-      ArrayList var3 = new ArrayList();
-      Predicate var4 = var1x -> var1.isInside(var1x.pos());
-      this.alreadyRunThisTick.stream().filter(var4).forEach(var3::add);
-      this.toRunThisTick.stream().filter(var4).forEach(var3::add);
-      this.forContainersInArea(var1, (var2x, var4x) -> var4x.getAll().filter(var4).forEach(var3::add));
-      LongSummaryStatistics var5 = var3.stream().mapToLong(ScheduledTick::subTickOrder).summaryStatistics();
-      long var6 = var5.getMin();
-      long var8 = var5.getMax();
-      var3.forEach(
+      this.copyAreaFrom(this, var1, var2);
+   }
+
+   public void copyAreaFrom(LevelTicks<T> var1, BoundingBox var2, Vec3i var3) {
+      ArrayList var4 = new ArrayList();
+      Predicate var5 = var1x -> var2.isInside(var1x.pos());
+      var1.alreadyRunThisTick.stream().filter(var5).forEach(var4::add);
+      var1.toRunThisTick.stream().filter(var5).forEach(var4::add);
+      var1.forContainersInArea(var2, (var2x, var4x) -> var4x.getAll().filter(var5).forEach(var4::add));
+      LongSummaryStatistics var6 = var4.stream().mapToLong(ScheduledTick::subTickOrder).summaryStatistics();
+      long var7 = var6.getMin();
+      long var9 = var6.getMax();
+      var4.forEach(
          var6x -> this.schedule(
-               new ScheduledTick<>((T)var6x.type(), var6x.pos().offset(var2), var6x.triggerTick(), var6x.priority(), var6x.subTickOrder() - var6 + var8 + 1L)
+               new ScheduledTick<>((T)var6x.type(), var6x.pos().offset(var3), var6x.triggerTick(), var6x.priority(), var6x.subTickOrder() - var7 + var9 + 1L)
             )
       );
    }

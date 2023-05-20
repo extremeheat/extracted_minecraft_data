@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;
@@ -110,7 +109,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
          double var5 = this.distanceToSqr(var4);
          if (var5 < 16.0) {
             if (var4.isSensitiveToWater()) {
-               var4.hurt(DamageSource.indirectMagic(this, this.getOwner()), 1.0F);
+               var4.hurt(this.damageSources().indirectMagic(this, this.getOwner()), 1.0F);
             }
 
             if (var4.isOnFire() && var4.isAlive()) {
@@ -134,9 +133,11 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
             if (var7.isAffectedByPotions()) {
                double var8 = this.distanceToSqr(var7);
                if (var8 < 16.0) {
-                  double var10 = 1.0 - Math.sqrt(var8) / 4.0;
+                  double var10;
                   if (var7 == var2) {
                      var10 = 1.0;
+                  } else {
+                     var10 = 1.0 - Math.sqrt(var8) / 4.0;
                   }
 
                   for(MobEffectInstance var13 : var1) {
@@ -144,9 +145,10 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
                      if (var14.isInstantenous()) {
                         var14.applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
                      } else {
-                        int var15 = (int)(var10 * (double)var13.getDuration() + 0.5);
-                        if (var15 > 20) {
-                           var7.addEffect(new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible()), var5);
+                        int var15 = var13.mapDuration(var2x -> (int)(var10 * (double)var2x + 0.5));
+                        MobEffectInstance var16 = new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible());
+                        if (!var16.endsWithin(20)) {
+                           var7.addEffect(var16, var5);
                         }
                      }
                   }

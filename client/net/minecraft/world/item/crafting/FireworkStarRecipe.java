@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Map;
 import net.minecraft.Util;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -95,30 +96,30 @@ public class FireworkStarRecipe extends CustomRecipe {
       return var3 && var4;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = new ItemStack(Items.FIREWORK_STAR);
-      CompoundTag var3 = var2.getOrCreateTagElement("Explosion");
-      FireworkRocketItem.Shape var4 = FireworkRocketItem.Shape.SMALL_BALL;
-      ArrayList var5 = Lists.newArrayList();
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ItemStack var3 = new ItemStack(Items.FIREWORK_STAR);
+      CompoundTag var4 = var3.getOrCreateTagElement("Explosion");
+      FireworkRocketItem.Shape var5 = FireworkRocketItem.Shape.SMALL_BALL;
+      ArrayList var6 = Lists.newArrayList();
 
-      for(int var6 = 0; var6 < var1.getContainerSize(); ++var6) {
-         ItemStack var7 = var1.getItem(var6);
-         if (!var7.isEmpty()) {
-            if (SHAPE_INGREDIENT.test(var7)) {
-               var4 = SHAPE_BY_ITEM.get(var7.getItem());
-            } else if (FLICKER_INGREDIENT.test(var7)) {
-               var3.putBoolean("Flicker", true);
-            } else if (TRAIL_INGREDIENT.test(var7)) {
-               var3.putBoolean("Trail", true);
-            } else if (var7.getItem() instanceof DyeItem) {
-               var5.add(((DyeItem)var7.getItem()).getDyeColor().getFireworkColor());
+      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
+         ItemStack var8 = var1.getItem(var7);
+         if (!var8.isEmpty()) {
+            if (SHAPE_INGREDIENT.test(var8)) {
+               var5 = SHAPE_BY_ITEM.get(var8.getItem());
+            } else if (FLICKER_INGREDIENT.test(var8)) {
+               var4.putBoolean("Flicker", true);
+            } else if (TRAIL_INGREDIENT.test(var8)) {
+               var4.putBoolean("Trail", true);
+            } else if (var8.getItem() instanceof DyeItem) {
+               var6.add(((DyeItem)var8.getItem()).getDyeColor().getFireworkColor());
             }
          }
       }
 
-      var3.putIntArray("Colors", var5);
-      var3.putByte("Type", (byte)var4.getId());
-      return var2;
+      var4.putIntArray("Colors", var6);
+      var4.putByte("Type", (byte)var5.getId());
+      return var3;
    }
 
    @Override
@@ -127,7 +128,7 @@ public class FireworkStarRecipe extends CustomRecipe {
    }
 
    @Override
-   public ItemStack getResultItem() {
+   public ItemStack getResultItem(RegistryAccess var1) {
       return new ItemStack(Items.FIREWORK_STAR);
    }
 

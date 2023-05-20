@@ -4,9 +4,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
+import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.client.renderer.texture.atlas.sources.SourceFilter;
 import net.minecraft.client.renderer.texture.atlas.sources.Unstitcher;
@@ -18,17 +18,16 @@ public class SpriteSources {
    public static final SpriteSourceType DIRECTORY = register("directory", DirectoryLister.CODEC);
    public static final SpriteSourceType FILTER = register("filter", SourceFilter.CODEC);
    public static final SpriteSourceType UNSTITCHER = register("unstitch", Unstitcher.CODEC);
+   public static final SpriteSourceType PALETTED_PERMUTATIONS = register("paletted_permutations", PalettedPermutations.CODEC);
    public static Codec<SpriteSourceType> TYPE_CODEC = ResourceLocation.CODEC.flatXmap(var0 -> {
       SpriteSourceType var1 = (SpriteSourceType)TYPES.get(var0);
-      return var1 != null ? DataResult.success(var1) : DataResult.error("Unknown type " + var0);
+      return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "Unknown type " + var0);
    }, var0 -> {
       ResourceLocation var1 = (ResourceLocation)TYPES.inverse().get(var0);
-      return var0 != null ? DataResult.success(var1) : DataResult.error("Unknown type " + var1);
+      return var0 != null ? DataResult.success(var1) : DataResult.error(() -> "Unknown type " + var1);
    });
    public static Codec<SpriteSource> CODEC = TYPE_CODEC.dispatch(SpriteSource::type, SpriteSourceType::codec);
-   public static Codec<List<SpriteSource>> FILE_CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(CODEC.listOf().fieldOf("sources").forGetter(var0x -> var0x)).apply(var0, var0x -> var0x)
-   );
+   public static Codec<List<SpriteSource>> FILE_CODEC = CODEC.listOf().fieldOf("sources").codec();
 
    public SpriteSources() {
       super();

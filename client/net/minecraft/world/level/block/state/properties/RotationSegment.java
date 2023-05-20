@@ -2,10 +2,11 @@ package net.minecraft.world.level.block.state.properties;
 
 import java.util.Optional;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
+import net.minecraft.util.SegmentedAnglePrecision;
 
 public class RotationSegment {
-   private static final int MAX_SEGMENT_INDEX = 15;
+   private static final SegmentedAnglePrecision SEGMENTED_ANGLE16 = new SegmentedAnglePrecision(4);
+   private static final int MAX_SEGMENT_INDEX = SEGMENTED_ANGLE16.getMask();
    private static final int NORTH_0 = 0;
    private static final int EAST_90 = 4;
    private static final int SOUTH_180 = 8;
@@ -16,15 +17,15 @@ public class RotationSegment {
    }
 
    public static int getMaxSegmentIndex() {
-      return 15;
+      return MAX_SEGMENT_INDEX;
    }
 
    public static int convertToSegment(Direction var0) {
-      return var0.getAxis().isVertical() ? 0 : var0.getOpposite().get2DDataValue() * 4;
+      return SEGMENTED_ANGLE16.fromDirection(var0);
    }
 
    public static int convertToSegment(float var0) {
-      return Mth.floor((double)((180.0F + var0) * 16.0F / 360.0F) + 0.5) & 15;
+      return SEGMENTED_ANGLE16.fromDegrees(var0);
    }
 
    public static Optional<Direction> convertToDirection(int var0) {
@@ -39,6 +40,6 @@ public class RotationSegment {
    }
 
    public static float convertToDegrees(int var0) {
-      return (float)var0 * 22.5F;
+      return SEGMENTED_ANGLE16.toDegrees(var0);
    }
 }

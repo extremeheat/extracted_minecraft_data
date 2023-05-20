@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -52,16 +53,13 @@ public class EditGameRulesScreen extends Screen {
    protected void init() {
       this.rules = new EditGameRulesScreen.RuleList(this.gameRules);
       this.addWidget(this.rules);
-      this.doneButton = this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.exitCallback.accept(Optional.of(this.gameRules)))
-            .bounds(this.width / 2 - 155, this.height - 29, 150, 20)
-            .build()
-      );
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.exitCallback.accept(Optional.empty()))
-            .bounds(this.width / 2 - 155 + 160, this.height - 29, 150, 20)
-            .build()
-      );
+      GridLayout.RowHelper var1 = new GridLayout().columnSpacing(10).createRowHelper(2);
+      this.doneButton = var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.exitCallback.accept(Optional.of(this.gameRules))).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.exitCallback.accept(Optional.empty())).build());
+      var1.getGrid().visitWidgets(var1x -> {
+      });
+      var1.getGrid().setPosition(this.width / 2 - 155, this.height - 28);
+      var1.getGrid().arrangeElements();
    }
 
    @Override

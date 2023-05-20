@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -49,7 +50,6 @@ public class PackSelectionScreen extends Screen {
    private static final int RELOAD_COOLDOWN = 20;
    private static final ResourceLocation DEFAULT_ICON = new ResourceLocation("textures/misc/unknown_pack.png");
    private final PackSelectionModel model;
-   private final Screen lastScreen;
    @Nullable
    private PackSelectionScreen.Watcher watcher;
    private long ticksToReload;
@@ -59,18 +59,16 @@ public class PackSelectionScreen extends Screen {
    private Button doneButton;
    private final Map<String, ResourceLocation> packIcons = Maps.newHashMap();
 
-   public PackSelectionScreen(Screen var1, PackRepository var2, Consumer<PackRepository> var3, Path var4, Component var5) {
-      super(var5);
-      this.lastScreen = var1;
-      this.model = new PackSelectionModel(this::populateLists, this::getPackIcon, var2, var3);
-      this.packDir = var4;
-      this.watcher = PackSelectionScreen.Watcher.create(var4);
+   public PackSelectionScreen(PackRepository var1, Consumer<PackRepository> var2, Path var3, Component var4) {
+      super(var4);
+      this.model = new PackSelectionModel(this::populateLists, this::getPackIcon, var1, var2);
+      this.packDir = var3;
+      this.watcher = PackSelectionScreen.Watcher.create(var3);
    }
 
    @Override
    public void onClose() {
       this.model.commit();
-      this.minecraft.setScreen(this.lastScreen);
       this.closeWatcher();
    }
 
@@ -130,8 +128,26 @@ public class PackSelectionScreen extends Screen {
 
    private void updateList(TransferableSelectionList var1, Stream<PackSelectionModel.Entry> var2) {
       var1.children().clear();
+      TransferableSelectionList.PackEntry var3 = var1.getSelected();
+      String var4 = var3 == null ? "" : var3.getPackId();
       var1.setSelected(null);
-      var2.forEach(var2x -> var1.children().add(new TransferableSelectionList.PackEntry(this.minecraft, var1, this, var2x)));
+      var2.forEach(var3x -> {
+         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
+         var1.children().add(var4x);
+         if (var3x.getId().equals(var4)) {
+            var1.setSelected(var4x);
+         }
+      });
+   }
+
+   public void updateFocus(TransferableSelectionList var1) {
+      TransferableSelectionList var2 = this.selectedPackList == var1 ? this.availablePackList : this.selectedPackList;
+      this.changeFocus(ComponentPath.path(var2.getFirstElement(), var2, this));
+   }
+
+   public void clearSelected() {
+      this.selectedPackList.setSelected(null);
+      this.availablePackList.setSelected(null);
    }
 
    private void reload() {
@@ -143,7 +159,7 @@ public class PackSelectionScreen extends Screen {
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(0);
+      this.renderDirtBackground(var1);
       this.availablePackList.render(var1, var2, var3, var4);
       this.selectedPackList.render(var1, var2, var3, var4);
       drawCenteredString(var1, this.font, this.title, this.width / 2, 8, 16777215);

@@ -20,9 +20,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.client.searchtree.SearchTree;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
@@ -81,22 +81,22 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       this.imageHeight = 136;
       this.imageWidth = 195;
       this.displayOperatorCreativeTab = var3;
-      CreativeModeTabs.tryRebuildTabContents(var2, this.hasPermissions(var1));
+      CreativeModeTabs.tryRebuildTabContents(var2, this.hasPermissions(var1), var1.level.registryAccess());
    }
 
    private boolean hasPermissions(Player var1) {
       return var1.canUseGameMasterBlocks() && this.displayOperatorCreativeTab;
    }
 
-   private void tryRefreshInvalidatedTabs(FeatureFlagSet var1, boolean var2) {
-      if (CreativeModeTabs.tryRebuildTabContents(var1, var2)) {
-         for(CreativeModeTab var4 : CreativeModeTabs.allTabs()) {
-            Collection var5 = var4.getDisplayItems();
-            if (var4 == selectedTab) {
-               if (var4.getType() == CreativeModeTab.Type.CATEGORY && var5.isEmpty()) {
+   private void tryRefreshInvalidatedTabs(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+      if (CreativeModeTabs.tryRebuildTabContents(var1, var2, var3)) {
+         for(CreativeModeTab var5 : CreativeModeTabs.allTabs()) {
+            Collection var6 = var5.getDisplayItems();
+            if (var5 == selectedTab) {
+               if (var5.getType() == CreativeModeTab.Type.CATEGORY && var6.isEmpty()) {
                   this.selectTab(CreativeModeTabs.getDefaultTab());
                } else {
-                  this.refreshCurrentTabContents(var5);
+                  this.refreshCurrentTabContents(var6);
                }
             }
          }
@@ -121,7 +121,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       super.containerTick();
       if (this.minecraft != null) {
          if (this.minecraft.player != null) {
-            this.tryRefreshInvalidatedTabs(this.minecraft.player.connection.enabledFeatures(), this.hasPermissions(this.minecraft.player));
+            this.tryRefreshInvalidatedTabs(
+               this.minecraft.player.connection.enabledFeatures(), this.hasPermissions(this.minecraft.player), this.minecraft.player.level.registryAccess()
+            );
          }
 
          if (!this.minecraft.gameMode.hasInfiniteItems()) {
@@ -414,7 +416,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    @Override
    protected void renderLabels(PoseStack var1, int var2, int var3) {
       if (selectedTab.showTitle()) {
-         RenderSystem.disableBlend();
          this.font.draw(var1, selectedTab.getDisplayName(), 8.0F, 6.0F, 4210752);
       }
    }
@@ -544,7 +545,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       if (selectedTab.getType() == CreativeModeTab.Type.SEARCH) {
          this.searchBox.setVisible(true);
          this.searchBox.setCanLoseFocus(false);
-         this.searchBox.setFocus(true);
+         this.searchBox.setFocused(true);
          if (var2 != var1) {
             this.searchBox.setValue("");
          }
@@ -553,7 +554,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       } else {
          this.searchBox.setVisible(false);
          this.searchBox.setCanLoseFocus(true);
-         this.searchBox.setFocus(false);
+         this.searchBox.setFocused(false);
          this.searchBox.setValue("");
       }
 
@@ -620,7 +621,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          this.renderTooltip(var1, TRASH_SLOT_TOOLTIP, var2, var3);
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       this.renderTooltip(var1, var2, var3);
    }
 
@@ -659,34 +659,28 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    @Override
    protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
       for(CreativeModeTab var6 : CreativeModeTabs.tabs()) {
-         RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION);
          if (var6 != selectedTab) {
             this.renderTabButton(var1, var6);
          }
       }
 
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, new ResourceLocation("textures/gui/container/creative_inventory/tab_" + selectedTab.getBackgroundSuffix()));
-      this.blit(var1, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+      blit(var1, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
       this.searchBox.render(var1, var3, var4, var2);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var8 = this.leftPos + 175;
       int var9 = this.topPos + 18;
       int var7 = var9 + 112;
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
       RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION);
       if (selectedTab.canScroll()) {
-         this.blit(var1, var8, var9 + (int)((float)(var7 - var9 - 17) * this.scrollOffs), 232 + (this.canScroll() ? 0 : 12), 0, 12, 15);
+         blit(var1, var8, var9 + (int)((float)(var7 - var9 - 17) * this.scrollOffs), 232 + (this.canScroll() ? 0 : 12), 0, 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-         InventoryScreen.renderEntityInInventory(
-            this.leftPos + 88, this.topPos + 45, 20, (float)(this.leftPos + 88 - var3), (float)(this.topPos + 45 - 30 - var4), this.minecraft.player
+         InventoryScreen.renderEntityInInventoryFollowsMouse(
+            var1, this.leftPos + 88, this.topPos + 45, 20, (float)(this.leftPos + 88 - var3), (float)(this.topPos + 45 - 30 - var4), this.minecraft.player
          );
       }
    }
@@ -750,14 +744,15 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          var9 += this.imageHeight - 4;
       }
 
-      this.blit(var1, var8, var9, var6, var7, 26, 32);
-      this.itemRenderer.blitOffset = 100.0F;
+      blit(var1, var8, var9, var6, var7, 26, 32);
+      var1.pushPose();
+      var1.translate(0.0F, 0.0F, 100.0F);
       var8 += 5;
       var9 += 8 + (var4 ? 1 : -1);
       ItemStack var11 = var2.getIconItem();
-      this.itemRenderer.renderAndDecorateItem(var11, var8, var9);
-      this.itemRenderer.renderGuiItemDecorations(this.font, var11, var8, var9);
-      this.itemRenderer.blitOffset = 0.0F;
+      this.itemRenderer.renderAndDecorateItem(var1, var11, var8, var9);
+      this.itemRenderer.renderGuiItemDecorations(var1, this.font, var11, var8, var9);
+      var1.popPose();
    }
 
    public boolean isInventoryOpen() {
@@ -876,7 +871,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          if (var2 >= this.slots.size() - 9 && var2 < this.slots.size()) {
             Slot var3 = this.slots.get(var2);
             if (var3 != null && var3.hasItem()) {
-               var3.set(ItemStack.EMPTY);
+               var3.setByPlayer(ItemStack.EMPTY);
             }
          }
 
@@ -930,6 +925,11 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       @Override
       public boolean hasItem() {
          return this.target.hasItem();
+      }
+
+      @Override
+      public void setByPlayer(ItemStack var1) {
+         this.target.setByPlayer(var1);
       }
 
       @Override

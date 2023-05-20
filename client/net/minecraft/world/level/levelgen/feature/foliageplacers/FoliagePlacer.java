@@ -4,8 +4,8 @@ import com.mojang.datafixers.Products.P2;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
-import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -40,7 +40,7 @@ public abstract class FoliagePlacer {
 
    public void createFoliage(
       LevelSimulatedReader var1,
-      BiConsumer<BlockPos, BlockState> var2,
+      FoliagePlacer.FoliageSetter var2,
       RandomSource var3,
       TreeConfiguration var4,
       int var5,
@@ -53,7 +53,7 @@ public abstract class FoliagePlacer {
 
    protected abstract void createFoliage(
       LevelSimulatedReader var1,
-      BiConsumer<BlockPos, BlockState> var2,
+      FoliagePlacer.FoliageSetter var2,
       RandomSource var3,
       TreeConfiguration var4,
       int var5,
@@ -90,14 +90,7 @@ public abstract class FoliagePlacer {
    }
 
    protected void placeLeavesRow(
-      LevelSimulatedReader var1,
-      BiConsumer<BlockPos, BlockState> var2,
-      RandomSource var3,
-      TreeConfiguration var4,
-      BlockPos var5,
-      int var6,
-      int var7,
-      boolean var8
+      LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, BlockPos var5, int var6, int var7, boolean var8
    ) {
       int var9 = var8 ? 1 : 0;
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
@@ -112,16 +105,53 @@ public abstract class FoliagePlacer {
       }
    }
 
-   protected static void tryPlaceLeaf(
-      LevelSimulatedReader var0, BiConsumer<BlockPos, BlockState> var1, RandomSource var2, TreeConfiguration var3, BlockPos var4
+   protected final void placeLeavesRowWithHangingLeavesBelow(
+      LevelSimulatedReader var1,
+      FoliagePlacer.FoliageSetter var2,
+      RandomSource var3,
+      TreeConfiguration var4,
+      BlockPos var5,
+      int var6,
+      int var7,
+      boolean var8,
+      float var9,
+      float var10
    ) {
-      if (TreeFeature.validTreePos(var0, var4)) {
+      this.placeLeavesRow(var1, var2, var3, var4, var5, var6, var7, var8);
+      int var11 = var8 ? 1 : 0;
+      BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
+
+      for(Direction var14 : Direction.Plane.HORIZONTAL) {
+         Direction var15 = var14.getClockWise();
+         int var16 = var15.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
+         var12.setWithOffset(var5, 0, var7 - 1, 0).move(var15, var16).move(var14, -var6);
+         int var17 = -var6;
+
+         while(var17 < var6 + var11) {
+            boolean var18 = var2.isSet(var12.move(Direction.UP));
+            var12.move(Direction.DOWN);
+            if (var18 && !(var3.nextFloat() > var9) && tryPlaceLeaf(var1, var2, var3, var4, var12) && !(var3.nextFloat() > var10)) {
+               tryPlaceLeaf(var1, var2, var3, var4, var12.move(Direction.DOWN));
+               var12.move(Direction.UP);
+            }
+
+            ++var17;
+            var12.move(var14);
+         }
+      }
+   }
+
+   protected static boolean tryPlaceLeaf(LevelSimulatedReader var0, FoliagePlacer.FoliageSetter var1, RandomSource var2, TreeConfiguration var3, BlockPos var4) {
+      if (!TreeFeature.validTreePos(var0, var4)) {
+         return false;
+      } else {
          BlockState var5 = var3.foliageProvider.getState(var2, var4);
          if (var5.hasProperty(BlockStateProperties.WATERLOGGED)) {
             var5 = var5.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var0.isFluidAtPosition(var4, var0x -> var0x.isSourceOfType(Fluids.WATER))));
          }
 
-         var1.accept(var4, var5);
+         var1.set(var4, var5);
+         return true;
       }
    }
 
@@ -148,5 +178,11 @@ public abstract class FoliagePlacer {
       public boolean doubleTrunk() {
          return this.doubleTrunk;
       }
+   }
+
+   public interface FoliageSetter {
+      void set(BlockPos var1, BlockState var2);
+
+      boolean isSet(BlockPos var1);
    }
 }

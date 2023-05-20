@@ -12,15 +12,22 @@ public class CommonComponents {
    public static final Component GUI_YES = Component.translatable("gui.yes");
    public static final Component GUI_NO = Component.translatable("gui.no");
    public static final Component GUI_PROCEED = Component.translatable("gui.proceed");
+   public static final Component GUI_CONTINUE = Component.translatable("gui.continue");
    public static final Component GUI_BACK = Component.translatable("gui.back");
+   public static final Component GUI_TO_TITLE = Component.translatable("gui.toTitle");
    public static final Component GUI_ACKNOWLEDGE = Component.translatable("gui.acknowledge");
    public static final Component CONNECT_FAILED = Component.translatable("connect.failed");
    public static final Component NEW_LINE = Component.literal("\n");
    public static final Component NARRATION_SEPARATOR = Component.literal(". ");
    public static final Component ELLIPSIS = Component.literal("...");
+   public static final Component SPACE = space();
 
    public CommonComponents() {
       super();
+   }
+
+   public static MutableComponent space() {
+      return Component.literal(" ");
    }
 
    public static MutableComponent days(long var0) {
@@ -47,8 +54,17 @@ public class CommonComponents {
       return Component.translatable("options.generic_value", var0, var1);
    }
 
-   public static MutableComponent joinForNarration(Component var0, Component var1) {
-      return Component.empty().append(var0).append(NARRATION_SEPARATOR).append(var1);
+   public static MutableComponent joinForNarration(Component... var0) {
+      MutableComponent var1 = Component.empty();
+
+      for(int var2 = 0; var2 < var0.length; ++var2) {
+         var1.append(var0[var2]);
+         if (var2 != var0.length - 1) {
+            var1.append(NARRATION_SEPARATOR);
+         }
+      }
+
+      return var1;
    }
 
    public static Component joinLines(Component... var0) {

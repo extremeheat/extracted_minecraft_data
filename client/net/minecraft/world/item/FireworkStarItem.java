@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.Level;
@@ -31,7 +32,9 @@ public class FireworkStarItem extends Item {
 
       int[] var4 = var0.getIntArray("FadeColors");
       if (var4.length > 0) {
-         var1.add(appendColors(Component.translatable("item.minecraft.firework_star.fade_to").append(" ").withStyle(ChatFormatting.GRAY), var4));
+         var1.add(
+            appendColors(Component.translatable("item.minecraft.firework_star.fade_to").append(CommonComponents.SPACE).withStyle(ChatFormatting.GRAY), var4)
+         );
       }
 
       if (var0.getBoolean("Trail")) {

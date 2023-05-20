@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
+import net.minecraft.world.item.ItemDisplayContext;
 
 public class ItemTransforms {
    public static final ItemTransforms NO_TRANSFORMS = new ItemTransforms();
@@ -64,30 +65,21 @@ public class ItemTransforms {
       this.fixed = var8;
    }
 
-   public ItemTransform getTransform(ItemTransforms.TransformType var1) {
-      switch(var1) {
-         case THIRD_PERSON_LEFT_HAND:
-            return this.thirdPersonLeftHand;
-         case THIRD_PERSON_RIGHT_HAND:
-            return this.thirdPersonRightHand;
-         case FIRST_PERSON_LEFT_HAND:
-            return this.firstPersonLeftHand;
-         case FIRST_PERSON_RIGHT_HAND:
-            return this.firstPersonRightHand;
-         case HEAD:
-            return this.head;
-         case GUI:
-            return this.gui;
-         case GROUND:
-            return this.ground;
-         case FIXED:
-            return this.fixed;
-         default:
-            return ItemTransform.NO_TRANSFORM;
-      }
+   public ItemTransform getTransform(ItemDisplayContext var1) {
+      return switch(var1) {
+         case THIRD_PERSON_LEFT_HAND -> this.thirdPersonLeftHand;
+         case THIRD_PERSON_RIGHT_HAND -> this.thirdPersonRightHand;
+         case FIRST_PERSON_LEFT_HAND -> this.firstPersonLeftHand;
+         case FIRST_PERSON_RIGHT_HAND -> this.firstPersonRightHand;
+         case HEAD -> this.head;
+         case GUI -> this.gui;
+         case GROUND -> this.ground;
+         case FIXED -> this.fixed;
+         default -> ItemTransform.NO_TRANSFORM;
+      };
    }
 
-   public boolean hasTransform(ItemTransforms.TransformType var1) {
+   public boolean hasTransform(ItemDisplayContext var1) {
       return this.getTransform(var1) != ItemTransform.NO_TRANSFORM;
    }
 
@@ -98,46 +90,28 @@ public class ItemTransforms {
 
       public ItemTransforms deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
          JsonObject var4 = var1.getAsJsonObject();
-         ItemTransform var5 = this.getTransform(var3, var4, "thirdperson_righthand");
-         ItemTransform var6 = this.getTransform(var3, var4, "thirdperson_lefthand");
+         ItemTransform var5 = this.getTransform(var3, var4, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+         ItemTransform var6 = this.getTransform(var3, var4, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
          if (var6 == ItemTransform.NO_TRANSFORM) {
             var6 = var5;
          }
 
-         ItemTransform var7 = this.getTransform(var3, var4, "firstperson_righthand");
-         ItemTransform var8 = this.getTransform(var3, var4, "firstperson_lefthand");
+         ItemTransform var7 = this.getTransform(var3, var4, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+         ItemTransform var8 = this.getTransform(var3, var4, ItemDisplayContext.FIRST_PERSON_LEFT_HAND);
          if (var8 == ItemTransform.NO_TRANSFORM) {
             var8 = var7;
          }
 
-         ItemTransform var9 = this.getTransform(var3, var4, "head");
-         ItemTransform var10 = this.getTransform(var3, var4, "gui");
-         ItemTransform var11 = this.getTransform(var3, var4, "ground");
-         ItemTransform var12 = this.getTransform(var3, var4, "fixed");
+         ItemTransform var9 = this.getTransform(var3, var4, ItemDisplayContext.HEAD);
+         ItemTransform var10 = this.getTransform(var3, var4, ItemDisplayContext.GUI);
+         ItemTransform var11 = this.getTransform(var3, var4, ItemDisplayContext.GROUND);
+         ItemTransform var12 = this.getTransform(var3, var4, ItemDisplayContext.FIXED);
          return new ItemTransforms(var6, var5, var8, var7, var9, var10, var11, var12);
       }
 
-      private ItemTransform getTransform(JsonDeserializationContext var1, JsonObject var2, String var3) {
-         return var2.has(var3) ? (ItemTransform)var1.deserialize(var2.get(var3), ItemTransform.class) : ItemTransform.NO_TRANSFORM;
-      }
-   }
-
-   public static enum TransformType {
-      NONE,
-      THIRD_PERSON_LEFT_HAND,
-      THIRD_PERSON_RIGHT_HAND,
-      FIRST_PERSON_LEFT_HAND,
-      FIRST_PERSON_RIGHT_HAND,
-      HEAD,
-      GUI,
-      GROUND,
-      FIXED;
-
-      private TransformType() {
-      }
-
-      public boolean firstPerson() {
-         return this == FIRST_PERSON_LEFT_HAND || this == FIRST_PERSON_RIGHT_HAND;
+      private ItemTransform getTransform(JsonDeserializationContext var1, JsonObject var2, ItemDisplayContext var3) {
+         String var4 = var3.getSerializedName();
+         return var2.has(var4) ? (ItemTransform)var1.deserialize(var2.get(var4), ItemTransform.class) : ItemTransform.NO_TRANSFORM;
       }
    }
 }

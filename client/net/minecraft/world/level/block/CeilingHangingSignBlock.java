@@ -53,7 +53,7 @@ public class CeilingHangingSignBlock extends SignBlock {
    );
 
    public CeilingHangingSignBlock(BlockBehaviour.Properties var1, WoodType var2) {
-      super(var1, var2);
+      super(var1.sound(var2.hangingSignSoundType()), var2);
       this.registerDefaultState(
          this.stateDefinition
             .any()
@@ -104,7 +104,7 @@ public class CeilingHangingSignBlock extends SignBlock {
          }
       }
 
-      int var11 = !var8 ? RotationSegment.convertToSegment(var7) : RotationSegment.convertToSegment(var1.getRotation());
+      int var11 = !var8 ? RotationSegment.convertToSegment(var7.getOpposite()) : RotationSegment.convertToSegment(var1.getRotation() + 180.0F);
       return this.defaultBlockState()
          .setValue(ATTACHED, Boolean.valueOf(var8))
          .setValue(ROTATION, Integer.valueOf(var11))

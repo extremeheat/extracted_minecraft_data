@@ -183,7 +183,7 @@ public class PotionUtils {
                var6 = Component.translatable("potion.withAmplifier", var6, Component.translatable("potion.potency." + var5.getAmplifier()));
             }
 
-            if (var5.getDuration() > 20) {
+            if (!var5.endsWithin(20)) {
                var6 = Component.translatable("potion.withDuration", var6, MobEffectUtil.formatDuration(var5, var2));
             }
 

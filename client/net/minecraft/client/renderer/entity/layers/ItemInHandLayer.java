@@ -6,10 +6,10 @@ import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & ArmedModel> extends RenderLayer<T, M> {
@@ -32,14 +32,14 @@ public class ItemInHandLayer<T extends LivingEntity, M extends EntityModel<T> & 
             var1.scale(0.5F, 0.5F, 0.5F);
          }
 
-         this.renderArmWithItem(var4, var13, ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, var1, var2, var3);
-         this.renderArmWithItem(var4, var12, ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, var1, var2, var3);
+         this.renderArmWithItem(var4, var13, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, HumanoidArm.RIGHT, var1, var2, var3);
+         this.renderArmWithItem(var4, var12, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, HumanoidArm.LEFT, var1, var2, var3);
          var1.popPose();
       }
    }
 
    protected void renderArmWithItem(
-      LivingEntity var1, ItemStack var2, ItemTransforms.TransformType var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7
+      LivingEntity var1, ItemStack var2, ItemDisplayContext var3, HumanoidArm var4, PoseStack var5, MultiBufferSource var6, int var7
    ) {
       if (!var2.isEmpty()) {
          var5.pushPose();

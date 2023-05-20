@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.time.Duration;
 import java.time.Instant;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.multiplayer.chat.report.ReportReason;
+import net.minecraft.client.multiplayer.chat.report.BanReason;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Style;
 import org.apache.commons.lang3.StringUtils;
 
 public class BanNoticeScreen {
-   public static final String URL_MODERATION = "https://aka.ms/mcjavamoderation";
    private static final Component TEMPORARY_BAN_TITLE = Component.translatable("gui.banned.title.temporary").withStyle(ChatFormatting.BOLD);
    private static final Component PERMANENT_BAN_TITLE = Component.translatable("gui.banned.title.permanent").withStyle(ChatFormatting.BOLD);
 
@@ -43,10 +42,10 @@ public class BanNoticeScreen {
       String var2 = var0.reasonMessage();
       if (StringUtils.isNumeric(var1)) {
          int var3 = Integer.parseInt(var1);
-         Component var4 = ReportReason.getTranslationById(var3);
+         BanReason var4 = BanReason.byId(var3);
          MutableComponent var5;
          if (var4 != null) {
-            var5 = ComponentUtils.mergeStyles(var4.copy(), Style.EMPTY.withBold(true));
+            var5 = ComponentUtils.mergeStyles(var4.title().copy(), Style.EMPTY.withBold(true));
          } else if (var2 != null) {
             var5 = Component.translatable("gui.banned.description.reason_id_message", var3, var2).withStyle(ChatFormatting.BOLD);
          } else {

@@ -7,7 +7,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -15,17 +20,17 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.util.Mth;
 import net.minecraft.world.flag.FeatureFlags;
 
 public class ConfirmExperimentalFeaturesScreen extends Screen {
    private static final Component TITLE = Component.translatable("selectWorld.experimental.title");
    private static final Component MESSAGE = Component.translatable("selectWorld.experimental.message");
    private static final Component DETAILS_BUTTON = Component.translatable("selectWorld.experimental.details");
-   private static final int MARGIN = 20;
+   private static final int COLUMN_SPACING = 10;
+   private static final int DETAILS_BUTTON_WIDTH = 100;
    private final BooleanConsumer callback;
    final Collection<Pack> enabledPacks;
-   private MultiLineLabel multilineMessage = MultiLineLabel.EMPTY;
+   private final GridLayout layout = new GridLayout().columnSpacing(10).rowSpacing(20);
 
    public ConfirmExperimentalFeaturesScreen(Collection<Pack> var1, BooleanConsumer var2) {
       super(TITLE);
@@ -38,38 +43,33 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), MESSAGE);
    }
 
-   private int messageHeight() {
-      return this.multilineMessage.getLineCount() * 9;
-   }
-
-   private int titleTop() {
-      int var1 = (this.height - this.messageHeight()) / 2;
-      return Mth.clamp(var1 - 20 - 9, 10, 80);
-   }
-
    @Override
    protected void init() {
       super.init();
-      this.multilineMessage = MultiLineLabel.create(this.font, MESSAGE, this.width - 50);
-      int var1 = Mth.clamp(this.titleTop() + 20 + this.messageHeight() + 20, this.height / 6 + 96, this.height - 24);
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_PROCEED, var1x -> this.callback.accept(true)).bounds(this.width / 2 - 50 - 105, var1, 100, 20).build()
+      GridLayout.RowHelper var1 = this.layout.createRowHelper(2);
+      LayoutSettings var2 = var1.newCellSettings().alignHorizontallyCenter();
+      var1.addChild(new StringWidget(this.title, this.font), 2, var2);
+      MultiLineTextWidget var3 = var1.addChild(new MultiLineTextWidget(MESSAGE, this.font).setCentered(true), 2, var2);
+      var3.setMaxWidth(310);
+      var1.addChild(
+         Button.builder(DETAILS_BUTTON, var1x -> this.minecraft.setScreen(new ConfirmExperimentalFeaturesScreen.DetailsScreen())).width(100).build(), 2, var2
       );
-      this.addRenderableWidget(
-         Button.builder(DETAILS_BUTTON, var1x -> this.minecraft.setScreen(new ConfirmExperimentalFeaturesScreen.DetailsScreen()))
-            .bounds(this.width / 2 - 50, var1, 100, 20)
-            .build()
-      );
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_BACK, var1x -> this.callback.accept(false)).bounds(this.width / 2 - 50 + 105, var1, 100, 20).build()
-      );
+      var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, var1x -> this.callback.accept(true)).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.callback.accept(false)).build());
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.layout.arrangeElements();
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      FrameLayout.alignInRectangle(this.layout, 0, 0, this.width, this.height, 0.5F, 0.5F);
    }
 
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, this.titleTop(), 16777215);
-      this.multilineMessage.renderCentered(var1, this.width / 2, this.titleTop() + 20);
       super.render(var1, var2, var3, var4);
    }
 
@@ -125,11 +125,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          @Override
          public int getRowWidth() {
             return this.width * 3 / 4;
-         }
-
-         @Override
-         public boolean isFocused() {
-            return DetailsScreen.this.getFocused() == this;
          }
       }
 

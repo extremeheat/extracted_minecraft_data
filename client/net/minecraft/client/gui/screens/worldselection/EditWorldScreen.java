@@ -1,20 +1,11 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.stream.JsonWriter;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.DataResult.PartialResult;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Function;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -23,14 +14,10 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.RegistryOps;
-import net.minecraft.server.WorldStem;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -39,7 +26,6 @@ import org.slf4j.Logger;
 
 public class EditWorldScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Gson WORLD_GEN_SETTINGS_GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().disableHtmlEscaping().create();
    private static final Component NAME_LABEL = Component.translatable("selectWorld.enterName");
    private Button renameButton;
    private final BooleanConsumer callback;
@@ -59,7 +45,16 @@ public class EditWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      Button var1 = this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit.resetIcon"), var1x -> {
+      this.renameButton = Button.builder(Component.translatable("selectWorld.edit.save"), var1x -> this.onRename())
+         .bounds(this.width / 2 - 100, this.height / 4 + 144 + 5, 98, 20)
+         .build();
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 38, 200, 20, Component.translatable("selectWorld.enterName"));
+      LevelSummary var1 = this.levelAccess.getSummary();
+      String var2 = var1 == null ? "" : var1.getLevelName();
+      this.nameEdit.setValue(var2);
+      this.nameEdit.setResponder(var1x -> this.renameButton.active = !var1x.trim().isEmpty());
+      this.addWidget(this.nameEdit);
+      Button var3 = this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit.resetIcon"), var1x -> {
          this.levelAccess.getIconFile().ifPresent(var0 -> FileUtils.deleteQuietly(var0.toFile()));
          var1x.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 0 + 5, 200, 20).build());
@@ -101,79 +96,13 @@ public class EditWorldScreen extends Screen {
             .bounds(this.width / 2 - 100, this.height / 4 + 96 + 5, 200, 20)
             .build()
       );
-      this.addRenderableWidget(
-         Button.builder(
-               Component.translatable("selectWorld.edit.export_worldgen_settings"),
-               var1x -> {
-                  DataResult var2x;
-                  try (WorldStem var3x = this.minecraft.createWorldOpenFlows().loadWorldStem(this.levelAccess, false)) {
-                     RegistryAccess.Frozen var4 = var3x.registries().compositeAccess();
-                     RegistryOps var5 = RegistryOps.create(JsonOps.INSTANCE, var4);
-                     DataResult var6 = WorldGenSettings.encode(var5, var3x.worldData().worldGenOptions(), var4);
-                     var2x = var6.flatMap(var1xx -> {
-                        Path var2xx = this.levelAccess.getLevelPath(LevelResource.ROOT).resolve("worldgen_settings_export.json");
-         
-                        try {
-                           JsonWriter var3xx = WORLD_GEN_SETTINGS_GSON.newJsonWriter(Files.newBufferedWriter(var2xx, StandardCharsets.UTF_8));
-         
-                           try {
-                              WORLD_GEN_SETTINGS_GSON.toJson(var1xx, var3xx);
-                           } catch (Throwable var7) {
-                              if (var3xx != null) {
-                                 try {
-                                    var3xx.close();
-                                 } catch (Throwable var6x) {
-                                    var7.addSuppressed(var6x);
-                                 }
-                              }
-         
-                              throw var7;
-                           }
-         
-                           if (var3xx != null) {
-                              var3xx.close();
-                           }
-                        } catch (JsonIOException | IOException var8) {
-                           return DataResult.error("Error writing file: " + var8.getMessage());
-                        }
-         
-                        return DataResult.success(var2xx.toString());
-                     });
-                  } catch (Exception var9) {
-                     LOGGER.warn("Could not parse level data", var9);
-                     var2x = DataResult.error("Could not parse level data: " + var9.getMessage());
-                  }
-         
-                  MutableComponent var10 = Component.literal((String)var2x.get().map(Function.identity(), PartialResult::message));
-                  MutableComponent var11 = Component.translatable(
-                     var2x.result().isPresent() ? "selectWorld.edit.export_worldgen_settings.success" : "selectWorld.edit.export_worldgen_settings.failure"
-                  );
-                  var2x.error().ifPresent(var0 -> LOGGER.error("Error exporting world settings: {}", var0));
-                  this.minecraft
-                     .getToasts()
-                     .addToast(SystemToast.multiline(this.minecraft, SystemToast.SystemToastIds.WORLD_GEN_SETTINGS_TRANSFER, var11, var10));
-               }
-            )
-            .bounds(this.width / 2 - 100, this.height / 4 + 120 + 5, 200, 20)
-            .build()
-      );
-      this.renameButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("selectWorld.edit.save"), var1x -> this.onRename())
-            .bounds(this.width / 2 - 100, this.height / 4 + 144 + 5, 98, 20)
-            .build()
-      );
+      this.addRenderableWidget(this.renameButton);
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.callback.accept(false))
             .bounds(this.width / 2 + 2, this.height / 4 + 144 + 5, 98, 20)
             .build()
       );
-      var1.active = this.levelAccess.getIconFile().filter(var0 -> Files.isRegularFile(var0)).isPresent();
-      LevelSummary var2 = this.levelAccess.getSummary();
-      String var3 = var2 == null ? "" : var2.getLevelName();
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 38, 200, 20, Component.translatable("selectWorld.enterName"));
-      this.nameEdit.setValue(var3);
-      this.nameEdit.setResponder(var1x -> this.renameButton.active = !var1x.trim().isEmpty());
-      this.addWidget(this.nameEdit);
+      var3.active = this.levelAccess.getIconFile().filter(var0 -> Files.isRegularFile(var0)).isPresent();
       this.setInitialFocus(this.nameEdit);
    }
 

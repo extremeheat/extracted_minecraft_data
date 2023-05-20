@@ -59,7 +59,7 @@ public class FlatLevelGeneratorSettings {
 
    private static DataResult<FlatLevelGeneratorSettings> validateHeight(FlatLevelGeneratorSettings var0) {
       int var1 = var0.layersInfo.stream().mapToInt(FlatLayerInfo::getHeight).sum();
-      return var1 > DimensionType.Y_SIZE ? DataResult.error("Sum of layer heights is > " + DimensionType.Y_SIZE, var0) : DataResult.success(var0);
+      return var1 > DimensionType.Y_SIZE ? DataResult.error(() -> "Sum of layer heights is > " + DimensionType.Y_SIZE, var0) : DataResult.success(var0);
    }
 
    private FlatLevelGeneratorSettings(

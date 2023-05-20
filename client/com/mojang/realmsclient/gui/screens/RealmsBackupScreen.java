@@ -246,7 +246,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          int var5 = var3 + 12;
          int var6 = var4 - 12;
          int var7 = this.font.width(var2);
-         this.fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+         fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
          this.font.drawShadow(var1, var2, (float)var5, (float)var6, 16777215);
       }
    }
@@ -263,11 +263,6 @@ public class RealmsBackupScreen extends RealmsScreen {
       @Override
       public int getRowWidth() {
          return (int)((double)this.width * 0.93);
-      }
-
-      @Override
-      public boolean isFocused() {
-         return RealmsBackupScreen.this.getFocused() == this;
       }
 
       @Override
@@ -291,7 +286,7 @@ public class RealmsBackupScreen extends RealmsScreen {
             int var9 = var8 / this.itemHeight;
             if (var1 >= (double)var6 && var1 <= (double)var7 && var9 >= 0 && var8 >= 0 && var9 < this.getItemCount()) {
                this.selectItem(var9);
-               this.itemClicked(var8, var9, var1, var3, this.width);
+               this.itemClicked(var8, var9, var1, var3, this.width, var5);
             }
 
             return true;
@@ -306,18 +301,18 @@ public class RealmsBackupScreen extends RealmsScreen {
       }
 
       @Override
-      public void itemClicked(int var1, int var2, double var3, double var5, int var7) {
-         int var8 = this.width - 35;
-         int var9 = var2 * this.itemHeight + 36 - (int)this.getScrollAmount();
-         int var10 = var8 + 10;
-         int var11 = var9 - 3;
-         if (var3 >= (double)var8 && var3 <= (double)(var8 + 9) && var5 >= (double)var9 && var5 <= (double)(var9 + 9)) {
+      public void itemClicked(int var1, int var2, double var3, double var5, int var7, int var8) {
+         int var9 = this.width - 35;
+         int var10 = var2 * this.itemHeight + 36 - (int)this.getScrollAmount();
+         int var11 = var9 + 10;
+         int var12 = var10 - 3;
+         if (var3 >= (double)var9 && var3 <= (double)(var9 + 9) && var5 >= (double)var10 && var5 <= (double)(var10 + 9)) {
             if (!RealmsBackupScreen.this.backups.get(var2).changeList.isEmpty()) {
                RealmsBackupScreen.this.selectedBackup = -1;
                RealmsBackupScreen.lastScrollPosition = (int)this.getScrollAmount();
                this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, RealmsBackupScreen.this.backups.get(var2)));
             }
-         } else if (var3 >= (double)var10 && var3 < (double)(var10 + 13) && var5 >= (double)var11 && var5 < (double)(var11 + 15)) {
+         } else if (var3 >= (double)var11 && var3 < (double)(var11 + 13) && var5 >= (double)var12 && var5 < (double)(var12 + 15)) {
             RealmsBackupScreen.lastScrollPosition = (int)this.getScrollAmount();
             RealmsBackupScreen.this.restoreClicked(var2);
          }
@@ -379,7 +374,6 @@ public class RealmsBackupScreen extends RealmsScreen {
       private void drawRestore(PoseStack var1, int var2, int var3, int var4, int var5) {
          boolean var6 = var4 >= var2 && var4 <= var2 + 12 && var5 >= var3 && var5 <= var3 + 14 && var5 < RealmsBackupScreen.this.height - 15 && var5 > 32;
          RenderSystem.setShaderTexture(0, RealmsBackupScreen.RESTORE_ICON_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          var1.pushPose();
          var1.scale(0.5F, 0.5F, 0.5F);
          float var7 = var6 ? 28.0F : 0.0F;
@@ -393,7 +387,6 @@ public class RealmsBackupScreen extends RealmsScreen {
       private void drawInfo(PoseStack var1, int var2, int var3, int var4, int var5) {
          boolean var6 = var4 >= var2 && var4 <= var2 + 8 && var5 >= var3 && var5 <= var3 + 8 && var5 < RealmsBackupScreen.this.height - 15 && var5 > 32;
          RenderSystem.setShaderTexture(0, RealmsBackupScreen.PLUS_ICON_LOCATION);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          var1.pushPose();
          var1.scale(0.5F, 0.5F, 0.5F);
          float var7 = var6 ? 15.0F : 0.0F;

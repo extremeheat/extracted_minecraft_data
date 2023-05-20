@@ -28,6 +28,7 @@ public final class BlockTags {
    public static final TagKey<Block> OAK_LOGS = create("oak_logs");
    public static final TagKey<Block> BIRCH_LOGS = create("birch_logs");
    public static final TagKey<Block> ACACIA_LOGS = create("acacia_logs");
+   public static final TagKey<Block> CHERRY_LOGS = create("cherry_logs");
    public static final TagKey<Block> JUNGLE_LOGS = create("jungle_logs");
    public static final TagKey<Block> SPRUCE_LOGS = create("spruce_logs");
    public static final TagKey<Block> MANGROVE_LOGS = create("mangrove_logs");
@@ -37,6 +38,7 @@ public final class BlockTags {
    public static final TagKey<Block> WART_BLOCKS = create("wart_blocks");
    public static final TagKey<Block> BANNERS = create("banners");
    public static final TagKey<Block> SAND = create("sand");
+   public static final TagKey<Block> SMELTS_TO_GLASS = create("smelts_to_glass");
    public static final TagKey<Block> STAIRS = create("stairs");
    public static final TagKey<Block> SLABS = create("slabs");
    public static final TagKey<Block> WALLS = create("walls");
@@ -162,6 +164,7 @@ public final class BlockTags {
    public static final TagKey<Block> SNOW_LAYER_CANNOT_SURVIVE_ON = create("snow_layer_cannot_survive_on");
    public static final TagKey<Block> SNOW_LAYER_CAN_SURVIVE_ON = create("snow_layer_can_survive_on");
    public static final TagKey<Block> INVALID_SPAWN_INSIDE = create("invalid_spawn_inside");
+   public static final TagKey<Block> SNIFFER_DIGGABLE_BLOCK = create("sniffer_diggable_block");
 
    private BlockTags() {
       super();

@@ -2,6 +2,8 @@ package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -34,7 +36,7 @@ public class ConfirmLinkScreen extends ConfirmScreen {
    }
 
    protected static MutableComponent confirmMessage(boolean var0, String var1) {
-      return confirmMessage(var0).append(" ").append(Component.literal(var1));
+      return confirmMessage(var0).append(CommonComponents.SPACE).append(Component.literal(var1));
    }
 
    protected static MutableComponent confirmMessage(boolean var0) {
@@ -61,5 +63,20 @@ public class ConfirmLinkScreen extends ConfirmScreen {
       if (this.showWarning) {
          drawCenteredString(var1, this.font, WARNING_TEXT, this.width / 2, 110, 16764108);
       }
+   }
+
+   public static void confirmLinkNow(String var0, Screen var1, boolean var2) {
+      Minecraft var3 = Minecraft.getInstance();
+      var3.setScreen(new ConfirmLinkScreen(var3x -> {
+         if (var3x) {
+            Util.getPlatform().openUri(var0);
+         }
+
+         var3.setScreen(var1);
+      }, var0, var2));
+   }
+
+   public static Button.OnPress confirmLink(String var0, Screen var1, boolean var2) {
+      return var3 -> confirmLinkNow(var0, var1, var2);
    }
 }

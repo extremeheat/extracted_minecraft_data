@@ -15,11 +15,14 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
@@ -75,6 +78,7 @@ public class RenderSystem {
    private static Matrix4f textureMatrix = new Matrix4f();
    private static final int[] shaderTextures = new int[12];
    private static final float[] shaderColor = new float[]{1.0F, 1.0F, 1.0F, 1.0F};
+   private static float shaderGlintAlpha = 1.0F;
    private static float shaderFogStart;
    private static float shaderFogEnd = 1.0F;
    private static final float[] shaderFogColor = new float[]{0.0F, 0.0F, 0.0F, 0.0F};
@@ -85,6 +89,8 @@ public class RenderSystem {
    private static String apiDescription = "Unknown";
    @Nullable
    private static ShaderInstance shader;
+   private static final AtomicLong pollEventsWaitStart = new AtomicLong();
+   private static final AtomicBoolean pollingEvents = new AtomicBoolean(false);
 
    public RenderSystem() {
       super();
@@ -161,12 +167,23 @@ public class RenderSystem {
       recordingQueue.add(var0);
    }
 
-   public static void flipFrame(long var0) {
+   private static void pollEvents() {
+      pollEventsWaitStart.set(Util.getMillis());
+      pollingEvents.set(true);
       GLFW.glfwPollEvents();
+      pollingEvents.set(false);
+   }
+
+   public static boolean isFrozenAtPollEvents() {
+      return pollingEvents.get() && Util.getMillis() - pollEventsWaitStart.get() > 200L;
+   }
+
+   public static void flipFrame(long var0) {
+      pollEvents();
       replayQueue();
       Tesselator.getInstance().getBuilder().clear();
       GLFW.glfwSwapBuffers(var0);
-      GLFW.glfwPollEvents();
+      pollEvents();
    }
 
    public static void replayQueue() {
@@ -309,16 +326,6 @@ public class RenderSystem {
       GlStateManager._activeTexture(var0);
    }
 
-   public static void enableTexture() {
-      assertOnRenderThread();
-      GlStateManager._enableTexture();
-   }
-
-   public static void disableTexture() {
-      assertOnRenderThread();
-      GlStateManager._disableTexture();
-   }
-
    public static void texParameter(int var0, int var1, int var2) {
       GlStateManager._texParameter(var0, var1, var2);
    }
@@ -393,6 +400,24 @@ public class RenderSystem {
    public static float getShaderFogStart() {
       assertOnRenderThread();
       return shaderFogStart;
+   }
+
+   public static void setShaderGlintAlpha(double var0) {
+      setShaderGlintAlpha((float)var0);
+   }
+
+   public static void setShaderGlintAlpha(float var0) {
+      assertOnRenderThread();
+      _setShaderGlintAlpha(var0);
+   }
+
+   private static void _setShaderGlintAlpha(float var0) {
+      shaderGlintAlpha = var0;
+   }
+
+   public static float getShaderGlintAlpha() {
+      assertOnRenderThread();
+      return shaderGlintAlpha;
    }
 
    public static void setShaderFogEnd(float var0) {
@@ -555,7 +580,6 @@ public class RenderSystem {
 
    public static void setupDefaultState(int var0, int var1, int var2, int var3) {
       assertInInitPhase();
-      GlStateManager._enableTexture();
       GlStateManager._clearDepth(1.0);
       GlStateManager._enableDepthTest();
       GlStateManager._depthFunc(515);
@@ -764,10 +788,6 @@ public class RenderSystem {
    public static ShaderInstance getShader() {
       assertOnRenderThread();
       return shader;
-   }
-
-   public static int getTextureId(int var0) {
-      return GlStateManager._getTextureId(var0);
    }
 
    public static void setShaderTexture(int var0, ResourceLocation var1) {

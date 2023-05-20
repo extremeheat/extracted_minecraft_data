@@ -292,7 +292,7 @@ public class V99 extends Schema {
       var1.registerType(false, References.TEAM, DSL::remainder);
       var1.registerType(true, References.UNTAGGED_SPAWNER, DSL::remainder);
       var1.registerType(false, References.POI_CHUNK, DSL::remainder);
-      var1.registerType(true, References.WORLD_GEN_SETTINGS, DSL::remainder);
+      var1.registerType(false, References.WORLD_GEN_SETTINGS, DSL::remainder);
       var1.registerType(false, References.ENTITY_CHUNK, () -> DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1))));
    }
 

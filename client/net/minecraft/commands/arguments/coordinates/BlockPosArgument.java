@@ -16,6 +16,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 public class BlockPosArgument implements ArgumentType<Coordinates> {
@@ -33,18 +34,27 @@ public class BlockPosArgument implements ArgumentType<Coordinates> {
    }
 
    public static BlockPos getLoadedBlockPos(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      BlockPos var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getBlockPos((CommandSourceStack)var0.getSource());
-      if (!((CommandSourceStack)var0.getSource()).getLevel().hasChunkAt(var2)) {
+      ServerLevel var2 = ((CommandSourceStack)var0.getSource()).getLevel();
+      return getLoadedBlockPos(var0, var2, var1);
+   }
+
+   public static BlockPos getLoadedBlockPos(CommandContext<CommandSourceStack> var0, ServerLevel var1, String var2) throws CommandSyntaxException {
+      BlockPos var3 = getBlockPos(var0, var2);
+      if (!var1.hasChunkAt(var3)) {
          throw ERROR_NOT_LOADED.create();
-      } else if (!((CommandSourceStack)var0.getSource()).getLevel().isInWorldBounds(var2)) {
+      } else if (!var1.isInWorldBounds(var3)) {
          throw ERROR_OUT_OF_WORLD.create();
       } else {
-         return var2;
+         return var3;
       }
    }
 
+   public static BlockPos getBlockPos(CommandContext<CommandSourceStack> var0, String var1) {
+      return ((Coordinates)var0.getArgument(var1, Coordinates.class)).getBlockPos((CommandSourceStack)var0.getSource());
+   }
+
    public static BlockPos getSpawnablePos(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      BlockPos var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getBlockPos((CommandSourceStack)var0.getSource());
+      BlockPos var2 = getBlockPos(var0, var1);
       if (!Level.isInSpawnableBounds(var2)) {
          throw ERROR_OUT_OF_BOUNDS.create();
       } else {

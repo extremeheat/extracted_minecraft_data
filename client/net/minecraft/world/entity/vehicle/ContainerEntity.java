@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.NonNullList;
@@ -23,7 +22,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -88,15 +86,9 @@ public interface ContainerEntity extends Container, MenuProvider {
       }
    }
 
-   default InteractionResult interactWithChestVehicle(BiConsumer<GameEvent, Entity> var1, Player var2) {
-      var2.openMenu(this);
-      if (!var2.level.isClientSide) {
-         var1.accept(GameEvent.CONTAINER_OPEN, var2);
-         PiglinAi.angerNearbyPiglins(var2, true);
-         return InteractionResult.CONSUME;
-      } else {
-         return InteractionResult.SUCCESS;
-      }
+   default InteractionResult interactWithContainerVehicle(Player var1) {
+      var1.openMenu(this);
+      return !var1.level.isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
    }
 
    default void unpackChestVehicleLootTable(@Nullable Player var1) {

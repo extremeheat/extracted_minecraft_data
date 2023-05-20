@@ -7,7 +7,6 @@ import java.util.Optional;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
 import net.minecraft.client.renderer.texture.atlas.SpriteSources;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -22,7 +21,6 @@ public class SingleFile implements SpriteSource {
             )
             .apply(var0, SingleFile::new)
    );
-   private final FileToIdConverter TEXTURE_ID_CONVERTER = new FileToIdConverter("textures", ".png");
    private final ResourceLocation resourceId;
    private final Optional<ResourceLocation> spriteId;
 
@@ -34,7 +32,7 @@ public class SingleFile implements SpriteSource {
 
    @Override
    public void run(ResourceManager var1, SpriteSource.Output var2) {
-      ResourceLocation var3 = this.TEXTURE_ID_CONVERTER.idToFile(this.resourceId);
+      ResourceLocation var3 = TEXTURE_ID_CONVERTER.idToFile(this.resourceId);
       Optional var4 = var1.getResource(var3);
       if (var4.isPresent()) {
          var2.add(this.spriteId.orElse(this.resourceId), (Resource)var4.get());

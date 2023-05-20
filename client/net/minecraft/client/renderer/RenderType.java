@@ -317,7 +317,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_ARMOR_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -333,7 +333,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -349,7 +349,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_GLINT_TRANSLUCENT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -365,7 +365,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -380,7 +380,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_GLINT_DIRECT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ITEM, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -395,7 +395,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_ENTITY_GLINT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -411,7 +411,7 @@ public abstract class RenderType extends RenderStateShard {
       256,
       RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_ENTITY_GLINT_DIRECT_SHADER)
-         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANT_GLINT_LOCATION, true, false))
+         .setTextureState(new RenderStateShard.TextureStateShard(ItemRenderer.ENCHANTED_GLINT_ENTITY, true, false))
          .setWriteMaskState(COLOR_WRITE)
          .setCullState(NO_CULL)
          .setDepthTestState(EQUAL_DEPTH_TEST)
@@ -454,6 +454,20 @@ public abstract class RenderType extends RenderStateShard {
                .setLightmapState(LIGHTMAP)
                .createCompositeState(false)
          )
+   );
+   private static final RenderType TEXT_BACKGROUND = create(
+      "text_background",
+      DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+      VertexFormat.Mode.QUADS,
+      256,
+      false,
+      true,
+      RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_TEXT_BACKGROUND_SHADER)
+         .setTextureState(NO_TEXTURE)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+         .setLightmapState(LIGHTMAP)
+         .createCompositeState(false)
    );
    private static final Function<ResourceLocation, RenderType> TEXT_INTENSITY = Util.memoize(
       var0 -> create(
@@ -522,6 +536,22 @@ public abstract class RenderType extends RenderStateShard {
                .setWriteMaskState(COLOR_WRITE)
                .createCompositeState(false)
          )
+   );
+   private static final RenderType TEXT_BACKGROUND_SEE_THROUGH = create(
+      "text_background_see_through",
+      DefaultVertexFormat.POSITION_COLOR_LIGHTMAP,
+      VertexFormat.Mode.QUADS,
+      256,
+      false,
+      true,
+      RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_TEXT_BACKGROUND_SEE_THROUGH_SHADER)
+         .setTextureState(NO_TEXTURE)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+         .setLightmapState(LIGHTMAP)
+         .setDepthTestState(NO_DEPTH_TEST)
+         .setWriteMaskState(COLOR_WRITE)
+         .createCompositeState(false)
    );
    private static final Function<ResourceLocation, RenderType> TEXT_INTENSITY_SEE_THROUGH = Util.memoize(
       var0 -> create(
@@ -617,6 +647,42 @@ public abstract class RenderType extends RenderStateShard {
          .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
          .setOutputState(ITEM_ENTITY_TARGET)
          .setWriteMaskState(COLOR_DEPTH_WRITE)
+         .setCullState(NO_CULL)
+         .createCompositeState(false)
+   );
+   private static final Function<Double, RenderType.CompositeRenderType> DEBUG_LINE_STRIP = Util.memoize(
+      var0 -> create(
+            "debug_line_strip",
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.DEBUG_LINE_STRIP,
+            256,
+            RenderType.CompositeState.builder()
+               .setShaderState(POSITION_COLOR_SHADER)
+               .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(var0)))
+               .setTransparencyState(NO_TRANSPARENCY)
+               .setCullState(NO_CULL)
+               .createCompositeState(false)
+         )
+   );
+   private static final RenderType.CompositeRenderType DEBUG_FILLED_BOX = create(
+      "debug_filled_box",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.TRIANGLE_STRIP,
+      131072,
+      RenderType.CompositeState.builder()
+         .setShaderState(POSITION_COLOR_SHADER)
+         .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+         .createCompositeState(false)
+   );
+   private static final RenderType.CompositeRenderType DEBUG_QUADS = create(
+      "debug_quads",
+      DefaultVertexFormat.POSITION_COLOR,
+      VertexFormat.Mode.QUADS,
+      131072,
+      RenderType.CompositeState.builder()
+         .setShaderState(POSITION_COLOR_SHADER)
+         .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
          .setCullState(NO_CULL)
          .createCompositeState(false)
    );
@@ -820,6 +886,10 @@ public abstract class RenderType extends RenderStateShard {
       return TEXT.apply(var0);
    }
 
+   public static RenderType textBackground() {
+      return TEXT_BACKGROUND;
+   }
+
    public static RenderType textIntensity(ResourceLocation var0) {
       return TEXT_INTENSITY.apply(var0);
    }
@@ -834,6 +904,10 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType textSeeThrough(ResourceLocation var0) {
       return TEXT_SEE_THROUGH.apply(var0);
+   }
+
+   public static RenderType textBackgroundSeeThrough() {
+      return TEXT_BACKGROUND_SEE_THROUGH;
    }
 
    public static RenderType textIntensitySeeThrough(ResourceLocation var0) {
@@ -872,6 +946,18 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType lineStrip() {
       return LINE_STRIP;
+   }
+
+   public static RenderType debugLineStrip(double var0) {
+      return DEBUG_LINE_STRIP.apply(var0);
+   }
+
+   public static RenderType debugFilledBox() {
+      return DEBUG_FILLED_BOX;
+   }
+
+   public static RenderType debugQuads() {
+      return DEBUG_QUADS;
    }
 
    public RenderType(String var1, VertexFormat var2, VertexFormat.Mode var3, int var4, boolean var5, boolean var6, Runnable var7, Runnable var8) {

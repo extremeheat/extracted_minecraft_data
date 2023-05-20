@@ -20,7 +20,7 @@ public class PlainTextButton extends Button {
    }
 
    @Override
-   public void renderButton(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
       Component var5 = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
       drawString(var1, this.font, var5, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
    }

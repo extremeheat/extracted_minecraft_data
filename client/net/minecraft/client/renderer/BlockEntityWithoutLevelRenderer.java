@@ -12,7 +12,6 @@ import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.TridentModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
@@ -27,6 +26,7 @@ import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
@@ -42,6 +42,7 @@ import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
+import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
@@ -61,6 +62,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
    private final BannerBlockEntity banner = new BannerBlockEntity(BlockPos.ZERO, Blocks.WHITE_BANNER.defaultBlockState());
    private final BedBlockEntity bed = new BedBlockEntity(BlockPos.ZERO, Blocks.RED_BED.defaultBlockState());
    private final ConduitBlockEntity conduit = new ConduitBlockEntity(BlockPos.ZERO, Blocks.CONDUIT.defaultBlockState());
+   private final DecoratedPotBlockEntity decoratedPot = new DecoratedPotBlockEntity(BlockPos.ZERO, Blocks.DECORATED_POT.defaultBlockState());
    private ShieldModel shieldModel;
    private TridentModel tridentModel;
    private Map<SkullBlock.Type, SkullModelBase> skullModels;
@@ -80,7 +82,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
       this.skullModels = SkullBlockRenderer.createSkullRenderers(this.entityModelSet);
    }
 
-   public void renderByItem(ItemStack var1, ItemTransforms.TransformType var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void renderByItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Item var7 = var1.getItem();
       if (var7 instanceof BlockItem) {
          Block var14 = ((BlockItem)var7).getBlock();
@@ -118,6 +120,9 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
                var15 = this.enderChest;
             } else if (var17.is(Blocks.TRAPPED_CHEST)) {
                var15 = this.trappedChest;
+            } else if (var17.is(Blocks.DECORATED_POT)) {
+               this.decoratedPot.setFromItem(var1);
+               var15 = this.decoratedPot;
             } else {
                if (!(var14 instanceof ShulkerBoxBlock)) {
                   return;

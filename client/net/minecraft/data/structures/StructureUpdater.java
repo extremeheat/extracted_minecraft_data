@@ -22,26 +22,14 @@ public class StructureUpdater implements SnbtToNbt.Filter {
    }
 
    public static CompoundTag update(String var0, CompoundTag var1) {
-      return updateStructure(var0, patchVersion(var1));
-   }
-
-   private static CompoundTag patchVersion(CompoundTag var0) {
-      if (!var0.contains("DataVersion", 99)) {
-         var0.putInt("DataVersion", 500);
-      }
-
-      return var0;
-   }
-
-   private static CompoundTag updateStructure(String var0, CompoundTag var1) {
       StructureTemplate var2 = new StructureTemplate();
-      int var3 = var1.getInt("DataVersion");
+      int var3 = NbtUtils.getDataVersion(var1, 500);
       boolean var4 = true;
-      if (var3 < 3200) {
-         LOGGER.warn("SNBT Too old, do not forget to update: {} < {}: {}", new Object[]{var3, 3200, var0});
+      if (var3 < 3318) {
+         LOGGER.warn("SNBT Too old, do not forget to update: {} < {}: {}", new Object[]{var3, 3318, var0});
       }
 
-      CompoundTag var5 = NbtUtils.update(DataFixers.getDataFixer(), DataFixTypes.STRUCTURE, var1, var3);
+      CompoundTag var5 = DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), var1, var3);
       var2.load(BuiltInRegistries.BLOCK.asLookup(), var5);
       return var2.save(new CompoundTag());
    }

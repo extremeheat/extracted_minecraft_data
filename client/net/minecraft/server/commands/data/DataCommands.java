@@ -12,6 +12,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +42,9 @@ public class DataCommands {
    private static final SimpleCommandExceptionType ERROR_MULTIPLE_TAGS = new SimpleCommandExceptionType(Component.translatable("commands.data.get.multiple"));
    private static final DynamicCommandExceptionType ERROR_EXPECTED_OBJECT = new DynamicCommandExceptionType(
       var0 -> Component.translatable("commands.data.modify.expected_object", var0)
+   );
+   private static final DynamicCommandExceptionType ERROR_EXPECTED_VALUE = new DynamicCommandExceptionType(
+      var0 -> Component.translatable("commands.data.modify.expected_value", var0)
    );
    public static final List<Function<String, DataCommands.DataProvider>> ALL_PROVIDERS = ImmutableList.of(
       EntityDataAccessor.PROVIDER, BlockDataAccessor.PROVIDER, StorageDataAccessor.PROVIDER
@@ -164,36 +168,121 @@ public class DataCommands {
       var0.register(var1);
    }
 
+   private static String getAsText(Tag var0) throws CommandSyntaxException {
+      if (var0.getType().isValue()) {
+         return var0.getAsString();
+      } else {
+         throw ERROR_EXPECTED_VALUE.create(var0);
+      }
+   }
+
+   private static List<Tag> stringifyTagList(List<Tag> var0, Function<String, String> var1) throws CommandSyntaxException {
+      ArrayList var2 = new ArrayList(var0.size());
+
+      for(Tag var4 : var0) {
+         String var5 = getAsText(var4);
+         var2.add(StringTag.valueOf((String)var1.apply(var5)));
+      }
+
+      return var2;
+   }
+
    private static ArgumentBuilder<CommandSourceStack, ?> decorateModification(
       BiConsumer<ArgumentBuilder<CommandSourceStack, ?>, DataCommands.DataManipulatorDecorator> var0
    ) {
       LiteralArgumentBuilder var1 = Commands.literal("modify");
 
       for(DataCommands.DataProvider var3 : TARGET_PROVIDERS) {
-         var3.wrap(var1, var2 -> {
-            RequiredArgumentBuilder var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
-
-            for(DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
-               var0.accept(var3x, var2x -> var5.wrap(Commands.literal("from"), var3xx -> var3xx.executes(var3xxx -> {
-                        List var4 = Collections.singletonList(var5.access(var3xxx).getData());
-                        return manipulateData(var3xxx, var3, var2x, var4);
-                     }).then(Commands.argument("sourcePath", NbtPathArgument.nbtPath()).executes(var3xxx -> {
-                        DataAccessor var4 = var5.access(var3xxx);
-                        NbtPathArgument.NbtPath var5x = NbtPathArgument.getPath(var3xxx, "sourcePath");
-                        List var6 = var5x.get(var4.getData());
-                        return manipulateData(var3xxx, var3, var2x, var6);
-                     }))));
+         var3.wrap(
+            var1,
+            var2 -> {
+               RequiredArgumentBuilder var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
+   
+               for(DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
+                  var0.accept(
+                     var3x,
+                     var2x -> var5.wrap(
+                           Commands.literal("from"),
+                           var3xx -> var3xx.executes(var3xxx -> manipulateData(var3xxx, var3, var2x, getSingletonSource(var3xxx, var5)))
+                                 .then(
+                                    Commands.argument("sourcePath", NbtPathArgument.nbtPath())
+                                       .executes(var3xxx -> manipulateData(var3xxx, var3, var2x, resolveSourcePath(var3xxx, var5)))
+                                 )
+                        )
+                  );
+                  var0.accept(
+                     var3x,
+                     var2x -> var5.wrap(
+                           Commands.literal("string"),
+                           var3xx -> var3xx.executes(
+                                    var3xxx -> manipulateData(
+                                          var3xxx, var3, var2x, stringifyTagList(getSingletonSource(var3xxx, var5), var0xxxxx -> var0xxxxx)
+                                       )
+                                 )
+                                 .then(
+                                    ((RequiredArgumentBuilder)Commands.argument("sourcePath", NbtPathArgument.nbtPath())
+                                          .executes(
+                                             var3xxx -> manipulateData(
+                                                   var3xxx, var3, var2x, stringifyTagList(resolveSourcePath(var3xxx, var5), var0xxxxx -> var0xxxxx)
+                                                )
+                                          ))
+                                       .then(
+                                          ((RequiredArgumentBuilder)Commands.argument("start", IntegerArgumentType.integer(0))
+                                                .executes(
+                                                   var3xxx -> manipulateData(
+                                                         var3xxx,
+                                                         var3,
+                                                         var2x,
+                                                         stringifyTagList(
+                                                            resolveSourcePath(var3xxx, var5),
+                                                            var1xxxxx -> var1xxxxx.substring(IntegerArgumentType.getInteger(var3xxx, "start"))
+                                                         )
+                                                      )
+                                                ))
+                                             .then(
+                                                Commands.argument("end", IntegerArgumentType.integer(0))
+                                                   .executes(
+                                                      var3xxx -> manipulateData(
+                                                            var3xxx,
+                                                            var3,
+                                                            var2x,
+                                                            stringifyTagList(
+                                                               resolveSourcePath(var3xxx, var5),
+                                                               var1xxxxx -> var1xxxxx.substring(
+                                                                     IntegerArgumentType.getInteger(var3xxx, "start"),
+                                                                     IntegerArgumentType.getInteger(var3xxx, "end")
+                                                                  )
+                                                            )
+                                                         )
+                                                   )
+                                             )
+                                       )
+                                 )
+                        )
+                  );
+               }
+   
+               var0.accept(var3x, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
+                     List var3xx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
+                     return manipulateData(var2x, var3, var1xx, var3xx);
+                  })));
+               return var2.then(var3x);
             }
-
-            var0.accept(var3x, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
-                  List var3xx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
-                  return manipulateData(var2x, var3, var1xx, var3xx);
-               })));
-            return var2.then(var3x);
-         });
+         );
       }
 
       return var1;
+   }
+
+   private static List<Tag> getSingletonSource(CommandContext<CommandSourceStack> var0, DataCommands.DataProvider var1) throws CommandSyntaxException {
+      DataAccessor var2 = var1.access(var0);
+      return Collections.singletonList(var2.getData());
+   }
+
+   private static List<Tag> resolveSourcePath(CommandContext<CommandSourceStack> var0, DataCommands.DataProvider var1) throws CommandSyntaxException {
+      DataAccessor var2 = var1.access(var0);
+      NbtPathArgument.NbtPath var3 = NbtPathArgument.getPath(var0, "sourcePath");
+      return var3.get(var2.getData());
    }
 
    private static int manipulateData(

@@ -138,15 +138,31 @@ public class SkullBlockEntity extends BlockEntity {
          profileCache.getAsync(var0.getName(), var2 -> Util.backgroundExecutor().execute(() -> Util.ifElse(var2, var1xxx -> {
                   Property var2xx = (Property)Iterables.getFirst(var1xxx.getProperties().get("textures"), null);
                   if (var2xx == null) {
-                     var1xxx = sessionService.fillProfileProperties(var1xxx, true);
+                     MinecraftSessionService var3 = sessionService;
+                     if (var3 == null) {
+                        return;
+                     }
+
+                     var1xxx = var3.fillProfileProperties(var1xxx, true);
                   }
 
-                  GameProfile var3 = var1xxx;
-                  mainThreadExecutor.execute(() -> {
-                     profileCache.add(var3);
-                     var1.accept(var3);
-                  });
-               }, () -> mainThreadExecutor.execute(() -> var1.accept(var0)))));
+                  GameProfile var5 = var1xxx;
+                  Executor var4 = mainThreadExecutor;
+                  if (var4 != null) {
+                     var4.execute(() -> {
+                        GameProfileCache var2xxx = profileCache;
+                        if (var2xxx != null) {
+                           var2xxx.add(var5);
+                           var1.accept(var5);
+                        }
+                     });
+                  }
+               }, () -> {
+                  Executor var2xx = mainThreadExecutor;
+                  if (var2xx != null) {
+                     var2xx.execute(() -> var1.accept(var0));
+                  }
+               })));
       } else {
          var1.accept(var0);
       }

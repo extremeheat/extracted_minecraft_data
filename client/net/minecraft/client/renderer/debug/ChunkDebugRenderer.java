@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,11 +46,6 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (this.data != null) {
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         RenderSystem.lineWidth(2.0F);
-         RenderSystem.disableTexture();
-         RenderSystem.depthMask(false);
          Map var24 = this.data.serverData.getNow(null);
          double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
 
@@ -67,20 +61,21 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
             for(String var23 : var18) {
                DebugRenderer.renderFloatingText(
+                  var1,
+                  var2,
                   var23,
                   (double)SectionPos.sectionToBlockCoord(var16.x, 8),
                   var12 + (double)var19,
                   (double)SectionPos.sectionToBlockCoord(var16.z, 8),
                   -1,
-                  0.15F
+                  0.15F,
+                  true,
+                  0.0F,
+                  true
                );
                var19 -= 2;
             }
          }
-
-         RenderSystem.depthMask(true);
-         RenderSystem.enableTexture();
-         RenderSystem.disableBlend();
       }
    }
 

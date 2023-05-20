@@ -33,7 +33,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
       Camera var9 = this.minecraft.gameRenderer.getMainCamera();
       ClientLevel var10 = this.minecraft.level;
       DimensionType var11 = var10.dimensionType();
-      BlockPos var12 = new BlockPos(var9.getPosition().x, 0.0, var9.getPosition().z);
+      BlockPos var12 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
       VertexConsumer var13 = var2.getBuffer(RenderType.lines());
       if (this.postMainBoxes.containsKey(var11)) {
          for(BoundingBox var15 : this.postMainBoxes.get(var11).values()) {

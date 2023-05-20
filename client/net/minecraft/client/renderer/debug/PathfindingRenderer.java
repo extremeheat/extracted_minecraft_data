@@ -1,17 +1,13 @@
 package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.pathfinder.Node;
@@ -49,7 +45,7 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
          for(Integer var12 : this.pathMap.keySet()) {
             Path var13 = this.pathMap.get(var12);
             float var14 = this.pathMaxDist.get(var12);
-            renderPath(var13, var14, true, true, var3, var5, var7);
+            renderPath(var1, var2, var13, var14, true, true, var3, var5, var7);
          }
 
          for(Integer var18 : this.creationMap.keySet().toArray(new Integer[0])) {
@@ -61,73 +57,71 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
    }
 
-   public static void renderPath(Path var0, float var1, boolean var2, boolean var3, double var4, double var6, double var8) {
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableTexture();
-      RenderSystem.lineWidth(6.0F);
-      doRenderPath(var0, var1, var2, var3, var4, var6, var8);
-      RenderSystem.enableTexture();
-      RenderSystem.disableBlend();
-   }
-
-   private static void doRenderPath(Path var0, float var1, boolean var2, boolean var3, double var4, double var6, double var8) {
-      renderPathLine(var0, var4, var6, var8);
-      BlockPos var10 = var0.getTarget();
-      if (distanceToCamera(var10, var4, var6, var8) <= 80.0F) {
+   public static void renderPath(
+      PoseStack var0, MultiBufferSource var1, Path var2, float var3, boolean var4, boolean var5, double var6, double var8, double var10
+   ) {
+      renderPathLine(var0, var1.getBuffer(RenderType.debugLineStrip(6.0)), var2, var6, var8, var10);
+      BlockPos var12 = var2.getTarget();
+      if (distanceToCamera(var12, var6, var8, var10) <= 80.0F) {
          DebugRenderer.renderFilledBox(
+            var0,
+            var1,
             new AABB(
-                  (double)((float)var10.getX() + 0.25F),
-                  (double)((float)var10.getY() + 0.25F),
-                  (double)var10.getZ() + 0.25,
-                  (double)((float)var10.getX() + 0.75F),
-                  (double)((float)var10.getY() + 0.75F),
-                  (double)((float)var10.getZ() + 0.75F)
+                  (double)((float)var12.getX() + 0.25F),
+                  (double)((float)var12.getY() + 0.25F),
+                  (double)var12.getZ() + 0.25,
+                  (double)((float)var12.getX() + 0.75F),
+                  (double)((float)var12.getY() + 0.75F),
+                  (double)((float)var12.getZ() + 0.75F)
                )
-               .move(-var4, -var6, -var8),
+               .move(-var6, -var8, -var10),
             0.0F,
             1.0F,
             0.0F,
             0.5F
          );
 
-         for(int var11 = 0; var11 < var0.getNodeCount(); ++var11) {
-            Node var12 = var0.getNode(var11);
-            if (distanceToCamera(var12.asBlockPos(), var4, var6, var8) <= 80.0F) {
-               float var13 = var11 == var0.getNextNodeIndex() ? 1.0F : 0.0F;
-               float var14 = var11 == var0.getNextNodeIndex() ? 0.0F : 1.0F;
+         for(int var13 = 0; var13 < var2.getNodeCount(); ++var13) {
+            Node var14 = var2.getNode(var13);
+            if (distanceToCamera(var14.asBlockPos(), var6, var8, var10) <= 80.0F) {
+               float var15 = var13 == var2.getNextNodeIndex() ? 1.0F : 0.0F;
+               float var16 = var13 == var2.getNextNodeIndex() ? 0.0F : 1.0F;
                DebugRenderer.renderFilledBox(
+                  var0,
+                  var1,
                   new AABB(
-                        (double)((float)var12.x + 0.5F - var1),
-                        (double)((float)var12.y + 0.01F * (float)var11),
-                        (double)((float)var12.z + 0.5F - var1),
-                        (double)((float)var12.x + 0.5F + var1),
-                        (double)((float)var12.y + 0.25F + 0.01F * (float)var11),
-                        (double)((float)var12.z + 0.5F + var1)
+                        (double)((float)var14.x + 0.5F - var3),
+                        (double)((float)var14.y + 0.01F * (float)var13),
+                        (double)((float)var14.z + 0.5F - var3),
+                        (double)((float)var14.x + 0.5F + var3),
+                        (double)((float)var14.y + 0.25F + 0.01F * (float)var13),
+                        (double)((float)var14.z + 0.5F + var3)
                      )
-                     .move(-var4, -var6, -var8),
-                  var13,
+                     .move(-var6, -var8, -var10),
+                  var15,
                   0.0F,
-                  var14,
+                  var16,
                   0.5F
                );
             }
          }
       }
 
-      if (var2) {
-         for(Node var23 : var0.getClosedSet()) {
-            if (distanceToCamera(var23.asBlockPos(), var4, var6, var8) <= 80.0F) {
+      if (var4) {
+         for(Node var25 : var2.getClosedSet()) {
+            if (distanceToCamera(var25.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
+                  var0,
+                  var1,
                   new AABB(
-                        (double)((float)var23.x + 0.5F - var1 / 2.0F),
-                        (double)((float)var23.y + 0.01F),
-                        (double)((float)var23.z + 0.5F - var1 / 2.0F),
-                        (double)((float)var23.x + 0.5F + var1 / 2.0F),
-                        (double)var23.y + 0.1,
-                        (double)((float)var23.z + 0.5F + var1 / 2.0F)
+                        (double)((float)var25.x + 0.5F - var3 / 2.0F),
+                        (double)((float)var25.y + 0.01F),
+                        (double)((float)var25.z + 0.5F - var3 / 2.0F),
+                        (double)((float)var25.x + 0.5F + var3 / 2.0F),
+                        (double)var25.y + 0.1,
+                        (double)((float)var25.z + 0.5F + var3 / 2.0F)
                      )
-                     .move(-var4, -var6, -var8),
+                     .move(-var6, -var8, -var10),
                   1.0F,
                   0.8F,
                   0.8F,
@@ -136,18 +130,20 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
             }
          }
 
-         for(Node var24 : var0.getOpenSet()) {
-            if (distanceToCamera(var24.asBlockPos(), var4, var6, var8) <= 80.0F) {
+         for(Node var26 : var2.getOpenSet()) {
+            if (distanceToCamera(var26.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
+                  var0,
+                  var1,
                   new AABB(
-                        (double)((float)var24.x + 0.5F - var1 / 2.0F),
-                        (double)((float)var24.y + 0.01F),
-                        (double)((float)var24.z + 0.5F - var1 / 2.0F),
-                        (double)((float)var24.x + 0.5F + var1 / 2.0F),
-                        (double)var24.y + 0.1,
-                        (double)((float)var24.z + 0.5F + var1 / 2.0F)
+                        (double)((float)var26.x + 0.5F - var3 / 2.0F),
+                        (double)((float)var26.y + 0.01F),
+                        (double)((float)var26.z + 0.5F - var3 / 2.0F),
+                        (double)((float)var26.x + 0.5F + var3 / 2.0F),
+                        (double)var26.y + 0.1,
+                        (double)((float)var26.z + 0.5F + var3 / 2.0F)
                      )
-                     .move(-var4, -var6, -var8),
+                     .move(-var6, -var8, -var10),
                   0.8F,
                   1.0F,
                   1.0F,
@@ -157,18 +153,20 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       }
 
-      if (var3) {
-         for(int var17 = 0; var17 < var0.getNodeCount(); ++var17) {
-            Node var20 = var0.getNode(var17);
-            if (distanceToCamera(var20.asBlockPos(), var4, var6, var8) <= 80.0F) {
+      if (var5) {
+         for(int var19 = 0; var19 < var2.getNodeCount(); ++var19) {
+            Node var22 = var2.getNode(var19);
+            if (distanceToCamera(var22.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFloatingText(
-                  String.valueOf(var20.type), (double)var20.x + 0.5, (double)var20.y + 0.75, (double)var20.z + 0.5, -1, 0.02F, true, 0.0F, true
+                  var0, var1, String.valueOf(var22.type), (double)var22.x + 0.5, (double)var22.y + 0.75, (double)var22.z + 0.5, -1, 0.02F, true, 0.0F, true
                );
                DebugRenderer.renderFloatingText(
-                  String.format(Locale.ROOT, "%.2f", var20.costMalus),
-                  (double)var20.x + 0.5,
-                  (double)var20.y + 0.25,
-                  (double)var20.z + 0.5,
+                  var0,
+                  var1,
+                  String.format(Locale.ROOT, "%.2f", var22.costMalus),
+                  (double)var22.x + 0.5,
+                  (double)var22.y + 0.25,
+                  (double)var22.z + 0.5,
                   -1,
                   0.02F,
                   true,
@@ -180,25 +178,22 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
    }
 
-   public static void renderPathLine(Path var0, double var1, double var3, double var5) {
-      Tesselator var7 = Tesselator.getInstance();
-      BufferBuilder var8 = var7.getBuilder();
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      var8.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-
-      for(int var9 = 0; var9 < var0.getNodeCount(); ++var9) {
-         Node var10 = var0.getNode(var9);
-         if (!(distanceToCamera(var10.asBlockPos(), var1, var3, var5) > 80.0F)) {
-            float var11 = (float)var9 / (float)var0.getNodeCount() * 0.33F;
+   public static void renderPathLine(PoseStack var0, VertexConsumer var1, Path var2, double var3, double var5, double var7) {
+      for(int var9 = 0; var9 < var2.getNodeCount(); ++var9) {
+         Node var10 = var2.getNode(var9);
+         if (!(distanceToCamera(var10.asBlockPos(), var3, var5, var7) > 80.0F)) {
+            float var11 = (float)var9 / (float)var2.getNodeCount() * 0.33F;
             int var12 = var9 == 0 ? 0 : Mth.hsvToRgb(var11, 0.9F, 0.9F);
             int var13 = var12 >> 16 & 0xFF;
             int var14 = var12 >> 8 & 0xFF;
             int var15 = var12 & 0xFF;
-            var8.vertex((double)var10.x - var1 + 0.5, (double)var10.y - var3 + 0.5, (double)var10.z - var5 + 0.5).color(var13, var14, var15, 255).endVertex();
+            var1.vertex(
+                  var0.last().pose(), (float)((double)var10.x - var3 + 0.5), (float)((double)var10.y - var5 + 0.5), (float)((double)var10.z - var7 + 0.5)
+               )
+               .color(var13, var14, var15, 255)
+               .endVertex();
          }
       }
-
-      var7.end();
    }
 
    private static float distanceToCamera(BlockPos var0, double var1, double var3, double var5) {

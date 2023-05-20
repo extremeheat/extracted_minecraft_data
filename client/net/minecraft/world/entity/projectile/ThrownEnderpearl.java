@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,7 +33,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      var1.getEntity().hurt(DamageSource.thrown(this, this.getOwner()), 0.0F);
+      var1.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0.0F);
    }
 
    // $QF: Could not properly define all variable types!
@@ -59,7 +58,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       if (!this.level.isClientSide && !this.isRemoved()) {
          Entity var5 = this.getOwner();
          if (var5 instanceof ServerPlayer var3) {
-            if (var3.connection.getConnection().isConnected() && var3.level == this.level && !var3.isSleeping()) {
+            if (var3.connection.isAcceptingMessages() && var3.level == this.level && !var3.isSleeping()) {
                if (this.random.nextFloat() < 0.05F && this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
                   Endermite var4 = EntityType.ENDERMITE.create(this.level);
                   if (var4 != null) {
@@ -75,7 +74,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                }
 
                var5.resetFallDistance();
-               var5.hurt(DamageSource.FALL, 5.0F);
+               var5.hurt(this.damageSources().fall(), 5.0F);
             }
          } else if (var5 != null) {
             var5.teleportTo(this.getX(), this.getY(), this.getZ());

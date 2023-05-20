@@ -11,7 +11,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -90,65 +89,59 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.renderBg(var1, var4, var2, var3);
       RenderSystem.disableDepthTest();
       super.render(var1, var2, var3, var4);
-      PoseStack var7 = RenderSystem.getModelViewStack();
-      var7.pushPose();
-      var7.translate((float)var5, (float)var6, 0.0F);
-      RenderSystem.applyModelViewMatrix();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.pushPose();
+      var1.translate((float)var5, (float)var6, 0.0F);
       this.hoveredSlot = null;
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-      for(int var8 = 0; var8 < this.menu.slots.size(); ++var8) {
-         Slot var9 = this.menu.slots.get(var8);
-         if (var9.isActive()) {
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            this.renderSlot(var1, var9);
+      for(int var7 = 0; var7 < this.menu.slots.size(); ++var7) {
+         Slot var8 = this.menu.slots.get(var7);
+         if (var8.isActive()) {
+            this.renderSlot(var1, var8);
          }
 
-         if (this.isHovering(var9, (double)var2, (double)var3) && var9.isActive()) {
-            this.hoveredSlot = var9;
-            int var10 = var9.x;
-            int var11 = var9.y;
-            renderSlotHighlight(var1, var10, var11, this.getBlitOffset());
+         if (this.isHovering(var8, (double)var2, (double)var3) && var8.isActive()) {
+            this.hoveredSlot = var8;
+            int var9 = var8.x;
+            int var10 = var8.y;
+            renderSlotHighlight(var1, var9, var10, 0);
          }
       }
 
       this.renderLabels(var1, var2, var3);
-      ItemStack var14 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
-      if (!var14.isEmpty()) {
-         boolean var15 = true;
-         int var17 = this.draggingItem.isEmpty() ? 8 : 16;
-         String var19 = null;
+      ItemStack var13 = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
+      if (!var13.isEmpty()) {
+         boolean var14 = true;
+         int var16 = this.draggingItem.isEmpty() ? 8 : 16;
+         String var18 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
-            var14 = var14.copy();
-            var14.setCount(Mth.ceil((float)var14.getCount() / 2.0F));
+            var13 = var13.copy();
+            var13.setCount(Mth.ceil((float)var13.getCount() / 2.0F));
          } else if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
-            var14 = var14.copy();
-            var14.setCount(this.quickCraftingRemainder);
-            if (var14.isEmpty()) {
-               var19 = ChatFormatting.YELLOW + "0";
+            var13 = var13.copy();
+            var13.setCount(this.quickCraftingRemainder);
+            if (var13.isEmpty()) {
+               var18 = ChatFormatting.YELLOW + "0";
             }
          }
 
-         this.renderFloatingItem(var14, var2 - var5 - 8, var3 - var6 - var17, var19);
+         this.renderFloatingItem(var1, var13, var2 - var5 - 8, var3 - var6 - var16, var18);
       }
 
       if (!this.snapbackItem.isEmpty()) {
-         float var16 = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
-         if (var16 >= 1.0F) {
-            var16 = 1.0F;
+         float var15 = (float)(Util.getMillis() - this.snapbackTime) / 100.0F;
+         if (var15 >= 1.0F) {
+            var15 = 1.0F;
             this.snapbackItem = ItemStack.EMPTY;
          }
 
-         int var18 = this.snapbackEnd.x - this.snapbackStartX;
-         int var20 = this.snapbackEnd.y - this.snapbackStartY;
-         int var12 = this.snapbackStartX + (int)((float)var18 * var16);
-         int var13 = this.snapbackStartY + (int)((float)var20 * var16);
-         this.renderFloatingItem(this.snapbackItem, var12, var13, null);
+         int var17 = this.snapbackEnd.x - this.snapbackStartX;
+         int var19 = this.snapbackEnd.y - this.snapbackStartY;
+         int var11 = this.snapbackStartX + (int)((float)var17 * var15);
+         int var12 = this.snapbackStartY + (int)((float)var19 * var15);
+         this.renderFloatingItem(var1, this.snapbackItem, var11, var12, null);
       }
 
-      var7.popPose();
-      RenderSystem.applyModelViewMatrix();
+      var1.popPose();
       RenderSystem.enableDepthTest();
    }
 
@@ -166,16 +159,12 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
    }
 
-   private void renderFloatingItem(ItemStack var1, int var2, int var3, String var4) {
-      PoseStack var5 = RenderSystem.getModelViewStack();
-      var5.translate(0.0F, 0.0F, 32.0F);
-      RenderSystem.applyModelViewMatrix();
-      this.setBlitOffset(200);
-      this.itemRenderer.blitOffset = 200.0F;
-      this.itemRenderer.renderAndDecorateItem(var1, var2, var3);
-      this.itemRenderer.renderGuiItemDecorations(this.font, var1, var2, var3 - (this.draggingItem.isEmpty() ? 0 : 8), var4);
-      this.setBlitOffset(0);
-      this.itemRenderer.blitOffset = 0.0F;
+   private void renderFloatingItem(PoseStack var1, ItemStack var2, int var3, int var4, String var5) {
+      var1.pushPose();
+      var1.translate(0.0F, 0.0F, 232.0F);
+      this.itemRenderer.renderAndDecorateItem(var1, var2, var3, var4);
+      this.itemRenderer.renderGuiItemDecorations(var1, this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
+      var1.popPose();
    }
 
    protected void renderLabels(PoseStack var1, int var2, int var3) {
@@ -218,14 +207,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
       }
 
-      this.setBlitOffset(100);
-      this.itemRenderer.blitOffset = 100.0F;
+      var1.pushPose();
+      var1.translate(0.0F, 0.0F, 100.0F);
       if (var5.isEmpty() && var2.isActive()) {
          Pair var12 = var2.getNoItemIcon();
          if (var12 != null) {
             TextureAtlasSprite var11 = this.minecraft.getTextureAtlas((ResourceLocation)var12.getFirst()).apply((ResourceLocation)var12.getSecond());
             RenderSystem.setShaderTexture(0, var11.atlasLocation());
-            blit(var1, var3, var4, this.getBlitOffset(), 16, 16, var11);
+            blit(var1, var3, var4, 0, 16, 16, var11);
             var7 = true;
          }
       }
@@ -235,13 +224,11 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             fill(var1, var3, var4, var3 + 16, var4 + 16, -2130706433);
          }
 
-         RenderSystem.enableDepthTest();
-         this.itemRenderer.renderAndDecorateItem(this.minecraft.player, var5, var3, var4, var2.x + var2.y * this.imageWidth);
-         this.itemRenderer.renderGuiItemDecorations(this.font, var5, var3, var4, var9);
+         this.itemRenderer.renderAndDecorateItem(var1, this.minecraft.player, var5, var3, var4, var2.x + var2.y * this.imageWidth);
+         this.itemRenderer.renderGuiItemDecorations(var1, this.font, var5, var3, var4, var9);
       }
 
-      this.itemRenderer.blitOffset = 0.0F;
-      this.setBlitOffset(0);
+      var1.popPose();
    }
 
    private void recalculateQuickCraftRemaining() {

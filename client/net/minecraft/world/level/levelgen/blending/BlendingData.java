@@ -82,7 +82,7 @@ public class BlendingData {
       .comapFlatMap(BlendingData::validateArraySize, Function.identity());
 
    private static DataResult<BlendingData> validateArraySize(BlendingData var0) {
-      return var0.heights.length != CELL_COLUMN_COUNT ? DataResult.error("heights has to be of length " + CELL_COLUMN_COUNT) : DataResult.success(var0);
+      return var0.heights.length != CELL_COLUMN_COUNT ? DataResult.error(() -> "heights has to be of length " + CELL_COLUMN_COUNT) : DataResult.success(var0);
    }
 
    private BlendingData(int var1, int var2, Optional<double[]> var3) {
@@ -222,7 +222,7 @@ public class BlendingData {
          var7 = var12;
       }
 
-      int var16 = this.getCellYIndex(Mth.intFloorDiv(var4, 8));
+      int var16 = this.getCellYIndex(Mth.floorDiv(var4, 8));
       if (var16 >= 0 && var16 < var5.length - 1) {
          double var17 = ((double)var4 + 0.5) % 8.0 / 8.0;
          double var18 = (1.0 - var17) / var17;

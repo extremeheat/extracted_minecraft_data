@@ -117,11 +117,15 @@ public class SynchedEntityData {
    }
 
    public <T> void set(EntityDataAccessor<T> var1, T var2) {
-      SynchedEntityData.DataItem var3 = this.getItem(var1);
-      if (ObjectUtils.notEqual(var2, var3.getValue())) {
-         var3.setValue((T)var2);
+      this.set(var1, var2, false);
+   }
+
+   public <T> void set(EntityDataAccessor<T> var1, T var2, boolean var3) {
+      SynchedEntityData.DataItem var4 = this.getItem(var1);
+      if (var3 || ObjectUtils.notEqual(var2, var4.getValue())) {
+         var4.setValue((T)var2);
          this.entity.onSyncedDataUpdated(var1);
-         var3.setDirty(true);
+         var4.setDirty(true);
          this.isDirty = true;
       }
    }
@@ -191,6 +195,8 @@ public class SynchedEntityData {
       } finally {
          this.lock.writeLock().unlock();
       }
+
+      this.entity.onSyncedDataUpdated(var1);
    }
 
    private <T> void assignValue(SynchedEntityData.DataItem<T> var1, SynchedEntityData.DataValue<?> var2) {

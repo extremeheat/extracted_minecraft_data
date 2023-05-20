@@ -21,7 +21,7 @@ public abstract class RealmsObjectSelectionList<E extends ObjectSelectionList.En
       this.setSelectedItem(var1);
    }
 
-   public void itemClicked(int var1, int var2, double var3, double var5, int var7) {
+   public void itemClicked(int var1, int var2, double var3, double var5, int var7, int var8) {
    }
 
    @Override

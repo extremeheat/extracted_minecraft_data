@@ -31,7 +31,7 @@ public class VibrationParticleOption implements ParticleOptions {
          float var5 = (float)var2.readDouble();
          var2.expect(' ');
          int var6 = var2.readInt();
-         BlockPos var7 = new BlockPos((double)var3, (double)var4, (double)var5);
+         BlockPos var7 = BlockPos.containing((double)var3, (double)var4, (double)var5);
          return new VibrationParticleOption(new BlockPositionSource(var7), var6);
       }
 

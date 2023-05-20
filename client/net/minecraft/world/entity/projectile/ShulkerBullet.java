@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -117,7 +118,7 @@ public class ShulkerBullet extends Projectile {
          var2 = this.blockPosition().below();
       } else {
          var3 = (double)this.finalTarget.getBbHeight() * 0.5;
-         var2 = new BlockPos(this.finalTarget.getX(), this.finalTarget.getY() + var3, this.finalTarget.getZ());
+         var2 = BlockPos.containing(this.finalTarget.getX(), this.finalTarget.getY() + var3, this.finalTarget.getZ());
       }
 
       double var5 = (double)var2.getX() + 0.5;
@@ -271,17 +272,19 @@ public class ShulkerBullet extends Projectile {
       return 1.0F;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
       Entity var2 = var1.getEntity();
       Entity var3 = this.getOwner();
       LivingEntity var4 = var3 instanceof LivingEntity ? (LivingEntity)var3 : null;
-      boolean var5 = var2.hurt(DamageSource.indirectMobAttack(this, var4).setProjectile(), 4.0F);
+      boolean var5 = var2.hurt(this.damageSources().mobProjectile(this, var4), 4.0F);
       if (var5) {
          this.doEnchantDamageEffects(var4, var2);
-         if (var2 instanceof LivingEntity) {
-            ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), (Entity)MoreObjects.firstNonNull(var3, this));
+         if (var2 instanceof LivingEntity var6) {
+            var6.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 200), (Entity)MoreObjects.firstNonNull(var3, this));
          }
       }
    }
@@ -293,10 +296,15 @@ public class ShulkerBullet extends Projectile {
       this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
    }
 
+   private void destroy() {
+      this.discard();
+      this.level.gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
+   }
+
    @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      this.discard();
+      this.destroy();
    }
 
    @Override
@@ -309,7 +317,7 @@ public class ShulkerBullet extends Projectile {
       if (!this.level.isClientSide) {
          this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
          ((ServerLevel)this.level).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
-         this.discard();
+         this.destroy();
       }
 
       return true;

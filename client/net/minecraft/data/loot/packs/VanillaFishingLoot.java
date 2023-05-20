@@ -62,17 +62,7 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(LootTableReference.lootTableReference(BuiltInLootTables.FISHING_FISH).setWeight(85).setQuality(-1))
             )
       );
-      var1.accept(
-         BuiltInLootTables.FISHING_FISH,
-         LootTable.lootTable()
-            .withPool(
-               LootPool.lootPool()
-                  .add(LootItem.lootTableItem(Items.COD).setWeight(60))
-                  .add(LootItem.lootTableItem(Items.SALMON).setWeight(25))
-                  .add(LootItem.lootTableItem(Items.TROPICAL_FISH).setWeight(2))
-                  .add(LootItem.lootTableItem(Items.PUFFERFISH).setWeight(13))
-            )
-      );
+      var1.accept(BuiltInLootTables.FISHING_FISH, fishingFishLootTable());
       var1.accept(
          BuiltInLootTables.FISHING_JUNK,
          LootTable.lootTable()
@@ -117,5 +107,16 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.NAUTILUS_SHELL))
             )
       );
+   }
+
+   public static LootTable.Builder fishingFishLootTable() {
+      return LootTable.lootTable()
+         .withPool(
+            LootPool.lootPool()
+               .add(LootItem.lootTableItem(Items.COD).setWeight(60))
+               .add(LootItem.lootTableItem(Items.SALMON).setWeight(25))
+               .add(LootItem.lootTableItem(Items.TROPICAL_FISH).setWeight(2))
+               .add(LootItem.lootTableItem(Items.PUFFERFISH).setWeight(13))
+         );
    }
 }

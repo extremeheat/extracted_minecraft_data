@@ -34,7 +34,7 @@ public class ViewArea {
             for(int var4 = 0; var4 < this.chunkGridSizeY; ++var4) {
                for(int var5 = 0; var5 < this.chunkGridSizeZ; ++var5) {
                   int var6 = this.getChunkIndex(var3, var4, var5);
-                  this.chunks[var6] = var1.new RenderChunk(var6, var3 * 16, var4 * 16, var5 * 16);
+                  this.chunks[var6] = var1.new RenderChunk(var1, var6, var3 * 16, var4 * 16, var5 * 16);
                }
             }
          }
@@ -94,9 +94,9 @@ public class ViewArea {
 
    @Nullable
    protected ChunkRenderDispatcher.RenderChunk getRenderChunkAt(BlockPos var1) {
-      int var2 = Mth.intFloorDiv(var1.getX(), 16);
-      int var3 = Mth.intFloorDiv(var1.getY() - this.level.getMinBuildHeight(), 16);
-      int var4 = Mth.intFloorDiv(var1.getZ(), 16);
+      int var2 = Mth.floorDiv(var1.getX(), 16);
+      int var3 = Mth.floorDiv(var1.getY() - this.level.getMinBuildHeight(), 16);
+      int var4 = Mth.floorDiv(var1.getZ(), 16);
       if (var3 >= 0 && var3 < this.chunkGridSizeY) {
          var2 = Mth.positiveModulo(var2, this.chunkGridSizeX);
          var4 = Mth.positiveModulo(var4, this.chunkGridSizeZ);

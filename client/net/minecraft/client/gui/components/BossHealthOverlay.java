@@ -32,7 +32,6 @@ public class BossHealthOverlay extends GuiComponent {
 
          for(LerpingBossEvent var5 : this.events.values()) {
             int var6 = var2 / 2 - 91;
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShaderTexture(0, GUI_BARS_LOCATION);
             this.drawBar(var1, var6, var3, var5);
             Component var8 = var5.getName();
@@ -57,11 +56,10 @@ public class BossHealthOverlay extends GuiComponent {
    }
 
    private void drawBar(PoseStack var1, int var2, int var3, BossEvent var4, int var5, int var6) {
-      this.blit(var1, var2, var3, 0, var4.getColor().ordinal() * 5 * 2 + var6, var5, 5);
+      blit(var1, var2, var3, 0, var4.getColor().ordinal() * 5 * 2 + var6, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
          RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         this.blit(var1, var2, var3, 0, 80 + (var4.getOverlay().ordinal() - 1) * 5 * 2 + var6, var5, 5);
+         blit(var1, var2, var3, 0, 80 + (var4.getOverlay().ordinal() - 1) * 5 * 2 + var6, var5, 5);
          RenderSystem.disableBlend();
       }
    }

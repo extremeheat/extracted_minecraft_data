@@ -1,14 +1,10 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -16,6 +12,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Matrix4f;
 
 public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
@@ -27,103 +24,76 @@ public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    @Override
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
-      Level var9 = this.minecraft.player.level;
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.lineWidth(2.0F);
-      RenderSystem.disableTexture();
-      RenderSystem.depthMask(false);
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      BlockPos var10 = new BlockPos(var3, var5, var7);
+      Matrix4f var9 = var1.last().pose();
+      Level var10 = this.minecraft.player.level;
+      BlockPos var11 = BlockPos.containing(var3, var5, var7);
 
-      for(BlockPos var12 : BlockPos.betweenClosed(var10.offset(-6, -6, -6), var10.offset(6, 6, 6))) {
-         BlockState var13 = var9.getBlockState(var12);
-         if (!var13.is(Blocks.AIR)) {
-            VoxelShape var14 = var13.getShape(var9, var12);
+      for(BlockPos var13 : BlockPos.betweenClosed(var11.offset(-6, -6, -6), var11.offset(6, 6, 6))) {
+         BlockState var14 = var10.getBlockState(var13);
+         if (!var14.is(Blocks.AIR)) {
+            VoxelShape var15 = var14.getShape(var10, var13);
 
-            for(AABB var16 : var14.toAabbs()) {
-               AABB var17 = var16.move(var12).inflate(0.002).move(-var3, -var5, -var7);
-               double var18 = var17.minX;
-               double var20 = var17.minY;
-               double var22 = var17.minZ;
-               double var24 = var17.maxX;
-               double var26 = var17.maxY;
-               double var28 = var17.maxZ;
-               float var30 = 1.0F;
-               float var31 = 0.0F;
-               float var32 = 0.0F;
-               float var33 = 0.5F;
-               if (var13.isFaceSturdy(var9, var12, Direction.WEST)) {
-                  Tesselator var34 = Tesselator.getInstance();
-                  BufferBuilder var35 = var34.getBuilder();
-                  var35.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var35.vertex(var18, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var35.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var35.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var35.vertex(var18, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var34.end();
+            for(AABB var17 : var15.toAabbs()) {
+               AABB var18 = var17.move(var13).inflate(0.002);
+               float var19 = (float)(var18.minX - var3);
+               float var20 = (float)(var18.minY - var5);
+               float var21 = (float)(var18.minZ - var7);
+               float var22 = (float)(var18.maxX - var3);
+               float var23 = (float)(var18.maxY - var5);
+               float var24 = (float)(var18.maxZ - var7);
+               float var25 = 1.0F;
+               float var26 = 0.0F;
+               float var27 = 0.0F;
+               float var28 = 0.5F;
+               if (var14.isFaceSturdy(var10, var13, Direction.WEST)) {
+                  VertexConsumer var29 = var2.getBuffer(RenderType.debugFilledBox());
+                  var29.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var29.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var29.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var29.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
 
-               if (var13.isFaceSturdy(var9, var12, Direction.SOUTH)) {
-                  Tesselator var36 = Tesselator.getInstance();
-                  BufferBuilder var41 = var36.getBuilder();
-                  var41.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var41.vertex(var18, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var41.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var41.vertex(var24, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var41.vertex(var24, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var36.end();
+               if (var14.isFaceSturdy(var10, var13, Direction.SOUTH)) {
+                  VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
+                  var30.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var30.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var30.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var30.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
 
-               if (var13.isFaceSturdy(var9, var12, Direction.EAST)) {
-                  Tesselator var37 = Tesselator.getInstance();
-                  BufferBuilder var42 = var37.getBuilder();
-                  var42.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var42.vertex(var24, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var42.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var42.vertex(var24, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var42.vertex(var24, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var37.end();
+               if (var14.isFaceSturdy(var10, var13, Direction.EAST)) {
+                  VertexConsumer var31 = var2.getBuffer(RenderType.debugFilledBox());
+                  var31.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var31.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var31.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var31.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
 
-               if (var13.isFaceSturdy(var9, var12, Direction.NORTH)) {
-                  Tesselator var38 = Tesselator.getInstance();
-                  BufferBuilder var43 = var38.getBuilder();
-                  var43.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var43.vertex(var24, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var43.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var43.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var43.vertex(var18, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var38.end();
+               if (var14.isFaceSturdy(var10, var13, Direction.NORTH)) {
+                  VertexConsumer var32 = var2.getBuffer(RenderType.debugFilledBox());
+                  var32.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var32.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var32.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var32.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
 
-               if (var13.isFaceSturdy(var9, var12, Direction.DOWN)) {
-                  Tesselator var39 = Tesselator.getInstance();
-                  BufferBuilder var44 = var39.getBuilder();
-                  var44.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var44.vertex(var18, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var44.vertex(var24, var20, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var44.vertex(var18, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var44.vertex(var24, var20, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var39.end();
+               if (var14.isFaceSturdy(var10, var13, Direction.DOWN)) {
+                  VertexConsumer var33 = var2.getBuffer(RenderType.debugFilledBox());
+                  var33.vertex(var9, var19, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var33.vertex(var9, var22, var20, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var33.vertex(var9, var19, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var33.vertex(var9, var22, var20, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
 
-               if (var13.isFaceSturdy(var9, var12, Direction.UP)) {
-                  Tesselator var40 = Tesselator.getInstance();
-                  BufferBuilder var45 = var40.getBuilder();
-                  var45.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                  var45.vertex(var18, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var45.vertex(var18, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var45.vertex(var24, var26, var22).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var45.vertex(var24, var26, var28).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
-                  var40.end();
+               if (var14.isFaceSturdy(var10, var13, Direction.UP)) {
+                  VertexConsumer var34 = var2.getBuffer(RenderType.debugFilledBox());
+                  var34.vertex(var9, var19, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var34.vertex(var9, var19, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var34.vertex(var9, var22, var23, var21).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
+                  var34.vertex(var9, var22, var23, var24).color(1.0F, 0.0F, 0.0F, 0.5F).endVertex();
                }
             }
          }
       }
-
-      RenderSystem.depthMask(true);
-      RenderSystem.enableTexture();
-      RenderSystem.disableBlend();
    }
 }

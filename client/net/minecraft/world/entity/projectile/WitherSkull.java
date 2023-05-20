@@ -46,6 +46,8 @@ public class WitherSkull extends AbstractHurtingProjectile {
       return this.isDangerous() && WitherBoss.canDestroy(var4) ? Math.min(0.8F, var6) : var6;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
@@ -54,7 +56,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
          Entity var3 = this.getOwner();
          boolean var4;
          if (var3 instanceof LivingEntity var5) {
-            var4 = var2.hurt(DamageSource.witherSkull(this, (Entity)var5), 8.0F);
+            var4 = var2.hurt(this.damageSources().witherSkull(this, (Entity)var5), 8.0F);
             if (var4) {
                if (var2.isAlive()) {
                   this.doEnchantDamageEffects((LivingEntity)var5, var2);
@@ -63,10 +65,10 @@ public class WitherSkull extends AbstractHurtingProjectile {
                }
             }
          } else {
-            var4 = var2.hurt(DamageSource.MAGIC, 5.0F);
+            var4 = var2.hurt(this.damageSources().magic(), 5.0F);
          }
 
-         if (var4 && var2 instanceof LivingEntity) {
+         if (var4 && var2 instanceof LivingEntity var7) {
             byte var6 = 0;
             if (this.level.getDifficulty() == Difficulty.NORMAL) {
                var6 = 10;
@@ -75,7 +77,7 @@ public class WitherSkull extends AbstractHurtingProjectile {
             }
 
             if (var6 > 0) {
-               ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var6, 1), this.getEffectSource());
+               var7.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var6, 1), this.getEffectSource());
             }
          }
       }

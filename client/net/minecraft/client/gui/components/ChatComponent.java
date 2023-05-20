@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.ListIterator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -101,10 +100,8 @@ public class ChatComponent extends GuiComponent {
                            }
                         }
 
-                        RenderSystem.enableBlend();
                         var1.translate(0.0F, 0.0F, 50.0F);
                         this.minecraft.font.drawShadow(var1, var24.content(), 0.0F, (float)var32, 16777215 + (var28 << 24));
-                        RenderSystem.disableBlend();
                         var1.popPose();
                      }
                   }
@@ -118,11 +115,9 @@ public class ChatComponent extends GuiComponent {
                var1.pushPose();
                var1.translate(0.0F, (float)var11, 50.0F);
                fill(var1, -2, 0, var9 + 4, 9, var40 << 24);
-               RenderSystem.enableBlend();
                var1.translate(0.0F, 0.0F, 50.0F);
                this.minecraft.font.drawShadow(var1, Component.translatable("chat.queue", var37), 0.0F, 1.0F, 16777215 + (var38 << 24));
                var1.popPose();
-               RenderSystem.disableBlend();
             }
 
             if (var7) {
@@ -187,7 +182,7 @@ public class ChatComponent extends GuiComponent {
 
    private void logChatMessage(Component var1, @Nullable GuiMessageTag var2) {
       String var3 = var1.getString().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n");
-      String var4 = Util.mapNullable(var2, GuiMessageTag::logTag);
+      String var4 = Optionull.map(var2, GuiMessageTag::logTag);
       if (var4 != null) {
          LOGGER.info("[{}] [CHAT] {}", var4, var3);
       } else {

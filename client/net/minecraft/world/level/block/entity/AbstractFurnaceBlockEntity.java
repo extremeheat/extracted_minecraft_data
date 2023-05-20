@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -255,7 +256,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          }
 
          int var10 = var3.getMaxStackSize();
-         if (!var3.isLit() && canBurn(var9, var3.items, var10)) {
+         if (!var3.isLit() && canBurn(var0.registryAccess(), var9, var3.items, var10)) {
             var3.litTime = var3.getBurnDuration(var6);
             var3.litDuration = var3.litTime;
             if (var3.isLit()) {
@@ -271,12 +272,12 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             }
          }
 
-         if (var3.isLit() && canBurn(var9, var3.items, var10)) {
+         if (var3.isLit() && canBurn(var0.registryAccess(), var9, var3.items, var10)) {
             ++var3.cookingProgress;
             if (var3.cookingProgress == var3.cookingTotalTime) {
                var3.cookingProgress = 0;
                var3.cookingTotalTime = getTotalCookTime(var0, var3);
-               if (burn(var9, var3.items, var10)) {
+               if (burn(var0.registryAccess(), var9, var3.items, var10)) {
                   var3.setRecipeUsed(var9);
                }
 
@@ -300,21 +301,21 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private static boolean canBurn(@Nullable Recipe<?> var0, NonNullList<ItemStack> var1, int var2) {
-      if (!((ItemStack)var1.get(0)).isEmpty() && var0 != null) {
-         ItemStack var3 = var0.getResultItem();
-         if (var3.isEmpty()) {
+   private static boolean canBurn(RegistryAccess var0, @Nullable Recipe<?> var1, NonNullList<ItemStack> var2, int var3) {
+      if (!((ItemStack)var2.get(0)).isEmpty() && var1 != null) {
+         ItemStack var4 = var1.getResultItem(var0);
+         if (var4.isEmpty()) {
             return false;
          } else {
-            ItemStack var4 = (ItemStack)var1.get(2);
-            if (var4.isEmpty()) {
+            ItemStack var5 = (ItemStack)var2.get(2);
+            if (var5.isEmpty()) {
                return true;
-            } else if (!var4.sameItem(var3)) {
+            } else if (!var5.sameItem(var4)) {
                return false;
-            } else if (var4.getCount() < var2 && var4.getCount() < var4.getMaxStackSize()) {
+            } else if (var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize()) {
                return true;
             } else {
-               return var4.getCount() < var3.getMaxStackSize();
+               return var5.getCount() < var4.getMaxStackSize();
             }
          }
       } else {
@@ -322,22 +323,22 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private static boolean burn(@Nullable Recipe<?> var0, NonNullList<ItemStack> var1, int var2) {
-      if (var0 != null && canBurn(var0, var1, var2)) {
-         ItemStack var3 = (ItemStack)var1.get(0);
-         ItemStack var4 = var0.getResultItem();
-         ItemStack var5 = (ItemStack)var1.get(2);
-         if (var5.isEmpty()) {
-            var1.set(2, var4.copy());
-         } else if (var5.is(var4.getItem())) {
-            var5.grow(1);
+   private static boolean burn(RegistryAccess var0, @Nullable Recipe<?> var1, NonNullList<ItemStack> var2, int var3) {
+      if (var1 != null && canBurn(var0, var1, var2, var3)) {
+         ItemStack var4 = (ItemStack)var2.get(0);
+         ItemStack var5 = var1.getResultItem(var0);
+         ItemStack var6 = (ItemStack)var2.get(2);
+         if (var6.isEmpty()) {
+            var2.set(2, var5.copy());
+         } else if (var6.is(var5.getItem())) {
+            var6.grow(1);
          }
 
-         if (var3.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var1.get(1)).isEmpty() && ((ItemStack)var1.get(1)).is(Items.BUCKET)) {
-            var1.set(1, new ItemStack(Items.WATER_BUCKET));
+         if (var4.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var2.get(1)).isEmpty() && ((ItemStack)var2.get(1)).is(Items.BUCKET)) {
+            var2.set(1, new ItemStack(Items.WATER_BUCKET));
          }
 
-         var3.shrink(1);
+         var4.shrink(1);
          return true;
       } else {
          return false;
@@ -433,12 +434,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
 
    @Override
    public boolean stillValid(Player var1) {
-      if (this.level.getBlockEntity(this.worldPosition) != this) {
-         return false;
-      } else {
-         return var1.distanceToSqr((double)this.worldPosition.getX() + 0.5, (double)this.worldPosition.getY() + 0.5, (double)this.worldPosition.getZ() + 0.5)
-            <= 64.0;
-      }
+      return Container.stillValidBlockEntity(this, var1);
    }
 
    @Override

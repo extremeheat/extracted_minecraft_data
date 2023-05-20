@@ -14,9 +14,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.camel.Camel;
 
 public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
-   private static final float WALK_ANIMATION_SPEED_FACTOR = 400.0F;
-   private static final float MIN_WALK_ANIMATION_SPEED = 0.3F;
    private static final float MAX_WALK_ANIMATION_SPEED = 2.0F;
+   private static final float WALK_ANIMATION_SCALE_FACTOR = 2.5F;
+   private static final float BABY_SCALE = 0.45F;
+   private static final float BABY_Y_OFFSET = 29.35F;
    private static final String SADDLE = "saddle";
    private static final String BRIDLE = "bridle";
    private static final String REINS = "reins";
@@ -119,9 +120,7 @@ public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
       this.root().getAllParts().forEach(ModelPart::resetPose);
       this.applyHeadRotation((T)var1, var5, var6, var4);
       this.toggleInvisibleParts((T)var1);
-      float var7 = (float)var1.getDeltaMovement().horizontalDistanceSqr();
-      float var8 = Mth.clamp(var7 * 400.0F, 0.3F, 2.0F);
-      this.animate(var1.walkAnimationState, CamelAnimation.CAMEL_WALK, var4, var8);
+      this.animateWalk(CamelAnimation.CAMEL_WALK, var2, var3, 2.0F, 2.5F);
       this.animate(var1.sitAnimationState, CamelAnimation.CAMEL_SIT, var4, 1.0F);
       this.animate(var1.sitPoseAnimationState, CamelAnimation.CAMEL_SIT_POSE, var4, 1.0F);
       this.animate(var1.sitUpAnimationState, CamelAnimation.CAMEL_STANDUP, var4, 1.0F);
@@ -158,11 +157,9 @@ public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
    @Override
    public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
       if (this.young) {
-         float var9 = 2.0F;
-         float var10 = 1.1F;
          var1.pushPose();
-         var1.scale(0.45454544F, 0.41322312F, 0.45454544F);
-         var1.translate(0.0F, 2.0625F, 0.0F);
+         var1.scale(0.45F, 0.45F, 0.45F);
+         var1.translate(0.0F, 1.834375F, 0.0F);
          this.root().render(var1, var2, var3, var4, var5, var6, var7, var8);
          var1.popPose();
       } else {

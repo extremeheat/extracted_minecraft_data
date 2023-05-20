@@ -10,11 +10,13 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -315,6 +317,10 @@ public class Guardian extends Monster {
       return ((float)this.clientSideAttackTime + var1) / (float)this.getAttackDuration();
    }
 
+   public float getClientSideAttackTime() {
+      return (float)this.clientSideAttackTime;
+   }
+
    @Override
    public boolean checkSpawnObstruction(LevelReader var1) {
       return var1.isUnobstructed(this);
@@ -331,15 +337,22 @@ public class Guardian extends Monster {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean hurt(DamageSource var1, float var2) {
-      if (!this.isMoving() && !var1.isMagic() && var1.getDirectEntity() instanceof LivingEntity var3 && !var1.isExplosion()) {
-         var3.hurt(DamageSource.thorns(this), 2.0F);
-      }
+      if (this.level.isClientSide) {
+         return false;
+      } else {
+         if (!this.isMoving() && !var1.is(DamageTypeTags.AVOIDS_GUARDIAN_THORNS) && !var1.is(DamageTypes.THORNS)) {
+            Entity var4 = var1.getDirectEntity();
+            if (var4 instanceof LivingEntity var3) {
+               var3.hurt(this.damageSources().thorns(this), 2.0F);
+            }
+         }
 
-      if (this.randomStrollGoal != null) {
-         this.randomStrollGoal.trigger();
-      }
+         if (this.randomStrollGoal != null) {
+            this.randomStrollGoal.trigger();
+         }
 
-      return super.hurt(var1, var2);
+         return super.hurt(var1, var2);
+      }
    }
 
    @Override
@@ -349,7 +362,7 @@ public class Guardian extends Monster {
 
    @Override
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(0.1F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -433,8 +446,8 @@ public class Guardian extends Monster {
                      var2 += 2.0F;
                   }
 
-                  var1.hurt(DamageSource.indirectMagic(this.guardian, this.guardian), var2);
-                  var1.hurt(DamageSource.mobAttack(this.guardian), (float)this.guardian.getAttributeValue(Attributes.ATTACK_DAMAGE));
+                  var1.hurt(this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), var2);
+                  var1.hurt(this.guardian.damageSources().mobAttack(this.guardian), (float)this.guardian.getAttributeValue(Attributes.ATTACK_DAMAGE));
                   this.guardian.setTarget(null);
                }
 

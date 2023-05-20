@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
@@ -67,10 +68,9 @@ public class SystemToast implements Toast {
       }
 
       RenderSystem.setShaderTexture(0, TEXTURE);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var5 = this.width();
       if (var5 == 160 && this.messageLines.size() <= 1) {
-         var2.blit(var1, 0, 0, 0, 64, var5, this.height());
+         GuiComponent.blit(var1, 0, 0, 0, 64, var5, this.height());
       } else {
          int var6 = this.height();
          boolean var7 = true;
@@ -94,19 +94,21 @@ public class SystemToast implements Toast {
          }
       }
 
-      return var3 - this.lastChanged < this.id.displayTime ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+      return (double)(var3 - this.lastChanged) < (double)this.id.displayTime * var2.getNotificationDisplayTimeMultiplier()
+         ? Toast.Visibility.SHOW
+         : Toast.Visibility.HIDE;
    }
 
    private void renderBackgroundRow(PoseStack var1, ToastComponent var2, int var3, int var4, int var5, int var6) {
       int var7 = var4 == 0 ? 20 : 5;
       int var8 = Math.min(60, var3 - var7);
-      var2.blit(var1, 0, var5, 0, 64 + var4, var7, var6);
+      GuiComponent.blit(var1, 0, var5, 0, 64 + var4, var7, var6);
 
       for(int var9 = var7; var9 < var3 - var8; var9 += 64) {
-         var2.blit(var1, var9, var5, 32, 64 + var4, Math.min(64, var3 - var9 - var8), var6);
+         GuiComponent.blit(var1, var9, var5, 32, 64 + var4, Math.min(64, var3 - var9 - var8), var6);
       }
 
-      var2.blit(var1, var3 - var8, var5, 160 - var8, 64 + var4, var8, var6);
+      GuiComponent.blit(var1, var3 - var8, var5, 160 - var8, 64 + var4, var8, var6);
    }
 
    public void reset(Component var1, @Nullable Component var2) {
@@ -148,7 +150,6 @@ public class SystemToast implements Toast {
       TUTORIAL_HINT,
       NARRATOR_TOGGLE,
       WORLD_BACKUP,
-      WORLD_GEN_SETTINGS_TRANSFER,
       PACK_LOAD_FAILURE,
       WORLD_ACCESS_FAILURE,
       PACK_COPY_FAILURE,

@@ -9,6 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,7 +35,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -91,29 +91,24 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    public void aiStep() {
       super.aiStep();
       if (!this.level.isClientSide) {
-         int var1 = Mth.floor(this.getX());
-         int var2 = Mth.floor(this.getY());
-         int var3 = Mth.floor(this.getZ());
-         BlockPos var4 = new BlockPos(var1, var2, var3);
-         Biome var5 = this.level.getBiome(var4).value();
-         if (var5.shouldSnowGolemBurn(var4)) {
-            this.hurt(DamageSource.ON_FIRE, 1.0F);
+         if (this.level.getBiome(this.blockPosition()).is(BiomeTags.SNOW_GOLEM_MELTS)) {
+            this.hurt(this.damageSources().onFire(), 1.0F);
          }
 
          if (!this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
             return;
          }
 
-         BlockState var6 = Blocks.SNOW.defaultBlockState();
+         BlockState var1 = Blocks.SNOW.defaultBlockState();
 
-         for(int var7 = 0; var7 < 4; ++var7) {
-            var1 = Mth.floor(this.getX() + (double)((float)(var7 % 2 * 2 - 1) * 0.25F));
-            var2 = Mth.floor(this.getY());
-            var3 = Mth.floor(this.getZ() + (double)((float)(var7 / 2 % 2 * 2 - 1) * 0.25F));
-            BlockPos var8 = new BlockPos(var1, var2, var3);
-            if (this.level.getBlockState(var8).isAir() && var6.canSurvive(this.level, var8)) {
-               this.level.setBlockAndUpdate(var8, var6);
-               this.level.gameEvent(GameEvent.BLOCK_PLACE, var8, GameEvent.Context.of(this, var6));
+         for(int var2 = 0; var2 < 4; ++var2) {
+            int var3 = Mth.floor(this.getX() + (double)((float)(var2 % 2 * 2 - 1) * 0.25F));
+            int var4 = Mth.floor(this.getY());
+            int var5 = Mth.floor(this.getZ() + (double)((float)(var2 / 2 % 2 * 2 - 1) * 0.25F));
+            BlockPos var6 = new BlockPos(var3, var4, var5);
+            if (this.level.getBlockState(var6).isAir() && var1.canSurvive(this.level, var6)) {
+               this.level.setBlockAndUpdate(var6, var1);
+               this.level.gameEvent(GameEvent.BLOCK_PLACE, var6, GameEvent.Context.of(this, var1));
             }
          }
       }

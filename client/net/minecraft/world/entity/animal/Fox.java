@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
@@ -699,7 +700,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          double var12 = var6 == 0.0 ? var4 * (double)((float)var9 / 6.0F) : var10 / var6;
 
          for(int var14 = 1; var14 < 4; ++var14) {
-            if (!var0.level.getBlockState(new BlockPos(var0.getX() + var12, var0.getY() + (double)var14, var0.getZ() + var10)).canBeReplaced()) {
+            if (!var0.level.getBlockState(BlockPos.containing(var0.getX() + var12, var0.getY() + (double)var14, var0.getZ() + var10)).canBeReplaced()) {
                return false;
             }
          }
@@ -829,7 +830,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       protected boolean hasShelter() {
-         BlockPos var1 = new BlockPos(Fox.this.getX(), Fox.this.getBoundingBox().maxY, Fox.this.getZ());
+         BlockPos var1 = BlockPos.containing(Fox.this.getX(), Fox.this.getBoundingBox().maxY, Fox.this.getZ());
          return !Fox.this.level.canSeeSky(var1) && Fox.this.getWalkTargetValue(var1) >= 0.0F;
       }
 
@@ -944,7 +945,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       private void pickGlowBerry(BlockState var1) {
-         CaveVines.use(var1, Fox.this.level, this.blockPos);
+         CaveVines.use(Fox.this, var1, Fox.this.level, this.blockPos);
       }
 
       private void pickSweetBerries(BlockState var1) {
@@ -1194,7 +1195,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          if (!Fox.this.isFaceplanted()) {
             Vec3 var2 = Fox.this.getDeltaMovement();
             if (var2.y * var2.y < 0.029999999329447746 && Fox.this.getXRot() != 0.0F) {
-               Fox.this.setXRot(Mth.rotlerp(Fox.this.getXRot(), 0.0F, 0.2F));
+               Fox.this.setXRot(Mth.rotLerp(0.2F, Fox.this.getXRot(), 0.0F));
             } else {
                double var3 = var2.horizontalDistance();
                double var5 = Math.signum(-var2.y) * Math.acos(var3 / var2.length()) * 57.2957763671875;
@@ -1520,7 +1521,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       public static Fox.Type byBiome(Holder<Biome> var0) {
-         return ((Biome)var0.value()).getPrecipitation() == Biome.Precipitation.SNOW ? SNOW : RED;
+         return var0.is(BiomeTags.SPAWNS_SNOW_FOXES) ? SNOW : RED;
       }
    }
 }

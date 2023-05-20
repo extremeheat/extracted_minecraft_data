@@ -59,7 +59,7 @@ public class BreathAirGoal extends Goal {
       }
 
       if (var2 == null) {
-         var2 = new BlockPos(this.mob.getX(), this.mob.getY() + 8.0, this.mob.getZ());
+         var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 8.0, this.mob.getZ());
       }
 
       this.mob.getNavigation().moveTo((double)var2.getX(), (double)(var2.getY() + 1), (double)var2.getZ(), 1.0);

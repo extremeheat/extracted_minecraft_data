@@ -112,11 +112,11 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.DAMAGE_INDICATOR, CritParticle.DamageIndicatorProvider::new);
       this.register(ParticleTypes.DRAGON_BREATH, DragonBreathParticle.Provider::new);
       this.register(ParticleTypes.DOLPHIN, SuspendedTownParticle.DolphinSpeedProvider::new);
-      this.register(ParticleTypes.DRIPPING_LAVA, DripParticle.LavaHangProvider::new);
-      this.register(ParticleTypes.FALLING_LAVA, DripParticle.LavaFallProvider::new);
-      this.register(ParticleTypes.LANDING_LAVA, DripParticle.LavaLandProvider::new);
-      this.register(ParticleTypes.DRIPPING_WATER, DripParticle.WaterHangProvider::new);
-      this.register(ParticleTypes.FALLING_WATER, DripParticle.WaterFallProvider::new);
+      this.register(ParticleTypes.DRIPPING_LAVA, DripParticle::createLavaHangParticle);
+      this.register(ParticleTypes.FALLING_LAVA, DripParticle::createLavaFallParticle);
+      this.register(ParticleTypes.LANDING_LAVA, DripParticle::createLavaLandParticle);
+      this.register(ParticleTypes.DRIPPING_WATER, DripParticle::createWaterHangParticle);
+      this.register(ParticleTypes.FALLING_WATER, DripParticle::createWaterFallParticle);
       this.register(ParticleTypes.DUST, DustParticle.Provider::new);
       this.register(ParticleTypes.DUST_COLOR_TRANSITION, DustColorTransitionParticle.Provider::new);
       this.register(ParticleTypes.EFFECT, SpellParticle.Provider::new);
@@ -162,25 +162,28 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.UNDERWATER, SuspendedParticle.UnderwaterProvider::new);
       this.register(ParticleTypes.SPLASH, SplashParticle.Provider::new);
       this.register(ParticleTypes.WITCH, SpellParticle.WitchProvider::new);
-      this.register(ParticleTypes.DRIPPING_HONEY, DripParticle.HoneyHangProvider::new);
-      this.register(ParticleTypes.FALLING_HONEY, DripParticle.HoneyFallProvider::new);
-      this.register(ParticleTypes.LANDING_HONEY, DripParticle.HoneyLandProvider::new);
-      this.register(ParticleTypes.FALLING_NECTAR, DripParticle.NectarFallProvider::new);
-      this.register(ParticleTypes.FALLING_SPORE_BLOSSOM, DripParticle.SporeBlossomFallProvider::new);
+      this.register(ParticleTypes.DRIPPING_HONEY, DripParticle::createHoneyHangParticle);
+      this.register(ParticleTypes.FALLING_HONEY, DripParticle::createHoneyFallParticle);
+      this.register(ParticleTypes.LANDING_HONEY, DripParticle::createHoneyLandParticle);
+      this.register(ParticleTypes.FALLING_NECTAR, DripParticle::createNectarFallParticle);
+      this.register(ParticleTypes.FALLING_SPORE_BLOSSOM, DripParticle::createSporeBlossomFallParticle);
       this.register(ParticleTypes.SPORE_BLOSSOM_AIR, SuspendedParticle.SporeBlossomAirProvider::new);
       this.register(ParticleTypes.ASH, AshParticle.Provider::new);
       this.register(ParticleTypes.CRIMSON_SPORE, SuspendedParticle.CrimsonSporeProvider::new);
       this.register(ParticleTypes.WARPED_SPORE, SuspendedParticle.WarpedSporeProvider::new);
-      this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, DripParticle.ObsidianTearHangProvider::new);
-      this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, DripParticle.ObsidianTearFallProvider::new);
-      this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, DripParticle.ObsidianTearLandProvider::new);
+      this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, DripParticle::createObsidianTearHangParticle);
+      this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, DripParticle::createObsidianTearFallParticle);
+      this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, DripParticle::createObsidianTearLandParticle);
       this.register(ParticleTypes.REVERSE_PORTAL, ReversePortalParticle.ReversePortalProvider::new);
       this.register(ParticleTypes.WHITE_ASH, WhiteAshParticle.Provider::new);
       this.register(ParticleTypes.SMALL_FLAME, FlameParticle.SmallFlameProvider::new);
-      this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle.DripstoneWaterHangProvider::new);
-      this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle.DripstoneWaterFallProvider::new);
-      this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle.DripstoneLavaHangProvider::new);
-      this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle.DripstoneLavaFallProvider::new);
+      this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterHangParticle);
+      this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterFallParticle);
+      this.register(ParticleTypes.DRIPPING_CHERRY_LEAVES, DripParticle::createCherryLeavesHangParticle);
+      this.register(ParticleTypes.FALLING_CHERRY_LEAVES, DripParticle::createCherryLeavesFallParticle);
+      this.register(ParticleTypes.LANDING_CHERRY_LEAVES, DripParticle::createCherryLeavesLandParticle);
+      this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaHangParticle);
+      this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaFallParticle);
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
       this.register(ParticleTypes.GLOW_SQUID_INK, SquidInkParticle.GlowInkProvider::new);
       this.register(ParticleTypes.GLOW, GlowParticle.GlowSquidProvider::new);
@@ -193,6 +196,17 @@ public class ParticleEngine implements PreparableReloadListener {
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
       this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(var1), var2);
+   }
+
+   private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider.Sprite<T> var2) {
+      this.register(var1, var1x -> (var2x, var3, var4, var6, var8, var10, var12, var14) -> {
+            TextureSheetParticle var16 = var2.createParticle(var2x, var3, var4, var6, var8, var10, var12, var14);
+            if (var16 != null) {
+               var16.pickSprite(var1x);
+            }
+
+            return var16;
+         });
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleEngine.SpriteParticleRegistration<T> var2) {
@@ -274,30 +288,21 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    private Optional<List<ResourceLocation>> loadParticleDescription(ResourceLocation var1, Resource var2) {
-      try {
-         Optional var7;
-         try (BufferedReader var3 = var2.openAsReader()) {
-            ParticleDescription var4 = ParticleDescription.fromJson(GsonHelper.parse(var3));
-            List var5 = var4.getTextures();
-            boolean var6 = this.spriteSets.containsKey(var1);
-            if (var5 == null) {
-               if (var6) {
-                  throw new IllegalStateException("Missing texture list for particle " + var1);
-               }
-
-               return Optional.empty();
+      if (!this.spriteSets.containsKey(var1)) {
+         LOGGER.debug("Redundant texture list for particle: {}", var1);
+         return Optional.empty();
+      } else {
+         try {
+            Optional var5;
+            try (BufferedReader var3 = var2.openAsReader()) {
+               ParticleDescription var4 = ParticleDescription.fromJson(GsonHelper.parse(var3));
+               var5 = Optional.of(var4.getTextures());
             }
 
-            if (!var6) {
-               throw new IllegalStateException("Redundant texture list for particle " + var1);
-            }
-
-            var7 = Optional.of(var5);
+            return var5;
+         } catch (IOException var8) {
+            throw new IllegalStateException("Failed to load description for particle " + var1, var8);
          }
-
-         return var7;
-      } catch (IOException var10) {
-         throw new IllegalStateException("Failed to load description for particle " + var1, var10);
       }
    }
 
@@ -408,7 +413,6 @@ public class ParticleEngine implements PreparableReloadListener {
          Iterable var9 = this.particles.get(var8);
          if (var9 != null) {
             RenderSystem.setShader(GameRenderer::getParticleShader);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             Tesselator var10 = Tesselator.getInstance();
             BufferBuilder var11 = var10.getBuilder();
             var8.begin(var11, this.textureManager);
@@ -534,6 +538,8 @@ public class ParticleEngine implements PreparableReloadListener {
 
    private void clearParticles() {
       this.particles.clear();
+      this.particlesToAdd.clear();
+      this.trackingEmitters.clear();
       this.trackedParticleCounts.clear();
    }
 

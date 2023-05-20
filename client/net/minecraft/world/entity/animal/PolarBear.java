@@ -217,7 +217,7 @@ public class PolarBear extends Animal implements NeutralMob {
 
    @Override
    public boolean doHurtTarget(Entity var1) {
-      boolean var2 = var1.hurt(DamageSource.mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+      boolean var2 = var1.hurt(this.damageSources().mobAttack(this), (float)((int)this.getAttributeValue(Attributes.ATTACK_DAMAGE)));
       if (var2) {
          this.doEnchantDamageEffects(this, var1);
       }

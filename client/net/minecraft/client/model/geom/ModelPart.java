@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -214,7 +215,8 @@ public final class ModelPart {
          float var11,
          boolean var12,
          float var13,
-         float var14
+         float var14,
+         Set<Direction> var15
       ) {
          super();
          this.minX = var3;
@@ -223,57 +225,75 @@ public final class ModelPart {
          this.maxX = var3 + var6;
          this.maxY = var4 + var7;
          this.maxZ = var5 + var8;
-         this.polygons = new ModelPart.Polygon[6];
-         float var15 = var3 + var6;
-         float var16 = var4 + var7;
-         float var17 = var5 + var8;
+         this.polygons = new ModelPart.Polygon[var15.size()];
+         float var16 = var3 + var6;
+         float var17 = var4 + var7;
+         float var18 = var5 + var8;
          var3 -= var9;
          var4 -= var10;
          var5 -= var11;
-         var15 += var9;
-         var16 += var10;
-         var17 += var11;
+         var16 += var9;
+         var17 += var10;
+         var18 += var11;
          if (var12) {
-            float var18 = var15;
-            var15 = var3;
-            var3 = var18;
+            float var19 = var16;
+            var16 = var3;
+            var3 = var19;
          }
 
-         ModelPart.Vertex var41 = new ModelPart.Vertex(var3, var4, var5, 0.0F, 0.0F);
-         ModelPart.Vertex var19 = new ModelPart.Vertex(var15, var4, var5, 0.0F, 8.0F);
-         ModelPart.Vertex var20 = new ModelPart.Vertex(var15, var16, var5, 8.0F, 8.0F);
-         ModelPart.Vertex var21 = new ModelPart.Vertex(var3, var16, var5, 8.0F, 0.0F);
-         ModelPart.Vertex var22 = new ModelPart.Vertex(var3, var4, var17, 0.0F, 0.0F);
-         ModelPart.Vertex var23 = new ModelPart.Vertex(var15, var4, var17, 0.0F, 8.0F);
-         ModelPart.Vertex var24 = new ModelPart.Vertex(var15, var16, var17, 8.0F, 8.0F);
-         ModelPart.Vertex var25 = new ModelPart.Vertex(var3, var16, var17, 8.0F, 0.0F);
-         float var26 = (float)var1;
-         float var27 = (float)var1 + var8;
-         float var28 = (float)var1 + var8 + var6;
-         float var29 = (float)var1 + var8 + var6 + var6;
-         float var30 = (float)var1 + var8 + var6 + var8;
-         float var31 = (float)var1 + var8 + var6 + var8 + var6;
-         float var32 = (float)var2;
-         float var33 = (float)var2 + var8;
-         float var34 = (float)var2 + var8 + var7;
-         this.polygons[2] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var23, var22, var41, var19}, var27, var32, var28, var33, var13, var14, var12, Direction.DOWN
-         );
-         this.polygons[3] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var20, var21, var25, var24}, var28, var33, var29, var32, var13, var14, var12, Direction.UP
-         );
-         this.polygons[1] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var41, var22, var25, var21}, var26, var33, var27, var34, var13, var14, var12, Direction.WEST
-         );
-         this.polygons[4] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var19, var41, var21, var20}, var27, var33, var28, var34, var13, var14, var12, Direction.NORTH
-         );
-         this.polygons[0] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var23, var19, var20, var24}, var28, var33, var30, var34, var13, var14, var12, Direction.EAST
-         );
-         this.polygons[5] = new ModelPart.Polygon(
-            new ModelPart.Vertex[]{var22, var23, var24, var25}, var30, var33, var31, var34, var13, var14, var12, Direction.SOUTH
-         );
+         ModelPart.Vertex var43 = new ModelPart.Vertex(var3, var4, var5, 0.0F, 0.0F);
+         ModelPart.Vertex var20 = new ModelPart.Vertex(var16, var4, var5, 0.0F, 8.0F);
+         ModelPart.Vertex var21 = new ModelPart.Vertex(var16, var17, var5, 8.0F, 8.0F);
+         ModelPart.Vertex var22 = new ModelPart.Vertex(var3, var17, var5, 8.0F, 0.0F);
+         ModelPart.Vertex var23 = new ModelPart.Vertex(var3, var4, var18, 0.0F, 0.0F);
+         ModelPart.Vertex var24 = new ModelPart.Vertex(var16, var4, var18, 0.0F, 8.0F);
+         ModelPart.Vertex var25 = new ModelPart.Vertex(var16, var17, var18, 8.0F, 8.0F);
+         ModelPart.Vertex var26 = new ModelPart.Vertex(var3, var17, var18, 8.0F, 0.0F);
+         float var27 = (float)var1;
+         float var28 = (float)var1 + var8;
+         float var29 = (float)var1 + var8 + var6;
+         float var30 = (float)var1 + var8 + var6 + var6;
+         float var31 = (float)var1 + var8 + var6 + var8;
+         float var32 = (float)var1 + var8 + var6 + var8 + var6;
+         float var33 = (float)var2;
+         float var34 = (float)var2 + var8;
+         float var35 = (float)var2 + var8 + var7;
+         int var36 = 0;
+         if (var15.contains(Direction.DOWN)) {
+            this.polygons[var36++] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var24, var23, var43, var20}, var28, var33, var29, var34, var13, var14, var12, Direction.DOWN
+            );
+         }
+
+         if (var15.contains(Direction.UP)) {
+            this.polygons[var36++] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var21, var22, var26, var25}, var29, var34, var30, var33, var13, var14, var12, Direction.UP
+            );
+         }
+
+         if (var15.contains(Direction.WEST)) {
+            this.polygons[var36++] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var43, var23, var26, var22}, var27, var34, var28, var35, var13, var14, var12, Direction.WEST
+            );
+         }
+
+         if (var15.contains(Direction.NORTH)) {
+            this.polygons[var36++] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var20, var43, var22, var21}, var28, var34, var29, var35, var13, var14, var12, Direction.NORTH
+            );
+         }
+
+         if (var15.contains(Direction.EAST)) {
+            this.polygons[var36++] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var24, var20, var21, var25}, var29, var34, var31, var35, var13, var14, var12, Direction.EAST
+            );
+         }
+
+         if (var15.contains(Direction.SOUTH)) {
+            this.polygons[var36] = new ModelPart.Polygon(
+               new ModelPart.Vertex[]{var23, var24, var25, var26}, var31, var34, var32, var35, var13, var14, var12, Direction.SOUTH
+            );
+         }
       }
 
       public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {

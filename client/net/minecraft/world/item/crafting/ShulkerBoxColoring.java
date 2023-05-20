@@ -1,5 +1,6 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -41,28 +42,28 @@ public class ShulkerBoxColoring extends CustomRecipe {
       return var3 == 1 && var4 == 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = ItemStack.EMPTY;
-      DyeItem var3 = (DyeItem)Items.WHITE_DYE;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ItemStack var3 = ItemStack.EMPTY;
+      DyeItem var4 = (DyeItem)Items.WHITE_DYE;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty()) {
-            Item var6 = var5.getItem();
-            if (Block.byItem(var6) instanceof ShulkerBoxBlock) {
-               var2 = var5;
-            } else if (var6 instanceof DyeItem) {
-               var3 = (DyeItem)var6;
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         if (!var6.isEmpty()) {
+            Item var7 = var6.getItem();
+            if (Block.byItem(var7) instanceof ShulkerBoxBlock) {
+               var3 = var6;
+            } else if (var7 instanceof DyeItem) {
+               var4 = (DyeItem)var7;
             }
          }
       }
 
-      ItemStack var7 = ShulkerBoxBlock.getColoredItemStack(var3.getDyeColor());
-      if (var2.hasTag()) {
-         var7.setTag(var2.getTag().copy());
+      ItemStack var8 = ShulkerBoxBlock.getColoredItemStack(var4.getDyeColor());
+      if (var3.hasTag()) {
+         var8.setTag(var3.getTag().copy());
       }
 
-      return var7;
+      return var8;
    }
 
    @Override

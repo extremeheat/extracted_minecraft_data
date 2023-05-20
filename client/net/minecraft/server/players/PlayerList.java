@@ -67,6 +67,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateEnabledFeaturesPacke
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateTagsPacket;
+import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
@@ -223,37 +224,41 @@ public abstract class PlayerList {
 
       this.broadcastSystemMessage(var17.withStyle(ChatFormatting.YELLOW), false);
       var13.teleport(var2.getX(), var2.getY(), var2.getZ(), var2.getYRot(), var2.getXRot());
-      var2.sendServerStatus(this.server.getStatus());
+      ServerStatus var18 = this.server.getStatus();
+      if (var18 != null) {
+         var2.sendServerStatus(var18);
+      }
+
       var2.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(this.players));
       this.players.add(var2);
       this.playersByUUID.put(var2.getUUID(), var2);
       this.broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(var2)));
+      this.sendLevelInfo(var2, var10);
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
-      this.sendLevelInfo(var2, var10);
       this.server.getServerResourcePack().ifPresent(var1x -> var2.sendTexturePack(var1x.url(), var1x.hash(), var1x.isRequired(), var1x.prompt()));
 
-      for(MobEffectInstance var19 : var2.getActiveEffects()) {
-         var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var19));
+      for(MobEffectInstance var20 : var2.getActiveEffects()) {
+         var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var20));
       }
 
       if (var7 != null && var7.contains("RootVehicle", 10)) {
-         CompoundTag var23 = var7.getCompound("RootVehicle");
-         Entity var24 = EntityType.loadEntityRecursive(var23.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
-         if (var24 != null) {
-            UUID var20;
-            if (var23.hasUUID("Attach")) {
-               var20 = var23.getUUID("Attach");
+         CompoundTag var24 = var7.getCompound("RootVehicle");
+         Entity var25 = EntityType.loadEntityRecursive(var24.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
+         if (var25 != null) {
+            UUID var21;
+            if (var24.hasUUID("Attach")) {
+               var21 = var24.getUUID("Attach");
             } else {
-               var20 = null;
+               var21 = null;
             }
 
-            if (var24.getUUID().equals(var20)) {
-               var2.startRiding(var24, true);
+            if (var25.getUUID().equals(var21)) {
+               var2.startRiding(var25, true);
             } else {
-               for(Entity var22 : var24.getIndirectPassengers()) {
-                  if (var22.getUUID().equals(var20)) {
-                     var2.startRiding(var22, true);
+               for(Entity var23 : var25.getIndirectPassengers()) {
+                  if (var23.getUUID().equals(var21)) {
+                     var2.startRiding(var23, true);
                      break;
                   }
                }
@@ -261,10 +266,10 @@ public abstract class PlayerList {
 
             if (!var2.isPassenger()) {
                LOGGER.warn("Couldn't reattach entity to player");
-               var24.discard();
+               var25.discard();
 
-               for(Entity var26 : var24.getIndirectPassengers()) {
-                  var26.discard();
+               for(Entity var27 : var25.getIndirectPassengers()) {
+                  var27.discard();
                }
             }
          }
@@ -837,9 +842,8 @@ public abstract class PlayerList {
       UUID var2 = var1.getUUID();
       PlayerAdvancements var3 = this.advancements.get(var2);
       if (var3 == null) {
-         File var4 = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).toFile();
-         File var5 = new File(var4, var2 + ".json");
-         var3 = new PlayerAdvancements(this.server.getFixerUpper(), this, this.server.getAdvancements(), var5, var1);
+         Path var4 = this.server.getWorldPath(LevelResource.PLAYER_ADVANCEMENTS_DIR).resolve(var2 + ".json");
+         var3 = new PlayerAdvancements(this.server.getFixerUpper(), this, this.server.getAdvancements(), var4, var1);
          this.advancements.put(var2, var3);
       }
 

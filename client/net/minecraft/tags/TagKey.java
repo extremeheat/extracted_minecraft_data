@@ -28,7 +28,7 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> a, ResourceLocation b
    public static <T> Codec<TagKey<T>> hashedCodec(ResourceKey<? extends Registry<T>> var0) {
       return Codec.STRING
          .comapFlatMap(
-            var1 -> var1.startsWith("#") ? ResourceLocation.read(var1.substring(1)).map(var1x -> create(var0, var1x)) : DataResult.error("Not a tag id"),
+            var1 -> var1.startsWith("#") ? ResourceLocation.read(var1.substring(1)).map(var1x -> create(var0, var1x)) : DataResult.error(() -> "Not a tag id"),
             var0x -> "#" + var0x.location
          );
    }

@@ -1,8 +1,8 @@
 package net.minecraft.world.level.biome;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.QuartPos;
@@ -38,12 +38,17 @@ public class TheEndBiomeSource extends BiomeSource {
    }
 
    private TheEndBiomeSource(Holder<Biome> var1, Holder<Biome> var2, Holder<Biome> var3, Holder<Biome> var4, Holder<Biome> var5) {
-      super(ImmutableList.of(var1, var2, var3, var4, var5));
+      super();
       this.end = var1;
       this.highlands = var2;
       this.midlands = var3;
       this.islands = var4;
       this.barrens = var5;
+   }
+
+   @Override
+   protected Stream<Holder<Biome>> collectPossibleBiomes() {
+      return Stream.of(this.end, this.highlands, this.midlands, this.islands, this.barrens);
    }
 
    @Override

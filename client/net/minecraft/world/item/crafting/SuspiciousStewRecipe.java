@@ -1,5 +1,6 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -43,21 +44,21 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       return var3 && var5 && var4 && var6;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ItemStack var2 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ItemStack var3 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
 
-      for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty()) {
-            SuspiciousEffectHolder var5 = SuspiciousEffectHolder.tryGet(var4.getItem());
-            if (var5 != null) {
-               SuspiciousStewItem.saveMobEffect(var2, var5.getSuspiciousEffect(), var5.getEffectDuration());
+      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
+         ItemStack var5 = var1.getItem(var4);
+         if (!var5.isEmpty()) {
+            SuspiciousEffectHolder var6 = SuspiciousEffectHolder.tryGet(var5.getItem());
+            if (var6 != null) {
+               SuspiciousStewItem.saveMobEffect(var3, var6.getSuspiciousEffect(), var6.getEffectDuration());
                break;
             }
          }
       }
 
-      return var2;
+      return var3;
    }
 
    @Override

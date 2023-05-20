@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -21,11 +22,24 @@ public class AnimalPanic extends Behavior<PathfinderMob> {
    private static final int PANIC_MAX_DURATION = 120;
    private static final int PANIC_DISTANCE_HORIZONTAL = 5;
    private static final int PANIC_DISTANCE_VERTICAL = 4;
+   private static final Predicate<PathfinderMob> DEFAULT_SHOULD_PANIC_PREDICATE = var0 -> var0.getLastHurtByMob() != null
+         || var0.isFreezing()
+         || var0.isOnFire();
    private final float speedMultiplier;
+   private final Predicate<PathfinderMob> shouldPanic;
 
    public AnimalPanic(float var1) {
+      this(var1, DEFAULT_SHOULD_PANIC_PREDICATE);
+   }
+
+   public AnimalPanic(float var1, Predicate<PathfinderMob> var2) {
       super(ImmutableMap.of(MemoryModuleType.IS_PANICKING, MemoryStatus.REGISTERED, MemoryModuleType.HURT_BY, MemoryStatus.VALUE_PRESENT), 100, 120);
       this.speedMultiplier = var1;
+      this.shouldPanic = var2;
+   }
+
+   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
+      return this.shouldPanic.test(var2);
    }
 
    protected boolean canStillUse(ServerLevel var1, PathfinderMob var2, long var3) {

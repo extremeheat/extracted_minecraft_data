@@ -79,11 +79,11 @@ public class GroundPathNavigation extends PathNavigation {
    private int getSurfaceY() {
       if (this.mob.isInWater() && this.canFloat()) {
          int var1 = this.mob.getBlockY();
-         BlockState var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)var1, this.mob.getZ()));
+         BlockState var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
          int var3 = 0;
 
          while(var2.is(Blocks.WATER)) {
-            var2 = this.level.getBlockState(new BlockPos(this.mob.getX(), (double)(++var1), this.mob.getZ()));
+            var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)(++var1), this.mob.getZ()));
             if (++var3 > 16) {
                return this.mob.getBlockY();
             }
@@ -99,7 +99,7 @@ public class GroundPathNavigation extends PathNavigation {
    protected void trimPath() {
       super.trimPath();
       if (this.avoidSun) {
-         if (this.level.canSeeSky(new BlockPos(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()))) {
+         if (this.level.canSeeSky(BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()))) {
             return;
          }
 

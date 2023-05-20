@@ -3,8 +3,12 @@ package net.minecraft.world.inventory;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.flag.FeatureElement;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 
-public class MenuType<T extends AbstractContainerMenu> {
+public class MenuType<T extends AbstractContainerMenu> implements FeatureElement {
    public static final MenuType<ChestMenu> GENERIC_9x1 = register("generic_9x1", ChestMenu::oneRow);
    public static final MenuType<ChestMenu> GENERIC_9x2 = register("generic_9x2", ChestMenu::twoRows);
    public static final MenuType<ChestMenu> GENERIC_9x3 = register("generic_9x3", ChestMenu::threeRows);
@@ -25,23 +29,35 @@ public class MenuType<T extends AbstractContainerMenu> {
    public static final MenuType<LoomMenu> LOOM = register("loom", LoomMenu::new);
    public static final MenuType<MerchantMenu> MERCHANT = register("merchant", MerchantMenu::new);
    public static final MenuType<ShulkerBoxMenu> SHULKER_BOX = register("shulker_box", ShulkerBoxMenu::new);
-   public static final MenuType<SmithingMenu> SMITHING = register("smithing", SmithingMenu::new);
+   public static final MenuType<LegacySmithingMenu> LEGACY_SMITHING = register("legacy_smithing", LegacySmithingMenu::new);
+   public static final MenuType<SmithingMenu> SMITHING = register("smithing", SmithingMenu::new, FeatureFlags.UPDATE_1_20);
    public static final MenuType<SmokerMenu> SMOKER = register("smoker", SmokerMenu::new);
    public static final MenuType<CartographyTableMenu> CARTOGRAPHY_TABLE = register("cartography_table", CartographyTableMenu::new);
    public static final MenuType<StonecutterMenu> STONECUTTER = register("stonecutter", StonecutterMenu::new);
+   private final FeatureFlagSet requiredFeatures;
    private final MenuType.MenuSupplier<T> constructor;
 
    private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuType.MenuSupplier<T> var1) {
-      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1));
+      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1, FeatureFlags.VANILLA_SET));
    }
 
-   private MenuType(MenuType.MenuSupplier<T> var1) {
+   private static <T extends AbstractContainerMenu> MenuType<T> register(String var0, MenuType.MenuSupplier<T> var1, FeatureFlag... var2) {
+      return Registry.register(BuiltInRegistries.MENU, var0, new MenuType<>(var1, FeatureFlags.REGISTRY.subset(var2)));
+   }
+
+   private MenuType(MenuType.MenuSupplier<T> var1, FeatureFlagSet var2) {
       super();
       this.constructor = var1;
+      this.requiredFeatures = var2;
    }
 
    public T create(int var1, Inventory var2) {
       return this.constructor.create(var1, var2);
+   }
+
+   @Override
+   public FeatureFlagSet requiredFeatures() {
+      return this.requiredFeatures;
    }
 
    interface MenuSupplier<T extends AbstractContainerMenu> {

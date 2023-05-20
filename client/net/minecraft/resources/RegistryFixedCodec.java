@@ -30,18 +30,18 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
          Optional var5 = var4.owner(this.registryKey);
          if (var5.isPresent()) {
             if (!var1.canSerializeIn((HolderOwner<T>)var5.get())) {
-               return DataResult.error("Element " + var1 + " is not valid in current registry set");
+               return DataResult.error(() -> "Element " + var1 + " is not valid in current registry set");
             }
 
             return (DataResult<T>)var1.unwrap()
                .map(
                   var2x -> ResourceLocation.CODEC.encode(var2x.location(), var2, var3),
-                  var1x -> DataResult.error("Elements from registry " + this.registryKey + " can't be serialized to a value")
+                  var1x -> DataResult.error(() -> "Elements from registry " + this.registryKey + " can't be serialized to a value")
                );
          }
       }
 
-      return DataResult.error("Can't access registry " + this.registryKey);
+      return DataResult.error(() -> "Can't access registry " + this.registryKey);
    }
 
    // $QF: Could not properly define all variable types!
@@ -58,7 +58,7 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
                      return ((DataResult)((HolderGetter)var4.get())
                            .get(ResourceKey.create(this.registryKey, var3x))
                            .map(DataResult::success)
-                           .orElseGet(() -> (T)DataResult.error("Failed to get element " + var3x)))
+                           .orElseGet(() -> (T)DataResult.error(() -> "Failed to get element " + var3x)))
                         .map(var1xx -> Pair.of(var1xx, var2x.getSecond()))
                         .setLifecycle(Lifecycle.stable());
                   }
@@ -66,7 +66,7 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
          }
       }
 
-      return DataResult.error("Can't access registry " + this.registryKey);
+      return DataResult.error(() -> "Can't access registry " + this.registryKey);
    }
 
    @Override

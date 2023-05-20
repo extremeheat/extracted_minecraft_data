@@ -1,6 +1,7 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -40,35 +41,35 @@ public class BookCloningRecipe extends CustomRecipe {
       return !var4.isEmpty() && var4.hasTag() && var3 > 0;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      int var2 = 0;
-      ItemStack var3 = ItemStack.EMPTY;
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      int var3 = 0;
+      ItemStack var4 = ItemStack.EMPTY;
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty()) {
-            if (var5.is(Items.WRITTEN_BOOK)) {
-               if (!var3.isEmpty()) {
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         if (!var6.isEmpty()) {
+            if (var6.is(Items.WRITTEN_BOOK)) {
+               if (!var4.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
-               var3 = var5;
+               var4 = var6;
             } else {
-               if (!var5.is(Items.WRITABLE_BOOK)) {
+               if (!var6.is(Items.WRITABLE_BOOK)) {
                   return ItemStack.EMPTY;
                }
 
-               ++var2;
+               ++var3;
             }
          }
       }
 
-      if (!var3.isEmpty() && var3.hasTag() && var2 >= 1 && WrittenBookItem.getGeneration(var3) < 2) {
-         ItemStack var6 = new ItemStack(Items.WRITTEN_BOOK, var2);
-         CompoundTag var7 = var3.getTag().copy();
-         var7.putInt("generation", WrittenBookItem.getGeneration(var3) + 1);
-         var6.setTag(var7);
-         return var6;
+      if (!var4.isEmpty() && var4.hasTag() && var3 >= 1 && WrittenBookItem.getGeneration(var4) < 2) {
+         ItemStack var7 = new ItemStack(Items.WRITTEN_BOOK, var3);
+         CompoundTag var8 = var4.getTag().copy();
+         var8.putInt("generation", WrittenBookItem.getGeneration(var4) + 1);
+         var7.setTag(var8);
+         return var7;
       } else {
          return ItemStack.EMPTY;
       }

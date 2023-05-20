@@ -52,6 +52,12 @@ public class PoseStack {
       var2.normal.rotate(var1);
    }
 
+   public void rotateAround(Quaternionf var1, float var2, float var3, float var4) {
+      PoseStack.Pose var5 = this.poseStack.getLast();
+      var5.pose.rotateAround(var1, var2, var3, var4);
+      var5.normal.rotate(var1);
+   }
+
    public void pushPose() {
       PoseStack.Pose var1 = this.poseStack.getLast();
       this.poseStack.addLast(new PoseStack.Pose(new Matrix4f(var1.pose), new Matrix3f(var1.normal)));

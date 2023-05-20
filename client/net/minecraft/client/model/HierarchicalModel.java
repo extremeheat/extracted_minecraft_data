@@ -41,6 +41,12 @@ public abstract class HierarchicalModel<E extends Entity> extends EntityModel<E>
       this.animate(var1, var2, var3, 1.0F);
    }
 
+   protected void animateWalk(AnimationDefinition var1, float var2, float var3, float var4, float var5) {
+      long var6 = (long)(var2 * 50.0F * var4);
+      float var8 = Math.min(var3 * var5, 1.0F);
+      KeyframeAnimations.animate(this, var1, var6, var8, ANIMATION_VECTOR_CACHE);
+   }
+
    protected void animate(AnimationState var1, AnimationDefinition var2, float var3, float var4) {
       var1.updateTime(var3, var4);
       var1.ifStarted(var2x -> KeyframeAnimations.animate(this, var2, var2x.getAccumulatedTime(), 1.0F, ANIMATION_VECTOR_CACHE));

@@ -1,14 +1,16 @@
 package net.minecraft.world.level.biome;
 
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -24,21 +26,20 @@ import net.minecraft.world.level.LevelReader;
 
 public abstract class BiomeSource implements BiomeResolver {
    public static final Codec<BiomeSource> CODEC = BuiltInRegistries.BIOME_SOURCE.byNameCodec().dispatchStable(BiomeSource::codec, Function.identity());
-   private final Set<Holder<Biome>> possibleBiomes;
+   private final Supplier<Set<Holder<Biome>>> possibleBiomes = Suppliers.memoize(
+      () -> this.collectPossibleBiomes().distinct().collect(ImmutableSet.toImmutableSet())
+   );
 
-   protected BiomeSource(Stream<Holder<Biome>> var1) {
-      this(var1.distinct().toList());
-   }
-
-   protected BiomeSource(List<Holder<Biome>> var1) {
+   protected BiomeSource() {
       super();
-      this.possibleBiomes = new ObjectLinkedOpenHashSet(var1);
    }
 
    protected abstract Codec<? extends BiomeSource> codec();
 
+   protected abstract Stream<Holder<Biome>> collectPossibleBiomes();
+
    public Set<Holder<Biome>> possibleBiomes() {
-      return this.possibleBiomes;
+      return this.possibleBiomes.get();
    }
 
    public Set<Holder<Biome>> getBiomesWithin(int var1, int var2, int var3, int var4, Climate.Sampler var5) {

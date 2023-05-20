@@ -62,6 +62,7 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.DigDurabilityEnchantment;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -625,6 +626,10 @@ public final class ItemStack {
       }
 
       if (this.hasTag()) {
+         if (shouldShowInTooltip(var20, ItemStack.TooltipPart.UPGRADES) && var1 != null) {
+            ArmorTrim.appendUpgradeHoverText(this, var1.level.registryAccess(), var3);
+         }
+
          if (shouldShowInTooltip(var20, ItemStack.TooltipPart.ENCHANTMENTS)) {
             appendEnchantmentNames(var3, this.getEnchantmentTags());
          }
@@ -691,7 +696,7 @@ public final class ItemStack {
 
                   if (var18) {
                      var3.add(
-                        Component.literal(" ")
+                        CommonComponents.space()
                            .append(
                               Component.translatable(
                                  "attribute.modifier.equals." + var13.getOperation().toValue(),
@@ -989,11 +994,6 @@ public final class ItemStack {
       return this.getItem().getEatingSound();
    }
 
-   @Nullable
-   public SoundEvent getEquipSound() {
-      return this.getItem().getEquipSound();
-   }
-
    public static enum TooltipPart {
       ENCHANTMENTS,
       MODIFIERS,
@@ -1001,7 +1001,8 @@ public final class ItemStack {
       CAN_DESTROY,
       CAN_PLACE,
       ADDITIONAL,
-      DYE;
+      DYE,
+      UPGRADES;
 
       private final int mask = 1 << this.ordinal();
 

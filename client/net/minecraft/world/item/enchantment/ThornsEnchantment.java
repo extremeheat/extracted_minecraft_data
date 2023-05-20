@@ -2,7 +2,6 @@ package net.minecraft.world.item.enchantment;
 
 import java.util.Map.Entry;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -42,7 +41,7 @@ public class ThornsEnchantment extends Enchantment {
       Entry var5 = EnchantmentHelper.getRandomItemWith(Enchantments.THORNS, var1);
       if (shouldHit(var3, var4)) {
          if (var2 != null) {
-            var2.hurt(DamageSource.thorns(var1), (float)getDamage(var3, var4));
+            var2.hurt(var1.damageSources().thorns(var1), (float)getDamage(var3, var4));
          }
 
          if (var5 != null) {

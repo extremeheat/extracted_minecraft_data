@@ -102,7 +102,7 @@ public class Explosion {
       this.z = var9;
       this.fire = var12;
       this.blockInteraction = var13;
-      this.damageSource = var3 == null ? DamageSource.explosion(this) : var3;
+      this.damageSource = var3 == null ? var1.damageSources().explosion(this) : var3;
       this.damageCalculator = var4 == null ? this.makeDamageCalculator(var2) : var4;
    }
 
@@ -167,7 +167,7 @@ public class Explosion {
                   double var19 = this.z;
 
                   for(float var21 = 0.3F; var14 > 0.0F; var14 -= 0.22500001F) {
-                     BlockPos var22 = new BlockPos(var15, var17, var19);
+                     BlockPos var22 = BlockPos.containing(var15, var17, var19);
                      BlockState var23 = this.level.getBlockState(var22);
                      FluidState var24 = this.level.getFluidState(var22);
                      if (!this.level.isInWorldBounds(var22)) {
@@ -193,42 +193,48 @@ public class Explosion {
       }
 
       this.toBlow.addAll(var1);
-      float var31 = this.radius * 2.0F;
-      int var32 = Mth.floor(this.x - (double)var31 - 1.0);
-      int var33 = Mth.floor(this.x + (double)var31 + 1.0);
-      int var35 = Mth.floor(this.y - (double)var31 - 1.0);
-      int var7 = Mth.floor(this.y + (double)var31 + 1.0);
-      int var37 = Mth.floor(this.z - (double)var31 - 1.0);
-      int var9 = Mth.floor(this.z + (double)var31 + 1.0);
-      List var39 = this.level.getEntities(this.source, new AABB((double)var32, (double)var35, (double)var37, (double)var33, (double)var7, (double)var9));
+      float var32 = this.radius * 2.0F;
+      int var33 = Mth.floor(this.x - (double)var32 - 1.0);
+      int var34 = Mth.floor(this.x + (double)var32 + 1.0);
+      int var36 = Mth.floor(this.y - (double)var32 - 1.0);
+      int var7 = Mth.floor(this.y + (double)var32 + 1.0);
+      int var38 = Mth.floor(this.z - (double)var32 - 1.0);
+      int var9 = Mth.floor(this.z + (double)var32 + 1.0);
+      List var40 = this.level.getEntities(this.source, new AABB((double)var33, (double)var36, (double)var38, (double)var34, (double)var7, (double)var9));
       Vec3 var11 = new Vec3(this.x, this.y, this.z);
 
-      for(int var40 = 0; var40 < var39.size(); ++var40) {
-         Entity var13 = (Entity)var39.get(var40);
+      for(int var41 = 0; var41 < var40.size(); ++var41) {
+         Entity var13 = (Entity)var40.get(var41);
          if (!var13.ignoreExplosion()) {
-            double var41 = Math.sqrt(var13.distanceToSqr(var11)) / (double)var31;
-            if (var41 <= 1.0) {
+            double var42 = Math.sqrt(var13.distanceToSqr(var11)) / (double)var32;
+            if (var42 <= 1.0) {
                double var16 = var13.getX() - this.x;
                double var18 = (var13 instanceof PrimedTnt ? var13.getY() : var13.getEyeY()) - this.y;
                double var20 = var13.getZ() - this.z;
-               double var45 = Math.sqrt(var16 * var16 + var18 * var18 + var20 * var20);
-               if (var45 != 0.0) {
-                  var16 /= var45;
-                  var18 /= var45;
-                  var20 /= var45;
-                  double var46 = (double)getSeenPercent(var11, var13);
-                  double var26 = (1.0 - var41) * var46;
-                  var13.hurt(this.getDamageSource(), (float)((int)((var26 * var26 + var26) / 2.0 * 7.0 * (double)var31 + 1.0)));
-                  double var28 = var26;
-                  if (var13 instanceof LivingEntity) {
-                     var28 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)var13, var26);
+               double var49 = Math.sqrt(var16 * var16 + var18 * var18 + var20 * var20);
+               if (var49 != 0.0) {
+                  var16 /= var49;
+                  var18 /= var49;
+                  var20 /= var49;
+                  double var50 = (double)getSeenPercent(var11, var13);
+                  double var26 = (1.0 - var42) * var50;
+                  var13.hurt(this.getDamageSource(), (float)((int)((var26 * var26 + var26) / 2.0 * 7.0 * (double)var32 + 1.0)));
+                  double var28;
+                  if (var13 instanceof LivingEntity var30) {
+                     var28 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)var30, var26);
+                  } else {
+                     var28 = var26;
                   }
 
-                  var13.setDeltaMovement(var13.getDeltaMovement().add(var16 * var28, var18 * var28, var20 * var28));
-                  if (var13 instanceof Player var30
-                     && !((Player)var30).isSpectator()
-                     && (!((Player)var30).isCreative() || !((Player)var30).getAbilities().flying)) {
-                     this.hitPlayers.put((Player)var30, new Vec3(var16 * var26, var18 * var26, var20 * var26));
+                  var16 *= var28;
+                  var18 *= var28;
+                  var20 *= var28;
+                  Vec3 var51 = new Vec3(var16, var18, var20);
+                  var13.setDeltaMovement(var13.getDeltaMovement().add(var51));
+                  if (var13 instanceof Player var31
+                     && !((Player)var31).isSpectator()
+                     && (!((Player)var31).isCreative() || !((Player)var31).getAbilities().flying)) {
+                     this.hitPlayers.put((Player)var31, var51);
                   }
                }
             }

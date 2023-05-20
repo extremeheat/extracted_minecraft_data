@@ -19,6 +19,8 @@ import net.minecraft.world.entity.LivingEntity;
 public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> implements ArmedModel, HeadedModel {
    public static final float OVERLAY_SCALE = 0.25F;
    public static final float HAT_OVERLAY_SCALE = 0.5F;
+   public static final float LEGGINGS_OVERLAY_SCALE = -0.1F;
+   private static final float DUCK_WALK_ROTATION = 0.005F;
    private static final float SPYGLASS_ARM_ROT_Y = 0.2617994F;
    private static final float SPYGLASS_ARM_ROT_X = 1.9198622F;
    private static final float SPYGLASS_ARM_CROUCH_ROT_X = 0.2617994F;
@@ -137,10 +139,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
       this.leftArm.zRot = 0.0F;
       this.rightLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3 / var9;
       this.leftLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3 / var9;
-      this.rightLeg.yRot = 0.0F;
-      this.leftLeg.yRot = 0.0F;
-      this.rightLeg.zRot = 0.0F;
-      this.leftLeg.zRot = 0.0F;
+      this.rightLeg.yRot = 0.005F;
+      this.leftLeg.yRot = -0.005F;
+      this.rightLeg.zRot = 0.005F;
+      this.leftLeg.zRot = -0.005F;
       if (this.riding) {
          this.rightArm.xRot += -0.62831855F;
          this.leftArm.xRot += -0.62831855F;
@@ -188,8 +190,8 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          this.rightArm.y = 5.2F;
       } else {
          this.body.xRot = 0.0F;
-         this.rightLeg.z = 0.1F;
-         this.leftLeg.z = 0.1F;
+         this.rightLeg.z = 0.0F;
+         this.leftLeg.z = 0.0F;
          this.rightLeg.y = 12.0F;
          this.leftLeg.y = 12.0F;
          this.head.y = 0.0F;
@@ -280,6 +282,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
          case CROSSBOW_HOLD:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
             break;
+         case BRUSH:
+            this.rightArm.xRot = this.rightArm.xRot * 0.5F - 0.62831855F;
+            this.rightArm.yRot = 0.0F;
+            break;
          case SPYGLASS:
             this.rightArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching() ? 0.2617994F : 0.0F), -2.4F, 3.3F);
             this.rightArm.yRot = this.head.yRot - 0.2617994F;
@@ -318,6 +324,10 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
             break;
          case CROSSBOW_HOLD:
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, false);
+            break;
+         case BRUSH:
+            this.leftArm.xRot = this.leftArm.xRot * 0.5F - 0.62831855F;
+            this.leftArm.yRot = 0.0F;
             break;
          case SPYGLASS:
             this.leftArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (var1.isCrouching() ? 0.2617994F : 0.0F), -2.4F, 3.3F);
@@ -427,7 +437,8 @@ public class HumanoidModel<T extends LivingEntity> extends AgeableListModel<T> i
       CROSSBOW_CHARGE(true),
       CROSSBOW_HOLD(true),
       SPYGLASS(false),
-      TOOT_HORN(false);
+      TOOT_HORN(false),
+      BRUSH(false);
 
       private final boolean twoHanded;
 

@@ -32,12 +32,12 @@ public interface PresetEditor {
          HolderLookup.RegistryLookup var6 = var3.lookupOrThrow(Registries.PLACED_FEATURE);
          return new CreateFlatWorldScreen(
             var0,
-            var1x -> var0.worldGenSettingsComponent.updateSettings(flatWorldConfigurator(var1x)),
+            var1x -> var0.getUiState().updateDimensions(flatWorldConfigurator(var1x)),
             var2 instanceof FlatLevelSource ? ((FlatLevelSource)var2).settings() : FlatLevelGeneratorSettings.getDefault(var4, var5, var6)
          );
       },
       Optional.of(WorldPresets.SINGLE_BIOME_SURFACE),
-      (var0, var1) -> new CreateBuffetWorldScreen(var0, var1, var1x -> var0.worldGenSettingsComponent.updateSettings(fixedBiomeConfigurator(var1x)))
+      (var0, var1) -> new CreateBuffetWorldScreen(var0, var1, var1x -> var0.getUiState().updateDimensions(fixedBiomeConfigurator(var1x)))
    );
 
    Screen createEditScreen(CreateWorldScreen var1, WorldCreationContext var2);

@@ -1,21 +1,16 @@
 package net.minecraft.client.renderer.debug;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Transformation;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -119,83 +114,88 @@ public class DebugRenderer {
       }
    }
 
-   public static void renderFilledBox(BlockPos var0, BlockPos var1, float var2, float var3, float var4, float var5) {
-      Camera var6 = Minecraft.getInstance().gameRenderer.getMainCamera();
-      if (var6.isInitialized()) {
-         Vec3 var7 = var6.getPosition().reverse();
-         AABB var8 = new AABB(var0, var1).move(var7);
-         renderFilledBox(var8, var2, var3, var4, var5);
+   public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, BlockPos var2, BlockPos var3, float var4, float var5, float var6, float var7) {
+      Camera var8 = Minecraft.getInstance().gameRenderer.getMainCamera();
+      if (var8.isInitialized()) {
+         Vec3 var9 = var8.getPosition().reverse();
+         AABB var10 = new AABB(var2, var3).move(var9);
+         renderFilledBox(var0, var1, var10, var4, var5, var6, var7);
       }
    }
 
-   public static void renderFilledBox(BlockPos var0, float var1, float var2, float var3, float var4, float var5) {
-      Camera var6 = Minecraft.getInstance().gameRenderer.getMainCamera();
-      if (var6.isInitialized()) {
-         Vec3 var7 = var6.getPosition().reverse();
-         AABB var8 = new AABB(var0).move(var7).inflate((double)var1);
-         renderFilledBox(var8, var2, var3, var4, var5);
+   public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, BlockPos var2, float var3, float var4, float var5, float var6, float var7) {
+      Camera var8 = Minecraft.getInstance().gameRenderer.getMainCamera();
+      if (var8.isInitialized()) {
+         Vec3 var9 = var8.getPosition().reverse();
+         AABB var10 = new AABB(var2).move(var9).inflate((double)var3);
+         renderFilledBox(var0, var1, var10, var4, var5, var6, var7);
       }
    }
 
-   public static void renderFilledBox(AABB var0, float var1, float var2, float var3, float var4) {
-      renderFilledBox(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ, var1, var2, var3, var4);
+   public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, AABB var2, float var3, float var4, float var5, float var6) {
+      renderFilledBox(var0, var1, var2.minX, var2.minY, var2.minZ, var2.maxX, var2.maxY, var2.maxZ, var3, var4, var5, var6);
    }
 
    public static void renderFilledBox(
-      double var0, double var2, double var4, double var6, double var8, double var10, float var12, float var13, float var14, float var15
+      PoseStack var0,
+      MultiBufferSource var1,
+      double var2,
+      double var4,
+      double var6,
+      double var8,
+      double var10,
+      double var12,
+      float var14,
+      float var15,
+      float var16,
+      float var17
    ) {
-      Tesselator var16 = Tesselator.getInstance();
-      BufferBuilder var17 = var16.getBuilder();
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      var17.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-      LevelRenderer.addChainedFilledBoxVertices(var17, var0, var2, var4, var6, var8, var10, var12, var13, var14, var15);
-      var16.end();
+      VertexConsumer var18 = var1.getBuffer(RenderType.debugFilledBox());
+      LevelRenderer.addChainedFilledBoxVertices(var0, var18, var2, var4, var6, var8, var10, var12, var14, var15, var16, var17);
    }
 
-   public static void renderFloatingText(String var0, int var1, int var2, int var3, int var4) {
-      renderFloatingText(var0, (double)var1 + 0.5, (double)var2 + 0.5, (double)var3 + 0.5, var4);
+   public static void renderFloatingText(PoseStack var0, MultiBufferSource var1, String var2, int var3, int var4, int var5, int var6) {
+      renderFloatingText(var0, var1, var2, (double)var3 + 0.5, (double)var4 + 0.5, (double)var5 + 0.5, var6);
    }
 
-   public static void renderFloatingText(String var0, double var1, double var3, double var5, int var7) {
-      renderFloatingText(var0, var1, var3, var5, var7, 0.02F);
+   public static void renderFloatingText(PoseStack var0, MultiBufferSource var1, String var2, double var3, double var5, double var7, int var9) {
+      renderFloatingText(var0, var1, var2, var3, var5, var7, var9, 0.02F);
    }
 
-   public static void renderFloatingText(String var0, double var1, double var3, double var5, int var7, float var8) {
-      renderFloatingText(var0, var1, var3, var5, var7, var8, true, 0.0F, false);
+   public static void renderFloatingText(PoseStack var0, MultiBufferSource var1, String var2, double var3, double var5, double var7, int var9, float var10) {
+      renderFloatingText(var0, var1, var2, var3, var5, var7, var9, var10, true, 0.0F, false);
    }
 
-   public static void renderFloatingText(String var0, double var1, double var3, double var5, int var7, float var8, boolean var9, float var10, boolean var11) {
-      Minecraft var12 = Minecraft.getInstance();
-      Camera var13 = var12.gameRenderer.getMainCamera();
-      if (var13.isInitialized() && var12.getEntityRenderDispatcher().options != null) {
-         Font var14 = var12.font;
-         double var15 = var13.getPosition().x;
-         double var17 = var13.getPosition().y;
-         double var19 = var13.getPosition().z;
-         PoseStack var21 = RenderSystem.getModelViewStack();
-         var21.pushPose();
-         var21.translate((float)(var1 - var15), (float)(var3 - var17) + 0.07F, (float)(var5 - var19));
-         var21.mulPoseMatrix(new Matrix4f().rotation(var13.rotation()));
-         var21.scale(var8, -var8, var8);
-         RenderSystem.enableTexture();
-         if (var11) {
-            RenderSystem.disableDepthTest();
-         } else {
-            RenderSystem.enableDepthTest();
-         }
-
-         RenderSystem.depthMask(true);
-         var21.scale(-1.0F, 1.0F, 1.0F);
-         RenderSystem.applyModelViewMatrix();
-         float var22 = var9 ? (float)(-var14.width(var0)) / 2.0F : 0.0F;
-         var22 -= var10 / var8;
-         MultiBufferSource.BufferSource var23 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         var14.drawInBatch(var0, var22, 0.0F, var7, false, Transformation.identity().getMatrix(), var23, var11, 0, 15728880);
-         var23.endBatch();
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         RenderSystem.enableDepthTest();
-         var21.popPose();
-         RenderSystem.applyModelViewMatrix();
+   public static void renderFloatingText(
+      PoseStack var0,
+      MultiBufferSource var1,
+      String var2,
+      double var3,
+      double var5,
+      double var7,
+      int var9,
+      float var10,
+      boolean var11,
+      float var12,
+      boolean var13
+   ) {
+      Minecraft var14 = Minecraft.getInstance();
+      Camera var15 = var14.gameRenderer.getMainCamera();
+      if (var15.isInitialized() && var14.getEntityRenderDispatcher().options != null) {
+         Font var16 = var14.font;
+         double var17 = var15.getPosition().x;
+         double var19 = var15.getPosition().y;
+         double var21 = var15.getPosition().z;
+         var0.pushPose();
+         var0.translate((float)(var3 - var17), (float)(var5 - var19) + 0.07F, (float)(var7 - var21));
+         var0.mulPoseMatrix(new Matrix4f().rotation(var15.rotation()));
+         var0.scale(-var10, -var10, var10);
+         float var23 = var11 ? (float)(-var16.width(var2)) / 2.0F : 0.0F;
+         var23 -= var12 / var10;
+         var16.drawInBatch(
+            var2, var23, 0.0F, var9, false, var0.last().pose(), var1, var13 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, 0, 15728880
+         );
+         var0.popPose();
       }
    }
 

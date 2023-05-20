@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class Projectile extends Entity {
+public abstract class Projectile extends Entity implements TraceableEntity {
    @Nullable
    private UUID ownerUUID;
    @Nullable
@@ -42,6 +43,7 @@ public abstract class Projectile extends Entity {
    }
 
    @Nullable
+   @Override
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
          return this.cachedOwner;
@@ -173,11 +175,11 @@ public abstract class Projectile extends Entity {
    }
 
    protected boolean canHitEntity(Entity var1) {
-      if (!var1.isSpectator() && var1.isAlive() && var1.isPickable()) {
+      if (!var1.canBeHitByProjectile()) {
+         return false;
+      } else {
          Entity var2 = this.getOwner();
          return var2 == null || this.leftOwner || !var2.isPassengerOfSameVehicle(var1);
-      } else {
-         return false;
       }
    }
 

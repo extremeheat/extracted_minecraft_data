@@ -139,7 +139,7 @@ public class Pufferfish extends AbstractFish {
 
    private void touch(Mob var1) {
       int var2 = this.getPuffState();
-      if (var1.hurt(DamageSource.mobAttack(this), (float)(1 + var2))) {
+      if (var1.hurt(this.damageSources().mobAttack(this), (float)(1 + var2))) {
          var1.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * var2, 0), this);
          this.playSound(SoundEvents.PUFFER_FISH_STING, 1.0F, 1.0F);
       }
@@ -148,7 +148,7 @@ public class Pufferfish extends AbstractFish {
    @Override
    public void playerTouch(Player var1) {
       int var2 = this.getPuffState();
-      if (var1 instanceof ServerPlayer && var2 > 0 && var1.hurt(DamageSource.mobAttack(this), (float)(1 + var2))) {
+      if (var1 instanceof ServerPlayer && var2 > 0 && var1.hurt(this.damageSources().mobAttack(this), (float)(1 + var2))) {
          if (!this.isSilent()) {
             ((ServerPlayer)var1).connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PUFFER_FISH_STING, 0.0F));
          }

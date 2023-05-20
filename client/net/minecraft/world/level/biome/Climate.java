@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +92,7 @@ public class Climate {
          "min",
          "max",
          (var0, var1) -> var0.compareTo(var1) > 0
-               ? DataResult.error("Cannon construct interval, min > max (" + var0 + " > " + var1 + ")")
+               ? DataResult.error(() -> "Cannon construct interval, min > max (" + var0 + " > " + var1 + ")")
                : DataResult.success(new Climate.Parameter(Climate.quantizeCoord(var0), Climate.quantizeCoord(var1))),
          var0 -> Climate.unquantizeCoord(var0.min()),
          var0 -> Climate.unquantizeCoord(var0.max())
@@ -148,6 +149,17 @@ public class Climate {
    public static class ParameterList<T> {
       private final List<Pair<Climate.ParameterPoint, T>> values;
       private final Climate.RTree<T> index;
+
+      public static <T> Codec<Climate.ParameterList<T>> codec(MapCodec<T> var0) {
+         return ExtraCodecs.nonEmptyList(
+               RecordCodecBuilder.create(
+                     var1 -> var1.group(Climate.ParameterPoint.CODEC.fieldOf("parameters").forGetter(Pair::getFirst), var0.forGetter(Pair::getSecond))
+                           .apply(var1, Pair::of)
+                  )
+                  .listOf()
+            )
+            .xmap(Climate.ParameterList::new, Climate.ParameterList::values);
+      }
 
       public ParameterList(List<Pair<Climate.ParameterPoint, T>> var1) {
          super();

@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
@@ -29,12 +31,15 @@ public class Sheets {
    public static final ResourceLocation SHIELD_SHEET = new ResourceLocation("textures/atlas/shield_patterns.png");
    public static final ResourceLocation SIGN_SHEET = new ResourceLocation("textures/atlas/signs.png");
    public static final ResourceLocation CHEST_SHEET = new ResourceLocation("textures/atlas/chest.png");
+   public static final ResourceLocation ARMOR_TRIMS_SHEET = new ResourceLocation("textures/atlas/armor_trims.png");
+   public static final ResourceLocation DECORATED_POT_SHEET = new ResourceLocation("textures/atlas/decorated_pot.png");
    private static final RenderType SHULKER_BOX_SHEET_TYPE = RenderType.entityCutoutNoCull(SHULKER_SHEET);
    private static final RenderType BED_SHEET_TYPE = RenderType.entitySolid(BED_SHEET);
    private static final RenderType BANNER_SHEET_TYPE = RenderType.entityNoOutline(BANNER_SHEET);
    private static final RenderType SHIELD_SHEET_TYPE = RenderType.entityNoOutline(SHIELD_SHEET);
    private static final RenderType SIGN_SHEET_TYPE = RenderType.entityCutoutNoCull(SIGN_SHEET);
    private static final RenderType CHEST_SHEET_TYPE = RenderType.entityCutout(CHEST_SHEET);
+   private static final RenderType ARMOR_TRIMS_SHEET_TYPE = RenderType.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
    private static final RenderType SOLID_BLOCK_SHEET = RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS);
    private static final RenderType CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
    private static final RenderType TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
@@ -71,6 +76,10 @@ public class Sheets {
       .registryKeySet()
       .stream()
       .collect(Collectors.toMap(Function.identity(), Sheets::createShieldMaterial));
+   public static final Map<ResourceKey<String>, Material> DECORATED_POT_MATERIALS = BuiltInRegistries.DECORATED_POT_PATTERNS
+      .registryKeySet()
+      .stream()
+      .collect(Collectors.toMap(Function.identity(), Sheets::createDecoratedPotMaterial));
    public static final Material[] BED_TEXTURES = Arrays.stream(DyeColor.values())
       .sorted(Comparator.comparingInt(DyeColor::getId))
       .map(var0 -> new Material(BED_SHEET, new ResourceLocation("entity/bed/" + var0.getName())))
@@ -116,6 +125,10 @@ public class Sheets {
 
    public static RenderType chestSheet() {
       return CHEST_SHEET_TYPE;
+   }
+
+   public static RenderType armorTrimsSheet() {
+      return ARMOR_TRIMS_SHEET_TYPE;
    }
 
    public static RenderType solidBlockSheet() {
@@ -192,6 +205,15 @@ public class Sheets {
 
    private static Material chestMaterial(String var0) {
       return new Material(CHEST_SHEET, new ResourceLocation("entity/chest/" + var0));
+   }
+
+   private static Material createDecoratedPotMaterial(ResourceKey<String> var0) {
+      return new Material(DECORATED_POT_SHEET, DecoratedPotPatterns.location(var0));
+   }
+
+   @Nullable
+   public static Material getDecoratedPotMaterial(@Nullable ResourceKey<String> var0) {
+      return var0 == null ? null : DECORATED_POT_MATERIALS.get(var0);
    }
 
    public static Material chooseMaterial(BlockEntity var0, ChestType var1, boolean var2) {

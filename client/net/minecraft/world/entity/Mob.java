@@ -72,7 +72,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public abstract class Mob extends LivingEntity {
+public abstract class Mob extends LivingEntity implements Targeting {
    private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
    private static final int MOB_FLAG_NO_AI = 1;
    private static final int MOB_FLAG_LEFTHANDED = 2;
@@ -151,25 +151,22 @@ public abstract class Mob extends LivingEntity {
 
    public float getPathfindingMalus(BlockPathTypes var1) {
       Mob var2;
-      if (this.getVehicle() instanceof Mob && ((Mob)this.getVehicle()).shouldPassengersInheritMalus()) {
-         var2 = (Mob)this.getVehicle();
-      } else {
+      label17: {
+         Entity var4 = this.getControlledVehicle();
+         if (var4 instanceof Mob var3 && ((Mob)var3).shouldPassengersInheritMalus()) {
+            var2 = (Mob)var3;
+            break label17;
+         }
+
          var2 = this;
       }
 
-      Float var3 = var2.pathfindingMalus.get(var1);
-      return var3 == null ? var1.getMalus() : var3;
+      Float var5 = var2.pathfindingMalus.get(var1);
+      return var5 == null ? var1.getMalus() : var5;
    }
 
    public void setPathfindingMalus(BlockPathTypes var1, float var2) {
       this.pathfindingMalus.put(var1, var2);
-   }
-
-   public boolean canCutCorner(BlockPathTypes var1) {
-      return var1 != BlockPathTypes.DANGER_FIRE
-         && var1 != BlockPathTypes.DANGER_CACTUS
-         && var1 != BlockPathTypes.DANGER_OTHER
-         && var1 != BlockPathTypes.WALKABLE_DOOR;
    }
 
    protected BodyRotationControl createBodyControl() {
@@ -181,7 +178,8 @@ public abstract class Mob extends LivingEntity {
    }
 
    public MoveControl getMoveControl() {
-      return this.isPassenger() && this.getVehicle() instanceof Mob var1 ? var1.getMoveControl() : this.moveControl;
+      Entity var2 = this.getControlledVehicle();
+      return var2 instanceof Mob var1 ? var1.getMoveControl() : this.moveControl;
    }
 
    public JumpControl getJumpControl() {
@@ -189,7 +187,21 @@ public abstract class Mob extends LivingEntity {
    }
 
    public PathNavigation getNavigation() {
-      return this.isPassenger() && this.getVehicle() instanceof Mob var1 ? var1.getNavigation() : this.navigation;
+      Entity var2 = this.getControlledVehicle();
+      return var2 instanceof Mob var1 ? var1.getNavigation() : this.navigation;
+   }
+
+   @Nullable
+   @Override
+   public LivingEntity getControllingPassenger() {
+      if (!this.isNoAi()) {
+         Entity var2 = this.getFirstPassenger();
+         if (var2 instanceof Mob var1) {
+            return (LivingEntity)var1;
+         }
+      }
+
+      return null;
    }
 
    public Sensing getSensing() {
@@ -197,6 +209,7 @@ public abstract class Mob extends LivingEntity {
    }
 
    @Nullable
+   @Override
    public LivingEntity getTarget() {
       return this.target;
    }
@@ -538,9 +551,15 @@ public abstract class Mob extends LivingEntity {
    }
 
    public ItemStack equipItemIfPossible(ItemStack var1) {
-      EquipmentSlot var2 = this.getEquipmentSlotForItemStack(var1);
+      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
       boolean var4 = this.canReplaceCurrentItem(var1, var3);
+      if (var2.isArmor() && !var4) {
+         var2 = EquipmentSlot.MAINHAND;
+         var3 = this.getItemBySlot(var2);
+         var4 = this.canReplaceCurrentItem(var1, var3);
+      }
+
       if (var4 && this.canHoldItem(var1)) {
          double var5 = (double)this.getEquipmentDropChance(var2);
          if (!var3.isEmpty() && (double)Math.max(this.random.nextFloat() - 0.1F, 0.0F) < var5) {
@@ -558,12 +577,6 @@ public abstract class Mob extends LivingEntity {
       } else {
          return ItemStack.EMPTY;
       }
-   }
-
-   private EquipmentSlot getEquipmentSlotForItemStack(ItemStack var1) {
-      EquipmentSlot var2 = getEquipmentSlotForItem(var1);
-      boolean var3 = this.getItemBySlot(var2).isEmpty();
-      return var2.isArmor() && !var3 ? EquipmentSlot.MAINHAND : var2;
    }
 
    protected void setItemSlotAndDropWhenKilled(EquipmentSlot var1, ItemStack var2) {
@@ -1063,15 +1076,17 @@ public abstract class Mob extends LivingEntity {
          return InteractionResult.PASS;
       } else if (this.getLeashHolder() == var1) {
          this.dropLeash(true, !var1.getAbilities().instabuild);
+         this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
          return InteractionResult.sidedSuccess(this.level.isClientSide);
       } else {
          InteractionResult var3 = this.checkAndHandleImportantInteractions(var1, var2);
          if (var3.consumesAction()) {
+            this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
             return var3;
          } else {
             var3 = this.mobInteract(var1, var2);
             if (var3.consumesAction()) {
-               this.gameEvent(GameEvent.ENTITY_INTERACT);
+               this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
                return var3;
             } else {
                return super.interact(var1, var2);
@@ -1290,11 +1305,6 @@ public abstract class Mob extends LivingEntity {
    }
 
    @Override
-   public boolean isControlledByLocalInstance() {
-      return this.hasControllingPassenger() && super.isControlledByLocalInstance();
-   }
-
-   @Override
    public boolean isEffectiveAi() {
       return super.isEffectiveAi() && !this.isNoAi();
    }
@@ -1361,7 +1371,7 @@ public abstract class Mob extends LivingEntity {
          var1.setSecondsOnFire(var4 * 4);
       }
 
-      boolean var5 = var1.hurt(DamageSource.mobAttack(this), var2);
+      boolean var5 = var1.hurt(this.damageSources().mobAttack(this), var2);
       if (var5) {
          if (var3 > 0.0F && var1 instanceof LivingEntity) {
             ((LivingEntity)var1)
@@ -1393,7 +1403,7 @@ public abstract class Mob extends LivingEntity {
    protected boolean isSunBurnTick() {
       if (this.level.isDay() && !this.level.isClientSide) {
          float var1 = this.getLightLevelDependentMagicValue();
-         BlockPos var2 = new BlockPos(this.getX(), this.getEyeY(), this.getZ());
+         BlockPos var2 = BlockPos.containing(this.getX(), this.getEyeY(), this.getZ());
          boolean var3 = this.isInWaterRainOrBubble() || this.isInPowderSnow || this.wasInPowderSnow;
          if (var1 > 0.5F && this.random.nextFloat() * 30.0F < (var1 - 0.4F) * 2.0F && !var3 && this.level.canSeeSky(var2)) {
             return true;

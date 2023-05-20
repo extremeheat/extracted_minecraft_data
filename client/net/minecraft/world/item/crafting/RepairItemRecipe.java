@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -38,51 +39,51 @@ public class RepairItemRecipe extends CustomRecipe {
       return var3.size() == 2;
    }
 
-   public ItemStack assemble(CraftingContainer var1) {
-      ArrayList var2 = Lists.newArrayList();
+   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+      ArrayList var3 = Lists.newArrayList();
 
-      for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty()) {
-            var2.add(var4);
-            if (var2.size() > 1) {
-               ItemStack var5 = (ItemStack)var2.get(0);
-               if (!var4.is(var5.getItem()) || var5.getCount() != 1 || var4.getCount() != 1 || !var5.getItem().canBeDepleted()) {
+      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
+         ItemStack var5 = var1.getItem(var4);
+         if (!var5.isEmpty()) {
+            var3.add(var5);
+            if (var3.size() > 1) {
+               ItemStack var6 = (ItemStack)var3.get(0);
+               if (!var5.is(var6.getItem()) || var6.getCount() != 1 || var5.getCount() != 1 || !var6.getItem().canBeDepleted()) {
                   return ItemStack.EMPTY;
                }
             }
          }
       }
 
-      if (var2.size() == 2) {
-         ItemStack var14 = (ItemStack)var2.get(0);
-         ItemStack var15 = (ItemStack)var2.get(1);
-         if (var14.is(var15.getItem()) && var14.getCount() == 1 && var15.getCount() == 1 && var14.getItem().canBeDepleted()) {
-            Item var16 = var14.getItem();
-            int var6 = var16.getMaxDamage() - var14.getDamageValue();
-            int var7 = var16.getMaxDamage() - var15.getDamageValue();
-            int var8 = var6 + var7 + var16.getMaxDamage() * 5 / 100;
-            int var9 = var16.getMaxDamage() - var8;
-            if (var9 < 0) {
-               var9 = 0;
+      if (var3.size() == 2) {
+         ItemStack var15 = (ItemStack)var3.get(0);
+         ItemStack var16 = (ItemStack)var3.get(1);
+         if (var15.is(var16.getItem()) && var15.getCount() == 1 && var16.getCount() == 1 && var15.getItem().canBeDepleted()) {
+            Item var17 = var15.getItem();
+            int var7 = var17.getMaxDamage() - var15.getDamageValue();
+            int var8 = var17.getMaxDamage() - var16.getDamageValue();
+            int var9 = var7 + var8 + var17.getMaxDamage() * 5 / 100;
+            int var10 = var17.getMaxDamage() - var9;
+            if (var10 < 0) {
+               var10 = 0;
             }
 
-            ItemStack var10 = new ItemStack(var14.getItem());
-            var10.setDamageValue(var9);
-            HashMap var11 = Maps.newHashMap();
-            Map var12 = EnchantmentHelper.getEnchantments(var14);
+            ItemStack var11 = new ItemStack(var15.getItem());
+            var11.setDamageValue(var10);
+            HashMap var12 = Maps.newHashMap();
             Map var13 = EnchantmentHelper.getEnchantments(var15);
+            Map var14 = EnchantmentHelper.getEnchantments(var16);
             BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isCurse).forEach(var3x -> {
-               int var4x = Math.max(var12.getOrDefault(var3x, 0), var13.getOrDefault(var3x, 0));
+               int var4x = Math.max(var13.getOrDefault(var3x, 0), var14.getOrDefault(var3x, 0));
                if (var4x > 0) {
-                  var11.put(var3x, var4x);
+                  var12.put(var3x, var4x);
                }
             });
-            if (!var11.isEmpty()) {
-               EnchantmentHelper.setEnchantments(var11, var10);
+            if (!var12.isEmpty()) {
+               EnchantmentHelper.setEnchantments(var12, var11);
             }
 
-            return var10;
+            return var11;
          }
       }
 

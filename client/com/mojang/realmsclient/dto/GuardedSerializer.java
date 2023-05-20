@@ -1,6 +1,7 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import javax.annotation.Nullable;
 
 public class GuardedSerializer {
@@ -11,6 +12,10 @@ public class GuardedSerializer {
    }
 
    public String toJson(ReflectionBasedSerialization var1) {
+      return this.gson.toJson(var1);
+   }
+
+   public String toJson(JsonElement var1) {
       return this.gson.toJson(var1);
    }
 

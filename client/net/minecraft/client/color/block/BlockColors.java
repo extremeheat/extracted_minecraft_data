@@ -37,18 +37,25 @@ public class BlockColors {
       var0.register(
          (var0x, var1, var2, var3) -> var1 != null && var2 != null
                ? BiomeColors.getAverageGrassColor(var1, var0x.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER ? var2.below() : var2)
-               : -1,
+               : GrassColor.getDefaultColor(),
          Blocks.LARGE_FERN,
          Blocks.TALL_GRASS
       );
       var0.addColoringState(DoublePlantBlock.HALF, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
       var0.register(
-         (var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.get(0.5, 1.0),
+         (var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor(),
          Blocks.GRASS_BLOCK,
          Blocks.FERN,
          Blocks.GRASS,
          Blocks.POTTED_FERN
       );
+      var0.register((var0x, var1, var2, var3) -> {
+         if (var3 != 0) {
+            return var1 != null && var2 != null ? BiomeColors.getAverageGrassColor(var1, var2) : GrassColor.getDefaultColor();
+         } else {
+            return -1;
+         }
+      }, Blocks.PINK_PETALS);
       var0.register((var0x, var1, var2, var3) -> FoliageColor.getEvergreenColor(), Blocks.SPRUCE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> FoliageColor.getBirchColor(), Blocks.BIRCH_LEAVES);
       var0.register(

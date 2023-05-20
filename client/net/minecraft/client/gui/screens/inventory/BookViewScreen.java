@@ -14,7 +14,6 @@ import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.ClickEvent;
@@ -103,9 +102,7 @@ public class BookViewScreen extends Screen {
    }
 
    protected void createMenuControls() {
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(null)).bounds(this.width / 2 - 100, 196, 200, 20).build()
-      );
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).bounds(this.width / 2 - 100, 196, 200, 20).build());
    }
 
    protected void createPageControlButtons() {
@@ -162,12 +159,10 @@ public class BookViewScreen extends Screen {
    @Override
    public void render(PoseStack var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.setShaderTexture(0, BOOK_LOCATION);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
-      this.blit(var1, var5, 2, 0, 0, 192, 192);
+      blit(var1, var5, 2, 0, 0, 192, 192);
       if (this.cachedPage != this.currentPage) {
          FormattedText var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);

@@ -17,6 +17,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.NodeEvaluator;
 import net.minecraft.world.level.pathfinder.Path;
@@ -94,7 +95,7 @@ public abstract class PathNavigation {
 
    @Nullable
    public final Path createPath(double var1, double var3, double var5, int var7) {
-      return this.createPath(new BlockPos(var1, var3, var5), var7);
+      return this.createPath(BlockPos.containing(var1, var3, var5), var7);
    }
 
    @Nullable
@@ -220,7 +221,7 @@ public abstract class PathNavigation {
    }
 
    protected double getGroundY(Vec3 var1) {
-      BlockPos var2 = new BlockPos(var1);
+      BlockPos var2 = BlockPos.containing(var1);
       return this.level.getBlockState(var2.below()).isAir() ? var1.y : WalkNodeEvaluator.getFloorLevel(this.level, var2);
    }
 
@@ -232,7 +233,7 @@ public abstract class PathNavigation {
       double var5 = Math.abs(this.mob.getY() - (double)var2.getY());
       double var7 = Math.abs(this.mob.getZ() - ((double)var2.getZ() + 0.5));
       boolean var9 = var3 < (double)this.maxDistanceToWaypoint && var7 < (double)this.maxDistanceToWaypoint && var5 < 1.0;
-      if (var9 || this.mob.canCutCorner(this.path.getNextNode().type) && this.shouldTargetNextNodeInDirection(var1)) {
+      if (var9 || this.canCutCorner(this.path.getNextNode().type) && this.shouldTargetNextNodeInDirection(var1)) {
          this.path.advance();
       }
 
@@ -351,6 +352,10 @@ public abstract class PathNavigation {
 
    protected boolean canMoveDirectly(Vec3 var1, Vec3 var2) {
       return false;
+   }
+
+   public boolean canCutCorner(BlockPathTypes var1) {
+      return var1 != BlockPathTypes.DANGER_FIRE && var1 != BlockPathTypes.DANGER_OTHER && var1 != BlockPathTypes.WALKABLE_DOOR;
    }
 
    protected static boolean isClearForMovementBetween(Mob var0, Vec3 var1, Vec3 var2, boolean var3) {

@@ -714,6 +714,9 @@ public class VillagerTrades {
          }
       )
    );
+   public static final Int2ObjectMap<VillagerTrades.ItemListing[]> WANDERING_TRADER_TRADES_1_20 = toIntMap(
+      ImmutableMap.of(1, new VillagerTrades.ItemListing[]{new VillagerTrades.ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1)})
+   );
 
    public VillagerTrades() {
       super();

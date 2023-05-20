@@ -534,7 +534,6 @@ public class DebugScreenOverlay extends GuiComponent {
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
       BufferBuilder var28 = Tesselator.getInstance().getBuilder();
       RenderSystem.enableBlend();
-      RenderSystem.disableTexture();
       RenderSystem.defaultBlendFunc();
       var28.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
@@ -554,27 +553,26 @@ public class DebugScreenOverlay extends GuiComponent {
       }
 
       BufferUploader.drawWithShader(var28.end());
-      RenderSystem.enableTexture();
       RenderSystem.disableBlend();
       if (var5) {
          fill(var1, var3 + 1, var27 - 30 + 1, var3 + 14, var27 - 30 + 10, -1873784752);
          this.font.draw(var1, "60 FPS", (float)(var3 + 2), (float)(var27 - 30 + 2), 14737632);
-         this.hLine(var1, var3, var3 + var12 - 1, var27 - 30, -1);
+         hLine(var1, var3, var3 + var12 - 1, var27 - 30, -1);
          fill(var1, var3 + 1, var27 - 60 + 1, var3 + 14, var27 - 60 + 10, -1873784752);
          this.font.draw(var1, "30 FPS", (float)(var3 + 2), (float)(var27 - 60 + 2), 14737632);
-         this.hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
+         hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
       } else {
          fill(var1, var3 + 1, var27 - 60 + 1, var3 + 14, var27 - 60 + 10, -1873784752);
          this.font.draw(var1, "20 TPS", (float)(var3 + 2), (float)(var27 - 60 + 2), 14737632);
-         this.hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
+         hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
       }
 
-      this.hLine(var1, var3, var3 + var12 - 1, var27 - 1, -1);
-      this.vLine(var1, var3, var27 - 60, var27, -1);
-      this.vLine(var1, var3 + var12 - 1, var27 - 60, var27, -1);
+      hLine(var1, var3, var3 + var12 - 1, var27 - 1, -1);
+      vLine(var1, var3, var27 - 60, var27, -1);
+      vLine(var1, var3 + var12 - 1, var27 - 60, var27, -1);
       int var29 = this.minecraft.options.framerateLimit().get();
       if (var5 && var29 > 0 && var29 <= 250) {
-         this.hLine(var1, var3, var3 + var12 - 1, var27 - 1 - (int)(1800.0 / (double)var29), -16711681);
+         hLine(var1, var3, var3 + var12 - 1, var27 - 1 - (int)(1800.0 / (double)var29), -16711681);
       }
 
       String var30 = var15 + " ms min";

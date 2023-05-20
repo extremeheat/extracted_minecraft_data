@@ -21,6 +21,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -29,7 +30,6 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class FillBiomeCommand {
-   private static final int MAX_FILL_AREA = 32768;
    public static final SimpleCommandExceptionType ERROR_NOT_LOADED = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
    private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType(
       (var0, var1) -> Component.translatable("commands.fillbiome.toobig", var0, var1)
@@ -106,38 +106,39 @@ public class FillBiomeCommand {
       BlockPos var6 = quantize(var2);
       BoundingBox var7 = BoundingBox.fromCorners(var5, var6);
       int var8 = var7.getXSpan() * var7.getYSpan() * var7.getZSpan();
-      if (var8 > 32768) {
-         throw ERROR_VOLUME_TOO_LARGE.create(32768, var8);
+      int var9 = var0.getLevel().getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+      if (var8 > var9) {
+         throw ERROR_VOLUME_TOO_LARGE.create(var9, var8);
       } else {
-         ServerLevel var9 = var0.getLevel();
-         ArrayList var10 = new ArrayList();
+         ServerLevel var10 = var0.getLevel();
+         ArrayList var11 = new ArrayList();
 
-         for(int var11 = SectionPos.blockToSectionCoord(var7.minZ()); var11 <= SectionPos.blockToSectionCoord(var7.maxZ()); ++var11) {
-            for(int var12 = SectionPos.blockToSectionCoord(var7.minX()); var12 <= SectionPos.blockToSectionCoord(var7.maxX()); ++var12) {
-               ChunkAccess var13 = var9.getChunk(var12, var11, ChunkStatus.FULL, false);
-               if (var13 == null) {
+         for(int var12 = SectionPos.blockToSectionCoord(var7.minZ()); var12 <= SectionPos.blockToSectionCoord(var7.maxZ()); ++var12) {
+            for(int var13 = SectionPos.blockToSectionCoord(var7.minX()); var13 <= SectionPos.blockToSectionCoord(var7.maxX()); ++var13) {
+               ChunkAccess var14 = var10.getChunk(var13, var12, ChunkStatus.FULL, false);
+               if (var14 == null) {
                   throw ERROR_NOT_LOADED.create();
                }
 
-               var10.add(var13);
+               var11.add(var14);
             }
          }
 
-         MutableInt var14 = new MutableInt(0);
+         MutableInt var15 = new MutableInt(0);
 
-         for(ChunkAccess var16 : var10) {
-            var16.fillBiomesFromNoise(makeResolver(var14, var16, var7, var3, var4), var9.getChunkSource().randomState().sampler());
-            var16.setUnsaved(true);
-            var9.getChunkSource().chunkMap.resendChunk(var16);
+         for(ChunkAccess var17 : var11) {
+            var17.fillBiomesFromNoise(makeResolver(var15, var17, var7, var3, var4), var10.getChunkSource().randomState().sampler());
+            var17.setUnsaved(true);
          }
 
+         var10.getChunkSource().chunkMap.resendBiomesForChunks(var11);
          var0.sendSuccess(
             Component.translatable(
-               "commands.fillbiome.success.count", var14.getValue(), var7.minX(), var7.minY(), var7.minZ(), var7.maxX(), var7.maxY(), var7.maxZ()
+               "commands.fillbiome.success.count", var15.getValue(), var7.minX(), var7.minY(), var7.minZ(), var7.maxX(), var7.maxY(), var7.maxZ()
             ),
             true
          );
-         return var14.getValue();
+         return var15.getValue();
       }
    }
 }

@@ -200,7 +200,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
       LevelChunk var3 = getChunk(var0, var2);
       BlockPos var4 = findValidSpawnInChunk(var3);
       if (var4 == null) {
-         BlockPos var5 = new BlockPos(var2.x + 0.5, 75.0, var2.z + 0.5);
+         BlockPos var5 = BlockPos.containing(var2.x + 0.5, 75.0, var2.z + 0.5);
          LOGGER.debug("Failed to find a suitable block to teleport to, spawning an island on {}", var5);
          var0.registryAccess()
             .registry(Registries.CONFIGURED_FEATURE)
