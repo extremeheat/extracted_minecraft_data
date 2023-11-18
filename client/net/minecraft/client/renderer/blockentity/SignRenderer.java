@@ -172,7 +172,7 @@ public class SignRenderer implements BlockEntityRenderer<SignBlockEntity> {
       }
    }
 
-   static int getDarkColor(SignText var0) {
+   public static int getDarkColor(SignText var0) {
       int var1 = var0.getColor().getTextColor();
       if (var1 == DyeColor.BLACK.getTextColor() && var0.hasGlowingText()) {
          return -988212;

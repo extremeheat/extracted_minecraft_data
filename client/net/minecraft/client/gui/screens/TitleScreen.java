@@ -17,11 +17,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.SplashRenderer;
+import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -46,7 +47,7 @@ import org.slf4j.Logger;
 public class TitleScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String DEMO_LEVEL_ID = "Demo_World";
-   public static final Component COPYRIGHT_TEXT = Component.literal("Copyright Mojang AB. Do not distribute!");
+   public static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
    public static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
    private static final ResourceLocation PANORAMA_OVERLAY = new ResourceLocation("textures/gui/title/background/panorama_overlay.png");
    @Nullable
@@ -123,22 +124,12 @@ public class TitleScreen extends Screen {
          this.createNormalMenuOptions(var4, 24);
       }
 
-      this.addRenderableWidget(
-         new ImageButton(
-            this.width / 2 - 124,
-            var4 + 72 + 12,
-            20,
-            20,
-            0,
-            106,
-            20,
-            Button.WIDGETS_LOCATION,
-            256,
-            256,
-            var1x -> this.minecraft.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())),
-            Component.translatable("narrator.button.language")
+      SpriteIconButton var5 = this.addRenderableWidget(
+         CommonButtons.language(
+            20, var1x -> this.minecraft.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true
          )
       );
+      var5.setPosition(this.width / 2 - 124, var4 + 72 + 12);
       this.addRenderableWidget(
          Button.builder(Component.translatable("menu.options"), var1x -> this.minecraft.setScreen(new OptionsScreen(this, this.minecraft.options)))
             .bounds(this.width / 2 - 100, var4 + 72 + 12, 98, 20)
@@ -147,28 +138,15 @@ public class TitleScreen extends Screen {
       this.addRenderableWidget(
          Button.builder(Component.translatable("menu.quit"), var1x -> this.minecraft.stop()).bounds(this.width / 2 + 2, var4 + 72 + 12, 98, 20).build()
       );
-      this.addRenderableWidget(
-         new ImageButton(
-            this.width / 2 + 104,
-            var4 + 72 + 12,
-            20,
-            20,
-            0,
-            0,
-            20,
-            Button.ACCESSIBILITY_TEXTURE,
-            32,
-            64,
-            var1x -> this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)),
-            Component.translatable("narrator.button.accessibility")
-         )
+      SpriteIconButton var6 = this.addRenderableWidget(
+         CommonButtons.accessibility(20, var1x -> this.minecraft.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true)
       );
+      var6.setPosition(this.width / 2 + 104, var4 + 72 + 12);
       this.addRenderableWidget(
          new PlainTextButton(
             var2, this.height - 10, var1, 10, COPYRIGHT_TEXT, var1x -> this.minecraft.setScreen(new CreditsAndAttributionScreen(this)), this.font
          )
       );
-      this.minecraft.setConnectedToRealms(false);
       if (this.realmsNotificationsScreen == null) {
          this.realmsNotificationsScreen = new RealmsNotificationsScreen();
       }
@@ -210,6 +188,8 @@ public class TitleScreen extends Screen {
    private Component getMultiplayerDisabledReason() {
       if (this.minecraft.allowsMultiplayer()) {
          return null;
+      } else if (this.minecraft.isNameBanned()) {
+         return Component.translatable("title.multiplayer.disabled.banned.name");
       } else {
          BanDetails var1 = this.minecraft.multiplayerBan();
          if (var1 != null) {
@@ -340,6 +320,10 @@ public class TitleScreen extends Screen {
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
          }
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    @Override

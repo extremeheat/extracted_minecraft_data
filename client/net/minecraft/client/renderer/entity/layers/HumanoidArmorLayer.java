@@ -65,7 +65,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
                this.renderModel(var1, var2, var5, (ArmorItem)var8, (A)var6, var15, 1.0F, 1.0F, 1.0F, null);
             }
 
-            ArmorTrim.getTrim(var3.level().registryAccess(), var7)
+            ArmorTrim.getTrim(var3.level().registryAccess(), var7, true)
                .ifPresent(var7x -> this.renderTrim(var8.getMaterial(), var1, var2, var5, var7x, (A)var6, var15));
             if (var7.hasFoil()) {
                this.renderGlint(var1, var2, var5, (A)var6);
@@ -106,7 +106,7 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
 
    private void renderTrim(ArmorMaterial var1, PoseStack var2, MultiBufferSource var3, int var4, ArmorTrim var5, A var6, boolean var7) {
       TextureAtlasSprite var8 = this.armorTrimAtlas.getSprite(var7 ? var5.innerTexture(var1) : var5.outerTexture(var1));
-      VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet()));
+      VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet(var5.pattern().value().decal())));
       var6.renderToBuffer(var2, var9, var4, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
    }
 

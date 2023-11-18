@@ -9,6 +9,7 @@ import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
@@ -95,12 +96,11 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
       Lighting.setupForFlatItems();
-      this.renderBackground(var1);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 40, 16777215);
       this.renderSign(var1);
       Lighting.setupFor3DItems();
-      super.render(var1, var2, var3, var4);
    }
 
    @Override
@@ -146,7 +146,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       var1.pose().translate(0.0F, 0.0F, 4.0F);
       Vector3f var2 = this.getSignTextScale();
       var1.pose().scale(var2.x(), var2.y(), var2.z());
-      int var3 = this.text.getColor().getTextColor();
+      int var3 = this.text.hasGlowingText() ? this.text.getColor().getTextColor() : SignRenderer.getDarkColor(this.text);
       boolean var4 = this.frame / 6 % 2 == 0;
       int var5 = this.signField.getCursorPos();
       int var6 = this.signField.getSelectionPos();

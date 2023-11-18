@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -55,7 +56,7 @@ public class ModelProvider implements DataProvider {
       Consumer var7 = var5::add;
       new BlockModelGenerators(var3, var6, var7).run();
       new ItemModelGenerators(var6).run();
-      List var8 = BuiltInRegistries.BLOCK.stream().filter(var1x -> !var2.containsKey(var1x)).toList();
+      List var8 = BuiltInRegistries.BLOCK.entrySet().stream().filter(var0 -> true).map(Entry::getValue).filter(var1x -> !var2.containsKey(var1x)).toList();
       if (!var8.isEmpty()) {
          throw new IllegalStateException("Missing blockstate definitions for: " + var8);
       } else {

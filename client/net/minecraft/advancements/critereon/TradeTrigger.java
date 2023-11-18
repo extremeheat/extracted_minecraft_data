@@ -1,27 +1,22 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class TradeTrigger extends SimpleCriterionTrigger<TradeTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("villager_trade");
-
    public TradeTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public TradeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "villager", var3);
-      ItemPredicate var5 = ItemPredicate.fromJson(var1.get("item"));
+   public TradeTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = EntityPredicate.fromJson(var1, "villager", var3);
+      Optional var5 = ItemPredicate.fromJson(var1.get("item"));
       return new TradeTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -31,37 +26,38 @@ public class TradeTrigger extends SimpleCriterionTrigger<TradeTrigger.TriggerIns
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ContextAwarePredicate villager;
-      private final ItemPredicate item;
+      private final Optional<ContextAwarePredicate> villager;
+      private final Optional<ItemPredicate> item;
 
-      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ItemPredicate var3) {
-         super(TradeTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ItemPredicate> var3) {
+         super(var1);
          this.villager = var2;
          this.item = var3;
       }
 
-      public static TradeTrigger.TriggerInstance tradedWithVillager() {
-         return new TradeTrigger.TriggerInstance(ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ItemPredicate.ANY);
+      public static Criterion<TradeTrigger.TriggerInstance> tradedWithVillager() {
+         return CriteriaTriggers.TRADE.createCriterion(new TradeTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty()));
       }
 
-      public static TradeTrigger.TriggerInstance tradedWithVillager(EntityPredicate.Builder var0) {
-         return new TradeTrigger.TriggerInstance(EntityPredicate.wrap(var0.build()), ContextAwarePredicate.ANY, ItemPredicate.ANY);
+      public static Criterion<TradeTrigger.TriggerInstance> tradedWithVillager(EntityPredicate.Builder var0) {
+         return CriteriaTriggers.TRADE
+            .createCriterion(new TradeTrigger.TriggerInstance(Optional.of(EntityPredicate.wrap(var0)), Optional.empty(), Optional.empty()));
       }
 
       public boolean matches(LootContext var1, ItemStack var2) {
-         if (!this.villager.matches(var1)) {
+         if (this.villager.isPresent() && !this.villager.get().matches(var1)) {
             return false;
          } else {
-            return this.item.matches(var2);
+            return !this.item.isPresent() || this.item.get().matches(var2);
          }
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("item", this.item.serializeToJson());
-         var2.add("villager", this.villager.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.item.ifPresent(var1x -> var1.add("item", var1x.serializeToJson()));
+         this.villager.ifPresent(var1x -> var1.add("villager", var1x.toJson()));
+         return var1;
       }
    }
 }

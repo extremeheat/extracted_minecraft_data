@@ -78,13 +78,33 @@ public class Library {
          throw new IllegalStateException("OpenAL 1.1 not supported");
       } else {
          this.setHrtf(var3.ALC_SOFT_HRTF && var2);
-         this.context = ALC10.alcCreateContext(this.currentDevice, (IntBuffer)null);
+         MemoryStack var4 = MemoryStack.stackPush();
+
+         try {
+            IntBuffer var5 = var4.callocInt(3).put(6554).put(1).put(0).flip();
+            this.context = ALC10.alcCreateContext(this.currentDevice, var5);
+         } catch (Throwable var9) {
+            if (var4 != null) {
+               try {
+                  var4.close();
+               } catch (Throwable var8) {
+                  var9.addSuppressed(var8);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (var4 != null) {
+            var4.close();
+         }
+
          ALC10.alcMakeContextCurrent(this.context);
-         int var4 = this.getChannelCount();
-         int var5 = Mth.clamp((int)Mth.sqrt((float)var4), 2, 8);
-         int var6 = Mth.clamp(var4 - var5, 8, 255);
+         int var10 = this.getChannelCount();
+         int var11 = Mth.clamp((int)Mth.sqrt((float)var10), 2, 8);
+         int var6 = Mth.clamp(var10 - var11, 8, 255);
          this.staticChannels = new Library.CountingChannelPool(var6);
-         this.streamingChannels = new Library.CountingChannelPool(var5);
+         this.streamingChannels = new Library.CountingChannelPool(var11);
          ALCapabilities var7 = AL.createCapabilities(var3);
          OpenAlUtil.checkALError("Initialization");
          if (!var7.AL_EXT_source_distance_model) {

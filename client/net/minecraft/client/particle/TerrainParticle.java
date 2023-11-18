@@ -44,22 +44,22 @@ public class TerrainParticle extends TextureSheetParticle {
 
    @Override
    protected float getU0() {
-      return this.sprite.getU((double)((this.uo + 1.0F) / 4.0F * 16.0F));
+      return this.sprite.getU((this.uo + 1.0F) / 4.0F);
    }
 
    @Override
    protected float getU1() {
-      return this.sprite.getU((double)(this.uo / 4.0F * 16.0F));
+      return this.sprite.getU(this.uo / 4.0F);
    }
 
    @Override
    protected float getV0() {
-      return this.sprite.getV((double)(this.vo / 4.0F * 16.0F));
+      return this.sprite.getV(this.vo / 4.0F);
    }
 
    @Override
    protected float getV1() {
-      return this.sprite.getV((double)((this.vo + 1.0F) / 4.0F * 16.0F));
+      return this.sprite.getV((this.vo + 1.0F) / 4.0F);
    }
 
    @Override
@@ -77,7 +77,9 @@ public class TerrainParticle extends TextureSheetParticle {
          BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
       ) {
          BlockState var15 = var1.getState();
-         return !var15.isAir() && !var15.is(Blocks.MOVING_PISTON) ? new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15) : null;
+         return !var15.isAir() && !var15.is(Blocks.MOVING_PISTON) && var15.shouldSpawnTerrainParticles()
+            ? new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15)
+            : null;
       }
    }
 }

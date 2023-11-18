@@ -11,12 +11,12 @@ import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.BitSet;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class StackedContents {
    private static final int EMPTY = 0;
@@ -74,12 +74,12 @@ public class StackedContents {
       return new StackedContents.RecipePicker(var1).tryPick(var3, var2);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, @Nullable IntList var2) {
+   public int getBiggestCraftableStack(RecipeHolder<?> var1, @Nullable IntList var2) {
       return this.getBiggestCraftableStack(var1, 2147483647, var2);
    }
 
-   public int getBiggestCraftableStack(Recipe<?> var1, int var2, @Nullable IntList var3) {
-      return new StackedContents.RecipePicker(var1).tryPickAll(var2, var3);
+   public int getBiggestCraftableStack(RecipeHolder<?> var1, int var2, @Nullable IntList var3) {
+      return new StackedContents.RecipePicker(var1.value()).tryPickAll(var2, var3);
    }
 
    public static ItemStack fromStackingIndex(int var0) {
@@ -138,26 +138,25 @@ public class StackedContents {
                this.data.clear(0, this.ingredientCount + this.itemCount);
             }
 
-            boolean var10 = var3 == this.ingredientCount;
-            boolean var11 = var10 && var2 != null;
-            if (var11) {
+            boolean var11 = var3 == this.ingredientCount;
+            boolean var12 = var11 && var2 != null;
+            if (var12) {
                var2.clear();
             }
 
             this.data.clear(0, this.ingredientCount + this.itemCount + this.ingredientCount);
             int var6 = 0;
-            NonNullList var7 = this.recipe.getIngredients();
 
-            for(int var8 = 0; var8 < var7.size(); ++var8) {
-               if (var11 && ((Ingredient)var7.get(var8)).isEmpty()) {
+            for(Ingredient var9 : this.recipe.getIngredients()) {
+               if (var12 && var9.isEmpty()) {
                   var2.add(0);
                } else {
-                  for(int var9 = 0; var9 < this.itemCount; ++var9) {
-                     if (this.hasResidual(false, var6, var9)) {
-                        this.toggleResidual(true, var9, var6);
-                        StackedContents.this.put(this.items[var9], var1);
-                        if (var11) {
-                           var2.add(this.items[var9]);
+                  for(int var10 = 0; var10 < this.itemCount; ++var10) {
+                     if (this.hasResidual(false, var6, var10)) {
+                        this.toggleResidual(true, var10, var6);
+                        StackedContents.this.put(this.items[var10], var1);
+                        if (var12) {
+                           var2.add(this.items[var10]);
                         }
                      }
                   }
@@ -166,7 +165,7 @@ public class StackedContents {
                }
             }
 
-            return var10;
+            return var11;
          }
       }
 

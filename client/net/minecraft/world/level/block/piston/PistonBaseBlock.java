@@ -278,8 +278,7 @@ public class PistonBaseBlock extends DirectionalBlock {
          List var8 = var6.getToPush();
          ArrayList var9 = Lists.newArrayList();
 
-         for(int var10 = 0; var10 < var8.size(); ++var10) {
-            BlockPos var11 = (BlockPos)var8.get(var10);
+         for(BlockPos var11 : var8) {
             BlockState var12 = var1.getBlockState(var11);
             var9.add(var12);
             var7.put(var11, var12);

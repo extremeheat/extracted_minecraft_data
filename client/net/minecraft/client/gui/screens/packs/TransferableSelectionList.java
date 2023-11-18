@@ -16,7 +16,14 @@ import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.util.FormattedCharSequence;
 
 public class TransferableSelectionList extends ObjectSelectionList<TransferableSelectionList.PackEntry> {
-   static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/resource_packs.png");
+   static final ResourceLocation SELECT_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/select_highlighted");
+   static final ResourceLocation SELECT_SPRITE = new ResourceLocation("transferable_list/select");
+   static final ResourceLocation UNSELECT_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/unselect_highlighted");
+   static final ResourceLocation UNSELECT_SPRITE = new ResourceLocation("transferable_list/unselect");
+   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/move_up_highlighted");
+   static final ResourceLocation MOVE_UP_SPRITE = new ResourceLocation("transferable_list/move_up");
+   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = new ResourceLocation("transferable_list/move_down_highlighted");
+   static final ResourceLocation MOVE_DOWN_SPRITE = new ResourceLocation("transferable_list/move_down");
    static final Component INCOMPATIBLE_TITLE = Component.translatable("pack.incompatible");
    static final Component INCOMPATIBLE_CONFIRM_TITLE = Component.translatable("pack.incompatible.confirm.title");
    private final Component title;
@@ -72,12 +79,6 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    }
 
    public static class PackEntry extends ObjectSelectionList.Entry<TransferableSelectionList.PackEntry> {
-      private static final int ICON_OVERLAY_X_MOVE_RIGHT = 0;
-      private static final int ICON_OVERLAY_X_MOVE_LEFT = 32;
-      private static final int ICON_OVERLAY_X_MOVE_DOWN = 64;
-      private static final int ICON_OVERLAY_X_MOVE_UP = 96;
-      private static final int ICON_OVERLAY_Y_UNSELECTED = 0;
-      private static final int ICON_OVERLAY_Y_SELECTED = 32;
       private static final int MAX_DESCRIPTION_WIDTH_PIXELS = 157;
       private static final int MAX_NAME_WIDTH_PIXELS = 157;
       private static final String TOO_LONG_NAME_SUFFIX = "...";
@@ -123,7 +124,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
-            var1.fill(var4 - 1, var3 - 1, var4 + var5 - 9, var3 + var6 + 1, -8978432);
+            var1.fill(var4 - 1, var3 - 1, var4 + var5 - 3, var3 + var6 + 1, -8978432);
          }
 
          var1.blit(this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
@@ -140,39 +141,39 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
 
             if (this.pack.canSelect()) {
                if (var14 < 32) {
-                  var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 32.0F, 32, 32, 256, 256);
+                  var1.blitSprite(TransferableSelectionList.SELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blitSprite(TransferableSelectionList.SELECT_SPRITE, var4, var3, 32, 32);
                }
             } else {
                if (this.pack.canUnselect()) {
                   if (var14 < 16) {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 32.0F, 32.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.UNSELECT_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 32.0F, 0.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.UNSELECT_SPRITE, var4, var3, 32, 32);
                   }
                }
 
                if (this.pack.canMoveUp()) {
                   if (var14 < 32 && var14 > 16 && var15 < 16) {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 32.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 0.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                   }
                }
 
                if (this.pack.canMoveDown()) {
                   if (var14 < 32 && var14 > 16 && var15 > 16) {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 32.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                   } else {
-                     var1.blit(TransferableSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 0.0F, 32, 32, 256, 256);
+                     var1.blitSprite(TransferableSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                   }
                }
             }
          }
 
          var1.drawString(this.minecraft.font, var12, var4 + 32 + 2, var3 + 1, 16777215);
-         var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, 8421504);
+         var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, -8355712);
       }
 
       public String getPackId() {
@@ -222,36 +223,32 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
 
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
-         if (var5 != 0) {
-            return false;
-         } else {
-            double var6 = var1 - (double)this.parent.getRowLeft();
-            double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
-            if (this.showHoverOverlay() && var6 <= 32.0) {
-               this.parent.screen.clearSelected();
-               if (this.pack.canSelect()) {
-                  this.handlePackSelection();
-                  return true;
-               }
-
-               if (var6 < 16.0 && this.pack.canUnselect()) {
-                  this.pack.unselect();
-                  return true;
-               }
-
-               if (var6 > 16.0 && var8 < 16.0 && this.pack.canMoveUp()) {
-                  this.pack.moveUp();
-                  return true;
-               }
-
-               if (var6 > 16.0 && var8 > 16.0 && this.pack.canMoveDown()) {
-                  this.pack.moveDown();
-                  return true;
-               }
+         double var6 = var1 - (double)this.parent.getRowLeft();
+         double var8 = var3 - (double)this.parent.getRowTop(this.parent.children().indexOf(this));
+         if (this.showHoverOverlay() && var6 <= 32.0) {
+            this.parent.screen.clearSelected();
+            if (this.pack.canSelect()) {
+               this.handlePackSelection();
+               return true;
             }
 
-            return false;
+            if (var6 < 16.0 && this.pack.canUnselect()) {
+               this.pack.unselect();
+               return true;
+            }
+
+            if (var6 > 16.0 && var8 < 16.0 && this.pack.canMoveUp()) {
+               this.pack.moveUp();
+               return true;
+            }
+
+            if (var6 > 16.0 && var8 > 16.0 && this.pack.canMoveDown()) {
+               this.pack.moveDown();
+               return true;
+            }
          }
+
+         return false;
       }
    }
 }

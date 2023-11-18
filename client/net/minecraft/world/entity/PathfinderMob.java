@@ -2,6 +2,8 @@ package net.minecraft.world.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.PanicGoal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -29,6 +31,12 @@ public abstract class PathfinderMob extends Mob {
 
    public boolean isPathFinding() {
       return !this.getNavigation().isDone();
+   }
+
+   public boolean isPanicking() {
+      return this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+         ? this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent()
+         : this.goalSelector.getRunningGoals().anyMatch(var0 -> var0.getGoal() instanceof PanicGoal);
    }
 
    @Override
@@ -59,7 +67,7 @@ public abstract class PathfinderMob extends Mob {
                   .add(Math.copySign(var3 * var3 * 0.4, var3), Math.copySign(var5 * var5 * 0.4, var5), Math.copySign(var7 * var7 * 0.4, var7))
             );
             this.checkSlowFallDistance();
-         } else if (this.shouldStayCloseToLeashHolder()) {
+         } else if (this.shouldStayCloseToLeashHolder() && !this.isPanicking()) {
             this.goalSelector.enableControlFlag(Goal.Flag.MOVE);
             float var9 = 2.0F;
             Vec3 var4 = new Vec3(var1.getX() - this.getX(), var1.getY() - this.getY(), var1.getZ() - this.getZ())

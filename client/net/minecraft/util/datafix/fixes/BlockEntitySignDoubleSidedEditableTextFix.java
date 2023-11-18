@@ -1,57 +1,62 @@
 package net.minecraft.util.datafix.fixes;
 
+import com.google.common.collect.Streams;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityFix {
+   public static final String FILTERED_CORRECT = "_filtered_correct";
+   private static final String DEFAULT_COLOR = "black";
+   private static final String EMPTY_COMPONENT = Component.Serializer.toJson(CommonComponents.EMPTY);
+
    public BlockEntitySignDoubleSidedEditableTextFix(Schema var1, String var2, String var3) {
       super(var1, false, var2, References.BLOCK_ENTITY, var3);
    }
 
-   private static Dynamic<?> fixTag(Dynamic<?> var0) {
-      String var1 = "black";
-      Dynamic var2 = var0.emptyMap();
-      var2 = var2.set("messages", getTextList(var0, "Text"));
-      var2 = var2.set("filtered_messages", getTextList(var0, "FilteredText"));
-      Optional var3 = var0.get("Color").result();
-      var2 = var2.set("color", var3.isPresent() ? (Dynamic)var3.get() : var2.createString("black"));
-      Optional var4 = var0.get("GlowingText").result();
-      var2 = var2.set("has_glowing_text", var4.isPresent() ? (Dynamic)var4.get() : var2.createBoolean(false));
-      Dynamic var5 = var0.emptyMap();
-      Dynamic var6 = getEmptyTextList(var0);
-      var5 = var5.set("messages", var6);
-      var5 = var5.set("filtered_messages", var6);
-      var5 = var5.set("color", var5.createString("black"));
-      var5 = var5.set("has_glowing_text", var5.createBoolean(false));
-      var0 = var0.set("front_text", var2);
-      return var0.set("back_text", var5);
+   private static <T> Dynamic<T> fixTag(Dynamic<T> var0) {
+      return var0.set("front_text", fixFrontTextTag(var0)).set("back_text", createDefaultText(var0)).set("is_waxed", var0.createBoolean(false));
    }
 
-   private static <T> Dynamic<T> getTextList(Dynamic<T> var0, String var1) {
-      Dynamic var2 = var0.createString(getEmptyComponent());
-      return var0.createList(
-         Stream.of(
-            (T[])((Dynamic)var0.get(var1 + "1").result().orElse((T)var2),
-            (Dynamic)var0.get(var1 + "2").result().orElse((T)var2),
-            (Dynamic)var0.get(var1 + "3").result().orElse((T)var2),
-            (Dynamic)var0.get(var1 + "4").result().orElse((T)var2))
-         )
-      );
+   private static <T> Dynamic<T> fixFrontTextTag(Dynamic<T> var0) {
+      Dynamic var1 = var0.createString(EMPTY_COMPONENT);
+      List var2 = getLines(var0, "Text").map(var1x -> (Dynamic)var1x.orElse((T)var1)).toList();
+      Dynamic var3 = var0.emptyMap()
+         .set("messages", var0.createList(var2.stream()))
+         .set("color", (Dynamic)var0.get("Color").result().orElse((T)var0.createString("black")))
+         .set("has_glowing_text", (Dynamic)var0.get("GlowingText").result().orElse((T)var0.createBoolean(false)))
+         .set("_filtered_correct", var0.createBoolean(true));
+      List var4 = getLines(var0, "FilteredText").toList();
+      if (var4.stream().anyMatch(Optional::isPresent)) {
+         var3 = var3.set("filtered_messages", var0.createList(Streams.mapWithIndex(var4.stream(), (var1x, var2x) -> {
+            Dynamic var4x = (Dynamic)var2.get((int)var2x);
+            return (Dynamic)var1x.orElse((T)var4x);
+         })));
+      }
+
+      return var3;
    }
 
-   private static <T> Dynamic<T> getEmptyTextList(Dynamic<T> var0) {
-      Dynamic var1 = var0.createString(getEmptyComponent());
+   private static <T> Stream<Optional<Dynamic<T>>> getLines(Dynamic<T> var0, String var1) {
+      return Stream.of(var0.get(var1 + "1").result(), var0.get(var1 + "2").result(), var0.get(var1 + "3").result(), var0.get(var1 + "4").result());
+   }
+
+   private static <T> Dynamic<T> createDefaultText(Dynamic<T> var0) {
+      return var0.emptyMap()
+         .set("messages", createEmptyLines(var0))
+         .set("color", var0.createString("black"))
+         .set("has_glowing_text", var0.createBoolean(false));
+   }
+
+   private static <T> Dynamic<T> createEmptyLines(Dynamic<T> var0) {
+      Dynamic var1 = var0.createString(EMPTY_COMPONENT);
       return var0.createList(Stream.of((T[])(var1, var1, var1, var1)));
-   }
-
-   private static String getEmptyComponent() {
-      return Component.Serializer.toJson(CommonComponents.EMPTY);
    }
 
    @Override

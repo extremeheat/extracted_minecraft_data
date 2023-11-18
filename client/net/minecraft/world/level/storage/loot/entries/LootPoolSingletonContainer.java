@@ -1,13 +1,14 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.Products.P4;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -16,14 +17,13 @@ import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import org.apache.commons.lang3.ArrayUtils;
 
 public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer {
    public static final int DEFAULT_WEIGHT = 1;
    public static final int DEFAULT_QUALITY = 0;
    protected final int weight;
    protected final int quality;
-   protected final LootItemFunction[] functions;
+   protected final List<LootItemFunction> functions;
    final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
    private final LootPoolEntry entry = new LootPoolSingletonContainer.EntryBase() {
       @Override
@@ -32,7 +32,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       }
    };
 
-   protected LootPoolSingletonContainer(int var1, int var2, LootItemCondition[] var3, LootItemFunction[] var4) {
+   protected LootPoolSingletonContainer(int var1, int var2, List<LootItemCondition> var3, List<LootItemFunction> var4) {
       super(var3);
       this.weight = var1;
       this.quality = var2;
@@ -40,12 +40,23 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       this.compositeFunction = LootItemFunctions.compose(var4);
    }
 
+   protected static <T extends LootPoolSingletonContainer> P4<Mu<T>, Integer, Integer, List<LootItemCondition>, List<LootItemFunction>> singletonFields(
+      Instance<T> var0
+   ) {
+      return var0.group(
+            ExtraCodecs.strictOptionalField(Codec.INT, "weight", 1).forGetter(var0x -> var0x.weight),
+            ExtraCodecs.strictOptionalField(Codec.INT, "quality", 0).forGetter(var0x -> var0x.quality)
+         )
+         .and(commonFields(var0).t1())
+         .and(ExtraCodecs.strictOptionalField(LootItemFunctions.CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions));
+   }
+
    @Override
    public void validate(ValidationContext var1) {
       super.validate(var1);
 
-      for(int var2 = 0; var2 < this.functions.length; ++var2) {
-         this.functions[var2].validate(var1.forChild(".functions[" + var2 + "]"));
+      for(int var2 = 0; var2 < this.functions.size(); ++var2) {
+         this.functions.get(var2).validate(var1.forChild(".functions[" + var2 + "]"));
       }
    }
 
@@ -70,7 +81,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       implements FunctionUserBuilder<T> {
       protected int weight = 1;
       protected int quality = 0;
-      private final List<LootItemFunction> functions = Lists.newArrayList();
+      private final com.google.common.collect.ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
 
       public Builder() {
          super();
@@ -81,8 +92,8 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
          return this.getThis();
       }
 
-      protected LootItemFunction[] getFunctions() {
-         return this.functions.toArray(new LootItemFunction[0]);
+      protected List<LootItemFunction> getFunctions() {
+         return this.functions.build();
       }
 
       public T setWeight(int var1) {
@@ -127,35 +138,6 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
 
    @FunctionalInterface
    protected interface EntryConstructor {
-      LootPoolSingletonContainer build(int var1, int var2, LootItemCondition[] var3, LootItemFunction[] var4);
-   }
-
-   public abstract static class Serializer<T extends LootPoolSingletonContainer> extends LootPoolEntryContainer.Serializer<T> {
-      public Serializer() {
-         super();
-      }
-
-      public void serializeCustom(JsonObject var1, T var2, JsonSerializationContext var3) {
-         if (var2.weight != 1) {
-            var1.addProperty("weight", var2.weight);
-         }
-
-         if (var2.quality != 0) {
-            var1.addProperty("quality", var2.quality);
-         }
-
-         if (!ArrayUtils.isEmpty(var2.functions)) {
-            var1.add("functions", var3.serialize(var2.functions));
-         }
-      }
-
-      public final T deserializeCustom(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         int var4 = GsonHelper.getAsInt(var1, "weight", 1);
-         int var5 = GsonHelper.getAsInt(var1, "quality", 0);
-         LootItemFunction[] var6 = (LootItemFunction[])GsonHelper.getAsObject(var1, "functions", new LootItemFunction[0], var2, LootItemFunction[].class);
-         return this.deserialize(var1, var2, var4, var5, var3, var6);
-      }
-
-      protected abstract T deserialize(JsonObject var1, JsonDeserializationContext var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6);
+      LootPoolSingletonContainer build(int var1, int var2, List<LootItemCondition> var3, List<LootItemFunction> var4);
    }
 }

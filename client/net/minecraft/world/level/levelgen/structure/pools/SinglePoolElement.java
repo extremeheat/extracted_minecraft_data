@@ -45,7 +45,7 @@ public class SinglePoolElement extends StructurePoolElement {
 
    private static <T> DataResult<T> encodeTemplate(Either<ResourceLocation, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
       Optional var3 = var0.left();
-      return !var3.isPresent()
+      return var3.isEmpty()
          ? DataResult.error(() -> "Can not serialize a runtime pool element")
          : ResourceLocation.CODEC.encode((ResourceLocation)var3.get(), var1, var2);
    }

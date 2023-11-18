@@ -1,28 +1,32 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import javax.annotation.Nullable;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
-public class FluidPredicate {
-   public static final FluidPredicate ANY = new FluidPredicate(null, null, StatePropertiesPredicate.ANY);
-   @Nullable
-   private final TagKey<Fluid> tag;
-   @Nullable
-   private final Fluid fluid;
-   private final StatePropertiesPredicate properties;
+public record FluidPredicate(Optional<TagKey<Fluid>> b, Optional<Holder<Fluid>> c, Optional<StatePropertiesPredicate> d) {
+   private final Optional<TagKey<Fluid>> tag;
+   private final Optional<Holder<Fluid>> fluid;
+   private final Optional<StatePropertiesPredicate> properties;
+   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(TagKey.codec(Registries.FLUID), "tag").forGetter(FluidPredicate::tag),
+               ExtraCodecs.strictOptionalField(BuiltInRegistries.FLUID.holderByNameCodec(), "fluid").forGetter(FluidPredicate::fluid),
+               ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(FluidPredicate::properties)
+            )
+            .apply(var0, FluidPredicate::new)
+   );
 
-   public FluidPredicate(@Nullable TagKey<Fluid> var1, @Nullable Fluid var2, StatePropertiesPredicate var3) {
+   public FluidPredicate(Optional<TagKey<Fluid>> var1, Optional<Holder<Fluid>> var2, Optional<StatePropertiesPredicate> var3) {
       super();
       this.tag = var1;
       this.fluid = var2;
@@ -30,68 +34,24 @@ public class FluidPredicate {
    }
 
    public boolean matches(ServerLevel var1, BlockPos var2) {
-      if (this == ANY) {
-         return true;
-      } else if (!var1.isLoaded(var2)) {
+      if (!var1.isLoaded(var2)) {
          return false;
       } else {
          FluidState var3 = var1.getFluidState(var2);
-         if (this.tag != null && !var3.is(this.tag)) {
+         if (this.tag.isPresent() && !var3.is(this.tag.get())) {
             return false;
-         } else if (this.fluid != null && !var3.is(this.fluid)) {
+         } else if (this.fluid.isPresent() && !var3.is(this.fluid.get().value())) {
             return false;
          } else {
-            return this.properties.matches(var3);
+            return !this.properties.isPresent() || this.properties.get().matches(var3);
          }
-      }
-   }
-
-   public static FluidPredicate fromJson(@Nullable JsonElement var0) {
-      if (var0 != null && !var0.isJsonNull()) {
-         JsonObject var1 = GsonHelper.convertToJsonObject(var0, "fluid");
-         Fluid var2 = null;
-         if (var1.has("fluid")) {
-            ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var1, "fluid"));
-            var2 = BuiltInRegistries.FLUID.get(var3);
-         }
-
-         TagKey var5 = null;
-         if (var1.has("tag")) {
-            ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "tag"));
-            var5 = TagKey.create(Registries.FLUID, var4);
-         }
-
-         StatePropertiesPredicate var6 = StatePropertiesPredicate.fromJson(var1.get("state"));
-         return new FluidPredicate(var5, var2, var6);
-      } else {
-         return ANY;
-      }
-   }
-
-   public JsonElement serializeToJson() {
-      if (this == ANY) {
-         return JsonNull.INSTANCE;
-      } else {
-         JsonObject var1 = new JsonObject();
-         if (this.fluid != null) {
-            var1.addProperty("fluid", BuiltInRegistries.FLUID.getKey(this.fluid).toString());
-         }
-
-         if (this.tag != null) {
-            var1.addProperty("tag", this.tag.location().toString());
-         }
-
-         var1.add("state", this.properties.serializeToJson());
-         return var1;
       }
    }
 
    public static class Builder {
-      @Nullable
-      private Fluid fluid;
-      @Nullable
-      private TagKey<Fluid> fluids;
-      private StatePropertiesPredicate properties = StatePropertiesPredicate.ANY;
+      private Optional<Holder<Fluid>> fluid = Optional.empty();
+      private Optional<TagKey<Fluid>> fluids = Optional.empty();
+      private Optional<StatePropertiesPredicate> properties = Optional.empty();
 
       private Builder() {
          super();
@@ -102,17 +62,17 @@ public class FluidPredicate {
       }
 
       public FluidPredicate.Builder of(Fluid var1) {
-         this.fluid = var1;
+         this.fluid = Optional.of(var1.builtInRegistryHolder());
          return this;
       }
 
       public FluidPredicate.Builder of(TagKey<Fluid> var1) {
-         this.fluids = var1;
+         this.fluids = Optional.of(var1);
          return this;
       }
 
       public FluidPredicate.Builder setProperties(StatePropertiesPredicate var1) {
-         this.properties = var1;
+         this.properties = Optional.of(var1);
          return this;
       }
 

@@ -1,23 +1,80 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
-   ABOVE(0, 0, 28, 32, 8),
-   BELOW(84, 0, 28, 32, 8),
-   LEFT(0, 64, 32, 28, 5),
-   RIGHT(96, 64, 32, 28, 5);
+   ABOVE(
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_above_left_selected"),
+         new ResourceLocation("advancements/tab_above_middle_selected"),
+         new ResourceLocation("advancements/tab_above_right_selected")
+      ),
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_above_left"),
+         new ResourceLocation("advancements/tab_above_middle"),
+         new ResourceLocation("advancements/tab_above_right")
+      ),
+      28,
+      32,
+      8
+   ),
+   BELOW(
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_below_left_selected"),
+         new ResourceLocation("advancements/tab_below_middle_selected"),
+         new ResourceLocation("advancements/tab_below_right_selected")
+      ),
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_below_left"),
+         new ResourceLocation("advancements/tab_below_middle"),
+         new ResourceLocation("advancements/tab_below_right")
+      ),
+      28,
+      32,
+      8
+   ),
+   LEFT(
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_left_top_selected"),
+         new ResourceLocation("advancements/tab_left_middle_selected"),
+         new ResourceLocation("advancements/tab_left_bottom_selected")
+      ),
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_left_top"),
+         new ResourceLocation("advancements/tab_left_middle"),
+         new ResourceLocation("advancements/tab_left_bottom")
+      ),
+      32,
+      28,
+      5
+   ),
+   RIGHT(
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_right_top_selected"),
+         new ResourceLocation("advancements/tab_right_middle_selected"),
+         new ResourceLocation("advancements/tab_right_bottom_selected")
+      ),
+      new AdvancementTabType.Sprites(
+         new ResourceLocation("advancements/tab_right_top"),
+         new ResourceLocation("advancements/tab_right_middle"),
+         new ResourceLocation("advancements/tab_right_bottom")
+      ),
+      32,
+      28,
+      5
+   );
 
-   private final int textureX;
-   private final int textureY;
+   private final AdvancementTabType.Sprites selectedSprites;
+   private final AdvancementTabType.Sprites unselectedSprites;
    private final int width;
    private final int height;
    private final int max;
 
-   private AdvancementTabType(int var3, int var4, int var5, int var6, int var7) {
-      this.textureX = var3;
-      this.textureY = var4;
+   private AdvancementTabType(AdvancementTabType.Sprites var3, AdvancementTabType.Sprites var4, int var5, int var6, int var7) {
+      this.selectedSprites = var3;
+      this.unselectedSprites = var4;
       this.width = var5;
       this.height = var6;
       this.max = var7;
@@ -28,17 +85,17 @@ enum AdvancementTabType {
    }
 
    public void draw(GuiGraphics var1, int var2, int var3, boolean var4, int var5) {
-      int var6 = this.textureX;
-      if (var5 > 0) {
-         var6 += this.width;
+      AdvancementTabType.Sprites var6 = var4 ? this.selectedSprites : this.unselectedSprites;
+      ResourceLocation var7;
+      if (var5 == 0) {
+         var7 = var6.first();
+      } else if (var5 == this.max - 1) {
+         var7 = var6.last();
+      } else {
+         var7 = var6.middle();
       }
 
-      if (var5 == this.max - 1) {
-         var6 += this.width;
-      }
-
-      int var7 = var4 ? this.textureY + this.height : this.textureY;
-      var1.blit(AdvancementsScreen.TABS_LOCATION, var2 + this.getX(var5), var3 + this.getY(var5), var6, var7, this.width, this.height);
+      var1.blitSprite(var7, var2 + this.getX(var5), var3 + this.getY(var5), this.width, this.height);
    }
 
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
@@ -99,5 +156,18 @@ enum AdvancementTabType {
       int var8 = var1 + this.getX(var3);
       int var9 = var2 + this.getY(var3);
       return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
+   }
+
+   static record Sprites(ResourceLocation a, ResourceLocation b, ResourceLocation c) {
+      private final ResourceLocation first;
+      private final ResourceLocation middle;
+      private final ResourceLocation last;
+
+      Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
+         super();
+         this.first = var1;
+         this.middle = var2;
+         this.last = var3;
+      }
    }
 }

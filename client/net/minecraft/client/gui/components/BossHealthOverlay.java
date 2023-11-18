@@ -9,13 +9,42 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
 public class BossHealthOverlay {
-   private static final ResourceLocation GUI_BARS_LOCATION = new ResourceLocation("textures/gui/bars.png");
    private static final int BAR_WIDTH = 182;
    private static final int BAR_HEIGHT = 5;
-   private static final int OVERLAY_OFFSET = 80;
+   private static final ResourceLocation[] BAR_BACKGROUND_SPRITES = new ResourceLocation[]{
+      new ResourceLocation("boss_bar/pink_background"),
+      new ResourceLocation("boss_bar/blue_background"),
+      new ResourceLocation("boss_bar/red_background"),
+      new ResourceLocation("boss_bar/green_background"),
+      new ResourceLocation("boss_bar/yellow_background"),
+      new ResourceLocation("boss_bar/purple_background"),
+      new ResourceLocation("boss_bar/white_background")
+   };
+   private static final ResourceLocation[] BAR_PROGRESS_SPRITES = new ResourceLocation[]{
+      new ResourceLocation("boss_bar/pink_progress"),
+      new ResourceLocation("boss_bar/blue_progress"),
+      new ResourceLocation("boss_bar/red_progress"),
+      new ResourceLocation("boss_bar/green_progress"),
+      new ResourceLocation("boss_bar/yellow_progress"),
+      new ResourceLocation("boss_bar/purple_progress"),
+      new ResourceLocation("boss_bar/white_progress")
+   };
+   private static final ResourceLocation[] OVERLAY_BACKGROUND_SPRITES = new ResourceLocation[]{
+      new ResourceLocation("boss_bar/notched_6_background"),
+      new ResourceLocation("boss_bar/notched_10_background"),
+      new ResourceLocation("boss_bar/notched_12_background"),
+      new ResourceLocation("boss_bar/notched_20_background")
+   };
+   private static final ResourceLocation[] OVERLAY_PROGRESS_SPRITES = new ResourceLocation[]{
+      new ResourceLocation("boss_bar/notched_6_progress"),
+      new ResourceLocation("boss_bar/notched_10_progress"),
+      new ResourceLocation("boss_bar/notched_12_progress"),
+      new ResourceLocation("boss_bar/notched_20_progress")
+   };
    private final Minecraft minecraft;
    final Map<UUID, LerpingBossEvent> events = Maps.newLinkedHashMap();
 
@@ -46,18 +75,18 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4) {
-      this.drawBar(var1, var2, var3, var4, 182, 0);
-      int var5 = (int)(var4.getProgress() * 183.0F);
+      this.drawBar(var1, var2, var3, var4, 182, BAR_BACKGROUND_SPRITES, OVERLAY_BACKGROUND_SPRITES);
+      int var5 = Mth.lerpDiscrete(var4.getProgress(), 0, 182);
       if (var5 > 0) {
-         this.drawBar(var1, var2, var3, var4, var5, 5);
+         this.drawBar(var1, var2, var3, var4, var5, BAR_PROGRESS_SPRITES, OVERLAY_PROGRESS_SPRITES);
       }
    }
 
-   private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, int var6) {
-      var1.blit(GUI_BARS_LOCATION, var2, var3, 0, var4.getColor().ordinal() * 5 * 2 + var6, var5, 5);
+   private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
+      var1.blitSprite(var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
          RenderSystem.enableBlend();
-         var1.blit(GUI_BARS_LOCATION, var2, var3, 0, 80 + (var4.getOverlay().ordinal() - 1) * 5 * 2 + var6, var5, 5);
+         var1.blitSprite(var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
          RenderSystem.disableBlend();
       }
    }

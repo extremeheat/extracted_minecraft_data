@@ -1,10 +1,12 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import net.minecraft.world.level.storage.loot.Serializer;
-import net.minecraft.world.level.storage.loot.SerializerType;
+import com.mojang.serialization.Codec;
 
-public class LootItemConditionType extends SerializerType<LootItemCondition> {
-   public LootItemConditionType(Serializer<? extends LootItemCondition> var1) {
-      super(var1);
+public record LootItemConditionType(Codec<? extends LootItemCondition> a) {
+   private final Codec<? extends LootItemCondition> codec;
+
+   public LootItemConditionType(Codec<? extends LootItemCondition> var1) {
+      super();
+      this.codec = var1;
    }
 }

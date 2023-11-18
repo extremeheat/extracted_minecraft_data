@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Display;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -46,7 +47,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
             int var11 = var10 != -1 ? var10 : var6;
             super.render((T)var1, var2, var3, var4, var5, var11);
             var4.pushPose();
-            var4.mulPose(this.calculateOrientation(var7, (T)var1));
+            var4.mulPose(this.calculateOrientation(var7, (T)var1, var3, new Quaternionf()));
             Transformation var12 = var7.transformation().get(var9);
             var4.mulPoseMatrix(var12.getMatrix());
             var4.last().normal().rotate(var12.getLeftRotation()).rotate(var12.getRightRotation());
@@ -56,15 +57,31 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
       }
    }
 
-   private Quaternionf calculateOrientation(Display.RenderState var1, T var2) {
-      Camera var3 = this.entityRenderDispatcher.camera;
+   private Quaternionf calculateOrientation(Display.RenderState var1, T var2, float var3, Quaternionf var4) {
+      Camera var5 = this.entityRenderDispatcher.camera;
 
       return switch(var1.billboardConstraints()) {
-         case FIXED -> var2.orientation();
-         case HORIZONTAL -> new Quaternionf().rotationYXZ(-0.017453292F * var2.getYRot(), -0.017453292F * var3.getXRot(), 0.0F);
-         case VERTICAL -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var3.getYRot(), 0.017453292F * var2.getXRot(), 0.0F);
-         case CENTER -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var3.getYRot(), -0.017453292F * var3.getXRot(), 0.0F);
+         case FIXED -> var4.rotationYXZ(-0.017453292F * entityYRot(var2, var3), 0.017453292F * entityXRot(var2, var3), 0.0F);
+         case HORIZONTAL -> var4.rotationYXZ(-0.017453292F * entityYRot(var2, var3), 0.017453292F * cameraXRot(var5), 0.0F);
+         case VERTICAL -> var4.rotationYXZ(-0.017453292F * cameraYrot(var5), 0.017453292F * entityXRot(var2, var3), 0.0F);
+         case CENTER -> var4.rotationYXZ(-0.017453292F * cameraYrot(var5), 0.017453292F * cameraXRot(var5), 0.0F);
       };
+   }
+
+   private static float cameraYrot(Camera var0) {
+      return var0.getYRot() - 180.0F;
+   }
+
+   private static float cameraXRot(Camera var0) {
+      return -var0.getXRot();
+   }
+
+   private static <T extends Display> float entityYRot(T var0, float var1) {
+      return Mth.rotLerp(var1, var0.yRotO, var0.getYRot());
+   }
+
+   private static <T extends Display> float entityXRot(T var0, float var1) {
+      return Mth.lerp(var1, var0.xRotO, var0.getXRot());
    }
 
    @Nullable

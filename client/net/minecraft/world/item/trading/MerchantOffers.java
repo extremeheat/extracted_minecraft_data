@@ -91,4 +91,14 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
       var1.put("Recipes", var2);
       return var1;
    }
+
+   public MerchantOffers copy() {
+      MerchantOffers var1 = new MerchantOffers(this.size());
+
+      for(MerchantOffer var3 : this) {
+         var1.add(var3.copy());
+      }
+
+      return var1;
+   }
 }

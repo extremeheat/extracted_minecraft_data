@@ -17,6 +17,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -88,8 +89,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public class Fox extends Animal implements VariantHolder<Fox.Type> {
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.INT);
@@ -404,10 +407,9 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ListTag var2 = var1.getList("Trusted", 11);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         this.addTrustedUUID(NbtUtils.loadUUID(var2.get(var3)));
+      for(Tag var4 : var1.getList("Trusted", 11)) {
+         this.addTrustedUUID(NbtUtils.loadUUID(var4));
       }
 
       this.setSleeping(var1.getBoolean("Sleeping"));
@@ -689,6 +691,11 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       super.dropAllDeathLoot(var1);
    }
 
+   @Override
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height + -0.0625F * var3, -0.25F * var3);
+   }
+
    public static boolean isPathClear(Fox var0, LivingEntity var1) {
       double var2 = var1.getZ() - var0.getZ();
       double var4 = var1.getX() - var0.getX();
@@ -964,6 +971,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
          Fox.this.playSound(SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, 1.0F, 1.0F);
          Fox.this.level().setBlock(this.blockPos, var1.setValue(SweetBerryBushBlock.AGE, Integer.valueOf(1)), 2);
+         Fox.this.level().gameEvent(GameEvent.BLOCK_CHANGE, this.blockPos, GameEvent.Context.of(Fox.this));
       }
 
       @Override
@@ -1070,9 +1078,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       @Override
-      protected void checkAndPerformAttack(LivingEntity var1, double var2) {
-         double var4 = this.getAttackReachSqr(var1);
-         if (var2 <= var4 && this.isTimeToAttack()) {
+      protected void checkAndPerformAttack(LivingEntity var1) {
+         if (this.canPerformAttack(var1)) {
             this.resetAttackCooldown();
             this.mob.doHurtTarget(var1);
             Fox.this.playSound(SoundEvents.FOX_BITE, 1.0F, 1.0F);

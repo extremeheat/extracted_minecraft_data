@@ -32,21 +32,26 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class PlayerTabOverlay {
+   private static final ResourceLocation PING_UNKNOWN_SPRITE = new ResourceLocation("icon/ping_unknown");
+   private static final ResourceLocation PING_1_SPRITE = new ResourceLocation("icon/ping_1");
+   private static final ResourceLocation PING_2_SPRITE = new ResourceLocation("icon/ping_2");
+   private static final ResourceLocation PING_3_SPRITE = new ResourceLocation("icon/ping_3");
+   private static final ResourceLocation PING_4_SPRITE = new ResourceLocation("icon/ping_4");
+   private static final ResourceLocation PING_5_SPRITE = new ResourceLocation("icon/ping_5");
+   private static final ResourceLocation HEART_CONTAINER_BLINKING_SPRITE = new ResourceLocation("hud/heart/container_blinking");
+   private static final ResourceLocation HEART_CONTAINER_SPRITE = new ResourceLocation("hud/heart/container");
+   private static final ResourceLocation HEART_FULL_BLINKING_SPRITE = new ResourceLocation("hud/heart/full_blinking");
+   private static final ResourceLocation HEART_HALF_BLINKING_SPRITE = new ResourceLocation("hud/heart/half_blinking");
+   private static final ResourceLocation HEART_ABSORBING_FULL_BLINKING_SPRITE = new ResourceLocation("hud/heart/absorbing_full_blinking");
+   private static final ResourceLocation HEART_FULL_SPRITE = new ResourceLocation("hud/heart/full");
+   private static final ResourceLocation HEART_ABSORBING_HALF_BLINKING_SPRITE = new ResourceLocation("hud/heart/absorbing_half_blinking");
+   private static final ResourceLocation HEART_HALF_SPRITE = new ResourceLocation("hud/heart/half");
    private static final Comparator<PlayerInfo> PLAYER_COMPARATOR = Comparator.<PlayerInfo>comparingInt(
          var0 -> var0.getGameMode() == GameType.SPECTATOR ? 1 : 0
       )
       .thenComparing(var0 -> Optionull.mapOrDefault(var0.getTeam(), PlayerTeam::getName, ""))
       .thenComparing(var0 -> var0.getProfile().getName(), String::compareToIgnoreCase);
-   private static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation("textures/gui/icons.png");
    public static final int MAX_ROWS_PER_COL = 20;
-   public static final int HEART_EMPTY_CONTAINER = 16;
-   public static final int HEART_EMPTY_CONTAINER_BLINKING = 25;
-   public static final int HEART_FULL = 52;
-   public static final int HEART_HALF_FULL = 61;
-   public static final int HEART_GOLDEN_FULL = 160;
-   public static final int HEART_GOLDEN_HALF_FULL = 169;
-   public static final int HEART_GHOST_FULL = 70;
-   public static final int HEART_GHOST_HALF_FULL = 79;
    private final Minecraft minecraft;
    private final Gui gui;
    @Nullable
@@ -177,7 +182,7 @@ public class PlayerTabOverlay {
                Player var27 = this.minecraft.level.getPlayerByUUID(var26.getId());
                boolean var28 = var27 != null && LivingEntityRenderer.isEntityUpsideDown(var27);
                boolean var29 = var27 != null && var27.isModelPartShown(PlayerModelPart.HAT);
-               PlayerFaceRenderer.draw(var1, var25.getSkinLocation(), var23, var24, 8, var29, var28);
+               PlayerFaceRenderer.draw(var1, var25.getSkin().texture(), var23, var24, 8, var29, var28);
                var23 += 9;
             }
 
@@ -207,25 +212,24 @@ public class PlayerTabOverlay {
    }
 
    protected void renderPingIcon(GuiGraphics var1, int var2, int var3, int var4, PlayerInfo var5) {
-      boolean var6 = false;
-      byte var7;
+      ResourceLocation var6;
       if (var5.getLatency() < 0) {
-         var7 = 5;
+         var6 = PING_UNKNOWN_SPRITE;
       } else if (var5.getLatency() < 150) {
-         var7 = 0;
+         var6 = PING_5_SPRITE;
       } else if (var5.getLatency() < 300) {
-         var7 = 1;
+         var6 = PING_4_SPRITE;
       } else if (var5.getLatency() < 600) {
-         var7 = 2;
+         var6 = PING_3_SPRITE;
       } else if (var5.getLatency() < 1000) {
-         var7 = 3;
+         var6 = PING_2_SPRITE;
       } else {
-         var7 = 4;
+         var6 = PING_1_SPRITE;
       }
 
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
-      var1.blit(GUI_ICONS_LOCATION, var3 + var2 - 11, var4, 0, 176 + var7 * 8, 10, 8);
+      var1.blitSprite(var6, var3 + var2 - 11, var4, 10, 8);
       var1.pose().popPose();
    }
 
@@ -248,37 +252,43 @@ public class PlayerTabOverlay {
       if (var8 > 0) {
          int var11 = Mth.floor(Math.min((float)(var3 - var2 - 4) / (float)var9, 9.0F));
          if (var11 <= 3) {
-            float var16 = Mth.clamp((float)var6 / 20.0F, 0.0F, 1.0F);
-            int var13 = (int)((1.0F - var16) * 255.0F) << 16 | (int)(var16 * 255.0F) << 8;
-            String var14 = (float)var6 / 2.0F + "";
-            if (var3 - this.minecraft.font.width(var14 + "hp") >= var2) {
-               var14 = var14 + "hp";
+            float var17 = Mth.clamp((float)var6 / 20.0F, 0.0F, 1.0F);
+            int var19 = (int)((1.0F - var17) * 255.0F) << 16 | (int)(var17 * 255.0F) << 8;
+            float var14 = (float)var6 / 2.0F;
+            MutableComponent var15 = Component.translatable("multiplayer.player.list.hp", var14);
+            MutableComponent var16;
+            if (var3 - this.minecraft.font.width(var15) >= var2) {
+               var16 = var15;
+            } else {
+               var16 = Component.literal(var14 + "");
             }
 
-            var5.drawString(this.minecraft.font, var14, (var3 + var2 - this.minecraft.font.width(var14)) / 2, var1, var13);
+            var5.drawString(this.minecraft.font, var16, (var3 + var2 - this.minecraft.font.width(var16)) / 2, var1, var19);
          } else {
-            for(int var12 = var8; var12 < var9; ++var12) {
-               var5.blit(GUI_ICONS_LOCATION, var2 + var12 * var11, var1, var10 ? 25 : 16, 0, 9, 9);
+            ResourceLocation var12 = var10 ? HEART_CONTAINER_BLINKING_SPRITE : HEART_CONTAINER_SPRITE;
+
+            for(int var13 = var8; var13 < var9; ++var13) {
+               var5.blitSprite(var12, var2 + var13 * var11, var1, 9, 9);
             }
 
-            for(int var15 = 0; var15 < var8; ++var15) {
-               var5.blit(GUI_ICONS_LOCATION, var2 + var15 * var11, var1, var10 ? 25 : 16, 0, 9, 9);
+            for(int var18 = 0; var18 < var8; ++var18) {
+               var5.blitSprite(var12, var2 + var18 * var11, var1, 9, 9);
                if (var10) {
-                  if (var15 * 2 + 1 < var7.displayedValue()) {
-                     var5.blit(GUI_ICONS_LOCATION, var2 + var15 * var11, var1, 70, 0, 9, 9);
+                  if (var18 * 2 + 1 < var7.displayedValue()) {
+                     var5.blitSprite(HEART_FULL_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
 
-                  if (var15 * 2 + 1 == var7.displayedValue()) {
-                     var5.blit(GUI_ICONS_LOCATION, var2 + var15 * var11, var1, 79, 0, 9, 9);
+                  if (var18 * 2 + 1 == var7.displayedValue()) {
+                     var5.blitSprite(HEART_HALF_BLINKING_SPRITE, var2 + var18 * var11, var1, 9, 9);
                   }
                }
 
-               if (var15 * 2 + 1 < var6) {
-                  var5.blit(GUI_ICONS_LOCATION, var2 + var15 * var11, var1, var15 >= 10 ? 160 : 52, 0, 9, 9);
+               if (var18 * 2 + 1 < var6) {
+                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_FULL_BLINKING_SPRITE : HEART_FULL_SPRITE, var2 + var18 * var11, var1, 9, 9);
                }
 
-               if (var15 * 2 + 1 == var6) {
-                  var5.blit(GUI_ICONS_LOCATION, var2 + var15 * var11, var1, var15 >= 10 ? 169 : 61, 0, 9, 9);
+               if (var18 * 2 + 1 == var6) {
+                  var5.blitSprite(var18 >= 10 ? HEART_ABSORBING_HALF_BLINKING_SPRITE : HEART_HALF_SPRITE, var2 + var18 * var11, var1, 9, 9);
                }
             }
          }

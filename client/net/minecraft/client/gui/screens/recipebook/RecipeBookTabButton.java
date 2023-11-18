@@ -7,12 +7,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookTabButton extends StateSwitchingButton {
+   private static final WidgetSprites SPRITES = new WidgetSprites(new ResourceLocation("recipe_book/tab"), new ResourceLocation("recipe_book/tab_selected"));
    private final RecipeBookCategories category;
    private static final float ANIMATION_TIME = 15.0F;
    private float animationTime;
@@ -20,7 +23,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
    public RecipeBookTabButton(RecipeBookCategories var1) {
       super(0, 0, 35, 27, false);
       this.category = var1;
-      this.initTextureValues(153, 2, 35, 0, RecipeBookComponent.RECIPE_BOOK_LOCATION);
+      this.initTextureValues(SPRITES);
    }
 
    public void startAnimation(Minecraft var1) {
@@ -28,7 +31,7 @@ public class RecipeBookTabButton extends StateSwitchingButton {
       List var3 = var2.getCollection(this.category);
       if (var1.player.containerMenu instanceof RecipeBookMenu) {
          for(RecipeCollection var5 : var3) {
-            for(Recipe var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
+            for(RecipeHolder var7 : var5.getRecipes(var2.isFiltering((RecipeBookMenu<?>)var1.player.containerMenu))) {
                if (var2.willHighlight(var7)) {
                   this.animationTime = 15.0F;
                   return;
@@ -40,37 +43,30 @@ public class RecipeBookTabButton extends StateSwitchingButton {
 
    @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      if (this.animationTime > 0.0F) {
-         float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
-         var1.pose().pushPose();
-         var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
-         var1.pose().scale(1.0F, var5, 1.0F);
-         var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
-      }
+      if (this.sprites != null) {
+         if (this.animationTime > 0.0F) {
+            float var5 = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
+            var1.pose().pushPose();
+            var1.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12), 0.0F);
+            var1.pose().scale(1.0F, var5, 1.0F);
+            var1.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)), 0.0F);
+         }
 
-      Minecraft var9 = Minecraft.getInstance();
-      RenderSystem.disableDepthTest();
-      int var6 = this.xTexStart;
-      int var7 = this.yTexStart;
-      if (this.isStateTriggered) {
-         var6 += this.xDiffTex;
-      }
+         Minecraft var8 = Minecraft.getInstance();
+         RenderSystem.disableDepthTest();
+         ResourceLocation var6 = this.sprites.get(true, this.isStateTriggered);
+         int var7 = this.getX();
+         if (this.isStateTriggered) {
+            var7 -= 2;
+         }
 
-      if (this.isHoveredOrFocused()) {
-         var7 += this.yDiffTex;
-      }
-
-      int var8 = this.getX();
-      if (this.isStateTriggered) {
-         var8 -= 2;
-      }
-
-      var1.blit(this.resourceLocation, var8, this.getY(), var6, var7, this.width, this.height);
-      RenderSystem.enableDepthTest();
-      this.renderIcon(var1, var9.getItemRenderer());
-      if (this.animationTime > 0.0F) {
-         var1.pose().popPose();
-         this.animationTime -= var4;
+         var1.blitSprite(var6, var7, this.getY(), this.width, this.height);
+         RenderSystem.enableDepthTest();
+         this.renderIcon(var1, var8.getItemRenderer());
+         if (this.animationTime > 0.0F) {
+            var1.pose().popPose();
+            this.animationTime -= var4;
+         }
       }
    }
 

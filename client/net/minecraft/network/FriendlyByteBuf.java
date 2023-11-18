@@ -1,6 +1,5 @@
 package net.minecraft.network;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -31,7 +30,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.time.Instant;
 import java.util.Arrays;
@@ -47,6 +45,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -59,6 +58,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
@@ -79,8 +79,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class FriendlyByteBuf extends ByteBuf {
-   private static final int MAX_VARINT_SIZE = 5;
-   private static final int MAX_VARLONG_SIZE = 10;
    public static final int DEFAULT_NBT_QUOTA = 2097152;
    private final ByteBuf source;
    public static final short MAX_STRING_LENGTH = 32767;
@@ -95,36 +93,22 @@ public class FriendlyByteBuf extends ByteBuf {
       this.source = var1;
    }
 
-   public static int getVarIntSize(int var0) {
-      for(int var1 = 1; var1 < 5; ++var1) {
-         if ((var0 & -1 << var1 * 7) == 0) {
-            return var1;
-         }
-      }
-
-      return 5;
-   }
-
-   public static int getVarLongSize(long var0) {
-      for(int var2 = 1; var2 < 10; ++var2) {
-         if ((var0 & -1L << var2 * 7) == 0L) {
-            return var2;
-         }
-      }
-
-      return 10;
+   @Deprecated
+   public <T> T readWithCodecTrusted(DynamicOps<Tag> var1, Codec<T> var2) {
+      return this.readWithCodec(var1, var2, NbtAccounter.unlimitedHeap());
    }
 
    @Deprecated
-   public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2) {
-      CompoundTag var3 = this.readAnySizeNbt();
-      return Util.getOrThrow(var2.parse(var1, var3), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var3));
+   public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2, NbtAccounter var3) {
+      Tag var4 = this.readNbt(var3);
+      return Util.getOrThrow(var2.parse(var1, var4), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var4));
    }
 
    @Deprecated
-   public <T> void writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
+   public <T> FriendlyByteBuf writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
       Tag var4 = Util.getOrThrow(var2.encodeStart(var1, var3), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var3));
-      this.writeNbt((CompoundTag)var4);
+      this.writeNbt(var4);
+      return this;
    }
 
    public <T> T readJsonWithCodec(Codec<T> var1) {
@@ -416,14 +400,6 @@ public class FriendlyByteBuf extends ByteBuf {
       return var1;
    }
 
-   @VisibleForTesting
-   public byte[] accessByteBufWithCorrectSize() {
-      int var1 = this.writerIndex();
-      byte[] var2 = new byte[var1];
-      this.getBytes(0, var2);
-      return var2;
-   }
-
    public BlockPos readBlockPos() {
       return BlockPos.of(this.readLong());
    }
@@ -483,6 +459,16 @@ public class FriendlyByteBuf extends ByteBuf {
       this.writeFloat(var1.w);
    }
 
+   public Vec3 readVec3() {
+      return new Vec3(this.readDouble(), this.readDouble(), this.readDouble());
+   }
+
+   public void writeVec3(Vec3 var1) {
+      this.writeDouble(var1.x());
+      this.writeDouble(var1.y());
+      this.writeDouble(var1.z());
+   }
+
    public Component readComponent() {
       MutableComponent var1 = Component.Serializer.fromJson(this.readUtf(262144));
       if (var1 == null) {
@@ -504,36 +490,22 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.writeVarInt(var1.ordinal());
    }
 
+   public <T> T readById(IntFunction<T> var1) {
+      int var2 = this.readVarInt();
+      return (T)var1.apply(var2);
+   }
+
+   public <T> FriendlyByteBuf writeById(ToIntFunction<T> var1, T var2) {
+      int var3 = var1.applyAsInt(var2);
+      return this.writeVarInt(var3);
+   }
+
    public int readVarInt() {
-      int var1 = 0;
-      int var2 = 0;
-
-      byte var3;
-      do {
-         var3 = this.readByte();
-         var1 |= (var3 & 127) << var2++ * 7;
-         if (var2 > 5) {
-            throw new RuntimeException("VarInt too big");
-         }
-      } while((var3 & 128) == 128);
-
-      return var1;
+      return VarInt.read(this.source);
    }
 
    public long readVarLong() {
-      long var1 = 0L;
-      int var3 = 0;
-
-      byte var4;
-      do {
-         var4 = this.readByte();
-         var1 |= (long)(var4 & 127) << var3++ * 7;
-         if (var3 > 10) {
-            throw new RuntimeException("VarLong too big");
-         }
-      } while((var4 & 128) == 128);
-
-      return var1;
+      return VarLong.read(this.source);
    }
 
    public FriendlyByteBuf writeUUID(UUID var1) {
@@ -547,63 +519,45 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public FriendlyByteBuf writeVarInt(int var1) {
-      while((var1 & -128) != 0) {
-         this.writeByte(var1 & 127 | 128);
-         var1 >>>= 7;
-      }
-
-      this.writeByte(var1);
+      VarInt.write(this.source, var1);
       return this;
    }
 
    public FriendlyByteBuf writeVarLong(long var1) {
-      while((var1 & -128L) != 0L) {
-         this.writeByte((int)(var1 & 127L) | 128);
-         var1 >>>= 7;
-      }
-
-      this.writeByte((int)var1);
+      VarLong.write(this.source, var1);
       return this;
    }
 
-   public FriendlyByteBuf writeNbt(@Nullable CompoundTag var1) {
+   public FriendlyByteBuf writeNbt(@Nullable Tag var1) {
       if (var1 == null) {
-         this.writeByte(0);
-      } else {
-         try {
-            NbtIo.write(var1, new ByteBufOutputStream(this));
-         } catch (IOException var3) {
-            throw new EncoderException(var3);
-         }
+         var1 = EndTag.INSTANCE;
       }
 
-      return this;
+      try {
+         NbtIo.writeAnyTag((Tag)var1, new ByteBufOutputStream(this));
+         return this;
+      } catch (IOException var3) {
+         throw new EncoderException(var3);
+      }
    }
 
    @Nullable
    public CompoundTag readNbt() {
-      return this.readNbt(new NbtAccounter(2097152L));
-   }
-
-   @Nullable
-   public CompoundTag readAnySizeNbt() {
-      return this.readNbt(NbtAccounter.UNLIMITED);
-   }
-
-   @Nullable
-   public CompoundTag readNbt(NbtAccounter var1) {
-      int var2 = this.readerIndex();
-      byte var3 = this.readByte();
-      if (var3 == 0) {
-         return null;
+      Tag var1 = this.readNbt(NbtAccounter.create(2097152L));
+      if (var1 != null && !(var1 instanceof CompoundTag)) {
+         throw new DecoderException("Not a compound tag: " + var1);
       } else {
-         this.readerIndex(var2);
+         return (CompoundTag)var1;
+      }
+   }
 
-         try {
-            return NbtIo.read(new ByteBufInputStream(this), var1);
-         } catch (IOException var5) {
-            throw new EncoderException(var5);
-         }
+   @Nullable
+   public Tag readNbt(NbtAccounter var1) {
+      try {
+         Tag var2 = NbtIo.readAnyTag(new ByteBufInputStream(this), var1);
+         return var2.getId() == 0 ? null : var2;
+      } catch (IOException var3) {
+         throw new EncoderException(var3);
       }
    }
 
@@ -643,21 +597,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public String readUtf(int var1) {
-      int var2 = getMaxEncodedUtfLength(var1);
-      int var3 = this.readVarInt();
-      if (var3 > var2) {
-         throw new DecoderException("The received encoded string buffer length is longer than maximum allowed (" + var3 + " > " + var2 + ")");
-      } else if (var3 < 0) {
-         throw new DecoderException("The received encoded string buffer length is less than zero! Weird string!");
-      } else {
-         String var4 = this.toString(this.readerIndex(), var3, StandardCharsets.UTF_8);
-         this.readerIndex(this.readerIndex() + var3);
-         if (var4.length() > var1) {
-            throw new DecoderException("The received string length is longer than maximum allowed (" + var4.length() + " > " + var1 + ")");
-         } else {
-            return var4;
-         }
-      }
+      return Utf8String.read(this.source, var1);
    }
 
    public FriendlyByteBuf writeUtf(String var1) {
@@ -665,23 +605,8 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public FriendlyByteBuf writeUtf(String var1, int var2) {
-      if (var1.length() > var2) {
-         throw new EncoderException("String too big (was " + var1.length() + " characters, max " + var2 + ")");
-      } else {
-         byte[] var3 = var1.getBytes(StandardCharsets.UTF_8);
-         int var4 = getMaxEncodedUtfLength(var2);
-         if (var3.length > var4) {
-            throw new EncoderException("String too big (was " + var3.length + " bytes encoded, max " + var4 + ")");
-         } else {
-            this.writeVarInt(var3.length);
-            this.writeBytes(var3);
-            return this;
-         }
-      }
-   }
-
-   private static int getMaxEncodedUtfLength(int var0) {
-      return var0 * 3;
+      Utf8String.write(this.source, var1, var2);
+      return this;
    }
 
    public ResourceLocation readResourceLocation() {
@@ -700,6 +625,11 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public void writeResourceKey(ResourceKey<?> var1) {
       this.writeResourceLocation(var1.location());
+   }
+
+   public <T> ResourceKey<? extends Registry<T>> readRegistryKey() {
+      ResourceLocation var1 = this.readResourceLocation();
+      return ResourceKey.createRegistryKey(var1);
    }
 
    public Date readDate() {
@@ -796,7 +726,7 @@ public class FriendlyByteBuf extends ByteBuf {
       PropertyMap var1 = new PropertyMap();
       this.readWithCount(var2 -> {
          Property var3 = this.readProperty();
-         var1.put(var3.getName(), var3);
+         var1.put(var3.name(), var3);
       });
       return var1;
    }
@@ -808,31 +738,31 @@ public class FriendlyByteBuf extends ByteBuf {
    public Property readProperty() {
       String var1 = this.readUtf();
       String var2 = this.readUtf();
-      if (this.readBoolean()) {
-         String var3 = this.readUtf();
-         return new Property(var1, var2, var3);
-      } else {
-         return new Property(var1, var2);
-      }
+      String var3 = this.readNullable(FriendlyByteBuf::readUtf);
+      return new Property(var1, var2, var3);
    }
 
    public void writeProperty(Property var1) {
-      this.writeUtf(var1.getName());
-      this.writeUtf(var1.getValue());
-      if (var1.hasSignature()) {
-         this.writeBoolean(true);
-         this.writeUtf(var1.getSignature());
-      } else {
-         this.writeBoolean(false);
-      }
+      this.writeUtf(var1.name());
+      this.writeUtf(var1.value());
+      this.writeNullable(var1.signature(), FriendlyByteBuf::writeUtf);
+   }
+
+   public boolean isContiguous() {
+      return this.source.isContiguous();
+   }
+
+   public int maxFastWritableBytes() {
+      return this.source.maxFastWritableBytes();
    }
 
    public int capacity() {
       return this.source.capacity();
    }
 
-   public ByteBuf capacity(int var1) {
-      return this.source.capacity(var1);
+   public FriendlyByteBuf capacity(int var1) {
+      this.source.capacity(var1);
+      return this;
    }
 
    public int maxCapacity() {
@@ -852,7 +782,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public ByteBuf unwrap() {
-      return this.source.unwrap();
+      return this.source;
    }
 
    public boolean isDirect() {
@@ -871,20 +801,23 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.readerIndex();
    }
 
-   public ByteBuf readerIndex(int var1) {
-      return this.source.readerIndex(var1);
+   public FriendlyByteBuf readerIndex(int var1) {
+      this.source.readerIndex(var1);
+      return this;
    }
 
    public int writerIndex() {
       return this.source.writerIndex();
    }
 
-   public ByteBuf writerIndex(int var1) {
-      return this.source.writerIndex(var1);
+   public FriendlyByteBuf writerIndex(int var1) {
+      this.source.writerIndex(var1);
+      return this;
    }
 
-   public ByteBuf setIndex(int var1, int var2) {
-      return this.source.setIndex(var1, var2);
+   public FriendlyByteBuf setIndex(int var1, int var2) {
+      this.source.setIndex(var1, var2);
+      return this;
    }
 
    public int readableBytes() {
@@ -915,36 +848,44 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.isWritable(var1);
    }
 
-   public ByteBuf clear() {
-      return this.source.clear();
+   public FriendlyByteBuf clear() {
+      this.source.clear();
+      return this;
    }
 
-   public ByteBuf markReaderIndex() {
-      return this.source.markReaderIndex();
+   public FriendlyByteBuf markReaderIndex() {
+      this.source.markReaderIndex();
+      return this;
    }
 
-   public ByteBuf resetReaderIndex() {
-      return this.source.resetReaderIndex();
+   public FriendlyByteBuf resetReaderIndex() {
+      this.source.resetReaderIndex();
+      return this;
    }
 
-   public ByteBuf markWriterIndex() {
-      return this.source.markWriterIndex();
+   public FriendlyByteBuf markWriterIndex() {
+      this.source.markWriterIndex();
+      return this;
    }
 
-   public ByteBuf resetWriterIndex() {
-      return this.source.resetWriterIndex();
+   public FriendlyByteBuf resetWriterIndex() {
+      this.source.resetWriterIndex();
+      return this;
    }
 
-   public ByteBuf discardReadBytes() {
-      return this.source.discardReadBytes();
+   public FriendlyByteBuf discardReadBytes() {
+      this.source.discardReadBytes();
+      return this;
    }
 
-   public ByteBuf discardSomeReadBytes() {
-      return this.source.discardSomeReadBytes();
+   public FriendlyByteBuf discardSomeReadBytes() {
+      this.source.discardSomeReadBytes();
+      return this;
    }
 
-   public ByteBuf ensureWritable(int var1) {
-      return this.source.ensureWritable(var1);
+   public FriendlyByteBuf ensureWritable(int var1) {
+      this.source.ensureWritable(var1);
+      return this;
    }
 
    public int ensureWritable(int var1, boolean var2) {
@@ -1031,32 +972,39 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.getDouble(var1);
    }
 
-   public ByteBuf getBytes(int var1, ByteBuf var2) {
-      return this.source.getBytes(var1, var2);
+   public FriendlyByteBuf getBytes(int var1, ByteBuf var2) {
+      this.source.getBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, ByteBuf var2, int var3) {
-      return this.source.getBytes(var1, var2, var3);
+   public FriendlyByteBuf getBytes(int var1, ByteBuf var2, int var3) {
+      this.source.getBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, ByteBuf var2, int var3, int var4) {
-      return this.source.getBytes(var1, var2, var3, var4);
+   public FriendlyByteBuf getBytes(int var1, ByteBuf var2, int var3, int var4) {
+      this.source.getBytes(var1, var2, var3, var4);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, byte[] var2) {
-      return this.source.getBytes(var1, var2);
+   public FriendlyByteBuf getBytes(int var1, byte[] var2) {
+      this.source.getBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, byte[] var2, int var3, int var4) {
-      return this.source.getBytes(var1, var2, var3, var4);
+   public FriendlyByteBuf getBytes(int var1, byte[] var2, int var3, int var4) {
+      this.source.getBytes(var1, var2, var3, var4);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, ByteBuffer var2) {
-      return this.source.getBytes(var1, var2);
+   public FriendlyByteBuf getBytes(int var1, ByteBuffer var2) {
+      this.source.getBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf getBytes(int var1, OutputStream var2, int var3) throws IOException {
-      return this.source.getBytes(var1, var2, var3);
+   public FriendlyByteBuf getBytes(int var1, OutputStream var2, int var3) throws IOException {
+      this.source.getBytes(var1, var2, var3);
+      return this;
    }
 
    public int getBytes(int var1, GatheringByteChannel var2, int var3) throws IOException {
@@ -1071,80 +1019,99 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.getCharSequence(var1, var2, var3);
    }
 
-   public ByteBuf setBoolean(int var1, boolean var2) {
-      return this.source.setBoolean(var1, var2);
+   public FriendlyByteBuf setBoolean(int var1, boolean var2) {
+      this.source.setBoolean(var1, var2);
+      return this;
    }
 
-   public ByteBuf setByte(int var1, int var2) {
-      return this.source.setByte(var1, var2);
+   public FriendlyByteBuf setByte(int var1, int var2) {
+      this.source.setByte(var1, var2);
+      return this;
    }
 
-   public ByteBuf setShort(int var1, int var2) {
-      return this.source.setShort(var1, var2);
+   public FriendlyByteBuf setShort(int var1, int var2) {
+      this.source.setShort(var1, var2);
+      return this;
    }
 
-   public ByteBuf setShortLE(int var1, int var2) {
-      return this.source.setShortLE(var1, var2);
+   public FriendlyByteBuf setShortLE(int var1, int var2) {
+      this.source.setShortLE(var1, var2);
+      return this;
    }
 
-   public ByteBuf setMedium(int var1, int var2) {
-      return this.source.setMedium(var1, var2);
+   public FriendlyByteBuf setMedium(int var1, int var2) {
+      this.source.setMedium(var1, var2);
+      return this;
    }
 
-   public ByteBuf setMediumLE(int var1, int var2) {
-      return this.source.setMediumLE(var1, var2);
+   public FriendlyByteBuf setMediumLE(int var1, int var2) {
+      this.source.setMediumLE(var1, var2);
+      return this;
    }
 
-   public ByteBuf setInt(int var1, int var2) {
-      return this.source.setInt(var1, var2);
+   public FriendlyByteBuf setInt(int var1, int var2) {
+      this.source.setInt(var1, var2);
+      return this;
    }
 
-   public ByteBuf setIntLE(int var1, int var2) {
-      return this.source.setIntLE(var1, var2);
+   public FriendlyByteBuf setIntLE(int var1, int var2) {
+      this.source.setIntLE(var1, var2);
+      return this;
    }
 
-   public ByteBuf setLong(int var1, long var2) {
-      return this.source.setLong(var1, var2);
+   public FriendlyByteBuf setLong(int var1, long var2) {
+      this.source.setLong(var1, var2);
+      return this;
    }
 
-   public ByteBuf setLongLE(int var1, long var2) {
-      return this.source.setLongLE(var1, var2);
+   public FriendlyByteBuf setLongLE(int var1, long var2) {
+      this.source.setLongLE(var1, var2);
+      return this;
    }
 
-   public ByteBuf setChar(int var1, int var2) {
-      return this.source.setChar(var1, var2);
+   public FriendlyByteBuf setChar(int var1, int var2) {
+      this.source.setChar(var1, var2);
+      return this;
    }
 
-   public ByteBuf setFloat(int var1, float var2) {
-      return this.source.setFloat(var1, var2);
+   public FriendlyByteBuf setFloat(int var1, float var2) {
+      this.source.setFloat(var1, var2);
+      return this;
    }
 
-   public ByteBuf setDouble(int var1, double var2) {
-      return this.source.setDouble(var1, var2);
+   public FriendlyByteBuf setDouble(int var1, double var2) {
+      this.source.setDouble(var1, var2);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, ByteBuf var2) {
-      return this.source.setBytes(var1, var2);
+   public FriendlyByteBuf setBytes(int var1, ByteBuf var2) {
+      this.source.setBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, ByteBuf var2, int var3) {
-      return this.source.setBytes(var1, var2, var3);
+   public FriendlyByteBuf setBytes(int var1, ByteBuf var2, int var3) {
+      this.source.setBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, ByteBuf var2, int var3, int var4) {
-      return this.source.setBytes(var1, var2, var3, var4);
+   public FriendlyByteBuf setBytes(int var1, ByteBuf var2, int var3, int var4) {
+      this.source.setBytes(var1, var2, var3, var4);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, byte[] var2) {
-      return this.source.setBytes(var1, var2);
+   public FriendlyByteBuf setBytes(int var1, byte[] var2) {
+      this.source.setBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, byte[] var2, int var3, int var4) {
-      return this.source.setBytes(var1, var2, var3, var4);
+   public FriendlyByteBuf setBytes(int var1, byte[] var2, int var3, int var4) {
+      this.source.setBytes(var1, var2, var3, var4);
+      return this;
    }
 
-   public ByteBuf setBytes(int var1, ByteBuffer var2) {
-      return this.source.setBytes(var1, var2);
+   public FriendlyByteBuf setBytes(int var1, ByteBuffer var2) {
+      this.source.setBytes(var1, var2);
+      return this;
    }
 
    public int setBytes(int var1, InputStream var2, int var3) throws IOException {
@@ -1159,8 +1126,9 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.setBytes(var1, var2, var3, var5);
    }
 
-   public ByteBuf setZero(int var1, int var2) {
-      return this.source.setZero(var1, var2);
+   public FriendlyByteBuf setZero(int var1, int var2) {
+      this.source.setZero(var1, var2);
+      return this;
    }
 
    public int setCharSequence(int var1, CharSequence var2, Charset var3) {
@@ -1259,32 +1227,39 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.readRetainedSlice(var1);
    }
 
-   public ByteBuf readBytes(ByteBuf var1) {
-      return this.source.readBytes(var1);
+   public FriendlyByteBuf readBytes(ByteBuf var1) {
+      this.source.readBytes(var1);
+      return this;
    }
 
-   public ByteBuf readBytes(ByteBuf var1, int var2) {
-      return this.source.readBytes(var1, var2);
+   public FriendlyByteBuf readBytes(ByteBuf var1, int var2) {
+      this.source.readBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf readBytes(ByteBuf var1, int var2, int var3) {
-      return this.source.readBytes(var1, var2, var3);
+   public FriendlyByteBuf readBytes(ByteBuf var1, int var2, int var3) {
+      this.source.readBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf readBytes(byte[] var1) {
-      return this.source.readBytes(var1);
+   public FriendlyByteBuf readBytes(byte[] var1) {
+      this.source.readBytes(var1);
+      return this;
    }
 
-   public ByteBuf readBytes(byte[] var1, int var2, int var3) {
-      return this.source.readBytes(var1, var2, var3);
+   public FriendlyByteBuf readBytes(byte[] var1, int var2, int var3) {
+      this.source.readBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf readBytes(ByteBuffer var1) {
-      return this.source.readBytes(var1);
+   public FriendlyByteBuf readBytes(ByteBuffer var1) {
+      this.source.readBytes(var1);
+      return this;
    }
 
-   public ByteBuf readBytes(OutputStream var1, int var2) throws IOException {
-      return this.source.readBytes(var1, var2);
+   public FriendlyByteBuf readBytes(OutputStream var1, int var2) throws IOException {
+      this.source.readBytes(var1, var2);
+      return this;
    }
 
    public int readBytes(GatheringByteChannel var1, int var2) throws IOException {
@@ -1299,84 +1274,104 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.readBytes(var1, var2, var4);
    }
 
-   public ByteBuf skipBytes(int var1) {
-      return this.source.skipBytes(var1);
+   public FriendlyByteBuf skipBytes(int var1) {
+      this.source.skipBytes(var1);
+      return this;
    }
 
-   public ByteBuf writeBoolean(boolean var1) {
-      return this.source.writeBoolean(var1);
+   public FriendlyByteBuf writeBoolean(boolean var1) {
+      this.source.writeBoolean(var1);
+      return this;
    }
 
-   public ByteBuf writeByte(int var1) {
-      return this.source.writeByte(var1);
+   public FriendlyByteBuf writeByte(int var1) {
+      this.source.writeByte(var1);
+      return this;
    }
 
-   public ByteBuf writeShort(int var1) {
-      return this.source.writeShort(var1);
+   public FriendlyByteBuf writeShort(int var1) {
+      this.source.writeShort(var1);
+      return this;
    }
 
-   public ByteBuf writeShortLE(int var1) {
-      return this.source.writeShortLE(var1);
+   public FriendlyByteBuf writeShortLE(int var1) {
+      this.source.writeShortLE(var1);
+      return this;
    }
 
-   public ByteBuf writeMedium(int var1) {
-      return this.source.writeMedium(var1);
+   public FriendlyByteBuf writeMedium(int var1) {
+      this.source.writeMedium(var1);
+      return this;
    }
 
-   public ByteBuf writeMediumLE(int var1) {
-      return this.source.writeMediumLE(var1);
+   public FriendlyByteBuf writeMediumLE(int var1) {
+      this.source.writeMediumLE(var1);
+      return this;
    }
 
-   public ByteBuf writeInt(int var1) {
-      return this.source.writeInt(var1);
+   public FriendlyByteBuf writeInt(int var1) {
+      this.source.writeInt(var1);
+      return this;
    }
 
-   public ByteBuf writeIntLE(int var1) {
-      return this.source.writeIntLE(var1);
+   public FriendlyByteBuf writeIntLE(int var1) {
+      this.source.writeIntLE(var1);
+      return this;
    }
 
-   public ByteBuf writeLong(long var1) {
-      return this.source.writeLong(var1);
+   public FriendlyByteBuf writeLong(long var1) {
+      this.source.writeLong(var1);
+      return this;
    }
 
-   public ByteBuf writeLongLE(long var1) {
-      return this.source.writeLongLE(var1);
+   public FriendlyByteBuf writeLongLE(long var1) {
+      this.source.writeLongLE(var1);
+      return this;
    }
 
-   public ByteBuf writeChar(int var1) {
-      return this.source.writeChar(var1);
+   public FriendlyByteBuf writeChar(int var1) {
+      this.source.writeChar(var1);
+      return this;
    }
 
-   public ByteBuf writeFloat(float var1) {
-      return this.source.writeFloat(var1);
+   public FriendlyByteBuf writeFloat(float var1) {
+      this.source.writeFloat(var1);
+      return this;
    }
 
-   public ByteBuf writeDouble(double var1) {
-      return this.source.writeDouble(var1);
+   public FriendlyByteBuf writeDouble(double var1) {
+      this.source.writeDouble(var1);
+      return this;
    }
 
-   public ByteBuf writeBytes(ByteBuf var1) {
-      return this.source.writeBytes(var1);
+   public FriendlyByteBuf writeBytes(ByteBuf var1) {
+      this.source.writeBytes(var1);
+      return this;
    }
 
-   public ByteBuf writeBytes(ByteBuf var1, int var2) {
-      return this.source.writeBytes(var1, var2);
+   public FriendlyByteBuf writeBytes(ByteBuf var1, int var2) {
+      this.source.writeBytes(var1, var2);
+      return this;
    }
 
-   public ByteBuf writeBytes(ByteBuf var1, int var2, int var3) {
-      return this.source.writeBytes(var1, var2, var3);
+   public FriendlyByteBuf writeBytes(ByteBuf var1, int var2, int var3) {
+      this.source.writeBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf writeBytes(byte[] var1) {
-      return this.source.writeBytes(var1);
+   public FriendlyByteBuf writeBytes(byte[] var1) {
+      this.source.writeBytes(var1);
+      return this;
    }
 
-   public ByteBuf writeBytes(byte[] var1, int var2, int var3) {
-      return this.source.writeBytes(var1, var2, var3);
+   public FriendlyByteBuf writeBytes(byte[] var1, int var2, int var3) {
+      this.source.writeBytes(var1, var2, var3);
+      return this;
    }
 
-   public ByteBuf writeBytes(ByteBuffer var1) {
-      return this.source.writeBytes(var1);
+   public FriendlyByteBuf writeBytes(ByteBuffer var1) {
+      this.source.writeBytes(var1);
+      return this;
    }
 
    public int writeBytes(InputStream var1, int var2) throws IOException {
@@ -1391,8 +1386,9 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.writeBytes(var1, var2, var4);
    }
 
-   public ByteBuf writeZero(int var1) {
-      return this.source.writeZero(var1);
+   public FriendlyByteBuf writeZero(int var1) {
+      this.source.writeZero(var1);
+      return this;
    }
 
    public int writeCharSequence(CharSequence var1, Charset var2) {
@@ -1531,20 +1527,24 @@ public class FriendlyByteBuf extends ByteBuf {
       return this.source.toString();
    }
 
-   public ByteBuf retain(int var1) {
-      return this.source.retain(var1);
+   public FriendlyByteBuf retain(int var1) {
+      this.source.retain(var1);
+      return this;
    }
 
-   public ByteBuf retain() {
-      return this.source.retain();
+   public FriendlyByteBuf retain() {
+      this.source.retain();
+      return this;
    }
 
-   public ByteBuf touch() {
-      return this.source.touch();
+   public FriendlyByteBuf touch() {
+      this.source.touch();
+      return this;
    }
 
-   public ByteBuf touch(Object var1) {
-      return this.source.touch(var1);
+   public FriendlyByteBuf touch(Object var1) {
+      this.source.touch(var1);
+      return this;
    }
 
    public int refCnt() {

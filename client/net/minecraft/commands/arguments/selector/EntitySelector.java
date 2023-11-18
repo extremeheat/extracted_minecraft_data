@@ -202,7 +202,8 @@ public class EntitySelector {
          Vec3 var2 = this.position.apply(var1.getPosition());
          Predicate var3 = this.getPredicate(var2);
          if (this.currentEntity) {
-            if (var1.getEntity() instanceof ServerPlayer var10 && var3.test(var10)) {
+            Entity var11 = var1.getEntity();
+            if (var11 instanceof ServerPlayer var10 && var3.test(var10)) {
                return Lists.newArrayList(new ServerPlayer[]{(ServerPlayer)var10});
             }
 

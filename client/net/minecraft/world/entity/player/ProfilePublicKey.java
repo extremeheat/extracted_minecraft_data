@@ -28,10 +28,8 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
       this.data = var1;
    }
 
-   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, ProfilePublicKey.Data var2, Duration var3) throws ProfilePublicKey.ValidationException {
-      if (var2.hasExpired(var3)) {
-         throw new ProfilePublicKey.ValidationException(EXPIRED_PROFILE_PUBLIC_KEY);
-      } else if (!var2.validateSignature(var0, var1)) {
+   public static ProfilePublicKey createValidated(SignatureValidator var0, UUID var1, ProfilePublicKey.Data var2) throws ProfilePublicKey.ValidationException {
+      if (!var2.validateSignature(var0, var1)) {
          throw new ProfilePublicKey.ValidationException(INVALID_SIGNATURE);
       } else {
          return new ProfilePublicKey(var2);

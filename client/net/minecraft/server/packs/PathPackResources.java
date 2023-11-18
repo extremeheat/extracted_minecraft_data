@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +20,7 @@ import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.slf4j.Logger;
 
@@ -86,7 +89,7 @@ public class PathPackResources extends AbstractPackResources {
                var3.accept(var5x, IoSupplier.create(var3x));
             }
          });
-      } catch (NoSuchFileException var10) {
+      } catch (NotDirectoryException | NoSuchFileException var10) {
       } catch (IOException var11) {
          LOGGER.error("Failed to list path {}", var4, var11);
       }
@@ -100,13 +103,13 @@ public class PathPackResources extends AbstractPackResources {
       try (DirectoryStream var4 = Files.newDirectoryStream(var3)) {
          for(Path var6 : var4) {
             String var7 = var6.getFileName().toString();
-            if (var7.equals(var7.toLowerCase(Locale.ROOT))) {
+            if (ResourceLocation.isValidNamespace(var7)) {
                var2.add(var7);
             } else {
-               LOGGER.warn("Ignored non-lowercase namespace: {} in {}", var7, this.root);
+               LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var7, this.root);
             }
          }
-      } catch (NoSuchFileException var10) {
+      } catch (NotDirectoryException | NoSuchFileException var10) {
       } catch (IOException var11) {
          LOGGER.error("Failed to list path {}", var3, var11);
       }
@@ -116,5 +119,39 @@ public class PathPackResources extends AbstractPackResources {
 
    @Override
    public void close() {
+   }
+
+   public static class PathResourcesSupplier implements Pack.ResourcesSupplier {
+      private final Path content;
+      private final boolean isBuiltin;
+
+      public PathResourcesSupplier(Path var1, boolean var2) {
+         super();
+         this.content = var1;
+         this.isBuiltin = var2;
+      }
+
+      @Override
+      public PackResources openPrimary(String var1) {
+         return new PathPackResources(var1, this.content, this.isBuiltin);
+      }
+
+      @Override
+      public PackResources openFull(String var1, Pack.Info var2) {
+         PackResources var3 = this.openPrimary(var1);
+         List var4 = var2.overlays();
+         if (var4.isEmpty()) {
+            return var3;
+         } else {
+            ArrayList var5 = new ArrayList(var4.size());
+
+            for(String var7 : var4) {
+               Path var8 = this.content.resolve(var7);
+               var5.add(new PathPackResources(var1, var8, this.isBuiltin));
+            }
+
+            return new CompositePackResources(var3, var5);
+         }
+      }
    }
 }

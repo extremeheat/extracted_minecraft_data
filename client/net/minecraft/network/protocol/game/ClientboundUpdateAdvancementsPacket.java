@@ -1,13 +1,11 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
@@ -15,30 +13,24 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePacketListener> {
    private final boolean reset;
-   private final Map<ResourceLocation, Advancement.Builder> added;
+   private final List<AdvancementHolder> added;
    private final Set<ResourceLocation> removed;
    private final Map<ResourceLocation, AdvancementProgress> progress;
 
    public ClientboundUpdateAdvancementsPacket(
-      boolean var1, Collection<Advancement> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4
+      boolean var1, Collection<AdvancementHolder> var2, Set<ResourceLocation> var3, Map<ResourceLocation, AdvancementProgress> var4
    ) {
       super();
       this.reset = var1;
-      Builder var5 = ImmutableMap.builder();
-
-      for(Advancement var7 : var2) {
-         var5.put(var7.getId(), var7.deconstruct());
-      }
-
-      this.added = var5.build();
-      this.removed = ImmutableSet.copyOf(var3);
-      this.progress = ImmutableMap.copyOf(var4);
+      this.added = List.copyOf(var2);
+      this.removed = Set.copyOf(var3);
+      this.progress = Map.copyOf(var4);
    }
 
    public ClientboundUpdateAdvancementsPacket(FriendlyByteBuf var1) {
       super();
       this.reset = var1.readBoolean();
-      this.added = var1.readMap(FriendlyByteBuf::readResourceLocation, Advancement.Builder::fromNetwork);
+      this.added = var1.readList(AdvancementHolder::read);
       this.removed = var1.readCollection(Sets::newLinkedHashSetWithExpectedSize, FriendlyByteBuf::readResourceLocation);
       this.progress = var1.readMap(FriendlyByteBuf::readResourceLocation, AdvancementProgress::fromNetwork);
    }
@@ -46,7 +38,7 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
    @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeBoolean(this.reset);
-      var1.writeMap(this.added, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
+      var1.writeCollection(this.added, (var0, var1x) -> var1x.write(var0));
       var1.writeCollection(this.removed, FriendlyByteBuf::writeResourceLocation);
       var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
    }
@@ -55,7 +47,7 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       var1.handleUpdateAdvancementsPacket(this);
    }
 
-   public Map<ResourceLocation, Advancement.Builder> getAdded() {
+   public List<AdvancementHolder> getAdded() {
       return this.added;
    }
 

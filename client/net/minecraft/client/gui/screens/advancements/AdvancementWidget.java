@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
@@ -20,7 +20,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class AdvancementWidget {
-   private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/advancements/widgets.png");
+   private static final ResourceLocation TITLE_BOX_SPRITE = new ResourceLocation("advancements/title_box");
    private static final int HEIGHT = 26;
    private static final int BOX_X = 0;
    private static final int BOX_WIDTH = 200;
@@ -35,7 +35,7 @@ public class AdvancementWidget {
    private static final int TITLE_MAX_WIDTH = 163;
    private static final int[] TEST_SPLIT_OFFSETS = new int[]{0, 10, -10, 25, -25};
    private final AdvancementTab tab;
-   private final Advancement advancement;
+   private final AdvancementNode advancementNode;
    private final DisplayInfo display;
    private final FormattedCharSequence title;
    private final int width;
@@ -49,16 +49,16 @@ public class AdvancementWidget {
    private final int x;
    private final int y;
 
-   public AdvancementWidget(AdvancementTab var1, Minecraft var2, Advancement var3, DisplayInfo var4) {
+   public AdvancementWidget(AdvancementTab var1, Minecraft var2, AdvancementNode var3, DisplayInfo var4) {
       super();
       this.tab = var1;
-      this.advancement = var3;
+      this.advancementNode = var3;
       this.display = var4;
       this.minecraft = var2;
       this.title = Language.getInstance().getVisualOrder(var2.font.substrByWidth(var4.getTitle(), 163));
       this.x = Mth.floor(var4.getX() * 28.0F);
       this.y = Mth.floor(var4.getY() * 27.0F);
-      int var5 = var3.getMaxCriteraRequired();
+      int var5 = var3.advancement().requirements().size();
       int var6 = String.valueOf(var5).length();
       int var7 = var5 > 1 ? var2.font.width("  ") + var2.font.width("0") * var6 * 2 + var2.font.width("/") : 0;
       int var8 = 29 + var2.font.width(this.title) + var7;
@@ -100,12 +100,12 @@ public class AdvancementWidget {
    }
 
    @Nullable
-   private AdvancementWidget getFirstVisibleParent(Advancement var1) {
+   private AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
       do {
-         var1 = var1.getParent();
-      } while(var1 != null && var1.getDisplay() == null);
+         var1 = var1.parent();
+      } while(var1 != null && var1.advancement().display().isEmpty());
 
-      return var1 != null && var1.getDisplay() != null ? this.tab.getWidget(var1) : null;
+      return var1 != null && !var1.advancement().display().isEmpty() ? this.tab.getWidget(var1.holder()) : null;
    }
 
    public void drawConnectivity(GuiGraphics var1, int var2, int var3, boolean var4) {
@@ -147,7 +147,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blit(WIDGETS_LOCATION, var2 + this.x + 3, var3 + this.y, this.display.getFrame().getTexture(), 128 + var5.getIndex() * 26, 26, 26);
+         var1.blitSprite(var5.frameSprite(this.display.getFrame()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -170,7 +170,7 @@ public class AdvancementWidget {
 
    public void drawHover(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6) {
       boolean var7 = var5 + var2 + this.x + this.width + 26 >= this.tab.getScreen().width;
-      String var8 = this.progress == null ? null : this.progress.getProgressText();
+      Component var8 = this.progress == null ? null : this.progress.getProgressText();
       int var9 = var8 == null ? 0 : this.minecraft.font.width(var8);
       boolean var10 = 113 - var3 - this.y - 26 <= 6 + this.description.size() * 9;
       float var11 = this.progress == null ? 0.0F : this.progress.getPercent();
@@ -212,15 +212,15 @@ public class AdvancementWidget {
       int var19 = 32 + this.description.size() * 9;
       if (!this.description.isEmpty()) {
          if (var10) {
-            var1.blitNineSliced(WIDGETS_LOCATION, var18, var17 + 26 - var19, this.width, var19, 10, 200, 26, 0, 52);
+            var1.blitSprite(TITLE_BOX_SPRITE, var18, var17 + 26 - var19, this.width, var19);
          } else {
-            var1.blitNineSliced(WIDGETS_LOCATION, var18, var17, this.width, var19, 10, 200, 26, 0, 52);
+            var1.blitSprite(TITLE_BOX_SPRITE, var18, var17, this.width, var19);
          }
       }
 
-      var1.blit(WIDGETS_LOCATION, var18, var17, 0, var12.getIndex() * 26, var15, 26);
-      var1.blit(WIDGETS_LOCATION, var18 + var15, var17, 200 - var16, var13.getIndex() * 26, var16, 26);
-      var1.blit(WIDGETS_LOCATION, var2 + this.x + 3, var3 + this.y, this.display.getFrame().getTexture(), 128 + var14.getIndex() * 26, 26, 26);
+      var1.blitSprite(var12.boxSprite(), 200, 26, 0, 0, var18, var17, var15, 26);
+      var1.blitSprite(var13.boxSprite(), 200, 26, 200 - var16, 0, var18 + var15, var17, var16, 26);
+      var1.blitSprite(var14.frameSprite(this.display.getFrame()), var2 + this.x + 3, var3 + this.y, 26, 26);
       if (var7) {
          var1.drawString(this.minecraft.font, this.title, var18 + 5, var3 + this.y + 9, -1);
          if (var8 != null) {
@@ -259,8 +259,8 @@ public class AdvancementWidget {
    }
 
    public void attachToParent() {
-      if (this.parent == null && this.advancement.getParent() != null) {
-         this.parent = this.getFirstVisibleParent(this.advancement);
+      if (this.parent == null && this.advancementNode.parent() != null) {
+         this.parent = this.getFirstVisibleParent(this.advancementNode);
          if (this.parent != null) {
             this.parent.addChild(this);
          }

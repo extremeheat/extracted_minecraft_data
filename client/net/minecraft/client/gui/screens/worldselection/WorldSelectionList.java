@@ -14,7 +14,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -40,9 +39,9 @@ import net.minecraft.client.gui.screens.ErrorScreen;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.LoadingDotsText;
+import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.SymlinkWarningScreen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
@@ -60,16 +59,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.Entry> {
+   static final ResourceLocation ERROR_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/error_highlighted");
+   static final ResourceLocation ERROR_SPRITE = new ResourceLocation("world_list/error");
+   static final ResourceLocation MARKED_JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/marked_join_highlighted");
+   static final ResourceLocation MARKED_JOIN_SPRITE = new ResourceLocation("world_list/marked_join");
+   static final ResourceLocation WARNING_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/warning_highlighted");
+   static final ResourceLocation WARNING_SPRITE = new ResourceLocation("world_list/warning");
+   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/join_highlighted");
+   static final ResourceLocation JOIN_SPRITE = new ResourceLocation("world_list/join");
    static final Logger LOGGER = LogUtils.getLogger();
    static final DateFormat DATE_FORMAT = new SimpleDateFormat();
    private static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
-   static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/world_selection.png");
    static final Component FROM_NEWER_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
    static final Component FROM_NEWER_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);
    static final Component SNAPSHOT_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.snapshot1").withStyle(ChatFormatting.GOLD);
    static final Component SNAPSHOT_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.snapshot2").withStyle(ChatFormatting.GOLD);
    static final Component WORLD_LOCKED_TOOLTIP = Component.translatable("selectWorld.locked").withStyle(ChatFormatting.RED);
    static final Component WORLD_REQUIRES_CONVERSION = Component.translatable("selectWorld.conversion.tooltip").withStyle(ChatFormatting.RED);
+   static final Component WORLD_EXPERIMENTAL = Component.translatable("selectWorld.experimental");
    private final SelectWorldScreen screen;
    private CompletableFuture<List<LevelSummary>> pendingLevels;
    @Nullable
@@ -267,7 +274,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
          String var13 = LoadingDotsText.get(Util.getMillis());
          int var14 = (this.minecraft.screen.width - this.minecraft.font.width(var13)) / 2;
          int var15 = var12 + 9;
-         var1.drawString(this.minecraft.font, var13, var14, var15, 8421504, false);
+         var1.drawString(this.minecraft.font, var13, var14, var15, -8355712, false);
       }
 
       @Override
@@ -284,12 +291,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
    public final class WorldListEntry extends WorldSelectionList.Entry implements AutoCloseable {
       private static final int ICON_WIDTH = 32;
       private static final int ICON_HEIGHT = 32;
-      private static final int ICON_OVERLAY_X_JOIN = 0;
-      private static final int ICON_OVERLAY_X_JOIN_WITH_NOTIFY = 32;
-      private static final int ICON_OVERLAY_X_WARNING = 64;
-      private static final int ICON_OVERLAY_X_ERROR = 96;
-      private static final int ICON_OVERLAY_Y_UNSELECTED = 0;
-      private static final int ICON_OVERLAY_Y_SELECTED = 32;
       private final Minecraft minecraft;
       private final SelectWorldScreen screen;
       private final LevelSummary summary;
@@ -314,10 +315,9 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             try {
                BasicFileAttributes var1 = Files.readAttributes(this.iconFile, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
                if (var1.isSymbolicLink()) {
-                  ArrayList var2 = new ArrayList();
-                  this.minecraft.getLevelSource().getWorldDirValidator().validateSymlink(this.iconFile, var2);
+                  List var2 = this.minecraft.directoryValidator().validateSymlink(this.iconFile);
                   if (!var2.isEmpty()) {
-                     WorldSelectionList.LOGGER.warn(ContentValidationException.getMessage(this.iconFile, var2));
+                     WorldSelectionList.LOGGER.warn("{}", ContentValidationException.getMessage(this.iconFile, var2));
                      this.iconFile = null;
                   } else {
                      var1 = Files.readAttributes(this.iconFile, BasicFileAttributes.class);
@@ -341,14 +341,15 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
          MutableComponent var1 = Component.translatable(
             "narrator.select.world_info", this.summary.getLevelName(), new Date(this.summary.getLastPlayed()), this.summary.getInfo()
          );
-         MutableComponent var2;
          if (this.summary.isLocked()) {
-            var2 = CommonComponents.joinForNarration(var1, WorldSelectionList.WORLD_LOCKED_TOOLTIP);
-         } else {
-            var2 = var1;
+            var1 = CommonComponents.joinForNarration(var1, WorldSelectionList.WORLD_LOCKED_TOOLTIP);
          }
 
-         return Component.translatable("narrator.select", var2);
+         if (this.summary.isExperimental()) {
+            var1 = CommonComponents.joinForNarration(var1, WorldSelectionList.WORLD_EXPERIMENTAL);
+         }
+
+         return Component.translatable("narrator.select", var1);
       }
 
       @Override
@@ -366,8 +367,8 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
 
          Component var15 = this.summary.getInfo();
          var1.drawString(this.minecraft.font, var11, var4 + 32 + 3, var3 + 1, 16777215, false);
-         var1.drawString(this.minecraft.font, var12, var4 + 32 + 3, var3 + 9 + 3, 8421504, false);
-         var1.drawString(this.minecraft.font, var15, var4 + 32 + 3, var3 + 9 + 9 + 3, 8421504, false);
+         var1.drawString(this.minecraft.font, var12, var4 + 32 + 3, var3 + 9 + 3, -8355712, false);
+         var1.drawString(this.minecraft.font, var15, var4 + 32 + 3, var3 + 9 + 9 + 3, -8355712, false);
          RenderSystem.enableBlend();
          var1.blit(this.icon.textureLocation(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          RenderSystem.disableBlend();
@@ -375,27 +376,30 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var16 = var7 - var4;
             boolean var17 = var16 < 32;
-            int var18 = var17 ? 32 : 0;
+            ResourceLocation var18 = var17 ? WorldSelectionList.JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.JOIN_SPRITE;
+            ResourceLocation var19 = var17 ? WorldSelectionList.WARNING_HIGHLIGHTED_SPRITE : WorldSelectionList.WARNING_SPRITE;
+            ResourceLocation var20 = var17 ? WorldSelectionList.ERROR_HIGHLIGHTED_SPRITE : WorldSelectionList.ERROR_SPRITE;
+            ResourceLocation var21 = var17 ? WorldSelectionList.MARKED_JOIN_HIGHLIGHTED_SPRITE : WorldSelectionList.MARKED_JOIN_SPRITE;
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, (float)var18, 32, 32, 256, 256);
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 32.0F, (float)var18, 32, 32, 256, 256);
+               var1.blitSprite(var20, var4, var3, 32, 32);
+               var1.blitSprite(var21, var4, var3, 32, 32);
                return;
             }
 
             if (this.summary.isLocked()) {
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, (float)var18, 32, 32, 256, 256);
+               var1.blitSprite(var20, var4, var3, 32, 32);
                if (var17) {
                   this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_LOCKED_TOOLTIP, 175));
                }
             } else if (this.summary.requiresManualConversion()) {
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, (float)var18, 32, 32, 256, 256);
+               var1.blitSprite(var20, var4, var3, 32, 32);
                if (var17) {
                   this.screen.setTooltipForNextRenderPass(this.minecraft.font.split(WorldSelectionList.WORLD_REQUIRES_CONVERSION, 175));
                }
             } else if (this.summary.markVersionInList()) {
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 32.0F, (float)var18, 32, 32, 256, 256);
+               var1.blitSprite(var21, var4, var3, 32, 32);
                if (this.summary.askToOpenWorld()) {
-                  var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, (float)var18, 32, 32, 256, 256);
+                  var1.blitSprite(var20, var4, var3, 32, 32);
                   if (var17) {
                      this.screen
                         .setTooltipForNextRenderPass(
@@ -405,7 +409,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                         );
                   }
                } else if (!SharedConstants.getCurrentVersion().isStable()) {
-                  var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, (float)var18, 32, 32, 256, 256);
+                  var1.blitSprite(var19, var4, var3, 32, 32);
                   if (var17) {
                      this.screen
                         .setTooltipForNextRenderPass(
@@ -416,7 +420,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                   }
                }
             } else {
-               var1.blit(WorldSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, (float)var18, 32, 32, 256, 256);
+               var1.blitSprite(var18, var4, var3, 32, 32);
             }
          }
       }
@@ -443,7 +447,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       public void joinWorld() {
          if (!this.summary.isDisabled()) {
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-               this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
             } else {
                LevelSummary.BackupStatus var1 = this.summary.backupStatus();
                if (var1.shouldBackup()) {
@@ -466,7 +470,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                            WorldSelectionList.LOGGER.error("Failed to backup level {}", var3x, var9);
                         } catch (ContentValidationException var10) {
                            WorldSelectionList.LOGGER.warn("{}", var10.getMessage());
-                           this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+                           this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
                         }
                      }
 
@@ -544,7 +548,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
 
       public void editWorld() {
          if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-            this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
          } else {
             this.queueLoadScreen();
             String var1 = this.summary.getLevelId();
@@ -570,14 +574,14 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                WorldSelectionList.this.reloadWorldList();
             } catch (ContentValidationException var4) {
                WorldSelectionList.LOGGER.warn("{}", var4.getMessage());
-               this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
             }
          }
       }
 
       public void recreateWorld() {
          if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-            this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
          } else {
             this.queueLoadScreen();
 
@@ -605,7 +609,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                }
             } catch (ContentValidationException var8) {
                WorldSelectionList.LOGGER.warn("{}", var8.getMessage());
-               this.minecraft.setScreen(new SymlinkWarningScreen(this.screen));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(this.screen));
             } catch (Exception var9) {
                WorldSelectionList.LOGGER.error("Unable to recreate world", var9);
                this.minecraft

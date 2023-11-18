@@ -1,37 +1,29 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class ShapelessRecipe implements CraftingRecipe {
-   private final ResourceLocation id;
    final String group;
    final CraftingBookCategory category;
    final ItemStack result;
    final NonNullList<Ingredient> ingredients;
 
-   public ShapelessRecipe(ResourceLocation var1, String var2, CraftingBookCategory var3, ItemStack var4, NonNullList<Ingredient> var5) {
+   public ShapelessRecipe(String var1, CraftingBookCategory var2, ItemStack var3, NonNullList<Ingredient> var4) {
       super();
-      this.id = var1;
-      this.group = var2;
-      this.category = var3;
-      this.result = var4;
-      this.ingredients = var5;
-   }
-
-   @Override
-   public ResourceLocation getId() {
-      return this.id;
+      this.group = var1;
+      this.category = var2;
+      this.result = var3;
+      this.ingredients = var4;
    }
 
    @Override
@@ -84,49 +76,53 @@ public class ShapelessRecipe implements CraftingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<ShapelessRecipe> {
+      private static final Codec<ShapelessRecipe> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
+                  CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
+                  CraftingRecipeCodecs.ITEMSTACK_OBJECT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
+                  Ingredient.CODEC_NONEMPTY
+                     .listOf()
+                     .fieldOf("ingredients")
+                     .flatXmap(
+                        var0x -> {
+                           Ingredient[] var1 = var0x.stream().filter(var0xx -> !var0xx.isEmpty()).toArray(var0xx -> new Ingredient[var0xx]);
+                           if (var1.length == 0) {
+                              return DataResult.error(() -> "No ingredients for shapeless recipe");
+                           } else {
+                              return var1.length > 9
+                                 ? DataResult.error(() -> "Too many ingredients for shapeless recipe")
+                                 : DataResult.success(NonNullList.of(Ingredient.EMPTY, var1));
+                           }
+                        },
+                        DataResult::success
+                     )
+                     .forGetter(var0x -> var0x.ingredients)
+               )
+               .apply(var0, ShapelessRecipe::new)
+      );
+
       public Serializer() {
          super();
       }
 
-      public ShapelessRecipe fromJson(ResourceLocation var1, JsonObject var2) {
-         String var3 = GsonHelper.getAsString(var2, "group", "");
-         CraftingBookCategory var4 = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(var2, "category", null), CraftingBookCategory.MISC);
-         NonNullList var5 = itemsFromJson(GsonHelper.getAsJsonArray(var2, "ingredients"));
-         if (var5.isEmpty()) {
-            throw new JsonParseException("No ingredients for shapeless recipe");
-         } else if (var5.size() > 9) {
-            throw new JsonParseException("Too many ingredients for shapeless recipe");
-         } else {
-            ItemStack var6 = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(var2, "result"));
-            return new ShapelessRecipe(var1, var3, var4, var6, var5);
-         }
+      @Override
+      public Codec<ShapelessRecipe> codec() {
+         return CODEC;
       }
 
-      private static NonNullList<Ingredient> itemsFromJson(JsonArray var0) {
-         NonNullList var1 = NonNullList.create();
+      public ShapelessRecipe fromNetwork(FriendlyByteBuf var1) {
+         String var2 = var1.readUtf();
+         CraftingBookCategory var3 = var1.readEnum(CraftingBookCategory.class);
+         int var4 = var1.readVarInt();
+         NonNullList var5 = NonNullList.withSize(var4, Ingredient.EMPTY);
 
-         for(int var2 = 0; var2 < var0.size(); ++var2) {
-            Ingredient var3 = Ingredient.fromJson(var0.get(var2), false);
-            if (!var3.isEmpty()) {
-               var1.add(var3);
-            }
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
+            var5.set(var6, Ingredient.fromNetwork(var1));
          }
 
-         return var1;
-      }
-
-      public ShapelessRecipe fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
-         String var3 = var2.readUtf();
-         CraftingBookCategory var4 = var2.readEnum(CraftingBookCategory.class);
-         int var5 = var2.readVarInt();
-         NonNullList var6 = NonNullList.withSize(var5, Ingredient.EMPTY);
-
-         for(int var7 = 0; var7 < var6.size(); ++var7) {
-            var6.set(var7, Ingredient.fromNetwork(var2));
-         }
-
-         ItemStack var8 = var2.readItem();
-         return new ShapelessRecipe(var1, var3, var4, var8, var6);
+         ItemStack var7 = var1.readItem();
+         return new ShapelessRecipe(var2, var3, var7, var5);
       }
 
       public void toNetwork(FriendlyByteBuf var1, ShapelessRecipe var2) {

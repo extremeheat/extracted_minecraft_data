@@ -312,20 +312,23 @@ public class V1460 extends NamespacedSchema {
                )
             )
       );
+      var1.registerType(false, References.SAVED_DATA_COMMAND_STORAGE, DSL::remainder);
+      var1.registerType(false, References.SAVED_DATA_FORCED_CHUNKS, DSL::remainder);
+      var1.registerType(false, References.SAVED_DATA_MAP_DATA, DSL::remainder);
+      var1.registerType(false, References.SAVED_DATA_MAP_INDEX, DSL::remainder);
+      var1.registerType(false, References.SAVED_DATA_RAIDS, DSL::remainder);
+      var1.registerType(false, References.SAVED_DATA_RANDOM_SEQUENCES, DSL::remainder);
       var1.registerType(
          false,
-         References.SAVED_DATA,
+         References.SAVED_DATA_SCOREBOARD,
          () -> DSL.optionalFields(
-               "data",
-               DSL.optionalFields(
-                  "Features",
-                  DSL.compoundList(References.STRUCTURE_FEATURE.in(var1)),
-                  "Objectives",
-                  DSL.list(References.OBJECTIVE.in(var1)),
-                  "Teams",
-                  DSL.list(References.TEAM.in(var1))
-               )
+               "data", DSL.optionalFields("Objectives", DSL.list(References.OBJECTIVE.in(var1)), "Teams", DSL.list(References.TEAM.in(var1)))
             )
+      );
+      var1.registerType(
+         false,
+         References.SAVED_DATA_STRUCTURE_FEATURE_INDICES,
+         () -> DSL.optionalFields("data", DSL.optionalFields("Features", DSL.compoundList(References.STRUCTURE_FEATURE.in(var1))))
       );
       var1.registerType(false, References.STRUCTURE_FEATURE, DSL::remainder);
       Map var5 = V1451_6.createCriterionTypes(var1);

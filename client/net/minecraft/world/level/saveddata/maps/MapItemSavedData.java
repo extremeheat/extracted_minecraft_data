@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -49,6 +50,12 @@ public class MapItemSavedData extends SavedData {
    final Map<String, MapDecoration> decorations = Maps.newLinkedHashMap();
    private final Map<String, MapFrame> frameMarkers = Maps.newHashMap();
    private int trackedDecorationCount;
+
+   public static SavedData.Factory<MapItemSavedData> factory() {
+      return new SavedData.Factory<>(() -> {
+         throw new IllegalStateException("Should never create an empty map saved data");
+      }, MapItemSavedData::load, DataFixTypes.SAVED_DATA_MAP_DATA);
+   }
 
    private MapItemSavedData(int var1, int var2, byte var3, boolean var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
       super();
@@ -235,7 +242,7 @@ public class MapItemSavedData extends SavedData {
 
    private void removeDecoration(String var1) {
       MapDecoration var2 = this.decorations.remove(var1);
-      if (var2 != null && var2.getType().shouldTrackCount()) {
+      if (var2 != null && var2.type().shouldTrackCount()) {
          --this.trackedDecorationCount;
       }
 
@@ -320,7 +327,7 @@ public class MapItemSavedData extends SavedData {
       MapDecoration var22 = new MapDecoration(var1, var14, var15, var16, var10);
       MapDecoration var19 = this.decorations.put(var3, var22);
       if (!var22.equals(var19)) {
-         if (var19 != null && var19.getType().shouldTrackCount()) {
+         if (var19 != null && var19.type().shouldTrackCount()) {
             --this.trackedDecorationCount;
          }
 
@@ -431,7 +438,7 @@ public class MapItemSavedData extends SavedData {
 
    public boolean isExplorationMap() {
       for(MapDecoration var2 : this.decorations.values()) {
-         if (var2.getType() == MapDecoration.Type.MANSION || var2.getType() == MapDecoration.Type.MONUMENT) {
+         if (var2.type().isExplorationMapElement()) {
             return true;
          }
       }
@@ -446,7 +453,7 @@ public class MapItemSavedData extends SavedData {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          MapDecoration var3 = (MapDecoration)var1.get(var2);
          this.decorations.put("icon-" + var2, var3);
-         if (var3.getType().shouldTrackCount()) {
+         if (var3.type().shouldTrackCount()) {
             ++this.trackedDecorationCount;
          }
       }

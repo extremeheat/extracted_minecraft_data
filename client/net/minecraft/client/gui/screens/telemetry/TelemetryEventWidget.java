@@ -10,8 +10,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -116,11 +116,11 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       return this.width - this.totalInnerPadding();
    }
 
-   static record Content(GridLayout a, Component b) {
-      private final GridLayout container;
+   static record Content(Layout a, Component b) {
+      private final Layout container;
       private final Component narration;
 
-      Content(GridLayout var1, Component var2) {
+      Content(Layout var1, Component var2) {
          super();
          this.container = var1;
          this.narration = var2;
@@ -129,19 +129,15 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
 
    static class ContentBuilder {
       private final int width;
-      private final GridLayout grid;
-      private final GridLayout.RowHelper helper;
-      private final LayoutSettings alignHeader;
+      private final LinearLayout layout;
       private final MutableComponent narration = Component.empty();
 
       public ContentBuilder(int var1) {
          super();
          this.width = var1;
-         this.grid = new GridLayout();
-         this.grid.defaultCellSetting().alignHorizontallyLeft();
-         this.helper = this.grid.createRowHelper(1);
-         this.helper.addChild(SpacerElement.width(var1));
-         this.alignHeader = this.helper.newCellSettings().alignHorizontallyCenter().paddingHorizontal(32);
+         this.layout = LinearLayout.vertical();
+         this.layout.defaultCellSetting().alignHorizontallyLeft();
+         this.layout.addChild(SpacerElement.width(var1));
       }
 
       public void addLine(Font var1, Component var2) {
@@ -149,22 +145,26 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       }
 
       public void addLine(Font var1, Component var2, int var3) {
-         this.helper.addChild(new MultiLineTextWidget(var2, var1).setMaxWidth(this.width), this.helper.newCellSettings().paddingBottom(var3));
+         this.layout.addChild(new MultiLineTextWidget(var2, var1).setMaxWidth(this.width), var1x -> var1x.paddingBottom(var3));
          this.narration.append(var2).append("\n");
       }
 
       public void addHeader(Font var1, Component var2) {
-         this.helper.addChild(new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true), this.alignHeader);
+         this.layout
+            .addChild(
+               new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true),
+               var0 -> var0.alignHorizontallyCenter().paddingHorizontal(32)
+            );
          this.narration.append(var2).append("\n");
       }
 
       public void addSpacer(int var1) {
-         this.helper.addChild(SpacerElement.height(var1));
+         this.layout.addChild(SpacerElement.height(var1));
       }
 
       public TelemetryEventWidget.Content build() {
-         this.grid.arrangeElements();
-         return new TelemetryEventWidget.Content(this.grid, this.narration);
+         this.layout.arrangeElements();
+         return new TelemetryEventWidget.Content(this.layout, this.narration);
       }
    }
 }

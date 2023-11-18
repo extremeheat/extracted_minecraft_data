@@ -16,6 +16,7 @@ import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.slf4j.Logger;
 
 public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integer> {
@@ -29,14 +30,14 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       this.menu = var1;
    }
 
-   public void recipeClicked(ServerPlayer var1, @Nullable Recipe<C> var2, boolean var3) {
+   public void recipeClicked(ServerPlayer var1, @Nullable RecipeHolder<? extends Recipe<C>> var2, boolean var3) {
       if (var2 != null && var1.getRecipeBook().contains(var2)) {
          this.inventory = var1.getInventory();
          if (this.testClearGrid() || var1.isCreative()) {
             this.stackedContents.clear();
             var1.getInventory().fillStackedContents(this.stackedContents);
             this.menu.fillCraftSlotsStackedContents(this.stackedContents);
-            if (this.stackedContents.canCraft(var2, null)) {
+            if (this.stackedContents.canCraft(var2.value(), null)) {
                this.handleRecipeClicked(var2, var3);
             } else {
                this.clearGrid();
@@ -60,7 +61,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       this.menu.clearCraftingContent();
    }
 
-   protected void handleRecipeClicked(Recipe<C> var1, boolean var2) {
+   protected void handleRecipeClicked(RecipeHolder<? extends Recipe<C>> var1, boolean var2) {
       boolean var3 = this.menu.recipeMatches(var1);
       int var4 = this.stackedContents.getBiggestCraftableStack(var1, null);
       if (var3) {
@@ -76,7 +77,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
 
       int var11 = this.getStackSize(var2, var4, var3);
       IntArrayList var12 = new IntArrayList();
-      if (this.stackedContents.canCraft(var1, var12, var11)) {
+      if (this.stackedContents.canCraft(var1.value(), var12, var11)) {
          int var7 = var11;
          IntListIterator var8 = var12.iterator();
 
@@ -88,7 +89,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
             }
          }
 
-         if (this.stackedContents.canCraft(var1, var12, var7)) {
+         if (this.stackedContents.canCraft(var1.value(), var12, var7)) {
             this.clearGrid();
             this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var12.iterator(), var7);
          }

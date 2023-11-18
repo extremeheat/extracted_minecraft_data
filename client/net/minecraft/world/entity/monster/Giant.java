@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Pose;
@@ -17,6 +18,11 @@ public class Giant extends Monster {
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
       return 10.440001F;
+   }
+
+   @Override
+   protected float ridingOffset(Entity var1) {
+      return -3.75F;
    }
 
    public static AttributeSupplier.Builder createAttributes() {

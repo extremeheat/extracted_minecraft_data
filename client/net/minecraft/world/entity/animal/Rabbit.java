@@ -62,6 +62,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -354,7 +355,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    public void setVariant(Rabbit.Variant var1) {
       if (var1 == Rabbit.Variant.EVIL) {
          this.getAttribute(Attributes.ARMOR).setBaseValue(8.0);
-         this.goalSelector.addGoal(4, new Rabbit.EvilRabbitAttackGoal(this));
+         this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.4, true));
          this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Wolf.class, true));
@@ -416,17 +417,6 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.6F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
-   static class EvilRabbitAttackGoal extends MeleeAttackGoal {
-      public EvilRabbitAttackGoal(Rabbit var1) {
-         super(var1, 1.4, true);
-      }
-
-      @Override
-      protected double getAttackReachSqr(LivingEntity var1) {
-         return (double)(4.0F + var1.getBbWidth());
-      }
    }
 
    static class RabbitAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
@@ -583,6 +573,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
                   var1.destroyBlock(var2, true, this.rabbit);
                } else {
                   var1.setBlock(var2, var3.setValue(CarrotBlock.AGE, Integer.valueOf(var5 - 1)), 2);
+                  var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(this.rabbit));
                   var1.levelEvent(2001, var2, Block.getId(var3));
                }
 

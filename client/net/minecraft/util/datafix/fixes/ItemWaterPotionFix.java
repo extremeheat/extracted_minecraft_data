@@ -34,7 +34,7 @@ public class ItemWaterPotionFix extends DataFix {
                   || "minecraft:tipped_arrow".equals(var4)) {
                   Typed var5 = var2x.getOrCreateTyped(var3);
                   Dynamic var6 = (Dynamic)var5.get(DSL.remainderFinder());
-                  if (!var6.get("Potion").asString().result().isPresent()) {
+                  if (var6.get("Potion").asString().result().isEmpty()) {
                      var6 = var6.set("Potion", var6.createString("minecraft:water"));
                   }
    

@@ -13,56 +13,80 @@ import java.util.Objects;
 public class ListTag extends CollectionTag<Tag> {
    private static final int SELF_SIZE_IN_BYTES = 37;
    public static final TagType<ListTag> TYPE = new TagType.VariableSize<ListTag>() {
-      public ListTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBytes(37L);
-         if (var2 > 512) {
-            throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
+      public ListTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         var2.pushDepth();
+
+         ListTag var3;
+         try {
+            var3 = loadList(var1, var2);
+         } finally {
+            var2.popDepth();
+         }
+
+         return var3;
+      }
+
+      private static ListTag loadList(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(37L);
+         byte var2 = var0.readByte();
+         int var3 = var0.readInt();
+         if (var2 == 0 && var3 > 0) {
+            throw new RuntimeException("Missing type on ListTag");
          } else {
-            byte var4 = var1.readByte();
-            int var5 = var1.readInt();
-            if (var4 == 0 && var5 > 0) {
-               throw new RuntimeException("Missing type on ListTag");
-            } else {
-               var3.accountBytes(4L * (long)var5);
-               TagType var6 = TagTypes.getType(var4);
-               ArrayList var7 = Lists.newArrayListWithCapacity(var5);
+            var1.accountBytes(4L, (long)var3);
+            TagType var4 = TagTypes.getType(var2);
+            ArrayList var5 = Lists.newArrayListWithCapacity(var3);
 
-               for(int var8 = 0; var8 < var5; ++var8) {
-                  var7.add(var6.load(var1, var2 + 1, var3));
-               }
-
-               return new ListTag(var7, var4);
+            for(int var6 = 0; var6 < var3; ++var6) {
+               var5.add(var4.load(var0, var1));
             }
+
+            return new ListTag(var5, var2);
          }
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) throws IOException {
-         TagType var3 = TagTypes.getType(var1.readByte());
-         int var4 = var1.readInt();
-         switch(var2.visitList(var3, var4)) {
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         var3.pushDepth();
+
+         StreamTagVisitor.ValueResult var4;
+         try {
+            var4 = parseList(var1, var2, var3);
+         } finally {
+            var3.popDepth();
+         }
+
+         return var4;
+      }
+
+      private static StreamTagVisitor.ValueResult parseList(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
+         var2.accountBytes(37L);
+         TagType var3 = TagTypes.getType(var0.readByte());
+         int var4 = var0.readInt();
+         switch(var1.visitList(var3, var4)) {
             case HALT:
                return StreamTagVisitor.ValueResult.HALT;
             case BREAK:
-               var3.skip(var1, var4);
-               return var2.visitContainerEnd();
+               var3.skip(var0, var4, var2);
+               return var1.visitContainerEnd();
             default:
+               var2.accountBytes(4L, (long)var4);
                int var5 = 0;
 
                while(true) {
                   label41: {
                      if (var5 < var4) {
-                        switch(var2.visitElement(var3, var5)) {
+                        switch(var1.visitElement(var3, var5)) {
                            case HALT:
                               return StreamTagVisitor.ValueResult.HALT;
                            case BREAK:
-                              var3.skip(var1);
+                              var3.skip(var0, var2);
                               break;
                            case SKIP:
-                              var3.skip(var1);
+                              var3.skip(var0, var2);
                               break label41;
                            default:
-                              switch(var3.parse(var1, var2)) {
+                              switch(var3.parse(var0, var1, var2)) {
                                  case HALT:
                                     return StreamTagVisitor.ValueResult.HALT;
                                  case BREAK:
@@ -75,10 +99,10 @@ public class ListTag extends CollectionTag<Tag> {
 
                      int var6 = var4 - 1 - var5;
                      if (var6 > 0) {
-                        var3.skip(var1, var6);
+                        var3.skip(var0, var6, var2);
                      }
 
-                     return var2.visitContainerEnd();
+                     return var1.visitContainerEnd();
                   }
 
                   ++var5;
@@ -87,10 +111,16 @@ public class ListTag extends CollectionTag<Tag> {
       }
 
       @Override
-      public void skip(DataInput var1) throws IOException {
-         TagType var2 = TagTypes.getType(var1.readByte());
-         int var3 = var1.readInt();
-         var2.skip(var1, var3);
+      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
+         var2.pushDepth();
+
+         try {
+            TagType var3 = TagTypes.getType(var1.readByte());
+            int var4 = var1.readInt();
+            var3.skip(var1, var4, var2);
+         } finally {
+            var2.popDepth();
+         }
       }
 
       @Override

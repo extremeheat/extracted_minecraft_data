@@ -433,6 +433,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       return var1.enforceSecureProfile && var1.onlineMode && this.services.profileKeySignatureValidator() != null;
    }
 
+   @Override
+   public boolean logIPs() {
+      return this.getProperties().logIPs;
+   }
+
    protected boolean convertOldUsers() {
       boolean var2 = false;
 

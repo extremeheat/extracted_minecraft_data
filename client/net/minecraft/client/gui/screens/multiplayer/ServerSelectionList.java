@@ -35,6 +35,24 @@ import net.minecraft.util.FormattedCharSequence;
 import org.slf4j.Logger;
 
 public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList.Entry> {
+   static final ResourceLocation INCOMPATIBLE_SPRITE = new ResourceLocation("server_list/incompatible");
+   static final ResourceLocation UNREACHABLE_SPRITE = new ResourceLocation("server_list/unreachable");
+   static final ResourceLocation PING_1_SPRITE = new ResourceLocation("server_list/ping_1");
+   static final ResourceLocation PING_2_SPRITE = new ResourceLocation("server_list/ping_2");
+   static final ResourceLocation PING_3_SPRITE = new ResourceLocation("server_list/ping_3");
+   static final ResourceLocation PING_4_SPRITE = new ResourceLocation("server_list/ping_4");
+   static final ResourceLocation PING_5_SPRITE = new ResourceLocation("server_list/ping_5");
+   static final ResourceLocation PINGING_1_SPRITE = new ResourceLocation("server_list/pinging_1");
+   static final ResourceLocation PINGING_2_SPRITE = new ResourceLocation("server_list/pinging_2");
+   static final ResourceLocation PINGING_3_SPRITE = new ResourceLocation("server_list/pinging_3");
+   static final ResourceLocation PINGING_4_SPRITE = new ResourceLocation("server_list/pinging_4");
+   static final ResourceLocation PINGING_5_SPRITE = new ResourceLocation("server_list/pinging_5");
+   static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("server_list/join_highlighted");
+   static final ResourceLocation JOIN_SPRITE = new ResourceLocation("server_list/join");
+   static final ResourceLocation MOVE_UP_HIGHLIGHTED_SPRITE = new ResourceLocation("server_list/move_up_highlighted");
+   static final ResourceLocation MOVE_UP_SPRITE = new ResourceLocation("server_list/move_up");
+   static final ResourceLocation MOVE_DOWN_HIGHLIGHTED_SPRITE = new ResourceLocation("server_list/move_down_highlighted");
+   static final ResourceLocation MOVE_DOWN_SPRITE = new ResourceLocation("server_list/move_down");
    static final Logger LOGGER = LogUtils.getLogger();
    static final ThreadPoolExecutor THREAD_POOL = new ScheduledThreadPoolExecutor(
       5,
@@ -45,8 +63,6 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          .build()
    );
    private static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
-   static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/server_selection.png");
-   static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation("textures/gui/icons.png");
    static final Component SCANNING_LABEL = Component.translatable("lanServer.scanning");
    static final Component CANT_RESOLVE_TEXT = Component.translatable("multiplayer.status.cannot_resolve").withStyle(var0 -> var0.withColor(-65536));
    static final Component CANT_CONNECT_TEXT = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
@@ -155,7 +171,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             false
          );
          String var12 = LoadingDotsText.get(Util.getMillis());
-         var1.drawString(this.minecraft.font, var12, this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2, var11 + 9, 8421504, false);
+         var1.drawString(this.minecraft.font, var12, this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2, var11 + 9, -8355712, false);
       }
 
       @Override
@@ -183,7 +199,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          var1.drawString(this.minecraft.font, LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, 16777215, false);
-         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, 8421504, false);
+         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712, false);
          if (this.minecraft.options.hideServerAddress) {
             var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064, false);
          } else {
@@ -219,12 +235,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
    public class OnlineServerEntry extends ServerSelectionList.Entry {
       private static final int ICON_WIDTH = 32;
       private static final int ICON_HEIGHT = 32;
-      private static final int ICON_OVERLAY_X_MOVE_RIGHT = 0;
       private static final int ICON_OVERLAY_X_MOVE_LEFT = 32;
-      private static final int ICON_OVERLAY_X_MOVE_DOWN = 64;
-      private static final int ICON_OVERLAY_X_MOVE_UP = 96;
-      private static final int ICON_OVERLAY_Y_UNSELECTED = 0;
-      private static final int ICON_OVERLAY_Y_SELECTED = 32;
       private final JoinMultiplayerScreen screen;
       private final Minecraft minecraft;
       private final ServerData serverData;
@@ -266,58 +277,62 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          List var12 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
          for(int var13 = 0; var13 < Math.min(var12.size(), 2); ++var13) {
-            var1.drawString(this.minecraft.font, (FormattedCharSequence)var12.get(var13), var4 + 32 + 3, var3 + 12 + 9 * var13, 8421504, false);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var12.get(var13), var4 + 32 + 3, var3 + 12 + 9 * var13, -8355712, false);
          }
 
-         Object var24 = var11 ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
-         int var14 = this.minecraft.font.width((FormattedText)var24);
-         var1.drawString(this.minecraft.font, (Component)var24, var4 + var5 - var14 - 15 - 2, var3 + 1, 8421504, false);
-         byte var15 = 0;
-         int var16;
-         List var17;
-         Object var18;
+         Object var23 = var11 ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
+         int var14 = this.minecraft.font.width((FormattedText)var23);
+         var1.drawString(this.minecraft.font, (Component)var23, var4 + var5 - var14 - 15 - 2, var3 + 1, -8355712, false);
+         ResourceLocation var15;
+         List var16;
+         Object var17;
          if (var11) {
-            var16 = 5;
-            var18 = ServerSelectionList.INCOMPATIBLE_STATUS;
-            var17 = this.serverData.playerList;
+            var15 = ServerSelectionList.INCOMPATIBLE_SPRITE;
+            var17 = ServerSelectionList.INCOMPATIBLE_STATUS;
+            var16 = this.serverData.playerList;
          } else if (this.pingCompleted()) {
             if (this.serverData.ping < 0L) {
-               var16 = 5;
+               var15 = ServerSelectionList.UNREACHABLE_SPRITE;
             } else if (this.serverData.ping < 150L) {
-               var16 = 0;
+               var15 = ServerSelectionList.PING_5_SPRITE;
             } else if (this.serverData.ping < 300L) {
-               var16 = 1;
+               var15 = ServerSelectionList.PING_4_SPRITE;
             } else if (this.serverData.ping < 600L) {
-               var16 = 2;
+               var15 = ServerSelectionList.PING_3_SPRITE;
             } else if (this.serverData.ping < 1000L) {
-               var16 = 3;
+               var15 = ServerSelectionList.PING_2_SPRITE;
             } else {
-               var16 = 4;
+               var15 = ServerSelectionList.PING_1_SPRITE;
             }
 
             if (this.serverData.ping < 0L) {
-               var18 = ServerSelectionList.NO_CONNECTION_STATUS;
-               var17 = Collections.emptyList();
+               var17 = ServerSelectionList.NO_CONNECTION_STATUS;
+               var16 = Collections.emptyList();
             } else {
-               var18 = Component.translatable("multiplayer.status.ping", this.serverData.ping);
-               var17 = this.serverData.playerList;
+               var17 = Component.translatable("multiplayer.status.ping", this.serverData.ping);
+               var16 = this.serverData.playerList;
             }
          } else {
-            var15 = 1;
-            var16 = (int)(Util.getMillis() / 100L + (long)(var2 * 2) & 7L);
-            if (var16 > 4) {
-               var16 = 8 - var16;
+            int var18 = (int)(Util.getMillis() / 100L + (long)(var2 * 2) & 7L);
+            if (var18 > 4) {
+               var18 = 8 - var18;
             }
-
-            var18 = ServerSelectionList.PINGING_STATUS;
-            var17 = Collections.emptyList();
+            var15 = switch(var18) {
+               case 1 -> ServerSelectionList.PINGING_2_SPRITE;
+               case 2 -> ServerSelectionList.PINGING_3_SPRITE;
+               case 3 -> ServerSelectionList.PINGING_4_SPRITE;
+               case 4 -> ServerSelectionList.PINGING_5_SPRITE;
+               default -> ServerSelectionList.PINGING_1_SPRITE;
+            };
+            var17 = ServerSelectionList.PINGING_STATUS;
+            var16 = Collections.emptyList();
          }
 
-         var1.blit(ServerSelectionList.GUI_ICONS_LOCATION, var4 + var5 - 15, var3, (float)(var15 * 10), (float)(176 + var16 * 8), 10, 8, 256, 256);
-         byte[] var19 = this.serverData.getIconBytes();
-         if (!Arrays.equals(var19, this.lastIconBytes)) {
-            if (this.uploadServerIcon(var19)) {
-               this.lastIconBytes = var19;
+         var1.blitSprite(var15, var4 + var5 - 15, var3, 10, 8);
+         byte[] var24 = this.serverData.getIconBytes();
+         if (!Arrays.equals(var24, this.lastIconBytes)) {
+            if (this.uploadServerIcon(var24)) {
+               this.lastIconBytes = var24;
             } else {
                this.serverData.setIconBytes(null);
                this.updateServerList();
@@ -325,39 +340,39 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          }
 
          this.drawIcon(var1, var4, var3, this.icon.textureLocation());
-         int var20 = var7 - var4;
-         int var21 = var8 - var3;
-         if (var20 >= var5 - 15 && var20 <= var5 - 5 && var21 >= 0 && var21 <= 8) {
-            this.screen.setToolTip(Collections.singletonList((Component)var18));
-         } else if (var20 >= var5 - var14 - 15 - 2 && var20 <= var5 - 15 - 2 && var21 >= 0 && var21 <= 8) {
-            this.screen.setToolTip(var17);
+         int var19 = var7 - var4;
+         int var20 = var8 - var3;
+         if (var19 >= var5 - 15 && var19 <= var5 - 5 && var20 >= 0 && var20 <= 8) {
+            this.screen.setToolTip(Collections.singletonList((Component)var17));
+         } else if (var19 >= var5 - var14 - 15 - 2 && var19 <= var5 - 15 - 2 && var20 >= 0 && var20 <= 8) {
+            this.screen.setToolTip(var16);
          }
 
          if (this.minecraft.options.touchscreen().get() || var9) {
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
-            int var22 = var7 - var4;
-            int var23 = var8 - var3;
+            int var21 = var7 - var4;
+            int var22 = var8 - var3;
             if (this.canJoin()) {
-               if (var22 < 32 && var22 > 16) {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 32.0F, 32, 32, 256, 256);
+               if (var21 < 32 && var21 > 16) {
+                  var1.blitSprite(ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blitSprite(ServerSelectionList.JOIN_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 > 0) {
-               if (var22 < 16 && var23 < 16) {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 32.0F, 32, 32, 256, 256);
+               if (var21 < 16 && var22 < 16) {
+                  var1.blitSprite(ServerSelectionList.MOVE_UP_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blitSprite(ServerSelectionList.MOVE_UP_SPRITE, var4, var3, 32, 32);
                }
             }
 
             if (var2 < this.screen.getServers().size() - 1) {
-               if (var22 < 16 && var23 > 16) {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 32.0F, 32, 32, 256, 256);
+               if (var21 < 16 && var22 > 16) {
+                  var1.blitSprite(ServerSelectionList.MOVE_DOWN_HIGHLIGHTED_SPRITE, var4, var3, 32, 32);
                } else {
-                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blitSprite(ServerSelectionList.MOVE_DOWN_SPRITE, var4, var3, 32, 32);
                }
             }
          }

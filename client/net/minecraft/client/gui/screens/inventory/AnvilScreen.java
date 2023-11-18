@@ -15,6 +15,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
+   private static final ResourceLocation TEXT_FIELD_SPRITE = new ResourceLocation("container/anvil/text_field");
+   private static final ResourceLocation TEXT_FIELD_DISABLED_SPRITE = new ResourceLocation("container/anvil/text_field_disabled");
+   private static final ResourceLocation ERROR_SPRITE = new ResourceLocation("container/anvil/error");
    private static final ResourceLocation ANVIL_LOCATION = new ResourceLocation("textures/gui/container/anvil.png");
    private static final Component TOO_EXPENSIVE_TEXT = Component.translatable("container.repair.expensive");
    private EditBox name;
@@ -24,12 +27,6 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       super(var1, var2, var3, ANVIL_LOCATION);
       this.player = var2.player;
       this.titleLabelX = 60;
-   }
-
-   @Override
-   public void containerTick() {
-      super.containerTick();
-      this.name.tick();
    }
 
    @Override
@@ -46,7 +43,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setValue("");
       this.addWidget(this.name);
       this.setInitialFocus(this.name);
-      this.name.setEditable(false);
+      this.name.setEditable(this.menu.getSlot(0).hasItem());
    }
 
    @Override
@@ -110,7 +107,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      var1.blit(ANVIL_LOCATION, this.leftPos + 59, this.topPos + 20, 0, this.imageHeight + (this.menu.getSlot(0).hasItem() ? 0 : 16), 110, 16);
+      var1.blitSprite(this.menu.getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE, this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
    @Override
@@ -121,7 +118,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    @Override
    protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if ((this.menu.getSlot(0).hasItem() || this.menu.getSlot(1).hasItem()) && !this.menu.getSlot(this.menu.getResultSlot()).hasItem()) {
-         var1.blit(ANVIL_LOCATION, var2 + 99, var3 + 45, this.imageWidth, 0, 28, 21);
+         var1.blitSprite(ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
       }
    }
 

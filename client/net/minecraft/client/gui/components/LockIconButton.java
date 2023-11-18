@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 
 public class LockIconButton extends Button {
    private boolean locked;
@@ -41,31 +42,21 @@ public class LockIconButton extends Button {
          var5 = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
       }
 
-      var1.blit(Button.WIDGETS_LOCATION, this.getX(), this.getY(), var5.getX(), var5.getY(), this.width, this.height);
+      var1.blitSprite(var5.sprite, this.getX(), this.getY(), this.width, this.height);
    }
 
    static enum Icon {
-      LOCKED(0, 146),
-      LOCKED_HOVER(0, 166),
-      LOCKED_DISABLED(0, 186),
-      UNLOCKED(20, 146),
-      UNLOCKED_HOVER(20, 166),
-      UNLOCKED_DISABLED(20, 186);
+      LOCKED(new ResourceLocation("widget/locked_button")),
+      LOCKED_HOVER(new ResourceLocation("widget/locked_button_highlighted")),
+      LOCKED_DISABLED(new ResourceLocation("widget/locked_button_disabled")),
+      UNLOCKED(new ResourceLocation("widget/unlocked_button")),
+      UNLOCKED_HOVER(new ResourceLocation("widget/unlocked_button_highlighted")),
+      UNLOCKED_DISABLED(new ResourceLocation("widget/unlocked_button_disabled"));
 
-      private final int x;
-      private final int y;
+      final ResourceLocation sprite;
 
-      private Icon(int var3, int var4) {
-         this.x = var3;
-         this.y = var4;
-      }
-
-      public int getX() {
-         return this.x;
-      }
-
-      public int getY() {
-         return this.y;
+      private Icon(ResourceLocation var3) {
+         this.sprite = var3;
       }
    }
 }

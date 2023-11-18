@@ -2,28 +2,23 @@ package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStrikeTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("lightning_strike");
-
    public LightningStrikeTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public LightningStrikeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "lightning", var3);
-      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "bystander", var3);
+   public LightningStrikeTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = EntityPredicate.fromJson(var1, "lightning", var3);
+      Optional var5 = EntityPredicate.fromJson(var1, "bystander", var3);
       return new LightningStrikeTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -34,33 +29,34 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ContextAwarePredicate lightning;
-      private final ContextAwarePredicate bystander;
+      private final Optional<ContextAwarePredicate> lightning;
+      private final Optional<ContextAwarePredicate> bystander;
 
-      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ContextAwarePredicate var3) {
-         super(LightningStrikeTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3) {
+         super(var1);
          this.lightning = var2;
          this.bystander = var3;
       }
 
-      public static LightningStrikeTrigger.TriggerInstance lighthingStrike(EntityPredicate var0, EntityPredicate var1) {
-         return new LightningStrikeTrigger.TriggerInstance(ContextAwarePredicate.ANY, EntityPredicate.wrap(var0), EntityPredicate.wrap(var1));
+      public static Criterion<LightningStrikeTrigger.TriggerInstance> lightningStrike(Optional<EntityPredicate> var0, Optional<EntityPredicate> var1) {
+         return CriteriaTriggers.LIGHTNING_STRIKE
+            .createCriterion(new LightningStrikeTrigger.TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0), EntityPredicate.wrap(var1)));
       }
 
       public boolean matches(LootContext var1, List<LootContext> var2) {
-         if (!this.lightning.matches(var1)) {
+         if (this.lightning.isPresent() && !this.lightning.get().matches(var1)) {
             return false;
          } else {
-            return this.bystander == ContextAwarePredicate.ANY || !var2.stream().noneMatch(this.bystander::matches);
+            return !this.bystander.isPresent() || !var2.stream().noneMatch(this.bystander.get()::matches);
          }
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("lightning", this.lightning.toJson(var1));
-         var2.add("bystander", this.bystander.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.lightning.ifPresent(var1x -> var1.add("lightning", var1x.toJson()));
+         this.bystander.ifPresent(var1x -> var1.add("bystander", var1x.toJson()));
+         return var1;
       }
    }
 }

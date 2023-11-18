@@ -15,8 +15,8 @@ public class MultipliedFloats implements SampledFloat {
    public float sample(RandomSource var1) {
       float var2 = 1.0F;
 
-      for(int var3 = 0; var3 < this.values.length; ++var3) {
-         var2 *= this.values[var3].sample(var1);
+      for(SampledFloat var6 : this.values) {
+         var2 *= var6.sample(var1);
       }
 
       return var2;

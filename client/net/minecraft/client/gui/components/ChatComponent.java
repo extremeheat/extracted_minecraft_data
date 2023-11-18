@@ -17,6 +17,7 @@ import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.ChatVisiblity;
@@ -32,7 +33,7 @@ public class ChatComponent {
    private static final int TIME_BEFORE_MESSAGE_DELETION = 60;
    private static final Component DELETED_CHAT_MESSAGE = Component.translatable("chat.deleted_marker").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
    private final Minecraft minecraft;
-   private final List<String> recentChat = Lists.newArrayList();
+   private final ArrayListDeque<String> recentChat = new ArrayListDeque<>(100);
    private final List<GuiMessage> allMessages = Lists.newArrayList();
    private final List<GuiMessage.Line> trimmedMessages = Lists.newArrayList();
    private int chatScrollbarPos;
@@ -42,6 +43,7 @@ public class ChatComponent {
    public ChatComponent(Minecraft var1) {
       super();
       this.minecraft = var1;
+      this.recentChat.addAll(var1.commandHistory().history());
    }
 
    public void tick() {
@@ -129,8 +131,8 @@ public class ChatComponent {
                   int var44 = var27 > 0 ? 170 : 96;
                   int var45 = this.newMessageSinceScroll ? 13382451 : 3355562;
                   int var46 = var9 + 4;
-                  var1.fill(var46, -var27, var46 + 2, -var27 - var43, var45 + (var44 << 24));
-                  var1.fill(var46 + 2, -var27, var46 + 1, -var27 - var43, 13421772 + (var44 << 24));
+                  var1.fill(var46, -var27, var46 + 2, -var27 - var43, 100, var45 + (var44 << 24));
+                  var1.fill(var46 + 2, -var27, var46 + 1, -var27 - var43, 100, 13421772 + (var44 << 24));
                }
             }
 
@@ -167,6 +169,7 @@ public class ChatComponent {
       this.allMessages.clear();
       if (var1) {
          this.recentChat.clear();
+         this.recentChat.addAll(this.minecraft.commandHistory().history());
       }
    }
 
@@ -280,13 +283,21 @@ public class ChatComponent {
       }
    }
 
-   public List<String> getRecentChat() {
+   public ArrayListDeque<String> getRecentChat() {
       return this.recentChat;
    }
 
    public void addRecentChat(String var1) {
-      if (this.recentChat.isEmpty() || !this.recentChat.get(this.recentChat.size() - 1).equals(var1)) {
-         this.recentChat.add(var1);
+      if (!var1.equals(this.recentChat.peekLast())) {
+         if (this.recentChat.size() >= 100) {
+            this.recentChat.removeFirst();
+         }
+
+         this.recentChat.addLast(var1);
+      }
+
+      if (var1.startsWith("/")) {
+         this.minecraft.commandHistory().addCommand(var1);
       }
    }
 

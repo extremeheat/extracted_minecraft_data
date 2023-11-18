@@ -1,7 +1,10 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
+import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -10,18 +13,11 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.Level;
 
 public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensionTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("changed_dimension");
-
    public ChangeDimensionTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public ChangeDimensionTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+   public ChangeDimensionTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
       ResourceKey var4 = var1.has("from") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "from"))) : null;
       ResourceKey var5 = var1.has("to") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "to"))) : null;
       return new ChangeDimensionTrigger.TriggerInstance(var2, var4, var5);
@@ -37,26 +33,26 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
       @Nullable
       private final ResourceKey<Level> to;
 
-      public TriggerInstance(ContextAwarePredicate var1, @Nullable ResourceKey<Level> var2, @Nullable ResourceKey<Level> var3) {
-         super(ChangeDimensionTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, @Nullable ResourceKey<Level> var2, @Nullable ResourceKey<Level> var3) {
+         super(var1);
          this.from = var2;
          this.to = var3;
       }
 
-      public static ChangeDimensionTrigger.TriggerInstance changedDimension() {
-         return new ChangeDimensionTrigger.TriggerInstance(ContextAwarePredicate.ANY, null, null);
+      public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimension() {
+         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), null, null));
       }
 
-      public static ChangeDimensionTrigger.TriggerInstance changedDimension(ResourceKey<Level> var0, ResourceKey<Level> var1) {
-         return new ChangeDimensionTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, var1);
+      public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimension(ResourceKey<Level> var0, ResourceKey<Level> var1) {
+         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), var0, var1));
       }
 
-      public static ChangeDimensionTrigger.TriggerInstance changedDimensionTo(ResourceKey<Level> var0) {
-         return new ChangeDimensionTrigger.TriggerInstance(ContextAwarePredicate.ANY, null, var0);
+      public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimensionTo(ResourceKey<Level> var0) {
+         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), null, var0));
       }
 
-      public static ChangeDimensionTrigger.TriggerInstance changedDimensionFrom(ResourceKey<Level> var0) {
-         return new ChangeDimensionTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, null);
+      public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimensionFrom(ResourceKey<Level> var0) {
+         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), var0, null));
       }
 
       public boolean matches(ResourceKey<Level> var1, ResourceKey<Level> var2) {
@@ -68,17 +64,17 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
          if (this.from != null) {
-            var2.addProperty("from", this.from.location().toString());
+            var1.addProperty("from", this.from.location().toString());
          }
 
          if (this.to != null) {
-            var2.addProperty("to", this.to.location().toString());
+            var1.addProperty("to", this.to.location().toString());
          }
 
-         return var2;
+         return var1;
       }
    }
 }

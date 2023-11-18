@@ -51,7 +51,7 @@ public class IntegratedServer extends MinecraftServer {
       ChunkProgressListenerFactory var7
    ) {
       super(var1, var3, var4, var5, var2.getProxy(), var2.getFixerUpper(), var6, var7);
-      this.setSingleplayerProfile(var2.getUser().getGameProfile());
+      this.setSingleplayerProfile(var2.getGameProfile());
       this.setDemo(var2.isDemo());
       this.setPlayerList(new IntegratedPlayerList(this, this.registries(), this.playerDataStorage));
       this.minecraft = var2;
@@ -105,6 +105,11 @@ public class IntegratedServer extends MinecraftServer {
             this.previousSimulationDistance = var6;
          }
       }
+   }
+
+   @Override
+   public void logTickTime(long var1) {
+      this.minecraft.getDebugOverlay().logTickDuration(var1);
    }
 
    private void tickPaused() {

@@ -2,7 +2,6 @@ package net.minecraft.core.dispenser;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -23,12 +22,12 @@ public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
       this.setSuccess(false);
       Item var3 = var2.getItem();
       if (var3 instanceof BlockItem) {
-         Direction var4 = var1.getBlockState().getValue(DispenserBlock.FACING);
-         BlockPos var5 = var1.getPos().relative(var4);
-         Direction var6 = var1.getLevel().isEmptyBlock(var5.below()) ? var4 : Direction.UP;
+         Direction var4 = var1.state().getValue(DispenserBlock.FACING);
+         BlockPos var5 = var1.pos().relative(var4);
+         Direction var6 = var1.level().isEmptyBlock(var5.below()) ? var4 : Direction.UP;
 
          try {
-            this.setSuccess(((BlockItem)var3).place(new DirectionalPlaceContext(var1.getLevel(), var5, var4, var2, var6)).consumesAction());
+            this.setSuccess(((BlockItem)var3).place(new DirectionalPlaceContext(var1.level(), var5, var4, var2, var6)).consumesAction());
          } catch (Exception var8) {
             LOGGER.error("Error trying to place shulker box at {}", var5, var8);
          }

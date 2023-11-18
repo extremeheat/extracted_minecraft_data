@@ -3,19 +3,11 @@ package net.minecraft.advancements.critereon;
 import com.google.gson.JsonObject;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 
 public class ImpossibleTrigger implements CriterionTrigger<ImpossibleTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("impossible");
-
    public ImpossibleTrigger() {
       super();
-   }
-
-   @Override
-   public ResourceLocation getId() {
-      return ID;
    }
 
    @Override
@@ -40,12 +32,7 @@ public class ImpossibleTrigger implements CriterionTrigger<ImpossibleTrigger.Tri
       }
 
       @Override
-      public ResourceLocation getCriterion() {
-         return ImpossibleTrigger.ID;
-      }
-
-      @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
+      public JsonObject serializeToJson() {
          return new JsonObject();
       }
    }

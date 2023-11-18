@@ -4,14 +4,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookComponent {
+   private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(
+      new ResourceLocation("recipe_book/furnace_filter_enabled"),
+      new ResourceLocation("recipe_book/furnace_filter_disabled"),
+      new ResourceLocation("recipe_book/furnace_filter_enabled_highlighted"),
+      new ResourceLocation("recipe_book/furnace_filter_disabled_highlighted")
+   );
    @Nullable
    private Ingredient fuels;
 
@@ -21,7 +29,7 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
 
    @Override
    protected void initFilterButtonTextures() {
-      this.filterButton.initTextureValues(152, 182, 28, 18, RECIPE_BOOK_LOCATION);
+      this.filterButton.initTextureValues(FILTER_SPRITES);
    }
 
    @Override
@@ -33,11 +41,11 @@ public abstract class AbstractFurnaceRecipeBookComponent extends RecipeBookCompo
    }
 
    @Override
-   public void setupGhostRecipe(Recipe<?> var1, List<Slot> var2) {
-      ItemStack var3 = var1.getResultItem(this.minecraft.level.registryAccess());
+   public void setupGhostRecipe(RecipeHolder<?> var1, List<Slot> var2) {
+      ItemStack var3 = var1.value().getResultItem(this.minecraft.level.registryAccess());
       this.ghostRecipe.setRecipe(var1);
       this.ghostRecipe.addIngredient(Ingredient.of(var3), ((Slot)var2.get(2)).x, ((Slot)var2.get(2)).y);
-      NonNullList var4 = var1.getIngredients();
+      NonNullList var4 = var1.value().getIngredients();
       Slot var5 = (Slot)var2.get(1);
       if (var5.getItem().isEmpty()) {
          if (this.fuels == null) {

@@ -158,9 +158,9 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      BlockState var5 = var1.getBlockState(var2.above());
-      return canReplace(var5);
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      BlockState var4 = var1.getBlockState(var2.above());
+      return canReplace(var4);
    }
 
    @Override

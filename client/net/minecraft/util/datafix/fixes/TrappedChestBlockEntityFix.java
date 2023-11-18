@@ -55,7 +55,7 @@ public class TrappedChestBlockEntityFix extends DataFix {
                         var7,
                         var4xx -> {
                            Optional var5xx = var4xx.getOptionalTyped(var8);
-                           if (!var5xx.isPresent()) {
+                           if (var5xx.isEmpty()) {
                               return var4xx;
                            } else {
                               List var6x = ((Typed)var5xx.get()).getAllTyped(var11);

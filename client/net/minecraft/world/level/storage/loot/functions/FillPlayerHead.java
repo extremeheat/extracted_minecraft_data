@@ -1,15 +1,13 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
 import com.mojang.authlib.GameProfile;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,9 +16,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class FillPlayerHead extends LootItemConditionalFunction {
-   final LootContext.EntityTarget entityTarget;
+   public static final Codec<FillPlayerHead> CODEC = RecordCodecBuilder.create(
+      var0 -> commonFields(var0).and(LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(var0x -> var0x.entityTarget)).apply(var0, FillPlayerHead::new)
+   );
+   private final LootContext.EntityTarget entityTarget;
 
-   public FillPlayerHead(LootItemCondition[] var1, LootContext.EntityTarget var2) {
+   public FillPlayerHead(List<LootItemCondition> var1, LootContext.EntityTarget var2) {
       super(var1);
       this.entityTarget = var2;
    }
@@ -35,13 +36,15 @@ public class FillPlayerHead extends LootItemConditionalFunction {
       return ImmutableSet.of(this.entityTarget.getParam());
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.PLAYER_HEAD)) {
-         Entity var3 = var2.getParamOrNull(this.entityTarget.getParam());
-         if (var3 instanceof Player) {
-            GameProfile var4 = ((Player)var3).getGameProfile();
-            var1.getOrCreateTag().put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var4));
+         Object var4 = var2.getParamOrNull(this.entityTarget.getParam());
+         if (var4 instanceof Player var3) {
+            GameProfile var5 = var3.getGameProfile();
+            var1.getOrCreateTag().put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var5));
          }
       }
 
@@ -50,21 +53,5 @@ public class FillPlayerHead extends LootItemConditionalFunction {
 
    public static LootItemConditionalFunction.Builder<?> fillPlayerHead(LootContext.EntityTarget var0) {
       return simpleBuilder(var1 -> new FillPlayerHead(var1, var0));
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<FillPlayerHead> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, FillPlayerHead var2, JsonSerializationContext var3) {
-         super.serialize(var1, var2, var3);
-         var1.add("entity", var3.serialize(var2.entityTarget));
-      }
-
-      public FillPlayerHead deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         LootContext.EntityTarget var4 = GsonHelper.getAsObject(var1, "entity", var2, LootContext.EntityTarget.class);
-         return new FillPlayerHead(var3, var4);
-      }
    }
 }

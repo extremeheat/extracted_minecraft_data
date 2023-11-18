@@ -232,7 +232,7 @@ public class StructureTemplateManager {
 
    public boolean save(ResourceLocation var1) {
       Optional var2 = this.structureRepository.get(var1);
-      if (!var2.isPresent()) {
+      if (var2.isEmpty()) {
          return false;
       } else {
          StructureTemplate var3 = (StructureTemplate)var2.get();

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 
 public class PlayerFaceRenderer {
@@ -18,6 +19,10 @@ public class PlayerFaceRenderer {
 
    public PlayerFaceRenderer() {
       super();
+   }
+
+   public static void draw(GuiGraphics var0, PlayerSkin var1, int var2, int var3, int var4) {
+      draw(var0, var1.texture(), var2, var3, var4);
    }
 
    public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4) {

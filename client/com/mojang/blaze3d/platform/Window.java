@@ -7,9 +7,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
-import java.util.Locale.Category;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -96,10 +94,7 @@ public final class Window implements AutoCloseable {
       }
 
       GLFW.glfwMakeContextCurrent(this.window);
-      Locale var11 = Locale.getDefault(Category.FORMAT);
-      Locale.setDefault(Category.FORMAT, Locale.ROOT);
       GL.createCapabilities();
-      Locale.setDefault(Category.FORMAT, var11);
       this.setMode();
       this.refreshFramebufferSize();
       GLFW.glfwSetFramebufferSizeCallback(this.window, this::onFramebufferResize);
@@ -149,49 +144,58 @@ public final class Window implements AutoCloseable {
 
    public void setIcon(PackResources var1, IconSet var2) throws IOException {
       RenderSystem.assertInInitPhase();
-      if (Minecraft.ON_OSX) {
-         MacosUtil.loadIcon(var2.getMacIcon(var1));
-      } else {
-         List var3 = var2.getStandardIcons(var1);
-         ArrayList var4 = new ArrayList(var3.size());
-
-         try {
-            MemoryStack var5 = MemoryStack.stackPush();
+      int var3 = GLFW.glfwGetPlatform();
+      switch(var3) {
+         case 393217:
+         case 393220:
+            List var4 = var2.getStandardIcons(var1);
+            ArrayList var5 = new ArrayList(var4.size());
 
             try {
-               Buffer var6 = GLFWImage.malloc(var3.size(), var5);
+               MemoryStack var6 = MemoryStack.stackPush();
 
-               for(int var7 = 0; var7 < var3.size(); ++var7) {
-                  try (NativeImage var8 = NativeImage.read((InputStream)((IoSupplier)var3.get(var7)).get())) {
-                     ByteBuffer var9 = MemoryUtil.memAlloc(var8.getWidth() * var8.getHeight() * 4);
-                     var4.add(var9);
-                     var9.asIntBuffer().put(var8.getPixelsRGBA());
-                     var6.position(var7);
-                     var6.width(var8.getWidth());
-                     var6.height(var8.getHeight());
-                     var6.pixels(var9);
+               try {
+                  Buffer var7 = GLFWImage.malloc(var4.size(), var6);
+
+                  for(int var8 = 0; var8 < var4.size(); ++var8) {
+                     try (NativeImage var9 = NativeImage.read((InputStream)((IoSupplier)var4.get(var8)).get())) {
+                        ByteBuffer var10 = MemoryUtil.memAlloc(var9.getWidth() * var9.getHeight() * 4);
+                        var5.add(var10);
+                        var10.asIntBuffer().put(var9.getPixelsRGBA());
+                        var7.position(var8);
+                        var7.width(var9.getWidth());
+                        var7.height(var9.getHeight());
+                        var7.pixels(var10);
+                     }
                   }
+
+                  GLFW.glfwSetWindowIcon(this.window, (Buffer)var7.position(0));
+               } catch (Throwable var21) {
+                  if (var6 != null) {
+                     try {
+                        var6.close();
+                     } catch (Throwable var18) {
+                        var21.addSuppressed(var18);
+                     }
+                  }
+
+                  throw var21;
                }
 
-               GLFW.glfwSetWindowIcon(this.window, (Buffer)var6.position(0));
-            } catch (Throwable var20) {
-               if (var5 != null) {
-                  try {
-                     var5.close();
-                  } catch (Throwable var17) {
-                     var20.addSuppressed(var17);
-                  }
+               if (var6 != null) {
+                  var6.close();
                }
-
-               throw var20;
+               break;
+            } finally {
+               var5.forEach(MemoryUtil::memFree);
             }
-
-            if (var5 != null) {
-               var5.close();
-            }
-         } finally {
-            var4.forEach(MemoryUtil::memFree);
-         }
+         case 393218:
+            MacosUtil.loadIcon(var2.getMacIcon(var1));
+         case 393219:
+         case 393221:
+            break;
+         default:
+            LOGGER.warn("Not setting icon for unrecognized platform: {}", var3);
       }
    }
 

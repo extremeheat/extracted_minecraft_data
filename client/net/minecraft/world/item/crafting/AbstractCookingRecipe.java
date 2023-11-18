@@ -2,33 +2,28 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public abstract class AbstractCookingRecipe implements Recipe<Container> {
    protected final RecipeType<?> type;
-   protected final ResourceLocation id;
-   private final CookingBookCategory category;
+   protected final CookingBookCategory category;
    protected final String group;
    protected final Ingredient ingredient;
    protected final ItemStack result;
    protected final float experience;
    protected final int cookingTime;
 
-   public AbstractCookingRecipe(
-      RecipeType<?> var1, ResourceLocation var2, String var3, CookingBookCategory var4, Ingredient var5, ItemStack var6, float var7, int var8
-   ) {
+   public AbstractCookingRecipe(RecipeType<?> var1, String var2, CookingBookCategory var3, Ingredient var4, ItemStack var5, float var6, int var7) {
       super();
       this.type = var1;
-      this.category = var4;
-      this.id = var2;
-      this.group = var3;
-      this.ingredient = var5;
-      this.result = var6;
-      this.experience = var7;
-      this.cookingTime = var8;
+      this.category = var3;
+      this.group = var2;
+      this.ingredient = var4;
+      this.result = var5;
+      this.experience = var6;
+      this.cookingTime = var7;
    }
 
    @Override
@@ -69,11 +64,6 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
 
    public int getCookingTime() {
       return this.cookingTime;
-   }
-
-   @Override
-   public ResourceLocation getId() {
-      return this.id;
    }
 
    @Override

@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLayerInfo;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 
 public class CreateFlatWorldScreen extends Screen {
-   private static final int SLOT_TEX_SIZE = 128;
+   static final ResourceLocation SLOT_SPRITE = new ResourceLocation("container/slot");
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
    private static final int SLOT_BG_X = 1;
@@ -101,17 +101,16 @@ public class CreateFlatWorldScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.list.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       int var5 = this.width / 2 - 92 - 16;
       var1.drawString(this.font, this.columnType, var5, 32, 16777215);
       var1.drawString(this.font, this.columnHeight, var5 + 2 + 213 - this.font.width(this.columnHeight), 32, 16777215);
-      super.render(var1, var2, var3, var4);
    }
 
    class DetailsList extends ObjectSelectionList<CreateFlatWorldScreen.DetailsList.Entry> {
-      static final ResourceLocation STATS_ICON_LOCATION = new ResourceLocation("textures/gui/container/stats_icons.png");
+      private static final ResourceLocation STATS_ICON_LOCATION = new ResourceLocation("textures/gui/container/stats_icons.png");
 
       public DetailsList() {
          super(
@@ -202,12 +201,8 @@ public class CreateFlatWorldScreen extends Screen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               DetailsList.this.setSelected(this);
-               return true;
-            } else {
-               return false;
-            }
+            DetailsList.this.setSelected(this);
+            return true;
          }
 
          private void blitSlot(GuiGraphics var1, int var2, int var3, ItemStack var4) {
@@ -218,7 +213,7 @@ public class CreateFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blit(CreateFlatWorldScreen.DetailsList.STATS_ICON_LOCATION, var2, var3, 0, 0.0F, 0.0F, 18, 18, 128, 128);
+            var1.blitSprite(CreateFlatWorldScreen.SLOT_SPRITE, var2, var3, 0, 18, 18);
          }
       }
    }

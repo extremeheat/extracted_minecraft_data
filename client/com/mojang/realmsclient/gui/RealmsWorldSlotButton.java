@@ -17,9 +17,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class RealmsWorldSlotButton extends Button {
-   public static final ResourceLocation SLOT_FRAME_LOCATION = new ResourceLocation("realms", "textures/gui/realms/slot_frame.png");
-   public static final ResourceLocation EMPTY_SLOT_LOCATION = new ResourceLocation("realms", "textures/gui/realms/empty_frame.png");
-   public static final ResourceLocation CHECK_MARK_LOCATION = new ResourceLocation("minecraft", "textures/gui/checkmark.png");
+   private static final ResourceLocation SLOT_FRAME_SPRITE = new ResourceLocation("widget/slot_frame");
+   private static final ResourceLocation CHECKMARK_SPRITE = new ResourceLocation("icon/checkmark");
+   public static final ResourceLocation EMPTY_SLOT_LOCATION = new ResourceLocation("textures/gui/realms/empty_frame.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_1 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_0.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_2 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_2.png");
    public static final ResourceLocation DEFAULT_WORLD_SLOT_3 = new ResourceLocation("minecraft", "textures/gui/title/background/panorama_3.png");
@@ -196,18 +196,18 @@ public class RealmsWorldSlotButton extends Button {
          var1.setColor(0.56F, 0.56F, 0.56F, 1.0F);
       }
 
-      var1.blit(SLOT_FRAME_LOCATION, var2, var3, 0.0F, 0.0F, 80, 80, 80, 80);
+      var1.blitSprite(SLOT_FRAME_SPRITE, var2, var3, 80, 80);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       if (var6) {
          this.renderCheckMark(var1, var2, var3);
       }
 
-      var1.drawCenteredString(var17.font, var7, var2 + 40, var3 + 66, 16777215);
+      var1.drawCenteredString(var17.font, var7, var2 + 40, var3 + 66, -1);
    }
 
    private void renderCheckMark(GuiGraphics var1, int var2, int var3) {
       RenderSystem.enableBlend();
-      var1.blit(CHECK_MARK_LOCATION, var2 + 67, var3 + 4, 0.0F, 0.0F, 9, 8, 9, 8);
+      var1.blitSprite(CHECKMARK_SPRITE, var2 + 67, var3 + 4, 9, 8);
       RenderSystem.disableBlend();
    }
 

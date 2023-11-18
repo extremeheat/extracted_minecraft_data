@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.TridentModel;
@@ -21,7 +20,6 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.BlockItem;
@@ -82,61 +80,52 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
       this.skullModels = SkullBlockRenderer.createSkullRenderers(this.entityModelSet);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void renderByItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Item var7 = var1.getItem();
       if (var7 instanceof BlockItem) {
-         Block var14 = ((BlockItem)var7).getBlock();
-         if (var14 instanceof AbstractSkullBlock) {
-            GameProfile var16 = null;
-            if (var1.hasTag()) {
-               CompoundTag var18 = var1.getTag();
-               if (var18.contains("SkullOwner", 10)) {
-                  var16 = NbtUtils.readGameProfile(var18.getCompound("SkullOwner"));
-               } else if (var18.contains("SkullOwner", 8) && !Util.isBlank(var18.getString("SkullOwner"))) {
-                  var16 = new GameProfile(null, var18.getString("SkullOwner"));
-                  var18.remove("SkullOwner");
-                  SkullBlockEntity.updateGameprofile(var16, var1x -> var18.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var1x)));
-               }
-            }
-
-            SkullBlock.Type var19 = ((AbstractSkullBlock)var14).getType();
-            SkullModelBase var21 = this.skullModels.get(var19);
-            RenderType var12 = SkullBlockRenderer.getRenderType(var19, var16);
-            SkullBlockRenderer.renderSkull(null, 180.0F, 0.0F, var3, var4, var5, var21, var12);
+         Block var15 = ((BlockItem)var7).getBlock();
+         if (var15 instanceof AbstractSkullBlock var17) {
+            CompoundTag var19 = var1.getTag();
+            GameProfile var21 = var19 != null ? SkullBlockEntity.getOrResolveGameProfile(var19) : null;
+            SkullModelBase var12 = this.skullModels.get(var17.getType());
+            RenderType var13 = SkullBlockRenderer.getRenderType(var17.getType(), var21);
+            SkullBlockRenderer.renderSkull(null, 180.0F, 0.0F, var3, var4, var5, var12, var13);
          } else {
-            BlockState var17 = var14.defaultBlockState();
-            Object var15;
-            if (var14 instanceof AbstractBannerBlock) {
-               this.banner.fromItem(var1, ((AbstractBannerBlock)var14).getColor());
-               var15 = this.banner;
-            } else if (var14 instanceof BedBlock) {
-               this.bed.setColor(((BedBlock)var14).getColor());
-               var15 = this.bed;
-            } else if (var17.is(Blocks.CONDUIT)) {
-               var15 = this.conduit;
-            } else if (var17.is(Blocks.CHEST)) {
-               var15 = this.chest;
-            } else if (var17.is(Blocks.ENDER_CHEST)) {
-               var15 = this.enderChest;
-            } else if (var17.is(Blocks.TRAPPED_CHEST)) {
-               var15 = this.trappedChest;
-            } else if (var17.is(Blocks.DECORATED_POT)) {
+            BlockState var18 = var15.defaultBlockState();
+            Object var16;
+            if (var15 instanceof AbstractBannerBlock) {
+               this.banner.fromItem(var1, ((AbstractBannerBlock)var15).getColor());
+               var16 = this.banner;
+            } else if (var15 instanceof BedBlock) {
+               this.bed.setColor(((BedBlock)var15).getColor());
+               var16 = this.bed;
+            } else if (var18.is(Blocks.CONDUIT)) {
+               var16 = this.conduit;
+            } else if (var18.is(Blocks.CHEST)) {
+               var16 = this.chest;
+            } else if (var18.is(Blocks.ENDER_CHEST)) {
+               var16 = this.enderChest;
+            } else if (var18.is(Blocks.TRAPPED_CHEST)) {
+               var16 = this.trappedChest;
+            } else if (var18.is(Blocks.DECORATED_POT)) {
                this.decoratedPot.setFromItem(var1);
-               var15 = this.decoratedPot;
+               var16 = this.decoratedPot;
             } else {
-               if (!(var14 instanceof ShulkerBoxBlock)) {
+               if (!(var15 instanceof ShulkerBoxBlock)) {
                   return;
                }
 
                DyeColor var20 = ShulkerBoxBlock.getColorFromItem(var7);
                if (var20 == null) {
-                  var15 = DEFAULT_SHULKER_BOX;
+                  var16 = DEFAULT_SHULKER_BOX;
                } else {
-                  var15 = SHULKER_BOXES[var20.getId()];
+                  var16 = SHULKER_BOXES[var20.getId()];
                }
             }
 
-            this.blockEntityRenderDispatcher.renderItem((BlockEntity)var15, var3, var4, var5, var6);
+            this.blockEntityRenderDispatcher.renderItem((BlockEntity)var16, var3, var4, var5, var6);
          }
       } else {
          if (var1.is(Items.SHIELD)) {
@@ -158,8 +147,8 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
          } else if (var1.is(Items.TRIDENT)) {
             var3.pushPose();
             var3.scale(1.0F, -1.0F, -1.0F);
-            VertexConsumer var13 = ItemRenderer.getFoilBufferDirect(var4, this.tridentModel.renderType(TridentModel.TEXTURE), false, var1.hasFoil());
-            this.tridentModel.renderToBuffer(var3, var13, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+            VertexConsumer var14 = ItemRenderer.getFoilBufferDirect(var4, this.tridentModel.renderType(TridentModel.TEXTURE), false, var1.hasFoil());
+            this.tridentModel.renderToBuffer(var3, var14, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
             var3.popPose();
          }
       }

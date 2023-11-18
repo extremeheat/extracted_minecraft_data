@@ -1,29 +1,24 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("bred_animals");
-
    public BredAnimalsTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public BredAnimalsTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "parent", var3);
-      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "partner", var3);
-      ContextAwarePredicate var6 = EntityPredicate.fromJson(var1, "child", var3);
+   public BredAnimalsTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = EntityPredicate.fromJson(var1, "parent", var3);
+      Optional var5 = EntityPredicate.fromJson(var1, "partner", var3);
+      Optional var6 = EntityPredicate.fromJson(var1, "child", var3);
       return new BredAnimalsTrigger.TriggerInstance(var2, var4, var5, var6);
    }
 
@@ -35,50 +30,62 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ContextAwarePredicate parent;
-      private final ContextAwarePredicate partner;
-      private final ContextAwarePredicate child;
+      private final Optional<ContextAwarePredicate> parent;
+      private final Optional<ContextAwarePredicate> partner;
+      private final Optional<ContextAwarePredicate> child;
 
-      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ContextAwarePredicate var3, ContextAwarePredicate var4) {
-         super(BredAnimalsTrigger.ID, var1);
+      public TriggerInstance(
+         Optional<ContextAwarePredicate> var1,
+         Optional<ContextAwarePredicate> var2,
+         Optional<ContextAwarePredicate> var3,
+         Optional<ContextAwarePredicate> var4
+      ) {
+         super(var1);
          this.parent = var2;
          this.partner = var3;
          this.child = var4;
       }
 
-      public static BredAnimalsTrigger.TriggerInstance bredAnimals() {
-         return new BredAnimalsTrigger.TriggerInstance(
-            ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY
-         );
+      public static Criterion<BredAnimalsTrigger.TriggerInstance> bredAnimals() {
+         return CriteriaTriggers.BRED_ANIMALS
+            .createCriterion(new BredAnimalsTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
       }
 
-      public static BredAnimalsTrigger.TriggerInstance bredAnimals(EntityPredicate.Builder var0) {
-         return new BredAnimalsTrigger.TriggerInstance(
-            ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, EntityPredicate.wrap(var0.build())
-         );
+      public static Criterion<BredAnimalsTrigger.TriggerInstance> bredAnimals(EntityPredicate.Builder var0) {
+         return CriteriaTriggers.BRED_ANIMALS
+            .createCriterion(
+               new BredAnimalsTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(EntityPredicate.wrap(var0)))
+            );
       }
 
-      public static BredAnimalsTrigger.TriggerInstance bredAnimals(EntityPredicate var0, EntityPredicate var1, EntityPredicate var2) {
-         return new BredAnimalsTrigger.TriggerInstance(
-            ContextAwarePredicate.ANY, EntityPredicate.wrap(var0), EntityPredicate.wrap(var1), EntityPredicate.wrap(var2)
-         );
+      public static Criterion<BredAnimalsTrigger.TriggerInstance> bredAnimals(
+         Optional<EntityPredicate> var0, Optional<EntityPredicate> var1, Optional<EntityPredicate> var2
+      ) {
+         return CriteriaTriggers.BRED_ANIMALS
+            .createCriterion(
+               new BredAnimalsTrigger.TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0), EntityPredicate.wrap(var1), EntityPredicate.wrap(var2))
+            );
       }
 
       public boolean matches(LootContext var1, LootContext var2, @Nullable LootContext var3) {
-         if (this.child == ContextAwarePredicate.ANY || var3 != null && this.child.matches(var3)) {
-            return this.parent.matches(var1) && this.partner.matches(var2) || this.parent.matches(var2) && this.partner.matches(var1);
+         if (!this.child.isPresent() || var3 != null && this.child.get().matches(var3)) {
+            return matches(this.parent, var1) && matches(this.partner, var2) || matches(this.parent, var2) && matches(this.partner, var1);
          } else {
             return false;
          }
       }
 
+      private static boolean matches(Optional<ContextAwarePredicate> var0, LootContext var1) {
+         return var0.isEmpty() || ((ContextAwarePredicate)var0.get()).matches(var1);
+      }
+
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("parent", this.parent.toJson(var1));
-         var2.add("partner", this.partner.toJson(var1));
-         var2.add("child", this.child.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.parent.ifPresent(var1x -> var1.add("parent", var1x.toJson()));
+         this.partner.ifPresent(var1x -> var1.add("partner", var1x.toJson()));
+         this.child.ifPresent(var1x -> var1.add("child", var1x.toJson()));
+         return var1;
       }
    }
 }

@@ -7,6 +7,7 @@ import java.util.Deque;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -20,6 +21,7 @@ import net.minecraft.util.StringDecomposer;
 import org.apache.commons.lang3.StringUtils;
 
 public class ChatListener {
+   private static final Component CHAT_VALIDATION_ERROR = Component.translatable("chat.validation_error").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
    private final Minecraft minecraft;
    private final Deque<ChatListener.Message> delayedMessageQueue = Queues.newArrayDeque();
    private long messageDelay;
@@ -94,6 +96,19 @@ public class ChatListener {
          }
 
          return var7x;
+      });
+   }
+
+   public void handleChatMessageError(UUID var1, ChatType.Bound var2) {
+      this.handleMessage(null, () -> {
+         if (this.minecraft.isBlocked(var1)) {
+            return false;
+         } else {
+            Component var3 = var2.decorate(CHAT_VALIDATION_ERROR);
+            this.minecraft.gui.getChat().addMessage(var3, null, GuiMessageTag.chatError());
+            this.previousMessageTime = Util.getMillis();
+            return true;
+         }
       });
    }
 

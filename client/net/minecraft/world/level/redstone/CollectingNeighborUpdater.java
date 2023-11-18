@@ -133,7 +133,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       public boolean runNext(Level var1) {
          BlockPos var2 = this.sourcePos.relative(NeighborUpdater.UPDATE_ORDER[this.idx++]);
          BlockState var3 = var1.getBlockState(var2);
-         var3.neighborChanged(var1, var2, this.sourceBlock, this.sourcePos, false);
+         NeighborUpdater.executeUpdate(var1, var3, var2, this.sourceBlock, this.sourcePos, false);
          if (this.idx < NeighborUpdater.UPDATE_ORDER.length && NeighborUpdater.UPDATE_ORDER[this.idx] == this.skipDirection) {
             ++this.idx;
          }

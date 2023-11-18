@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -8,6 +9,7 @@ import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
@@ -74,8 +76,8 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
    }
 
    @Override
-   public boolean recipeMatches(Recipe<? super Container> var1) {
-      return var1.matches(this.container, this.level);
+   public boolean recipeMatches(RecipeHolder<? extends Recipe<Container>> var1) {
+      return var1.value().matches(this.container, this.level);
    }
 
    @Override
@@ -160,19 +162,19 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu<Container> {
       return AbstractFurnaceBlockEntity.isFuel(var1);
    }
 
-   public int getBurnProgress() {
+   public float getBurnProgress() {
       int var1 = this.data.get(2);
       int var2 = this.data.get(3);
-      return var2 != 0 && var1 != 0 ? var1 * 24 / var2 : 0;
+      return var2 != 0 && var1 != 0 ? Mth.clamp((float)var1 / (float)var2, 0.0F, 1.0F) : 0.0F;
    }
 
-   public int getLitProgress() {
+   public float getLitProgress() {
       int var1 = this.data.get(1);
       if (var1 == 0) {
          var1 = 200;
       }
 
-      return this.data.get(0) * 13 / var1;
+      return Mth.clamp((float)this.data.get(0) / (float)var1, 0.0F, 1.0F);
    }
 
    public boolean isLit() {

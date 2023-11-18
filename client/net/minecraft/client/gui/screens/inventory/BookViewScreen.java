@@ -157,10 +157,9 @@ public class BookViewScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
-      var1.blit(BOOK_LOCATION, var5, 2, 0, 0, 192, 192);
       if (this.cachedPage != this.currentPage) {
          FormattedText var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
@@ -181,8 +180,12 @@ public class BookViewScreen extends Screen {
       if (var12 != null) {
          var1.renderComponentHoverEffect(this.font, var12, var2, var3);
       }
+   }
 
-      super.render(var1, var2, var3, var4);
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      super.renderBackground(var1, var2, var3, var4);
+      var1.blit(BOOK_LOCATION, (this.width - 192) / 2, 2, 0, 0, 192, 192);
    }
 
    @Override

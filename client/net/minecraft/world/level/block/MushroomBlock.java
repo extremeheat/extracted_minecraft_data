@@ -94,7 +94,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return true;
    }
 

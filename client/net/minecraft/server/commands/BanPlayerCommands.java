@@ -13,7 +13,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.players.UserBanListEntry;
@@ -54,7 +53,7 @@ public class BanPlayerCommands {
             UserBanListEntry var7 = new UserBanListEntry(var6, null, var0.getTextName(), null, var2 == null ? null : var2.getString());
             var3.add(var7);
             ++var4;
-            var0.sendSuccess(() -> Component.translatable("commands.ban.success", ComponentUtils.getDisplayName(var6), var7.getReason()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.getName()), var7.getReason()), true);
             ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.getId());
             if (var8 != null) {
                var8.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));

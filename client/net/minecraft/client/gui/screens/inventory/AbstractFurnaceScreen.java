@@ -7,21 +7,27 @@ import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 
 public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
-   private static final ResourceLocation RECIPE_BUTTON_LOCATION = new ResourceLocation("textures/gui/recipe_button.png");
    public final AbstractFurnaceRecipeBookComponent recipeBookComponent;
    private boolean widthTooNarrow;
    private final ResourceLocation texture;
+   private final ResourceLocation litProgressSprite;
+   private final ResourceLocation burnProgressSprite;
 
-   public AbstractFurnaceScreen(T var1, AbstractFurnaceRecipeBookComponent var2, Inventory var3, Component var4, ResourceLocation var5) {
+   public AbstractFurnaceScreen(
+      T var1, AbstractFurnaceRecipeBookComponent var2, Inventory var3, Component var4, ResourceLocation var5, ResourceLocation var6, ResourceLocation var7
+   ) {
       super((T)var1, var3, var4);
       this.recipeBookComponent = var2;
       this.texture = var5;
+      this.litProgressSprite = var6;
+      this.burnProgressSprite = var7;
    }
 
    @Override
@@ -30,7 +36,7 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       this.widthTooNarrow = this.width < 379;
       this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
       this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-      this.addRenderableWidget(new ImageButton(this.leftPos + 20, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, var1 -> {
+      this.addRenderableWidget(new ImageButton(this.leftPos + 20, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, var1 -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
          var1.setPosition(this.leftPos + 20, this.height / 2 - 49);
@@ -46,13 +52,12 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBg(var1, var4, var2, var3);
+         this.renderBackground(var1, var2, var3, var4);
          this.recipeBookComponent.render(var1, var2, var3, var4);
       } else {
-         this.recipeBookComponent.render(var1, var2, var3, var4);
          super.render(var1, var2, var3, var4);
+         this.recipeBookComponent.render(var1, var2, var3, var4);
          this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true, var4);
       }
 
@@ -66,12 +71,14 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       int var6 = this.topPos;
       var1.blit(this.texture, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       if (this.menu.isLit()) {
-         int var7 = this.menu.getLitProgress();
-         var1.blit(this.texture, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
+         boolean var7 = true;
+         int var8 = Mth.ceil(this.menu.getLitProgress() * 13.0F) + 1;
+         var1.blitSprite(this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
       }
 
-      int var8 = this.menu.getBurnProgress();
-      var1.blit(this.texture, var5 + 79, var6 + 34, 176, 14, var8 + 1, 16);
+      boolean var9 = true;
+      int var10 = Mth.ceil(this.menu.getBurnProgress() * 24.0F);
+      var1.blitSprite(this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
    }
 
    @Override

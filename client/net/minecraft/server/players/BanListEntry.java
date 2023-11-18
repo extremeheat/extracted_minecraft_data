@@ -17,7 +17,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    protected final Date expires;
    protected final String reason;
 
-   public BanListEntry(T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
+   public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
       super((T)var1);
       this.created = var2 == null ? new Date() : var2;
       this.source = var3 == null ? "(Unknown)" : var3;
@@ -25,7 +25,7 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       this.reason = var5 == null ? "Banned by an operator." : var5;
    }
 
-   protected BanListEntry(T var1, JsonObject var2) {
+   protected BanListEntry(@Nullable T var1, JsonObject var2) {
       super((T)var1);
 
       Date var3;

@@ -222,11 +222,11 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
          if (var1 instanceof CrossbowAttackMob var12) {
             var12.shootCrossbowProjectile(var12.getTarget(), var3, (Projectile)var11, var9);
          } else {
-            Vec3 var16 = var1.getUpVector(1.0F);
-            Quaternionf var13 = new Quaternionf().setAngleAxis((double)(var9 * 0.017453292F), var16.x, var16.y, var16.z);
-            Vec3 var14 = var1.getViewVector(1.0F);
-            Vector3f var15 = var14.toVector3f().rotate(var13);
-            ((Projectile)var11).shoot((double)var15.x(), (double)var15.y(), (double)var15.z(), var7, var8);
+            Vec3 var13 = var1.getUpVector(1.0F);
+            Quaternionf var14 = new Quaternionf().setAngleAxis((double)(var9 * 0.017453292F), var13.x, var13.y, var13.z);
+            Vec3 var15 = var1.getViewVector(1.0F);
+            Vector3f var16 = var15.toVector3f().rotate(var14);
+            ((Projectile)var11).shoot((double)var16.x(), (double)var16.y(), (double)var16.z(), var7, var8);
          }
 
          var3.hurtAndBreak(var10 ? 3 : 1, var1, var1x -> var1x.broadcastBreakEvent(var2));

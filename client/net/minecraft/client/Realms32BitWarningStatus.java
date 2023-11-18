@@ -50,7 +50,7 @@ public class Realms32BitWarningStatus {
             .listWorlds()
             .servers
             .stream()
-            .anyMatch(var1 -> var1.ownerUUID != null && !var1.expired && var1.ownerUUID.equals(this.minecraft.getUser().getUuid()));
+            .anyMatch(var1 -> !var1.expired && this.minecraft.isLocalPlayer(var1.ownerUUID));
       } catch (RealmsServiceException var2) {
          return false;
       }

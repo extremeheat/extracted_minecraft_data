@@ -1,22 +1,17 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 
 public class StartRidingTrigger extends SimpleCriterionTrigger<StartRidingTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("started_riding");
-
    public StartRidingTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public StartRidingTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+   public StartRidingTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
       return new StartRidingTrigger.TriggerInstance(var2);
    }
 
@@ -25,12 +20,12 @@ public class StartRidingTrigger extends SimpleCriterionTrigger<StartRidingTrigge
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      public TriggerInstance(ContextAwarePredicate var1) {
-         super(StartRidingTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1) {
+         super(var1);
       }
 
-      public static StartRidingTrigger.TriggerInstance playerStartsRiding(EntityPredicate.Builder var0) {
-         return new StartRidingTrigger.TriggerInstance(EntityPredicate.wrap(var0.build()));
+      public static Criterion<StartRidingTrigger.TriggerInstance> playerStartsRiding(EntityPredicate.Builder var0) {
+         return CriteriaTriggers.START_RIDING_TRIGGER.createCriterion(new StartRidingTrigger.TriggerInstance(Optional.of(EntityPredicate.wrap(var0))));
       }
    }
 }

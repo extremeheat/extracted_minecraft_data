@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.RecipeBookType;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBook {
    protected final Set<ResourceLocation> known = Sets.newHashSet();
@@ -25,9 +25,9 @@ public class RecipeBook {
       this.highlight.addAll(var1.highlight);
    }
 
-   public void add(Recipe<?> var1) {
-      if (!var1.isSpecial()) {
-         this.add(var1.getId());
+   public void add(RecipeHolder<?> var1) {
+      if (!var1.value().isSpecial()) {
+         this.add(var1.id());
       }
    }
 
@@ -35,16 +35,16 @@ public class RecipeBook {
       this.known.add(var1);
    }
 
-   public boolean contains(@Nullable Recipe<?> var1) {
-      return var1 == null ? false : this.known.contains(var1.getId());
+   public boolean contains(@Nullable RecipeHolder<?> var1) {
+      return var1 == null ? false : this.known.contains(var1.id());
    }
 
    public boolean contains(ResourceLocation var1) {
       return this.known.contains(var1);
    }
 
-   public void remove(Recipe<?> var1) {
-      this.remove(var1.getId());
+   public void remove(RecipeHolder<?> var1) {
+      this.remove(var1.id());
    }
 
    protected void remove(ResourceLocation var1) {
@@ -52,16 +52,16 @@ public class RecipeBook {
       this.highlight.remove(var1);
    }
 
-   public boolean willHighlight(Recipe<?> var1) {
-      return this.highlight.contains(var1.getId());
+   public boolean willHighlight(RecipeHolder<?> var1) {
+      return this.highlight.contains(var1.id());
    }
 
-   public void removeHighlight(Recipe<?> var1) {
-      this.highlight.remove(var1.getId());
+   public void removeHighlight(RecipeHolder<?> var1) {
+      this.highlight.remove(var1.id());
    }
 
-   public void addHighlight(Recipe<?> var1) {
-      this.addHighlight(var1.getId());
+   public void addHighlight(RecipeHolder<?> var1) {
+      this.addHighlight(var1.id());
    }
 
    protected void addHighlight(ResourceLocation var1) {

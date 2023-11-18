@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsConnect;
 
 public class ConnectTask extends LongRunningTask {
+   private static final Component TITLE = Component.translatable("mco.connect.connecting");
    private final RealmsConnect realmsConnect;
    private final RealmsServer server;
    private final RealmsServerAddress address;
@@ -22,12 +23,12 @@ public class ConnectTask extends LongRunningTask {
 
    @Override
    public void run() {
-      this.setTitle(Component.translatable("mco.connect.connecting"));
       this.realmsConnect.connect(this.server, ServerAddress.parseString(this.address.address));
    }
 
    @Override
    public void abortTask() {
+      super.abortTask();
       this.realmsConnect.abort();
       Minecraft.getInstance().getDownloadedPackSource().clearServerPack();
    }
@@ -35,5 +36,10 @@ public class ConnectTask extends LongRunningTask {
    @Override
    public void tick() {
       this.realmsConnect.tick();
+   }
+
+   @Override
+   public Component getTitle() {
+      return TITLE;
    }
 }

@@ -11,17 +11,17 @@ public class SavedDataUUIDFix extends AbstractUUIDFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
    public SavedDataUUIDFix(Schema var1) {
-      super(var1, References.SAVED_DATA);
+      super(var1, References.SAVED_DATA_RAIDS);
    }
 
    protected TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped(
          "SavedDataUUIDFix",
          this.getInputSchema().getType(this.typeReference),
-         var0 -> var0.updateTyped(
-               var0.getType().findField("data"),
+         var0 -> var0.update(
+               DSL.remainderFinder(),
                var0x -> var0x.update(
-                     DSL.remainderFinder(),
+                     "data",
                      var0xx -> var0xx.update(
                            "Raids",
                            var0xxx -> var0xxx.createList(

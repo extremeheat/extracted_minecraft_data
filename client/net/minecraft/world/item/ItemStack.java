@@ -27,6 +27,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -223,6 +224,10 @@ public final class ItemStack {
 
    public boolean is(Holder<Item> var1) {
       return this.getItem().builtInRegistryHolder() == var1;
+   }
+
+   public boolean is(HolderSet<Item> var1) {
+      return var1.contains(this.getItemHolder());
    }
 
    public Stream<TagKey<Item>> getTags() {
@@ -592,7 +597,7 @@ public final class ItemStack {
       if (!var2.isAdvanced() && !this.hasCustomHoverName() && this.is(Items.FILLED_MAP)) {
          Integer var5 = MapItem.getMapId(this);
          if (var5 != null) {
-            var3.add(Component.literal("#" + var5).withStyle(ChatFormatting.GRAY));
+            var3.add(MapItem.getTooltipForId(this));
          }
       }
 
@@ -850,7 +855,11 @@ public final class ItemStack {
    }
 
    public void setRepairCost(int var1) {
-      this.getOrCreateTag().putInt("RepairCost", var1);
+      if (var1 > 0) {
+         this.getOrCreateTag().putInt("RepairCost", var1);
+      } else {
+         this.removeTagKey("RepairCost");
+      }
    }
 
    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot var1) {
@@ -863,7 +872,7 @@ public final class ItemStack {
             CompoundTag var5 = var3.getCompound(var4);
             if (!var5.contains("Slot", 8) || var5.getString("Slot").equals(var1.getName())) {
                Optional var6 = BuiltInRegistries.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var5.getString("AttributeName")));
-               if (var6.isPresent()) {
+               if (!var6.isEmpty()) {
                   AttributeModifier var7 = AttributeModifier.load(var5);
                   if (var7 != null && var7.getId().getLeastSignificantBits() != 0L && var7.getId().getMostSignificantBits() != 0L) {
                      var2.put((Attribute)var6.get(), var7);

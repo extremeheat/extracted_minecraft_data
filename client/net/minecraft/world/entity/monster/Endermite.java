@@ -27,6 +27,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Vector3f;
 
 public class Endermite extends Monster {
    private static final int MAX_LIFE = 2400;
@@ -108,11 +109,6 @@ public class Endermite extends Monster {
    }
 
    @Override
-   public double getMyRidingOffset() {
-      return 0.1;
-   }
-
-   @Override
    public void aiStep() {
       super.aiStep();
       if (this.level().isClientSide) {
@@ -151,5 +147,10 @@ public class Endermite extends Monster {
    @Override
    public MobType getMobType() {
       return MobType.ARTHROPOD;
+   }
+
+   @Override
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 }

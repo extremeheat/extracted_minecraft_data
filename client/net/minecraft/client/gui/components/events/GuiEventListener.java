@@ -24,7 +24,7 @@ public interface GuiEventListener extends TabOrderedElement {
       return false;
    }
 
-   default boolean mouseScrolled(double var1, double var3, double var5) {
+   default boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       return false;
    }
 

@@ -70,13 +70,13 @@ public final class NetworkPacketSummary {
       }
    }
 
-   public static record PacketIdentification(PacketFlow a, int b, int c) {
+   public static record PacketIdentification(PacketFlow a, String b, int c) {
       private final PacketFlow direction;
-      private final int protocolId;
+      private final String protocolId;
       private final int packetId;
       private static final Map<NetworkPacketSummary.PacketIdentification, String> PACKET_NAME_BY_ID;
 
-      public PacketIdentification(PacketFlow var1, int var2, int var3) {
+      public PacketIdentification(PacketFlow var1, String var2, int var3) {
          super();
          this.direction = var1;
          this.protocolId = var2;
@@ -90,7 +90,7 @@ public final class NetworkPacketSummary {
       public static NetworkPacketSummary.PacketIdentification from(RecordedEvent var0) {
          return new NetworkPacketSummary.PacketIdentification(
             var0.getEventType().getName().equals("minecraft.PacketSent") ? PacketFlow.CLIENTBOUND : PacketFlow.SERVERBOUND,
-            var0.getInt("protocolId"),
+            var0.getString("protocolId"),
             var0.getInt("packetId")
          );
       }
@@ -101,7 +101,7 @@ public final class NetworkPacketSummary {
          for(ConnectionProtocol var4 : ConnectionProtocol.values()) {
             for(PacketFlow var8 : PacketFlow.values()) {
                Int2ObjectMap var9 = var4.getPacketsByIds(var8);
-               var9.forEach((var3, var4x) -> var0.put(new NetworkPacketSummary.PacketIdentification(var8, var4.getId(), var3), var4x.getSimpleName()));
+               var9.forEach((var3, var4x) -> var0.put(new NetworkPacketSummary.PacketIdentification(var8, var4.id(), var3), var4x.getSimpleName()));
             }
          }
 

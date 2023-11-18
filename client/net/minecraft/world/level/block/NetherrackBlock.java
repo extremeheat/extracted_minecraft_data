@@ -15,12 +15,12 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       if (!var1.getBlockState(var2.above()).propagatesSkylightDown(var1, var2)) {
          return false;
       } else {
-         for(BlockPos var6 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
-            if (var1.getBlockState(var6).is(BlockTags.NYLIUM)) {
+         for(BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
+            if (var1.getBlockState(var5).is(BlockTags.NYLIUM)) {
                return true;
             }
          }

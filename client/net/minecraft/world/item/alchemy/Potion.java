@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -12,6 +13,7 @@ public class Potion {
    @Nullable
    private final String name;
    private final ImmutableList<MobEffectInstance> effects;
+   private final Holder.Reference<Potion> builtInRegistryHolder = BuiltInRegistries.POTION.createIntrusiveHolder(this);
 
    public static Potion byName(String var0) {
       return BuiltInRegistries.POTION.get(ResourceLocation.tryParse(var0));
@@ -48,5 +50,10 @@ public class Potion {
       }
 
       return false;
+   }
+
+   @Deprecated
+   public Holder.Reference<Potion> builtInRegistryHolder() {
+      return this.builtInRegistryHolder;
    }
 }

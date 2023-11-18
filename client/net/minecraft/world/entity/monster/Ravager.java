@@ -11,6 +11,7 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -38,6 +39,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public class Ravager extends Raider {
    private static final Predicate<Entity> NO_RAVAGER_AND_ALIVE = var0 -> var0.isAlive() && !(var0 instanceof Ravager);
@@ -64,7 +66,7 @@ public class Ravager extends Raider {
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(4, new Ravager.RavagerMeleeAttackGoal());
+      this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, true));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.4));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
@@ -121,21 +123,8 @@ public class Ravager extends Raider {
    }
 
    @Override
-   public double getPassengersRidingOffset() {
-      return 2.1;
-   }
-
-   @Nullable
-   @Override
-   public LivingEntity getControllingPassenger() {
-      if (!this.isNoAi()) {
-         Entity var2 = this.getFirstPassenger();
-         if (var2 instanceof LivingEntity var1) {
-            return (LivingEntity)var1;
-         }
-      }
-
-      return null;
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height + 0.0625F * var3, -0.0625F * var3);
    }
 
    @Override
@@ -245,7 +234,7 @@ public class Ravager extends Raider {
             this.level().addParticle(ParticleTypes.POOF, var10.x, var10.y, var10.z, var4, var6, var8);
          }
 
-         this.gameEvent(GameEvent.ENTITY_ROAR);
+         this.gameEvent(GameEvent.ENTITY_ACTION);
       }
    }
 
@@ -323,15 +312,9 @@ public class Ravager extends Raider {
       return false;
    }
 
-   class RavagerMeleeAttackGoal extends MeleeAttackGoal {
-      public RavagerMeleeAttackGoal() {
-         super(Ravager.this, 1.0, true);
-      }
-
-      @Override
-      protected double getAttackReachSqr(LivingEntity var1) {
-         float var2 = Ravager.this.getBbWidth() - 0.1F;
-         return (double)(var2 * 2.0F * var2 * 2.0F + var1.getBbWidth());
-      }
+   @Override
+   protected AABB getAttackBoundingBox() {
+      AABB var1 = super.getAttackBoundingBox();
+      return var1.deflate(0.05, 0.0, 0.05);
    }
 }

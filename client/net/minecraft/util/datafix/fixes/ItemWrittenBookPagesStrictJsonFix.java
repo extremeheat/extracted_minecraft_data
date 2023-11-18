@@ -26,7 +26,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
                   .map(
                      var0x -> var0x.map(
                            var0xx -> {
-                              if (!var0xx.asString().result().isPresent()) {
+                              if (var0xx.asString().result().isEmpty()) {
                                  return var0xx;
                               } else {
                                  String var1xx = var0xx.asString("");

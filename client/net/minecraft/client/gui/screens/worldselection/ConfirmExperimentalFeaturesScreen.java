@@ -67,12 +67,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    }
 
    @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      super.render(var1, var2, var3, var4);
-   }
-
-   @Override
    public void onClose() {
       this.callback.accept(false);
    }
@@ -101,10 +95,9 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, float var4) {
-         this.renderBackground(var1);
+         super.render(var1, var2, var3, var4);
          this.packList.render(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, this.title, this.width / 2, 10, 16777215);
-         super.render(var1, var2, var3, var4);
       }
 
       class PackList extends ObjectSelectionList<ConfirmExperimentalFeaturesScreen.DetailsScreen.PackListEntry> {

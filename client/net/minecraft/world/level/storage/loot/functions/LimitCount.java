@@ -1,10 +1,9 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Set;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -12,9 +11,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LimitCount extends LootItemConditionalFunction {
-   final IntRange limiter;
+   public static final Codec<LimitCount> CODEC = RecordCodecBuilder.create(
+      var0 -> commonFields(var0).and(IntRange.CODEC.fieldOf("limit").forGetter(var0x -> var0x.limiter)).apply(var0, LimitCount::new)
+   );
+   private final IntRange limiter;
 
-   LimitCount(LootItemCondition[] var1, IntRange var2) {
+   private LimitCount(List<LootItemCondition> var1, IntRange var2) {
       super(var1);
       this.limiter = var2;
    }
@@ -38,21 +40,5 @@ public class LimitCount extends LootItemConditionalFunction {
 
    public static LootItemConditionalFunction.Builder<?> limitCount(IntRange var0) {
       return simpleBuilder(var1 -> new LimitCount(var1, var0));
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<LimitCount> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, LimitCount var2, JsonSerializationContext var3) {
-         super.serialize(var1, var2, var3);
-         var1.add("limit", var3.serialize(var2.limiter));
-      }
-
-      public LimitCount deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         IntRange var4 = GsonHelper.getAsObject(var1, "limit", var2, IntRange.class);
-         return new LimitCount(var3, var4);
-      }
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.client.telemetry.events;
 
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
@@ -31,7 +32,8 @@ public class WorldLoadEvent {
    }
 
    private TelemetryProperty.ServerType getServerType() {
-      if (Minecraft.getInstance().isConnectedToRealms()) {
+      ServerData var1 = Minecraft.getInstance().getCurrentServer();
+      if (var1 != null && var1.isRealm()) {
          return TelemetryProperty.ServerType.REALM;
       } else {
          return Minecraft.getInstance().hasSingleplayerServer() ? TelemetryProperty.ServerType.LOCAL : TelemetryProperty.ServerType.OTHER;

@@ -1,12 +1,13 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.UUID;
 
 public class PlayerInfo extends ValueObject implements ReflectionBasedSerialization {
    @SerializedName("name")
    private String name;
    @SerializedName("uuid")
-   private String uuid;
+   private UUID uuid;
    @SerializedName("operator")
    private boolean operator;
    @SerializedName("accepted")
@@ -26,11 +27,11 @@ public class PlayerInfo extends ValueObject implements ReflectionBasedSerializat
       this.name = var1;
    }
 
-   public String getUuid() {
+   public UUID getUuid() {
       return this.uuid;
    }
 
-   public void setUuid(String var1) {
+   public void setUuid(UUID var1) {
       this.uuid = var1;
    }
 

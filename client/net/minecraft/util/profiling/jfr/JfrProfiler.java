@@ -29,6 +29,7 @@ import jdk.jfr.RecordingState;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.util.profiling.jfr.event.ChunkGenerationEvent;
@@ -181,9 +182,9 @@ public class JfrProfiler implements JvmProfiler {
    }
 
    @Override
-   public void onPacketReceived(int var1, int var2, SocketAddress var3, int var4) {
+   public void onPacketReceived(ConnectionProtocol var1, int var2, SocketAddress var3, int var4) {
       if (PacketReceivedEvent.TYPE.isEnabled()) {
-         new PacketReceivedEvent(var1, var2, var3, var4).commit();
+         new PacketReceivedEvent(var1.id(), var2, var3, var4).commit();
       }
 
       if (NetworkSummaryEvent.TYPE.isEnabled()) {
@@ -192,9 +193,9 @@ public class JfrProfiler implements JvmProfiler {
    }
 
    @Override
-   public void onPacketSent(int var1, int var2, SocketAddress var3, int var4) {
+   public void onPacketSent(ConnectionProtocol var1, int var2, SocketAddress var3, int var4) {
       if (PacketSentEvent.TYPE.isEnabled()) {
-         new PacketSentEvent(var1, var2, var3, var4).commit();
+         new PacketSentEvent(var1.id(), var2, var3, var4).commit();
       }
 
       if (NetworkSummaryEvent.TYPE.isEnabled()) {

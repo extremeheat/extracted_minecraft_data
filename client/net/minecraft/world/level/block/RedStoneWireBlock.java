@@ -186,7 +186,7 @@ public class RedStoneWireBlock extends Block {
    @Override
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.DOWN) {
-         return var1;
+         return !this.canSurviveOn(var4, var6, var3) ? Blocks.AIR.defaultBlockState() : var1;
       } else if (var2 == Direction.UP) {
          return this.getConnectionState(var4, var1, var5);
       } else {

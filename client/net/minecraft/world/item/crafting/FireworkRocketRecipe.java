@@ -3,7 +3,6 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -14,8 +13,8 @@ public class FireworkRocketRecipe extends CustomRecipe {
    private static final Ingredient GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
    private static final Ingredient STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
 
-   public FireworkRocketRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public FireworkRocketRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

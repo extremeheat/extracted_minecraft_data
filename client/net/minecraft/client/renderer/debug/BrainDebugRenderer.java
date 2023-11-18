@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
@@ -21,9 +20,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
+import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.pathfinder.Path;
 import org.slf4j.Logger;
 
 public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
@@ -64,7 +63,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int ORANGE = -23296;
    private final Minecraft minecraft;
    private final Map<BlockPos, BrainDebugRenderer.PoiInfo> pois = Maps.newHashMap();
-   private final Map<UUID, BrainDebugRenderer.BrainDump> brainDumpsPerEntity = Maps.newHashMap();
+   private final Map<UUID, BrainDebugPayload.BrainDump> brainDumpsPerEntity = Maps.newHashMap();
    @Nullable
    private UUID lastLookedAtUuid;
 
@@ -97,12 +96,12 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
    }
 
-   public void addOrUpdateBrainDump(BrainDebugRenderer.BrainDump var1) {
-      this.brainDumpsPerEntity.put(var1.uuid, var1);
+   public void addOrUpdateBrainDump(BrainDebugPayload.BrainDump var1) {
+      this.brainDumpsPerEntity.put(var1.uuid(), var1);
    }
 
    public void removeBrainDump(int var1) {
-      this.brainDumpsPerEntity.values().removeIf(var1x -> var1x.id == var1);
+      this.brainDumpsPerEntity.values().removeIf(var1x -> var1x.id() == var1);
    }
 
    @Override
@@ -116,7 +115,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private void clearRemovedEntities() {
       this.brainDumpsPerEntity.entrySet().removeIf(var1 -> {
-         Entity var2 = this.minecraft.level.getEntity(var1.getValue().id);
+         Entity var2 = this.minecraft.level.getEntity(var1.getValue().id());
          return var2 == null || var2.isRemoved();
       });
    }
@@ -180,71 +179,71 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       renderTextOverPoi(var1, var2, var3.type, var3, ++var4, -1);
    }
 
-   private void renderPath(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.BrainDump var3, double var4, double var6, double var8) {
-      if (var3.path != null) {
-         PathfindingRenderer.renderPath(var1, var2, var3.path, 0.5F, false, false, var4, var6, var8);
+   private void renderPath(PoseStack var1, MultiBufferSource var2, BrainDebugPayload.BrainDump var3, double var4, double var6, double var8) {
+      if (var3.path() != null) {
+         PathfindingRenderer.renderPath(var1, var2, var3.path(), 0.5F, false, false, var4, var6, var8);
       }
    }
 
-   private void renderBrainInfo(PoseStack var1, MultiBufferSource var2, BrainDebugRenderer.BrainDump var3, double var4, double var6, double var8) {
+   private void renderBrainInfo(PoseStack var1, MultiBufferSource var2, BrainDebugPayload.BrainDump var3, double var4, double var6, double var8) {
       boolean var10 = this.isMobSelected(var3);
       int var11 = 0;
-      renderTextOverMob(var1, var2, var3.pos, var11, var3.name, -1, 0.03F);
+      renderTextOverMob(var1, var2, var3.pos(), var11, var3.name(), -1, 0.03F);
       ++var11;
       if (var10) {
-         renderTextOverMob(var1, var2, var3.pos, var11, var3.profession + " " + var3.xp + " xp", -1, 0.02F);
+         renderTextOverMob(var1, var2, var3.pos(), var11, var3.profession() + " " + var3.xp() + " xp", -1, 0.02F);
          ++var11;
       }
 
       if (var10) {
-         int var12 = var3.health < var3.maxHealth ? -23296 : -1;
+         int var12 = var3.health() < var3.maxHealth() ? -23296 : -1;
          renderTextOverMob(
             var1,
             var2,
-            var3.pos,
+            var3.pos(),
             var11,
-            "health: " + String.format(Locale.ROOT, "%.1f", var3.health) + " / " + String.format(Locale.ROOT, "%.1f", var3.maxHealth),
+            "health: " + String.format(Locale.ROOT, "%.1f", var3.health()) + " / " + String.format(Locale.ROOT, "%.1f", var3.maxHealth()),
             var12,
             0.02F
          );
          ++var11;
       }
 
-      if (var10 && !var3.inventory.equals("")) {
-         renderTextOverMob(var1, var2, var3.pos, var11, var3.inventory, -98404, 0.02F);
+      if (var10 && !var3.inventory().equals("")) {
+         renderTextOverMob(var1, var2, var3.pos(), var11, var3.inventory(), -98404, 0.02F);
          ++var11;
       }
 
       if (var10) {
-         for(String var13 : var3.behaviors) {
-            renderTextOverMob(var1, var2, var3.pos, var11, var13, -16711681, 0.02F);
+         for(String var13 : var3.behaviors()) {
+            renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711681, 0.02F);
             ++var11;
          }
       }
 
       if (var10) {
-         for(String var19 : var3.activities) {
-            renderTextOverMob(var1, var2, var3.pos, var11, var19, -16711936, 0.02F);
+         for(String var19 : var3.activities()) {
+            renderTextOverMob(var1, var2, var3.pos(), var11, var19, -16711936, 0.02F);
             ++var11;
          }
       }
 
-      if (var3.wantsGolem) {
-         renderTextOverMob(var1, var2, var3.pos, var11, "Wants Golem", -23296, 0.02F);
+      if (var3.wantsGolem()) {
+         renderTextOverMob(var1, var2, var3.pos(), var11, "Wants Golem", -23296, 0.02F);
          ++var11;
       }
 
-      if (var10 && var3.angerLevel != -1) {
-         renderTextOverMob(var1, var2, var3.pos, var11, "Anger Level: " + var3.angerLevel, -98404, 0.02F);
+      if (var10 && var3.angerLevel() != -1) {
+         renderTextOverMob(var1, var2, var3.pos(), var11, "Anger Level: " + var3.angerLevel(), -98404, 0.02F);
          ++var11;
       }
 
       if (var10) {
-         for(String var20 : var3.gossips) {
-            if (var20.startsWith(var3.name)) {
-               renderTextOverMob(var1, var2, var3.pos, var11, var20, -1, 0.02F);
+         for(String var20 : var3.gossips()) {
+            if (var20.startsWith(var3.name())) {
+               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -1, 0.02F);
             } else {
-               renderTextOverMob(var1, var2, var3.pos, var11, var20, -23296, 0.02F);
+               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -23296, 0.02F);
             }
 
             ++var11;
@@ -252,8 +251,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var10) {
-         for(String var21 : Lists.reverse(var3.memories)) {
-            renderTextOverMob(var1, var2, var3.pos, var11, var21, -3355444, 0.02F);
+         for(String var21 : Lists.reverse(var3.memories())) {
+            renderTextOverMob(var1, var2, var3.pos(), var11, var21, -3355444, 0.02F);
             ++var11;
          }
       }
@@ -295,24 +294,19 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       return this.getPotentialTicketHolders(var1.pos).stream().map(DebugEntityNameGenerator::getEntityName).collect(Collectors.toSet());
    }
 
-   private boolean isMobSelected(BrainDebugRenderer.BrainDump var1) {
-      return Objects.equals(this.lastLookedAtUuid, var1.uuid);
+   private boolean isMobSelected(BrainDebugPayload.BrainDump var1) {
+      return Objects.equals(this.lastLookedAtUuid, var1.uuid());
    }
 
-   private boolean isPlayerCloseEnoughToMob(BrainDebugRenderer.BrainDump var1) {
+   private boolean isPlayerCloseEnoughToMob(BrainDebugPayload.BrainDump var1) {
       LocalPlayer var2 = this.minecraft.player;
-      BlockPos var3 = BlockPos.containing(var2.getX(), var1.pos.y(), var2.getZ());
-      BlockPos var4 = BlockPos.containing(var1.pos);
+      BlockPos var3 = BlockPos.containing(var2.getX(), var1.pos().y(), var2.getZ());
+      BlockPos var4 = BlockPos.containing(var1.pos());
       return var3.closerThan(var4, 30.0);
    }
 
    private Collection<UUID> getTicketHolders(BlockPos var1) {
-      return this.brainDumpsPerEntity
-         .values()
-         .stream()
-         .filter(var1x -> var1x.hasPoi(var1))
-         .map(BrainDebugRenderer.BrainDump::getUuid)
-         .collect(Collectors.toSet());
+      return this.brainDumpsPerEntity.values().stream().filter(var1x -> var1x.hasPoi(var1)).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
    }
 
    private Collection<UUID> getPotentialTicketHolders(BlockPos var1) {
@@ -320,17 +314,17 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          .values()
          .stream()
          .filter(var1x -> var1x.hasPotentialPoi(var1))
-         .map(BrainDebugRenderer.BrainDump::getUuid)
+         .map(BrainDebugPayload.BrainDump::uuid)
          .collect(Collectors.toSet());
    }
 
    private Map<BlockPos, List<String>> getGhostPois() {
       HashMap var1 = Maps.newHashMap();
 
-      for(BrainDebugRenderer.BrainDump var3 : this.brainDumpsPerEntity.values()) {
-         for(BlockPos var5 : Iterables.concat(var3.pois, var3.potentialPois)) {
+      for(BrainDebugPayload.BrainDump var3 : this.brainDumpsPerEntity.values()) {
+         for(BlockPos var5 : Iterables.concat(var3.pois(), var3.potentialPois())) {
             if (!this.pois.containsKey(var5)) {
-               var1.computeIfAbsent(var5, var0 -> Lists.newArrayList()).add(var3.name);
+               var1.computeIfAbsent(var5, var0 -> Lists.newArrayList()).add(var3.name());
             }
          }
       }
@@ -342,71 +336,9 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent(var1 -> this.lastLookedAtUuid = var1.getUUID());
    }
 
-   public static class BrainDump {
-      public final UUID uuid;
-      public final int id;
-      public final String name;
-      public final String profession;
-      public final int xp;
-      public final float health;
-      public final float maxHealth;
-      public final Position pos;
-      public final String inventory;
-      public final Path path;
-      public final boolean wantsGolem;
-      public final int angerLevel;
-      public final List<String> activities = Lists.newArrayList();
-      public final List<String> behaviors = Lists.newArrayList();
-      public final List<String> memories = Lists.newArrayList();
-      public final List<String> gossips = Lists.newArrayList();
-      public final Set<BlockPos> pois = Sets.newHashSet();
-      public final Set<BlockPos> potentialPois = Sets.newHashSet();
-
-      public BrainDump(
-         UUID var1,
-         int var2,
-         String var3,
-         String var4,
-         int var5,
-         float var6,
-         float var7,
-         Position var8,
-         String var9,
-         @Nullable Path var10,
-         boolean var11,
-         int var12
-      ) {
-         super();
-         this.uuid = var1;
-         this.id = var2;
-         this.name = var3;
-         this.profession = var4;
-         this.xp = var5;
-         this.health = var6;
-         this.maxHealth = var7;
-         this.pos = var8;
-         this.inventory = var9;
-         this.path = var10;
-         this.wantsGolem = var11;
-         this.angerLevel = var12;
-      }
-
-      boolean hasPoi(BlockPos var1) {
-         return this.pois.stream().anyMatch(var1::equals);
-      }
-
-      boolean hasPotentialPoi(BlockPos var1) {
-         return this.potentialPois.contains(var1);
-      }
-
-      public UUID getUuid() {
-         return this.uuid;
-      }
-   }
-
    public static class PoiInfo {
       public final BlockPos pos;
-      public String type;
+      public final String type;
       public int freeTicketCount;
 
       public PoiInfo(BlockPos var1, String var2, int var3) {

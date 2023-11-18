@@ -1,7 +1,6 @@
 package net.minecraft.client;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -476,7 +475,7 @@ public final class OptionInstance<T> {
 
       @Override
       public Codec<Double> codec() {
-         return Codec.either(Codec.doubleRange(0.0, 1.0), Codec.BOOL).xmap(var0 -> (Double)var0.map(var0x -> var0x, var0x -> var0x ? 1.0 : 0.0), Either::left);
+         return ExtraCodecs.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, var0 -> var0 ? 1.0 : 0.0);
       }
    }
 

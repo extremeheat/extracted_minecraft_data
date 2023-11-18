@@ -13,9 +13,9 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.DisplaySlot;
 
-public class ScoreboardSlotArgument implements ArgumentType<Integer> {
+public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
    private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
    public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
       var0 -> Component.translatable("argument.scoreboardDisplaySlot.invalid", var0)
@@ -29,14 +29,14 @@ public class ScoreboardSlotArgument implements ArgumentType<Integer> {
       return new ScoreboardSlotArgument();
    }
 
-   public static int getDisplaySlot(CommandContext<CommandSourceStack> var0, String var1) {
-      return var0.getArgument(var1, Integer.class);
+   public static DisplaySlot getDisplaySlot(CommandContext<CommandSourceStack> var0, String var1) {
+      return (DisplaySlot)var0.getArgument(var1, DisplaySlot.class);
    }
 
-   public Integer parse(StringReader var1) throws CommandSyntaxException {
+   public DisplaySlot parse(StringReader var1) throws CommandSyntaxException {
       String var2 = var1.readUnquotedString();
-      int var3 = Scoreboard.getDisplaySlotByName(var2);
-      if (var3 == -1) {
+      DisplaySlot var3 = DisplaySlot.CODEC.byName(var2);
+      if (var3 == null) {
          throw ERROR_INVALID_VALUE.create(var2);
       } else {
          return var3;
@@ -44,7 +44,7 @@ public class ScoreboardSlotArgument implements ArgumentType<Integer> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(Scoreboard.getDisplaySlotNames(), var2);
+      return SharedSuggestionProvider.suggest(Arrays.stream(DisplaySlot.values()).map(DisplaySlot::getSerializedName), var2);
    }
 
    public Collection<String> getExamples() {

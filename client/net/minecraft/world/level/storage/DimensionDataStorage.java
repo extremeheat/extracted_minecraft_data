@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
@@ -36,22 +35,22 @@ public class DimensionDataStorage {
       return new File(this.dataFolder, var1 + ".dat");
    }
 
-   public <T extends SavedData> T computeIfAbsent(Function<CompoundTag, T> var1, Supplier<T> var2, String var3) {
-      SavedData var4 = this.get(var1, var3);
-      if (var4 != null) {
-         return (T)var4;
+   public <T extends SavedData> T computeIfAbsent(SavedData.Factory<T> var1, String var2) {
+      SavedData var3 = this.get(var1, var2);
+      if (var3 != null) {
+         return (T)var3;
       } else {
-         SavedData var5 = (SavedData)var2.get();
-         this.set(var3, var5);
-         return (T)var5;
+         SavedData var4 = (SavedData)var1.constructor().get();
+         this.set(var2, var4);
+         return (T)var4;
       }
    }
 
    @Nullable
-   public <T extends SavedData> T get(Function<CompoundTag, T> var1, String var2) {
+   public <T extends SavedData> T get(SavedData.Factory var1, String var2) {
       SavedData var3 = this.cache.get(var2);
       if (var3 == null && !this.cache.containsKey(var2)) {
-         var3 = this.readSavedData(var1, var2);
+         var3 = this.readSavedData(var1.deserializer(), var1.type(), var2);
          this.cache.put(var2, var3);
       }
 
@@ -59,15 +58,15 @@ public class DimensionDataStorage {
    }
 
    @Nullable
-   private <T extends SavedData> T readSavedData(Function<CompoundTag, T> var1, String var2) {
+   private <T extends SavedData> T readSavedData(Function<CompoundTag, T> var1, DataFixTypes var2, String var3) {
       try {
-         File var3 = this.getDataFile(var2);
-         if (var3.exists()) {
-            CompoundTag var4 = this.readTagFromDisk(var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-            return (T)var1.apply(var4.getCompound("data"));
+         File var4 = this.getDataFile(var3);
+         if (var4.exists()) {
+            CompoundTag var5 = this.readTagFromDisk(var3, var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            return (T)var1.apply(var5.getCompound("data"));
          }
-      } catch (Exception var5) {
-         LOGGER.error("Error loading saved data: {}", var2, var5);
+      } catch (Exception var6) {
+         LOGGER.error("Error loading saved data: {}", var3, var6);
       }
 
       return null;
@@ -77,28 +76,28 @@ public class DimensionDataStorage {
       this.cache.put(var1, var2);
    }
 
-   public CompoundTag readTagFromDisk(String var1, int var2) throws IOException {
-      File var3 = this.getDataFile(var1);
+   public CompoundTag readTagFromDisk(String var1, DataFixTypes var2, int var3) throws IOException {
+      File var4 = this.getDataFile(var1);
 
-      CompoundTag var8;
+      CompoundTag var9;
       try (
-         FileInputStream var4 = new FileInputStream(var3);
-         PushbackInputStream var5 = new PushbackInputStream(var4, 2);
+         FileInputStream var5 = new FileInputStream(var4);
+         PushbackInputStream var6 = new PushbackInputStream(var5, 2);
       ) {
-         CompoundTag var6;
-         if (this.isGzip(var5)) {
-            var6 = NbtIo.readCompressed(var5);
+         CompoundTag var7;
+         if (this.isGzip(var6)) {
+            var7 = NbtIo.readCompressed(var6);
          } else {
-            try (DataInputStream var7 = new DataInputStream(var5)) {
-               var6 = NbtIo.read(var7);
+            try (DataInputStream var8 = new DataInputStream(var6)) {
+               var7 = NbtIo.read(var8);
             }
          }
 
-         int var16 = NbtUtils.getDataVersion(var6, 1343);
-         var8 = DataFixTypes.SAVED_DATA.update(this.fixerUpper, var6, var16, var2);
+         int var17 = NbtUtils.getDataVersion(var7, 1343);
+         var9 = var2.update(this.fixerUpper, var7, var17, var3);
       }
 
-      return var8;
+      return var9;
    }
 
    private boolean isGzip(PushbackInputStream var1) throws IOException {

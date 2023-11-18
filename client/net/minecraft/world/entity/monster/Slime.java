@@ -13,6 +13,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -41,6 +42,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
@@ -66,6 +68,11 @@ public class Slime extends Mob implements Enemy {
       this.targetSelector
          .addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, var1 -> Math.abs(var1.getY() - this.getY()) <= 4.0));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+   }
+
+   @Override
+   public SoundSource getSoundSource() {
+      return SoundSource.HOSTILE;
    }
 
    @Override
@@ -245,6 +252,11 @@ public class Slime extends Mob implements Enemy {
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
       return 0.625F * var2.height;
+   }
+
+   @Override
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height - 0.015625F * (float)this.getSize() * var3, 0.0F);
    }
 
    protected boolean isDealsDamage() {

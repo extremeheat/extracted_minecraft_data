@@ -50,7 +50,7 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
       this.effectAmplifier = var1.readByte();
       this.effectDurationTicks = var1.readVarInt();
       this.flags = var1.readByte();
-      this.factorData = var1.readNullable(var0 -> var0.readWithCodec(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC));
+      this.factorData = var1.readNullable(var0 -> var0.readWithCodecTrusted(NbtOps.INSTANCE, MobEffectInstance.FactorData.CODEC));
    }
 
    @Override

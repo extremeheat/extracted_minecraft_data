@@ -1,6 +1,7 @@
 package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
+import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -9,10 +10,12 @@ import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.util.PngInfo;
 import org.slf4j.Logger;
 
 public class ServerData {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int MAX_ICON_SIZE = 1024;
    public String name;
    public String ip;
    public Component status;
@@ -27,14 +30,14 @@ public class ServerData {
    private ServerData.ServerPackStatus packStatus = ServerData.ServerPackStatus.PROMPT;
    @Nullable
    private byte[] iconBytes;
-   private boolean lan;
+   private ServerData.Type type;
    private boolean enforcesSecureChat;
 
-   public ServerData(String var1, String var2, boolean var3) {
+   public ServerData(String var1, String var2, ServerData.Type var3) {
       super();
       this.name = var1;
       this.ip = var2;
-      this.lan = var3;
+      this.type = var3;
    }
 
    public CompoundTag write() {
@@ -63,10 +66,11 @@ public class ServerData {
    }
 
    public static ServerData read(CompoundTag var0) {
-      ServerData var1 = new ServerData(var0.getString("name"), var0.getString("ip"), false);
+      ServerData var1 = new ServerData(var0.getString("name"), var0.getString("ip"), ServerData.Type.OTHER);
       if (var0.contains("icon", 8)) {
          try {
-            var1.setIconBytes(Base64.getDecoder().decode(var0.getString("icon")));
+            byte[] var2 = Base64.getDecoder().decode(var0.getString("icon"));
+            var1.setIconBytes(validateIcon(var2));
          } catch (IllegalArgumentException var3) {
             LOGGER.warn("Malformed base64 server icon", var3);
          }
@@ -95,7 +99,11 @@ public class ServerData {
    }
 
    public boolean isLan() {
-      return this.lan;
+      return this.type == ServerData.Type.LAN;
+   }
+
+   public boolean isRealm() {
+      return this.type == ServerData.Type.REALM;
    }
 
    public void setEnforcesSecureChat(boolean var1) {
@@ -115,8 +123,24 @@ public class ServerData {
    public void copyFrom(ServerData var1) {
       this.copyNameIconFrom(var1);
       this.setResourcePackStatus(var1.getResourcePackStatus());
-      this.lan = var1.lan;
+      this.type = var1.type;
       this.enforcesSecureChat = var1.enforcesSecureChat;
+   }
+
+   @Nullable
+   public static byte[] validateIcon(@Nullable byte[] var0) {
+      if (var0 != null) {
+         try {
+            PngInfo var1 = PngInfo.fromBytes(var0);
+            if (var1.width() <= 1024 && var1.height() <= 1024) {
+               return var0;
+            }
+         } catch (IOException var2) {
+            LOGGER.warn("Failed to decode server icon", var2);
+         }
+      }
+
+      return null;
    }
 
    public static enum ServerPackStatus {
@@ -132,6 +156,15 @@ public class ServerData {
 
       public Component getName() {
          return this.name;
+      }
+   }
+
+   public static enum Type {
+      LAN,
+      REALM,
+      OTHER;
+
+      private Type() {
       }
    }
 }

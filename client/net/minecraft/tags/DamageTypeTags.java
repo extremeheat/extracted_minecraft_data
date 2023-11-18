@@ -30,6 +30,8 @@ public interface DamageTypeTags {
    TagKey<DamageType> AVOIDS_GUARDIAN_THORNS = create("avoids_guardian_thorns");
    TagKey<DamageType> ALWAYS_TRIGGERS_SILVERFISH = create("always_triggers_silverfish");
    TagKey<DamageType> ALWAYS_HURTS_ENDER_DRAGONS = create("always_hurts_ender_dragons");
+   TagKey<DamageType> NO_KNOCKBACK = create("no_knockback");
+   TagKey<DamageType> ALWAYS_KILLS_ARMOR_STANDS = create("always_kills_armor_stands");
 
    private static TagKey<DamageType> create(String var0) {
       return TagKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(var0));

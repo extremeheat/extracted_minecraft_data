@@ -1,29 +1,45 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public class LootItemBlockStatePropertyCondition implements LootItemCondition {
-   final Block block;
-   final StatePropertiesPredicate properties;
+public record LootItemBlockStatePropertyCondition(Holder<Block> b, Optional<StatePropertiesPredicate> c) implements LootItemCondition {
+   private final Holder<Block> block;
+   private final Optional<StatePropertiesPredicate> properties;
+   public static final Codec<LootItemBlockStatePropertyCondition> CODEC = ExtraCodecs.validate(
+      RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block),
+                  ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "properties").forGetter(LootItemBlockStatePropertyCondition::properties)
+               )
+               .apply(var0, LootItemBlockStatePropertyCondition::new)
+      ),
+      LootItemBlockStatePropertyCondition::validate
+   );
 
-   LootItemBlockStatePropertyCondition(Block var1, StatePropertiesPredicate var2) {
+   public LootItemBlockStatePropertyCondition(Holder<Block> var1, Optional<StatePropertiesPredicate> var2) {
       super();
       this.block = var1;
       this.properties = var2;
+   }
+
+   private static DataResult<LootItemBlockStatePropertyCondition> validate(LootItemBlockStatePropertyCondition var0) {
+      return (DataResult<LootItemBlockStatePropertyCondition>)var0.properties()
+         .flatMap(var1 -> var1.checkState(var0.block().value().getStateDefinition()))
+         .map(var1 -> DataResult.error(() -> "Block " + var0.block() + " has no property" + var1))
+         .orElse(DataResult.success(var0));
    }
 
    @Override
@@ -33,12 +49,12 @@ public class LootItemBlockStatePropertyCondition implements LootItemCondition {
 
    @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(LootContextParams.BLOCK_STATE);
+      return Set.of(LootContextParams.BLOCK_STATE);
    }
 
    public boolean test(LootContext var1) {
       BlockState var2 = var1.getParamOrNull(LootContextParams.BLOCK_STATE);
-      return var2 != null && var2.is(this.block) && this.properties.matches(var2);
+      return var2 != null && var2.is(this.block) && (this.properties.isEmpty() || this.properties.get().matches(var2));
    }
 
    public static LootItemBlockStatePropertyCondition.Builder hasBlockStateProperties(Block var0) {
@@ -46,12 +62,12 @@ public class LootItemBlockStatePropertyCondition implements LootItemCondition {
    }
 
    public static class Builder implements LootItemCondition.Builder {
-      private final Block block;
-      private StatePropertiesPredicate properties = StatePropertiesPredicate.ANY;
+      private final Holder<Block> block;
+      private Optional<StatePropertiesPredicate> properties = Optional.empty();
 
       public Builder(Block var1) {
          super();
-         this.block = var1;
+         this.block = var1.builtInRegistryHolder();
       }
 
       public LootItemBlockStatePropertyCondition.Builder setProperties(StatePropertiesPredicate.Builder var1) {
@@ -62,27 +78,6 @@ public class LootItemBlockStatePropertyCondition implements LootItemCondition {
       @Override
       public LootItemCondition build() {
          return new LootItemBlockStatePropertyCondition(this.block, this.properties);
-      }
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<LootItemBlockStatePropertyCondition> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, LootItemBlockStatePropertyCondition var2, JsonSerializationContext var3) {
-         var1.addProperty("block", BuiltInRegistries.BLOCK.getKey(var2.block).toString());
-         var1.add("properties", var2.properties.serializeToJson());
-      }
-
-      public LootItemBlockStatePropertyCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var1, "block"));
-         Block var4 = BuiltInRegistries.BLOCK.getOptional(var3).orElseThrow(() -> new IllegalArgumentException("Can't find block " + var3));
-         StatePropertiesPredicate var5 = StatePropertiesPredicate.fromJson(var1.get("properties"));
-         var5.checkState(var4.getStateDefinition(), var1x -> {
-            throw new JsonSyntaxException("Block " + var4 + " has no property " + var1x);
-         });
-         return new LootItemBlockStatePropertyCondition(var4, var5);
       }
    }
 }

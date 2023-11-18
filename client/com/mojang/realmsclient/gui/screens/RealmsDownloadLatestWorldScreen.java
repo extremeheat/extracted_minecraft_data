@@ -113,8 +113,8 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       var1.add(this.downloadTitle);
       var1.add(this.status);
       if (this.progress != null) {
-         var1.add(Component.literal(this.progress + "%"));
-         var1.add(Component.literal(Unit.humanReadable(this.bytesPersSecond) + "/s"));
+         var1.add(Component.translatable("mco.download.percent", this.progress));
+         var1.add(Component.translatable("mco.download.speed.narration", Unit.humanReadable(this.bytesPersSecond)));
       }
 
       if (this.errorMessage != null) {
@@ -145,7 +145,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.downloadTitle, this.width / 2, 20, 16777215);
       var1.drawCenteredString(this.font, this.status, this.width / 2, 50, 16777215);
       if (this.showDots) {
@@ -160,8 +160,6 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       if (this.errorMessage != null) {
          var1.drawCenteredString(this.font, this.errorMessage, this.width / 2, 110, 16711680);
       }
-
-      super.render(var1, var2, var3, var4);
    }
 
    private void drawDots(GuiGraphics var1) {
@@ -267,7 +265,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                LOGGER.error("Could not acquire upload lock");
             } catch (Exception var10) {
                this.errorMessage = Component.translatable("mco.download.failed");
-               var10.printStackTrace();
+               LOGGER.info("Exception while downloading world", var10);
             }
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {

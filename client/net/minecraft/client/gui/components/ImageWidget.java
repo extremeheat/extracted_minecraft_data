@@ -1,20 +1,25 @@
 package net.minecraft.client.gui.components;
 
+import javax.annotation.Nullable;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.ResourceLocation;
 
-public class ImageWidget extends AbstractWidget {
-   private final ResourceLocation imageLocation;
-
-   public ImageWidget(int var1, int var2, ResourceLocation var3) {
-      this(0, 0, var1, var2, var3);
+public abstract class ImageWidget extends AbstractWidget {
+   ImageWidget(int var1, int var2, int var3, int var4) {
+      super(var1, var2, var3, var4, CommonComponents.EMPTY);
    }
 
-   public ImageWidget(int var1, int var2, int var3, int var4, ResourceLocation var5) {
-      super(var1, var2, var3, var4, Component.empty());
-      this.imageLocation = var5;
+   public static ImageWidget texture(int var0, int var1, ResourceLocation var2, int var3, int var4) {
+      return new ImageWidget.Texture(0, 0, var0, var1, var2, var3, var4);
+   }
+
+   public static ImageWidget sprite(int var0, int var1, ResourceLocation var2) {
+      return new ImageWidget.Sprite(0, 0, var0, var1, var2);
    }
 
    @Override
@@ -22,9 +27,61 @@ public class ImageWidget extends AbstractWidget {
    }
 
    @Override
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.getWidth();
-      int var6 = this.getHeight();
-      var1.blit(this.imageLocation, this.getX(), this.getY(), 0.0F, 0.0F, var5, var6, var5, var6);
+   public void playDownSound(SoundManager var1) {
+   }
+
+   @Override
+   public boolean isActive() {
+      return false;
+   }
+
+   @Nullable
+   @Override
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      return null;
+   }
+
+   static class Sprite extends ImageWidget {
+      private final ResourceLocation sprite;
+
+      public Sprite(int var1, int var2, int var3, int var4, ResourceLocation var5) {
+         super(var1, var2, var3, var4);
+         this.sprite = var5;
+      }
+
+      @Override
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         var1.blitSprite(this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+      }
+   }
+
+   static class Texture extends ImageWidget {
+      private final ResourceLocation texture;
+      private final int textureWidth;
+      private final int textureHeight;
+
+      public Texture(int var1, int var2, int var3, int var4, ResourceLocation var5, int var6, int var7) {
+         super(var1, var2, var3, var4);
+         this.texture = var5;
+         this.textureWidth = var6;
+         this.textureHeight = var7;
+      }
+
+      @Override
+      protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         var1.blit(
+            this.texture,
+            this.getX(),
+            this.getY(),
+            this.getWidth(),
+            this.getHeight(),
+            0.0F,
+            0.0F,
+            this.getWidth(),
+            this.getHeight(),
+            this.textureWidth,
+            this.textureHeight
+         );
+      }
    }
 }

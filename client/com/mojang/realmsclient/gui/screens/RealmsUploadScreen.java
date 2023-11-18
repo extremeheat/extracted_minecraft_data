@@ -3,6 +3,7 @@ package com.mojang.realmsclient.gui.screens;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import com.mojang.logging.LogUtils;
+import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.Unit;
 import com.mojang.realmsclient.client.FileUpload;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -27,6 +28,7 @@ import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -67,9 +69,8 @@ public class RealmsUploadScreen extends RealmsScreen {
    @Nullable
    private Long previousTimeSnapshot;
    private long bytesPersSecond;
-   private final Runnable callback;
 
-   public RealmsUploadScreen(long var1, int var3, RealmsResetWorldScreen var4, LevelSummary var5, Runnable var6) {
+   public RealmsUploadScreen(long var1, int var3, RealmsResetWorldScreen var4, LevelSummary var5) {
       super(GameNarrator.NO_TITLE);
       this.worldId = var1;
       this.slotId = var3;
@@ -77,7 +78,6 @@ public class RealmsUploadScreen extends RealmsScreen {
       this.selectedLevel = var5;
       this.uploadStatus = new UploadStatus();
       this.narrationRateLimiter = RateLimiter.create(0.10000000149011612);
-      this.callback = var6;
    }
 
    @Override
@@ -105,7 +105,7 @@ public class RealmsUploadScreen extends RealmsScreen {
    }
 
    private void onBack() {
-      this.callback.run();
+      this.minecraft.setScreen(new RealmsConfigureWorldScreen(new RealmsMainScreen(new TitleScreen()), this.worldId));
    }
 
    private void onCancel() {
@@ -130,7 +130,7 @@ public class RealmsUploadScreen extends RealmsScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       if (!this.uploadFinished && this.uploadStatus.bytesWritten != 0L && this.uploadStatus.bytesWritten == this.uploadStatus.totalBytes) {
          this.status = VERIFYING_TEXT;
          this.cancelButton.active = false;
@@ -151,8 +151,6 @@ public class RealmsUploadScreen extends RealmsScreen {
             var1.drawCenteredString(this.font, this.errorMessage[var5], this.width / 2, 110 + 12 * var5, 16711680);
          }
       }
-
-      super.render(var1, var2, var3, var4);
    }
 
    private void drawDots(GuiGraphics var1) {
@@ -167,7 +165,7 @@ public class RealmsUploadScreen extends RealmsScreen {
       int var5 = var4 + (int)Math.round(200.0 * var2);
       var1.fill(var4 - 1, 79, var5 + 1, 96, -2501934);
       var1.fill(var4, 80, var5, 95, -8355712);
-      var1.drawCenteredString(this.font, this.progress + " %", this.width / 2, 84, 16777215);
+      var1.drawCenteredString(this.font, Component.translatable("mco.upload.percent", this.progress), this.width / 2, 84, 16777215);
    }
 
    private void drawUploadSpeed(GuiGraphics var1) {
@@ -211,7 +209,7 @@ public class RealmsUploadScreen extends RealmsScreen {
       ArrayList var1 = Lists.newArrayList();
       var1.add(this.status);
       if (this.progress != null) {
-         var1.add(Component.literal(this.progress + "%"));
+         var1.add(Component.translatable("mco.upload.percent", this.progress));
       }
 
       if (this.errorMessage != null) {
@@ -333,7 +331,7 @@ public class RealmsUploadScreen extends RealmsScreen {
                      this.setErrorMessage(Component.translatable("mco.upload.failed", var21.getMessage()));
                   } catch (RealmsServiceException var22) {
                      var5 = var22;
-                     this.setErrorMessage(Component.translatable("mco.upload.failed", var22.toString()));
+                     this.setErrorMessage(Component.translatable("mco.upload.failed", var22.realmsError.errorMessage()));
                   } catch (InterruptedException var23) {
                      var5 = var23;
                      LOGGER.error("Could not acquire upload lock");

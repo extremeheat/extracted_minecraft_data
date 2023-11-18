@@ -1,0 +1,75 @@
+package net.minecraft.client.gui.screens;
+
+import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+
+public class NoticeWithLinkScreen extends Screen {
+   private static final Component SYMLINK_WORLD_TITLE = Component.translatable("symlink_warning.title.world").withStyle(ChatFormatting.BOLD);
+   private static final Component SYMLINK_WORLD_MESSAGE_TEXT = Component.translatable("symlink_warning.message.world", "https://aka.ms/MinecraftSymLinks");
+   private static final Component SYMLINK_PACK_TITLE = Component.translatable("symlink_warning.title.pack").withStyle(ChatFormatting.BOLD);
+   private static final Component SYMLINK_PACK_MESSAGE_TEXT = Component.translatable("symlink_warning.message.pack", "https://aka.ms/MinecraftSymLinks");
+   private final Component message;
+   private final String url;
+   @Nullable
+   private final Screen callbackScreen;
+   private final GridLayout layout = new GridLayout().rowSpacing(10);
+
+   public NoticeWithLinkScreen(Component var1, Component var2, String var3, @Nullable Screen var4) {
+      super(var1);
+      this.message = var2;
+      this.url = var3;
+      this.callbackScreen = var4;
+   }
+
+   public static Screen createWorldSymlinkWarningScreen(@Nullable Screen var0) {
+      return new NoticeWithLinkScreen(SYMLINK_WORLD_TITLE, SYMLINK_WORLD_MESSAGE_TEXT, "https://aka.ms/MinecraftSymLinks", var0);
+   }
+
+   public static Screen createPackSymlinkWarningScreen(@Nullable Screen var0) {
+      return new NoticeWithLinkScreen(SYMLINK_PACK_TITLE, SYMLINK_PACK_MESSAGE_TEXT, "https://aka.ms/MinecraftSymLinks", var0);
+   }
+
+   @Override
+   protected void init() {
+      super.init();
+      this.layout.defaultCellSetting().alignHorizontallyCenter();
+      GridLayout.RowHelper var1 = this.layout.createRowHelper(1);
+      var1.addChild(new StringWidget(this.title, this.font));
+      var1.addChild(new MultiLineTextWidget(this.message, this.font).setMaxWidth(this.width - 50).setCentered(true));
+      boolean var2 = true;
+      GridLayout var3 = new GridLayout().columnSpacing(5);
+      GridLayout.RowHelper var4 = var3.createRowHelper(3);
+      var4.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, var1x -> Util.getPlatform().openUri(this.url)).size(120, 20).build());
+      var4.addChild(
+         Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, var1x -> this.minecraft.keyboardHandler.setClipboard(this.url)).size(120, 20).build()
+      );
+      var4.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).size(120, 20).build());
+      var1.addChild(var3);
+      this.repositionElements();
+      this.layout.visitWidgets(this::addRenderableWidget);
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      FrameLayout.centerInRectangle(this.layout, this.getRectangle());
+   }
+
+   @Override
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), this.message);
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.callbackScreen);
+   }
+}

@@ -73,22 +73,19 @@ public class PlayerSocialManager {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void addPlayer(PlayerInfo var1) {
       GameProfile var2 = var1.getProfile();
-      if (var2.isComplete()) {
-         this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
-      }
-
-      Screen var3 = this.minecraft.screen;
-      if (var3 instanceof SocialInteractionsScreen var4) {
-         var4.onAddPlayer(var1);
+      this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
+      Screen var4 = this.minecraft.screen;
+      if (var4 instanceof SocialInteractionsScreen var3) {
+         var3.onAddPlayer(var1);
       }
    }
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void removePlayer(UUID var1) {
-      Screen var2 = this.minecraft.screen;
-      if (var2 instanceof SocialInteractionsScreen var3) {
-         var3.onRemovePlayer(var1);
+      Screen var3 = this.minecraft.screen;
+      if (var3 instanceof SocialInteractionsScreen var2) {
+         var2.onRemovePlayer(var1);
       }
    }
 }

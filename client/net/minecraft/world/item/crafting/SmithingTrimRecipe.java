@@ -1,14 +1,13 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -20,17 +19,15 @@ import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.level.Level;
 
 public class SmithingTrimRecipe implements SmithingRecipe {
-   private final ResourceLocation id;
    final Ingredient template;
    final Ingredient base;
    final Ingredient addition;
 
-   public SmithingTrimRecipe(ResourceLocation var1, Ingredient var2, Ingredient var3, Ingredient var4) {
+   SmithingTrimRecipe(Ingredient var1, Ingredient var2, Ingredient var3) {
       super();
-      this.id = var1;
-      this.template = var2;
-      this.base = var3;
-      this.addition = var4;
+      this.template = var1;
+      this.base = var2;
+      this.addition = var3;
    }
 
    @Override
@@ -45,7 +42,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
          Optional var4 = TrimMaterials.getFromIngredient(var2, var1.getItem(2));
          Optional var5 = TrimPatterns.getFromTemplate(var2, var1.getItem(0));
          if (var4.isPresent() && var5.isPresent()) {
-            Optional var6 = ArmorTrim.getTrim(var2, var3);
+            Optional var6 = ArmorTrim.getTrim(var2, var3, false);
             if (var6.isPresent() && ((ArmorTrim)var6.get()).hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {
                return ItemStack.EMPTY;
             }
@@ -93,11 +90,6 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    @Override
-   public ResourceLocation getId() {
-      return this.id;
-   }
-
-   @Override
    public RecipeSerializer<?> getSerializer() {
       return RecipeSerializer.SMITHING_TRIM;
    }
@@ -108,22 +100,29 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTrimRecipe> {
+      private static final Codec<SmithingTrimRecipe> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  Ingredient.CODEC.fieldOf("template").forGetter(var0x -> var0x.template),
+                  Ingredient.CODEC.fieldOf("base").forGetter(var0x -> var0x.base),
+                  Ingredient.CODEC.fieldOf("addition").forGetter(var0x -> var0x.addition)
+               )
+               .apply(var0, SmithingTrimRecipe::new)
+      );
+
       public Serializer() {
          super();
       }
 
-      public SmithingTrimRecipe fromJson(ResourceLocation var1, JsonObject var2) {
-         Ingredient var3 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "template"));
-         Ingredient var4 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "base"));
-         Ingredient var5 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "addition"));
-         return new SmithingTrimRecipe(var1, var3, var4, var5);
+      @Override
+      public Codec<SmithingTrimRecipe> codec() {
+         return CODEC;
       }
 
-      public SmithingTrimRecipe fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
-         Ingredient var3 = Ingredient.fromNetwork(var2);
-         Ingredient var4 = Ingredient.fromNetwork(var2);
-         Ingredient var5 = Ingredient.fromNetwork(var2);
-         return new SmithingTrimRecipe(var1, var3, var4, var5);
+      public SmithingTrimRecipe fromNetwork(FriendlyByteBuf var1) {
+         Ingredient var2 = Ingredient.fromNetwork(var1);
+         Ingredient var3 = Ingredient.fromNetwork(var1);
+         Ingredient var4 = Ingredient.fromNetwork(var1);
+         return new SmithingTrimRecipe(var2, var3, var4);
       }
 
       public void toNetwork(FriendlyByteBuf var1, SmithingTrimRecipe var2) {

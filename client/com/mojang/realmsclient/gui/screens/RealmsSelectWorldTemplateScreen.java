@@ -17,11 +17,17 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -32,28 +38,25 @@ import org.slf4j.Logger;
 
 public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final ResourceLocation LINK_ICON = new ResourceLocation("realms", "textures/gui/realms/link_icons.png");
-   static final ResourceLocation TRAILER_ICON = new ResourceLocation("realms", "textures/gui/realms/trailer_icons.png");
-   static final ResourceLocation SLOT_FRAME_LOCATION = new ResourceLocation("realms", "textures/gui/realms/slot_frame.png");
-   static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
-   static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
-   private final Consumer<WorldTemplate> callback;
+   static final ResourceLocation SLOT_FRAME_SPRITE = new ResourceLocation("widget/slot_frame");
+   private static final Component SELECT_BUTTON_NAME = Component.translatable("mco.template.button.select");
+   private static final Component TRAILER_BUTTON_NAME = Component.translatable("mco.template.button.trailer");
+   private static final Component PUBLISHER_BUTTON_NAME = Component.translatable("mco.template.button.publisher");
+   private static final int BUTTON_WIDTH = 100;
+   private static final int BUTTON_SPACING = 10;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   final Consumer<WorldTemplate> callback;
    RealmsSelectWorldTemplateScreen.WorldTemplateObjectSelectionList worldTemplateObjectSelectionList;
-   int selectedTemplate = -1;
+   private final RealmsServer.WorldType worldType;
    private Button selectButton;
    private Button trailerButton;
    private Button publisherButton;
    @Nullable
-   Component toolTip;
+   WorldTemplate selectedTemplate = null;
    @Nullable
    String currentLink;
-   private final RealmsServer.WorldType worldType;
-   int clicks;
    @Nullable
    private Component[] warning;
-   private String warningURL;
-   boolean displayWarning;
-   private boolean hoverWarning;
    @Nullable
    List<TextRenderingUtils.Line> noTemplatesMessage;
 
@@ -76,56 +79,37 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
    public void setWarning(Component... var1) {
       this.warning = var1;
-      this.displayWarning = true;
-   }
-
-   @Override
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.hoverWarning && this.warningURL != null) {
-         Util.getPlatform().openUri("https://www.minecraft.net/realms/adventure-maps-in-1-9");
-         return true;
-      } else {
-         return super.mouseClicked(var1, var3, var5);
-      }
    }
 
    @Override
    public void init() {
+      this.layout.addToHeader(new StringWidget(this.title, this.font));
       this.worldTemplateObjectSelectionList = new RealmsSelectWorldTemplateScreen.WorldTemplateObjectSelectionList(
          this.worldTemplateObjectSelectionList.getTemplates()
       );
-      this.trailerButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.template.button.trailer"), var1x -> this.onTrailer())
-            .bounds(this.width / 2 - 206, this.height - 32, 100, 20)
-            .build()
-      );
-      this.selectButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.template.button.select"), var1x -> this.selectTemplate())
-            .bounds(this.width / 2 - 100, this.height - 32, 100, 20)
-            .build()
-      );
-      Component var1 = this.worldType == RealmsServer.WorldType.MINIGAME ? CommonComponents.GUI_CANCEL : CommonComponents.GUI_BACK;
-      Button var2 = Button.builder(var1, var1x -> this.onClose()).bounds(this.width / 2 + 6, this.height - 32, 100, 20).build();
-      this.addRenderableWidget(var2);
-      this.publisherButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.template.button.publisher"), var1x -> this.onPublish())
-            .bounds(this.width / 2 + 112, this.height - 32, 100, 20)
-            .build()
-      );
-      this.selectButton.active = false;
-      this.trailerButton.visible = false;
-      this.publisherButton.visible = false;
-      this.addWidget(this.worldTemplateObjectSelectionList);
-      this.magicalSpecialHackyFocus(this.worldTemplateObjectSelectionList);
+      this.addRenderableWidget(this.worldTemplateObjectSelectionList);
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(10));
+      var1.defaultCellSetting().alignHorizontallyCenter();
+      this.trailerButton = var1.addChild(Button.builder(TRAILER_BUTTON_NAME, var1x -> this.onTrailer()).width(100).build());
+      this.selectButton = var1.addChild(Button.builder(SELECT_BUTTON_NAME, var1x -> this.selectTemplate()).width(100).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).width(100).build());
+      this.publisherButton = var1.addChild(Button.builder(PUBLISHER_BUTTON_NAME, var1x -> this.onPublish()).width(100).build());
+      this.updateButtonStates();
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.worldTemplateObjectSelectionList.updateSize(this.width, this.height, this.getHeaderHeight(), this.height - this.layout.getFooterHeight());
+      this.layout.arrangeElements();
    }
 
    @Override
    public Component getNarrationMessage() {
       ArrayList var1 = Lists.newArrayListWithCapacity(2);
-      if (this.title != null) {
-         var1.add(this.title);
-      }
-
+      var1.add(this.title);
       if (this.warning != null) {
          var1.addAll(Arrays.asList(this.warning));
       }
@@ -134,34 +118,9 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    void updateButtonStates() {
-      this.publisherButton.visible = this.shouldPublisherBeVisible();
-      this.trailerButton.visible = this.shouldTrailerBeVisible();
-      this.selectButton.active = this.shouldSelectButtonBeActive();
-   }
-
-   private boolean shouldSelectButtonBeActive() {
-      return this.selectedTemplate != -1;
-   }
-
-   private boolean shouldPublisherBeVisible() {
-      return this.selectedTemplate != -1 && !this.getSelectedTemplate().link.isEmpty();
-   }
-
-   private WorldTemplate getSelectedTemplate() {
-      return this.worldTemplateObjectSelectionList.get(this.selectedTemplate);
-   }
-
-   private boolean shouldTrailerBeVisible() {
-      return this.selectedTemplate != -1 && !this.getSelectedTemplate().trailer.isEmpty();
-   }
-
-   @Override
-   public void tick() {
-      super.tick();
-      --this.clicks;
-      if (this.clicks < 0) {
-         this.clicks = 0;
-      }
+      this.publisherButton.visible = this.selectedTemplate != null && !this.selectedTemplate.link.isEmpty();
+      this.trailerButton.visible = this.selectedTemplate != null && !this.selectedTemplate.trailer.isEmpty();
+      this.selectButton.active = this.selectedTemplate != null;
    }
 
    @Override
@@ -169,31 +128,27 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       this.callback.accept(null);
    }
 
-   void selectTemplate() {
-      if (this.hasValidTemplate()) {
-         this.callback.accept(this.getSelectedTemplate());
+   private void selectTemplate() {
+      if (this.selectedTemplate != null) {
+         this.callback.accept(this.selectedTemplate);
       }
    }
 
-   private boolean hasValidTemplate() {
-      return this.selectedTemplate >= 0 && this.selectedTemplate < this.worldTemplateObjectSelectionList.getItemCount();
-   }
-
    private void onTrailer() {
-      if (this.hasValidTemplate()) {
-         WorldTemplate var1 = this.getSelectedTemplate();
-         if (!"".equals(var1.trailer)) {
-            Util.getPlatform().openUri(var1.trailer);
-         }
+      if (this.selectedTemplate != null && !this.selectedTemplate.trailer.isBlank()) {
+         this.minecraft.setScreen(new ConfirmLinkScreen(var1 -> {
+            if (var1) {
+               Util.getPlatform().openUri(this.selectedTemplate.trailer);
+            }
+
+            this.minecraft.setScreen(this);
+         }, this.selectedTemplate.trailer, true));
       }
    }
 
    private void onPublish() {
-      if (this.hasValidTemplate()) {
-         WorldTemplate var1 = this.getSelectedTemplate();
-         if (!"".equals(var1.link)) {
-            Util.getPlatform().openUri(var1.link);
-         }
+      if (this.selectedTemplate != null && !this.selectedTemplate.link.isBlank()) {
+         ConfirmLinkScreen.confirmLinkNow(this.selectedTemplate.link, this, true);
       }
    }
 
@@ -210,7 +165,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
                      .submit(
                         () -> {
                            if (var3.right().isPresent()) {
-                              RealmsSelectWorldTemplateScreen.LOGGER.error("Couldn't fetch templates: {}", var3.right().get());
+                              RealmsSelectWorldTemplateScreen.LOGGER.error("Couldn't fetch templates", (Throwable)var3.right().get());
                               if (RealmsSelectWorldTemplateScreen.this.worldTemplateObjectSelectionList.isEmpty()) {
                                  RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(
                                     I18n.get("mco.template.select.failure")
@@ -250,56 +205,28 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          .start();
    }
 
-   Either<WorldTemplatePaginatedList, String> fetchTemplates(WorldTemplatePaginatedList var1, RealmsClient var2) {
+   Either<WorldTemplatePaginatedList, Exception> fetchTemplates(WorldTemplatePaginatedList var1, RealmsClient var2) {
       try {
          return Either.left(var2.fetchWorldTemplates(var1.page + 1, var1.size, this.worldType));
       } catch (RealmsServiceException var4) {
-         return Either.right(var4.getMessage());
+         return Either.right(var4);
       }
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.toolTip = null;
+      super.render(var1, var2, var3, var4);
       this.currentLink = null;
-      this.hoverWarning = false;
-      this.renderBackground(var1);
-      this.worldTemplateObjectSelectionList.render(var1, var2, var3, var4);
       if (this.noTemplatesMessage != null) {
          this.renderMultilineMessage(var1, var2, var3, this.noTemplatesMessage);
       }
 
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 13, 16777215);
-      if (this.displayWarning) {
-         Component[] var5 = this.warning;
-
-         for(int var6 = 0; var6 < var5.length; ++var6) {
-            int var7 = this.font.width(var5[var6]);
-            int var8 = this.width / 2 - var7 / 2;
-            int var9 = row(-1 + var6);
-            if (var2 >= var8 && var2 <= var8 + var7 && var3 >= var9 && var3 <= var9 + 9) {
-               this.hoverWarning = true;
-            }
-         }
-
-         for(int var10 = 0; var10 < var5.length; ++var10) {
-            Object var11 = var5[var10];
-            int var12 = 10526880;
-            if (this.warningURL != null) {
-               if (this.hoverWarning) {
-                  var12 = 7107012;
-                  var11 = ((Component)var11).copy().withStyle(ChatFormatting.STRIKETHROUGH);
-               } else {
-                  var12 = 3368635;
-               }
-            }
-
-            var1.drawCenteredString(this.font, (Component)var11, this.width / 2, row(-1 + var10), var12);
+      if (this.warning != null) {
+         for(int var5 = 0; var5 < this.warning.length; ++var5) {
+            Component var6 = this.warning[var5];
+            var1.drawCenteredString(this.font, var6, this.width / 2, row(-1 + var5), -6250336);
          }
       }
-
-      super.render(var1, var2, var3, var4);
-      this.renderMousehoverTooltip(var1, this.toolTip, var2, var3);
    }
 
    private void renderMultilineMessage(GuiGraphics var1, int var2, int var3, List<TextRenderingUtils.Line> var4) {
@@ -310,10 +237,10 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          int var9 = this.width / 2 - var8 / 2;
 
          for(TextRenderingUtils.LineSegment var11 : var6.segments) {
-            int var12 = var11.isLink() ? 3368635 : 16777215;
+            int var12 = var11.isLink() ? 3368635 : -1;
             int var13 = var1.drawString(this.font, var11.renderedText(), var9, var7, var12);
             if (var11.isLink() && var2 > var9 && var2 < var13 && var3 > var7 - 3 && var3 < var7 + 8) {
-               this.toolTip = Component.literal(var11.getLinkUrl());
+               this.setTooltipForNextRenderPass(Component.literal(var11.getLinkUrl()));
                this.currentLink = var11.getLinkUrl();
             }
 
@@ -322,96 +249,91 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
    }
 
-   protected void renderMousehoverTooltip(GuiGraphics var1, @Nullable Component var2, int var3, int var4) {
-      if (var2 != null) {
-         int var5 = var3 + 12;
-         int var6 = var4 - 12;
-         int var7 = this.font.width(var2);
-         var1.fillGradient(var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
-         var1.drawString(this.font, var2, var5, var6, 16777215);
-      }
+   int getHeaderHeight() {
+      return this.warning != null ? row(1) : 36;
    }
 
    class Entry extends ObjectSelectionList.Entry<RealmsSelectWorldTemplateScreen.Entry> {
-      final WorldTemplate template;
+      private static final WidgetSprites WEBSITE_LINK_SPRITES = new WidgetSprites(
+         new ResourceLocation("icon/link"), new ResourceLocation("icon/link_highlighted")
+      );
+      private static final WidgetSprites TRAILER_LINK_SPRITES = new WidgetSprites(
+         new ResourceLocation("icon/video_link"), new ResourceLocation("icon/video_link_highlighted")
+      );
+      private static final Component PUBLISHER_LINK_TOOLTIP = Component.translatable("mco.template.info.tooltip");
+      private static final Component TRAILER_LINK_TOOLTIP = Component.translatable("mco.template.trailer.tooltip");
+      public final WorldTemplate template;
+      private long lastClickTime;
+      @Nullable
+      private ImageButton websiteButton;
+      @Nullable
+      private ImageButton trailerButton;
 
       public Entry(WorldTemplate var2) {
          super();
          this.template = var2;
+         if (!var2.link.isBlank()) {
+            this.websiteButton = new ImageButton(
+               15, 15, WEBSITE_LINK_SPRITES, ConfirmLinkScreen.confirmLink(var2.link, RealmsSelectWorldTemplateScreen.this, true), PUBLISHER_LINK_TOOLTIP
+            );
+            this.websiteButton.setTooltip(Tooltip.create(PUBLISHER_LINK_TOOLTIP));
+         }
+
+         if (!var2.trailer.isBlank()) {
+            this.trailerButton = new ImageButton(
+               15, 15, TRAILER_LINK_SPRITES, ConfirmLinkScreen.confirmLink(var2.trailer, RealmsSelectWorldTemplateScreen.this, true), TRAILER_LINK_TOOLTIP
+            );
+            this.trailerButton.setTooltip(Tooltip.create(TRAILER_LINK_TOOLTIP));
+         }
+      }
+
+      @Override
+      public boolean mouseClicked(double var1, double var3, int var5) {
+         if (var5 == 0) {
+            RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.template;
+            RealmsSelectWorldTemplateScreen.this.updateButtonStates();
+            if (Util.getMillis() - this.lastClickTime < 250L && this.isFocused()) {
+               RealmsSelectWorldTemplateScreen.this.callback.accept(this.template);
+            }
+
+            this.lastClickTime = Util.getMillis();
+            if (this.websiteButton != null) {
+               this.websiteButton.mouseClicked(var1, var3, var5);
+            }
+
+            if (this.trailerButton != null) {
+               this.trailerButton.mouseClicked(var1, var3, var5);
+            }
+
+            return true;
+         } else {
+            return super.mouseClicked(var1, var3, var5);
+         }
       }
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         this.renderWorldTemplateItem(var1, this.template, var4, var3, var7, var8);
-      }
-
-      private void renderWorldTemplateItem(GuiGraphics var1, WorldTemplate var2, int var3, int var4, int var5, int var6) {
-         int var7 = var3 + 45 + 20;
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, var2.name, var7, var4 + 2, 16777215, false);
-         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, var2.author, var7, var4 + 15, 7105644, false);
-         var1.drawString(
-            RealmsSelectWorldTemplateScreen.this.font,
-            var2.version,
-            var7 + 227 - RealmsSelectWorldTemplateScreen.this.font.width(var2.version),
-            var4 + 1,
-            7105644,
-            false
-         );
-         if (!"".equals(var2.link) || !"".equals(var2.trailer) || !"".equals(var2.recommendedPlayers)) {
-            this.drawIcons(var1, var7 - 1, var4 + 25, var5, var6, var2.link, var2.trailer, var2.recommendedPlayers);
+         var1.blit(RealmsTextureManager.worldTemplate(this.template.id, this.template.image), var4 + 1, var3 + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
+         var1.blitSprite(RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, var4, var3 + 1, 40, 40);
+         boolean var11 = true;
+         int var12 = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version);
+         if (this.websiteButton != null) {
+            this.websiteButton.setPosition(var4 + var5 - var12 - this.websiteButton.getWidth() - 10, var3);
+            this.websiteButton.render(var1, var7, var8, var10);
          }
 
-         this.drawImage(var1, var3, var4 + 1, var5, var6, var2);
-      }
-
-      private void drawImage(GuiGraphics var1, int var2, int var3, int var4, int var5, WorldTemplate var6) {
-         var1.blit(RealmsTextureManager.worldTemplate(var6.id, var6.image), var2 + 1, var3 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         var1.blit(RealmsSelectWorldTemplateScreen.SLOT_FRAME_LOCATION, var2, var3, 0.0F, 0.0F, 40, 40, 40, 40);
-      }
-
-      private void drawIcons(GuiGraphics var1, int var2, int var3, int var4, int var5, String var6, String var7, String var8) {
-         if (!"".equals(var8)) {
-            var1.drawString(RealmsSelectWorldTemplateScreen.this.font, var8, var2, var3 + 4, 5000268, false);
+         if (this.trailerButton != null) {
+            this.trailerButton.setPosition(var4 + var5 - var12 - this.trailerButton.getWidth() * 2 - 15, var3);
+            this.trailerButton.render(var1, var7, var8, var10);
          }
 
-         int var9 = "".equals(var8) ? 0 : RealmsSelectWorldTemplateScreen.this.font.width(var8) + 2;
-         boolean var10 = false;
-         boolean var11 = false;
-         boolean var12 = "".equals(var6);
-         if (var4 >= var2 + var9
-            && var4 <= var2 + var9 + 32
-            && var5 >= var3
-            && var5 <= var3 + 15
-            && var5 < RealmsSelectWorldTemplateScreen.this.height - 15
-            && var5 > 32) {
-            if (var4 <= var2 + 15 + var9 && var4 > var9) {
-               if (var12) {
-                  var11 = true;
-               } else {
-                  var10 = true;
-               }
-            } else if (!var12) {
-               var11 = true;
-            }
-         }
-
-         if (!var12) {
-            float var13 = var10 ? 15.0F : 0.0F;
-            var1.blit(RealmsSelectWorldTemplateScreen.LINK_ICON, var2 + var9, var3, var13, 0.0F, 15, 15, 30, 15);
-         }
-
-         if (!"".equals(var7)) {
-            int var15 = var2 + var9 + (var12 ? 0 : 17);
-            float var14 = var11 ? 15.0F : 0.0F;
-            var1.blit(RealmsSelectWorldTemplateScreen.TRAILER_ICON, var15, var3, var14, 0.0F, 15, 15, 30, 15);
-         }
-
-         if (var10) {
-            RealmsSelectWorldTemplateScreen.this.toolTip = RealmsSelectWorldTemplateScreen.PUBLISHER_LINK_TOOLTIP;
-            RealmsSelectWorldTemplateScreen.this.currentLink = var6;
-         } else if (var11 && !"".equals(var7)) {
-            RealmsSelectWorldTemplateScreen.this.toolTip = RealmsSelectWorldTemplateScreen.TRAILER_LINK_TOOLTIP;
-            RealmsSelectWorldTemplateScreen.this.currentLink = var7;
+         int var13 = var4 + 45 + 20;
+         int var14 = var3 + 5;
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.name, var13, var14, -1, false);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.version, var4 + var5 - var12 - 5, var14, 7105644, false);
+         var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.author, var13, var14 + 9 + 5, -6250336, false);
+         if (!this.template.recommendedPlayers.isBlank()) {
+            var1.drawString(RealmsSelectWorldTemplateScreen.this.font, this.template.recommendedPlayers, var13, var3 + var6 - 9 / 2 - 5, 5000268, false);
          }
       }
 
@@ -436,8 +358,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          super(
             RealmsSelectWorldTemplateScreen.this.width,
             RealmsSelectWorldTemplateScreen.this.height,
-            RealmsSelectWorldTemplateScreen.this.displayWarning ? RealmsSelectWorldTemplateScreen.row(1) : 32,
-            RealmsSelectWorldTemplateScreen.this.height - 40,
+            RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
+            RealmsSelectWorldTemplateScreen.this.height - 36,
             46
          );
          var2.forEach(this::addEntry);
@@ -449,36 +371,17 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
-         if (var5 == 0 && var3 >= (double)this.y0 && var3 <= (double)this.y1) {
-            int var6 = this.width / 2 - 150;
-            if (RealmsSelectWorldTemplateScreen.this.currentLink != null) {
-               Util.getPlatform().openUri(RealmsSelectWorldTemplateScreen.this.currentLink);
-            }
-
-            int var7 = (int)Math.floor(var3 - (double)this.y0) - this.headerHeight + (int)this.getScrollAmount() - 4;
-            int var8 = var7 / this.itemHeight;
-            if (var1 >= (double)var6 && var1 < (double)this.getScrollbarPosition() && var8 >= 0 && var7 >= 0 && var8 < this.getItemCount()) {
-               this.selectItem(var8);
-               this.itemClicked(var7, var8, var1, var3, this.width, var5);
-               if (var8 >= RealmsSelectWorldTemplateScreen.this.worldTemplateObjectSelectionList.getItemCount()) {
-                  return super.mouseClicked(var1, var3, var5);
-               }
-
-               RealmsSelectWorldTemplateScreen.this.clicks += 7;
-               if (RealmsSelectWorldTemplateScreen.this.clicks >= 10) {
-                  RealmsSelectWorldTemplateScreen.this.selectTemplate();
-               }
-
-               return true;
-            }
+         if (RealmsSelectWorldTemplateScreen.this.currentLink != null) {
+            ConfirmLinkScreen.confirmLinkNow(RealmsSelectWorldTemplateScreen.this.currentLink, RealmsSelectWorldTemplateScreen.this, true);
+            return true;
+         } else {
+            return super.mouseClicked(var1, var3, var5);
          }
-
-         return super.mouseClicked(var1, var3, var5);
       }
 
       public void setSelected(@Nullable RealmsSelectWorldTemplateScreen.Entry var1) {
          super.setSelected(var1);
-         RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.children().indexOf(var1);
+         RealmsSelectWorldTemplateScreen.this.selectedTemplate = var1 == null ? null : var1.template;
          RealmsSelectWorldTemplateScreen.this.updateButtonStates();
       }
 
@@ -492,17 +395,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          return 300;
       }
 
-      @Override
-      public void renderBackground(GuiGraphics var1) {
-         RealmsSelectWorldTemplateScreen.this.renderBackground(var1);
-      }
-
       public boolean isEmpty() {
          return this.getItemCount() == 0;
-      }
-
-      public WorldTemplate get(int var1) {
-         return this.children().get(var1).template;
       }
 
       public List<WorldTemplate> getTemplates() {

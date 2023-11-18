@@ -20,6 +20,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
@@ -58,6 +60,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public class Turtle extends Animal {
    private static final EntityDataAccessor<BlockPos> HOME_POS = SynchedEntityData.defineId(Turtle.class, EntityDataSerializers.BLOCK_POS);
@@ -298,6 +301,7 @@ public class Turtle extends Animal {
          BlockPos var1 = this.blockPosition();
          if (TurtleEggBlock.onSand(this.level(), var1)) {
             this.level().levelEvent(2001, var1, Block.getId(this.level().getBlockState(var1.below())));
+            this.gameEvent(GameEvent.ENTITY_ACTION);
          }
       }
    }
@@ -332,6 +336,11 @@ public class Turtle extends Animal {
    @Override
    public void thunderHit(ServerLevel var1, LightningBolt var2) {
       this.hurt(this.damageSources().lightningBolt(), 3.4028235E38F);
+   }
+
+   @Override
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height + (this.isBaby() ? 0.0F : 0.15625F) * var3, -0.25F * var3);
    }
 
    static class TurtleBreedGoal extends BreedGoal {

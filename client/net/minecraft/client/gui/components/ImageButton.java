@@ -6,51 +6,24 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class ImageButton extends Button {
-   protected final ResourceLocation resourceLocation;
-   protected final int xTexStart;
-   protected final int yTexStart;
-   protected final int yDiffTex;
-   protected final int textureWidth;
-   protected final int textureHeight;
+   protected final WidgetSprites sprites;
 
-   public ImageButton(int var1, int var2, int var3, int var4, int var5, int var6, ResourceLocation var7, Button.OnPress var8) {
-      this(var1, var2, var3, var4, var5, var6, var4, var7, 256, 256, var8);
+   public ImageButton(int var1, int var2, int var3, int var4, WidgetSprites var5, Button.OnPress var6) {
+      this(var1, var2, var3, var4, var5, var6, CommonComponents.EMPTY);
    }
 
-   public ImageButton(int var1, int var2, int var3, int var4, int var5, int var6, int var7, ResourceLocation var8, Button.OnPress var9) {
-      this(var1, var2, var3, var4, var5, var6, var7, var8, 256, 256, var9);
+   public ImageButton(int var1, int var2, int var3, int var4, WidgetSprites var5, Button.OnPress var6, Component var7) {
+      super(var1, var2, var3, var4, var7, var6, DEFAULT_NARRATION);
+      this.sprites = var5;
    }
 
-   public ImageButton(int var1, int var2, int var3, int var4, int var5, int var6, int var7, ResourceLocation var8, int var9, int var10, Button.OnPress var11) {
-      this(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, CommonComponents.EMPTY);
-   }
-
-   public ImageButton(
-      int var1, int var2, int var3, int var4, int var5, int var6, int var7, ResourceLocation var8, int var9, int var10, Button.OnPress var11, Component var12
-   ) {
-      super(var1, var2, var3, var4, var12, var11, DEFAULT_NARRATION);
-      this.textureWidth = var9;
-      this.textureHeight = var10;
-      this.xTexStart = var5;
-      this.yTexStart = var6;
-      this.yDiffTex = var7;
-      this.resourceLocation = var8;
+   public ImageButton(int var1, int var2, WidgetSprites var3, Button.OnPress var4, Component var5) {
+      this(0, 0, var1, var2, var3, var4, var5);
    }
 
    @Override
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderTexture(
-         var1,
-         this.resourceLocation,
-         this.getX(),
-         this.getY(),
-         this.xTexStart,
-         this.yTexStart,
-         this.yDiffTex,
-         this.width,
-         this.height,
-         this.textureWidth,
-         this.textureHeight
-      );
+      ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
+      var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);
    }
 }

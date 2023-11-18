@@ -11,7 +11,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public class KnowledgeBookItem extends Item {
                   return InteractionResultHolder.fail(var4);
                }
 
-               var7.add((Recipe)var11.get());
+               var7.add((RecipeHolder)var11.get());
             }
 
             var2.awardRecipes(var7);

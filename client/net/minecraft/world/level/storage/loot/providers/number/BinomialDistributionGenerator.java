@@ -1,20 +1,25 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.google.common.collect.Sets;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public final class BinomialDistributionGenerator implements NumberProvider {
-   final NumberProvider n;
-   final NumberProvider p;
+public record BinomialDistributionGenerator(NumberProvider b, NumberProvider c) implements NumberProvider {
+   private final NumberProvider n;
+   private final NumberProvider p;
+   public static final Codec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n),
+               NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)
+            )
+            .apply(var0, BinomialDistributionGenerator::new)
+   );
 
-   BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
+   public BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
       super();
       this.n = var1;
       this.p = var2;
@@ -53,22 +58,5 @@ public final class BinomialDistributionGenerator implements NumberProvider {
    @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return Sets.union(this.n.getReferencedContextParams(), this.p.getReferencedContextParams());
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<BinomialDistributionGenerator> {
-      public Serializer() {
-         super();
-      }
-
-      public BinomialDistributionGenerator deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         NumberProvider var3 = GsonHelper.getAsObject(var1, "n", var2, NumberProvider.class);
-         NumberProvider var4 = GsonHelper.getAsObject(var1, "p", var2, NumberProvider.class);
-         return new BinomialDistributionGenerator(var3, var4);
-      }
-
-      public void serialize(JsonObject var1, BinomialDistributionGenerator var2, JsonSerializationContext var3) {
-         var1.add("n", var3.serialize(var2.n));
-         var1.add("p", var3.serialize(var2.p));
-      }
    }
 }

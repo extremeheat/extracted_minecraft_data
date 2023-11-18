@@ -7,9 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 
 public class SystemToast implements Toast {
+   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("toast/system");
    private static final int MAX_LINE_SIZE = 200;
    private static final int LINE_SPACING = 12;
    private static final int MARGIN = 10;
@@ -67,18 +69,18 @@ public class SystemToast implements Toast {
 
       int var5 = this.width();
       if (var5 == 160 && this.messageLines.size() <= 1) {
-         var1.blit(TEXTURE, 0, 0, 0, 64, var5, this.height());
+         var1.blitSprite(BACKGROUND_SPRITE, 0, 0, var5, this.height());
       } else {
          int var6 = this.height();
          boolean var7 = true;
          int var8 = Math.min(4, var6 - 28);
-         this.renderBackgroundRow(var1, var2, var5, 0, 0, 28);
+         this.renderBackgroundRow(var1, var5, 0, 0, 28);
 
          for(int var9 = 28; var9 < var6 - var8; var9 += 10) {
-            this.renderBackgroundRow(var1, var2, var5, 16, var9, Math.min(16, var6 - var9 - var8));
+            this.renderBackgroundRow(var1, var5, 16, var9, Math.min(16, var6 - var9 - var8));
          }
 
-         this.renderBackgroundRow(var1, var2, var5, 32 - var8, var6 - var8, var8);
+         this.renderBackgroundRow(var1, var5, 32 - var8, var6 - var8, var8);
       }
 
       if (this.messageLines == null) {
@@ -96,16 +98,17 @@ public class SystemToast implements Toast {
          : Toast.Visibility.HIDE;
    }
 
-   private void renderBackgroundRow(GuiGraphics var1, ToastComponent var2, int var3, int var4, int var5, int var6) {
-      int var7 = var4 == 0 ? 20 : 5;
-      int var8 = Math.min(60, var3 - var7);
-      var1.blit(TEXTURE, 0, var5, 0, 64 + var4, var7, var6);
+   private void renderBackgroundRow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      int var6 = var3 == 0 ? 20 : 5;
+      int var7 = Math.min(60, var2 - var6);
+      ResourceLocation var8 = BACKGROUND_SPRITE;
+      var1.blitSprite(var8, 160, 32, 0, var3, 0, var4, var6, var5);
 
-      for(int var9 = var7; var9 < var3 - var8; var9 += 64) {
-         var1.blit(TEXTURE, var9, var5, 32, 64 + var4, Math.min(64, var3 - var9 - var8), var6);
+      for(int var9 = var6; var9 < var2 - var7; var9 += 64) {
+         var1.blitSprite(var8, 160, 32, 32, var3, var9, var4, Math.min(64, var2 - var9 - var7), var5);
       }
 
-      var1.blit(TEXTURE, var3 - var8, var5, 160 - var8, 64 + var4, var8, var6);
+      var1.blitSprite(var8, 160, 32, 160 - var7, var3, var2 - var7, var4, var7, var5);
    }
 
    public void reset(Component var1, @Nullable Component var2) {

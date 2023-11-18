@@ -11,16 +11,16 @@ public final class PlayerMap {
       super();
    }
 
-   public Set<ServerPlayer> getPlayers(long var1) {
+   public Set<ServerPlayer> getAllPlayers() {
       return this.players.keySet();
    }
 
-   public void addPlayer(long var1, ServerPlayer var3, boolean var4) {
-      this.players.put(var3, var4);
+   public void addPlayer(ServerPlayer var1, boolean var2) {
+      this.players.put(var1, var2);
    }
 
-   public void removePlayer(long var1, ServerPlayer var3) {
-      this.players.removeBoolean(var3);
+   public void removePlayer(ServerPlayer var1) {
+      this.players.removeBoolean(var1);
    }
 
    public void ignorePlayer(ServerPlayer var1) {
@@ -37,8 +37,5 @@ public final class PlayerMap {
 
    public boolean ignored(ServerPlayer var1) {
       return this.players.getBoolean(var1);
-   }
-
-   public void updatePlayer(long var1, long var3, ServerPlayer var5) {
    }
 }

@@ -13,6 +13,9 @@ import net.minecraft.network.protocol.game.ClientboundSetObjectivePacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Score;
@@ -59,7 +62,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    @Override
-   public void setDisplayObjective(int var1, @Nullable Objective var2) {
+   public void setDisplayObjective(DisplaySlot var1, @Nullable Objective var2) {
       Objective var3 = this.getDisplayObjective(var1);
       super.setDisplayObjective(var1, var2);
       if (var3 != var2 && var3 != null) {
@@ -160,14 +163,14 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 0));
 
-      for(int var3 = 0; var3 < 19; ++var3) {
-         if (this.getDisplayObjective(var3) == var1) {
-            var2.add(new ClientboundSetDisplayObjectivePacket(var3, var1));
+      for(DisplaySlot var6 : DisplaySlot.values()) {
+         if (this.getDisplayObjective(var6) == var1) {
+            var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
       }
 
-      for(Score var4 : this.getPlayerScores(var1)) {
-         var2.add(new ClientboundSetScorePacket(ServerScoreboard.Method.CHANGE, var4.getObjective().getName(), var4.getOwner(), var4.getScore()));
+      for(Score var8 : this.getPlayerScores(var1)) {
+         var2.add(new ClientboundSetScorePacket(ServerScoreboard.Method.CHANGE, var8.getObjective().getName(), var8.getOwner(), var8.getScore()));
       }
 
       return var2;
@@ -189,9 +192,9 @@ public class ServerScoreboard extends Scoreboard {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 1));
 
-      for(int var3 = 0; var3 < 19; ++var3) {
-         if (this.getDisplayObjective(var3) == var1) {
-            var2.add(new ClientboundSetDisplayObjectivePacket(var3, var1));
+      for(DisplaySlot var6 : DisplaySlot.values()) {
+         if (this.getDisplayObjective(var6) == var1) {
+            var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
       }
 
@@ -213,8 +216,8 @@ public class ServerScoreboard extends Scoreboard {
    public int getObjectiveDisplaySlotCount(Objective var1) {
       int var2 = 0;
 
-      for(int var3 = 0; var3 < 19; ++var3) {
-         if (this.getDisplayObjective(var3) == var1) {
+      for(DisplaySlot var6 : DisplaySlot.values()) {
+         if (this.getDisplayObjective(var6) == var1) {
             ++var2;
          }
       }
@@ -222,13 +225,17 @@ public class ServerScoreboard extends Scoreboard {
       return var2;
    }
 
-   public ScoreboardSaveData createData() {
+   public SavedData.Factory<ScoreboardSaveData> dataFactory() {
+      return new SavedData.Factory<>(this::createData, this::createData, DataFixTypes.SAVED_DATA_SCOREBOARD);
+   }
+
+   private ScoreboardSaveData createData() {
       ScoreboardSaveData var1 = new ScoreboardSaveData(this);
       this.addDirtyListener(var1::setDirty);
       return var1;
    }
 
-   public ScoreboardSaveData createData(CompoundTag var1) {
+   private ScoreboardSaveData createData(CompoundTag var1) {
       return this.createData().load(var1);
    }
 

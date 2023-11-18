@@ -61,7 +61,7 @@ public class TrimPatterns {
 
    private static void register(BootstapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {
       TrimPattern var3 = new TrimPattern(
-         var2.location(), BuiltInRegistries.ITEM.wrapAsHolder(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var2.location()))
+         var2.location(), BuiltInRegistries.ITEM.wrapAsHolder(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var2.location())), false
       );
       var0.register(var2, var3);
    }

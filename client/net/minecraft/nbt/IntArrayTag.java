@@ -10,33 +10,30 @@ import org.apache.commons.lang3.ArrayUtils;
 public class IntArrayTag extends CollectionTag<IntTag> {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<IntArrayTag> TYPE = new TagType.VariableSize<IntArrayTag>() {
-      public IntArrayTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBytes(24L);
-         int var4 = var1.readInt();
-         var3.accountBytes(4L * (long)var4);
-         int[] var5 = new int[var4];
-
-         for(int var6 = 0; var6 < var4; ++var6) {
-            var5[var6] = var1.readInt();
-         }
-
-         return new IntArrayTag(var5);
+      public IntArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return new IntArrayTag(readAccounted(var1, var2));
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) throws IOException {
-         int var3 = var1.readInt();
-         int[] var4 = new int[var3];
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         return var2.visit(readAccounted(var1, var3));
+      }
 
-         for(int var5 = 0; var5 < var3; ++var5) {
-            var4[var5] = var1.readInt();
+      private static int[] readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(24L);
+         int var2 = var0.readInt();
+         var1.accountBytes(4L, (long)var2);
+         int[] var3 = new int[var2];
+
+         for(int var4 = 0; var4 < var2; ++var4) {
+            var3[var4] = var0.readInt();
          }
 
-         return var2.visit(var4);
+         return var3;
       }
 
       @Override
-      public void skip(DataInput var1) throws IOException {
+      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          var1.skipBytes(var1.readInt() * 4);
       }
 

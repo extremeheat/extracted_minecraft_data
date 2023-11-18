@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -56,7 +57,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return true;
    }
 
@@ -82,7 +83,7 @@ public class SeagrassBlock extends BushBlock implements BonemealableBlock, Liqui
    }
 
    @Override
-   public boolean canPlaceLiquid(BlockGetter var1, BlockPos var2, BlockState var3, Fluid var4) {
+   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return false;
    }
 

@@ -11,10 +11,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
@@ -106,7 +107,7 @@ public class EntitySelectorOptions {
          register("distance", var0 -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Doubles var2 = MinMaxBounds.Doubles.fromReader(var0.getReader());
-            if ((var2.getMin() == null || !(var2.getMin() < 0.0)) && (var2.getMax() == null || !(var2.getMax() < 0.0))) {
+            if ((!var2.min().isPresent() || !(var2.min().get() < 0.0)) && (!var2.max().isPresent() || !(var2.max().get() < 0.0))) {
                var0.setDistance(var2);
                var0.setWorldLimited();
             } else {
@@ -117,7 +118,7 @@ public class EntitySelectorOptions {
          register("level", var0 -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Ints var2 = MinMaxBounds.Ints.fromReader(var0.getReader());
-            if ((var2.getMin() == null || var2.getMin() >= 0) && (var2.getMax() == null || var2.getMax() >= 0)) {
+            if ((!var2.min().isPresent() || var2.min().get() >= 0) && (!var2.max().isPresent() || var2.max().get() >= 0)) {
                var0.setLevel(var2);
                var0.setIncludesEntities(false);
             } else {
@@ -456,7 +457,7 @@ public class EntitySelectorOptions {
                      ServerAdvancementManager var4x = var2x.getServer().getAdvancements();
 
                      for(Entry var6x : var2.entrySet()) {
-                        Advancement var7x = var4x.getAdvancement((ResourceLocation)var6x.getKey());
+                        AdvancementHolder var7x = var4x.get((ResourceLocation)var6x.getKey());
                         if (var7x == null || !((Predicate)var6x.getValue()).test(var3x.getOrStartProgress(var7x))) {
                            return false;
                         }
@@ -489,7 +490,7 @@ public class EntitySelectorOptions {
                               .withParameter(LootContextParams.THIS_ENTITY, var2x)
                               .withParameter(LootContextParams.ORIGIN, var2x.position())
                               .create(LootContextParamSets.SELECTOR);
-                           LootContext var6 = new LootContext.Builder(var5).create(null);
+                           LootContext var6 = new LootContext.Builder(var5).create(Optional.empty());
                            var6.pushVisitedElement(LootContext.createVisitedEntry(var4));
                            return var1 ^ var4.test(var6);
                         }

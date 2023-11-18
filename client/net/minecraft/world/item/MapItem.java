@@ -363,7 +363,7 @@ public class MapItem extends ComplexItem {
       if (var4.isAdvanced()) {
          if (var6 != null) {
             if (!var8 && var9 == 0) {
-               var3.add(Component.translatable("filled_map.id", var5).withStyle(ChatFormatting.GRAY));
+               var3.add(getTooltipForId(var5));
             }
 
             int var10 = Math.min(var6.scale + var9, 4);
@@ -373,6 +373,14 @@ public class MapItem extends ComplexItem {
             var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
          }
       }
+   }
+
+   private static Component getTooltipForId(int var0) {
+      return Component.translatable("filled_map.id", var0).withStyle(ChatFormatting.GRAY);
+   }
+
+   public static Component getTooltipForId(ItemStack var0) {
+      return getTooltipForId(getMapId(var0));
    }
 
    public static int getColor(ItemStack var0) {

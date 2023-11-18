@@ -2,12 +2,21 @@ package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -21,76 +30,69 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyC
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Team;
 
-public class EntityPredicate {
-   public static final EntityPredicate ANY = new EntityPredicate(
-      EntityTypePredicate.ANY,
-      DistancePredicate.ANY,
-      LocationPredicate.ANY,
-      LocationPredicate.ANY,
-      MobEffectsPredicate.ANY,
-      NbtPredicate.ANY,
-      EntityFlagsPredicate.ANY,
-      EntityEquipmentPredicate.ANY,
-      EntitySubPredicate.ANY,
-      null
+public record EntityPredicate(
+   Optional<EntityTypePredicate> b,
+   Optional<DistancePredicate> c,
+   Optional<LocationPredicate> d,
+   Optional<LocationPredicate> e,
+   Optional<MobEffectsPredicate> f,
+   Optional<NbtPredicate> g,
+   Optional<EntityFlagsPredicate> h,
+   Optional<EntityEquipmentPredicate> i,
+   Optional<EntitySubPredicate> j,
+   Optional<EntityPredicate> k,
+   Optional<EntityPredicate> l,
+   Optional<EntityPredicate> m,
+   Optional<String> n
+) {
+   private final Optional<EntityTypePredicate> entityType;
+   private final Optional<DistancePredicate> distanceToPlayer;
+   private final Optional<LocationPredicate> location;
+   private final Optional<LocationPredicate> steppingOnLocation;
+   private final Optional<MobEffectsPredicate> effects;
+   private final Optional<NbtPredicate> nbt;
+   private final Optional<EntityFlagsPredicate> flags;
+   private final Optional<EntityEquipmentPredicate> equipment;
+   private final Optional<EntitySubPredicate> subPredicate;
+   private final Optional<EntityPredicate> vehicle;
+   private final Optional<EntityPredicate> passenger;
+   private final Optional<EntityPredicate> targetedEntity;
+   private final Optional<String> team;
+   public static final Codec<EntityPredicate> CODEC = ExtraCodecs.recursive(
+      var0 -> RecordCodecBuilder.create(
+            var1 -> var1.group(
+                     ExtraCodecs.strictOptionalField(EntityTypePredicate.CODEC, "type").forGetter(EntityPredicate::entityType),
+                     ExtraCodecs.strictOptionalField(DistancePredicate.CODEC, "distance").forGetter(EntityPredicate::distanceToPlayer),
+                     ExtraCodecs.strictOptionalField(LocationPredicate.CODEC, "location").forGetter(EntityPredicate::location),
+                     ExtraCodecs.strictOptionalField(LocationPredicate.CODEC, "stepping_on").forGetter(EntityPredicate::steppingOnLocation),
+                     ExtraCodecs.strictOptionalField(MobEffectsPredicate.CODEC, "effects").forGetter(EntityPredicate::effects),
+                     ExtraCodecs.strictOptionalField(NbtPredicate.CODEC, "nbt").forGetter(EntityPredicate::nbt),
+                     ExtraCodecs.strictOptionalField(EntityFlagsPredicate.CODEC, "flags").forGetter(EntityPredicate::flags),
+                     ExtraCodecs.strictOptionalField(EntityEquipmentPredicate.CODEC, "equipment").forGetter(EntityPredicate::equipment),
+                     ExtraCodecs.strictOptionalField(EntitySubPredicate.CODEC, "type_specific").forGetter(EntityPredicate::subPredicate),
+                     ExtraCodecs.strictOptionalField(var0, "vehicle").forGetter(EntityPredicate::vehicle),
+                     ExtraCodecs.strictOptionalField(var0, "passenger").forGetter(EntityPredicate::passenger),
+                     ExtraCodecs.strictOptionalField(var0, "targeted_entity").forGetter(EntityPredicate::targetedEntity),
+                     ExtraCodecs.strictOptionalField(Codec.STRING, "team").forGetter(EntityPredicate::team)
+                  )
+                  .apply(var1, EntityPredicate::new)
+         )
    );
-   private final EntityTypePredicate entityType;
-   private final DistancePredicate distanceToPlayer;
-   private final LocationPredicate location;
-   private final LocationPredicate steppingOnLocation;
-   private final MobEffectsPredicate effects;
-   private final NbtPredicate nbt;
-   private final EntityFlagsPredicate flags;
-   private final EntityEquipmentPredicate equipment;
-   private final EntitySubPredicate subPredicate;
-   private final EntityPredicate vehicle;
-   private final EntityPredicate passenger;
-   private final EntityPredicate targetedEntity;
-   @Nullable
-   private final String team;
 
-   private EntityPredicate(
-      EntityTypePredicate var1,
-      DistancePredicate var2,
-      LocationPredicate var3,
-      LocationPredicate var4,
-      MobEffectsPredicate var5,
-      NbtPredicate var6,
-      EntityFlagsPredicate var7,
-      EntityEquipmentPredicate var8,
-      EntitySubPredicate var9,
-      @Nullable String var10
-   ) {
-      super();
-      this.entityType = var1;
-      this.distanceToPlayer = var2;
-      this.location = var3;
-      this.steppingOnLocation = var4;
-      this.effects = var5;
-      this.nbt = var6;
-      this.flags = var7;
-      this.equipment = var8;
-      this.subPredicate = var9;
-      this.passenger = this;
-      this.vehicle = this;
-      this.targetedEntity = this;
-      this.team = var10;
-   }
-
-   EntityPredicate(
-      EntityTypePredicate var1,
-      DistancePredicate var2,
-      LocationPredicate var3,
-      LocationPredicate var4,
-      MobEffectsPredicate var5,
-      NbtPredicate var6,
-      EntityFlagsPredicate var7,
-      EntityEquipmentPredicate var8,
-      EntitySubPredicate var9,
-      EntityPredicate var10,
-      EntityPredicate var11,
-      EntityPredicate var12,
-      @Nullable String var13
+   public EntityPredicate(
+      Optional<EntityTypePredicate> var1,
+      Optional<DistancePredicate> var2,
+      Optional<LocationPredicate> var3,
+      Optional<LocationPredicate> var4,
+      Optional<MobEffectsPredicate> var5,
+      Optional<NbtPredicate> var6,
+      Optional<EntityFlagsPredicate> var7,
+      Optional<EntityEquipmentPredicate> var8,
+      Optional<EntitySubPredicate> var9,
+      Optional<EntityPredicate> var10,
+      Optional<EntityPredicate> var11,
+      Optional<EntityPredicate> var12,
+      Optional<String> var13
    ) {
       super();
       this.entityType = var1;
@@ -108,44 +110,52 @@ public class EntityPredicate {
       this.team = var13;
    }
 
-   public static ContextAwarePredicate fromJson(JsonObject var0, String var1, DeserializationContext var2) {
+   public static Optional<ContextAwarePredicate> fromJson(JsonObject var0, String var1, DeserializationContext var2) {
       JsonElement var3 = var0.get(var1);
       return fromElement(var1, var2, var3);
    }
 
-   public static ContextAwarePredicate[] fromJsonArray(JsonObject var0, String var1, DeserializationContext var2) {
+   public static List<ContextAwarePredicate> fromJsonArray(JsonObject var0, String var1, DeserializationContext var2) {
       JsonElement var3 = var0.get(var1);
       if (var3 != null && !var3.isJsonNull()) {
          JsonArray var4 = GsonHelper.convertToJsonArray(var3, var1);
-         ContextAwarePredicate[] var5 = new ContextAwarePredicate[var4.size()];
+         ArrayList var5 = new ArrayList(var4.size());
 
          for(int var6 = 0; var6 < var4.size(); ++var6) {
-            var5[var6] = fromElement(var1 + "[" + var6 + "]", var2, var4.get(var6));
+            fromElement(var1 + "[" + var6 + "]", var2, var4.get(var6)).ifPresent(var5::add);
          }
 
-         return var5;
+         return List.copyOf(var5);
       } else {
-         return new ContextAwarePredicate[0];
+         return List.of();
       }
    }
 
-   private static ContextAwarePredicate fromElement(String var0, DeserializationContext var1, @Nullable JsonElement var2) {
-      ContextAwarePredicate var3 = ContextAwarePredicate.fromElement(var0, var1, var2, LootContextParamSets.ADVANCEMENT_ENTITY);
-      if (var3 != null) {
-         return var3;
+   private static Optional<ContextAwarePredicate> fromElement(String var0, DeserializationContext var1, @Nullable JsonElement var2) {
+      Optional var3 = ContextAwarePredicate.fromElement(var0, var1, var2, LootContextParamSets.ADVANCEMENT_ENTITY);
+      if (var3.isPresent()) {
+         return (Optional<ContextAwarePredicate>)var3.get();
       } else {
-         EntityPredicate var4 = fromJson(var2);
+         Optional var4 = fromJson(var2);
          return wrap(var4);
       }
    }
 
+   public static ContextAwarePredicate wrap(EntityPredicate.Builder var0) {
+      return wrap(var0.build());
+   }
+
+   public static Optional<ContextAwarePredicate> wrap(Optional<EntityPredicate> var0) {
+      return var0.map(EntityPredicate::wrap);
+   }
+
+   public static List<ContextAwarePredicate> wrap(EntityPredicate.Builder... var0) {
+      return Stream.of(var0).map(EntityPredicate::wrap).toList();
+   }
+
    public static ContextAwarePredicate wrap(EntityPredicate var0) {
-      if (var0 == ANY) {
-         return ContextAwarePredicate.ANY;
-      } else {
-         LootItemCondition var1 = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, var0).build();
-         return new ContextAwarePredicate(new LootItemCondition[]{var1});
-      }
+      LootItemCondition var1 = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, var0).build();
+      return new ContextAwarePredicate(List.of(var1));
    }
 
    public boolean matches(ServerPlayer var1, @Nullable Entity var2) {
@@ -153,51 +163,51 @@ public class EntityPredicate {
    }
 
    public boolean matches(ServerLevel var1, @Nullable Vec3 var2, @Nullable Entity var3) {
-      if (this == ANY) {
-         return true;
-      } else if (var3 == null) {
+      if (var3 == null) {
          return false;
-      } else if (!this.entityType.matches(var3.getType())) {
+      } else if (this.entityType.isPresent() && !this.entityType.get().matches(var3.getType())) {
          return false;
       } else {
          if (var2 == null) {
-            if (this.distanceToPlayer != DistancePredicate.ANY) {
+            if (this.distanceToPlayer.isPresent()) {
                return false;
             }
-         } else if (!this.distanceToPlayer.matches(var2.x, var2.y, var2.z, var3.getX(), var3.getY(), var3.getZ())) {
+         } else if (this.distanceToPlayer.isPresent() && !this.distanceToPlayer.get().matches(var2.x, var2.y, var2.z, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          }
 
-         if (!this.location.matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
+         if (this.location.isPresent() && !this.location.get().matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          } else {
-            if (this.steppingOnLocation != LocationPredicate.ANY) {
+            if (this.steppingOnLocation.isPresent()) {
                Vec3 var4 = Vec3.atCenterOf(var3.getOnPos());
-               if (!this.steppingOnLocation.matches(var1, var4.x(), var4.y(), var4.z())) {
+               if (!this.steppingOnLocation.get().matches(var1, var4.x(), var4.y(), var4.z())) {
                   return false;
                }
             }
 
-            if (!this.effects.matches(var3)) {
+            if (this.effects.isPresent() && !this.effects.get().matches(var3)) {
                return false;
-            } else if (!this.nbt.matches(var3)) {
+            } else if (this.nbt.isPresent() && !this.nbt.get().matches(var3)) {
                return false;
-            } else if (!this.flags.matches(var3)) {
+            } else if (this.flags.isPresent() && !this.flags.get().matches(var3)) {
                return false;
-            } else if (!this.equipment.matches(var3)) {
+            } else if (this.equipment.isPresent() && !this.equipment.get().matches(var3)) {
                return false;
-            } else if (!this.subPredicate.matches(var3, var1, var2)) {
+            } else if (this.subPredicate.isPresent() && !this.subPredicate.get().matches(var3, var1, var2)) {
                return false;
-            } else if (!this.vehicle.matches(var1, var2, var3.getVehicle())) {
+            } else if (this.vehicle.isPresent() && !this.vehicle.get().matches(var1, var2, var3.getVehicle())) {
                return false;
-            } else if (this.passenger != ANY && var3.getPassengers().stream().noneMatch(var3x -> this.passenger.matches(var1, var2, var3x))) {
+            } else if (this.passenger.isPresent() && var3.getPassengers().stream().noneMatch(var3x -> this.passenger.get().matches(var1, var2, var3x))) {
                return false;
-            } else if (!this.targetedEntity.matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)) {
+            } else if (this.targetedEntity.isPresent() && !this.targetedEntity.get().matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)
+               )
+             {
                return false;
             } else {
-               if (this.team != null) {
+               if (this.team.isPresent()) {
                   Team var5 = var3.getTeam();
-                  if (var5 == null || !this.team.equals(var5.getName())) {
+                  if (var5 == null || !this.team.get().equals(var5.getName())) {
                      return false;
                   }
                }
@@ -208,62 +218,14 @@ public class EntityPredicate {
       }
    }
 
-   public static EntityPredicate fromJson(@Nullable JsonElement var0) {
-      if (var0 != null && !var0.isJsonNull()) {
-         JsonObject var1 = GsonHelper.convertToJsonObject(var0, "entity");
-         EntityTypePredicate var2 = EntityTypePredicate.fromJson(var1.get("type"));
-         DistancePredicate var3 = DistancePredicate.fromJson(var1.get("distance"));
-         LocationPredicate var4 = LocationPredicate.fromJson(var1.get("location"));
-         LocationPredicate var5 = LocationPredicate.fromJson(var1.get("stepping_on"));
-         MobEffectsPredicate var6 = MobEffectsPredicate.fromJson(var1.get("effects"));
-         NbtPredicate var7 = NbtPredicate.fromJson(var1.get("nbt"));
-         EntityFlagsPredicate var8 = EntityFlagsPredicate.fromJson(var1.get("flags"));
-         EntityEquipmentPredicate var9 = EntityEquipmentPredicate.fromJson(var1.get("equipment"));
-         EntitySubPredicate var10 = EntitySubPredicate.fromJson(var1.get("type_specific"));
-         EntityPredicate var11 = fromJson(var1.get("vehicle"));
-         EntityPredicate var12 = fromJson(var1.get("passenger"));
-         EntityPredicate var13 = fromJson(var1.get("targeted_entity"));
-         String var14 = GsonHelper.getAsString(var1, "team", null);
-         return new EntityPredicate.Builder()
-            .entityType(var2)
-            .distance(var3)
-            .located(var4)
-            .steppingOn(var5)
-            .effects(var6)
-            .nbt(var7)
-            .flags(var8)
-            .equipment(var9)
-            .subPredicate(var10)
-            .team(var14)
-            .vehicle(var11)
-            .passenger(var12)
-            .targetedEntity(var13)
-            .build();
-      } else {
-         return ANY;
-      }
+   public static Optional<EntityPredicate> fromJson(@Nullable JsonElement var0) {
+      return var0 != null && !var0.isJsonNull()
+         ? Optional.of(Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new))
+         : Optional.empty();
    }
 
    public JsonElement serializeToJson() {
-      if (this == ANY) {
-         return JsonNull.INSTANCE;
-      } else {
-         JsonObject var1 = new JsonObject();
-         var1.add("type", this.entityType.serializeToJson());
-         var1.add("distance", this.distanceToPlayer.serializeToJson());
-         var1.add("location", this.location.serializeToJson());
-         var1.add("stepping_on", this.steppingOnLocation.serializeToJson());
-         var1.add("effects", this.effects.serializeToJson());
-         var1.add("nbt", this.nbt.serializeToJson());
-         var1.add("flags", this.flags.serializeToJson());
-         var1.add("equipment", this.equipment.serializeToJson());
-         var1.add("type_specific", this.subPredicate.serialize());
-         var1.add("vehicle", this.vehicle.serializeToJson());
-         var1.add("passenger", this.passenger.serializeToJson());
-         var1.add("targeted_entity", this.targetedEntity.serializeToJson());
-         var1.addProperty("team", this.team);
-         return var1;
-      }
+      return Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new);
    }
 
    public static LootContext createContext(ServerPlayer var0, Entity var1) {
@@ -271,24 +233,23 @@ public class EntityPredicate {
          .withParameter(LootContextParams.THIS_ENTITY, var1)
          .withParameter(LootContextParams.ORIGIN, var0.position())
          .create(LootContextParamSets.ADVANCEMENT_ENTITY);
-      return new LootContext.Builder(var2).create(null);
+      return new LootContext.Builder(var2).create(Optional.empty());
    }
 
    public static class Builder {
-      private EntityTypePredicate entityType = EntityTypePredicate.ANY;
-      private DistancePredicate distanceToPlayer = DistancePredicate.ANY;
-      private LocationPredicate location = LocationPredicate.ANY;
-      private LocationPredicate steppingOnLocation = LocationPredicate.ANY;
-      private MobEffectsPredicate effects = MobEffectsPredicate.ANY;
-      private NbtPredicate nbt = NbtPredicate.ANY;
-      private EntityFlagsPredicate flags = EntityFlagsPredicate.ANY;
-      private EntityEquipmentPredicate equipment = EntityEquipmentPredicate.ANY;
-      private EntitySubPredicate subPredicate = EntitySubPredicate.ANY;
-      private EntityPredicate vehicle = EntityPredicate.ANY;
-      private EntityPredicate passenger = EntityPredicate.ANY;
-      private EntityPredicate targetedEntity = EntityPredicate.ANY;
-      @Nullable
-      private String team;
+      private Optional<EntityTypePredicate> entityType = Optional.empty();
+      private Optional<DistancePredicate> distanceToPlayer = Optional.empty();
+      private Optional<LocationPredicate> location = Optional.empty();
+      private Optional<LocationPredicate> steppingOnLocation = Optional.empty();
+      private Optional<MobEffectsPredicate> effects = Optional.empty();
+      private Optional<NbtPredicate> nbt = Optional.empty();
+      private Optional<EntityFlagsPredicate> flags = Optional.empty();
+      private Optional<EntityEquipmentPredicate> equipment = Optional.empty();
+      private Optional<EntitySubPredicate> subPredicate = Optional.empty();
+      private Optional<EntityPredicate> vehicle = Optional.empty();
+      private Optional<EntityPredicate> passenger = Optional.empty();
+      private Optional<EntityPredicate> targetedEntity = Optional.empty();
+      private Optional<String> team = Optional.empty();
 
       public Builder() {
          super();
@@ -299,77 +260,82 @@ public class EntityPredicate {
       }
 
       public EntityPredicate.Builder of(EntityType<?> var1) {
-         this.entityType = EntityTypePredicate.of(var1);
+         this.entityType = Optional.of(EntityTypePredicate.of(var1));
          return this;
       }
 
       public EntityPredicate.Builder of(TagKey<EntityType<?>> var1) {
-         this.entityType = EntityTypePredicate.of(var1);
+         this.entityType = Optional.of(EntityTypePredicate.of(var1));
          return this;
       }
 
       public EntityPredicate.Builder entityType(EntityTypePredicate var1) {
-         this.entityType = var1;
+         this.entityType = Optional.of(var1);
          return this;
       }
 
       public EntityPredicate.Builder distance(DistancePredicate var1) {
-         this.distanceToPlayer = var1;
+         this.distanceToPlayer = Optional.of(var1);
          return this;
       }
 
-      public EntityPredicate.Builder located(LocationPredicate var1) {
-         this.location = var1;
+      public EntityPredicate.Builder located(LocationPredicate.Builder var1) {
+         this.location = Optional.of(var1.build());
          return this;
       }
 
-      public EntityPredicate.Builder steppingOn(LocationPredicate var1) {
-         this.steppingOnLocation = var1;
+      public EntityPredicate.Builder steppingOn(LocationPredicate.Builder var1) {
+         this.steppingOnLocation = Optional.of(var1.build());
          return this;
       }
 
-      public EntityPredicate.Builder effects(MobEffectsPredicate var1) {
-         this.effects = var1;
+      public EntityPredicate.Builder effects(MobEffectsPredicate.Builder var1) {
+         this.effects = var1.build();
          return this;
       }
 
       public EntityPredicate.Builder nbt(NbtPredicate var1) {
-         this.nbt = var1;
+         this.nbt = Optional.of(var1);
          return this;
       }
 
-      public EntityPredicate.Builder flags(EntityFlagsPredicate var1) {
-         this.flags = var1;
+      public EntityPredicate.Builder flags(EntityFlagsPredicate.Builder var1) {
+         this.flags = Optional.of(var1.build());
+         return this;
+      }
+
+      public EntityPredicate.Builder equipment(EntityEquipmentPredicate.Builder var1) {
+         this.equipment = Optional.of(var1.build());
          return this;
       }
 
       public EntityPredicate.Builder equipment(EntityEquipmentPredicate var1) {
-         this.equipment = var1;
+         this.equipment = Optional.of(var1);
          return this;
       }
 
       public EntityPredicate.Builder subPredicate(EntitySubPredicate var1) {
-         this.subPredicate = var1;
+         this.subPredicate = Optional.of(var1);
          return this;
       }
 
-      public EntityPredicate.Builder vehicle(EntityPredicate var1) {
-         this.vehicle = var1;
+      public EntityPredicate.Builder vehicle(EntityPredicate.Builder var1) {
+         this.vehicle = Optional.of(var1.build());
          return this;
       }
 
-      public EntityPredicate.Builder passenger(EntityPredicate var1) {
-         this.passenger = var1;
+      public EntityPredicate.Builder passenger(EntityPredicate.Builder var1) {
+         this.passenger = Optional.of(var1.build());
          return this;
       }
 
-      public EntityPredicate.Builder targetedEntity(EntityPredicate var1) {
-         this.targetedEntity = var1;
+      public EntityPredicate.Builder targetedEntity(EntityPredicate.Builder var1) {
+         this.targetedEntity = Optional.of(var1.build());
          return this;
       }
 
-      public EntityPredicate.Builder team(@Nullable String var1) {
-         this.team = var1;
+      public EntityPredicate.Builder team(String var1) {
+         this.team = Optional.of(var1);
          return this;
       }
 

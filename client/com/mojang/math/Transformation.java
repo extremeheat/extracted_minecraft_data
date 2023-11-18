@@ -1,6 +1,5 @@
 package com.mojang.math;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
@@ -26,8 +25,9 @@ public final class Transformation {
             )
             .apply(var0, Transformation::new)
    );
-   public static final Codec<Transformation> EXTENDED_CODEC = Codec.either(CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix))
-      .xmap(var0 -> (Transformation)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
+   public static final Codec<Transformation> EXTENDED_CODEC = ExtraCodecs.withAlternative(
+      CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix)
+   );
    private boolean decomposed;
    @Nullable
    private Vector3f translation;

@@ -13,6 +13,8 @@ import java.util.function.IntConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.FunctionInstantiationException;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameRules;
@@ -64,28 +66,33 @@ public class ServerFunctionManager {
    }
 
    public int execute(CommandFunction var1, CommandSourceStack var2) {
-      return this.execute(var1, var2, null);
+      try {
+         return this.execute(var1, var2, null, null);
+      } catch (FunctionInstantiationException var4) {
+         return 0;
+      }
    }
 
-   public int execute(CommandFunction var1, CommandSourceStack var2, @Nullable ServerFunctionManager.TraceCallbacks var3) {
+   public int execute(CommandFunction var1, CommandSourceStack var2, @Nullable ServerFunctionManager.TraceCallbacks var3, @Nullable CompoundTag var4) throws FunctionInstantiationException {
+      CommandFunction var5 = var1.instantiate(var4, this.getDispatcher(), var2);
       if (this.context != null) {
          if (var3 != null) {
             this.context.reportError(NO_RECURSIVE_TRACES.getString());
             return 0;
          } else {
-            this.context.delayFunctionCall(var1, var2);
+            this.context.delayFunctionCall(var5, var2);
             return 0;
          }
       } else {
-         int var4;
+         int var6;
          try {
             this.context = new ServerFunctionManager.ExecutionContext(var3);
-            var4 = this.context.runTopCommand(var1, var2);
+            var6 = this.context.runTopCommand(var5, var2);
          } finally {
             this.context = null;
          }
 
-         return var4;
+         return var6;
       }
    }
 

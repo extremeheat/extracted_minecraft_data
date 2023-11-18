@@ -1,10 +1,9 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 
 public interface RecipeSerializer<T extends Recipe<?>> {
    RecipeSerializer<ShapedRecipe> SHAPED_RECIPE = register("crafting_shaped", new ShapedRecipe.Serializer());
@@ -51,9 +50,9 @@ public interface RecipeSerializer<T extends Recipe<?>> {
       "crafting_decorated_pot", new SimpleCraftingRecipeSerializer<>(DecoratedPotRecipe::new)
    );
 
-   T fromJson(ResourceLocation var1, JsonObject var2);
+   Codec<T> codec();
 
-   T fromNetwork(ResourceLocation var1, FriendlyByteBuf var2);
+   T fromNetwork(FriendlyByteBuf var1);
 
    void toNetwork(FriendlyByteBuf var1, T var2);
 

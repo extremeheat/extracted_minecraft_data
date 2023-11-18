@@ -2,7 +2,10 @@ package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,24 +14,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SlideDownBlockTrigger extends SimpleCriterionTrigger<SlideDownBlockTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("slide_down_block");
-
    public SlideDownBlockTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public SlideDownBlockTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+   public SlideDownBlockTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
       Block var4 = deserializeBlock(var1);
-      StatePropertiesPredicate var5 = StatePropertiesPredicate.fromJson(var1.get("state"));
+      Optional var5 = StatePropertiesPredicate.fromJson(var1.get("state"));
       if (var4 != null) {
-         var5.checkState(var4.getStateDefinition(), var1x -> {
-            throw new JsonSyntaxException("Block " + var4 + " has no property " + var1x);
-         });
+         var5.ifPresent(var1x -> var1x.checkState(var4.getStateDefinition(), var1xx -> {
+               throw new JsonSyntaxException("Block " + var4 + " has no property " + var1xx);
+            }));
       }
 
       return new SlideDownBlockTrigger.TriggerInstance(var2, var4, var5);
@@ -51,34 +47,34 @@ public class SlideDownBlockTrigger extends SimpleCriterionTrigger<SlideDownBlock
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       @Nullable
       private final Block block;
-      private final StatePropertiesPredicate state;
+      private final Optional<StatePropertiesPredicate> state;
 
-      public TriggerInstance(ContextAwarePredicate var1, @Nullable Block var2, StatePropertiesPredicate var3) {
-         super(SlideDownBlockTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, @Nullable Block var2, Optional<StatePropertiesPredicate> var3) {
+         super(var1);
          this.block = var2;
          this.state = var3;
       }
 
-      public static SlideDownBlockTrigger.TriggerInstance slidesDownBlock(Block var0) {
-         return new SlideDownBlockTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, StatePropertiesPredicate.ANY);
+      public static Criterion<SlideDownBlockTrigger.TriggerInstance> slidesDownBlock(Block var0) {
+         return CriteriaTriggers.HONEY_BLOCK_SLIDE.createCriterion(new SlideDownBlockTrigger.TriggerInstance(Optional.empty(), var0, Optional.empty()));
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
          if (this.block != null) {
-            var2.addProperty("block", BuiltInRegistries.BLOCK.getKey(this.block).toString());
+            var1.addProperty("block", BuiltInRegistries.BLOCK.getKey(this.block).toString());
          }
 
-         var2.add("state", this.state.serializeToJson());
-         return var2;
+         this.state.ifPresent(var1x -> var1.add("state", var1x.serializeToJson()));
+         return var1;
       }
 
       public boolean matches(BlockState var1) {
          if (this.block != null && !var1.is(this.block)) {
             return false;
          } else {
-            return this.state.matches(var1);
+            return !this.state.isPresent() || this.state.get().matches(var1);
          }
       }
    }

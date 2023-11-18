@@ -122,8 +122,8 @@ public class MapRenderer implements AutoCloseable {
          for(MapDecoration var12 : this.data.getDecorations()) {
             if (!var3 || var12.renderOnFrame()) {
                var1.pushPose();
-               var1.translate(0.0F + (float)var12.getX() / 2.0F + 64.0F, 0.0F + (float)var12.getY() / 2.0F + 64.0F, -0.02F);
-               var1.mulPose(Axis.ZP.rotationDegrees((float)(var12.getRot() * 360) / 16.0F));
+               var1.translate(0.0F + (float)var12.x() / 2.0F + 64.0F, 0.0F + (float)var12.y() / 2.0F + 64.0F, -0.02F);
+               var1.mulPose(Axis.ZP.rotationDegrees((float)(var12.rot() * 360) / 16.0F));
                var1.scale(4.0F, 4.0F, 3.0F);
                var1.translate(-0.125F, 0.125F, 0.0F);
                byte var13 = var12.getImage();
@@ -139,13 +139,13 @@ public class MapRenderer implements AutoCloseable {
                var20.vertex(var18, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
                var20.vertex(var18, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var17).uv2(var4).endVertex();
                var1.popPose();
-               if (var12.getName() != null) {
+               if (var12.name() != null) {
                   Font var21 = Minecraft.getInstance().font;
-                  Component var22 = var12.getName();
+                  Component var22 = var12.name();
                   float var23 = (float)var21.width(var22);
                   float var24 = Mth.clamp(25.0F / var23, 0.0F, 6.0F / 9.0F);
                   var1.pushPose();
-                  var1.translate(0.0F + (float)var12.getX() / 2.0F + 64.0F - var23 * var24 / 2.0F, 0.0F + (float)var12.getY() / 2.0F + 64.0F + 4.0F, -0.025F);
+                  var1.translate(0.0F + (float)var12.x() / 2.0F + 64.0F - var23 * var24 / 2.0F, 0.0F + (float)var12.y() / 2.0F + 64.0F + 4.0F, -0.025F);
                   var1.scale(var24, var24, 1.0F);
                   var1.translate(0.0F, 0.0F, -0.1F);
                   var21.drawInBatch(var22, 0.0F, 0.0F, -1, false, var1.last().pose(), var2, Font.DisplayMode.NORMAL, -2147483648, var4);

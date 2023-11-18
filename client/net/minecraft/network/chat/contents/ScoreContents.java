@@ -73,7 +73,7 @@ public class ScoreContents implements ComponentContents {
       if (var3 != null) {
          ServerScoreboard var4 = var3.getScoreboard();
          Objective var5 = var4.getObjective(this.objective);
-         if (var4.hasPlayerScore(var1, var5)) {
+         if (var5 != null && var4.hasPlayerScore(var1, var5)) {
             Score var6 = var4.getOrCreatePlayerScore(var1, var5);
             return Integer.toString(var6.getScore());
          }

@@ -222,33 +222,10 @@ public class WinScreen extends Screen {
       this.lines.add(var1.getVisualOrderText());
    }
 
-   private void renderBg(GuiGraphics var1) {
-      int var2 = this.width;
-      float var3 = this.scroll * 0.5F;
-      boolean var4 = true;
-      float var5 = this.scroll / this.unmodifiedScrollSpeed;
-      float var6 = var5 * 0.02F;
-      float var7 = (float)(this.totalScrollLength + this.height + this.height + 24) / this.unmodifiedScrollSpeed;
-      float var8 = (var7 - 20.0F - var5) * 0.005F;
-      if (var8 < var6) {
-         var6 = var8;
-      }
-
-      if (var6 > 1.0F) {
-         var6 = 1.0F;
-      }
-
-      var6 *= var6;
-      var6 = var6 * 96.0F / 255.0F;
-      var1.setColor(var6, var6, var6, 1.0F);
-      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, var3, var2, this.height, 64, 64);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-   }
-
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
-      this.renderBg(var1);
+      super.render(var1, var2, var3, var4);
       int var5 = this.width / 2 - 128;
       int var6 = this.height + 50;
       float var7 = -this.scroll;
@@ -283,7 +260,30 @@ public class WinScreen extends Screen {
       var1.blit(VIGNETTE_LOCATION, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
       RenderSystem.disableBlend();
       RenderSystem.defaultBlendFunc();
-      super.render(var1, var2, var3, var4);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      int var5 = this.width;
+      float var6 = this.scroll * 0.5F;
+      boolean var7 = true;
+      float var8 = this.scroll / this.unmodifiedScrollSpeed;
+      float var9 = var8 * 0.02F;
+      float var10 = (float)(this.totalScrollLength + this.height + this.height + 24) / this.unmodifiedScrollSpeed;
+      float var11 = (var10 - 20.0F - var8) * 0.005F;
+      if (var11 < var9) {
+         var9 = var11;
+      }
+
+      if (var9 > 1.0F) {
+         var9 = 1.0F;
+      }
+
+      var9 *= var9;
+      var9 = var9 * 96.0F / 255.0F;
+      var1.setColor(var9, var9, var9, 1.0F);
+      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, var6, var5, this.height, 64, 64);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    @Override

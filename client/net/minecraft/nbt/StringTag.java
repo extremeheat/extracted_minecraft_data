@@ -10,20 +10,24 @@ import net.minecraft.Util;
 public class StringTag implements Tag {
    private static final int SELF_SIZE_IN_BYTES = 36;
    public static final TagType<StringTag> TYPE = new TagType.VariableSize<StringTag>() {
-      public StringTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBytes(36L);
-         String var4 = var1.readUTF();
-         var3.accountBytes((long)(2 * var4.length()));
-         return StringTag.valueOf(var4);
+      public StringTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return StringTag.valueOf(readAccounted(var1, var2));
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) throws IOException {
-         return var2.visit(var1.readUTF());
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         return var2.visit(readAccounted(var1, var3));
+      }
+
+      private static String readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(36L);
+         String var2 = var0.readUTF();
+         var1.accountBytes(2L, (long)var2.length());
+         return var2;
       }
 
       @Override
-      public void skip(DataInput var1) throws IOException {
+      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          StringTag.skipString(var1);
       }
 

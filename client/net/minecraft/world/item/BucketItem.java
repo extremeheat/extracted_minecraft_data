@@ -54,15 +54,16 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             return InteractionResultHolder.fail(var4);
          } else if (this.content == Fluids.EMPTY) {
             BlockState var13 = var1.getBlockState(var6);
-            if (var13.getBlock() instanceof BucketPickup var14) {
-               ItemStack var11 = var14.pickupBlock(var1, var6, var13);
-               if (!var11.isEmpty()) {
+            Block var11 = var13.getBlock();
+            if (var11 instanceof BucketPickup var14) {
+               ItemStack var15 = var14.pickupBlock(var2, var1, var6, var13);
+               if (!var15.isEmpty()) {
                   var2.awardStat(Stats.ITEM_USED.get(this));
                   var14.getPickupSound().ifPresent(var1x -> var2.playSound(var1x, 1.0F, 1.0F));
                   var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var6);
-                  ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var11);
+                  ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var15);
                   if (!var1.isClientSide) {
-                     CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var11);
+                     CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var15);
                   }
 
                   return InteractionResultHolder.sidedSuccess(var12, var1.isClientSide());
@@ -96,44 +97,66 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    public void checkExtraContent(@Nullable Player var1, Level var2, ItemStack var3, BlockPos var4) {
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean emptyContents(@Nullable Player var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
-      if (!(this.content instanceof FlowingFluid)) {
+      Fluid var6 = this.content;
+      if (!(var6 instanceof FlowingFluid)) {
          return false;
       } else {
-         BlockState var5 = var2.getBlockState(var3);
-         Block var6 = var5.getBlock();
-         boolean var7 = var5.canBeReplaced(this.content);
-         boolean var8 = var5.isAir()
-            || var7
-            || var6 instanceof LiquidBlockContainer && ((LiquidBlockContainer)var6).canPlaceLiquid(var2, var3, var5, this.content);
-         if (!var8) {
+         FlowingFluid var5;
+         Block var7;
+         boolean var8;
+         boolean var10000;
+         label82: {
+            var5 = (FlowingFluid)var6;
+            var14 = var2.getBlockState(var3);
+            var7 = var14.getBlock();
+            var8 = var14.canBeReplaced(this.content);
+            label70:
+            if (!var14.isAir() && !var8) {
+               if (var7 instanceof LiquidBlockContainer var10 && var10.canPlaceLiquid(var1, var2, var3, var14, this.content)) {
+                  break label70;
+               }
+
+               var10000 = false;
+               break label82;
+            }
+
+            var10000 = true;
+         }
+
+         boolean var9 = var10000;
+         if (!var9) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), null);
          } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
-            int var9 = var3.getX();
-            int var10 = var3.getY();
-            int var11 = var3.getZ();
+            int var16 = var3.getX();
+            int var11 = var3.getY();
+            int var12 = var3.getZ();
             var2.playSound(
                var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F
             );
 
-            for(int var12 = 0; var12 < 8; ++var12) {
+            for(int var13 = 0; var13 < 8; ++var13) {
                var2.addParticle(
-                  ParticleTypes.LARGE_SMOKE, (double)var9 + Math.random(), (double)var10 + Math.random(), (double)var11 + Math.random(), 0.0, 0.0, 0.0
+                  ParticleTypes.LARGE_SMOKE, (double)var16 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0
                );
             }
 
             return true;
-         } else if (var6 instanceof LiquidBlockContainer && this.content == Fluids.WATER) {
-            ((LiquidBlockContainer)var6).placeLiquid(var2, var3, var5, ((FlowingFluid)this.content).getSource(false));
-            this.playEmptySound(var1, var2, var3);
-            return true;
          } else {
-            if (!var2.isClientSide && var7 && !var5.liquid()) {
+            if (var7 instanceof LiquidBlockContainer var15 && this.content == Fluids.WATER) {
+               var15.placeLiquid(var2, var3, var14, var5.getSource(false));
+               this.playEmptySound(var1, var2, var3);
+               return true;
+            }
+
+            if (!var2.isClientSide && var8 && !var14.liquid()) {
                var2.destroyBlock(var3, true);
             }
 
-            if (!var2.setBlock(var3, this.content.defaultFluidState().createLegacyBlock(), 11) && !var5.getFluidState().isSource()) {
+            if (!var2.setBlock(var3, this.content.defaultFluidState().createLegacyBlock(), 11) && !var14.getFluidState().isSource()) {
                return false;
             } else {
                this.playEmptySound(var1, var2, var3);

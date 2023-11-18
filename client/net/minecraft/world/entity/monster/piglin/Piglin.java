@@ -285,16 +285,11 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   public double getPassengersRidingOffset() {
-      return (double)this.getBbHeight() * 0.92;
-   }
-
-   @Override
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
       if (!this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-         var2.removeModifier(SPEED_MODIFIER_BABY);
+         var2.removeModifier(SPEED_MODIFIER_BABY.getId());
          if (var1) {
             var2.addTransientModifier(SPEED_MODIFIER_BABY);
          }

@@ -1,20 +1,37 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.core.Vec3i;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-public class LocationCheck implements LootItemCondition {
-   final LocationPredicate predicate;
-   final BlockPos offset;
+public record LocationCheck(Optional<LocationPredicate> b, BlockPos c) implements LootItemCondition {
+   private final Optional<LocationPredicate> predicate;
+   private final BlockPos offset;
+   private static final MapCodec<BlockPos> OFFSET_CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(Codec.INT, "offsetX", 0).forGetter(Vec3i::getX),
+               ExtraCodecs.strictOptionalField(Codec.INT, "offsetY", 0).forGetter(Vec3i::getY),
+               ExtraCodecs.strictOptionalField(Codec.INT, "offsetZ", 0).forGetter(Vec3i::getZ)
+            )
+            .apply(var0, BlockPos::new)
+   );
+   public static final Codec<LocationCheck> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(LocationPredicate.CODEC, "predicate").forGetter(LocationCheck::predicate),
+               OFFSET_CODEC.forGetter(LocationCheck::offset)
+            )
+            .apply(var0, LocationCheck::new)
+   );
 
-   LocationCheck(LocationPredicate var1, BlockPos var2) {
+   public LocationCheck(Optional<LocationPredicate> var1, BlockPos var2) {
       super();
       this.predicate = var1;
       this.offset = var2;
@@ -28,44 +45,21 @@ public class LocationCheck implements LootItemCondition {
    public boolean test(LootContext var1) {
       Vec3 var2 = var1.getParamOrNull(LootContextParams.ORIGIN);
       return var2 != null
-         && this.predicate
-            .matches(var1.getLevel(), var2.x() + (double)this.offset.getX(), var2.y() + (double)this.offset.getY(), var2.z() + (double)this.offset.getZ());
+         && (
+            this.predicate.isEmpty()
+               || this.predicate
+                  .get()
+                  .matches(
+                     var1.getLevel(), var2.x() + (double)this.offset.getX(), var2.y() + (double)this.offset.getY(), var2.z() + (double)this.offset.getZ()
+                  )
+         );
    }
 
    public static LootItemCondition.Builder checkLocation(LocationPredicate.Builder var0) {
-      return () -> new LocationCheck(var0.build(), BlockPos.ZERO);
+      return () -> new LocationCheck(Optional.of(var0.build()), BlockPos.ZERO);
    }
 
    public static LootItemCondition.Builder checkLocation(LocationPredicate.Builder var0, BlockPos var1) {
-      return () -> new LocationCheck(var0.build(), var1);
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<LocationCheck> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, LocationCheck var2, JsonSerializationContext var3) {
-         var1.add("predicate", var2.predicate.serializeToJson());
-         if (var2.offset.getX() != 0) {
-            var1.addProperty("offsetX", var2.offset.getX());
-         }
-
-         if (var2.offset.getY() != 0) {
-            var1.addProperty("offsetY", var2.offset.getY());
-         }
-
-         if (var2.offset.getZ() != 0) {
-            var1.addProperty("offsetZ", var2.offset.getZ());
-         }
-      }
-
-      public LocationCheck deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         LocationPredicate var3 = LocationPredicate.fromJson(var1.get("predicate"));
-         int var4 = GsonHelper.getAsInt(var1, "offsetX", 0);
-         int var5 = GsonHelper.getAsInt(var1, "offsetY", 0);
-         int var6 = GsonHelper.getAsInt(var1, "offsetZ", 0);
-         return new LocationCheck(var3, new BlockPos(var4, var5, var6));
-      }
+      return () -> new LocationCheck(Optional.of(var0.build()), var1);
    }
 }

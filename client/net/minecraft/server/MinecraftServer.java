@@ -97,7 +97,6 @@ import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
-import net.minecraft.util.FrameTimer;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
@@ -157,7 +156,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
-public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements CommandSource, AutoCloseable {
+public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, CommandSource, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String VANILLA_BRAND = "vanilla";
    private static final float AVERAGE_TICK_TIME_SMOOTHING = 0.8F;
@@ -233,7 +232,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private CommandStorage commandStorage;
    private final CustomBossEvents customBossEvents = new CustomBossEvents();
    private final ServerFunctionManager functionManager;
-   private final FrameTimer frameTimer = new FrameTimer();
    private boolean enforceWhitelist;
    private float averageTickTime;
    private final Executor executor;
@@ -296,7 +294,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void readScoreboard(DimensionDataStorage var1) {
-      var1.computeIfAbsent(this.getScoreboard()::createData, this.getScoreboard()::createData, "scoreboard");
+      var1.computeIfAbsent(this.getScoreboard().dataFactory(), "scoreboard");
    }
 
    protected abstract boolean initServer() throws IOException;
@@ -465,7 +463,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.waitUntilNextTick();
 
       for(ServerLevel var6 : this.levels.values()) {
-         ForcedChunksSavedData var7 = var6.getDataStorage().get(ForcedChunksSavedData::load, "chunks");
+         ForcedChunksSavedData var7 = var6.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
          if (var7 != null) {
             LongIterator var8 = var7.getChunks().iterator();
 
@@ -549,10 +547,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       LOGGER.info("Stopping server");
-      if (this.getConnection() != null) {
-         this.getConnection().stop();
-      }
-
+      this.getConnection().stop();
       this.isSaving = true;
       if (this.playerList != null) {
          LOGGER.info("Saving players");
@@ -810,8 +805,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       long var4 = this.tickTimes[this.tickCount % 100] = Util.getNanos() - var2;
       this.averageTickTime = this.averageTickTime * 0.8F + (float)var4 / 1000000.0F * 0.19999999F;
       long var6 = Util.getNanos();
-      this.frameTimer.logFrameDuration(var6 - var2);
+      this.logTickTime(var6 - var2);
       this.profiler.pop();
+   }
+
+   protected void logTickTime(long var1) {
    }
 
    private ServerStatus buildServerStatus() {
@@ -846,6 +844,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void tickChildren(BooleanSupplier var1) {
+      this.getPlayerList().getPlayers().forEach(var0 -> var0.connection.suspendFlushing());
       this.profiler.push("commandFunctions");
       this.getFunctions().tick();
       this.profiler.popPush("levels");
@@ -884,6 +883,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       for(int var7 = 0; var7 < this.tickables.size(); ++var7) {
          this.tickables.get(var7).run();
+      }
+
+      this.profiler.popPush("send chunks");
+
+      for(ServerPlayer var9 : this.playerList.getPlayers()) {
+         var9.connection.chunkSender.sendNextChunks(var9);
+         var9.connection.resumeFlushing();
       }
 
       this.profiler.pop();
@@ -943,14 +949,17 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.levels.values();
    }
 
+   @Override
    public String getServerVersion() {
       return SharedConstants.getCurrentVersion().getName();
    }
 
+   @Override
    public int getPlayerCount() {
       return this.playerList.getPlayerCount();
    }
 
+   @Override
    public int getMaxPlayers() {
       return this.playerList.getMaxPlayers();
    }
@@ -1132,6 +1141,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public abstract boolean isCommandBlockEnabled();
 
+   @Override
    public String getMotd() {
       return this.motd;
    }
@@ -1158,7 +1168,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.worldData.setGameType(var1);
    }
 
-   @Nullable
    public ServerConnectionListener getConnection() {
       return this.connection;
    }
@@ -1493,10 +1502,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   public FrameTimer getFrameTimer() {
-      return this.frameTimer;
-   }
-
    public ProfilerFiller getProfiler() {
       return this.profiler;
    }
@@ -1728,6 +1733,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public ChatDecorator getChatDecorator() {
       return ChatDecorator.PLAIN;
+   }
+
+   public boolean logIPs() {
+      return true;
    }
 
    static record ReloadableResources(CloseableResourceManager a, ReloadableServerResources b) implements AutoCloseable {

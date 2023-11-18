@@ -86,6 +86,7 @@ public class Util {
    private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
    private static final ExecutorService IO_POOL = makeIoExecutor();
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+   public static final long NANOS_PER_MILLI = 1000000L;
    public static TimeSource.NanoTimeSource timeSource = System::nanoTime;
    public static final Ticker TICKER = new Ticker() {
       public long read() {
@@ -355,7 +356,7 @@ public class Util {
       return (T)var0.get();
    }
 
-   public static <T> T make(T var0, Consumer<T> var1) {
+   public static <T> T make(T var0, Consumer<? super T> var1) {
       var1.accept(var0);
       return (T)var0;
    }

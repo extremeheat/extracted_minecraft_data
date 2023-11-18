@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,7 +18,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -91,14 +91,18 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    private void angerNearbyBees(Level var1, BlockPos var2) {
-      List var3 = var1.getEntitiesOfClass(Bee.class, new AABB(var2).inflate(8.0, 6.0, 8.0));
-      if (!var3.isEmpty()) {
-         List var4 = var1.getEntitiesOfClass(Player.class, new AABB(var2).inflate(8.0, 6.0, 8.0));
-         int var5 = var4.size();
+      AABB var3 = new AABB(var2).inflate(8.0, 6.0, 8.0);
+      List var4 = var1.getEntitiesOfClass(Bee.class, var3);
+      if (!var4.isEmpty()) {
+         List var5 = var1.getEntitiesOfClass(Player.class, var3);
+         if (var5.isEmpty()) {
+            return;
+         }
 
-         for(Bee var7 : var3) {
+         for(Bee var7 : var4) {
             if (var7.getTarget() == null) {
-               var7.setTarget((LivingEntity)var4.get(var1.random.nextInt(var5)));
+               Player var8 = Util.getRandom(var5, var1.random);
+               var7.setTarget(var8);
             }
          }
       }

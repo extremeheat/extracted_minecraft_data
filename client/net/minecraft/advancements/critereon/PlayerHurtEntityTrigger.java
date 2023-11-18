@@ -1,27 +1,22 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<PlayerHurtEntityTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("player_hurt_entity");
-
    public PlayerHurtEntityTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public PlayerHurtEntityTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      DamagePredicate var4 = DamagePredicate.fromJson(var1.get("damage"));
-      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "entity", var3);
+   public PlayerHurtEntityTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = DamagePredicate.fromJson(var1.get("damage"));
+      Optional var5 = EntityPredicate.fromJson(var1, "entity", var3);
       return new PlayerHurtEntityTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -31,53 +26,58 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<PlayerHurtEn
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final DamagePredicate damage;
-      private final ContextAwarePredicate entity;
+      private final Optional<DamagePredicate> damage;
+      private final Optional<ContextAwarePredicate> entity;
 
-      public TriggerInstance(ContextAwarePredicate var1, DamagePredicate var2, ContextAwarePredicate var3) {
-         super(PlayerHurtEntityTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2, Optional<ContextAwarePredicate> var3) {
+         super(var1);
          this.damage = var2;
          this.entity = var3;
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity() {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, DamagePredicate.ANY, ContextAwarePredicate.ANY);
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntity() {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY
+            .createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty()));
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, ContextAwarePredicate.ANY);
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntityWithDamage(Optional<DamagePredicate> var0) {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY.createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), var0, Optional.empty()));
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate.Builder var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0.build(), ContextAwarePredicate.ANY);
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntityWithDamage(DamagePredicate.Builder var0) {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY
+            .createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), Optional.of(var0.build()), Optional.empty()));
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(EntityPredicate var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, DamagePredicate.ANY, EntityPredicate.wrap(var0));
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntity(Optional<EntityPredicate> var0) {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY
+            .createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), Optional.empty(), EntityPredicate.wrap(var0)));
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate var0, EntityPredicate var1) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, EntityPredicate.wrap(var1));
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntity(Optional<DamagePredicate> var0, Optional<EntityPredicate> var1) {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY
+            .createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), var0, EntityPredicate.wrap(var1)));
       }
 
-      public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate.Builder var0, EntityPredicate var1) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0.build(), EntityPredicate.wrap(var1));
+      public static Criterion<PlayerHurtEntityTrigger.TriggerInstance> playerHurtEntity(DamagePredicate.Builder var0, Optional<EntityPredicate> var1) {
+         return CriteriaTriggers.PLAYER_HURT_ENTITY
+            .createCriterion(new PlayerHurtEntityTrigger.TriggerInstance(Optional.empty(), Optional.of(var0.build()), EntityPredicate.wrap(var1)));
       }
 
       public boolean matches(ServerPlayer var1, LootContext var2, DamageSource var3, float var4, float var5, boolean var6) {
-         if (!this.damage.matches(var1, var3, var4, var5, var6)) {
+         if (this.damage.isPresent() && !this.damage.get().matches(var1, var3, var4, var5, var6)) {
             return false;
          } else {
-            return this.entity.matches(var2);
+            return !this.entity.isPresent() || this.entity.get().matches(var2);
          }
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("damage", this.damage.serializeToJson());
-         var2.add("entity", this.entity.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.damage.ifPresent(var1x -> var1.add("damage", var1x.serializeToJson()));
+         this.entity.ifPresent(var1x -> var1.add("entity", var1x.toJson()));
+         return var1;
       }
    }
 }

@@ -2,27 +2,39 @@ package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import java.lang.reflect.Type;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class IntRange {
+   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "min").forGetter(var0x -> Optional.ofNullable(var0x.min)),
+               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "max").forGetter(var0x -> Optional.ofNullable(var0x.max))
+            )
+            .apply(var0, IntRange::new)
+   );
+   public static final Codec<IntRange> CODEC = Codec.either(Codec.INT, RECORD_CODEC)
+      .xmap(var0 -> (IntRange)var0.map(IntRange::exact, Function.identity()), var0 -> {
+         OptionalInt var1 = var0.unpackExact();
+         return var1.isPresent() ? Either.left(var1.getAsInt()) : Either.right(var0);
+      });
    @Nullable
-   final NumberProvider min;
+   private final NumberProvider min;
    @Nullable
-   final NumberProvider max;
+   private final NumberProvider max;
    private final IntRange.IntLimiter limiter;
    private final IntRange.IntChecker predicate;
 
@@ -39,7 +51,11 @@ public class IntRange {
       return var1.build();
    }
 
-   IntRange(@Nullable NumberProvider var1, @Nullable NumberProvider var2) {
+   private IntRange(Optional<NumberProvider> var1, Optional<NumberProvider> var2) {
+      this(var1.orElse(null), var2.orElse(null));
+   }
+
+   private IntRange(@Nullable NumberProvider var1, @Nullable NumberProvider var2) {
       super();
       this.min = var1;
       this.max = var2;
@@ -62,19 +78,19 @@ public class IntRange {
 
    public static IntRange exact(int var0) {
       ConstantValue var1 = ConstantValue.exactly((float)var0);
-      return new IntRange(var1, var1);
+      return new IntRange(Optional.of(var1), Optional.of(var1));
    }
 
    public static IntRange range(int var0, int var1) {
-      return new IntRange(ConstantValue.exactly((float)var0), ConstantValue.exactly((float)var1));
+      return new IntRange(Optional.of(ConstantValue.exactly((float)var0)), Optional.of(ConstantValue.exactly((float)var1)));
    }
 
    public static IntRange lowerBound(int var0) {
-      return new IntRange(ConstantValue.exactly((float)var0), null);
+      return new IntRange(Optional.of(ConstantValue.exactly((float)var0)), Optional.empty());
    }
 
    public static IntRange upperBound(int var0) {
-      return new IntRange(null, ConstantValue.exactly((float)var0));
+      return new IntRange(Optional.empty(), Optional.of(ConstantValue.exactly((float)var0)));
    }
 
    public int clamp(LootContext var1, int var2) {
@@ -85,6 +101,19 @@ public class IntRange {
       return this.predicate.test(var1, var2);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private OptionalInt unpackExact() {
+      if (Objects.equals(this.min, this.max)) {
+         NumberProvider var2 = this.min;
+         if (var2 instanceof ConstantValue var1 && Math.floor((double)var1.value()) == (double)var1.value()) {
+            return OptionalInt.of((int)var1.value());
+         }
+      }
+
+      return OptionalInt.empty();
+   }
+
    @FunctionalInterface
    interface IntChecker {
       boolean test(LootContext var1, int var2);
@@ -93,39 +122,5 @@ public class IntRange {
    @FunctionalInterface
    interface IntLimiter {
       int apply(LootContext var1, int var2);
-   }
-
-   public static class Serializer implements JsonDeserializer<IntRange>, JsonSerializer<IntRange> {
-      public Serializer() {
-         super();
-      }
-
-      public IntRange deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) {
-         if (var1.isJsonPrimitive()) {
-            return IntRange.exact(var1.getAsInt());
-         } else {
-            JsonObject var4 = GsonHelper.convertToJsonObject(var1, "value");
-            NumberProvider var5 = var4.has("min") ? GsonHelper.getAsObject(var4, "min", var3, NumberProvider.class) : null;
-            NumberProvider var6 = var4.has("max") ? GsonHelper.getAsObject(var4, "max", var3, NumberProvider.class) : null;
-            return new IntRange(var5, var6);
-         }
-      }
-
-      public JsonElement serialize(IntRange var1, Type var2, JsonSerializationContext var3) {
-         JsonObject var4 = new JsonObject();
-         if (Objects.equals(var1.max, var1.min)) {
-            return var3.serialize(var1.min);
-         } else {
-            if (var1.max != null) {
-               var4.add("max", var3.serialize(var1.max));
-            }
-
-            if (var1.min != null) {
-               var4.add("min", var3.serialize(var1.min));
-            }
-
-            return var4;
-         }
-      }
    }
 }

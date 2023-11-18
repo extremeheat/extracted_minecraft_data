@@ -101,11 +101,18 @@ public class CamelAi {
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
             Pair.of(1, new AnimalMakeLove(EntityType.CAMEL, 1.0F)),
-            Pair.of(2, new FollowTemptation(var0x -> 2.5F)),
-            Pair.of(3, BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F))),
-            Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)),
             Pair.of(
-               5,
+               2,
+               new RunOne(
+                  ImmutableList.of(
+                     Pair.of(new FollowTemptation(var0x -> 2.5F, var0x -> var0x.isBaby() ? 2.5 : 3.5), 1),
+                     Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F)), 1)
+                  )
+               )
+            ),
+            Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)),
+            Pair.of(
+               4,
                new RunOne(
                   ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                   ImmutableList.of(
@@ -158,7 +165,8 @@ public class CamelAi {
             && var2.getPoseTime() >= (long)this.minimalPoseTicks
             && !var2.isLeashed()
             && var2.onGround()
-            && !var2.hasControllingPassenger();
+            && !var2.hasControllingPassenger()
+            && var2.canCamelChangePose();
       }
 
       protected void start(ServerLevel var1, Camel var2, long var3) {

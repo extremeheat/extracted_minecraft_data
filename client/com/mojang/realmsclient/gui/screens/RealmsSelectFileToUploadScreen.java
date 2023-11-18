@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 
 public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Component TITLE = Component.translatable("mco.upload.select.world.title");
    private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
    static final Component WORLD_TEXT = Component.translatable("selectWorld.world");
    static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withStyle(var0 -> var0.withColor(-65536));
@@ -34,14 +35,12 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    List<LevelSummary> levelList = Lists.newArrayList();
    int selectedWorld = -1;
    RealmsSelectFileToUploadScreen.WorldSelectionList worldSelectionList;
-   private final Runnable callback;
 
-   public RealmsSelectFileToUploadScreen(long var1, int var3, RealmsResetWorldScreen var4, Runnable var5) {
-      super(Component.translatable("mco.upload.select.world.title"));
+   public RealmsSelectFileToUploadScreen(long var1, int var3, RealmsResetWorldScreen var4) {
+      super(TITLE);
       this.lastScreen = var4;
       this.worldId = var1;
       this.slotId = var3;
-      this.callback = var5;
    }
 
    private void loadLevelList() throws Exception {
@@ -83,9 +82,9 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
             .bounds(this.width / 2 + 6, this.height - 32, 153, 20)
             .build()
       );
-      this.addLabel(new RealmsLabel(Component.translatable("mco.upload.select.world.subtitle"), this.width / 2, row(-1), 10526880));
+      this.addLabel(new RealmsLabel(Component.translatable("mco.upload.select.world.subtitle"), this.width / 2, row(-1), -6250336));
       if (this.levelList.isEmpty()) {
-         this.addLabel(new RealmsLabel(Component.translatable("mco.upload.select.world.none"), this.width / 2, this.height / 2 - 20, 16777215));
+         this.addLabel(new RealmsLabel(Component.translatable("mco.upload.select.world.none"), this.width / 2, this.height / 2 - 20, -1));
       }
    }
 
@@ -97,16 +96,15 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    private void upload() {
       if (this.selectedWorld != -1 && !this.levelList.get(this.selectedWorld).isHardcore()) {
          LevelSummary var1 = this.levelList.get(this.selectedWorld);
-         this.minecraft.setScreen(new RealmsUploadScreen(this.worldId, this.slotId, this.lastScreen, var1, this.callback));
+         this.minecraft.setScreen(new RealmsUploadScreen(this.worldId, this.slotId, this.lastScreen, var1));
       }
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      this.worldSelectionList.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 13, 16777215);
       super.render(var1, var2, var3, var4);
+      this.worldSelectionList.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 13, -1);
    }
 
    @Override
@@ -172,8 +170,8 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          }
 
          var1.drawString(RealmsSelectFileToUploadScreen.this.font, var5, var3 + 2, var4 + 1, 16777215, false);
-         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.id, var3 + 2, var4 + 12, 8421504, false);
-         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.info, var3 + 2, var4 + 12 + 10, 8421504, false);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.id, var3 + 2, var4 + 12, -8355712, false);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.info, var3 + 2, var4 + 12 + 10, -8355712, false);
       }
 
       @Override
@@ -205,11 +203,6 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       @Override
       public int getMaxPosition() {
          return RealmsSelectFileToUploadScreen.this.levelList.size() * 36;
-      }
-
-      @Override
-      public void renderBackground(GuiGraphics var1) {
-         RealmsSelectFileToUploadScreen.this.renderBackground(var1);
       }
 
       public void setSelected(@Nullable RealmsSelectFileToUploadScreen.Entry var1) {

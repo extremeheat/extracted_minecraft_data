@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -57,7 +58,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private static final float MAX_SHADOW_RADIUS = 32.0F;
    private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
    private Map<EntityType<?>, EntityRenderer<?>> renderers = ImmutableMap.of();
-   private Map<String, EntityRenderer<? extends Player>> playerRenderers = ImmutableMap.of();
+   private Map<PlayerSkin.Model, EntityRenderer<? extends Player>> playerRenderers = Map.of();
    public final TextureManager textureManager;
    private Level level;
    public Camera camera;
@@ -89,11 +90,13 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.entityModels = var7;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T extends Entity> EntityRenderer<? super T> getRenderer(T var1) {
-      if (var1 instanceof AbstractClientPlayer) {
-         String var2 = ((AbstractClientPlayer)var1).getModelName();
-         EntityRenderer var3 = this.playerRenderers.get(var2);
-         return var3 != null ? var3 : this.playerRenderers.get("default");
+      if (var1 instanceof AbstractClientPlayer var2) {
+         PlayerSkin.Model var3 = var2.getSkin().model();
+         EntityRenderer var4 = this.playerRenderers.get(var3);
+         return var4 != null ? var4 : this.playerRenderers.get(PlayerSkin.Model.WIDE);
       } else {
          return (EntityRenderer<? super T>)this.renderers.get(var1.getType());
       }
@@ -208,13 +211,34 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          );
       }
 
-      Vec3 var22 = var2.getViewVector(var3);
-      Matrix4f var6 = var0.last().pose();
-      Matrix3f var23 = var0.last().normal();
-      var1.vertex(var6, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var23, (float)var22.x, (float)var22.y, (float)var22.z).endVertex();
-      var1.vertex(var6, (float)(var22.x * 2.0), (float)((double)var2.getEyeHeight() + var22.y * 2.0), (float)(var22.z * 2.0))
+      Entity var22 = var2.getVehicle();
+      if (var22 != null) {
+         float var6 = Math.min(var22.getBbWidth(), var2.getBbWidth()) / 2.0F;
+         float var24 = 0.0625F;
+         Vec3 var8 = var22.getPassengerRidingPosition(var2).subtract(var2.position());
+         LevelRenderer.renderLineBox(
+            var0,
+            var1,
+            var8.x - (double)var6,
+            var8.y,
+            var8.z - (double)var6,
+            var8.x + (double)var6,
+            var8.y + 0.0625,
+            var8.z + (double)var6,
+            1.0F,
+            1.0F,
+            0.0F,
+            1.0F
+         );
+      }
+
+      Vec3 var23 = var2.getViewVector(var3);
+      Matrix4f var25 = var0.last().pose();
+      Matrix3f var26 = var0.last().normal();
+      var1.vertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var26, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
+      var1.vertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0))
          .color(0, 0, 255, 255)
-         .normal(var23, (float)var22.x, (float)var22.y, (float)var22.z)
+         .normal(var26, (float)var23.x, (float)var23.y, (float)var23.z)
          .endVertex();
    }
 

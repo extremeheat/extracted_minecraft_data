@@ -107,19 +107,20 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       }
 
-      if (var4) {
-         for(Node var25 : var2.getClosedSet()) {
-            if (distanceToCamera(var25.asBlockPos(), var6, var8, var10) <= 80.0F) {
+      Path.DebugData var18 = var2.debugData();
+      if (var4 && var18 != null) {
+         for(Node var17 : var18.closedSet()) {
+            if (distanceToCamera(var17.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
                   var0,
                   var1,
                   new AABB(
-                        (double)((float)var25.x + 0.5F - var3 / 2.0F),
-                        (double)((float)var25.y + 0.01F),
-                        (double)((float)var25.z + 0.5F - var3 / 2.0F),
-                        (double)((float)var25.x + 0.5F + var3 / 2.0F),
-                        (double)var25.y + 0.1,
-                        (double)((float)var25.z + 0.5F + var3 / 2.0F)
+                        (double)((float)var17.x + 0.5F - var3 / 2.0F),
+                        (double)((float)var17.y + 0.01F),
+                        (double)((float)var17.z + 0.5F - var3 / 2.0F),
+                        (double)((float)var17.x + 0.5F + var3 / 2.0F),
+                        (double)var17.y + 0.1,
+                        (double)((float)var17.z + 0.5F + var3 / 2.0F)
                      )
                      .move(-var6, -var8, -var10),
                   1.0F,
@@ -130,18 +131,18 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
             }
          }
 
-         for(Node var26 : var2.getOpenSet()) {
-            if (distanceToCamera(var26.asBlockPos(), var6, var8, var10) <= 80.0F) {
+         for(Node var27 : var18.openSet()) {
+            if (distanceToCamera(var27.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(
                   var0,
                   var1,
                   new AABB(
-                        (double)((float)var26.x + 0.5F - var3 / 2.0F),
-                        (double)((float)var26.y + 0.01F),
-                        (double)((float)var26.z + 0.5F - var3 / 2.0F),
-                        (double)((float)var26.x + 0.5F + var3 / 2.0F),
-                        (double)var26.y + 0.1,
-                        (double)((float)var26.z + 0.5F + var3 / 2.0F)
+                        (double)((float)var27.x + 0.5F - var3 / 2.0F),
+                        (double)((float)var27.y + 0.01F),
+                        (double)((float)var27.z + 0.5F - var3 / 2.0F),
+                        (double)((float)var27.x + 0.5F + var3 / 2.0F),
+                        (double)var27.y + 0.1,
+                        (double)((float)var27.z + 0.5F + var3 / 2.0F)
                      )
                      .move(-var6, -var8, -var10),
                   0.8F,
@@ -154,19 +155,19 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var5) {
-         for(int var19 = 0; var19 < var2.getNodeCount(); ++var19) {
-            Node var22 = var2.getNode(var19);
-            if (distanceToCamera(var22.asBlockPos(), var6, var8, var10) <= 80.0F) {
+         for(int var21 = 0; var21 < var2.getNodeCount(); ++var21) {
+            Node var24 = var2.getNode(var21);
+            if (distanceToCamera(var24.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFloatingText(
-                  var0, var1, String.valueOf(var22.type), (double)var22.x + 0.5, (double)var22.y + 0.75, (double)var22.z + 0.5, -1, 0.02F, true, 0.0F, true
+                  var0, var1, String.valueOf(var24.type), (double)var24.x + 0.5, (double)var24.y + 0.75, (double)var24.z + 0.5, -1, 0.02F, true, 0.0F, true
                );
                DebugRenderer.renderFloatingText(
                   var0,
                   var1,
-                  String.format(Locale.ROOT, "%.2f", var22.costMalus),
-                  (double)var22.x + 0.5,
-                  (double)var22.y + 0.25,
-                  (double)var22.z + 0.5,
+                  String.format(Locale.ROOT, "%.2f", var24.costMalus),
+                  (double)var24.x + 0.5,
+                  (double)var24.y + 0.25,
+                  (double)var24.z + 0.5,
                   -1,
                   0.02F,
                   true,

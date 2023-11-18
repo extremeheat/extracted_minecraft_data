@@ -1,6 +1,8 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.authlib.GameProfile;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -15,12 +17,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
+import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -227,8 +233,12 @@ public class GameTestHelper {
       };
    }
 
+   @Deprecated(
+      forRemoval = true
+   )
    public ServerPlayer makeMockServerPlayerInLevel() {
-      ServerPlayer var1 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+      CommonListenerCookie var1 = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-mock-player"));
+      ServerPlayer var2 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), var1.gameProfile(), var1.clientInformation()) {
          @Override
          public boolean isSpectator() {
             return false;
@@ -239,8 +249,11 @@ public class GameTestHelper {
             return true;
          }
       };
-      this.getLevel().getServer().getPlayerList().placeNewPlayer(new Connection(PacketFlow.SERVERBOUND), var1);
-      return var1;
+      Connection var3 = new Connection(PacketFlow.SERVERBOUND);
+      EmbeddedChannel var4 = new EmbeddedChannel(new ChannelHandler[]{var3});
+      var4.attr(Connection.ATTRIBUTE_SERVERBOUND_PROTOCOL).set(ConnectionProtocol.PLAY.codec(PacketFlow.SERVERBOUND));
+      this.getLevel().getServer().getPlayerList().placeNewPlayer(var3, var2, var1);
+      return var2;
    }
 
    public void pullLever(int var1, int var2, int var3) {
@@ -614,6 +627,14 @@ public class GameTestHelper {
       Object var5 = var2.apply(var1);
       if (!var5.equals(var4)) {
          throw new GameTestAssertException("Entity " + var1 + " value " + var3 + "=" + var5 + " is not equal to expected " + var4);
+      }
+   }
+
+   public void assertLivingEntityHasMobEffect(LivingEntity var1, MobEffect var2, int var3) {
+      MobEffectInstance var4 = var1.getEffect(var2);
+      if (var4 == null || var4.getAmplifier() != var3) {
+         int var5 = var3 + 1;
+         throw new GameTestAssertException("Entity " + var1 + " failed has " + var2.getDescriptionId() + " x " + var5 + " test");
       }
    }
 

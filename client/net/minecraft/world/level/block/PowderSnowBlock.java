@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -129,10 +130,10 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public ItemStack pickupBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      var1.setBlock(var2, Blocks.AIR.defaultBlockState(), 11);
-      if (!var1.isClientSide()) {
-         var1.levelEvent(2001, var2, Block.getId(var3));
+   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+      var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
+      if (!var2.isClientSide()) {
+         var2.levelEvent(2001, var3, Block.getId(var4));
       }
 
       return new ItemStack(Items.POWDER_SNOW_BUCKET);

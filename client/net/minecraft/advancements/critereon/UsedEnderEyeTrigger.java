@@ -1,23 +1,16 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("used_ender_eye");
-
    public UsedEnderEyeTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public UsedEnderEyeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+   public UsedEnderEyeTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
       MinMaxBounds.Doubles var4 = MinMaxBounds.Doubles.fromJson(var1.get("distance"));
       return new UsedEnderEyeTrigger.TriggerInstance(var2, var4);
    }
@@ -32,8 +25,8 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrig
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final MinMaxBounds.Doubles level;
 
-      public TriggerInstance(ContextAwarePredicate var1, MinMaxBounds.Doubles var2) {
-         super(UsedEnderEyeTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Doubles var2) {
+         super(var1);
          this.level = var2;
       }
 

@@ -149,7 +149,7 @@ public class Arrow extends AbstractArrow {
             var2.add(var4.save(new CompoundTag()));
          }
 
-         var1.put("CustomPotionEffects", var2);
+         var1.put("custom_potion_effects", var2);
       }
    }
 

@@ -30,6 +30,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -45,8 +47,11 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 public abstract class AbstractMinecart extends Entity {
+   private static final float LOWERED_PASSENGER_ATTACHMENT_Y = 0.0F;
+   private static final float PASSENGER_ATTACHMENT_Y = 0.1875F;
    private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.FLOAT);
@@ -59,6 +64,13 @@ public abstract class AbstractMinecart extends Entity {
    protected static final float WATER_SLOWDOWN_FACTOR = 0.95F;
    private boolean flipped;
    private boolean onRails;
+   private int lerpSteps;
+   private double lerpX;
+   private double lerpY;
+   private double lerpZ;
+   private double lerpYRot;
+   private double lerpXRot;
+   private Vec3 targetDeltaMovement = Vec3.ZERO;
    private static final Map<RailShape, Pair<Vec3i, Vec3i>> EXITS = Util.make(Maps.newEnumMap(RailShape.class), var0 -> {
       Vec3i var1 = Direction.WEST.getNormal();
       Vec3i var2 = Direction.EAST.getNormal();
@@ -79,15 +91,6 @@ public abstract class AbstractMinecart extends Entity {
       var0.put(RailShape.NORTH_WEST, Pair.of(var3, var1));
       var0.put(RailShape.NORTH_EAST, Pair.of(var3, var2));
    });
-   private int lSteps;
-   private double lx;
-   private double ly;
-   private double lz;
-   private double lyr;
-   private double lxr;
-   private double lxd;
-   private double lyd;
-   private double lzd;
 
    protected AbstractMinecart(EntityType<?> var1, Level var2) {
       super(var1, var2);
@@ -151,8 +154,9 @@ public abstract class AbstractMinecart extends Entity {
    }
 
    @Override
-   public double getPassengersRidingOffset() {
-      return 0.0;
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      boolean var4 = var1 instanceof Villager || var1 instanceof WanderingTrader;
+      return new Vector3f(0.0F, var4 ? 0.0F : 0.1875F, 0.0F);
    }
 
    @Override
@@ -293,16 +297,9 @@ public abstract class AbstractMinecart extends Entity {
       this.checkBelowWorld();
       this.handleNetherPortal();
       if (this.level().isClientSide) {
-         if (this.lSteps > 0) {
-            double var16 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
-            double var17 = this.getY() + (this.ly - this.getY()) / (double)this.lSteps;
-            double var18 = this.getZ() + (this.lz - this.getZ()) / (double)this.lSteps;
-            double var7 = Mth.wrapDegrees(this.lyr - (double)this.getYRot());
-            this.setYRot(this.getYRot() + (float)var7 / (float)this.lSteps);
-            this.setXRot(this.getXRot() + (float)(this.lxr - (double)this.getXRot()) / (float)this.lSteps);
-            --this.lSteps;
-            this.setPos(var16, var17, var18);
-            this.setRot(this.getYRot(), this.getXRot());
+         if (this.lerpSteps > 0) {
+            this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
+            --this.lerpSteps;
          } else {
             this.reapplyPosition();
             this.setRot(this.getYRot(), this.getXRot());
@@ -351,11 +348,10 @@ public abstract class AbstractMinecart extends Entity {
 
          this.setRot(this.getYRot(), this.getXRot());
          if (this.getMinecartType() == AbstractMinecart.Type.RIDEABLE && this.getDeltaMovement().horizontalDistanceSqr() > 0.01) {
-            List var19 = this.level()
+            List var16 = this.level()
                .getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224), EntitySelector.pushableBy(this));
-            if (!var19.isEmpty()) {
-               for(int var20 = 0; var20 < var19.size(); ++var20) {
-                  Entity var14 = (Entity)var19.get(var20);
+            if (!var16.isEmpty()) {
+               for(Entity var14 : var16) {
                   if (!(var14 instanceof Player)
                      && !(var14 instanceof IronGolem)
                      && !(var14 instanceof AbstractMinecart)
@@ -761,22 +757,45 @@ public abstract class AbstractMinecart extends Entity {
    }
 
    @Override
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
-      this.lx = var1;
-      this.ly = var3;
-      this.lz = var5;
-      this.lyr = (double)var7;
-      this.lxr = (double)var8;
-      this.lSteps = var9 + 2;
-      this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
+   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
+      this.lerpX = var1;
+      this.lerpY = var3;
+      this.lerpZ = var5;
+      this.lerpYRot = (double)var7;
+      this.lerpXRot = (double)var8;
+      this.lerpSteps = var9 + 2;
+      this.setDeltaMovement(this.targetDeltaMovement);
+   }
+
+   @Override
+   public double lerpTargetX() {
+      return this.lerpSteps > 0 ? this.lerpX : this.getX();
+   }
+
+   @Override
+   public double lerpTargetY() {
+      return this.lerpSteps > 0 ? this.lerpY : this.getY();
+   }
+
+   @Override
+   public double lerpTargetZ() {
+      return this.lerpSteps > 0 ? this.lerpZ : this.getZ();
+   }
+
+   @Override
+   public float lerpTargetXRot() {
+      return this.lerpSteps > 0 ? (float)this.lerpXRot : this.getXRot();
+   }
+
+   @Override
+   public float lerpTargetYRot() {
+      return this.lerpSteps > 0 ? (float)this.lerpYRot : this.getYRot();
    }
 
    @Override
    public void lerpMotion(double var1, double var3, double var5) {
-      this.lxd = var1;
-      this.lyd = var3;
-      this.lzd = var5;
-      this.setDeltaMovement(this.lxd, this.lyd, this.lzd);
+      this.targetDeltaMovement = new Vec3(var1, var3, var5);
+      this.setDeltaMovement(this.targetDeltaMovement);
    }
 
    public void setDamage(float var1) {

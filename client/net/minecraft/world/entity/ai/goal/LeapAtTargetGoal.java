@@ -19,7 +19,7 @@ public class LeapAtTargetGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      if (this.mob.isVehicle()) {
+      if (this.mob.hasControllingPassenger()) {
          return false;
       } else {
          this.target = this.mob.getTarget();

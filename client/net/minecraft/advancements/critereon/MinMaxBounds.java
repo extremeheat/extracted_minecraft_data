@@ -2,83 +2,57 @@ package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonParseException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.function.BiFunction;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 
-public abstract class MinMaxBounds<T extends Number> {
-   public static final SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
-   public static final SimpleCommandExceptionType ERROR_SWAPPED = new SimpleCommandExceptionType(Component.translatable("argument.range.swapped"));
-   @Nullable
-   protected final T min;
-   @Nullable
-   protected final T max;
+public interface MinMaxBounds<T extends Number> {
+   SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
+   SimpleCommandExceptionType ERROR_SWAPPED = new SimpleCommandExceptionType(Component.translatable("argument.range.swapped"));
 
-   protected MinMaxBounds(@Nullable T var1, @Nullable T var2) {
-      super();
-      this.min = var1;
-      this.max = var2;
+   Optional<T> min();
+
+   Optional<T> max();
+
+   default boolean isAny() {
+      return this.min().isEmpty() && this.max().isEmpty();
    }
 
-   @Nullable
-   public T getMin() {
-      return this.min;
+   default Optional<T> unwrapPoint() {
+      Optional var1 = this.min();
+      Optional var2 = this.max();
+      return var1.equals(var2) ? var1 : Optional.empty();
    }
 
-   @Nullable
-   public T getMax() {
-      return this.max;
+   static <T extends Number, R extends MinMaxBounds<T>> Codec<R> createCodec(Codec<T> var0, MinMaxBounds.BoundsFactory<T, R> var1) {
+      Codec var2 = RecordCodecBuilder.create(
+         var2x -> var2x.group(
+                  ExtraCodecs.strictOptionalField(var0, "min").forGetter(MinMaxBounds::min),
+                  ExtraCodecs.strictOptionalField(var0, "max").forGetter(MinMaxBounds::max)
+               )
+               .apply(var2x, var1::create)
+      );
+      return Codec.either(var2, var0)
+         .xmap(var1x -> (MinMaxBounds)var1x.map(var0xx -> var0xx, var1xx -> var1.create(Optional.of(var1xx), Optional.of(var1xx))), var0x -> {
+            Optional var1x = var0x.unwrapPoint();
+            return var1x.isPresent() ? Either.right((Number)var1x.get()) : Either.left(var0x);
+         });
    }
 
-   public boolean isAny() {
-      return this.min == null && this.max == null;
-   }
-
-   public JsonElement serializeToJson() {
-      if (this.isAny()) {
-         return JsonNull.INSTANCE;
-      } else if (this.min != null && this.min.equals(this.max)) {
-         return new JsonPrimitive(this.min);
-      } else {
-         JsonObject var1 = new JsonObject();
-         if (this.min != null) {
-            var1.addProperty("min", this.min);
-         }
-
-         if (this.max != null) {
-            var1.addProperty("max", this.max);
-         }
-
-         return var1;
-      }
-   }
-
-   protected static <T extends Number, R extends MinMaxBounds<T>> R fromJson(
-      @Nullable JsonElement var0, R var1, BiFunction<JsonElement, String, T> var2, MinMaxBounds.BoundsFactory<T, R> var3
-   ) {
-      if (var0 == null || var0.isJsonNull()) {
-         return (R)var1;
-      } else if (GsonHelper.isNumberValue(var0)) {
-         Number var7 = (Number)var2.apply((T)var0, "value");
-         return (R)var3.create(var7, var7);
-      } else {
-         JsonObject var4 = GsonHelper.convertToJsonObject(var0, "value");
-         Number var5 = var4.has("min") ? (Number)var2.apply((T)var4.get("min"), "min") : null;
-         Number var6 = var4.has("max") ? (Number)var2.apply((T)var4.get("max"), "max") : null;
-         return (R)var3.create(var5, var6);
-      }
-   }
-
-   protected static <T extends Number, R extends MinMaxBounds<T>> R fromReader(
+   static <T extends Number, R extends MinMaxBounds<T>> R fromReader(
       StringReader var0,
       MinMaxBounds.BoundsFromReaderFactory<T, R> var1,
       Function<String, T> var2,
@@ -91,20 +65,20 @@ public abstract class MinMaxBounds<T extends Number> {
          int var5 = var0.getCursor();
 
          try {
-            Number var6 = optionallyFormat(readNumber(var0, var2, var3), var4);
-            Number var7;
+            Optional var6 = readNumber(var0, var2, var3).map(var4);
+            Optional var7;
             if (var0.canRead(2) && var0.peek() == '.' && var0.peek(1) == '.') {
                var0.skip();
                var0.skip();
-               var7 = optionallyFormat(readNumber(var0, var2, var3), var4);
-               if (var6 == null && var7 == null) {
+               var7 = readNumber(var0, var2, var3).map(var4);
+               if (var6.isEmpty() && var7.isEmpty()) {
                   throw ERROR_EMPTY.createWithContext(var0);
                }
             } else {
                var7 = var6;
             }
 
-            if (var6 == null && var7 == null) {
+            if (var6.isEmpty() && var7.isEmpty()) {
                throw ERROR_EMPTY.createWithContext(var0);
             } else {
                return (R)var1.create(var0, var6, var7);
@@ -116,8 +90,7 @@ public abstract class MinMaxBounds<T extends Number> {
       }
    }
 
-   @Nullable
-   private static <T extends Number> T readNumber(StringReader var0, Function<String, T> var1, Supplier<DynamicCommandExceptionType> var2) throws CommandSyntaxException {
+   private static <T extends Number> Optional<T> readNumber(StringReader var0, Function<String, T> var1, Supplier<DynamicCommandExceptionType> var2) throws CommandSyntaxException {
       int var3 = var0.getCursor();
 
       while(var0.canRead() && isAllowedInputChat(var0)) {
@@ -126,10 +99,10 @@ public abstract class MinMaxBounds<T extends Number> {
 
       String var4 = var0.getString().substring(var3, var0.getCursor());
       if (var4.isEmpty()) {
-         return null;
+         return Optional.empty();
       } else {
          try {
-            return (T)var1.apply(var4);
+            return Optional.of((T)var1.apply(var4));
          } catch (NumberFormatException var6) {
             throw ((DynamicCommandExceptionType)var2.get()).createWithContext(var0, var4);
          }
@@ -149,81 +122,86 @@ public abstract class MinMaxBounds<T extends Number> {
       }
    }
 
-   @Nullable
-   private static <T> T optionallyFormat(@Nullable T var0, Function<T, T> var1) {
-      return (T)(var0 == null ? null : var1.apply(var0));
+   @FunctionalInterface
+   public interface BoundsFactory<T extends Number, R extends MinMaxBounds<T>> {
+      R create(Optional<T> var1, Optional<T> var2);
    }
 
    @FunctionalInterface
-   protected interface BoundsFactory<T extends Number, R extends MinMaxBounds<T>> {
-      R create(@Nullable T var1, @Nullable T var2);
+   public interface BoundsFromReaderFactory<T extends Number, R extends MinMaxBounds<T>> {
+      R create(StringReader var1, Optional<T> var2, Optional<T> var3) throws CommandSyntaxException;
    }
 
-   @FunctionalInterface
-   protected interface BoundsFromReaderFactory<T extends Number, R extends MinMaxBounds<T>> {
-      R create(StringReader var1, @Nullable T var2, @Nullable T var3) throws CommandSyntaxException;
-   }
+   public static record Doubles(Optional<Double> e, Optional<Double> f, Optional<Double> g, Optional<Double> h) implements MinMaxBounds<Double> {
+      private final Optional<Double> min;
+      private final Optional<Double> max;
+      private final Optional<Double> minSq;
+      private final Optional<Double> maxSq;
+      public static final MinMaxBounds.Doubles ANY = new MinMaxBounds.Doubles(Optional.empty(), Optional.empty());
+      public static final Codec<MinMaxBounds.Doubles> CODEC = MinMaxBounds.createCodec(Codec.DOUBLE, MinMaxBounds.Doubles::new);
 
-   public static class Doubles extends MinMaxBounds<Double> {
-      public static final MinMaxBounds.Doubles ANY = new MinMaxBounds.Doubles(null, null);
-      @Nullable
-      private final Double minSq;
-      @Nullable
-      private final Double maxSq;
+      private Doubles(Optional<Double> var1, Optional<Double> var2) {
+         this(var1, var2, squareOpt(var1), squareOpt(var2));
+      }
 
-      private static MinMaxBounds.Doubles create(StringReader var0, @Nullable Double var1, @Nullable Double var2) throws CommandSyntaxException {
-         if (var1 != null && var2 != null && var1 > var2) {
+      public Doubles(Optional<Double> var1, Optional<Double> var2, Optional<Double> var3, Optional<Double> var4) {
+         super();
+         this.min = var1;
+         this.max = var2;
+         this.minSq = var3;
+         this.maxSq = var4;
+      }
+
+      private static MinMaxBounds.Doubles create(StringReader var0, Optional<Double> var1, Optional<Double> var2) throws CommandSyntaxException {
+         if (var1.isPresent() && var2.isPresent() && var1.get() > var2.get()) {
             throw ERROR_SWAPPED.createWithContext(var0);
          } else {
             return new MinMaxBounds.Doubles(var1, var2);
          }
       }
 
-      @Nullable
-      private static Double squareOpt(@Nullable Double var0) {
-         return var0 == null ? null : var0 * var0;
-      }
-
-      private Doubles(@Nullable Double var1, @Nullable Double var2) {
-         super(var1, var2);
-         this.minSq = squareOpt(var1);
-         this.maxSq = squareOpt(var2);
+      private static Optional<Double> squareOpt(Optional<Double> var0) {
+         return var0.map(var0x -> var0x * var0x);
       }
 
       public static MinMaxBounds.Doubles exactly(double var0) {
-         return new MinMaxBounds.Doubles(var0, var0);
+         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.of(var0));
       }
 
       public static MinMaxBounds.Doubles between(double var0, double var2) {
-         return new MinMaxBounds.Doubles(var0, var2);
+         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.of(var2));
       }
 
       public static MinMaxBounds.Doubles atLeast(double var0) {
-         return new MinMaxBounds.Doubles(var0, null);
+         return new MinMaxBounds.Doubles(Optional.of(var0), Optional.empty());
       }
 
       public static MinMaxBounds.Doubles atMost(double var0) {
-         return new MinMaxBounds.Doubles(null, var0);
+         return new MinMaxBounds.Doubles(Optional.empty(), Optional.of(var0));
       }
 
       public boolean matches(double var1) {
-         if (this.min != null && this.min > var1) {
+         if (this.min.isPresent() && this.min.get() > var1) {
             return false;
          } else {
-            return this.max == null || !(this.max < var1);
+            return this.max.isEmpty() || !(this.max.get() < var1);
          }
       }
 
       public boolean matchesSqr(double var1) {
-         if (this.minSq != null && this.minSq > var1) {
+         if (this.minSq.isPresent() && this.minSq.get() > var1) {
             return false;
          } else {
-            return this.maxSq == null || !(this.maxSq < var1);
+            return this.maxSq.isEmpty() || !(this.maxSq.get() < var1);
          }
       }
 
       public static MinMaxBounds.Doubles fromJson(@Nullable JsonElement var0) {
-         return fromJson(var0, ANY, GsonHelper::convertToDouble, MinMaxBounds.Doubles::new);
+         return var0 != null && !var0.isJsonNull() ? Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new) : ANY;
+      }
+
+      public JsonElement serializeToJson() {
+         return (JsonElement)(this.isAny() ? JsonNull.INSTANCE : Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new));
       }
 
       public static MinMaxBounds.Doubles fromReader(StringReader var0) throws CommandSyntaxException {
@@ -231,70 +209,82 @@ public abstract class MinMaxBounds<T extends Number> {
       }
 
       public static MinMaxBounds.Doubles fromReader(StringReader var0, Function<Double, Double> var1) throws CommandSyntaxException {
-         return fromReader(var0, MinMaxBounds.Doubles::create, Double::parseDouble, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidDouble, var1);
+         return MinMaxBounds.fromReader(
+            var0, MinMaxBounds.Doubles::create, Double::parseDouble, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidDouble, var1
+         );
       }
    }
 
-   public static class Ints extends MinMaxBounds<Integer> {
-      public static final MinMaxBounds.Ints ANY = new MinMaxBounds.Ints(null, null);
-      @Nullable
-      private final Long minSq;
-      @Nullable
-      private final Long maxSq;
+   public static record Ints(Optional<Integer> e, Optional<Integer> f, Optional<Long> g, Optional<Long> h) implements MinMaxBounds<Integer> {
+      private final Optional<Integer> min;
+      private final Optional<Integer> max;
+      private final Optional<Long> minSq;
+      private final Optional<Long> maxSq;
+      public static final MinMaxBounds.Ints ANY = new MinMaxBounds.Ints(Optional.empty(), Optional.empty());
+      public static final Codec<MinMaxBounds.Ints> CODEC = MinMaxBounds.createCodec(Codec.INT, MinMaxBounds.Ints::new);
 
-      private static MinMaxBounds.Ints create(StringReader var0, @Nullable Integer var1, @Nullable Integer var2) throws CommandSyntaxException {
-         if (var1 != null && var2 != null && var1 > var2) {
+      private Ints(Optional<Integer> var1, Optional<Integer> var2) {
+         this(var1, var2, var1.map(var0 -> var0.longValue() * var0.longValue()), squareOpt(var2));
+      }
+
+      public Ints(Optional<Integer> var1, Optional<Integer> var2, Optional<Long> var3, Optional<Long> var4) {
+         super();
+         this.min = var1;
+         this.max = var2;
+         this.minSq = var3;
+         this.maxSq = var4;
+      }
+
+      private static MinMaxBounds.Ints create(StringReader var0, Optional<Integer> var1, Optional<Integer> var2) throws CommandSyntaxException {
+         if (var1.isPresent() && var2.isPresent() && var1.get() > var2.get()) {
             throw ERROR_SWAPPED.createWithContext(var0);
          } else {
             return new MinMaxBounds.Ints(var1, var2);
          }
       }
 
-      @Nullable
-      private static Long squareOpt(@Nullable Integer var0) {
-         return var0 == null ? null : var0.longValue() * var0.longValue();
-      }
-
-      private Ints(@Nullable Integer var1, @Nullable Integer var2) {
-         super(var1, var2);
-         this.minSq = squareOpt(var1);
-         this.maxSq = squareOpt(var2);
+      private static Optional<Long> squareOpt(Optional<Integer> var0) {
+         return var0.map(var0x -> var0x.longValue() * var0x.longValue());
       }
 
       public static MinMaxBounds.Ints exactly(int var0) {
-         return new MinMaxBounds.Ints(var0, var0);
+         return new MinMaxBounds.Ints(Optional.of(var0), Optional.of(var0));
       }
 
       public static MinMaxBounds.Ints between(int var0, int var1) {
-         return new MinMaxBounds.Ints(var0, var1);
+         return new MinMaxBounds.Ints(Optional.of(var0), Optional.of(var1));
       }
 
       public static MinMaxBounds.Ints atLeast(int var0) {
-         return new MinMaxBounds.Ints(var0, null);
+         return new MinMaxBounds.Ints(Optional.of(var0), Optional.empty());
       }
 
       public static MinMaxBounds.Ints atMost(int var0) {
-         return new MinMaxBounds.Ints(null, var0);
+         return new MinMaxBounds.Ints(Optional.empty(), Optional.of(var0));
       }
 
       public boolean matches(int var1) {
-         if (this.min != null && this.min > var1) {
+         if (this.min.isPresent() && this.min.get() > var1) {
             return false;
          } else {
-            return this.max == null || this.max >= var1;
+            return this.max.isEmpty() || this.max.get() >= var1;
          }
       }
 
       public boolean matchesSqr(long var1) {
-         if (this.minSq != null && this.minSq > var1) {
+         if (this.minSq.isPresent() && this.minSq.get() > var1) {
             return false;
          } else {
-            return this.maxSq == null || this.maxSq >= var1;
+            return this.maxSq.isEmpty() || this.maxSq.get() >= var1;
          }
       }
 
       public static MinMaxBounds.Ints fromJson(@Nullable JsonElement var0) {
-         return fromJson(var0, ANY, GsonHelper::convertToInt, MinMaxBounds.Ints::new);
+         return var0 != null && !var0.isJsonNull() ? Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new) : ANY;
+      }
+
+      public JsonElement serializeToJson() {
+         return (JsonElement)(this.isAny() ? JsonNull.INSTANCE : Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new));
       }
 
       public static MinMaxBounds.Ints fromReader(StringReader var0) throws CommandSyntaxException {
@@ -302,7 +292,7 @@ public abstract class MinMaxBounds<T extends Number> {
       }
 
       public static MinMaxBounds.Ints fromReader(StringReader var0, Function<Integer, Integer> var1) throws CommandSyntaxException {
-         return fromReader(var0, MinMaxBounds.Ints::create, Integer::parseInt, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidInt, var1);
+         return MinMaxBounds.fromReader(var0, MinMaxBounds.Ints::create, Integer::parseInt, CommandSyntaxException.BUILT_IN_EXCEPTIONS::readerInvalidInt, var1);
       }
    }
 }

@@ -9,14 +9,18 @@ public class FloatTag extends NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 12;
    public static final FloatTag ZERO = new FloatTag(0.0F);
    public static final TagType<FloatTag> TYPE = new TagType.StaticSize<FloatTag>() {
-      public FloatTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBytes(12L);
-         return FloatTag.valueOf(var1.readFloat());
+      public FloatTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return FloatTag.valueOf(readAccounted(var1, var2));
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) throws IOException {
-         return var2.visit(var1.readFloat());
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         return var2.visit(readAccounted(var1, var3));
+      }
+
+      private static float readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(12L);
+         return var0.readFloat();
       }
 
       @Override

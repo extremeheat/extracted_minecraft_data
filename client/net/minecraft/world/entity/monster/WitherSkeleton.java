@@ -97,6 +97,11 @@ public class WitherSkeleton extends AbstractSkeleton {
    }
 
    @Override
+   protected float ridingOffset(Entity var1) {
+      return -0.875F;
+   }
+
+   @Override
    public boolean doHurtTarget(Entity var1) {
       if (!super.doHurtTarget(var1)) {
          return false;

@@ -2,7 +2,6 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
@@ -12,8 +11,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 
 public class BannerDuplicateRecipe extends CustomRecipe {
-   public BannerDuplicateRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public BannerDuplicateRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

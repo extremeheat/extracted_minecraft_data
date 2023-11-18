@@ -1,11 +1,13 @@
 package net.minecraft.world.level.saveddata.maps;
 
-import java.util.Objects;
+import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.material.MapColor;
 
-public class MapDecoration {
+public record MapDecoration(MapDecoration.Type a, byte b, byte c, byte d, @Nullable Component e) {
    private final MapDecoration.Type type;
    private final byte x;
    private final byte y;
@@ -26,99 +28,73 @@ public class MapDecoration {
       return this.type.getIcon();
    }
 
-   public MapDecoration.Type getType() {
-      return this.type;
-   }
-
-   public byte getX() {
-      return this.x;
-   }
-
-   public byte getY() {
-      return this.y;
-   }
-
-   public byte getRot() {
-      return this.rot;
-   }
-
    public boolean renderOnFrame() {
       return this.type.isRenderedOnFrame();
    }
 
-   @Nullable
-   public Component getName() {
-      return this.name;
-   }
+   public static enum Type implements StringRepresentable {
+      PLAYER("player", false, true),
+      FRAME("frame", true, true),
+      RED_MARKER("red_marker", false, true),
+      BLUE_MARKER("blue_marker", false, true),
+      TARGET_X("target_x", true, false),
+      TARGET_POINT("target_point", true, false),
+      PLAYER_OFF_MAP("player_off_map", false, true),
+      PLAYER_OFF_LIMITS("player_off_limits", false, true),
+      MANSION("mansion", true, 5393476, false, true),
+      MONUMENT("monument", true, 3830373, false, true),
+      BANNER_WHITE("banner_white", true, true),
+      BANNER_ORANGE("banner_orange", true, true),
+      BANNER_MAGENTA("banner_magenta", true, true),
+      BANNER_LIGHT_BLUE("banner_light_blue", true, true),
+      BANNER_YELLOW("banner_yellow", true, true),
+      BANNER_LIME("banner_lime", true, true),
+      BANNER_PINK("banner_pink", true, true),
+      BANNER_GRAY("banner_gray", true, true),
+      BANNER_LIGHT_GRAY("banner_light_gray", true, true),
+      BANNER_CYAN("banner_cyan", true, true),
+      BANNER_PURPLE("banner_purple", true, true),
+      BANNER_BLUE("banner_blue", true, true),
+      BANNER_BROWN("banner_brown", true, true),
+      BANNER_GREEN("banner_green", true, true),
+      BANNER_RED("banner_red", true, true),
+      BANNER_BLACK("banner_black", true, true),
+      RED_X("red_x", true, false),
+      DESERT_VILLAGE("village_desert", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      PLAINS_VILLAGE("village_plains", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      SAVANNA_VILLAGE("village_savanna", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      SNOWY_VILLAGE("village_snowy", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      TAIGA_VILLAGE("village_taiga", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      JUNGLE_TEMPLE("jungle_temple", true, MapColor.COLOR_LIGHT_GRAY.col, false, true),
+      SWAMP_HUT("swamp_hut", true, MapColor.COLOR_LIGHT_GRAY.col, false, true);
 
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof MapDecoration)) {
-         return false;
-      } else {
-         MapDecoration var2 = (MapDecoration)var1;
-         return this.type == var2.type && this.rot == var2.rot && this.x == var2.x && this.y == var2.y && Objects.equals(this.name, var2.name);
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      int var1 = this.type.getIcon();
-      var1 = 31 * var1 + this.x;
-      var1 = 31 * var1 + this.y;
-      var1 = 31 * var1 + this.rot;
-      return 31 * var1 + Objects.hashCode(this.name);
-   }
-
-   public static enum Type {
-      PLAYER(false, true),
-      FRAME(true, true),
-      RED_MARKER(false, true),
-      BLUE_MARKER(false, true),
-      TARGET_X(true, false),
-      TARGET_POINT(true, false),
-      PLAYER_OFF_MAP(false, true),
-      PLAYER_OFF_LIMITS(false, true),
-      MANSION(true, 5393476, false),
-      MONUMENT(true, 3830373, false),
-      BANNER_WHITE(true, true),
-      BANNER_ORANGE(true, true),
-      BANNER_MAGENTA(true, true),
-      BANNER_LIGHT_BLUE(true, true),
-      BANNER_YELLOW(true, true),
-      BANNER_LIME(true, true),
-      BANNER_PINK(true, true),
-      BANNER_GRAY(true, true),
-      BANNER_LIGHT_GRAY(true, true),
-      BANNER_CYAN(true, true),
-      BANNER_PURPLE(true, true),
-      BANNER_BLUE(true, true),
-      BANNER_BROWN(true, true),
-      BANNER_GREEN(true, true),
-      BANNER_RED(true, true),
-      BANNER_BLACK(true, true),
-      RED_X(true, false);
-
+      public static final Codec<MapDecoration.Type> CODEC = StringRepresentable.fromEnum(MapDecoration.Type::values);
+      private final String name;
       private final byte icon;
       private final boolean renderedOnFrame;
       private final int mapColor;
+      private final boolean isExplorationMapElement;
       private final boolean trackCount;
 
-      private Type(boolean var3, boolean var4) {
-         this(var3, -1, var4);
+      private Type(String var3, boolean var4, boolean var5) {
+         this(var3, var4, -1, var5, false);
       }
 
-      private Type(boolean var3, int var4, boolean var5) {
-         this.trackCount = var5;
+      private Type(String var3, boolean var4, int var5, boolean var6, boolean var7) {
+         this.name = var3;
+         this.trackCount = var6;
          this.icon = (byte)this.ordinal();
-         this.renderedOnFrame = var3;
-         this.mapColor = var4;
+         this.renderedOnFrame = var4;
+         this.mapColor = var5;
+         this.isExplorationMapElement = var7;
       }
 
       public byte getIcon() {
          return this.icon;
+      }
+
+      public boolean isExplorationMapElement() {
+         return this.isExplorationMapElement;
       }
 
       public boolean isRenderedOnFrame() {
@@ -139,6 +115,11 @@ public class MapDecoration {
 
       public boolean shouldTrackCount() {
          return this.trackCount;
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
    }
 }

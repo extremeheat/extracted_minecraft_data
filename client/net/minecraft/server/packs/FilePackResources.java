@@ -1,55 +1,36 @@
 package net.minecraft.server.packs;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.resources.IoSupplier;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public class FilePackResources extends AbstractPackResources {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Splitter SPLITTER = Splitter.on('/').omitEmptyStrings().limit(3);
-   private final File file;
-   @Nullable
-   private ZipFile zipFile;
-   private boolean failedToLoad;
+   static final Logger LOGGER = LogUtils.getLogger();
+   private final FilePackResources.SharedZipFileAccess zipFileAccess;
+   private final String prefix;
 
-   public FilePackResources(String var1, File var2, boolean var3) {
+   FilePackResources(String var1, FilePackResources.SharedZipFileAccess var2, boolean var3, String var4) {
       super(var1, var3);
-      this.file = var2;
-   }
-
-   @Nullable
-   private ZipFile getOrCreateZipFile() {
-      if (this.failedToLoad) {
-         return null;
-      } else {
-         if (this.zipFile == null) {
-            try {
-               this.zipFile = new ZipFile(this.file);
-            } catch (IOException var2) {
-               LOGGER.error("Failed to open pack {}", this.file, var2);
-               this.failedToLoad = true;
-               return null;
-            }
-         }
-
-         return this.zipFile;
-      }
+      this.zipFileAccess = var2;
+      this.prefix = var4;
    }
 
    private static String getPathFromLocation(PackType var0, ResourceLocation var1) {
@@ -67,38 +48,40 @@ public class FilePackResources extends AbstractPackResources {
       return this.getResource(getPathFromLocation(var1, var2));
    }
 
+   private String addPrefix(String var1) {
+      return this.prefix.isEmpty() ? var1 : this.prefix + "/" + var1;
+   }
+
    @Nullable
    private IoSupplier<InputStream> getResource(String var1) {
-      ZipFile var2 = this.getOrCreateZipFile();
+      ZipFile var2 = this.zipFileAccess.getOrCreateZipFile();
       if (var2 == null) {
          return null;
       } else {
-         ZipEntry var3 = var2.getEntry(var1);
+         ZipEntry var3 = var2.getEntry(this.addPrefix(var1));
          return var3 == null ? null : IoSupplier.create(var2, var3);
       }
    }
 
    @Override
    public Set<String> getNamespaces(PackType var1) {
-      ZipFile var2 = this.getOrCreateZipFile();
+      ZipFile var2 = this.zipFileAccess.getOrCreateZipFile();
       if (var2 == null) {
          return Set.of();
       } else {
          Enumeration var3 = var2.entries();
          HashSet var4 = Sets.newHashSet();
+         String var5 = this.addPrefix(var1.getDirectory() + "/");
 
          while(var3.hasMoreElements()) {
-            ZipEntry var5 = (ZipEntry)var3.nextElement();
-            String var6 = var5.getName();
-            if (var6.startsWith(var1.getDirectory() + "/")) {
-               ArrayList var7 = Lists.newArrayList(SPLITTER.split(var6));
-               if (var7.size() > 1) {
-                  String var8 = (String)var7.get(1);
-                  if (var8.equals(var8.toLowerCase(Locale.ROOT))) {
-                     var4.add(var8);
-                  } else {
-                     LOGGER.warn("Ignored non-lowercase namespace: {} in {}", var8, this.file);
-                  }
+            ZipEntry var6 = (ZipEntry)var3.nextElement();
+            String var7 = var6.getName();
+            String var8 = extractNamespace(var5, var7);
+            if (!var8.isEmpty()) {
+               if (ResourceLocation.isValidNamespace(var8)) {
+                  var4.add(var8);
+               } else {
+                  LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var8, this.zipFileAccess.file);
                }
             }
          }
@@ -107,26 +90,28 @@ public class FilePackResources extends AbstractPackResources {
       }
    }
 
-   @Override
-   protected void finalize() throws Throwable {
-      this.close();
-      super.finalize();
-   }
-
-   @Override
-   public void close() {
-      if (this.zipFile != null) {
-         IOUtils.closeQuietly(this.zipFile);
-         this.zipFile = null;
+   @VisibleForTesting
+   public static String extractNamespace(String var0, String var1) {
+      if (!var1.startsWith(var0)) {
+         return "";
+      } else {
+         int var2 = var0.length();
+         int var3 = var1.indexOf(47, var2);
+         return var3 == -1 ? var1.substring(var2) : var1.substring(var2, var3);
       }
    }
 
    @Override
+   public void close() {
+      this.zipFileAccess.close();
+   }
+
+   @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      ZipFile var5 = this.getOrCreateZipFile();
+      ZipFile var5 = this.zipFileAccess.getOrCreateZipFile();
       if (var5 != null) {
          Enumeration var6 = var5.entries();
-         String var7 = var1.getDirectory() + "/" + var2 + "/";
+         String var7 = this.addPrefix(var1.getDirectory() + "/" + var2 + "/");
          String var8 = var7 + var3 + "/";
 
          while(var6.hasMoreElements()) {
@@ -144,6 +129,90 @@ public class FilePackResources extends AbstractPackResources {
                }
             }
          }
+      }
+   }
+
+   public static class FileResourcesSupplier implements Pack.ResourcesSupplier {
+      private final File content;
+      private final boolean isBuiltin;
+
+      public FileResourcesSupplier(Path var1, boolean var2) {
+         this(var1.toFile(), var2);
+      }
+
+      public FileResourcesSupplier(File var1, boolean var2) {
+         super();
+         this.isBuiltin = var2;
+         this.content = var1;
+      }
+
+      @Override
+      public PackResources openPrimary(String var1) {
+         FilePackResources.SharedZipFileAccess var2 = new FilePackResources.SharedZipFileAccess(this.content);
+         return new FilePackResources(var1, var2, this.isBuiltin, "");
+      }
+
+      @Override
+      public PackResources openFull(String var1, Pack.Info var2) {
+         FilePackResources.SharedZipFileAccess var3 = new FilePackResources.SharedZipFileAccess(this.content);
+         FilePackResources var4 = new FilePackResources(var1, var3, this.isBuiltin, "");
+         List var5 = var2.overlays();
+         if (var5.isEmpty()) {
+            return var4;
+         } else {
+            ArrayList var6 = new ArrayList(var5.size());
+
+            for(String var8 : var5) {
+               var6.add(new FilePackResources(var1, var3, this.isBuiltin, var8));
+            }
+
+            return new CompositePackResources(var4, var6);
+         }
+      }
+   }
+
+   static class SharedZipFileAccess implements AutoCloseable {
+      final File file;
+      @Nullable
+      private ZipFile zipFile;
+      private boolean failedToLoad;
+
+      SharedZipFileAccess(File var1) {
+         super();
+         this.file = var1;
+      }
+
+      @Nullable
+      ZipFile getOrCreateZipFile() {
+         if (this.failedToLoad) {
+            return null;
+         } else {
+            if (this.zipFile == null) {
+               try {
+                  this.zipFile = new ZipFile(this.file);
+               } catch (IOException var2) {
+                  FilePackResources.LOGGER.error("Failed to open pack {}", this.file, var2);
+                  this.failedToLoad = true;
+                  return null;
+               }
+            }
+
+            return this.zipFile;
+         }
+      }
+
+      @Override
+      public void close() {
+         if (this.zipFile != null) {
+            IOUtils.closeQuietly(this.zipFile);
+            this.zipFile = null;
+         }
+      }
+
+      @Override
+      protected void finalize() throws Throwable {
+         this.close();
+         super.finalize();
       }
    }
 }

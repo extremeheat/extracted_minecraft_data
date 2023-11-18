@@ -9,6 +9,7 @@ import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.worldgen.features.TreeFeatures;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
@@ -654,10 +655,10 @@ public class Blocks {
    public static final Block AZALEA_LEAVES = register("azalea_leaves", leaves(SoundType.AZALEA_LEAVES));
    public static final Block FLOWERING_AZALEA_LEAVES = register("flowering_azalea_leaves", leaves(SoundType.AZALEA_LEAVES));
    public static final Block SPONGE = register(
-      "sponge", new SpongeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.GRASS))
+      "sponge", new SpongeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.SPONGE))
    );
    public static final Block WET_SPONGE = register(
-      "wet_sponge", new WetSpongeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.GRASS))
+      "wet_sponge", new WetSpongeBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.6F).sound(SoundType.WET_SPONGE))
    );
    public static final Block GLASS = register(
       "glass",
@@ -1976,7 +1977,7 @@ public class Blocks {
       )
    );
    public static final Block LEVER = register(
-      "lever", new LeverBlock(BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.WOOD).pushReaction(PushReaction.DESTROY))
+      "lever", new LeverBlock(BlockBehaviour.Properties.of().noCollission().strength(0.5F).sound(SoundType.STONE).pushReaction(PushReaction.DESTROY))
    );
    public static final Block STONE_PRESSURE_PLATE = register(
       "stone_pressure_plate",
@@ -2225,7 +2226,14 @@ public class Blocks {
    );
    public static final Block JUKEBOX = register(
       "jukebox",
-      new JukeboxBlock(BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).instrument(NoteBlockInstrument.BASS).strength(2.0F, 6.0F).ignitedByLava())
+      new JukeboxBlock(
+         BlockBehaviour.Properties.of()
+            .mapColor(MapColor.DIRT)
+            .instrument(NoteBlockInstrument.BASS)
+            .strength(2.0F, 6.0F)
+            .sound(SoundType.WOOD)
+            .ignitedByLava()
+      )
    );
    public static final Block OAK_FENCE = register(
       "oak_fence",
@@ -2372,7 +2380,7 @@ public class Blocks {
       "cake", new CakeBlock(BlockBehaviour.Properties.of().forceSolidOn().strength(0.5F).sound(SoundType.WOOL).pushReaction(PushReaction.DESTROY))
    );
    public static final Block REPEATER = register(
-      "repeater", new RepeaterBlock(BlockBehaviour.Properties.of().instabreak().sound(SoundType.WOOD).pushReaction(PushReaction.DESTROY))
+      "repeater", new RepeaterBlock(BlockBehaviour.Properties.of().instabreak().sound(SoundType.STONE).pushReaction(PushReaction.DESTROY))
    );
    public static final Block WHITE_STAINED_GLASS = register("white_stained_glass", stainedGlass(DyeColor.WHITE));
    public static final Block ORANGE_STAINED_GLASS = register("orange_stained_glass", stainedGlass(DyeColor.ORANGE));
@@ -2844,7 +2852,7 @@ public class Blocks {
       )
    );
    public static final Block TRIPWIRE_HOOK = register(
-      "tripwire_hook", new TripWireHookBlock(BlockBehaviour.Properties.of().noCollission().pushReaction(PushReaction.DESTROY))
+      "tripwire_hook", new TripWireHookBlock(BlockBehaviour.Properties.of().noCollission().sound(SoundType.WOOD).pushReaction(PushReaction.DESTROY))
    );
    public static final Block TRIPWIRE = register(
       "tripwire", new TripWireBlock((TripWireHookBlock)TRIPWIRE_HOOK, BlockBehaviour.Properties.of().noCollission().pushReaction(PushReaction.DESTROY))
@@ -3084,7 +3092,7 @@ public class Blocks {
       )
    );
    public static final Block COMPARATOR = register(
-      "comparator", new ComparatorBlock(BlockBehaviour.Properties.of().instabreak().sound(SoundType.WOOD).pushReaction(PushReaction.DESTROY))
+      "comparator", new ComparatorBlock(BlockBehaviour.Properties.of().instabreak().sound(SoundType.STONE).pushReaction(PushReaction.DESTROY))
    );
    public static final Block DAYLIGHT_DETECTOR = register(
       "daylight_detector",
@@ -3432,7 +3440,7 @@ public class Blocks {
             .noLootTable()
             .noOcclusion()
             .isValidSpawn(Blocks::never)
-            .noParticlesOnBreak()
+            .noTerrainParticles()
             .pushReaction(PushReaction.BLOCK)
       )
    );
@@ -4916,7 +4924,7 @@ public class Blocks {
    );
    public static final Block STRUCTURE_VOID = register(
       "structure_void",
-      new StructureVoidBlock(BlockBehaviour.Properties.of().replaceable().noCollission().noLootTable().noParticlesOnBreak().pushReaction(PushReaction.DESTROY))
+      new StructureVoidBlock(BlockBehaviour.Properties.of().replaceable().noCollission().noLootTable().noTerrainParticles().pushReaction(PushReaction.DESTROY))
    );
    public static final Block OBSERVER = register(
       "observer",
@@ -7412,15 +7420,7 @@ public class Blocks {
          return var3 instanceof ShulkerBoxBlockEntity var4 ? var4.isClosed() : true;
       };
       return new ShulkerBoxBlock(
-         var0,
-         var1.forceSolidOn()
-            .strength(2.0F)
-            .dynamicShape()
-            .noOcclusion()
-            .isSuffocating(var2)
-            .isViewBlocking(var2)
-            .pushReaction(PushReaction.DESTROY)
-            .isRedstoneConductor(Blocks::always)
+         var0, var1.forceSolidOn().strength(2.0F).dynamicShape().noOcclusion().isSuffocating(var2).isViewBlocking(var2).pushReaction(PushReaction.DESTROY)
       );
    }
 
@@ -7473,6 +7473,10 @@ public class Blocks {
    }
 
    public static Block register(String var0, Block var1) {
+      return Registry.register(BuiltInRegistries.BLOCK, var0, var1);
+   }
+
+   public static Block register(ResourceLocation var0, Block var1) {
       return Registry.register(BuiltInRegistries.BLOCK, var0, var1);
    }
 

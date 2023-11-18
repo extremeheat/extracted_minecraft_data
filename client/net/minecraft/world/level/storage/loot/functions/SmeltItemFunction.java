@@ -1,11 +1,13 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -14,8 +16,9 @@ import org.slf4j.Logger;
 
 public class SmeltItemFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<SmeltItemFunction> CODEC = RecordCodecBuilder.create(var0 -> commonFields(var0).apply(var0, SmeltItemFunction::new));
 
-   SmeltItemFunction(LootItemCondition[] var1) {
+   private SmeltItemFunction(List<LootItemCondition> var1) {
       super(var1);
    }
 
@@ -31,7 +34,7 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
       } else {
          Optional var3 = var2.getLevel().getRecipeManager().getRecipeFor(RecipeType.SMELTING, new SimpleContainer(var1), var2.getLevel());
          if (var3.isPresent()) {
-            ItemStack var4 = ((SmeltingRecipe)var3.get()).getResultItem(var2.getLevel().registryAccess());
+            ItemStack var4 = ((SmeltingRecipe)((RecipeHolder)var3.get()).value()).getResultItem(var2.getLevel().registryAccess());
             if (!var4.isEmpty()) {
                return var4.copyWithCount(var1.getCount());
             }
@@ -44,15 +47,5 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
 
    public static LootItemConditionalFunction.Builder<?> smelted() {
       return simpleBuilder(SmeltItemFunction::new);
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<SmeltItemFunction> {
-      public Serializer() {
-         super();
-      }
-
-      public SmeltItemFunction deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         return new SmeltItemFunction(var3);
-      }
    }
 }

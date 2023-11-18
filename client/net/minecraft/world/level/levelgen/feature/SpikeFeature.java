@@ -21,6 +21,7 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -113,7 +114,9 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          var20.setInvulnerable(var3.isCrystalInvulnerable());
          var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntity(var20);
-         this.setBlock(var1, new BlockPos(var4.getCenterX(), var4.getHeight(), var4.getCenterZ()), Blocks.BEDROCK.defaultBlockState());
+         BlockPos var22 = var20.blockPosition();
+         this.setBlock(var1, var22.below(), Blocks.BEDROCK.defaultBlockState());
+         this.setBlock(var1, var22, FireBlock.getState(var1, var22));
       }
    }
 

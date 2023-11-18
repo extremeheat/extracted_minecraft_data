@@ -25,7 +25,7 @@ public class SpriteCoordinateExpander implements VertexConsumer {
 
    @Override
    public VertexConsumer uv(float var1, float var2) {
-      return this.delegate.uv(this.sprite.getU((double)(var1 * 16.0F)), this.sprite.getV((double)(var2 * 16.0F)));
+      return this.delegate.uv(this.sprite.getU(var1), this.sprite.getV(var2));
    }
 
    @Override
@@ -75,22 +75,6 @@ public class SpriteCoordinateExpander implements VertexConsumer {
       float var13,
       float var14
    ) {
-      this.delegate
-         .vertex(
-            var1,
-            var2,
-            var3,
-            var4,
-            var5,
-            var6,
-            var7,
-            this.sprite.getU((double)(var8 * 16.0F)),
-            this.sprite.getV((double)(var9 * 16.0F)),
-            var10,
-            var11,
-            var12,
-            var13,
-            var14
-         );
+      this.delegate.vertex(var1, var2, var3, var4, var5, var6, var7, this.sprite.getU(var8), this.sprite.getV(var9), var10, var11, var12, var13, var14);
    }
 }

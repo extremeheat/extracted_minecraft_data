@@ -64,6 +64,7 @@ import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Vector3f;
 
 public class Zombie extends Monster {
    private static final UUID SPEED_MODIFIER_BABY_UUID = UUID.fromString("B9766B59-9566-4402-BC1F-2EE2A276D836");
@@ -177,7 +178,7 @@ public class Zombie extends Monster {
       this.getEntityData().set(DATA_BABY_ID, var1);
       if (this.level() != null && !this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-         var2.removeModifier(SPEED_MODIFIER_BABY);
+         var2.removeModifier(SPEED_MODIFIER_BABY.getId());
          if (var1) {
             var2.addTransientModifier(SPEED_MODIFIER_BABY);
          }
@@ -534,8 +535,13 @@ public class Zombie extends Monster {
    }
 
    @Override
-   public double getMyRidingOffset() {
-      return this.isBaby() ? 0.0 : -0.45;
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height + 0.0625F * var3, 0.0F);
+   }
+
+   @Override
+   protected float ridingOffset(Entity var1) {
+      return -0.7F;
    }
 
    // $QF: Could not properly define all variable types!

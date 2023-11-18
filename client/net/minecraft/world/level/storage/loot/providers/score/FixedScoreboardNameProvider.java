@@ -1,19 +1,20 @@
 package net.minecraft.world.level.storage.loot.providers.score;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
-public class FixedScoreboardNameProvider implements ScoreboardNameProvider {
-   final String name;
+public record FixedScoreboardNameProvider(String b) implements ScoreboardNameProvider {
+   private final String name;
+   public static final Codec<FixedScoreboardNameProvider> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(Codec.STRING.fieldOf("name").forGetter(FixedScoreboardNameProvider::name)).apply(var0, FixedScoreboardNameProvider::new)
+   );
 
-   FixedScoreboardNameProvider(String var1) {
+   public FixedScoreboardNameProvider(String var1) {
       super();
       this.name = var1;
    }
@@ -27,10 +28,6 @@ public class FixedScoreboardNameProvider implements ScoreboardNameProvider {
       return ScoreboardNameProviders.FIXED;
    }
 
-   public String getName() {
-      return this.name;
-   }
-
    @Nullable
    @Override
    public String getScoreboardName(LootContext var1) {
@@ -40,20 +37,5 @@ public class FixedScoreboardNameProvider implements ScoreboardNameProvider {
    @Override
    public Set<LootContextParam<?>> getReferencedContextParams() {
       return ImmutableSet.of();
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<FixedScoreboardNameProvider> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, FixedScoreboardNameProvider var2, JsonSerializationContext var3) {
-         var1.addProperty("name", var2.name);
-      }
-
-      public FixedScoreboardNameProvider deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         String var3 = GsonHelper.getAsString(var1, "name");
-         return new FixedScoreboardNameProvider(var3);
-      }
    }
 }

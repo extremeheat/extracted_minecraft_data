@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -35,10 +36,11 @@ public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> exten
       if (var11.is(Items.ELYTRA)) {
          ResourceLocation var12;
          if (var4 instanceof AbstractClientPlayer var13) {
-            if (var13.isElytraLoaded() && var13.getElytraTextureLocation() != null) {
-               var12 = var13.getElytraTextureLocation();
-            } else if (var13.isCapeLoaded() && var13.getCloakTextureLocation() != null && var13.isModelPartShown(PlayerModelPart.CAPE)) {
-               var12 = var13.getCloakTextureLocation();
+            PlayerSkin var14 = var13.getSkin();
+            if (var14.elytraTexture() != null) {
+               var12 = var14.elytraTexture();
+            } else if (var14.capeTexture() != null && var13.isModelPartShown(PlayerModelPart.CAPE)) {
+               var12 = var14.capeTexture();
             } else {
                var12 = WINGS_LOCATION;
             }
@@ -50,8 +52,8 @@ public class ElytraLayer<T extends LivingEntity, M extends EntityModel<T>> exten
          var1.translate(0.0F, 0.0F, 0.125F);
          this.getParentModel().copyPropertiesTo(this.elytraModel);
          this.elytraModel.setupAnim((T)var4, var5, var6, var8, var9, var10);
-         VertexConsumer var14 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), false, var11.hasFoil());
-         this.elytraModel.renderToBuffer(var1, var14, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+         VertexConsumer var15 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(var12), false, var11.hasFoil());
+         this.elytraModel.renderToBuffer(var1, var15, var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
          var1.popPose();
       }
    }

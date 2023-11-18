@@ -21,11 +21,9 @@ import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
 import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.network.Connection;
-import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import org.slf4j.Logger;
 
@@ -33,7 +31,7 @@ public class ConnectScreen extends Screen {
    private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
    static final Logger LOGGER = LogUtils.getLogger();
    private static final long NARRATION_DELAY_MS = 2000L;
-   static final Component ABORT_CONNECTION = Component.translatable("connect.aborted");
+   public static final Component ABORT_CONNECTION = Component.translatable("connect.aborted");
    public static final Component UNKNOWN_HOST_MESSAGE = Component.translatable("disconnect.genericReason", Component.translatable("disconnect.unknownHost"));
    @Nullable
    volatile Connection connection;
@@ -56,7 +54,7 @@ public class ConnectScreen extends Screen {
          LOGGER.error("Attempt to connect while already connecting");
       } else {
          ConnectScreen var5 = new ConnectScreen(var0, var4 ? QuickPlay.ERROR_TITLE : CommonComponents.CONNECT_FAILED);
-         var1.clearLevel();
+         var1.disconnect();
          var1.prepareForMultiplayer();
          var1.updateReportEnvironment(ReportEnvironment.thirdParty(var3 != null ? var3.ip : var2.getHost()));
          var1.quickPlayLog().setWorldData(QuickPlayLog.Type.MULTIPLAYER, var3.ip, var3.name);
@@ -82,7 +80,7 @@ public class ConnectScreen extends Screen {
                   return;
                }
 
-               if (!var2x.isPresent()) {
+               if (var2x.isEmpty()) {
                   var1.execute(
                      () -> var1.setScreen(
                            new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)
@@ -99,6 +97,7 @@ public class ConnectScreen extends Screen {
                   }
 
                   var10 = new Connection(PacketFlow.CLIENTBOUND);
+                  var10.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
                   ConnectScreen.this.channelFuture = Connection.connect(var1x, var1.options.useNativeTransport(), var10);
                }
 
@@ -113,13 +112,14 @@ public class ConnectScreen extends Screen {
                }
 
                ConnectScreen.this.connection
-                  .setListener(
+                  .initiateServerboundPlayConnection(
+                     var1x.getHostName(),
+                     var1x.getPort(),
                      new ClientHandshakePacketListenerImpl(
                         ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus
                      )
                   );
-               ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
-               ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), Optional.ofNullable(var1.getUser().getProfileId())));
+               ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
             } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {
                   return;
@@ -192,7 +192,7 @@ public class ConnectScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;
@@ -200,6 +200,5 @@ public class ConnectScreen extends Screen {
       }
 
       var1.drawCenteredString(this.font, this.status, this.width / 2, this.height / 2 - 50, 16777215);
-      super.render(var1, var2, var3, var4);
    }
 }

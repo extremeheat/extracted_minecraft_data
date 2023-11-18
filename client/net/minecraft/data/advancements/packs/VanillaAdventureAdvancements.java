@@ -2,13 +2,15 @@ package net.minecraft.data.advancements.packs;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.advancements.critereon.ChanneledLightningTrigger;
 import net.minecraft.advancements.critereon.DamagePredicate;
@@ -22,7 +24,7 @@ import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
 import net.minecraft.advancements.critereon.KilledByCrossbowTrigger;
 import net.minecraft.advancements.critereon.KilledTrigger;
-import net.minecraft.advancements.critereon.LighthingBoltPredicate;
+import net.minecraft.advancements.critereon.LightningBoltPredicate;
 import net.minecraft.advancements.critereon.LightningStrikeTrigger;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.LootTableTrigger;
@@ -56,7 +58,6 @@ import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.DecoratedPotRecipe;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
@@ -117,27 +118,28 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       super();
    }
 
-   private static LightningStrikeTrigger.TriggerInstance fireCountAndBystander(MinMaxBounds.Ints var0, EntityPredicate var1) {
-      return LightningStrikeTrigger.TriggerInstance.lighthingStrike(
-         EntityPredicate.Builder.entity()
-            .distance(DistancePredicate.absolute(MinMaxBounds.Doubles.atMost(30.0)))
-            .subPredicate(LighthingBoltPredicate.blockSetOnFire(var0))
-            .build(),
+   private static Criterion<LightningStrikeTrigger.TriggerInstance> fireCountAndBystander(MinMaxBounds.Ints var0, Optional<EntityPredicate> var1) {
+      return LightningStrikeTrigger.TriggerInstance.lightningStrike(
+         Optional.of(
+            EntityPredicate.Builder.entity()
+               .distance(DistancePredicate.absolute(MinMaxBounds.Doubles.atMost(30.0)))
+               .subPredicate(LightningBoltPredicate.blockSetOnFire(var0))
+               .build()
+         ),
          var1
       );
    }
 
-   private static UsingItemTrigger.TriggerInstance lookAtThroughItem(EntityType<?> var0, Item var1) {
+   private static Criterion<UsingItemTrigger.TriggerInstance> lookAtThroughItem(EntityType<?> var0, Item var1) {
       return UsingItemTrigger.TriggerInstance.lookingAt(
-         EntityPredicate.Builder.entity()
-            .subPredicate(PlayerPredicate.Builder.player().setLookingAt(EntityPredicate.Builder.entity().of(var0).build()).build()),
+         EntityPredicate.Builder.entity().subPredicate(PlayerPredicate.Builder.player().setLookingAt(EntityPredicate.Builder.entity().of(var0)).build()),
          ItemPredicate.Builder.item().of(var1)
       );
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, Consumer<Advancement> var2) {
-      Advancement var3 = Advancement.Builder.advancement()
+   public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
+      AdvancementHolder var3 = Advancement.Builder.advancement()
          .display(
             Items.MAP,
             Component.translatable("advancements.adventure.root.title"),
@@ -148,11 +150,11 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             false,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("killed_something", KilledTrigger.TriggerInstance.playerKilledEntity())
          .addCriterion("killed_by_something", KilledTrigger.TriggerInstance.entityKilledPlayer())
          .save(var2, "adventure/root");
-      Advancement var4 = Advancement.Builder.advancement()
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Blocks.RED_BED,
@@ -167,7 +169,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .addCriterion("slept_in_bed", PlayerTrigger.TriggerInstance.sleptInBed())
          .save(var2, "adventure/sleep_in_bed");
       createAdventuringTime(var2, var4, MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD);
-      Advancement var5 = Advancement.Builder.advancement()
+      AdvancementHolder var5 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.EMERALD,
@@ -196,11 +198,11 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "trade_at_world_height",
             TradeTrigger.TriggerInstance.tradedWithVillager(
-               EntityPredicate.Builder.entity().located(LocationPredicate.atYLocation(MinMaxBounds.Doubles.atLeast(319.0)))
+               EntityPredicate.Builder.entity().located(LocationPredicate.Builder.atYLocation(MinMaxBounds.Doubles.atLeast(319.0)))
             )
          )
          .save(var2, "adventure/trade_at_world_height");
-      Advancement var6 = addMobsToKill(Advancement.Builder.advancement())
+      AdvancementHolder var6 = addMobsToKill(Advancement.Builder.advancement())
          .parent(var3)
          .display(
             Items.IRON_SWORD,
@@ -212,7 +214,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .save(var2, "adventure/kill_a_mob");
       addMobsToKill(Advancement.Builder.advancement())
          .parent(var6)
@@ -228,7 +230,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .rewards(AdvancementRewards.Builder.experience(100))
          .save(var2, "adventure/kill_all_mobs");
-      Advancement var7 = Advancement.Builder.advancement()
+      AdvancementHolder var7 = Advancement.Builder.advancement()
          .parent(var6)
          .display(
             Items.BOW,
@@ -242,7 +244,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion(
             "shot_arrow",
-            PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntity(
+            PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(
                DamagePredicate.Builder.damageInstance()
                   .type(
                      DamageSourcePredicate.Builder.damageType()
@@ -252,7 +254,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             )
          )
          .save(var2, "adventure/shoot_arrow");
-      Advancement var8 = Advancement.Builder.advancement()
+      AdvancementHolder var8 = Advancement.Builder.advancement()
          .parent(var6)
          .display(
             Items.TRIDENT,
@@ -266,7 +268,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion(
             "shot_trident",
-            PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntity(
+            PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(
                DamagePredicate.Builder.damageInstance()
                   .type(
                      DamageSourcePredicate.Builder.damageType()
@@ -289,7 +291,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             false
          )
          .addCriterion(
-            "struck_villager", ChanneledLightningTrigger.TriggerInstance.channeledLightning(EntityPredicate.Builder.entity().of(EntityType.VILLAGER).build())
+            "struck_villager", ChanneledLightningTrigger.TriggerInstance.channeledLightning(EntityPredicate.Builder.entity().of(EntityType.VILLAGER))
          )
          .save(var2, "adventure/very_very_frightening");
       Advancement.Builder.advancement()
@@ -341,7 +343,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("used_totem", UsedTotemTrigger.TriggerInstance.usedTotem(Items.TOTEM_OF_UNDYING))
          .save(var2, "adventure/totem_of_undying");
-      Advancement var9 = Advancement.Builder.advancement()
+      AdvancementHolder var9 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.CROSSBOW,
@@ -404,7 +406,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .rewards(AdvancementRewards.Builder.experience(85))
          .addCriterion("arbalistic", KilledByCrossbowTrigger.TriggerInstance.crossbowKilled(MinMaxBounds.Ints.exactly(5)))
          .save(var2, "adventure/arbalistic");
-      Advancement var10 = Advancement.Builder.advancement()
+      AdvancementHolder var10 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Raid.getLeaderBannerInstance(),
@@ -469,7 +471,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             "bullseye",
             TargetBlockTrigger.TriggerInstance.targetHit(
                MinMaxBounds.Ints.exactly(15),
-               EntityPredicate.wrap(EntityPredicate.Builder.entity().distance(DistancePredicate.horizontal(MinMaxBounds.Doubles.atLeast(30.0))).build())
+               Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().distance(DistancePredicate.horizontal(MinMaxBounds.Doubles.atLeast(30.0)))))
             )
          )
          .save(var2, "adventure/bullseye");
@@ -503,10 +505,10 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion(
             "lightning_rod_with_villager_no_fire",
-            fireCountAndBystander(MinMaxBounds.Ints.exactly(0), EntityPredicate.Builder.entity().of(EntityType.VILLAGER).build())
+            fireCountAndBystander(MinMaxBounds.Ints.exactly(0), Optional.of(EntityPredicate.Builder.entity().of(EntityType.VILLAGER).build()))
          )
          .save(var2, "adventure/lightning_rod_with_villager_no_fire");
-      Advancement var11 = Advancement.Builder.advancement()
+      AdvancementHolder var11 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.SPYGLASS,
@@ -520,7 +522,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("spyglass_at_parrot", lookAtThroughItem(EntityType.PARROT, Items.SPYGLASS))
          .save(var2, "adventure/spyglass_at_parrot");
-      Advancement var12 = Advancement.Builder.advancement()
+      AdvancementHolder var12 = Advancement.Builder.advancement()
          .parent(var11)
          .display(
             Items.SPYGLASS,
@@ -549,7 +551,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "play_jukebox_in_meadows",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBiome(Biomes.MEADOW).setBlock(BlockPredicate.Builder.block().of(Blocks.JUKEBOX).build()),
+               LocationPredicate.Builder.location().setBiome(Biomes.MEADOW).setBlock(BlockPredicate.Builder.block().of(Blocks.JUKEBOX)),
                ItemPredicate.Builder.item().of(ItemTags.MUSIC_DISCS)
             )
          )
@@ -583,9 +585,9 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "fall_from_world_height",
             DistanceTrigger.TriggerInstance.fallFromHeight(
-               EntityPredicate.Builder.entity().located(LocationPredicate.atYLocation(MinMaxBounds.Doubles.atMost(-59.0))),
+               EntityPredicate.Builder.entity().located(LocationPredicate.Builder.atYLocation(MinMaxBounds.Doubles.atMost(-59.0))),
                DistancePredicate.vertical(MinMaxBounds.Doubles.atLeast(379.0)),
-               LocationPredicate.atYLocation(MinMaxBounds.Doubles.atLeast(319.0))
+               LocationPredicate.Builder.atYLocation(MinMaxBounds.Doubles.atLeast(319.0))
             )
          )
          .save(var2, "adventure/fall_from_world_height");
@@ -617,7 +619,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("avoid_vibration", PlayerTrigger.TriggerInstance.avoidVibration())
          .save(var2, "adventure/avoid_vibration");
-      Advancement var13 = respectingTheRemnantsCriterions(Advancement.Builder.advancement())
+      AdvancementHolder var13 = respectingTheRemnantsCriterions(Advancement.Builder.advancement())
          .parent(var3)
          .display(
             Items.BRUSH,
@@ -633,7 +635,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       Advancement.Builder.advancement()
          .parent(var13)
          .display(
-            DecoratedPotRecipe.createDecoratedPotItem(
+            DecoratedPotBlockEntity.createDecoratedPotItem(
                new DecoratedPotBlockEntity.Decorations(Items.BRICK, Items.HEART_POTTERY_SHERD, Items.BRICK, Items.EXPLORER_POTTERY_SHERD)
             ),
             Component.translatable("advancements.adventure.craft_decorated_pot_using_only_sherds.title"),
@@ -649,15 +651,15 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             RecipeCraftedTrigger.TriggerInstance.craftedItem(
                new ResourceLocation("minecraft:decorated_pot"),
                List.of(
-                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS).build(),
-                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS).build(),
-                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS).build(),
-                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS).build()
+                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS),
+                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS),
+                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS),
+                  ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS)
                )
             )
          )
          .save(var2, "adventure/craft_decorated_pot_using_only_sherds");
-      Advancement var14 = craftingANewLook(Advancement.Builder.advancement())
+      AdvancementHolder var14 = craftingANewLook(Advancement.Builder.advancement())
          .parent(var3)
          .display(
             new ItemStack(Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE),
@@ -682,6 +684,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true,
             false
          )
+         .rewards(AdvancementRewards.Builder.experience(150))
          .save(var2, "adventure/trim_with_all_exclusive_armor_patterns");
       Advancement.Builder.advancement()
          .parent(var3)
@@ -695,16 +698,16 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("chiseled_bookshelf", placedBlockReadByComparator(Blocks.CHISELED_BOOKSHELF))
          .addCriterion("comparator", placedComparatorReadingBlock(Blocks.CHISELED_BOOKSHELF))
          .save(var2, "adventure/read_power_of_chiseled_bookshelf");
    }
 
-   private static CriterionTriggerInstance placedBlockReadByComparator(Block var0) {
+   private static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlockReadByComparator(Block var0) {
       LootItemCondition.Builder[] var1 = ComparatorBlock.FACING.getPossibleValues().stream().map(var0x -> {
-         StatePropertiesPredicate var1x = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x).build();
-         BlockPredicate var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1x).build();
+         StatePropertiesPredicate.Builder var1x = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x);
+         BlockPredicate.Builder var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1x);
          return LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(var2), new BlockPos(var0x.getOpposite().getNormal()));
       }).toArray(var0x -> new LootItemCondition.Builder[var0x]);
       return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(
@@ -712,7 +715,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       );
    }
 
-   private static CriterionTriggerInstance placedComparatorReadingBlock(Block var0) {
+   private static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedComparatorReadingBlock(Block var0) {
       LootItemCondition.Builder[] var1 = ComparatorBlock.FACING
          .getPossibleValues()
          .stream()
@@ -721,7 +724,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
                StatePropertiesPredicate.Builder var2 = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var1x);
                LootItemBlockStatePropertyCondition.Builder var3 = new LootItemBlockStatePropertyCondition.Builder(Blocks.COMPARATOR).setProperties(var2);
                LootItemCondition.Builder var4 = LocationCheck.checkLocation(
-                  LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var0).build()), new BlockPos(var1x.getNormal())
+                  LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var0)), new BlockPos(var1x.getNormal())
                );
                return AllOfCondition.allOf(var3, var4);
             }
@@ -731,7 +734,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder smithingWithStyle(Advancement.Builder var0) {
-      var0.requirements(RequirementsStrategy.AND);
+      var0.requirements(AdvancementRequirements.Strategy.AND);
       Map var1 = VanillaRecipeProvider.smithingTrims();
       Stream.of(
             Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
@@ -751,7 +754,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder craftingANewLook(Advancement.Builder var0) {
-      var0.requirements(RequirementsStrategy.OR);
+      var0.requirements(AdvancementRequirements.Strategy.OR);
 
       for(ResourceLocation var2 : VanillaRecipeProvider.smithingTrims().values()) {
          var0.addCriterion("armor_trimmed_" + var2, RecipeCraftedTrigger.TriggerInstance.craftedItem(var2));
@@ -761,20 +764,28 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
    }
 
    private static Advancement.Builder respectingTheRemnantsCriterions(Advancement.Builder var0) {
-      var0.addCriterion("desert_pyramid", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY));
-      var0.addCriterion("desert_well", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY));
-      var0.addCriterion("ocean_ruin_cold", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY));
-      var0.addCriterion("ocean_ruin_warm", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY));
-      var0.addCriterion("trail_ruins_rare", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_RARE));
-      var0.addCriterion("trail_ruins_common", LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON));
-      String[] var1 = var0.getCriteria().keySet().toArray(var0x -> new String[var0x]);
+      Map var1 = Map.of(
+         "desert_pyramid",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY),
+         "desert_well",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY),
+         "ocean_ruin_cold",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY),
+         "ocean_ruin_warm",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY),
+         "trail_ruins_rare",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_RARE),
+         "trail_ruins_common",
+         LootTableTrigger.TriggerInstance.lootTableUsed(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON)
+      );
+      var1.forEach(var0::addCriterion);
       String var2 = "has_sherd";
-      var0.addCriterion("has_sherd", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS).build()));
-      var0.requirements(new String[][]{var1, {"has_sherd"}});
+      var0.addCriterion("has_sherd", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(ItemTags.DECORATED_POT_SHERDS)));
+      var0.requirements(new AdvancementRequirements(new String[][]{var1.keySet().toArray(var0x -> new String[var0x]), {"has_sherd"}}));
       return var0;
    }
 
-   protected static void createAdventuringTime(Consumer<Advancement> var0, Advancement var1, MultiNoiseBiomeSourceParameterList.Preset var2) {
+   protected static void createAdventuringTime(Consumer<AdvancementHolder> var0, AdvancementHolder var1, MultiNoiseBiomeSourceParameterList.Preset var2) {
       addBiomes(Advancement.Builder.advancement(), var2.usedBiomes().toList())
          .parent(var1)
          .display(
@@ -803,7 +814,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
 
    protected static Advancement.Builder addBiomes(Advancement.Builder var0, List<ResourceKey<Biome>> var1) {
       for(ResourceKey var3 : var1) {
-         var0.addCriterion(var3.location().toString(), PlayerTrigger.TriggerInstance.located(LocationPredicate.inBiome(var3)));
+         var0.addCriterion(var3.location().toString(), PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inBiome(var3)));
       }
 
       return var0;

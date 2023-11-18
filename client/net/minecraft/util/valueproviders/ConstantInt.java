@@ -1,16 +1,13 @@
 package net.minecraft.util.valueproviders;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 
 public class ConstantInt extends IntProvider {
    public static final ConstantInt ZERO = new ConstantInt(0);
-   public static final Codec<ConstantInt> CODEC = Codec.either(
-         Codec.INT, RecordCodecBuilder.create(var0 -> var0.group(Codec.INT.fieldOf("value").forGetter(var0x -> var0x.value)).apply(var0, ConstantInt::new))
-      )
-      .xmap(var0 -> (ConstantInt)var0.map(ConstantInt::of, var0x -> var0x), var0 -> Either.left(var0.value));
+   public static final Codec<ConstantInt> CODEC = ExtraCodecs.withAlternative(Codec.INT, Codec.INT.fieldOf("value").codec())
+      .xmap(ConstantInt::new, ConstantInt::getValue);
    private final int value;
 
    public static ConstantInt of(int var0) {

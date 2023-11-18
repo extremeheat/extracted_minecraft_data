@@ -1,25 +1,20 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntityTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("summoned_entity");
-
    public SummonedEntityTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "entity", var3);
+   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = EntityPredicate.fromJson(var1, "entity", var3);
       return new SummonedEntityTrigger.TriggerInstance(var2, var4);
    }
 
@@ -29,26 +24,27 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntity
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ContextAwarePredicate entity;
+      private final Optional<ContextAwarePredicate> entity;
 
-      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2) {
-         super(SummonedEntityTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+         super(var1);
          this.entity = var2;
       }
 
-      public static SummonedEntityTrigger.TriggerInstance summonedEntity(EntityPredicate.Builder var0) {
-         return new SummonedEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, EntityPredicate.wrap(var0.build()));
+      public static Criterion<SummonedEntityTrigger.TriggerInstance> summonedEntity(EntityPredicate.Builder var0) {
+         return CriteriaTriggers.SUMMONED_ENTITY
+            .createCriterion(new SummonedEntityTrigger.TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(var0))));
       }
 
       public boolean matches(LootContext var1) {
-         return this.entity.matches(var1);
+         return this.entity.isEmpty() || this.entity.get().matches(var1);
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("entity", this.entity.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.entity.ifPresent(var1x -> var1.add("entity", var1x.toJson()));
+         return var1;
       }
    }
 }

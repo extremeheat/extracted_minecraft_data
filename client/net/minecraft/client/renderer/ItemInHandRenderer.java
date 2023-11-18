@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -129,7 +128,6 @@ public class ItemInHandRenderer {
    }
 
    private void renderMapHand(PoseStack var1, MultiBufferSource var2, int var3, HumanoidArm var4) {
-      RenderSystem.setShaderTexture(0, this.minecraft.player.getSkinTextureLocation());
       PlayerRenderer var5 = (PlayerRenderer)this.entityRenderDispatcher.<AbstractClientPlayer>getRenderer(this.minecraft.player);
       var1.pushPose();
       float var6 = var4 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
@@ -225,7 +223,6 @@ public class ItemInHandRenderer {
       var1.mulPose(Axis.YP.rotationDegrees(var8 * var14 * 70.0F));
       var1.mulPose(Axis.ZP.rotationDegrees(var8 * var13 * -20.0F));
       LocalPlayer var15 = this.minecraft.player;
-      RenderSystem.setShaderTexture(0, var15.getSkinTextureLocation());
       var1.translate(var8 * -1.0F, 3.6F, 3.5F);
       var1.mulPose(Axis.ZP.rotationDegrees(var8 * 120.0F));
       var1.mulPose(Axis.XP.rotationDegrees(200.0F));

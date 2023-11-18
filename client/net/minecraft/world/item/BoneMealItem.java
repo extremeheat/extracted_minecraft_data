@@ -15,9 +15,11 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseCoralWallFanBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 public class BoneMealItem extends Item {
    public static final int GRASS_SPREAD_WIDTH = 3;
@@ -35,6 +37,7 @@ public class BoneMealItem extends Item {
       BlockPos var4 = var3.relative(var1.getClickedFace());
       if (growCrop(var1.getItemInHand(), var2, var3)) {
          if (!var2.isClientSide) {
+            var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
             var2.levelEvent(1505, var3, 0);
          }
 
@@ -44,6 +47,7 @@ public class BoneMealItem extends Item {
          boolean var6 = var5.isFaceSturdy(var2, var3, var1.getClickedFace());
          if (var6 && growWaterPlant(var1.getItemInHand(), var2, var4, var1.getClickedFace())) {
             if (!var2.isClientSide) {
+               var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
                var2.levelEvent(1505, var4, 0);
             }
 
@@ -58,7 +62,8 @@ public class BoneMealItem extends Item {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean growCrop(ItemStack var0, Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      if (var3.getBlock() instanceof BonemealableBlock var4 && var4.isValidBonemealTarget(var1, var2, var3, var1.isClientSide)) {
+      Block var5 = var3.getBlock();
+      if (var5 instanceof BonemealableBlock var4 && var4.isValidBonemealTarget(var1, var2, var3)) {
          if (var1 instanceof ServerLevel) {
             if (var4.isBonemealSuccess(var1, var1.random, var2, var3)) {
                var4.performBonemeal((ServerLevel)var1, var1.random, var2, var3);

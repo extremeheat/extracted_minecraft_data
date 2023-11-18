@@ -1,6 +1,7 @@
 package net.minecraft.core;
 
 import com.mojang.datafixers.util.Either;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -8,10 +9,10 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 public interface HolderSet<T> extends Iterable<Holder<T>> {
@@ -51,7 +52,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       return direct(Stream.of(var1).map(var0).toList());
    }
 
-   static <E, T> HolderSet.Direct<T> direct(Function<E, Holder<T>> var0, List<E> var1) {
+   static <E, T> HolderSet.Direct<T> direct(Function<E, Holder<T>> var0, Collection<E> var1) {
       return direct(var1.stream().map(var0).toList());
    }
 

@@ -87,7 +87,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
             boolean var14 = ((SignBlockEntity)var16).executeClickCommandsIfPresent(var4, var2, var3, var17);
             if (((SignBlockEntity)var16).isWaxed()) {
                var2.playSound(null, ((SignBlockEntity)var16).getBlockPos(), SoundEvents.WAXED_SIGN_INTERACT_FAIL, SoundSource.BLOCKS);
-               return InteractionResult.PASS;
+               return this.getInteractionResult(var15);
             } else if (var15
                && !this.otherPlayerIsEditingSign(var4, (SignBlockEntity)var16)
                && var9.canApplyToSign(var13, var4)
@@ -107,7 +107,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
                && var4.mayBuild()
                && this.hasEditableText(var4, (SignBlockEntity)var16, var17)) {
                this.openTextEdit(var4, (SignBlockEntity)var16, var17);
-               return InteractionResult.SUCCESS;
+               return this.getInteractionResult(var15);
             } else {
                return InteractionResult.PASS;
             }
@@ -117,6 +117,10 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
       } else {
          return InteractionResult.PASS;
       }
+   }
+
+   private InteractionResult getInteractionResult(boolean var1) {
+      return var1 ? InteractionResult.PASS : InteractionResult.SUCCESS;
    }
 
    private boolean hasEditableText(Player var1, SignBlockEntity var2, boolean var3) {

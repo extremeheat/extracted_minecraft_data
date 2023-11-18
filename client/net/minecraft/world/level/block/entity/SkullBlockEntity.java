@@ -1,11 +1,12 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.Iterables;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.properties.Property;
+import com.mojang.authlib.yggdrasil.ProfileResult;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -17,6 +18,7 @@ import net.minecraft.server.Services;
 import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SkullBlockEntity extends BlockEntity {
@@ -28,6 +30,12 @@ public class SkullBlockEntity extends BlockEntity {
    private static MinecraftSessionService sessionService;
    @Nullable
    private static Executor mainThreadExecutor;
+   private static final Executor CHECKED_MAIN_THREAD_EXECUTOR = var0 -> {
+      Executor var1 = mainThreadExecutor;
+      if (var1 != null) {
+         var1.execute(var0);
+      }
+   };
    @Nullable
    private GameProfile owner;
    @Nullable
@@ -73,7 +81,7 @@ public class SkullBlockEntity extends BlockEntity {
       } else if (var1.contains("ExtraType", 8)) {
          String var2 = var1.getString("ExtraType");
          if (!StringUtil.isNullOrEmpty(var2)) {
-            this.setOwner(new GameProfile(null, var2));
+            this.setOwner(new GameProfile(Util.NIL_UUID, var2));
          }
       }
 
@@ -83,7 +91,7 @@ public class SkullBlockEntity extends BlockEntity {
    }
 
    public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
-      if (var0.hasNeighborSignal(var1)) {
+      if (var2.hasProperty(SkullBlock.POWERED) && var2.getValue(SkullBlock.POWERED)) {
          var3.isAnimating = true;
          ++var3.animationTickCount;
       } else {
@@ -123,48 +131,77 @@ public class SkullBlockEntity extends BlockEntity {
    }
 
    private void updateOwnerProfile() {
-      updateGameprofile(this.owner, var1 -> {
-         this.owner = var1;
+      if (this.owner != null && !Util.isBlank(this.owner.getName()) && !hasTextures(this.owner)) {
+         fetchGameProfile(this.owner.getName()).thenAcceptAsync(var1 -> {
+            this.owner = (GameProfile)var1.orElse(this.owner);
+            this.setChanged();
+         }, CHECKED_MAIN_THREAD_EXECUTOR);
+      } else {
          this.setChanged();
-      });
+      }
    }
 
-   public static void updateGameprofile(@Nullable GameProfile var0, Consumer<GameProfile> var1) {
-      if (var0 != null
-         && !StringUtil.isNullOrEmpty(var0.getName())
-         && (!var0.isComplete() || !var0.getProperties().containsKey("textures"))
-         && profileCache != null
-         && sessionService != null) {
-         profileCache.getAsync(var0.getName(), var2 -> Util.backgroundExecutor().execute(() -> Util.ifElse(var2, var1xxx -> {
-                  Property var2xx = (Property)Iterables.getFirst(var1xxx.getProperties().get("textures"), null);
-                  if (var2xx == null) {
-                     MinecraftSessionService var3 = sessionService;
-                     if (var3 == null) {
-                        return;
-                     }
-
-                     var1xxx = var3.fillProfileProperties(var1xxx, true);
-                  }
-
-                  GameProfile var5 = var1xxx;
-                  Executor var4 = mainThreadExecutor;
-                  if (var4 != null) {
-                     var4.execute(() -> {
-                        GameProfileCache var2xxx = profileCache;
-                        if (var2xxx != null) {
-                           var2xxx.add(var5);
-                           var1.accept(var5);
-                        }
-                     });
-                  }
-               }, () -> {
-                  Executor var2xx = mainThreadExecutor;
-                  if (var2xx != null) {
-                     var2xx.execute(() -> var1.accept(var0));
-                  }
-               })));
+   @Nullable
+   public static GameProfile getOrResolveGameProfile(CompoundTag var0) {
+      if (var0.contains("SkullOwner", 10)) {
+         return NbtUtils.readGameProfile(var0.getCompound("SkullOwner"));
       } else {
-         var1.accept(var0);
+         if (var0.contains("SkullOwner", 8)) {
+            String var1 = var0.getString("SkullOwner");
+            if (!Util.isBlank(var1)) {
+               var0.remove("SkullOwner");
+               resolveGameProfile(var0, var1);
+            }
+         }
+
+         return null;
       }
+   }
+
+   public static void resolveGameProfile(CompoundTag var0) {
+      String var1 = var0.getString("SkullOwner");
+      if (!Util.isBlank(var1)) {
+         resolveGameProfile(var0, var1);
+      }
+   }
+
+   private static void resolveGameProfile(CompoundTag var0, String var1) {
+      fetchGameProfile(var1)
+         .thenAccept(
+            var2 -> var0.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), (GameProfile)var2.orElse(new GameProfile(Util.NIL_UUID, var1))))
+         );
+   }
+
+   private static CompletableFuture<Optional<GameProfile>> fetchGameProfile(String var0) {
+      GameProfileCache var1 = profileCache;
+      return var1 == null
+         ? CompletableFuture.completedFuture(Optional.empty())
+         : var1.getAsync(var0)
+            .thenCompose(var0x -> var0x.isPresent() ? fillProfileTextures((GameProfile)var0x.get()) : CompletableFuture.completedFuture(Optional.empty()))
+            .thenApplyAsync((Function<? super Optional, ? extends Optional<GameProfile>>)(var0x -> {
+               GameProfileCache var1x = profileCache;
+               if (var1x != null) {
+                  var0x.ifPresent(var1x::add);
+                  return var0x;
+               } else {
+                  return Optional.empty();
+               }
+            }), CHECKED_MAIN_THREAD_EXECUTOR);
+   }
+
+   private static CompletableFuture<Optional<GameProfile>> fillProfileTextures(GameProfile var0) {
+      return hasTextures(var0) ? CompletableFuture.completedFuture(Optional.of(var0)) : CompletableFuture.supplyAsync(() -> {
+         MinecraftSessionService var1 = sessionService;
+         if (var1 != null) {
+            ProfileResult var2 = var1.fetchProfile(var0.getId(), true);
+            return var2 == null ? Optional.of(var0) : Optional.of(var2.profile());
+         } else {
+            return Optional.empty();
+         }
+      }, Util.backgroundExecutor());
+   }
+
+   private static boolean hasTextures(GameProfile var0) {
+      return var0.getProperties().containsKey("textures");
    }
 }

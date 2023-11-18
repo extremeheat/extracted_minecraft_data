@@ -7,7 +7,7 @@ import net.minecraft.Util;
 import net.minecraft.client.resources.model.ModelBakery;
 
 public class RenderBuffers {
-   private final ChunkBufferBuilderPack fixedBufferPack = new ChunkBufferBuilderPack();
+   private final SectionBufferBuilderPack fixedBufferPack = new SectionBufferBuilderPack();
    private final SortedMap<RenderType, BufferBuilder> fixedBuffers = Util.make(new Object2ObjectLinkedOpenHashMap(), var1 -> {
       var1.put(Sheets.solidBlockSheet(), this.fixedBufferPack.builder(RenderType.solid()));
       var1.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.builder(RenderType.cutout()));
@@ -42,7 +42,7 @@ public class RenderBuffers {
       var0.put(var1, new BufferBuilder(var1.bufferSize()));
    }
 
-   public ChunkBufferBuilderPack fixedBufferPack() {
+   public SectionBufferBuilderPack fixedBufferPack() {
       return this.fixedBufferPack;
    }
 

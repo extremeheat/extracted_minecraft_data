@@ -7,7 +7,6 @@ import com.mojang.realmsclient.dto.RealmsServerList;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
-import java.util.concurrent.locks.ReentrantLock;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
@@ -22,7 +21,6 @@ import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.packs.resources.ReloadInstance;
 
 public class QuickPlay {
    public static final Component ERROR_TITLE = Component.translatable("quickplay.error.title");
@@ -37,19 +35,17 @@ public class QuickPlay {
       super();
    }
 
-   public static void connect(Minecraft var0, GameConfig.QuickPlayData var1, ReloadInstance var2, RealmsClient var3) {
-      String var4 = var1.singleplayer();
-      String var5 = var1.multiplayer();
-      String var6 = var1.realms();
-      var2.done().thenRunAsync(() -> {
-         if (!Util.isBlank(var4)) {
-            joinSingleplayerWorld(var0, var4);
-         } else if (!Util.isBlank(var5)) {
-            joinMultiplayerWorld(var0, var5);
-         } else if (!Util.isBlank(var6)) {
-            joinRealmsWorld(var0, var3, var6);
-         }
-      }, var0);
+   public static void connect(Minecraft var0, GameConfig.QuickPlayData var1, RealmsClient var2) {
+      String var3 = var1.singleplayer();
+      String var4 = var1.multiplayer();
+      String var5 = var1.realms();
+      if (!Util.isBlank(var3)) {
+         joinSingleplayerWorld(var0, var3);
+      } else if (!Util.isBlank(var4)) {
+         joinMultiplayerWorld(var0, var4);
+      } else if (!Util.isBlank(var5)) {
+         joinRealmsWorld(var0, var2, var5);
+      }
    }
 
    private static void joinSingleplayerWorld(Minecraft var0, String var1) {
@@ -67,7 +63,7 @@ public class QuickPlay {
       var2.load();
       ServerData var3 = var2.get(var1);
       if (var3 == null) {
-         var3 = new ServerData(I18n.get("selectServer.defaultName"), var1, false);
+         var3 = new ServerData(I18n.get("selectServer.defaultName"), var1, ServerData.Type.OTHER);
          var2.add(var3, true);
          var2.save();
       }
@@ -98,7 +94,7 @@ public class QuickPlay {
          var0.setScreen(new DisconnectedScreen(var13, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
       } else {
          TitleScreen var12 = new TitleScreen();
-         GetServerDetailsTask var8 = new GetServerDetailsTask(new RealmsMainScreen(var12), var12, var6, new ReentrantLock());
+         GetServerDetailsTask var8 = new GetServerDetailsTask(var12, var6);
          var0.setScreen(new RealmsLongRunningMcoTaskScreen(var12, var8));
       }
    }

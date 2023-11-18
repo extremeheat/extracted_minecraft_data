@@ -1,6 +1,7 @@
 package net.minecraft.network.protocol;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.ReportedException;
 import net.minecraft.network.PacketListener;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.server.level.ServerLevel;
@@ -21,15 +22,15 @@ public class PacketUtils {
    public static <T extends PacketListener> void ensureRunningOnSameThread(Packet<T> var0, T var1, BlockableEventLoop<?> var2) throws RunningOnDifferentThreadException {
       if (!var2.isSameThread()) {
          var2.executeIfPossible(() -> {
-            if (var1.isAcceptingMessages()) {
+            if (var1.shouldHandleMessage(var0)) {
                try {
                   var0.handle(var1);
-               } catch (Exception var3) {
-                  if (var1.shouldPropagateHandlingExceptions()) {
-                     throw var3;
+               } catch (Exception var4) {
+                  if (var4 instanceof ReportedException var3 && var3.getCause() instanceof OutOfMemoryError || var1.shouldPropagateHandlingExceptions()) {
+                     throw var4;
                   }
 
-                  LOGGER.error("Failed to handle packet {}, suppressing error", var0, var3);
+                  LOGGER.error("Failed to handle packet {}, suppressing error", var0, var4);
                }
             } else {
                LOGGER.debug("Ignoring packet due to disconnection: {}", var0);

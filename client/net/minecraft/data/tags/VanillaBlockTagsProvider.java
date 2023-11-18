@@ -637,7 +637,15 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.FLOWERS)
          .addTag(BlockTags.SMALL_FLOWERS)
          .addTag(BlockTags.TALL_FLOWERS)
-         .add(Blocks.FLOWERING_AZALEA_LEAVES, Blocks.FLOWERING_AZALEA, Blocks.MANGROVE_PROPAGULE, Blocks.CHERRY_LEAVES, Blocks.PINK_PETALS);
+         .add(
+            Blocks.FLOWERING_AZALEA_LEAVES,
+            Blocks.FLOWERING_AZALEA,
+            Blocks.MANGROVE_PROPAGULE,
+            Blocks.CHERRY_LEAVES,
+            Blocks.PINK_PETALS,
+            Blocks.CHORUS_FLOWER,
+            Blocks.SPORE_BLOSSOM
+         );
       this.tag(BlockTags.BEEHIVES).add(Blocks.BEE_NEST, Blocks.BEEHIVE);
       this.tag(BlockTags.CROPS)
          .add(
@@ -1304,29 +1312,14 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.SNOW,
             Blocks.SOUL_SAND,
             Blocks.DIRT_PATH,
-            Blocks.WHITE_CONCRETE_POWDER,
-            Blocks.ORANGE_CONCRETE_POWDER,
-            Blocks.MAGENTA_CONCRETE_POWDER,
-            Blocks.LIGHT_BLUE_CONCRETE_POWDER,
-            Blocks.YELLOW_CONCRETE_POWDER,
-            Blocks.LIME_CONCRETE_POWDER,
-            Blocks.PINK_CONCRETE_POWDER,
-            Blocks.GRAY_CONCRETE_POWDER,
-            Blocks.LIGHT_GRAY_CONCRETE_POWDER,
-            Blocks.CYAN_CONCRETE_POWDER,
-            Blocks.PURPLE_CONCRETE_POWDER,
-            Blocks.BLUE_CONCRETE_POWDER,
-            Blocks.BROWN_CONCRETE_POWDER,
-            Blocks.GREEN_CONCRETE_POWDER,
-            Blocks.RED_CONCRETE_POWDER,
-            Blocks.BLACK_CONCRETE_POWDER,
             Blocks.SOUL_SOIL,
             Blocks.ROOTED_DIRT,
             Blocks.MUDDY_MANGROVE_ROOTS,
             Blocks.MUD,
             Blocks.SUSPICIOUS_SAND,
             Blocks.SUSPICIOUS_GRAVEL
-         );
+         )
+         .addTag(BlockTags.CONCRETE_POWDER);
       this.tag(BlockTags.SWORD_EFFICIENT)
          .addTag(BlockTags.LEAVES)
          .addTag(BlockTags.SAPLINGS)
@@ -1481,6 +1474,25 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.RED_TERRACOTTA,
             Blocks.BLACK_TERRACOTTA
          );
+      this.tag(BlockTags.CONCRETE_POWDER)
+         .add(
+            Blocks.WHITE_CONCRETE_POWDER,
+            Blocks.ORANGE_CONCRETE_POWDER,
+            Blocks.MAGENTA_CONCRETE_POWDER,
+            Blocks.LIGHT_BLUE_CONCRETE_POWDER,
+            Blocks.YELLOW_CONCRETE_POWDER,
+            Blocks.LIME_CONCRETE_POWDER,
+            Blocks.PINK_CONCRETE_POWDER,
+            Blocks.GRAY_CONCRETE_POWDER,
+            Blocks.LIGHT_GRAY_CONCRETE_POWDER,
+            Blocks.CYAN_CONCRETE_POWDER,
+            Blocks.PURPLE_CONCRETE_POWDER,
+            Blocks.BLUE_CONCRETE_POWDER,
+            Blocks.BROWN_CONCRETE_POWDER,
+            Blocks.GREEN_CONCRETE_POWDER,
+            Blocks.RED_CONCRETE_POWDER,
+            Blocks.BLACK_CONCRETE_POWDER
+         );
       this.tag(BlockTags.AZALEA_GROWS_ON)
          .addTag(BlockTags.DIRT)
          .addTag(BlockTags.SAND)
@@ -1598,5 +1610,6 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.PITCHER_CROP,
             Blocks.WHEAT
          );
+      this.tag(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS).addTag(BlockTags.SAND).addTag(BlockTags.CONCRETE_POWDER);
    }
 }

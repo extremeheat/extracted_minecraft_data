@@ -1,7 +1,8 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -9,7 +10,9 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EmptyLootItem extends LootPoolSingletonContainer {
-   EmptyLootItem(int var1, int var2, LootItemCondition[] var3, LootItemFunction[] var4) {
+   public static final Codec<EmptyLootItem> CODEC = RecordCodecBuilder.create(var0 -> singletonFields(var0).apply(var0, EmptyLootItem::new));
+
+   private EmptyLootItem(int var1, int var2, List<LootItemCondition> var3, List<LootItemFunction> var4) {
       super(var1, var2, var3, var4);
    }
 
@@ -24,15 +27,5 @@ public class EmptyLootItem extends LootPoolSingletonContainer {
 
    public static LootPoolSingletonContainer.Builder<?> emptyItem() {
       return simpleBuilder(EmptyLootItem::new);
-   }
-
-   public static class Serializer extends LootPoolSingletonContainer.Serializer<EmptyLootItem> {
-      public Serializer() {
-         super();
-      }
-
-      public EmptyLootItem deserialize(JsonObject var1, JsonDeserializationContext var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6) {
-         return new EmptyLootItem(var3, var4, var5, var6);
-      }
    }
 }

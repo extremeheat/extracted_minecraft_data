@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -112,7 +113,9 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
             double var26 = var15.y + 0.20000000298023224 + 0.5;
             double var28 = var15.z + 0.20000000298023224;
             renderFilledBox(var1, var2, new AABB(var18, var20, var22, var24, var26, var28), 1.0F, 1.0F, 1.0F, 0.2F);
-            DebugRenderer.renderFloatingText(var1, var2, var35.gameEvent.getName(), var15.x, var15.y + 0.8500000238418579, var15.z, -7564911, 0.0075F);
+            DebugRenderer.renderFloatingText(
+               var1, var2, var35.gameEvent.location().toString(), var15.x, var15.y + 0.8500000238418579, var15.z, -7564911, 0.0075F
+            );
          }
       }
    }
@@ -125,7 +128,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       }
    }
 
-   public void trackGameEvent(GameEvent var1, Vec3 var2) {
+   public void trackGameEvent(ResourceKey<GameEvent> var1, Vec3 var2) {
       this.trackedGameEvents.add(new GameEventListenerRenderer.TrackedGameEvent(Util.getMillis(), var1, var2));
    }
 
@@ -133,12 +136,12 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       this.trackedListeners.add(new GameEventListenerRenderer.TrackedListener(var1, var2));
    }
 
-   static record TrackedGameEvent(long a, GameEvent b, Vec3 c) {
+   static record TrackedGameEvent(long a, ResourceKey<GameEvent> b, Vec3 c) {
       private final long timeStamp;
-      final GameEvent gameEvent;
+      final ResourceKey<GameEvent> gameEvent;
       final Vec3 position;
 
-      TrackedGameEvent(long var1, GameEvent var3, Vec3 var4) {
+      TrackedGameEvent(long var1, ResourceKey<GameEvent> var3, Vec3 var4) {
          super();
          this.timeStamp = var1;
          this.gameEvent = var3;

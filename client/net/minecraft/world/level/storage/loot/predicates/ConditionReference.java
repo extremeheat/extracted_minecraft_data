@@ -1,22 +1,23 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootDataId;
 import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import org.slf4j.Logger;
 
-public class ConditionReference implements LootItemCondition {
+public record ConditionReference(ResourceLocation b) implements LootItemCondition {
+   private final ResourceLocation name;
    private static final Logger LOGGER = LogUtils.getLogger();
-   final ResourceLocation name;
+   public static final Codec<ConditionReference> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new)
+   );
 
-   ConditionReference(ResourceLocation var1) {
+   public ConditionReference(ResourceLocation var1) {
       super();
       this.name = var1;
    }
@@ -66,20 +67,5 @@ public class ConditionReference implements LootItemCondition {
 
    public static LootItemCondition.Builder conditionReference(ResourceLocation var0) {
       return () -> new ConditionReference(var0);
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<ConditionReference> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, ConditionReference var2, JsonSerializationContext var3) {
-         var1.addProperty("name", var2.name.toString());
-      }
-
-      public ConditionReference deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         ResourceLocation var3 = new ResourceLocation(GsonHelper.getAsString(var1, "name"));
-         return new ConditionReference(var3);
-      }
    }
 }

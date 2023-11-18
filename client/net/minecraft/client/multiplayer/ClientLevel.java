@@ -294,6 +294,7 @@ public class ClientLevel extends Level {
    public void onChunkLoaded(ChunkPos var1) {
       this.tintCaches.forEach((var1x, var2) -> var2.invalidateForChunk(var1.x, var1.z));
       this.entityStorage.startTicking(var1);
+      this.levelRenderer.onChunkLoaded(var1);
    }
 
    public void clearTintCaches() {
@@ -309,17 +310,9 @@ public class ClientLevel extends Level {
       return this.entityStorage.count();
    }
 
-   public void addPlayer(int var1, AbstractClientPlayer var2) {
-      this.addEntity(var1, var2);
-   }
-
-   public void putNonPlayerEntity(int var1, Entity var2) {
-      this.addEntity(var1, var2);
-   }
-
-   private void addEntity(int var1, Entity var2) {
-      this.removeEntity(var1, Entity.RemovalReason.DISCARDED);
-      this.entityStorage.addEntity(var2);
+   public void addEntity(Entity var1) {
+      this.removeEntity(var1.getId(), Entity.RemovalReason.DISCARDED);
+      this.entityStorage.addEntity(var1);
    }
 
    public void removeEntity(int var1, Entity.RemovalReason var2) {
@@ -459,7 +452,7 @@ public class ClientLevel extends Level {
    @Override
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", () -> this.minecraft.player.getServerBrand());
+      var2.setDetail("Server brand", () -> this.minecraft.player.connection.serverBrand());
       var2.setDetail(
          "Server type", () -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"
       );

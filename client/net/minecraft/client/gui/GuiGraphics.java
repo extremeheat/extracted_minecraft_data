@@ -11,14 +11,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Divisor;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -35,6 +34,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -49,7 +49,6 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector2ic;
 
@@ -61,6 +60,7 @@ public class GuiGraphics {
    private final PoseStack pose;
    private final MultiBufferSource.BufferSource bufferSource;
    private final GuiGraphics.ScissorStack scissorStack = new GuiGraphics.ScissorStack();
+   private final GuiSpriteManager sprites;
    private boolean managed;
 
    private GuiGraphics(Minecraft var1, PoseStack var2, MultiBufferSource.BufferSource var3) {
@@ -68,6 +68,7 @@ public class GuiGraphics {
       this.minecraft = var1;
       this.pose = var2;
       this.bufferSource = var3;
+      this.sprites = var1.getGuiSprites();
    }
 
    public GuiGraphics(Minecraft var1, MultiBufferSource.BufferSource var2) {
@@ -309,7 +310,7 @@ public class GuiGraphics {
    }
 
    public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6) {
-      this.innerBlit(var6.atlasLocation(), var1, var1 + var4, var2, var2 + var5, var3, var6.getU0(), var6.getU1(), var6.getV0(), var6.getV1());
+      this.blitSprite(var6, var1, var2, var3, var4, var5);
    }
 
    public void blit(int var1, int var2, int var3, int var4, int var5, TextureAtlasSprite var6, float var7, float var8, float var9, float var10) {
@@ -323,6 +324,61 @@ public class GuiGraphics {
       this.fill(var1, var2 + var4 - 1, var1 + var3, var2 + var4, var5);
       this.fill(var1, var2 + 1, var1 + 1, var2 + var4 - 1, var5);
       this.fill(var1 + var3 - 1, var2 + 1, var1 + var3, var2 + var4 - 1, var5);
+   }
+
+   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5) {
+      this.blitSprite(var1, var2, var3, 0, var4, var5);
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6) {
+      TextureAtlasSprite var7 = this.sprites.getSprite(var1);
+      GuiSpriteScaling var8 = this.sprites.getSpriteScaling(var7);
+      if (var8 instanceof GuiSpriteScaling.Stretch) {
+         this.blitSprite(var7, var2, var3, var4, var5, var6);
+      } else if (var8 instanceof GuiSpriteScaling.Tile var9) {
+         this.blitTiledSprite(var7, var2, var3, var4, var5, var6, 0, 0, var9.width(), var9.height(), var9.width(), var9.height());
+      } else if (var8 instanceof GuiSpriteScaling.NineSlice var10) {
+         this.blitNineSlicedSprite(var7, (GuiSpriteScaling.NineSlice)var10, var2, var3, var4, var5, var6);
+      }
+   }
+
+   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
+      this.blitSprite(var1, var2, var3, var4, var5, var6, var7, 0, var8, var9);
+   }
+
+   public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
+      TextureAtlasSprite var11 = this.sprites.getSprite(var1);
+      GuiSpriteScaling var12 = this.sprites.getSpriteScaling(var11);
+      if (var12 instanceof GuiSpriteScaling.Stretch) {
+         this.blitSprite(var11, var2, var3, var4, var5, var6, var7, var8, var9, var10);
+      } else {
+         this.blitSprite(var11, var6, var7, var8, var9, var10);
+      }
+   }
+
+   private void blitSprite(TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
+      if (var9 != 0 && var10 != 0) {
+         this.innerBlit(
+            var1.atlasLocation(),
+            var6,
+            var6 + var9,
+            var7,
+            var7 + var10,
+            var8,
+            var1.getU((float)var4 / (float)var2),
+            var1.getU((float)(var4 + var9) / (float)var2),
+            var1.getV((float)var5 / (float)var3),
+            var1.getV((float)(var5 + var10) / (float)var3)
+         );
+      }
+   }
+
+   private void blitSprite(TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6) {
+      if (var5 != 0 && var6 != 0) {
+         this.innerBlit(var1.atlasLocation(), var2, var2 + var5, var3, var3 + var6, var4, var1.getU0(), var1.getU1(), var1.getV0(), var1.getV1());
+      }
    }
 
    public void blit(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7) {
@@ -399,67 +455,101 @@ public class GuiGraphics {
       RenderSystem.disableBlend();
    }
 
-   public void blitNineSliced(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10) {
-      this.blitNineSliced(var1, var2, var3, var4, var5, var6, var6, var6, var6, var7, var8, var9, var10);
-   }
-
-   public void blitNineSliced(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      this.blitNineSliced(var1, var2, var3, var4, var5, var6, var7, var6, var7, var8, var9, var10, var11);
-   }
-
-   public void blitNineSliced(
-      ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13
-   ) {
-      var6 = Math.min(var6, var4 / 2);
-      var8 = Math.min(var8, var4 / 2);
-      var7 = Math.min(var7, var5 / 2);
-      var9 = Math.min(var9, var5 / 2);
-      if (var4 == var10 && var5 == var11) {
-         this.blit(var1, var2, var3, var12, var13, var4, var5);
-      } else if (var5 == var11) {
-         this.blit(var1, var2, var3, var12, var13, var6, var5);
-         this.blitRepeating(var1, var2 + var6, var3, var4 - var8 - var6, var5, var12 + var6, var13, var10 - var8 - var6, var11);
-         this.blit(var1, var2 + var4 - var8, var3, var12 + var10 - var8, var13, var8, var5);
-      } else if (var4 == var10) {
-         this.blit(var1, var2, var3, var12, var13, var4, var7);
-         this.blitRepeating(var1, var2, var3 + var7, var4, var5 - var9 - var7, var12, var13 + var7, var10, var11 - var9 - var7);
-         this.blit(var1, var2, var3 + var5 - var9, var12, var13 + var11 - var9, var4, var9);
-      } else {
-         this.blit(var1, var2, var3, var12, var13, var6, var7);
-         this.blitRepeating(var1, var2 + var6, var3, var4 - var8 - var6, var7, var12 + var6, var13, var10 - var8 - var6, var7);
-         this.blit(var1, var2 + var4 - var8, var3, var12 + var10 - var8, var13, var8, var7);
-         this.blit(var1, var2, var3 + var5 - var9, var12, var13 + var11 - var9, var6, var9);
-         this.blitRepeating(var1, var2 + var6, var3 + var5 - var9, var4 - var8 - var6, var9, var12 + var6, var13 + var11 - var9, var10 - var8 - var6, var9);
-         this.blit(var1, var2 + var4 - var8, var3 + var5 - var9, var12 + var10 - var8, var13 + var11 - var9, var8, var9);
-         this.blitRepeating(var1, var2, var3 + var7, var6, var5 - var9 - var7, var12, var13 + var7, var6, var11 - var9 - var7);
-         this.blitRepeating(
-            var1, var2 + var6, var3 + var7, var4 - var8 - var6, var5 - var9 - var7, var12 + var6, var13 + var7, var10 - var8 - var6, var11 - var9 - var7
+   private void blitNineSlicedSprite(TextureAtlasSprite var1, GuiSpriteScaling.NineSlice var2, int var3, int var4, int var5, int var6, int var7) {
+      GuiSpriteScaling.NineSlice.Border var8 = var2.border();
+      int var9 = Math.min(var8.left(), var6 / 2);
+      int var10 = Math.min(var8.right(), var6 / 2);
+      int var11 = Math.min(var8.top(), var7 / 2);
+      int var12 = Math.min(var8.bottom(), var7 / 2);
+      if (var6 == var2.width() && var7 == var2.height()) {
+         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var6, var7);
+      } else if (var7 == var2.height()) {
+         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var9, var7);
+         this.blitTiledSprite(
+            var1, var3 + var9, var4, var5, var6 - var10 - var9, var7, var9, 0, var2.width() - var10 - var9, var2.height(), var2.width(), var2.height()
          );
-         this.blitRepeating(var1, var2 + var4 - var8, var3 + var7, var6, var5 - var9 - var7, var12 + var10 - var8, var13 + var7, var8, var11 - var9 - var7);
+         this.blitSprite(var1, var2.width(), var2.height(), var2.width() - var10, 0, var3 + var6 - var10, var4, var5, var10, var7);
+      } else if (var6 == var2.width()) {
+         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var6, var11);
+         this.blitTiledSprite(
+            var1, var3, var4 + var11, var5, var6, var7 - var12 - var11, 0, var11, var2.width(), var2.height() - var12 - var11, var2.width(), var2.height()
+         );
+         this.blitSprite(var1, var2.width(), var2.height(), 0, var2.height() - var12, var3, var4 + var7 - var12, var5, var6, var12);
+      } else {
+         this.blitSprite(var1, var2.width(), var2.height(), 0, 0, var3, var4, var5, var9, var11);
+         this.blitTiledSprite(
+            var1, var3 + var9, var4, var5, var6 - var10 - var9, var11, var9, 0, var2.width() - var10 - var9, var11, var2.width(), var2.height()
+         );
+         this.blitSprite(var1, var2.width(), var2.height(), var2.width() - var10, 0, var3 + var6 - var10, var4, var5, var10, var11);
+         this.blitSprite(var1, var2.width(), var2.height(), 0, var2.height() - var12, var3, var4 + var7 - var12, var5, var9, var12);
+         this.blitTiledSprite(
+            var1,
+            var3 + var9,
+            var4 + var7 - var12,
+            var5,
+            var6 - var10 - var9,
+            var12,
+            var9,
+            var2.height() - var12,
+            var2.width() - var10 - var9,
+            var12,
+            var2.width(),
+            var2.height()
+         );
+         this.blitSprite(
+            var1, var2.width(), var2.height(), var2.width() - var10, var2.height() - var12, var3 + var6 - var10, var4 + var7 - var12, var5, var10, var12
+         );
+         this.blitTiledSprite(
+            var1, var3, var4 + var11, var5, var9, var7 - var12 - var11, 0, var11, var9, var2.height() - var12 - var11, var2.width(), var2.height()
+         );
+         this.blitTiledSprite(
+            var1,
+            var3 + var9,
+            var4 + var11,
+            var5,
+            var6 - var10 - var9,
+            var7 - var12 - var11,
+            var9,
+            var11,
+            var2.width() - var10 - var9,
+            var2.height() - var12 - var11,
+            var2.width(),
+            var2.height()
+         );
+         this.blitTiledSprite(
+            var1,
+            var3 + var6 - var10,
+            var4 + var11,
+            var5,
+            var9,
+            var7 - var12 - var11,
+            var2.width() - var10,
+            var11,
+            var10,
+            var2.height() - var12 - var11,
+            var2.width(),
+            var2.height()
+         );
       }
    }
 
-   public void blitRepeating(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
-      int var10 = var2;
+   private void blitTiledSprite(
+      TextureAtlasSprite var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12
+   ) {
+      if (var5 > 0 && var6 > 0) {
+         if (var9 > 0 && var10 > 0) {
+            for(int var13 = 0; var13 < var5; var13 += var9) {
+               int var14 = Math.min(var9, var5 - var13);
 
-      int var12;
-      for(IntIterator var11 = slices(var4, var8); var11.hasNext(); var10 += var12) {
-         var12 = var11.nextInt();
-         int var13 = (var8 - var12) / 2;
-         int var14 = var3;
-
-         int var16;
-         for(IntIterator var15 = slices(var5, var9); var15.hasNext(); var14 += var16) {
-            var16 = var15.nextInt();
-            int var17 = (var9 - var16) / 2;
-            this.blit(var1, var10, var14, var6 + var13, var7 + var17, var12, var16);
+               for(int var15 = 0; var15 < var6; var15 += var10) {
+                  int var16 = Math.min(var10, var6 - var15);
+                  this.blitSprite(var1, var11, var12, var7, var8, var2 + var13, var3 + var15, var4, var14, var16);
+               }
+            }
+         } else {
+            throw new IllegalArgumentException("Tiled sprite texture size must be positive, got " + var9 + "x" + var10);
          }
       }
-   }
-
-   private static IntIterator slices(int var0, int var1) {
-      int var2 = Mth.positiveCeilDiv(var0, var1);
-      return new Divisor(var0, var2);
    }
 
    public void renderItem(ItemStack var1, int var2, int var3) {

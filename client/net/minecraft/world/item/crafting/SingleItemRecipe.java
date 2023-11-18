@@ -1,12 +1,13 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
@@ -15,17 +16,15 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
    protected final ItemStack result;
    private final RecipeType<?> type;
    private final RecipeSerializer<?> serializer;
-   protected final ResourceLocation id;
    protected final String group;
 
-   public SingleItemRecipe(RecipeType<?> var1, RecipeSerializer<?> var2, ResourceLocation var3, String var4, Ingredient var5, ItemStack var6) {
+   public SingleItemRecipe(RecipeType<?> var1, RecipeSerializer<?> var2, String var3, Ingredient var4, ItemStack var5) {
       super();
       this.type = var1;
       this.serializer = var2;
-      this.id = var3;
-      this.group = var4;
-      this.ingredient = var5;
-      this.result = var6;
+      this.group = var3;
+      this.ingredient = var4;
+      this.result = var5;
    }
 
    @Override
@@ -36,11 +35,6 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
    @Override
    public RecipeSerializer<?> getSerializer() {
       return this.serializer;
-   }
-
-   @Override
-   public ResourceLocation getId() {
-      return this.id;
    }
 
    @Override
@@ -71,33 +65,39 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
    }
 
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
+      private static final MapCodec<ItemStack> RESULT_CODEC = RecordCodecBuilder.mapCodec(
+         var0 -> var0.group(
+                  BuiltInRegistries.ITEM.byNameCodec().fieldOf("result").forGetter(ItemStack::getItem),
+                  Codec.INT.fieldOf("count").forGetter(ItemStack::getCount)
+               )
+               .apply(var0, ItemStack::new)
+      );
       final SingleItemRecipe.Serializer.SingleItemMaker<T> factory;
+      private final Codec<T> codec;
 
       protected Serializer(SingleItemRecipe.Serializer.SingleItemMaker<T> var1) {
          super();
          this.factory = var1;
+         this.codec = RecordCodecBuilder.create(
+            var1x -> var1x.group(
+                     ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
+                     Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
+                     RESULT_CODEC.forGetter(var0x -> var0x.result)
+                  )
+                  .apply(var1x, var1::create)
+         );
       }
 
-      public T fromJson(ResourceLocation var1, JsonObject var2) {
-         String var3 = GsonHelper.getAsString(var2, "group", "");
-         Ingredient var4;
-         if (GsonHelper.isArrayNode(var2, "ingredient")) {
-            var4 = Ingredient.fromJson(GsonHelper.getAsJsonArray(var2, "ingredient"), false);
-         } else {
-            var4 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "ingredient"), false);
-         }
-
-         String var5 = GsonHelper.getAsString(var2, "result");
-         int var6 = GsonHelper.getAsInt(var2, "count");
-         ItemStack var7 = new ItemStack(BuiltInRegistries.ITEM.get(new ResourceLocation(var5)), var6);
-         return this.factory.create(var1, var3, var4, var7);
+      @Override
+      public Codec<T> codec() {
+         return this.codec;
       }
 
-      public T fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
-         String var3 = var2.readUtf();
-         Ingredient var4 = Ingredient.fromNetwork(var2);
-         ItemStack var5 = var2.readItem();
-         return this.factory.create(var1, var3, var4, var5);
+      public T fromNetwork(FriendlyByteBuf var1) {
+         String var2 = var1.readUtf();
+         Ingredient var3 = Ingredient.fromNetwork(var1);
+         ItemStack var4 = var1.readItem();
+         return this.factory.create(var2, var3, var4);
       }
 
       public void toNetwork(FriendlyByteBuf var1, T var2) {
@@ -107,7 +107,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
       }
 
       interface SingleItemMaker<T extends SingleItemRecipe> {
-         T create(ResourceLocation var1, String var2, Ingredient var3, ItemStack var4);
+         T create(String var1, Ingredient var2, ItemStack var3);
       }
    }
 }

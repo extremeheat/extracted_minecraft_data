@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
@@ -12,8 +11,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 
 public class ShulkerBoxColoring extends CustomRecipe {
-   public ShulkerBoxColoring(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public ShulkerBoxColoring(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

@@ -2,6 +2,7 @@ package net.minecraft.data.advancements.packs;
 
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.critereon.ChangeDimensionTrigger;
@@ -31,8 +32,8 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, Consumer<Advancement> var2) {
-      Advancement var3 = Advancement.Builder.advancement()
+   public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
+      AdvancementHolder var3 = Advancement.Builder.advancement()
          .display(
             Blocks.END_STONE,
             Component.translatable("advancements.end.root.title"),
@@ -45,7 +46,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("entered_end", ChangeDimensionTrigger.TriggerInstance.changedDimensionTo(Level.END))
          .save(var2, "end/root");
-      Advancement var4 = Advancement.Builder.advancement()
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Blocks.DRAGON_HEAD,
@@ -59,7 +60,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("killed_dragon", KilledTrigger.TriggerInstance.playerKilledEntity(EntityPredicate.Builder.entity().of(EntityType.ENDER_DRAGON)))
          .save(var2, "end/kill_dragon");
-      Advancement var5 = Advancement.Builder.advancement()
+      AdvancementHolder var5 = Advancement.Builder.advancement()
          .parent(var4)
          .display(
             Items.ENDER_PEARL,
@@ -87,7 +88,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("summoned_dragon", SummonedEntityTrigger.TriggerInstance.summonedEntity(EntityPredicate.Builder.entity().of(EntityType.ENDER_DRAGON)))
          .save(var2, "end/respawn_dragon");
-      Advancement var6 = Advancement.Builder.advancement()
+      AdvancementHolder var6 = Advancement.Builder.advancement()
          .parent(var5)
          .display(
             Blocks.PURPUR_BLOCK,
@@ -99,7 +100,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("in_city", PlayerTrigger.TriggerInstance.located(LocationPredicate.inStructure(BuiltinStructures.END_CITY)))
+         .addCriterion("in_city", PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(BuiltinStructures.END_CITY)))
          .save(var2, "end/find_end_city");
       Advancement.Builder.advancement()
          .parent(var4)

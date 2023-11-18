@@ -36,7 +36,7 @@ public class RandomStrollGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      if (this.mob.isVehicle()) {
+      if (this.mob.hasControllingPassenger()) {
          return false;
       } else {
          if (!this.forceTrigger) {
@@ -69,7 +69,7 @@ public class RandomStrollGoal extends Goal {
 
    @Override
    public boolean canContinueToUse() {
-      return !this.mob.getNavigation().isDone() && !this.mob.isVehicle();
+      return !this.mob.getNavigation().isDone() && !this.mob.hasControllingPassenger();
    }
 
    @Override

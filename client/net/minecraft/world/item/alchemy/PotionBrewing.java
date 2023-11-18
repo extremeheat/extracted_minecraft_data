@@ -35,10 +35,8 @@ public class PotionBrewing {
    }
 
    protected static boolean isContainerIngredient(ItemStack var0) {
-      int var1 = 0;
-
-      for(int var2 = CONTAINER_MIXES.size(); var1 < var2; ++var1) {
-         if (CONTAINER_MIXES.get(var1).ingredient.test(var0)) {
+      for(PotionBrewing.Mix var2 : CONTAINER_MIXES) {
+         if (var2.ingredient.test(var0)) {
             return true;
          }
       }
@@ -47,10 +45,8 @@ public class PotionBrewing {
    }
 
    protected static boolean isPotionIngredient(ItemStack var0) {
-      int var1 = 0;
-
-      for(int var2 = POTION_MIXES.size(); var1 < var2; ++var1) {
-         if (POTION_MIXES.get(var1).ingredient.test(var0)) {
+      for(PotionBrewing.Mix var2 : POTION_MIXES) {
+         if (var2.ingredient.test(var0)) {
             return true;
          }
       }
@@ -59,10 +55,8 @@ public class PotionBrewing {
    }
 
    public static boolean isBrewablePotion(Potion var0) {
-      int var1 = 0;
-
-      for(int var2 = POTION_MIXES.size(); var1 < var2; ++var1) {
-         if (POTION_MIXES.get(var1).to == var0) {
+      for(PotionBrewing.Mix var2 : POTION_MIXES) {
+         if (var2.to == var0) {
             return true;
          }
       }
@@ -80,11 +74,9 @@ public class PotionBrewing {
 
    protected static boolean hasContainerMix(ItemStack var0, ItemStack var1) {
       Item var2 = var0.getItem();
-      int var3 = 0;
 
-      for(int var4 = CONTAINER_MIXES.size(); var3 < var4; ++var3) {
-         PotionBrewing.Mix var5 = CONTAINER_MIXES.get(var3);
-         if (var5.from == var2 && var5.ingredient.test(var1)) {
+      for(PotionBrewing.Mix var4 : CONTAINER_MIXES) {
+         if (var4.from == var2 && var4.ingredient.test(var1)) {
             return true;
          }
       }
@@ -94,11 +86,9 @@ public class PotionBrewing {
 
    protected static boolean hasPotionMix(ItemStack var0, ItemStack var1) {
       Potion var2 = PotionUtils.getPotion(var0);
-      int var3 = 0;
 
-      for(int var4 = POTION_MIXES.size(); var3 < var4; ++var3) {
-         PotionBrewing.Mix var5 = POTION_MIXES.get(var3);
-         if (var5.from == var2 && var5.ingredient.test(var1)) {
+      for(PotionBrewing.Mix var4 : POTION_MIXES) {
+         if (var4.from == var2 && var4.ingredient.test(var1)) {
             return true;
          }
       }
@@ -110,21 +100,16 @@ public class PotionBrewing {
       if (!var1.isEmpty()) {
          Potion var2 = PotionUtils.getPotion(var1);
          Item var3 = var1.getItem();
-         int var4 = 0;
 
-         for(int var5 = CONTAINER_MIXES.size(); var4 < var5; ++var4) {
-            PotionBrewing.Mix var6 = CONTAINER_MIXES.get(var4);
-            if (var6.from == var3 && var6.ingredient.test(var0)) {
-               return PotionUtils.setPotion(new ItemStack((ItemLike)var6.to), var2);
+         for(PotionBrewing.Mix var5 : CONTAINER_MIXES) {
+            if (var5.from == var3 && var5.ingredient.test(var0)) {
+               return PotionUtils.setPotion(new ItemStack((ItemLike)var5.to), var2);
             }
          }
 
-         var4 = 0;
-
-         for(int var8 = POTION_MIXES.size(); var4 < var8; ++var4) {
-            PotionBrewing.Mix var9 = POTION_MIXES.get(var4);
-            if (var9.from == var2 && var9.ingredient.test(var0)) {
-               return PotionUtils.setPotion(new ItemStack(var3), (Potion)var9.to);
+         for(PotionBrewing.Mix var7 : POTION_MIXES) {
+            if (var7.from == var2 && var7.ingredient.test(var0)) {
+               return PotionUtils.setPotion(new ItemStack(var3), (Potion)var7.to);
             }
          }
       }

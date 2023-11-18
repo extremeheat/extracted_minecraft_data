@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -16,8 +15,8 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 public class RepairItemRecipe extends CustomRecipe {
-   public RepairItemRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public RepairItemRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

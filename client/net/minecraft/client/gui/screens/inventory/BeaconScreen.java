@@ -26,7 +26,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 
 public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
-   static final ResourceLocation BEACON_LOCATION = new ResourceLocation("textures/gui/container/beacon.png");
+   private static final ResourceLocation BEACON_LOCATION = new ResourceLocation("textures/gui/container/beacon.png");
+   static final ResourceLocation BUTTON_DISABLED_SPRITE = new ResourceLocation("container/beacon/button_disabled");
+   static final ResourceLocation BUTTON_SELECTED_SPRITE = new ResourceLocation("container/beacon/button_selected");
+   static final ResourceLocation BUTTON_HIGHLIGHTED_SPRITE = new ResourceLocation("container/beacon/button_highlighted");
+   static final ResourceLocation BUTTON_SPRITE = new ResourceLocation("container/beacon/button");
+   static final ResourceLocation CONFIRM_SPRITE = new ResourceLocation("container/beacon/confirm");
+   static final ResourceLocation CANCEL_SPRITE = new ResourceLocation("container/beacon/cancel");
    private static final Component PRIMARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.primary");
    private static final Component SECONDARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.secondary");
    private final List<BeaconScreen.BeaconButton> beaconButtons = Lists.newArrayList();
@@ -132,7 +138,6 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
@@ -143,7 +148,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
    class BeaconCancelButton extends BeaconScreen.BeaconSpriteScreenButton {
       public BeaconCancelButton(int var2, int var3) {
-         super(var2, var3, 112, 220, CommonComponents.GUI_CANCEL);
+         super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
       @Override
@@ -158,7 +163,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
    class BeaconConfirmButton extends BeaconScreen.BeaconSpriteScreenButton {
       public BeaconConfirmButton(int var2, int var3) {
-         super(var2, var3, 90, 220, CommonComponents.GUI_DONE);
+         super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
       @Override
@@ -241,17 +246,18 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       @Override
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         boolean var5 = true;
-         int var6 = 0;
+         ResourceLocation var5;
          if (!this.active) {
-            var6 += this.width * 2;
+            var5 = BeaconScreen.BUTTON_DISABLED_SPRITE;
          } else if (this.selected) {
-            var6 += this.width * 1;
+            var5 = BeaconScreen.BUTTON_SELECTED_SPRITE;
          } else if (this.isHoveredOrFocused()) {
-            var6 += this.width * 3;
+            var5 = BeaconScreen.BUTTON_HIGHLIGHTED_SPRITE;
+         } else {
+            var5 = BeaconScreen.BUTTON_SPRITE;
          }
 
-         var1.blit(BeaconScreen.BEACON_LOCATION, this.getX(), this.getY(), var6, 219, this.width, this.height);
+         var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);
          this.renderIcon(var1);
       }
 
@@ -272,18 +278,16 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    abstract static class BeaconSpriteScreenButton extends BeaconScreen.BeaconScreenButton {
-      private final int iconX;
-      private final int iconY;
+      private final ResourceLocation sprite;
 
-      protected BeaconSpriteScreenButton(int var1, int var2, int var3, int var4, Component var5) {
-         super(var1, var2, var5);
-         this.iconX = var3;
-         this.iconY = var4;
+      protected BeaconSpriteScreenButton(int var1, int var2, ResourceLocation var3, Component var4) {
+         super(var1, var2, var4);
+         this.sprite = var3;
       }
 
       @Override
       protected void renderIcon(GuiGraphics var1) {
-         var1.blit(BeaconScreen.BEACON_LOCATION, this.getX() + 2, this.getY() + 2, this.iconX, this.iconY, 18, 18);
+         var1.blitSprite(this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
    }
 

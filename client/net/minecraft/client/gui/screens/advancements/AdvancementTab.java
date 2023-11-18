@@ -3,8 +3,10 @@ package net.minecraft.client.gui.screens.advancements;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,12 +21,12 @@ public class AdvancementTab {
    private final AdvancementsScreen screen;
    private final AdvancementTabType type;
    private final int index;
-   private final Advancement advancement;
+   private final AdvancementNode rootNode;
    private final DisplayInfo display;
    private final ItemStack icon;
    private final Component title;
    private final AdvancementWidget root;
-   private final Map<Advancement, AdvancementWidget> widgets = Maps.newLinkedHashMap();
+   private final Map<AdvancementHolder, AdvancementWidget> widgets = Maps.newLinkedHashMap();
    private double scrollX;
    private double scrollY;
    private int minX = 2147483647;
@@ -34,18 +36,18 @@ public class AdvancementTab {
    private float fade;
    private boolean centered;
 
-   public AdvancementTab(Minecraft var1, AdvancementsScreen var2, AdvancementTabType var3, int var4, Advancement var5, DisplayInfo var6) {
+   public AdvancementTab(Minecraft var1, AdvancementsScreen var2, AdvancementTabType var3, int var4, AdvancementNode var5, DisplayInfo var6) {
       super();
       this.minecraft = var1;
       this.screen = var2;
       this.type = var3;
       this.index = var4;
-      this.advancement = var5;
+      this.rootNode = var5;
       this.display = var6;
       this.icon = var6.getIcon();
       this.title = var6.getTitle();
       this.root = new AdvancementWidget(this, var1, var5, var6);
-      this.addWidget(this.root, var5);
+      this.addWidget(this.root, var5.holder());
    }
 
    public AdvancementTabType getType() {
@@ -56,8 +58,8 @@ public class AdvancementTab {
       return this.index;
    }
 
-   public Advancement getAdvancement() {
-      return this.advancement;
+   public AdvancementNode getRootNode() {
+      return this.rootNode;
    }
 
    public Component getTitle() {
@@ -135,16 +137,17 @@ public class AdvancementTab {
    }
 
    @Nullable
-   public static AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, Advancement var3) {
-      if (var3.getDisplay() == null) {
+   public static AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
+      Optional var4 = var3.advancement().display();
+      if (var4.isEmpty()) {
          return null;
       } else {
-         for(AdvancementTabType var7 : AdvancementTabType.values()) {
-            if (var2 < var7.getMax()) {
-               return new AdvancementTab(var0, var1, var7, var2, var3, var3.getDisplay());
+         for(AdvancementTabType var8 : AdvancementTabType.values()) {
+            if (var2 < var8.getMax()) {
+               return new AdvancementTab(var0, var1, var8, var2, var3, (DisplayInfo)var4.get());
             }
 
-            var2 -= var7.getMax();
+            var2 -= var8.getMax();
          }
 
          return null;
@@ -161,14 +164,15 @@ public class AdvancementTab {
       }
    }
 
-   public void addAdvancement(Advancement var1) {
-      if (var1.getDisplay() != null) {
-         AdvancementWidget var2 = new AdvancementWidget(this, this.minecraft, var1, var1.getDisplay());
-         this.addWidget(var2, var1);
+   public void addAdvancement(AdvancementNode var1) {
+      Optional var2 = var1.advancement().display();
+      if (!var2.isEmpty()) {
+         AdvancementWidget var3 = new AdvancementWidget(this, this.minecraft, var1, (DisplayInfo)var2.get());
+         this.addWidget(var3, var1.holder());
       }
    }
 
-   private void addWidget(AdvancementWidget var1, Advancement var2) {
+   private void addWidget(AdvancementWidget var1, AdvancementHolder var2) {
       this.widgets.put(var2, var1);
       int var3 = var1.getX();
       int var4 = var3 + 28;
@@ -185,7 +189,7 @@ public class AdvancementTab {
    }
 
    @Nullable
-   public AdvancementWidget getWidget(Advancement var1) {
+   public AdvancementWidget getWidget(AdvancementHolder var1) {
       return this.widgets.get(var1);
    }
 

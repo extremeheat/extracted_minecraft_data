@@ -50,7 +50,7 @@ public class SleepInBed extends Behavior<LivingEntity> {
    @Override
    protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
       Optional var5 = var2.getBrain().getMemory(MemoryModuleType.HOME);
-      if (!var5.isPresent()) {
+      if (var5.isEmpty()) {
          return false;
       } else {
          BlockPos var6 = ((GlobalPos)var5.get()).pos();

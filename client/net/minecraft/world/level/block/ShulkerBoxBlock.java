@@ -11,10 +11,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -199,7 +197,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       CompoundTag var5 = BlockItem.getBlockEntityData(var1);
       if (var5 != null) {
          if (var5.contains("LootTable", 8)) {
-            var3.add(Component.literal("???????"));
+            var3.add(Component.translatable("container.shulkerBox.unknownContents"));
          }
 
          if (var5.contains("Items", 9)) {
@@ -213,9 +211,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
                   ++var8;
                   if (var7 <= 4) {
                      ++var7;
-                     MutableComponent var11 = var10.getHoverName().copy();
-                     var11.append(" x").append(String.valueOf(var10.getCount()));
-                     var3.add(var11);
+                     var3.add(Component.translatable("container.shulkerBox.itemCount", var10.getHoverName(), String.valueOf(var10.getCount())));
                   }
                }
             }
@@ -250,7 +246,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    @Override
    public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      return AbstractContainerMenu.getRedstoneSignalFromContainer((Container)var2.getBlockEntity(var3));
+      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
    @Override

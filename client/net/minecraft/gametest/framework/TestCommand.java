@@ -7,6 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,8 +47,10 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 
 public class TestCommand {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_CLEAR_RADIUS = 200;
    private static final int MAX_CLEAR_RADIUS = 1024;
    private static final int STRUCTURE_BLOCK_NEARBY_SEARCH_RADIUS = 15;
@@ -64,27 +67,88 @@ public class TestCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
-                                             "test"
-                                          )
-                                          .then(Commands.literal("runthis").executes(var0x -> runNearbyTest((CommandSourceStack)var0x.getSource()))))
-                                       .then(Commands.literal("runthese").executes(var0x -> runAllNearbyTests((CommandSourceStack)var0x.getSource()))))
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
+                                                "test"
+                                             )
+                                             .then(Commands.literal("runthis").executes(var0x -> runNearbyTest((CommandSourceStack)var0x.getSource()))))
+                                          .then(Commands.literal("runthese").executes(var0x -> runAllNearbyTests((CommandSourceStack)var0x.getSource()))))
+                                       .then(
+                                          ((LiteralArgumentBuilder)Commands.literal("runfailed")
+                                                .executes(var0x -> runLastFailedTests((CommandSourceStack)var0x.getSource(), false, 0, 8)))
+                                             .then(
+                                                ((RequiredArgumentBuilder)Commands.argument("onlyRequiredTests", BoolArgumentType.bool())
+                                                      .executes(
+                                                         var0x -> runLastFailedTests(
+                                                               (CommandSourceStack)var0x.getSource(),
+                                                               BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
+                                                               0,
+                                                               8
+                                                            )
+                                                      ))
+                                                   .then(
+                                                      ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
+                                                            .executes(
+                                                               var0x -> runLastFailedTests(
+                                                                     (CommandSourceStack)var0x.getSource(),
+                                                                     BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
+                                                                     IntegerArgumentType.getInteger(var0x, "rotationSteps"),
+                                                                     8
+                                                                  )
+                                                            ))
+                                                         .then(
+                                                            Commands.argument("testsPerRow", IntegerArgumentType.integer())
+                                                               .executes(
+                                                                  var0x -> runLastFailedTests(
+                                                                        (CommandSourceStack)var0x.getSource(),
+                                                                        BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
+                                                                        IntegerArgumentType.getInteger(var0x, "rotationSteps"),
+                                                                        IntegerArgumentType.getInteger(var0x, "testsPerRow")
+                                                                     )
+                                                               )
+                                                         )
+                                                   )
+                                             )
+                                       ))
                                     .then(
-                                       ((LiteralArgumentBuilder)Commands.literal("runfailed")
-                                             .executes(var0x -> runLastFailedTests((CommandSourceStack)var0x.getSource(), false, 0, 8)))
+                                       Commands.literal("run")
                                           .then(
-                                             ((RequiredArgumentBuilder)Commands.argument("onlyRequiredTests", BoolArgumentType.bool())
+                                             ((RequiredArgumentBuilder)Commands.argument("testName", TestFunctionArgument.testFunctionArgument())
                                                    .executes(
-                                                      var0x -> runLastFailedTests(
-                                                            (CommandSourceStack)var0x.getSource(), BoolArgumentType.getBool(var0x, "onlyRequiredTests"), 0, 8
+                                                      var0x -> runTest(
+                                                            (CommandSourceStack)var0x.getSource(), TestFunctionArgument.getTestFunction(var0x, "testName"), 0
+                                                         )
+                                                   ))
+                                                .then(
+                                                   Commands.argument("rotationSteps", IntegerArgumentType.integer())
+                                                      .executes(
+                                                         var0x -> runTest(
+                                                               (CommandSourceStack)var0x.getSource(),
+                                                               TestFunctionArgument.getTestFunction(var0x, "testName"),
+                                                               IntegerArgumentType.getInteger(var0x, "rotationSteps")
+                                                            )
+                                                      )
+                                                )
+                                          )
+                                    ))
+                                 .then(
+                                    ((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("runall")
+                                             .executes(var0x -> runAllTests((CommandSourceStack)var0x.getSource(), 0, 8)))
+                                          .then(
+                                             ((RequiredArgumentBuilder)Commands.argument("testClassName", TestClassNameArgument.testClassName())
+                                                   .executes(
+                                                      var0x -> runAllTestsInClass(
+                                                            (CommandSourceStack)var0x.getSource(),
+                                                            TestClassNameArgument.getTestClassName(var0x, "testClassName"),
+                                                            0,
+                                                            8
                                                          )
                                                    ))
                                                 .then(
                                                    ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
                                                          .executes(
-                                                            var0x -> runLastFailedTests(
+                                                            var0x -> runAllTestsInClass(
                                                                   (CommandSourceStack)var0x.getSource(),
-                                                                  BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
+                                                                  TestClassNameArgument.getTestClassName(var0x, "testClassName"),
                                                                   IntegerArgumentType.getInteger(var0x, "rotationSteps"),
                                                                   8
                                                                )
@@ -92,103 +156,48 @@ public class TestCommand {
                                                       .then(
                                                          Commands.argument("testsPerRow", IntegerArgumentType.integer())
                                                             .executes(
-                                                               var0x -> runLastFailedTests(
+                                                               var0x -> runAllTestsInClass(
                                                                      (CommandSourceStack)var0x.getSource(),
-                                                                     BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
+                                                                     TestClassNameArgument.getTestClassName(var0x, "testClassName"),
                                                                      IntegerArgumentType.getInteger(var0x, "rotationSteps"),
                                                                      IntegerArgumentType.getInteger(var0x, "testsPerRow")
                                                                   )
                                                             )
                                                       )
                                                 )
-                                          )
-                                    ))
-                                 .then(
-                                    Commands.literal("run")
+                                          ))
                                        .then(
-                                          ((RequiredArgumentBuilder)Commands.argument("testName", TestFunctionArgument.testFunctionArgument())
+                                          ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
                                                 .executes(
-                                                   var0x -> runTest(
-                                                         (CommandSourceStack)var0x.getSource(), TestFunctionArgument.getTestFunction(var0x, "testName"), 0
+                                                   var0x -> runAllTests(
+                                                         (CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "rotationSteps"), 8
                                                       )
                                                 ))
                                              .then(
-                                                Commands.argument("rotationSteps", IntegerArgumentType.integer())
+                                                Commands.argument("testsPerRow", IntegerArgumentType.integer())
                                                    .executes(
-                                                      var0x -> runTest(
+                                                      var0x -> runAllTests(
                                                             (CommandSourceStack)var0x.getSource(),
-                                                            TestFunctionArgument.getTestFunction(var0x, "testName"),
-                                                            IntegerArgumentType.getInteger(var0x, "rotationSteps")
+                                                            IntegerArgumentType.getInteger(var0x, "rotationSteps"),
+                                                            IntegerArgumentType.getInteger(var0x, "testsPerRow")
                                                          )
                                                    )
                                              )
                                        )
                                  ))
                               .then(
-                                 ((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("runall")
-                                          .executes(var0x -> runAllTests((CommandSourceStack)var0x.getSource(), 0, 8)))
-                                       .then(
-                                          ((RequiredArgumentBuilder)Commands.argument("testClassName", TestClassNameArgument.testClassName())
-                                                .executes(
-                                                   var0x -> runAllTestsInClass(
-                                                         (CommandSourceStack)var0x.getSource(),
-                                                         TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                         0,
-                                                         8
-                                                      )
-                                                ))
-                                             .then(
-                                                ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
-                                                      .executes(
-                                                         var0x -> runAllTestsInClass(
-                                                               (CommandSourceStack)var0x.getSource(),
-                                                               TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                               IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                               8
-                                                            )
-                                                      ))
-                                                   .then(
-                                                      Commands.argument("testsPerRow", IntegerArgumentType.integer())
-                                                         .executes(
-                                                            var0x -> runAllTestsInClass(
-                                                                  (CommandSourceStack)var0x.getSource(),
-                                                                  TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                                  IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                                  IntegerArgumentType.getInteger(var0x, "testsPerRow")
-                                                               )
-                                                         )
-                                                   )
-                                             )
-                                       ))
+                                 Commands.literal("export")
                                     .then(
-                                       ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
-                                             .executes(
-                                                var0x -> runAllTests(
-                                                      (CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "rotationSteps"), 8
-                                                   )
-                                             ))
-                                          .then(
-                                             Commands.argument("testsPerRow", IntegerArgumentType.integer())
-                                                .executes(
-                                                   var0x -> runAllTests(
-                                                         (CommandSourceStack)var0x.getSource(),
-                                                         IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                         IntegerArgumentType.getInteger(var0x, "testsPerRow")
-                                                      )
+                                       Commands.argument("testName", StringArgumentType.word())
+                                          .executes(
+                                             var0x -> exportTestStructure(
+                                                   (CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName")
                                                 )
                                           )
                                     )
                               ))
-                           .then(
-                              Commands.literal("export")
-                                 .then(
-                                    Commands.argument("testName", StringArgumentType.word())
-                                       .executes(
-                                          var0x -> exportTestStructure((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName"))
-                                       )
-                                 )
-                           ))
-                        .then(Commands.literal("exportthis").executes(var0x -> exportNearestTestStructure((CommandSourceStack)var0x.getSource()))))
+                           .then(Commands.literal("exportthis").executes(var0x -> exportNearestTestStructure((CommandSourceStack)var0x.getSource()))))
+                        .then(Commands.literal("exportthese").executes(var0x -> exportAllNearbyTests((CommandSourceStack)var0x.getSource()))))
                      .then(
                         Commands.literal("import")
                            .then(
@@ -279,11 +288,11 @@ public class TestCommand {
       BlockPos var3 = var2.getBlockPos();
       ServerLevel var4 = var0.getLevel();
       Optional var5 = StructureUtils.findStructureBlockContainingPos(var3, 15, var4);
-      if (!var5.isPresent()) {
+      if (var5.isEmpty()) {
          var5 = StructureUtils.findStructureBlockContainingPos(var3, 200, var4);
       }
 
-      if (!var5.isPresent()) {
+      if (var5.isEmpty()) {
          var0.sendFailure(Component.literal("Can't find a structure block that contains the targeted pos " + var3));
          return 0;
       } else {
@@ -464,6 +473,28 @@ public class TestCommand {
       }
    }
 
+   private static int exportAllNearbyTests(CommandSourceStack var0) {
+      BlockPos var1 = BlockPos.containing(var0.getPosition());
+      ServerLevel var2 = var0.getLevel();
+      Collection var3 = StructureUtils.findStructureBlocks(var1, 200, var2);
+      if (var3.isEmpty()) {
+         say(var2, "Couldn't find any structure blocks within 200 block radius", ChatFormatting.RED);
+         return 1;
+      } else {
+         boolean var4 = true;
+
+         for(BlockPos var6 : var3) {
+            StructureBlockEntity var7 = (StructureBlockEntity)var2.getBlockEntity(var6);
+            String var8 = var7.getStructurePath();
+            if (exportTestStructure(var0, var8) != 0) {
+               var4 = false;
+            }
+         }
+
+         return var4 ? 0 : 1;
+      }
+   }
+
    private static int exportTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir);
       ResourceLocation var3 = new ResourceLocation("minecraft", var1);
@@ -477,7 +508,7 @@ public class TestCommand {
             Files.createDirectories(var5.getParent());
          } catch (IOException var7) {
             say(var0, "Could not create folder " + var5.getParent());
-            var7.printStackTrace();
+            LOGGER.error("Could not create export folder", var7);
             return 1;
          }
 
@@ -503,8 +534,7 @@ public class TestCommand {
          say(var0, "Imported to " + var4.toAbsolutePath());
          return 0;
       } catch (CommandSyntaxException | IOException var12) {
-         System.err.println("Failed to load structure " + var1);
-         var12.printStackTrace();
+         LOGGER.error("Failed to load structure {}", var1, var12);
          return 1;
       }
    }

@@ -1,26 +1,28 @@
 package net.minecraft.client.renderer.debug;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.List;
-import java.util.Map;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.common.custom.GoalDebugPayload;
 
 public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int MAX_RENDER_DIST = 160;
    private final Minecraft minecraft;
-   private final Map<Integer, List<GoalSelectorDebugRenderer.DebugGoal>> goalSelectors = Maps.newHashMap();
+   private final Int2ObjectMap<GoalSelectorDebugRenderer.EntityGoalInfo> goalSelectors = new Int2ObjectOpenHashMap();
 
    @Override
    public void clear() {
       this.goalSelectors.clear();
    }
 
-   public void addGoalSelector(int var1, List<GoalSelectorDebugRenderer.DebugGoal> var2) {
-      this.goalSelectors.put(var1, var2);
+   public void addGoalSelector(int var1, BlockPos var2, List<GoalDebugPayload.DebugGoal> var3) {
+      this.goalSelectors.put(var1, new GoalSelectorDebugRenderer.EntityGoalInfo(var2, var3));
    }
 
    public void removeGoalSelector(int var1) {
@@ -36,32 +38,32 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       Camera var9 = this.minecraft.gameRenderer.getMainCamera();
       BlockPos var10 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
-      this.goalSelectors.forEach((var3x, var4) -> {
-         for(int var5x = 0; var5x < var4.size(); ++var5x) {
-            GoalSelectorDebugRenderer.DebugGoal var6 = var4.get(var5x);
-            if (var10.closerThan(var6.pos, 160.0)) {
-               double var7x = (double)var6.pos.getX() + 0.5;
-               double var9x = (double)var6.pos.getY() + 2.0 + (double)var5x * 0.25;
-               double var11 = (double)var6.pos.getZ() + 0.5;
-               int var13 = var6.isRunning ? -16711936 : -3355444;
-               DebugRenderer.renderFloatingText(var1, var2, var6.name, var7x, var9x, var11, var13);
+      ObjectIterator var11 = this.goalSelectors.values().iterator();
+
+      while(var11.hasNext()) {
+         GoalSelectorDebugRenderer.EntityGoalInfo var12 = (GoalSelectorDebugRenderer.EntityGoalInfo)var11.next();
+         BlockPos var13 = var12.entityPos;
+         if (var10.closerThan(var13, 160.0)) {
+            for(int var14 = 0; var14 < var12.goals.size(); ++var14) {
+               GoalDebugPayload.DebugGoal var15 = var12.goals.get(var14);
+               double var16 = (double)var13.getX() + 0.5;
+               double var18 = (double)var13.getY() + 2.0 + (double)var14 * 0.25;
+               double var20 = (double)var13.getZ() + 0.5;
+               int var22 = var15.isRunning() ? -16711936 : -3355444;
+               DebugRenderer.renderFloatingText(var1, var2, var15.name(), var16, var18, var20, var22);
             }
          }
-      });
+      }
    }
 
-   public static class DebugGoal {
-      public final BlockPos pos;
-      public final int priority;
-      public final String name;
-      public final boolean isRunning;
+   static record EntityGoalInfo(BlockPos a, List<GoalDebugPayload.DebugGoal> b) {
+      final BlockPos entityPos;
+      final List<GoalDebugPayload.DebugGoal> goals;
 
-      public DebugGoal(BlockPos var1, int var2, String var3, boolean var4) {
+      EntityGoalInfo(BlockPos var1, List<GoalDebugPayload.DebugGoal> var2) {
          super();
-         this.pos = var1;
-         this.priority = var2;
-         this.name = var3;
-         this.isRunning = var4;
+         this.entityPos = var1;
+         this.goals = var2;
       }
    }
 }

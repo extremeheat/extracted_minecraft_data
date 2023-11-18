@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -9,8 +8,8 @@ import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.Level;
 
 public class TippedArrowRecipe extends CustomRecipe {
-   public TippedArrowRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public TippedArrowRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {

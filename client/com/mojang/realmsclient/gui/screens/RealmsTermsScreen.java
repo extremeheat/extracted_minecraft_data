@@ -1,12 +1,10 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
-import java.util.concurrent.locks.ReentrantLock;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -24,15 +22,13 @@ public class RealmsTermsScreen extends RealmsScreen {
    private static final Component TERMS_LINK_TEXT = CommonComponents.space()
       .append(Component.translatable("mco.terms.sentence.2").withStyle(Style.EMPTY.withUnderlined(true)));
    private final Screen lastScreen;
-   private final RealmsMainScreen mainScreen;
    private final RealmsServer realmsServer;
    private boolean onLink;
 
-   public RealmsTermsScreen(Screen var1, RealmsMainScreen var2, RealmsServer var3) {
+   public RealmsTermsScreen(Screen var1, RealmsServer var2) {
       super(TITLE);
       this.lastScreen = var1;
-      this.mainScreen = var2;
-      this.realmsServer = var3;
+      this.realmsServer = var2;
    }
 
    @Override
@@ -63,14 +59,9 @@ public class RealmsTermsScreen extends RealmsScreen {
 
       try {
          var1.agreeToTos();
-         this.minecraft
-            .setScreen(
-               new RealmsLongRunningMcoTaskScreen(
-                  this.lastScreen, new GetServerDetailsTask(this.mainScreen, this.lastScreen, this.realmsServer, new ReentrantLock())
-               )
-            );
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new GetServerDetailsTask(this.lastScreen, this.realmsServer)));
       } catch (RealmsServiceException var3) {
-         LOGGER.error("Couldn't agree to TOS");
+         LOGGER.error("Couldn't agree to TOS", var3);
       }
    }
 
@@ -92,9 +83,9 @@ public class RealmsTermsScreen extends RealmsScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
-      var1.drawString(this.font, TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), 16777215, false);
+      super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
+      var1.drawString(this.font, TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), -1, false);
       int var5 = this.font.width(TERMS_STATIC_TEXT);
       int var6 = this.width / 2 - 121 + var5;
       int var7 = row(5);
@@ -102,6 +93,5 @@ public class RealmsTermsScreen extends RealmsScreen {
       int var9 = var7 + 1 + 9;
       this.onLink = var6 <= var2 && var2 <= var8 && var7 <= var3 && var3 <= var9;
       var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? 7107012 : 3368635, false);
-      super.render(var1, var2, var3, var4);
    }
 }

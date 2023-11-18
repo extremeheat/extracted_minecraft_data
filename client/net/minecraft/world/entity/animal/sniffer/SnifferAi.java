@@ -97,7 +97,7 @@ public class SnifferAi {
             SnifferAi.resetSniffing((Sniffer)var2);
             super.start(var1, var2, var3);
          }
-      }, new MoveToTargetSink(10000, 15000), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
+      }, new MoveToTargetSink(500, 700), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
    }
 
    private static void initSniffingActivity(Brain<Sniffer> var0) {

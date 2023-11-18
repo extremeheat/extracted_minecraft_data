@@ -59,7 +59,7 @@ public class ChunkTaskPriorityQueue<T> {
             if (var3) {
                var6.clear();
             } else {
-               var6.removeIf(var0 -> !var0.isPresent());
+               var6.removeIf(var0 -> var0.isEmpty());
             }
 
             if (var6.isEmpty()) {

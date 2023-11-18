@@ -19,7 +19,7 @@ public interface AbuseReportSender {
       return new AbuseReportSender.Services(var0, var1);
    }
 
-   CompletableFuture<Unit> send(UUID var1, AbuseReport var2);
+   CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3);
 
    boolean isEnabled();
 
@@ -47,22 +47,22 @@ public interface AbuseReportSender {
       }
 
       @Override
-      public CompletableFuture<Unit> send(UUID var1, AbuseReport var2) {
+      public CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3) {
          return CompletableFuture.supplyAsync(
             () -> {
-               AbuseReportRequest var3 = new AbuseReportRequest(
-                  1, var1, var2, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo()
+               AbuseReportRequest var4 = new AbuseReportRequest(
+                  1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName()
                );
    
                try {
-                  this.userApiService.reportAbuse(var3);
+                  this.userApiService.reportAbuse(var4);
                   return Unit.INSTANCE;
-               } catch (MinecraftClientHttpException var6) {
-                  Component var8 = this.getHttpErrorDescription(var6);
-                  throw new CompletionException(new AbuseReportSender.SendException(var8, var6));
-               } catch (MinecraftClientException var7) {
-                  Component var5 = this.getErrorDescription(var7);
-                  throw new CompletionException(new AbuseReportSender.SendException(var5, var7));
+               } catch (MinecraftClientHttpException var7) {
+                  Component var9 = this.getHttpErrorDescription(var7);
+                  throw new CompletionException(new AbuseReportSender.SendException(var9, var7));
+               } catch (MinecraftClientException var8) {
+                  Component var6 = this.getErrorDescription(var8);
+                  throw new CompletionException(new AbuseReportSender.SendException(var6, var8));
                }
             },
             Util.ioPool()

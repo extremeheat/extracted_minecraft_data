@@ -11,7 +11,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class GolemSensor extends Sensor<LivingEntity> {
    private static final int GOLEM_SCAN_RATE = 200;
-   private static final int MEMORY_TIME_TO_LIVE = 600;
+   private static final int MEMORY_TIME_TO_LIVE = 599;
 
    public GolemSensor() {
       this(200);
@@ -33,7 +33,7 @@ public class GolemSensor extends Sensor<LivingEntity> {
 
    public static void checkForNearbyGolem(LivingEntity var0) {
       Optional var1 = var0.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
-      if (var1.isPresent()) {
+      if (!var1.isEmpty()) {
          boolean var2 = ((List)var1.get()).stream().anyMatch(var0x -> var0x.getType().equals(EntityType.IRON_GOLEM));
          if (var2) {
             golemDetected(var0);
@@ -42,6 +42,6 @@ public class GolemSensor extends Sensor<LivingEntity> {
    }
 
    public static void golemDetected(LivingEntity var0) {
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.GOLEM_DETECTED_RECENTLY, true, 600L);
+      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.GOLEM_DETECTED_RECENTLY, true, 599L);
    }
 }
