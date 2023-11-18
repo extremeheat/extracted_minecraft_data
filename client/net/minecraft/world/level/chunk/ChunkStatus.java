@@ -323,16 +323,17 @@ public class ChunkStatus {
    ) {
       ChunkAccess var8 = (ChunkAccess)var7.get(var7.size() / 2);
       ProfiledDuration var9 = JvmProfiler.INSTANCE.onChunkGenerate(var8.getPos(), var2.dimension(), this.toString());
-      return this.generationTask.doWork(this, var1, var2, var3, var4, var5, var6, var7, var8).thenApply(var3x -> {
-         if (var8 instanceof ProtoChunk var4x && !var4x.getStatus().isOrAfter(this)) {
-            var4x.setStatus(this);
-         }
-
+      return this.generationTask.doWork(this, var1, var2, var3, var4, var5, var6, var7, var8).thenApply(var2x -> {
+         var2x.ifLeft(var1xx -> {
+            if (var1xx instanceof ProtoChunk var2xx && !var2xx.getStatus().isOrAfter(this)) {
+               var2xx.setStatus(this);
+            }
+         });
          if (var9 != null) {
             var9.finish();
          }
 
-         return var3x;
+         return var2x;
       });
    }
 

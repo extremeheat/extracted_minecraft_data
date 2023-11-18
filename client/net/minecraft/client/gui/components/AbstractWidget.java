@@ -119,7 +119,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return Component.translatable("gui.narrate.button", var0);
    }
 
-   public abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
+   protected abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
 
    protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
       int var8 = var1.width(var2);

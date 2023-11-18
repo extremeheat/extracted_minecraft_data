@@ -78,6 +78,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    private float averageSentPackets;
    private int tickCount;
    private boolean handlingFault;
+   @Nullable
+   private volatile Component delayedDisconnect;
 
    public Connection(PacketFlow var1) {
       super();
@@ -93,6 +95,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          this.setProtocol(ConnectionProtocol.HANDSHAKING);
       } catch (Throwable var3) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Failed to change protocol to handshake", var3);
+      }
+
+      if (this.delayedDisconnect != null) {
+         this.disconnect(this.delayedDisconnect);
       }
    }
 
@@ -264,7 +270,11 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    public void disconnect(Component var1) {
-      if (this.channel.isOpen()) {
+      if (this.channel == null) {
+         this.delayedDisconnect = var1;
+      }
+
+      if (this.isConnected()) {
          this.channel.close().awaitUninterruptibly();
          this.disconnectedReason = var1;
       }
@@ -283,7 +293,13 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    public static Connection connectToServer(InetSocketAddress var0, boolean var1) {
-      final Connection var2 = new Connection(PacketFlow.CLIENTBOUND);
+      Connection var2 = new Connection(PacketFlow.CLIENTBOUND);
+      ChannelFuture var3 = connect(var0, var1, var2);
+      var3.syncUninterruptibly();
+      return var2;
+   }
+
+   public static ChannelFuture connect(InetSocketAddress var0, boolean var1, final Connection var2) {
       Class<EpollSocketChannel> var3;
       LazyLoadedValue var4;
       if (Epoll.isAvailable() && var1) {
@@ -294,7 +310,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          var4 = NETWORK_WORKER_GROUP;
       }
 
-      ((Bootstrap)((Bootstrap)((Bootstrap)new Bootstrap().group((EventLoopGroup)var4.get())).handler(new ChannelInitializer<Channel>() {
+      return ((Bootstrap)((Bootstrap)((Bootstrap)new Bootstrap().group((EventLoopGroup)var4.get())).handler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1) {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);
@@ -305,8 +321,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             Connection.configureSerialization(var2x, PacketFlow.CLIENTBOUND);
             var2x.addLast("packet_handler", var2);
          }
-      })).channel(var3)).connect(var0.getAddress(), var0.getPort()).syncUninterruptibly();
-      return var2;
+      })).channel(var3)).connect(var0.getAddress(), var0.getPort());
    }
 
    public static void configureSerialization(ChannelPipeline var0, PacketFlow var1) {

@@ -275,18 +275,18 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    public void addMiddleButtons() {
-      this.createTrialButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), var1 -> {
+      this.createTrialButton = this.addWidget(Button.builder(Component.translatable("mco.selectServer.trial"), var1 -> {
          if (this.trialsAvailable && !this.createdTrial) {
             Util.getPlatform().openUri("https://aka.ms/startjavarealmstrial");
             this.minecraft.setScreen(this.lastScreen);
          }
       }).bounds(this.width / 2 + 52, this.popupY0() + 137 - 20, 98, 20).build());
-      this.buyARealmButton = this.addRenderableWidget(
+      this.buyARealmButton = this.addWidget(
          Button.builder(Component.translatable("mco.selectServer.buy"), var0 -> Util.getPlatform().openUri("https://aka.ms/BuyJavaRealms"))
             .bounds(this.width / 2 + 52, this.popupY0() + 160 - 20, 98, 20)
             .build()
       );
-      this.closeButton = this.addRenderableWidget(new RealmsMainScreen.CloseButton());
+      this.closeButton = this.addWidget(new RealmsMainScreen.CloseButton());
    }
 
    public void addFooterButtons() {
@@ -809,7 +809,7 @@ public class RealmsMainScreen extends RealmsScreen {
       if (this.shouldShowPopup()) {
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 100.0F);
-         this.drawPopup(var1);
+         this.drawPopup(var1, var2, var3, var4);
          var1.pose().popPose();
       } else {
          if (this.showingPopup) {
@@ -834,6 +834,8 @@ public class RealmsMainScreen extends RealmsScreen {
             var7 = 8;
          }
 
+         var1.pose().pushPose();
+         var1.pose().translate(0.0F, 0.0F, 110.0F);
          var1.blit(
             TRIAL_ICON_LOCATION,
             this.createTrialButton.getX() + this.createTrialButton.getWidth() - 8 - 4,
@@ -845,6 +847,7 @@ public class RealmsMainScreen extends RealmsScreen {
             8,
             16
          );
+         var1.pose().popPose();
       }
    }
 
@@ -865,9 +868,9 @@ public class RealmsMainScreen extends RealmsScreen {
       return var1 < (double)(var5 - 5) || var1 > (double)(var5 + 315) || var3 < (double)(var6 - 5) || var3 > (double)(var6 + 171);
    }
 
-   private void drawPopup(GuiGraphics var1) {
-      int var2 = this.popupX0();
-      int var3 = this.popupY0();
+   private void drawPopup(GuiGraphics var1, int var2, int var3, float var4) {
+      int var5 = this.popupX0();
+      int var6 = this.popupY0();
       if (!this.showingPopup) {
          this.carouselIndex = 0;
          this.carouselTick = 0;
@@ -887,14 +890,12 @@ public class RealmsMainScreen extends RealmsScreen {
 
       var1.setColor(1.0F, 1.0F, 1.0F, 0.7F);
       RenderSystem.enableBlend();
-      boolean var4 = false;
-      boolean var5 = true;
-      var1.blit(DARKEN_LOCATION, 0, 32, 0.0F, 0.0F, this.width, this.height - 40 - 32, 310, 166);
+      var1.blit(DARKEN_LOCATION, 0, 44, 0.0F, 0.0F, this.width, this.height - 44, 310, 166);
       RenderSystem.disableBlend();
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-      var1.blit(POPUP_LOCATION, var2, var3, 0.0F, 0.0F, 310, 166, 310, 166);
+      var1.blit(POPUP_LOCATION, var5, var6, 0.0F, 0.0F, 310, 166, 310, 166);
       if (!teaserImages.isEmpty()) {
-         var1.blit(teaserImages.get(this.carouselIndex), var2 + 7, var3 + 7, 0.0F, 0.0F, 195, 152, 195, 152);
+         var1.blit(teaserImages.get(this.carouselIndex), var5 + 7, var6 + 7, 0.0F, 0.0F, 195, 152, 195, 152);
          if (this.carouselTick % 95 < 5) {
             if (!this.hasSwitchedCarouselImage) {
                this.carouselIndex = (this.carouselIndex + 1) % teaserImages.size();
@@ -905,7 +906,10 @@ public class RealmsMainScreen extends RealmsScreen {
          }
       }
 
-      this.formattedPopup.renderLeftAlignedNoShadow(var1, this.width / 2 + 52, var3 + 7, 10, 16777215);
+      this.formattedPopup.renderLeftAlignedNoShadow(var1, this.width / 2 + 52, var6 + 7, 10, 16777215);
+      this.createTrialButton.render(var1, var2, var3, var4);
+      this.buyARealmButton.render(var1, var2, var3, var4);
+      this.closeButton.render(var1, var2, var3, var4);
    }
 
    int popupX0() {

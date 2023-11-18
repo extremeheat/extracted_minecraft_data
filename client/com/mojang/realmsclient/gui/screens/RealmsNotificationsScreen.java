@@ -140,45 +140,45 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (validClient) {
-         this.drawIcons(var1, var2, var3);
+         this.drawIcons(var1);
       }
 
       super.render(var1, var2, var3, var4);
    }
 
-   private void drawIcons(GuiGraphics var1, int var2, int var3) {
-      int var4 = this.numberOfPendingInvites;
-      boolean var5 = true;
-      int var6 = this.height / 4 + 48;
-      int var7 = this.width / 2 + 80;
-      int var8 = var6 + 48 + 2;
-      int var9 = 0;
+   private void drawIcons(GuiGraphics var1) {
+      int var2 = this.numberOfPendingInvites;
+      boolean var3 = true;
+      int var4 = this.height / 4 + 48;
+      int var5 = this.width / 2 + 80;
+      int var6 = var4 + 48 + 2;
+      int var7 = 0;
       if (hasUnseenNotifications) {
-         var1.blit(UNSEEN_NOTIFICATION_ICON_LOCATION, var7 - var9 + 5, var8 + 3, 0.0F, 0.0F, 10, 10, 10, 10);
-         var9 += 14;
+         var1.blit(UNSEEN_NOTIFICATION_ICON_LOCATION, var5 - var7 + 5, var6 + 3, 0.0F, 0.0F, 10, 10, 10, 10);
+         var7 += 14;
       }
 
       if (this.currentConfiguration != null && this.currentConfiguration.showOldNotifications()) {
          if (hasUnreadNews) {
             var1.pose().pushPose();
             var1.pose().scale(0.4F, 0.4F, 0.4F);
-            var1.blit(NEWS_ICON_LOCATION, (int)((double)(var7 + 2 - var9) * 2.5), (int)((double)var8 * 2.5), 0.0F, 0.0F, 40, 40, 40, 40);
+            var1.blit(NEWS_ICON_LOCATION, (int)((double)(var5 + 2 - var7) * 2.5), (int)((double)var6 * 2.5), 0.0F, 0.0F, 40, 40, 40, 40);
             var1.pose().popPose();
-            var9 += 14;
+            var7 += 14;
          }
 
-         if (var4 != 0) {
-            var1.blit(INVITE_ICON_LOCATION, var7 - var9, var8 - 6, 0.0F, 0.0F, 15, 25, 31, 25);
-            var9 += 16;
+         if (var2 != 0) {
+            var1.blit(INVITE_ICON_LOCATION, var5 - var7, var6, 0.0F, 0.0F, 18, 15, 18, 30);
+            var7 += 16;
          }
 
          if (trialAvailable) {
-            byte var10 = 0;
+            byte var8 = 0;
             if ((Util.getMillis() / 800L & 1L) == 1L) {
-               var10 = 8;
+               var8 = 8;
             }
 
-            var1.blit(TRIAL_ICON_LOCATION, var7 + 4 - var9, var8 + 4, 0.0F, (float)var10, 8, 8, 8, 16);
+            var1.blit(TRIAL_ICON_LOCATION, var5 + 4 - var7, var6 + 4, 0.0F, (float)var8, 8, 8, 8, 16);
          }
       }
    }

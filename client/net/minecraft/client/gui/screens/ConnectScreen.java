@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import com.mojang.logging.LogUtils;
+import io.netty.channel.ChannelFuture;
 import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +24,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import org.slf4j.Logger;
@@ -31,9 +33,12 @@ public class ConnectScreen extends Screen {
    private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
    static final Logger LOGGER = LogUtils.getLogger();
    private static final long NARRATION_DELAY_MS = 2000L;
+   static final Component ABORT_CONNECTION = Component.translatable("connect.aborted");
    public static final Component UNKNOWN_HOST_MESSAGE = Component.translatable("disconnect.genericReason", Component.translatable("disconnect.unknownHost"));
    @Nullable
    volatile Connection connection;
+   @Nullable
+   ChannelFuture channelFuture;
    volatile boolean aborted;
    final Screen parent;
    private Component status = Component.translatable("connect.connecting");
@@ -87,42 +92,55 @@ public class ConnectScreen extends Screen {
                }
 
                var1x = (InetSocketAddress)var2x.get();
+               Connection var10;
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
                      return;
                   }
 
-                  ConnectScreen.this.connection = Connection.connectToServer(var1x, var1.options.useNativeTransport());
-                  ConnectScreen.this.connection
-                     .setListener(
-                        new ClientHandshakePacketListenerImpl(
-                           ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus
-                        )
-                     );
-                  ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
-                  ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), Optional.ofNullable(var1.getUser().getProfileId())));
+                  var10 = new Connection(PacketFlow.CLIENTBOUND);
+                  ConnectScreen.this.channelFuture = Connection.connect(var1x, var1.options.useNativeTransport(), var10);
                }
-            } catch (Exception var7) {
+
+               ConnectScreen.this.channelFuture.syncUninterruptibly();
+               synchronized(ConnectScreen.this) {
+                  if (ConnectScreen.this.aborted) {
+                     var10.disconnect(ConnectScreen.ABORT_CONNECTION);
+                     return;
+                  }
+
+                  ConnectScreen.this.connection = var10;
+               }
+
+               ConnectScreen.this.connection
+                  .setListener(
+                     new ClientHandshakePacketListenerImpl(
+                        ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, null, ConnectScreen.this::updateStatus
+                     )
+                  );
+               ConnectScreen.this.connection.send(new ClientIntentionPacket(var1x.getHostName(), var1x.getPort(), ConnectionProtocol.LOGIN));
+               ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), Optional.ofNullable(var1.getUser().getProfileId())));
+            } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {
                   return;
                }
 
-               Throwable var5 = var7.getCause();
+               Throwable var5 = var9.getCause();
                Exception var3x;
                if (var5 instanceof Exception var4) {
                   var3x = (Exception)var4;
                } else {
-                  var3x = var7;
+                  var3x = var9;
                }
 
-               ConnectScreen.LOGGER.error("Couldn't connect to server", var7);
-               String var9 = var1x == null
+               ConnectScreen.LOGGER.error("Couldn't connect to server", var9);
+               String var11 = var1x == null
                   ? var3x.getMessage()
                   : var3x.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
                var1.execute(
                   () -> var1.setScreen(
                         new DisconnectedScreen(
-                           ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var9)
+                           ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var11)
                         )
                      )
                );
@@ -158,8 +176,13 @@ public class ConnectScreen extends Screen {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, var1 -> {
          synchronized(this) {
             this.aborted = true;
+            if (this.channelFuture != null) {
+               this.channelFuture.cancel(true);
+               this.channelFuture = null;
+            }
+
             if (this.connection != null) {
-               this.connection.disconnect(Component.translatable("connect.aborted"));
+               this.connection.disconnect(ABORT_CONNECTION);
             }
          }
 
